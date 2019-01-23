@@ -1,2 +1,2 @@
 # common
-eJAT Common Managers test12345
+eJAT Common Managers
