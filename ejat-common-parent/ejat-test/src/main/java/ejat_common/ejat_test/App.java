@@ -1,13 +1,20 @@
 package ejat_common.ejat_test;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+    public static String testMethod1() {
+    	return "test string";
+    }
+    
+    public static String testMethod2() {
+    	return "test string";
+    }
+    
+    public static String testMethod3() {
+    	return "test string";
+    }
+    
+    public static String testMethod4() {
+    	return "test string";
     }
 }
