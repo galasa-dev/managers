@@ -15,6 +15,17 @@
         <module>ejat-common-obr</module>
         <module>ejat-test</module>
     </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>ejat.repo</id>
+            <url>${ejat.distribution.repo}</url>
+        </repository>
+        <snapshotRepository>
+            <id>ejat.repo</id>
+            <url>${ejat.distribution.repo}</url>
+        </snapshotRepository>
+    </distributionManagement>
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,6 +35,25 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.service.obr</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13-beta-1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>2.0.1.Final</version>
+		</dependency>
+    </dependencies>
     
     <build>
 		<pluginManagement>
@@ -51,59 +81,19 @@
 				<artifactId>maven-bundle-plugin</artifactId>
 			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <id>default-test</id>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/it/**</exclude>
-                            </excludes>
-                            <reportsDirectory>${project.build.directory}/../../../target/test-reports/unit</reportsDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.2</version>
 				<executions>
-                  <!--
-                      Prepares the property pointing to the JaCoCo runtime agent which
-                      is passed as VM argument when Maven the Surefire plugin is executed.
-                  -->
-                  <execution>
-                      <id>pre-unit-test</id>
-                      <goals>
-                          <goal>prepare-agent</goal>
-                      </goals>
-                      <configuration>
-							<!-- Sets the path to the file which contains the execution data. -->
-							<destFile>${project.build.directory}/../../../target/jacoco.exec</destFile>
+					<execution>
+						<id>pre-unit-test</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
 						</configuration>
-                  </execution>
-                  <!--
-                      Ensures that the code coverage report for unit tests is created after
-                      unit tests have been run.
-                  -->
-                  <execution>
-                      <id>post-unit-test</id>
-                      <phase>test</phase>
-                      <goals>
-                          <goal>report</goal>
-                      </goals>
-                      <configuration>
-                          <!-- Sets the path to the file which contains the execution data. -->
-                          <dataFile>${project.build.directory}/../../../target/jacoco.exec</dataFile>
-                          <!-- Sets the output directory for the code coverage report. -->
-                          <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
-                      </configuration>
-                  </execution>
-              </executions>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
         
@@ -116,30 +106,5 @@
             </resource>
         </resources>
     </build>
-    
-    <distributionManagement>
-        <repository>
-            <id>ejat.repo</id>
-            <url>${ejat.distribution.repo}</url>
-        </repository>
-        <snapshotRepository>
-            <id>ejat.repo</id>
-            <url>${ejat.distribution.repo}</url>
-        </snapshotRepository>
-    </distributionManagement>
-    
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.service.obr</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13-beta-1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    
+     
 </project>
