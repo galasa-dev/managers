@@ -1,61 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    
-    <name>ejat-common-parent</name>
-    
-    <groupId>ejat-common</groupId>
-    <artifactId>ejat-common-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    
-    <modules>
-        <module>ejat-common-bom</module>
-        <module>zos.manager</module>
-        <module>ejat-common-obr</module>
-        <module>ejat-test</module>
-    </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <distributionManagement>
-        <repository>
-            <id>ejat.repo</id>
-            <url>${ejat.distribution.repo}</url>
-        </repository>
-        <snapshotRepository>
-            <id>ejat.repo</id>
-            <url>${ejat.distribution.repo}</url>
-        </snapshotRepository>
-    </distributionManagement>
-    
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-    </properties>
+	<groupId>ejat-common</groupId>
+	<artifactId>ejat-common-parent</artifactId>
+	<version>3.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.service.obr</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13-beta-1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
+	<name>eJAT Common area</name>
+
+	<modules>
+		<module>ejat-common-bom</module>
+		<module>zos-manager</module>
+		<module>ejat-common-obr</module>
+	</modules>
+
+	<distributionManagement>
+		<repository>
+			<id>ejat.repo</id>
+			<url>${ejat.distribution.repo}</url>
+		</repository>
+		<snapshotRepository>
+			<id>ejat.repo</id>
+			<url>${ejat.distribution.repo}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.osgi.service.obr</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13-beta-1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 			<version>2.0.1.Final</version>
 		</dependency>
-    </dependencies>
-    
-    <build>
+	</dependencies>
+
+	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -64,17 +65,9 @@
 					<version>3.5.0</version>
 					<extensions>true</extensions>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.22.1</version>
-					<configuration>
-						<useSystemClassLoader>false</useSystemClassLoader>
-					</configuration>
-				</plugin>
 			</plugins>
 		</pluginManagement>
-        
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -96,15 +89,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-        
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
-    </build>
-     
+	</build>
+
 </project>
