@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -10,19 +9,10 @@
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>ejat-common</groupId>
-	<artifactId>ejat-common-parent</artifactId>
+	<groupId>ejat</groupId>
+	<artifactId>ejat-release-bom</artifactId>
 	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
-	<name>eJAT Common area</name>
-
-	<modules>
-		<module>ejat-common-bom</module>
-		<module>zos-manager</module>
-		<module>ejat-common-obr</module>
-		<module>ejat-release-bom</module>
-	</modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -36,6 +26,13 @@
 			<dependency>
 				<groupId>ejat-core</groupId>
 				<artifactId>ejat-core-bom</artifactId>
+				<version>3.0.0-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>ejat-common</groupId>
+				<artifactId>ejat-common-bom</artifactId>
 				<version>3.0.0-SNAPSHOT</version>
 				<type>pom</type>
 				<scope>import</scope>
