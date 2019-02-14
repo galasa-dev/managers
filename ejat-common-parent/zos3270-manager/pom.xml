@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>ejat-common</groupId>
+		<artifactId>ejat-common-parent</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+	
+	<artifactId>zos3270-manager</artifactId>
+	<version>0.2.0-SNAPSHOT</version>
+	<packaging>bundle</packaging>
+	
+	<name>zOS 3270 Terminal Manager</name>
+	
+	<dependencies>
+		<dependency>
+			<groupId>ejat</groupId>
+			<artifactId>ejat-framework</artifactId>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>src/main/resources/META-INF</manifestLocation>
+					<rebuildBundle>true</rebuildBundle>
+					<supportedProjectTypes>bundle</supportedProjectTypes>
+					<instructions>
+						<Bundle-Version>$[versionmask;===;$[maven_version;${project.version}]].${maven.build.timestamp}</Bundle-Version>
+						<Bundle-SymbolicName>zos3270-manager</Bundle-SymbolicName>
+						<Private-Package>io.ejat.common.zos3270.internal.*</Private-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+</project>

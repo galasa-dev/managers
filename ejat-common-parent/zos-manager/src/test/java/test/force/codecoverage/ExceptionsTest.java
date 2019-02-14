@@ -8,7 +8,7 @@ import io.ejat.zosbatch.ZosBatchException;
 public class ExceptionsTest {
 	
 	@Test
-	public void testEtcd3ManagerException() {
+	public void testZosManagerException() {
 		Throwable throwable = new ZosBatchException();
 		new ZosBatchException("Message");		
 		new ZosBatchException("Message", throwable);		

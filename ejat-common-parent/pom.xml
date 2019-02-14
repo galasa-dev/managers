@@ -22,6 +22,7 @@
 		<module>zos-manager</module>
 		<module>ejat-common-obr</module>
 		<module>ejat-release-bom</module>
+		<module>zos3270-manager</module>
 	</modules>
 
 	<dependencyManagement>
