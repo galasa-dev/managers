@@ -21,7 +21,6 @@
 		<dependency>
 			<groupId>ejat</groupId>
 			<artifactId>ejat-framework</artifactId>
-			<type>bundle</type>
 		</dependency>
 	</dependencies>
 
