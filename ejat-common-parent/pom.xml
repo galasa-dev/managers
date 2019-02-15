@@ -19,10 +19,11 @@
 
 	<modules>
 		<module>ejat-common-bom</module>
-		<module>zos-manager</module>
-		<module>ejat-common-obr</module>
 		<module>ejat-release-bom</module>
+		<module>zos-manager</module>
 		<module>zos3270-manager</module>
+		<module>ejat-common-obr</module>
+		<module>ejat-uber-obr</module>
 	</modules>
 
 	<dependencyManagement>
