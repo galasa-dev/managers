@@ -13,7 +13,7 @@
 	<groupId>ejat-common</groupId>
 	<artifactId>ejat-common-obr</artifactId>
 	<version>3.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+	<packaging>ejat-obr</packaging>
 
 	<name>eJAT Common OBR</name>
 
