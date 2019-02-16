@@ -24,6 +24,7 @@
 		<module>zos3270-manager</module>
 		<module>ejat-common-obr</module>
 		<module>ejat-uber-obr</module>
+		<module>ejat-uber-karaffeature</module>
 	</modules>
 
 	<dependencyManagement>
