@@ -3,17 +3,17 @@ package test.force.codecoverage;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.ejat.common.zos3270.Zos3270Exception;
+import io.ejat.zos3270.spi.NetworkException;
 
 public class ExceptionsTest {
 	
 	@Test
-	public void testZos3270Exception() {
-		Throwable throwable = new Zos3270Exception();
-		new Zos3270Exception("Message");		
-		new Zos3270Exception("Message", throwable);		
-		new Zos3270Exception(throwable);		
-		new Zos3270Exception("Message", throwable, false, false);		
+	public void testNetworkException() {
+		Throwable throwable = new NetworkException();
+		new NetworkException("Message");		
+		new NetworkException("Message", throwable);		
+		new NetworkException(throwable);		
+		new NetworkException("Message", throwable, false, false);		
 		Assert.assertTrue("dummy",true);
 	}
 	

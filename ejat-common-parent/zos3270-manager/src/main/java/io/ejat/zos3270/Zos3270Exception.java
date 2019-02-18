@@ -1,4 +1,4 @@
-package io.ejat.common.zos3270;
+package io.ejat.zos3270;
 
 public class Zos3270Exception extends Exception {
 	private static final long serialVersionUID = 1L;

@@ -22,6 +22,11 @@
 			<groupId>ejat</groupId>
 			<artifactId>ejat-framework</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
 	</dependencies>
 	
 	<build>
@@ -31,13 +36,8 @@
 				<artifactId>maven-bundle-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
-					<manifestLocation>src/main/resources/META-INF</manifestLocation>
-					<rebuildBundle>true</rebuildBundle>
-					<supportedProjectTypes>bundle</supportedProjectTypes>
 					<instructions>
-						<Bundle-Version>$[versionmask;===;$[maven_version;${project.version}]].${maven.build.timestamp}</Bundle-Version>
-						<Bundle-SymbolicName>zos3270-manager</Bundle-SymbolicName>
-						<Private-Package>io.ejat.common.zos3270.internal.*</Private-Package>
+						<Bundle-SymbolicName>io.ejat.zos3270.manager</Bundle-SymbolicName>
 					</instructions>
 				</configuration>
 			</plugin>
