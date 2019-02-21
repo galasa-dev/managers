@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -19,6 +20,7 @@ public class Network /* extends Thread */{
 	public static final byte WILL = -5;
 	public static final byte SB = -6;
 	public static final byte SE = -16;
+	public static final byte EOR = -17;
 
 	public static final byte CONNECT = 1;
 	public static final byte DEVICE_TYPE = 2;
@@ -32,6 +34,66 @@ public class Network /* extends Thread */{
 
 	public static final Charset ascii7 = Charset.forName("us-ascii");
 
+	private final String host;
+	private final int    port;
+
+	private Socket socket;
+
+	public Network(String host, int port) {
+		this.host = host;
+		this.port = port;
+	}
+
+	public boolean connectClient() throws NetworkException {
+		if (socket != null) {
+			if (socket.isConnected()) {
+				return true;
+			}
+			
+			close();
+		}
+
+		Socket newSocket = null;
+		try {
+			newSocket = createSocket();
+			newSocket.setTcpNoDelay(true);
+			newSocket.setKeepAlive(true);
+			
+			negotiate(newSocket.getInputStream(), newSocket.getOutputStream());
+			
+			this.socket = newSocket;
+			newSocket = null;
+			
+			return true;
+		} catch(IOException e) {
+			throw new NetworkException("Unable to connect to Telnet server", e);
+		} finally {
+			if (newSocket != null) {
+				try {
+					newSocket.close();
+				} catch (IOException e) { //NOSONAR
+				}
+			}
+		}
+	}
+	
+	public Socket createSocket() throws IOException {
+		Socket newSocket = new Socket(this.host, this.port); //NOSONAR
+		newSocket.setTcpNoDelay(true);
+		newSocket.setKeepAlive(true);
+		
+		return newSocket;
+	}
+	
+	public void close() {
+		if (socket != null) {
+			try {
+				socket.close();
+			} catch (IOException e) { //NOSONAR
+			}
+			socket = null;
+		}
+	}
 
 	public void negotiate(InputStream inputStream, OutputStream outputStream) throws NetworkException {
 		try {

@@ -33,79 +33,25 @@ public class NegotiationTest {
 	public static final byte TN3270E = 40;	
 	
 	@Test
-	public void testSuccessfulBasicNoFunctions() throws NetworkException, UnsupportedEncodingException, IOException {
-		ByteArrayOutputStream prepInput = new ByteArrayOutputStream();
-		prepInput.write(IAC);
-		prepInput.write(DO);
-		prepInput.write(TN3270E);
-		
-		prepInput.write(IAC);
-		prepInput.write(SB);
-		prepInput.write(TN3270E);
-		prepInput.write(SEND);
-		prepInput.write(DEVICE_TYPE);
-		prepInput.write(IAC);
-		prepInput.write(SE);
-		
-		prepInput.write(IAC);
-		prepInput.write(SB);
-		prepInput.write(TN3270E);
-		prepInput.write(DEVICE_TYPE);
-		prepInput.write(IS);
-		prepInput.write("IBM-3278-2".getBytes("us-ascii"));
-		prepInput.write(CONNECT);
-		prepInput.write("TERM0001".getBytes("us-ascii"));
-		prepInput.write(IAC);
-		prepInput.write(SE);
-		
-		prepInput.write(IAC);
-		prepInput.write(SB);
-		prepInput.write(TN3270E);
-		prepInput.write(FUNCTIONS);
-		prepInput.write(IS);
-		prepInput.write(IAC);
-		prepInput.write(SE);
-		
-		ByteArrayOutputStream prepOutput = new ByteArrayOutputStream(); 
-		prepOutput.write(IAC);
-		prepOutput.write(WILL);
-		prepOutput.write(TN3270E);
-
-		prepOutput.write(IAC);
-		prepOutput.write(SB);
-		prepOutput.write(TN3270E);
-		prepOutput.write(DEVICE_TYPE);
-		prepOutput.write(REQUEST);
-		prepOutput.write("IBM-3278-2".getBytes("us-ascii"));
-		prepOutput.write(IAC);
-		prepOutput.write(SE);
-		
-		prepOutput.write(IAC);
-		prepOutput.write(SB);
-		prepOutput.write(TN3270E);
-		prepOutput.write(FUNCTIONS);
-		prepOutput.write(REQUEST);
-		prepOutput.write(IAC);
-		prepOutput.write(SE);
-		
-		ByteArrayInputStream fromServer = new ByteArrayInputStream(prepInput.toByteArray());
+	public void testSuccessfulNegotiationBasicNoFunctions() throws NetworkException, UnsupportedEncodingException, IOException {		
+		ByteArrayInputStream fromServer = new ByteArrayInputStream(getServerNegotiation().toByteArray());
 		ByteArrayOutputStream toServer = new ByteArrayOutputStream();
 		
-		Network network = new Network();
+		Network network = new Network("dummy",0);
 		
 		network.negotiate(fromServer, toServer);
 		
-		Assert.assertArrayEquals("Responses are not correct from client to server", prepOutput.toByteArray(), toServer.toByteArray());
+		Assert.assertArrayEquals("Responses are not correct from client to server", getClientNegotiation().toByteArray(), toServer.toByteArray());
 	}
 	
 	@Test
-	public void testIoException() {
+	public void testNegotiationIoException() {
 		
 		IOExceptionInputStream fromServer = new IOExceptionInputStream();
 		ByteArrayOutputStream toServer = new ByteArrayOutputStream();
 		
 		try {
-			Network network = new Network();
+			Network network = new Network("dummy",0);
 			network.negotiate(fromServer, toServer);
 			fail("Should have thrown an NetworkException");
 		} catch (NetworkException e) {
@@ -156,5 +102,65 @@ public class NegotiationTest {
 	}
 	
 	
+	
+	public static ByteArrayOutputStream getServerNegotiation() throws UnsupportedEncodingException, IOException {
+		ByteArrayOutputStream prepInput = new ByteArrayOutputStream();
+		prepInput.write(IAC);
+		prepInput.write(DO);
+		prepInput.write(TN3270E);
+		
+		prepInput.write(IAC);
+		prepInput.write(SB);
+		prepInput.write(TN3270E);
+		prepInput.write(SEND);
+		prepInput.write(DEVICE_TYPE);
+		prepInput.write(IAC);
+		prepInput.write(SE);
+		
+		prepInput.write(IAC);
+		prepInput.write(SB);
+		prepInput.write(TN3270E);
+		prepInput.write(DEVICE_TYPE);
+		prepInput.write(IS);
+		prepInput.write("IBM-3278-2".getBytes("us-ascii"));
+		prepInput.write(CONNECT);
+		prepInput.write("TERM0001".getBytes("us-ascii"));
+		prepInput.write(IAC);
+		prepInput.write(SE);
+		
+		prepInput.write(IAC);
+		prepInput.write(SB);
+		prepInput.write(TN3270E);
+		prepInput.write(FUNCTIONS);
+		prepInput.write(IS);
+		prepInput.write(IAC);
+		prepInput.write(SE);
+		return prepInput;
+	}
+	
+	public static ByteArrayOutputStream getClientNegotiation() throws UnsupportedEncodingException, IOException {
+		ByteArrayOutputStream prepOutput = new ByteArrayOutputStream(); 
+		prepOutput.write(IAC);
+		prepOutput.write(WILL);
+		prepOutput.write(TN3270E);
+
+		prepOutput.write(IAC);
+		prepOutput.write(SB);
+		prepOutput.write(TN3270E);
+		prepOutput.write(DEVICE_TYPE);
+		prepOutput.write(REQUEST);
+		prepOutput.write("IBM-3278-2".getBytes("us-ascii"));
+		prepOutput.write(IAC);
+		prepOutput.write(SE);
+		
+		prepOutput.write(IAC);
+		prepOutput.write(SB);
+		prepOutput.write(TN3270E);
+		prepOutput.write(FUNCTIONS);
+		prepOutput.write(REQUEST);
+		prepOutput.write(IAC);
+		prepOutput.write(SE);
+		return prepOutput;
+	}
 	
 }
