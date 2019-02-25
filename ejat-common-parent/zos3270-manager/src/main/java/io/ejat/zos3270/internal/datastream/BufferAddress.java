@@ -49,6 +49,10 @@ public class BufferAddress {
 		this.address = left | right;
 	} 
 	
+	public BufferAddress(int address) {
+		this.address = address;
+	}
+	
 	
 	public byte[] getCharRepresentation() {
 		int left  = (address & 0xfc0) >> 6;
@@ -62,8 +66,12 @@ public class BufferAddress {
 	}
 
 
-	public Object getBufferAddress() {
+	public int getBufferAddress() {
 		return this.address;
+	}
+	
+	public ByteBuffer getByteBufferAddress() {
+		return  ByteBuffer.wrap(getCharRepresentation());
 	}
 	
 	@Override

@@ -12,11 +12,19 @@ public class OrderSetBufferAddress extends Order {
 	
 	public OrderSetBufferAddress(ByteBuffer buffer) throws DatastreamException {
 		this.bufferAddress = new BufferAddress(buffer);
-	} 
+	}
+	
+	public OrderSetBufferAddress(BufferAddress bufferAddress) {
+		this.bufferAddress = bufferAddress;
+	}
 	
 	@Override
 	public String toString() {
 		return "SBA(" + bufferAddress + ")";
+	}
+
+	public int getBufferAddress() {
+		return this.bufferAddress.getBufferAddress();
 	}
 	
 }

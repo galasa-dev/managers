@@ -9,6 +9,13 @@ public class OrderText extends Order {
 	
 	private StringBuilder text = new StringBuilder();
 	
+	public OrderText() {
+	}
+	
+	public OrderText(String newText) {
+		this.text.append(newText);
+	}
+
 	public void append(byte data) {
 		byte[] charByte = new byte[] {data};
 		text.append(ebcdic.decode(ByteBuffer.wrap(charByte)).array()[0]);
@@ -17,6 +24,10 @@ public class OrderText extends Order {
 	@Override
 	public String toString() {
 		return "TEXT(" + text.toString() + ")";
+	}
+
+	public String getText() {
+		return text.toString();
 	}
 	
 }

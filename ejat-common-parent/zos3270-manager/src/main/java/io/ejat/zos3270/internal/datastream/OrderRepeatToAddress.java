@@ -22,9 +22,22 @@ public class OrderRepeatToAddress extends Order {
 		repeatChar = ebcdic.decode(ByteBuffer.wrap(charByte)).array()[0];
 	} 
 	
+	public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress) {
+		this.bufferAddress = bufferAddress;
+		this.repeatChar    = repeatChar;
+	}
+
 	@Override
 	public String toString() {
 		return "RA(" + repeatChar + "," + bufferAddress + ")";
+	}
+
+	public int getBufferAddress() {
+		return this.bufferAddress.getBufferAddress();
+	}
+
+	public char getChar() {
+		return this.repeatChar;
 	}
 	
 }

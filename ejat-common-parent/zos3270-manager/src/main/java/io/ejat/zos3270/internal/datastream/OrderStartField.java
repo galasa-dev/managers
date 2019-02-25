@@ -21,8 +21,21 @@ public class OrderStartField extends Order {
 		this.fieldIntenseDisplay = ((attributes & 0x0c) == 0x08);
 		this.fieldSelectorPen = (((attributes & 0x0c) == 0x04) || ((attributes & 0x0c) == 0x08));
 		this.fieldModifed = ((attributes & 0x01) == 0x01);
-		
-	} 
+	}
+	
+	public OrderStartField(boolean fieldProtected, 
+			boolean fieldNumeric,
+			boolean fieldDisplay, 
+			boolean fieldIntenseDisplay, 
+			boolean fieldSelectorPen,
+			boolean fieldModifed) {
+		this.fieldProtected = fieldProtected;
+		this.fieldNumeric = fieldNumeric;
+		this.fieldDisplay = fieldDisplay;
+		this.fieldIntenseDisplay = fieldIntenseDisplay;
+		this.fieldSelectorPen = fieldSelectorPen;
+		this.fieldModifed = fieldModifed;
+	}
 	
 	
 	

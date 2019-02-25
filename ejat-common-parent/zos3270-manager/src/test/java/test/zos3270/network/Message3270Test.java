@@ -73,7 +73,7 @@ public class Message3270Test {
 			NetworkThread.readTerminatedMessage(bais);
 			fail("Should have thrown an exception saying terminated early");
 		} catch(NetworkException e) {
-			Assert.assertEquals("Exception thrown is not correct", "3270 message did not terminate with IAC SE", e.getMessage());
+			Assert.assertEquals("Exception thrown is not correct", "3270 message did not terminate with IAC EOR", e.getMessage());
 		}
 
 	}

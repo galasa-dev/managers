@@ -33,8 +33,8 @@ public class NetworkThread {
 	public static final byte DT_SSCP_LU_DATA = 7;
 	public static final byte DT_PRINT_EOJ    = 8;
 
-	private final InputStream inputStream;
-	private final OutputStream outputStream;
+	private final InputStream inputStream; //NOSONAR
+	private final OutputStream outputStream; //NOSONAR
 
 	public NetworkThread(InputStream inputStream, OutputStream outputStream) {
 		this.inputStream  = inputStream;
@@ -59,8 +59,8 @@ public class NetworkThread {
 	public static List<Order> process3270Data(InputStream messageStream) throws IOException, NetworkException {
 		ByteBuffer buffer = readTerminatedMessage(messageStream);
 
-		CommandCode commandCode = CommandCode.getCommandCode(buffer.get());
-		WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
+		CommandCode commandCode = CommandCode.getCommandCode(buffer.get());  //NOSONAR
+		WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());//NOSONAR
 
 		OrderText orderText = null;
 
@@ -128,7 +128,7 @@ public class NetworkThread {
 		}
 
 		if (!terminated) {
-			throw new NetworkException("3270 message did not terminate with IAC SE");
+			throw new NetworkException("3270 message did not terminate with IAC EOR");
 		}
 
 		byte[] bytes = byteArrayOutputStream.toByteArray();
