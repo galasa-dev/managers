@@ -1,7 +1,14 @@
 package io.ejat.zos3270.internal.terminal.fields;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.validation.constraints.NotNull;
+
+import io.ejat.zos3270.FieldNotFoundException;
 
 /**
  * Represents a display field of varying text
@@ -10,6 +17,10 @@ import java.util.List;
  *
  */
 public class FieldText extends Field {
+	
+	private static final Pattern numericPattern = Pattern.compile("\\d+");
+	private static final Charset ebcdic = Charset.forName("Cp037");
+	
 	
 	private char[] text;
 	
@@ -32,12 +43,13 @@ public class FieldText extends Field {
 	 * @param fieldChars - The char field to replace
 	 */
 	public FieldText(FieldChars fieldChars) {
-		super(fieldChars.start, (fieldChars.end - fieldChars.start) + 1);
+		super(fieldChars.start, fieldChars.end);
 		this.text = new char[(fieldChars.end - fieldChars.start) + 1];
 		char newChar = fieldChars.getCharacter();
 		for(int i = 0; i < this.text.length; i++) {
 			this.text[i] = newChar;
 		}
+		this.previousStartOfField = fieldChars.previousStartOfField;
 	}
 
 	/**
@@ -176,6 +188,72 @@ public class FieldText extends Field {
 		this.text = newText;
 		this.end = newEnd;
 		allFields.remove(nextField);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#containsText(java.lang.String)
+	 */
+	@Override
+	public boolean containsText(@NotNull String searchText) {
+		StringBuilder sb = new StringBuilder();
+		getFieldString(sb);
+		String text = sb.toString();
+		
+		return text.contains(searchText);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isTypeable()
+	 */
+	@Override
+	public boolean isTypeable() {
+		return !this.previousStartOfField.isProtected();
+	}
+
+	public void type(String typeText) throws FieldNotFoundException {
+		if (this.previousStartOfField.isNumeric()) {
+			Matcher matcher = numericPattern.matcher(typeText);
+			if (!matcher.matches()) {
+				throw new FieldNotFoundException("Unable to type text in a numeric field");
+			}
+		}
+		
+		char[] typeTextChars = typeText.toCharArray();
+		
+		for(int i = 0; i < typeTextChars.length && i < this.text.length; i++) {
+			this.text[i] = typeTextChars[i];
+		}
+		
+		this.previousStartOfField.setFieldModified();
+	}
+	
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isModified()
+	 */
+	@Override
+	public boolean isModified() {
+		return this.previousStartOfField.isFieldModifed();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
+	 */
+	@Override
+	public byte[] getFieldEbcdicWithoutNulls() {
+		StringBuilder sb = new StringBuilder();
+		for(char c : text) {
+			//*** Remove nulls and compress
+			if (c != 0x00) {
+				sb.append(c);
+			}
+		}
+
+		byte[] outbound = sb.toString().getBytes(ebcdic); 
+		
+		return outbound;
 	}
 
 }

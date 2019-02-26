@@ -20,6 +20,7 @@ public abstract class CommandCode {
 		case ERASE_WRITE:
 			return new CommandEraseWrite();
 		case WRITE:
+			return new CommandWrite();
 		case ERASE_WRITE_ALTERNATE:
 		case READ_BUFFER:
 		case READ_MODIFIED:

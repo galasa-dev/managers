@@ -2,6 +2,8 @@ package io.ejat.zos3270.internal.terminal.fields;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * <p>Represent a working field on the screen</p>
  * 
@@ -18,6 +20,8 @@ public abstract class Field {
 	 * end position of this field, from zero. for an 80x24 screen,  the max would be 1919
 	 */
 	protected int end;
+	
+	protected FieldStartOfField previousStartOfField = null;
 
 	/**
 	 * Create a field with a start and end position
@@ -28,6 +32,10 @@ public abstract class Field {
 	public Field(int start, int end) {
 		this.start  = start;
 		this.end    = end;
+	}
+	
+	public void setPreviousStartOfField(FieldStartOfField startOfField) {
+		this.previousStartOfField = startOfField;
 	}
 	
 	/* (non-Javadoc)
@@ -106,5 +114,41 @@ public abstract class Field {
 	 * @param nextField - The field to merge with
 	 */
 	public abstract void merge(List<Field> allFields, Field nextField);
-	
+
+	/**
+	 * Inspects field to see if it contains a text string
+	 * 
+	 * @param searchText - Text for find
+	 * @return - true if the field contains the text
+	 */
+	public boolean containsText(@NotNull String searchText) {
+		return false;
+	}
+
+	/**
+	 * Can this field be typed in
+	 * 
+	 * @return true if you can type into this field
+	 */
+	public boolean isTypeable() {
+		return false;
+	}
+
+	/**
+	 * Has the field been modified, only Text fields should respond
+	 * 
+	 * @return - true if modified
+	 */
+	public boolean isModified() {
+		return false;
+	}
+
+	/**
+	 * Get the Field Text, without nulls,  only Text fields should respond
+	 * 
+	 * @return - byte representation of the text in ebcdic
+	 */
+	public byte[] getFieldEbcdicWithoutNulls() {
+		return null;
+	}
 }

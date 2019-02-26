@@ -3,10 +3,8 @@ package io.ejat.zos3270.internal.comms;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
 
@@ -18,10 +16,11 @@ import io.ejat.zos3270.internal.datastream.OrderSetBufferAddress;
 import io.ejat.zos3270.internal.datastream.OrderStartField;
 import io.ejat.zos3270.internal.datastream.OrderText;
 import io.ejat.zos3270.internal.datastream.WriteControlCharacter;
+import io.ejat.zos3270.internal.terminal.Screen;
 import io.ejat.zos3270.spi.DatastreamException;
 import io.ejat.zos3270.spi.NetworkException;
 
-public class NetworkThread {
+public class NetworkThread extends Thread {
 
 	public static final byte DT_3270_DATA    = 0;
 	public static final byte DT_SCS_DATA     = 1;
@@ -33,34 +32,65 @@ public class NetworkThread {
 	public static final byte DT_SSCP_LU_DATA = 7;
 	public static final byte DT_PRINT_EOJ    = 8;
 
-	private final InputStream inputStream; //NOSONAR
-	private final OutputStream outputStream; //NOSONAR
+	private final InputStream inputStream;
+	private final Screen      screen;
+	private final Network     network;
 
-	public NetworkThread(InputStream inputStream, OutputStream outputStream) {
+	public NetworkThread(Screen screen, Network network, InputStream inputStream) {
+		this.screen       = screen;
+		this.network      = network;
 		this.inputStream  = inputStream;
-		this.outputStream = outputStream;
+	}
+	
+	@Override
+	public void run() {
+		
+		while(true) {
+			try {
+				processMessage(inputStream);
+			} catch (NetworkException e) {
+				e.printStackTrace();
+				network.close();
+				return;
+			} catch (IOException e) {
+				if (e.getMessage().contains("Socket closed")) {
+					return;
+				}
+				e.printStackTrace();
+				network.close();
+				return;
+			}
+		}
 	}
 
 
-	public static void processMessage(InputStream messageStream) throws IOException, NetworkException {
-		byte[] header = new byte[5];
-		if (messageStream.read(header) != 5) {
-			throw new NetworkException("Missing 5 bytes of the telnet 3270 header");
+	public void processMessage(InputStream messageStream) throws IOException, NetworkException {
+		byte[] header = new byte[1];
+		if (messageStream.read(header) != 1) {
+			throw new NetworkException("Missing first byte of the telnet 3270 header");
 		}
 
 		if (header[0] == DT_3270_DATA) {
-			process3270Data(messageStream);
+			byte[] remainingHeader = new byte[4];
+			if (messageStream.read(remainingHeader) != 4) {
+				throw new NetworkException("Missing remaining 4 byte of the telnet 3270 header");
+			}
+			Inbound3270Message inbound3270Message = process3270Data(messageStream);
+			this.screen.processInboundMessage(inbound3270Message);
 		} else {
 			throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");	
 		}
 	}
 
 
-	public static List<Order> process3270Data(InputStream messageStream) throws IOException, NetworkException {
+	public static Inbound3270Message process3270Data(InputStream messageStream) throws IOException, NetworkException {
 		ByteBuffer buffer = readTerminatedMessage(messageStream);
+		
+		String hex = new String(Hex.encodeHex(buffer.array()));
+		System.out.println("inbound=" + hex);
 
-		CommandCode commandCode = CommandCode.getCommandCode(buffer.get());  //NOSONAR
-		WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());//NOSONAR
+		CommandCode commandCode = CommandCode.getCommandCode(buffer.get()); 
+		WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
 		OrderText orderText = null;
 
@@ -68,7 +98,7 @@ public class NetworkThread {
 		while(buffer.remaining() > 0) {
 			byte orderByte = buffer.get();
 
-			if (orderByte >= 0x00 && orderByte <= 0x3f) {
+			if (orderByte > 0x00 && orderByte <= 0x3f) {
 				orderText = null;
 
 				Order order = null;
@@ -99,7 +129,7 @@ public class NetworkThread {
 			}
 		}
 
-		return orders;
+		return new Inbound3270Message(commandCode, writeControlCharacter, orders);
 	}
 
 

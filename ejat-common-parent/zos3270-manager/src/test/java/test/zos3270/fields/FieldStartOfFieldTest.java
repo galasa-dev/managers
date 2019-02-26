@@ -10,20 +10,19 @@ import org.junit.Test;
 
 import io.ejat.zos3270.internal.terminal.fields.Field;
 import io.ejat.zos3270.internal.terminal.fields.FieldStartOfField;
-import io.ejat.zos3270.internal.terminal.fields.FieldText;
 
 public class FieldStartOfFieldTest {
 
 	@Test
 	public void testSetup() throws UnsupportedEncodingException {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
 		Assert.assertEquals("Setup incorrect of FieldStartOfField", "StartOfField(20)", sf.toString());
 
 	}
 
 	@Test
 	public void testStringConvert() {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		StringBuilder sb = new StringBuilder();
 		sf.getFieldString(sb);
@@ -33,7 +32,7 @@ public class FieldStartOfFieldTest {
 
 	@Test
 	public void testMergeInvalid() {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
 		try {
 			sf.merge(null, null);
 			fail("FieldStartOfField should throw an exception as merge is not applicable");
@@ -42,7 +41,7 @@ public class FieldStartOfFieldTest {
 
 	@Test
 	public void testSplitRemove() {
-		FieldStartOfField sfOriginal = new FieldStartOfField(20);
+		FieldStartOfField sfOriginal = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		LinkedList<Field> fields = new LinkedList<>();
 		fields.add(sfOriginal);
@@ -57,7 +56,7 @@ public class FieldStartOfFieldTest {
 	
 	@Test
 	public void testSplitIgnore() {
-		FieldStartOfField sfOriginal = new FieldStartOfField(20);
+		FieldStartOfField sfOriginal = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		LinkedList<Field> fields = new LinkedList<>();
 		fields.add(sfOriginal);

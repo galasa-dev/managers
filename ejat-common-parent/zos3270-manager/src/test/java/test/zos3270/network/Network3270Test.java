@@ -33,7 +33,8 @@ public class Network3270Test {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-		NetworkThread.processMessage(bais);
+		NetworkThread networkThread = new NetworkThread(null, null, bais);
+		networkThread.processMessage(bais);
 
 		Assert.assertTrue("Will test the screen at this point, later",true);
 	}
@@ -47,7 +48,8 @@ public class Network3270Test {
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
 		try {
-			NetworkThread.processMessage(bais);
+			NetworkThread networkThread = new NetworkThread(null, null, bais);
+			networkThread.processMessage(bais);
 			fail("Should have thrown an error because header < 5");
 		} catch(NetworkException e) {
 			Assert.assertEquals("Error message incorrect", "Missing 5 bytes of the telnet 3270 header", e.getMessage());
@@ -67,7 +69,8 @@ public class Network3270Test {
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
 		try {
-			NetworkThread.processMessage(bais);
+			NetworkThread networkThread = new NetworkThread(null, null, bais);
+			networkThread.processMessage(bais);
 			fail("Should have thrown an error because unknown error");
 		} catch(NetworkException e) {
 			Assert.assertEquals("Error message incorrect", "TN3270E message Data-Type -1 is unsupported", e.getMessage());

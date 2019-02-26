@@ -56,7 +56,7 @@ public class FieldTextTest {
 	@Test
 	public void testMergeInvalid() {
 		FieldText ft1 = new FieldText("abc", 20, 22);
-		FieldStartOfField sf2 = new FieldStartOfField(23);
+		FieldStartOfField sf2 = new FieldStartOfField(23, false, false, false, false, false, false);
 
 		LinkedList<Field> fields = new LinkedList<>();
 		fields.add(ft1);

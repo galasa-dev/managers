@@ -10,13 +10,32 @@ import java.util.List;
  */
 public class FieldStartOfField extends Field {
 	
+	private final boolean fieldProtected; 
+	private final boolean fieldNumeric; 
+	private final boolean fieldDisplay; 
+	private final boolean fieldIntenseDisplay; 
+	private final boolean fieldSelectorPen; 
+	private boolean fieldModifed; 
+	
 	/**
 	 * Create the start of a field
 	 * 
 	 * @param position - The buffer position the field is to start
 	 */
-	public FieldStartOfField(int position) {
+	public FieldStartOfField(int position,
+			boolean fieldProtected, 
+			boolean fieldNumeric,
+			boolean fieldDisplay, 
+			boolean fieldIntenseDisplay, 
+			boolean fieldSelectorPen,
+			boolean fieldModifed) {
 		super(position, position);
+		this.fieldProtected = fieldProtected;
+		this.fieldNumeric = fieldNumeric;
+		this.fieldDisplay = fieldDisplay;
+		this.fieldIntenseDisplay = fieldIntenseDisplay;
+		this.fieldSelectorPen = fieldSelectorPen;
+		this.fieldModifed = fieldModifed;		
 	}
 
 	/* (non-Javadoc)
@@ -57,4 +76,33 @@ public class FieldStartOfField extends Field {
 		throw new UnsupportedOperationException("Should not have entered this method");
 	}
 
+	public boolean isProtected() {
+		return fieldProtected;
+	}
+
+	public boolean isNumeric() {
+		return fieldNumeric;
+	}
+
+	public boolean isDisplay() {
+		return fieldDisplay;
+	}
+
+	public boolean isIntenseDisplay() {
+		return fieldIntenseDisplay;
+	}
+
+	public boolean isSelectorPen() {
+		return fieldSelectorPen;
+	}
+
+	public boolean isFieldModifed() {
+		return fieldModifed;
+	}
+
+	public void setFieldModified() {
+		this.fieldModifed = true;
+	}
+
+	
 }
