@@ -21,12 +21,13 @@ public abstract class CommandCode {
 			return new CommandEraseWrite();
 		case WRITE:
 			return new CommandWrite();
+		case WRITE_STRUCTURED:
+			return new CommandWriteStructured();
 		case ERASE_WRITE_ALTERNATE:
 		case READ_BUFFER:
 		case READ_MODIFIED:
 		case READ_MODIFIED_ALL:
 		case ERASE_ALL_UNPROTECTED:
-		case WRITE_STRUCTURED:
 			throw new DatastreamException("Unsupported command code=" + commandCode);
 		default:
 			throw new DatastreamException("Unrecognised command code=" + commandCode);

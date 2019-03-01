@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import io.ejat.zos3270.spi.DatastreamException;
 
 public class BufferAddress {
-	
+
 	private static final byte[] chars = new byte[] { 
 			(byte)0x40, (byte)0xc1, (byte)0xc2, (byte)0xc3, 
 			(byte)0xc4, (byte)0xc5, (byte)0xc6, (byte)0xc7, 
@@ -25,9 +25,9 @@ public class BufferAddress {
 			(byte)0xf8, (byte)0xf9, (byte)0x7a, (byte)0x7b, 
 			(byte)0x7c, (byte)0x7d, (byte)0x7e, (byte)0x7f};
 
-	
+
 	private int address = 0;
-	
+
 	public BufferAddress(ByteBuffer buffer) throws DatastreamException {
 		byte[] data = new byte[4];
 		try {
@@ -38,30 +38,34 @@ public class BufferAddress {
 		} catch (BufferUnderflowException e) {
 			throw new DatastreamException("Buffer Address terminated too early",e);
 		}
-		
+
 		ByteBuffer toInt = ByteBuffer.wrap(data);
-		
+
 		int preConv = toInt.getInt();
-		
-		int left = (preConv & 0x3f00) >> 2;
-		int right = (preConv & 0x3f);
-		
-		this.address = left | right;
+
+		if ((preConv & 0xc000) == 0) {
+			this.address = preConv;
+		} else {
+			int left = (preConv & 0x3f00) >> 2;
+			int right = (preConv & 0x3f);
+
+			this.address = left | right;
+		}
 	} 
-	
+
 	public BufferAddress(int address) {
 		this.address = address;
 	}
-	
-	
+
+
 	public byte[] getCharRepresentation() {
 		int left  = (address & 0xfc0) >> 6;
 		int right = (address & 0x3f);
-		
+
 		byte[] output = new byte[2];
 		output[0] = chars[left];
 		output[1] = chars[right];
-		
+
 		return output;
 	}
 
@@ -69,19 +73,19 @@ public class BufferAddress {
 	public int getBufferAddress() {
 		return this.address;
 	}
-	
+
 	public ByteBuffer getByteBufferAddress() {
 		return  ByteBuffer.wrap(getCharRepresentation());
 	}
-	
+
 	@Override
 	public String toString() {
 		return Integer.toString(address);
 	}
-	
+
 	public static byte[] getAddressChars() {
 		return chars;
 	}
 
-	
+
 }

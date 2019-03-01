@@ -17,16 +17,23 @@ import io.ejat.zos3270.KeyboardLockedException;
 import io.ejat.zos3270.TextNotFoundException;
 import io.ejat.zos3270.TimeoutException;
 import io.ejat.zos3270.internal.comms.Inbound3270Message;
+import io.ejat.zos3270.internal.comms.Network;
 import io.ejat.zos3270.internal.datastream.AttentionIdentification;
 import io.ejat.zos3270.internal.datastream.BufferAddress;
 import io.ejat.zos3270.internal.datastream.CommandCode;
 import io.ejat.zos3270.internal.datastream.CommandEraseWrite;
+import io.ejat.zos3270.internal.datastream.CommandWriteStructured;
 import io.ejat.zos3270.internal.datastream.Order;
 import io.ejat.zos3270.internal.datastream.OrderInsertCursor;
 import io.ejat.zos3270.internal.datastream.OrderRepeatToAddress;
 import io.ejat.zos3270.internal.datastream.OrderSetBufferAddress;
 import io.ejat.zos3270.internal.datastream.OrderStartField;
 import io.ejat.zos3270.internal.datastream.OrderText;
+import io.ejat.zos3270.internal.datastream.QueryReply;
+import io.ejat.zos3270.internal.datastream.QueryReplySummary;
+import io.ejat.zos3270.internal.datastream.QueryReplyUsableArea;
+import io.ejat.zos3270.internal.datastream.StructuredField;
+import io.ejat.zos3270.internal.datastream.StructuredFieldReadPartition;
 import io.ejat.zos3270.internal.datastream.WriteControlCharacter;
 import io.ejat.zos3270.internal.terminal.fields.Field;
 import io.ejat.zos3270.internal.terminal.fields.FieldChars;
@@ -41,6 +48,8 @@ import io.ejat.zos3270.spi.DatastreamException;
  *
  */
 public class Screen {
+
+	private final Network network;
 
 	private LinkedList<Field> fields = new LinkedList<>();
 
@@ -59,7 +68,7 @@ public class Screen {
 	 * Create a default screen
 	 */
 	public Screen() {
-		this(80, 24);
+		this(80, 24, null);
 	}
 
 	/**
@@ -69,16 +78,20 @@ public class Screen {
 	 * @param rows - Number of rows 
 	 */
 	public Screen(int columns, int rows) {
+		this(columns, rows, null);
+	}
+
+	public Screen(int columns, int rows, Network network) {
 		try {
 			lockKeyboard();
 		} catch(KeyboardLockedException e) {
 			throw new UnsupportedOperationException("Some got a interrupt during the constructor",e);
 		}
-		this.columns    = columns;
-		this.rows       = rows;
-		this.screenSize = this.columns * this.rows; 
+		this.columns      = columns;
+		this.rows         = rows;
+		this.screenSize   = this.columns * this.rows;
+		this.network      = network;
 	}
-
 
 	/**
 	 * Wait on the keyboard being free
@@ -107,6 +120,20 @@ public class Screen {
 	}
 
 	/**
+	 * @return The number of columns on the screen
+	 */
+	public int getNoOfColumns() {
+		return this.columns;
+	}
+
+	/**
+	 * @return The number of rows on the screen
+	 */
+	public int getNoOfRows() {
+		return this.rows;
+	}
+
+	/**
 	 * Clear the screen and fill with nulls
 	 */
 	public synchronized void erase() {
@@ -126,17 +153,65 @@ public class Screen {
 
 	public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
 		CommandCode commandCode = inbound.getCommandCode();
-		WriteControlCharacter writeControlCharacter = inbound.getWriteControlCharacter();
-		List<Order> orders = inbound.getOrders();
+		if (commandCode instanceof CommandWriteStructured) {
+			processStructuredFields(inbound.getStructuredFields());
+		} else {
+			WriteControlCharacter writeControlCharacter = inbound.getWriteControlCharacter();
+			List<Order> orders = inbound.getOrders();
 
-		if (commandCode instanceof CommandEraseWrite) {
-			erase();
+			if (commandCode instanceof CommandEraseWrite) {
+				erase();
+			}
+			processOrders(orders);
+
+			if (writeControlCharacter.isKeyboardReset()) {
+				unlockKeyboard();
+			}
+		}
+	}
+
+	private synchronized void processStructuredFields(List<StructuredField> structuredFields) throws DatastreamException {
+		for(StructuredField structuredField : structuredFields) {
+			if (structuredField instanceof StructuredFieldReadPartition) {
+				processReadPartition((StructuredFieldReadPartition)structuredField);
+			} else {
+				throw new DatastreamException("Unsupported Structured Field - " + structuredField.getClass().getName());
+			}
+		}
+	}
+
+	private synchronized void processReadPartition(StructuredFieldReadPartition readPartition) throws DatastreamException {
+		switch(readPartition.getType()) {
+		case Query:
+			processReadPartitionQuery();
+		default:
+			throw new DatastreamException("Unsupported Read Partition Type - " + readPartition.getType().toString());
 		}
 
-		processOrders(orders);
+	}
 
-		if (writeControlCharacter.isKeyboardReset()) {
-			unlockKeyboard();
+	private void processReadPartitionQuery() throws DatastreamException {
+		ArrayList<QueryReply> replies = new ArrayList<>();
+
+		replies.add(new QueryReplyUsableArea(this));
+
+		QueryReplySummary summary = new QueryReplySummary(replies);
+
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(AttentionIdentification.STRUCTURED_FIELD.getKeyValue());
+			baos.write(summary.toByte());
+			
+			for(QueryReply reply : replies) {
+				baos.write(reply.toByte());
+			}
+			
+			String hex = new String(Hex.encodeHex(baos.toByteArray()));
+			System.out.println("outbound=" + hex);
+
+			network.sendDatastream(baos.toByteArray());
+		} catch(Exception e) {
+			throw new DatastreamException("Unable able to write Query Reply", e);
 		}
 	}
 
@@ -281,7 +356,7 @@ public class Screen {
 	 * 
 	 * @param newField - The field to insert into the buffer
 	 */
-	public synchronized void insertField(Field newField) {
+	private synchronized void insertField(Field newField) {
 		//*** Easy if there are no pre-existing fields
 		if (this.fields.isEmpty()) {
 			this.fields.add(newField);
@@ -524,7 +599,7 @@ public class Screen {
 					outboundBuffer.write(fieldText);
 				}
 			}
-			
+
 			String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
 			System.out.println("outbound=" + hex);
 

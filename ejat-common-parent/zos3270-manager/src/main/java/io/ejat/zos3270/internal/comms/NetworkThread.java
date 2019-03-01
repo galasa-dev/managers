@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import org.apache.commons.codec.binary.Hex;
 
 import io.ejat.zos3270.internal.datastream.CommandCode;
+import io.ejat.zos3270.internal.datastream.CommandWriteStructured;
 import io.ejat.zos3270.internal.datastream.Order;
 import io.ejat.zos3270.internal.datastream.OrderInsertCursor;
 import io.ejat.zos3270.internal.datastream.OrderRepeatToAddress;
 import io.ejat.zos3270.internal.datastream.OrderSetBufferAddress;
 import io.ejat.zos3270.internal.datastream.OrderStartField;
 import io.ejat.zos3270.internal.datastream.OrderText;
+import io.ejat.zos3270.internal.datastream.StructuredField;
 import io.ejat.zos3270.internal.datastream.WriteControlCharacter;
 import io.ejat.zos3270.internal.terminal.Screen;
 import io.ejat.zos3270.spi.DatastreamException;
@@ -41,10 +43,10 @@ public class NetworkThread extends Thread {
 		this.network      = network;
 		this.inputStream  = inputStream;
 	}
-	
+
 	@Override
 	public void run() {
-		
+
 		while(true) {
 			try {
 				processMessage(inputStream);
@@ -85,53 +87,75 @@ public class NetworkThread extends Thread {
 
 	public static Inbound3270Message process3270Data(InputStream messageStream) throws IOException, NetworkException {
 		ByteBuffer buffer = readTerminatedMessage(messageStream);
-		
+
 		String hex = new String(Hex.encodeHex(buffer.array()));
 		System.out.println("inbound=" + hex);
 
 		CommandCode commandCode = CommandCode.getCommandCode(buffer.get()); 
-		WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
+		if (commandCode instanceof CommandWriteStructured) {
+			return processStructuredFields((CommandWriteStructured)commandCode, buffer);
+		} else {
+			WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
-		OrderText orderText = null;
+			OrderText orderText = null;
 
-		ArrayList<Order> orders = new ArrayList<>();
-		while(buffer.remaining() > 0) {
-			byte orderByte = buffer.get();
+			ArrayList<Order> orders = new ArrayList<>();
+			while(buffer.remaining() > 0) {
+				byte orderByte = buffer.get();
 
-			if (orderByte > 0x00 && orderByte <= 0x3f) {
-				orderText = null;
+				if (orderByte > 0x00 && orderByte <= 0x3f) {
+					orderText = null;
 
-				Order order = null;
-				switch(orderByte) {
-				case OrderSetBufferAddress.ID:
-					order = new OrderSetBufferAddress(buffer);
-					break;
-				case OrderRepeatToAddress.ID:
-					order = new OrderRepeatToAddress(buffer);
-					break;
-				case OrderStartField.ID:
-					order = new OrderStartField(buffer);
-					break;
-				case OrderInsertCursor.ID:
-					order = new OrderInsertCursor();
-					break;
-				default:
-					String byteHex = Hex.encodeHexString(new byte[] {orderByte});
-					throw new DatastreamException("Unrecognised order byte 0x" + byteHex);
+					Order order = null;
+					switch(orderByte) {
+					case OrderSetBufferAddress.ID:
+						order = new OrderSetBufferAddress(buffer);
+						break;
+					case OrderRepeatToAddress.ID:
+						order = new OrderRepeatToAddress(buffer);
+						break;
+					case OrderStartField.ID:
+						order = new OrderStartField(buffer);
+						break;
+					case OrderInsertCursor.ID:
+						order = new OrderInsertCursor();
+						break;
+					default:
+						String byteHex = Hex.encodeHexString(new byte[] {orderByte});
+						throw new DatastreamException("Unrecognised order byte 0x" + byteHex);
+					}
+					orders.add(order);
+				} else {
+					if (orderText == null) {
+						orderText = new OrderText();
+						orders.add(orderText);
+					}
+					orderText.append(orderByte);
 				}
-				orders.add(order);
-			} else {
-				if (orderText == null) {
-					orderText = new OrderText();
-					orders.add(orderText);
-				}
-				orderText.append(orderByte);
 			}
+			return new Inbound3270Message(commandCode, writeControlCharacter, orders);
 		}
-
-		return new Inbound3270Message(commandCode, writeControlCharacter, orders);
 	}
 
+
+	public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer) throws NetworkException {
+		ArrayList<StructuredField> structuredFields = new ArrayList<>();
+
+		while(buffer.remaining() > 0) {
+			int length = buffer.getShort();
+			if (length == 0) {
+				if (buffer.remaining() != 0) {
+					throw new NetworkException("SF with length of zero was not the last SF in the buffer");
+				}
+			}
+			byte[] sfData = new byte[length - 2];
+			buffer.get(sfData);
+			
+			structuredFields.add(StructuredField.getStructuredField(sfData));
+		}
+		
+		return new Inbound3270Message(commandCode, structuredFields);
+	}
 
 	public static ByteBuffer readTerminatedMessage(InputStream messageStream) throws IOException, NetworkException {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

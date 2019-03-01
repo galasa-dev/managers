@@ -86,5 +86,17 @@ public class ByteAddressTest {
 			Assert.assertTrue("Terminated early exception incorrect", e.getMessage().contains("terminated too early"));
 		}
 	}
+	
+	@Test
+	public void test14bitAddress() throws DatastreamException {
+		ByteBuffer buffer = ByteBuffer.allocate(2);
+		buffer.put((byte)0x3f);
+		buffer.put((byte)0xff);
+		buffer.flip();
+		
+		BufferAddress sba = new BufferAddress(buffer);
+		
+		Assert.assertEquals("Should be address 16383", 16383, sba.getBufferAddress());
+	}
 
 }
