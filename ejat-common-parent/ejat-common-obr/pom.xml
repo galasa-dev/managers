@@ -37,6 +37,11 @@
 
 		<dependency>
 			<groupId>ejat-common</groupId>
+			<artifactId>zosbatch-zosmf-manager</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ejat-common</groupId>
 			<artifactId>zos3270-manager</artifactId>
 		</dependency>
 	</dependencies>
