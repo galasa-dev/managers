@@ -450,6 +450,37 @@ public class Screen {
         }
         return screenSB.toString();
     }
+    
+    public Object printScreenTextWithCursor() {
+        int cursorRow = screenCursor / columns;
+        int cursorCol = screenCursor % columns;
+        
+        StringBuilder sb = new StringBuilder();
+        for(Field field : this.fields) {
+            field.getFieldString(sb);
+        }
+
+        StringBuilder screenSB = new StringBuilder();
+        String screenString = sb.toString();
+        int row = 0;
+        for(int i = 0; i < this.screenSize; i += this.columns) {
+            screenSB.append("= ");
+            screenSB.append(screenString.substring(i, i + this.columns));
+            screenSB.append('\n');
+            if (row == cursorRow) {
+                screenSB.append("^ ");
+                for(int j = 0; j < cursorCol; j++) {
+                    screenSB.append(" ");
+                }
+                screenSB.append("^");
+                screenSB.append('\n');
+            }
+            
+            row++;
+        }
+        return screenSB.toString();
+    }
+
 
 
     /**
@@ -662,4 +693,5 @@ public class Screen {
             throw new DatastreamException("Unable to generate outbound datastream", e);
         }
     }
+
 }

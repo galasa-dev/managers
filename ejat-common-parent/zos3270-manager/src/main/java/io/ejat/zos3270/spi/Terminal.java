@@ -113,5 +113,11 @@ public class Terminal implements ITerminal {
         return this;
     }
 
+    @Override
+    public ITerminal reportScreenWithCursor() {
+        logger.info(screen.printScreenTextWithCursor());
+        return this;
+    }
+
 
 }
