@@ -28,4 +28,5 @@ public interface ITerminal {
 	 * @return ITerminal for chaining
 	 */
 	ITerminal reportScreen();
+    ITerminal reportScreenWithCursor();
 }
