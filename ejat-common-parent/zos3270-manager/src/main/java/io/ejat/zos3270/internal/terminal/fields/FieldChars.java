@@ -2,6 +2,8 @@ package io.ejat.zos3270.internal.terminal.fields;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Represents a field of repeating characters, normally spaces or nulls.
  * 
@@ -124,5 +126,28 @@ public class FieldChars extends Field {
 		allFields.remove(this);
 	}
 
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#containsText(java.lang.String)
+	 */
+	@Override
+	public boolean containsText(@NotNull String searchText) {
+		char[] searchChars = searchText.toCharArray();
+		
+		for(char c : searchChars) {
+			if (c != this.character) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isTypeable()
+	 */
+	@Override
+	public boolean isTypeable() {
+		return !this.previousStartOfField.isProtected();
+	}
 
 }

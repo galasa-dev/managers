@@ -10,20 +10,33 @@ import org.junit.Test;
 
 import io.ejat.zos3270.internal.terminal.fields.Field;
 import io.ejat.zos3270.internal.terminal.fields.FieldStartOfField;
-import io.ejat.zos3270.internal.terminal.fields.FieldText;
 
 public class FieldStartOfFieldTest {
 
 	@Test
 	public void testSetup() throws UnsupportedEncodingException {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, true, false, true, false, true);
 		Assert.assertEquals("Setup incorrect of FieldStartOfField", "StartOfField(20)", sf.toString());
+		
+		Assert.assertFalse("protected is wrong", sf.isProtected());
+        Assert.assertTrue("numeric is wrong", sf.isNumeric());
+        Assert.assertFalse("display is wrong", sf.isDisplay());
+        Assert.assertTrue("intense is wrong", sf.isIntenseDisplay());
+        Assert.assertFalse("pen is wrong", sf.isSelectorPen());
+        Assert.assertTrue("modified is wrong", sf.isFieldModifed());
 
+        sf = new FieldStartOfField(20, true, false, true, false, true, false);
+        Assert.assertTrue("protected is wrong", sf.isProtected());
+        Assert.assertFalse("numeric is wrong", sf.isNumeric());
+        Assert.assertTrue("display is wrong", sf.isDisplay());
+        Assert.assertFalse("intense is wrong", sf.isIntenseDisplay());
+        Assert.assertTrue("pen is wrong", sf.isSelectorPen());
+        Assert.assertFalse("modified is wrong", sf.isFieldModifed());
 	}
 
 	@Test
 	public void testStringConvert() {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		StringBuilder sb = new StringBuilder();
 		sf.getFieldString(sb);
@@ -33,7 +46,7 @@ public class FieldStartOfFieldTest {
 
 	@Test
 	public void testMergeInvalid() {
-		FieldStartOfField sf = new FieldStartOfField(20);
+		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
 		try {
 			sf.merge(null, null);
 			fail("FieldStartOfField should throw an exception as merge is not applicable");
@@ -42,7 +55,7 @@ public class FieldStartOfFieldTest {
 
 	@Test
 	public void testSplitRemove() {
-		FieldStartOfField sfOriginal = new FieldStartOfField(20);
+		FieldStartOfField sfOriginal = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		LinkedList<Field> fields = new LinkedList<>();
 		fields.add(sfOriginal);
@@ -57,7 +70,7 @@ public class FieldStartOfFieldTest {
 	
 	@Test
 	public void testSplitIgnore() {
-		FieldStartOfField sfOriginal = new FieldStartOfField(20);
+		FieldStartOfField sfOriginal = new FieldStartOfField(20, false, false, false, false, false, false);
 
 		LinkedList<Field> fields = new LinkedList<>();
 		fields.add(sfOriginal);

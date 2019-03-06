@@ -38,6 +38,8 @@ public class Network /* extends Thread */{
 	private final int    port;
 
 	private Socket socket;
+	private OutputStream outputStream;
+	private InputStream inputStream;
 
 	public Network(String host, int port) {
 		this.host = host;
@@ -59,9 +61,14 @@ public class Network /* extends Thread */{
 			newSocket.setTcpNoDelay(true);
 			newSocket.setKeepAlive(true);
 			
-			negotiate(newSocket.getInputStream(), newSocket.getOutputStream());
+			InputStream newInputStream = newSocket.getInputStream();
+			OutputStream newOutputStream = newSocket.getOutputStream();
+			
+			negotiate(newInputStream, newOutputStream);
 			
 			this.socket = newSocket;
+			this.outputStream = newOutputStream;
+			this.inputStream = newInputStream;
 			newSocket = null;
 			
 			return true;
@@ -92,7 +99,13 @@ public class Network /* extends Thread */{
 			} catch (IOException e) { //NOSONAR
 			}
 			socket = null;
+			inputStream = null;
+			outputStream = null;
 		}
+	}
+	
+	public InputStream getInputStream() {
+		return this.inputStream;
 	}
 
 	public void negotiate(InputStream inputStream, OutputStream outputStream) throws NetworkException {
@@ -171,6 +184,25 @@ public class Network /* extends Thread */{
 			String receivedString = Hex.encodeHexString(received);
 			throw new NetworkException("Expected " + expectedString + " but received " + receivedString); 
 		}
+	}
+
+	public void sendDatastream(byte[] outboundDatastream) throws NetworkException {
+		sendDatastream(outputStream, outboundDatastream);
+	}
+
+	public void sendDatastream(OutputStream outputStream, byte[] outboundDatastream) throws NetworkException {
+		try {
+			byte[] header = new byte[] {0,0,0,0,0};
+			byte[] trailer = new byte[] {(byte) 0xff,(byte) 0xef};
+			
+			outputStream.write(header);
+			outputStream.write(outboundDatastream);
+			outputStream.write(trailer);
+			outputStream.flush();
+		} catch(IOException e) {
+			throw new NetworkException("Unable to write outbound datastream", e);
+		}
+		
 	}
 
 }

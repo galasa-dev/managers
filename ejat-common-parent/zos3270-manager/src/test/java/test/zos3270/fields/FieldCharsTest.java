@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import io.ejat.zos3270.internal.terminal.fields.Field;
 import io.ejat.zos3270.internal.terminal.fields.FieldChars;
+import io.ejat.zos3270.internal.terminal.fields.FieldStartOfField;
 import io.ejat.zos3270.internal.terminal.fields.FieldText;
 
 public class FieldCharsTest {
@@ -157,5 +158,26 @@ public class FieldCharsTest {
 		Assert.assertTrue("Original FieldChars is missing", fields.contains(fcOriginal));
 		Assert.assertEquals("Existing Split FieldChars 1 is incorrect", "Chars(w,10-30)", fields.get(0).toString());
 	}
+
+    @Test
+    public void testContains() {
+        FieldChars field = new FieldChars('w', 10, 30);
+        
+        Assert.assertTrue("Should have found wwwwww", field.containsText("wwwwww"));
+        Assert.assertFalse("Should not have found xxxxxx", field.containsText("xxxxxx"));
+    }
+    
+    @Test
+    public void testTypable() {
+        FieldChars field = new FieldChars('w', 10, 30);
+        
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, false));
+        Assert.assertTrue("Should be typeable", field.isTypeable());
+
+        field.setPreviousStartOfField(new FieldStartOfField(0, true, false, false, false, false, false));
+        Assert.assertFalse("Should not be typeable", field.isTypeable());
+    }
+
+
 
 }

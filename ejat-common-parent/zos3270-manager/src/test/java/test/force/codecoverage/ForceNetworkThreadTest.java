@@ -9,7 +9,7 @@ public class ForceNetworkThreadTest {
 	
 	@Test
 	public void testConstructor() {
-		new NetworkThread(null, null);
+		new NetworkThread(null, null, null);
 		Assert.assertTrue("dummy", true);
 	}
 	

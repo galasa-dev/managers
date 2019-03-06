@@ -12,8 +12,8 @@ import io.ejat.zos3270.internal.datastream.OrderRepeatToAddress;
 import io.ejat.zos3270.internal.datastream.OrderSetBufferAddress;
 import io.ejat.zos3270.internal.datastream.OrderStartField;
 import io.ejat.zos3270.internal.datastream.OrderText;
-import io.ejat.zos3270.internal.terminal.Screen;
 import io.ejat.zos3270.spi.DatastreamException;
+import io.ejat.zos3270.spi.Screen;
 
 public class ScreenTest {
 	
@@ -30,6 +30,19 @@ public class ScreenTest {
 		screen.erase();
 		
 		Assert.assertEquals("Erase fields are incorrect", "Chars( ,0-19)", screen.printFields());
+	}
+	
+	
+	@Test
+	public void testEraseUsingRA() throws DatastreamException {
+		Screen screen = new Screen(10, 2);
+		ArrayList<Order> orders = new ArrayList<>();
+		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
+		orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0)));
+		
+		screen.processOrders(orders);
+		
+		Assert.assertEquals("Clear fields are incorrect", "Chars( ,0-19)", screen.printFields());
 	}
 	
 	

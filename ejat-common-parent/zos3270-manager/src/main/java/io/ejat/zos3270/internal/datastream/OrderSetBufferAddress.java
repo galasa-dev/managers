@@ -26,5 +26,16 @@ public class OrderSetBufferAddress extends Order {
 	public int getBufferAddress() {
 		return this.bufferAddress.getBufferAddress();
 	}
+
+	public byte[] getCharRepresentation() {
+		byte[] repBA = this.bufferAddress.getCharRepresentation();
+		
+		byte[] rep = new byte[3];
+		rep[0] = ID;
+		rep[1] = repBA[0];
+		rep[2] = repBA[1];
+		
+		return rep;
+	}
 	
 }
