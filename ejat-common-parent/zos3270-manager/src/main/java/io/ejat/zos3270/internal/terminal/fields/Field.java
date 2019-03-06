@@ -143,12 +143,21 @@ public abstract class Field {
 		return false;
 	}
 
-	/**
-	 * Get the Field Text, without nulls,  only Text fields should respond
-	 * 
-	 * @return - byte representation of the text in ebcdic
-	 */
-	public byte[] getFieldEbcdicWithoutNulls() {
-		return null;
-	}
+    /**
+     * Get the Field Text, without nulls,  only Text fields should respond
+     * 
+     * @return - byte representation of the text in ebcdic
+     */
+    public byte[] getFieldEbcdicWithoutNulls() {
+        return null; //NOSONAR
+    }
+    
+    /**
+     * Get the Field Text, without nulls,  only Text fields should respond
+     * 
+     * @return - the text
+     */
+    public String getFieldWithoutNulls() {
+        return null; //NOSONAR
+    }
 }

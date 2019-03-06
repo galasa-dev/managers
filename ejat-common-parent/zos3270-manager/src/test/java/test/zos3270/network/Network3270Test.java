@@ -14,6 +14,7 @@ import io.ejat.zos3270.internal.comms.NetworkThread;
 import io.ejat.zos3270.internal.datastream.CommandCode;
 import io.ejat.zos3270.internal.datastream.OrderInsertCursor;
 import io.ejat.zos3270.spi.NetworkException;
+import io.ejat.zos3270.spi.Screen;
 
 public class Network3270Test {
 
@@ -33,7 +34,7 @@ public class Network3270Test {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-		NetworkThread networkThread = new NetworkThread(null, null, bais);
+		NetworkThread networkThread = new NetworkThread(new Screen(), null, bais);
 		networkThread.processMessage(bais);
 
 		Assert.assertTrue("Will test the screen at this point, later",true);
@@ -52,7 +53,7 @@ public class Network3270Test {
 			networkThread.processMessage(bais);
 			fail("Should have thrown an error because header < 5");
 		} catch(NetworkException e) {
-			Assert.assertEquals("Error message incorrect", "Missing 5 bytes of the telnet 3270 header", e.getMessage());
+			Assert.assertEquals("Error message incorrect", "Missing remaining 4 byte of the telnet 3270 header", e.getMessage());
 		}
 
 	}

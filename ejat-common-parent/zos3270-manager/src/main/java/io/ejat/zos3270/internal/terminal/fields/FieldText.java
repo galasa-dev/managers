@@ -198,9 +198,9 @@ public class FieldText extends Field {
 	public boolean containsText(@NotNull String searchText) {
 		StringBuilder sb = new StringBuilder();
 		getFieldString(sb);
-		String text = sb.toString();
+		String sbText = sb.toString();
 		
-		return text.contains(searchText);
+		return sbText.contains(searchText);
 	}
 	
 	
@@ -238,22 +238,28 @@ public class FieldText extends Field {
 	}
 	
 	
-	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
-	 */
-	@Override
-	public byte[] getFieldEbcdicWithoutNulls() {
-		StringBuilder sb = new StringBuilder();
-		for(char c : text) {
-			//*** Remove nulls and compress
-			if (c != 0x00) {
-				sb.append(c);
-			}
-		}
+    /* (non-Javadoc)
+     * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
+     */
+    @Override
+    public byte[] getFieldEbcdicWithoutNulls() {
+        return getFieldWithoutNulls().getBytes(ebcdic); 
+    }
 
-		byte[] outbound = sb.toString().getBytes(ebcdic); 
-		
-		return outbound;
-	}
+    /* (non-Javadoc)
+     * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
+     */
+    @Override
+    public String getFieldWithoutNulls() {
+        StringBuilder sb = new StringBuilder();
+        for(char c : text) {
+            //*** Remove nulls and compress
+            if (c != 0x00) {
+                sb.append(c);
+            }
+        }
+
+        return sb.toString();
+    }
 
 }

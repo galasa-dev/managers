@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.ejat.zos3270.FieldNotFoundException;
 import io.ejat.zos3270.internal.terminal.fields.Field;
 import io.ejat.zos3270.internal.terminal.fields.FieldChars;
 import io.ejat.zos3270.internal.terminal.fields.FieldStartOfField;
@@ -157,5 +158,69 @@ public class FieldTextTest {
 		Assert.assertTrue("Original FieldText is missing", fields.contains(ftoriginal));
 		Assert.assertEquals("Existing Split FieldText 1 is incorrect", "Text(abcde,20-24)", fields.get(0).toString());
 	}
+	
+    @Test
+    public void testContains() {
+        FieldText field = new FieldText("Hello little rabbit", 0, 18);
+        
+        Assert.assertTrue("Should have found little", field.containsText("little"));
+        Assert.assertFalse("Should not have found fox", field.containsText("fox"));
+    }
+
+    @Test
+    public void testTypable() {
+        FieldText field = new FieldText("Hello little rabbit", 1, 19);
+        
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, false));
+        Assert.assertTrue("Should be typeable", field.isTypeable());
+
+        field.setPreviousStartOfField(new FieldStartOfField(0, true, false, false, false, false, false));
+        Assert.assertFalse("Should not be typeable", field.isTypeable());
+    }
+
+    @Test
+    public void testModified() {
+        FieldText field = new FieldText("Hello little rabbit", 1, 19);
+        
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, true));
+        Assert.assertTrue("Should be modified", field.isModified());
+
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, false));
+        Assert.assertFalse("Should not be modified", field.isModified());
+    }
+
+    @Test
+    public void testType() throws FieldNotFoundException {
+        FieldText field = new FieldText(new FieldChars((char)0, 1, 8));
+        
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, true));
+        field.type("Hello");
+        Assert.assertTrue("Should be modified", field.isModified());
+        Assert.assertEquals("Typed Text is incorrect", "Hello", field.getFieldWithoutNulls());
+        
+        field.type("helloworld");
+        Assert.assertEquals("Typed Text is incorrect", "hellowor", field.getFieldWithoutNulls());
+
+
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, true, false, false, false, false));
+        try {
+            field.type("hello");
+            fail("Should have failed attempting to enter text in a numeric field");
+        } catch(FieldNotFoundException e) {}
+        field.type("98765432");
+        Assert.assertEquals("Typed Text is incorrect", "98765432", field.getFieldWithoutNulls());
+    }
+
+    @Test
+    public void testEbcdicNotNulls() throws FieldNotFoundException, UnsupportedEncodingException {
+        FieldText field = new FieldText(new FieldChars((char)0, 1, 8));
+        
+        String testText = "Hello";
+        byte[] testBytes = testText.getBytes("Cp037");
+        
+        field.setPreviousStartOfField(new FieldStartOfField(0, false, false, false, false, false, true));
+        field.type(testText);
+        Assert.assertArrayEquals("Typed Text is incorrect", testBytes, field.getFieldEbcdicWithoutNulls());
+    }
 
 }

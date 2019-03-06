@@ -12,8 +12,8 @@ import io.ejat.zos3270.internal.datastream.OrderRepeatToAddress;
 import io.ejat.zos3270.internal.datastream.OrderSetBufferAddress;
 import io.ejat.zos3270.internal.datastream.OrderStartField;
 import io.ejat.zos3270.internal.datastream.OrderText;
-import io.ejat.zos3270.internal.terminal.Screen;
 import io.ejat.zos3270.spi.DatastreamException;
+import io.ejat.zos3270.spi.Screen;
 
 public class ScreenTest {
 	

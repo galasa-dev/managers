@@ -9,7 +9,7 @@ import org.junit.Test;
 import io.ejat.zos3270.internal.datastream.QueryReply;
 import io.ejat.zos3270.internal.datastream.QueryReplySummary;
 import io.ejat.zos3270.internal.datastream.QueryReplyUsableArea;
-import io.ejat.zos3270.internal.terminal.Screen;
+import io.ejat.zos3270.spi.Screen;
 
 public class QueryReplySummaryTest {
 	

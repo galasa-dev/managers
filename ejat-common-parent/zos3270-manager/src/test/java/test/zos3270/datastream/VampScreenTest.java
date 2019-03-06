@@ -24,7 +24,9 @@ public class VampScreenTest {
 		byte[] stream = Hex.decodeHex(vampHex);
 		ByteArrayInputStream bais = new ByteArrayInputStream(stream);
 		
-		List<Order> orders = NetworkThread.process3270Data(bais).getOrders();
+		NetworkThread networkThread = new NetworkThread(null, null, null);
+		
+		List<Order> orders = networkThread.process3270Data(bais).getOrders();
 		Assert.assertEquals("Count of orders is incorrect",  225, orders.size());
 	}
 

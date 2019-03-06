@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.ejat.zos3270.internal.datastream.QueryReplyUsableArea;
-import io.ejat.zos3270.internal.terminal.Screen;
+import io.ejat.zos3270.spi.Screen;
 
 public class QueryReplyUsableAreaTest {
 	

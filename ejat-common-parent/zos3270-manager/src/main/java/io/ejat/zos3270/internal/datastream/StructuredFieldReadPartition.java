@@ -7,7 +7,7 @@ public class StructuredFieldReadPartition extends StructuredField {
 	public static final byte QUERY = 0x02;
 	
 	public enum Type {
-		Query
+		QUERY
 	}
 	
 	private final int pid; 
@@ -16,9 +16,9 @@ public class StructuredFieldReadPartition extends StructuredField {
 	public StructuredFieldReadPartition(byte[] structuredFieldData) throws NetworkException {
 		this.pid = structuredFieldData[1];
 		
-		switch(structuredFieldData[2]) {
+		switch(structuredFieldData[2]) {  //NOSONAR - will have more cases
 		case QUERY:
-			this.type = Type.Query;
+			this.type = Type.QUERY;
 			break;
 		default:
 			throw new NetworkException("Unsupported Read Partition Type code = " + structuredFieldData[2]);

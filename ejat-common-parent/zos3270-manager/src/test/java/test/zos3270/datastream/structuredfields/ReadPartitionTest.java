@@ -35,7 +35,7 @@ public class ReadPartitionTest {
 		StructuredFieldReadPartition sfrp = (StructuredFieldReadPartition) fields.get(0);
 
 		Assert.assertEquals("Partition ID is incorrect", -1, sfrp.getPartitionId());
-		Assert.assertEquals("Type is incorrect", StructuredFieldReadPartition.Type.Query, sfrp.getType());
+		Assert.assertEquals("Type is incorrect", StructuredFieldReadPartition.Type.QUERY, sfrp.getType());
 	}
 
 	@Test

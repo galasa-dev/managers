@@ -15,9 +15,23 @@ public class FieldStartOfFieldTest {
 
 	@Test
 	public void testSetup() throws UnsupportedEncodingException {
-		FieldStartOfField sf = new FieldStartOfField(20, false, false, false, false, false, false);
+		FieldStartOfField sf = new FieldStartOfField(20, false, true, false, true, false, true);
 		Assert.assertEquals("Setup incorrect of FieldStartOfField", "StartOfField(20)", sf.toString());
+		
+		Assert.assertFalse("protected is wrong", sf.isProtected());
+        Assert.assertTrue("numeric is wrong", sf.isNumeric());
+        Assert.assertFalse("display is wrong", sf.isDisplay());
+        Assert.assertTrue("intense is wrong", sf.isIntenseDisplay());
+        Assert.assertFalse("pen is wrong", sf.isSelectorPen());
+        Assert.assertTrue("modified is wrong", sf.isFieldModifed());
 
+        sf = new FieldStartOfField(20, true, false, true, false, true, false);
+        Assert.assertTrue("protected is wrong", sf.isProtected());
+        Assert.assertFalse("numeric is wrong", sf.isNumeric());
+        Assert.assertTrue("display is wrong", sf.isDisplay());
+        Assert.assertFalse("intense is wrong", sf.isIntenseDisplay());
+        Assert.assertTrue("pen is wrong", sf.isSelectorPen());
+        Assert.assertFalse("modified is wrong", sf.isFieldModifed());
 	}
 
 	@Test

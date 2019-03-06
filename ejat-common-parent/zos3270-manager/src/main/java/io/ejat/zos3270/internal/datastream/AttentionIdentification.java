@@ -9,7 +9,7 @@ public enum AttentionIdentification {
 	
 	private final byte keyValue;
 	
-	private AttentionIdentification(byte keyValue) {
+	AttentionIdentification(byte keyValue) {
 		this.keyValue = keyValue;
 	}
 	

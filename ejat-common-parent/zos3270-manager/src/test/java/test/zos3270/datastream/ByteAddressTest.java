@@ -88,7 +88,7 @@ public class ByteAddressTest {
 	}
 	
 	@Test
-	public void test14bitAddress() throws DatastreamException {
+	public void testBit14Address() throws DatastreamException {
 		ByteBuffer buffer = ByteBuffer.allocate(2);
 		buffer.put((byte)0x3f);
 		buffer.put((byte)0xff);

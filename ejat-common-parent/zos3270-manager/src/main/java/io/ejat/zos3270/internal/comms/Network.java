@@ -61,11 +61,14 @@ public class Network /* extends Thread */{
 			newSocket.setTcpNoDelay(true);
 			newSocket.setKeepAlive(true);
 			
-			negotiate(newSocket.getInputStream(), newSocket.getOutputStream());
+			InputStream newInputStream = newSocket.getInputStream();
+			OutputStream newOutputStream = newSocket.getOutputStream();
+			
+			negotiate(newInputStream, newOutputStream);
 			
 			this.socket = newSocket;
-			this.outputStream = socket.getOutputStream();
-			this.inputStream = socket.getInputStream();
+			this.outputStream = newOutputStream;
+			this.inputStream = newInputStream;
 			newSocket = null;
 			
 			return true;

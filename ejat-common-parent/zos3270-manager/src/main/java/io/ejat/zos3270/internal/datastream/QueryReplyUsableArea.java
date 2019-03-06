@@ -2,7 +2,7 @@ package io.ejat.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
 
-import io.ejat.zos3270.internal.terminal.Screen;
+import io.ejat.zos3270.spi.Screen;
 
 public class QueryReplyUsableArea extends QueryReply {
 	
