@@ -55,7 +55,7 @@ import io.ejat.zos3270.internal.terminal.fields.FieldText;
  *
  */
 public class Screen {
-    
+
     private static final String CANT_FIND_TEXT = "Unable to find a field containing '";
 
     private final Network network;
@@ -74,7 +74,7 @@ public class Screen {
     private boolean keyboardLockSet = false;
 
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
-    
+
     private final Log logger = LogFactory.getLog(getClass());
 
     /**
@@ -191,7 +191,7 @@ public class Screen {
             }
         }
     }
-    
+
     private synchronized void processStructuredFields(List<StructuredField> structuredFields) throws DatastreamException {
         for(StructuredField structuredField : structuredFields) {
             if (structuredField instanceof StructuredFieldReadPartition) {
@@ -450,14 +450,20 @@ public class Screen {
         }
         return screenSB.toString();
     }
-    
+
     public Object printScreenTextWithCursor() {
         int cursorRow = screenCursor / columns;
         int cursorCol = screenCursor % columns;
-        
+
         StringBuilder sb = new StringBuilder();
-        for(Field field : this.fields) {
-            field.getFieldString(sb);
+        if (this.fields.isEmpty()) {
+            for(int i = 0; i < screenSize; i++) {
+                sb.append(' '); //Can be better
+            }
+        } else {
+            for(Field field : this.fields) {
+                field.getFieldString(sb);
+            }
         }
 
         StringBuilder screenSB = new StringBuilder();
@@ -475,7 +481,7 @@ public class Screen {
                 screenSB.append("^");
                 screenSB.append('\n');
             }
-            
+
             row++;
         }
         return screenSB.toString();

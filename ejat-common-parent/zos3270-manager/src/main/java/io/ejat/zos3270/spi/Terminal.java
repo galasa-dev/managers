@@ -109,13 +109,13 @@ public class Terminal implements ITerminal {
 
     @Override
     public ITerminal reportScreen() {
-        logger.trace(screen.printScreen());
+        logger.trace("\n" + screen.printScreen());
         return this;
     }
 
     @Override
     public ITerminal reportScreenWithCursor() {
-        logger.info(screen.printScreenTextWithCursor());
+        logger.info("\n" + screen.printScreenTextWithCursor());
         return this;
     }
 
