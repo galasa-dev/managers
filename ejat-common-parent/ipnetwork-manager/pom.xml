@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -7,25 +6,19 @@
 	<parent>
 		<groupId>ejat-common</groupId>
 		<artifactId>ejat-common-parent</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>ejat-common</groupId>
-	<artifactId>zosbatch-zosmf-manager</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<artifactId>ipnetwork-manager</artifactId>
+	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
-
-	<name>zOS Batch Manager - zOS/MF Implementation</name>
-
+	
+		<name>IP Network Manager</name>
+	
 	<dependencies>
 		<dependency>
 			<groupId>ejat</groupId>
 			<artifactId>ejat-framework</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ejat-common</groupId>
-			<artifactId>zos-manager</artifactId>
-			<version>0.2.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -38,11 +31,12 @@
 				<configuration>
 					<supportedProjectTypes>bundle</supportedProjectTypes>
 					<instructions>
-						<Bundle-SymbolicName>io.ejat.zosbatch.zosmf.manager</Bundle-SymbolicName>
+						<Bundle-SymbolicName>io.ejat.ipnetwork.manager</Bundle-SymbolicName>
 					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
 
 </project>
