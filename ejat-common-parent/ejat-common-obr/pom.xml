@@ -7,12 +7,10 @@
 	<parent>
 		<groupId>ejat-common</groupId>
 		<artifactId>ejat-common-parent</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>ejat-common</groupId>
 	<artifactId>ejat-common-obr</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
 	<packaging>ejat-obr</packaging>
 
 	<name>eJAT Common OBR</name>
@@ -22,7 +20,7 @@
 			<dependency>
 				<groupId>ejat-common</groupId>
 				<artifactId>ejat-common-bom</artifactId>
-				<version>0.2.0-SNAPSHOT</version>
+				<version>0.3.0-SNAPSHOT</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -43,6 +41,11 @@
 		<dependency>
 			<groupId>ejat-common</groupId>
 			<artifactId>zos3270-manager</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ejat-common</groupId>
+			<artifactId>ipnetwork-manager</artifactId>
 		</dependency>
 	</dependencies>
 
