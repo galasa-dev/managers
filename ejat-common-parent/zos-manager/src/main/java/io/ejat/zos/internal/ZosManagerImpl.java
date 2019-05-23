@@ -18,6 +18,7 @@ import io.ejat.framework.spi.AbstractManager;
 import io.ejat.framework.spi.AnnotatedField;
 import io.ejat.framework.spi.DynamicStatusStoreException;
 import io.ejat.framework.spi.GenerateAnnotatedField;
+import io.ejat.framework.spi.IConfigurationPropertyStoreService;
 import io.ejat.framework.spi.IDynamicStatusStoreService;
 import io.ejat.framework.spi.IFramework;
 import io.ejat.framework.spi.IManager;
@@ -40,6 +41,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 	private final static Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
 	private ZosProperties zosProperties;
+	private IConfigurationPropertyStoreService cps;
 	private IDynamicStatusStoreService dss;
 	private IIpNetworkManagerSpi ipManager;
 
@@ -82,8 +84,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 
 		try {
 			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-		} catch (DynamicStatusStoreException e) {
-			throw new ZosManagerException("Unable to request DSS", e);
+			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
+		} catch (Exception e) {
+			throw new ZosManagerException("Unable to request framework services", e);
 		}
 	}
 
@@ -278,6 +281,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		return this.dss;
 	}
 
+	public IConfigurationPropertyStoreService getCPS() {
+		return this.cps;
+	}
 	public ZosProperties getZosProperties() {
 		return this.zosProperties;
 	}
@@ -302,6 +308,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 	protected IIpNetworkManagerSpi getIpManager() {
 		return this.ipManager;
 	}
+
 
 
 
