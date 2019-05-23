@@ -19,7 +19,6 @@ public interface IZosImage {
 	 * Get the name of the Sysplex this Image belongs to
 	 */
 	String getSysplexID();
-
 	
 	/**
 	 * Get the name of the Cluster this Image belongs to 

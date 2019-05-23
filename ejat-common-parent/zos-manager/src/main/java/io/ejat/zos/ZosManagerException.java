@@ -1,6 +1,8 @@
 package io.ejat.zos;
 
-public class ZosManagerException extends Exception {
+import io.ejat.framework.spi.ManagerException;
+
+public class ZosManagerException extends ManagerException {
 	private static final long serialVersionUID = 1L;
 
 	public ZosManagerException() {

@@ -6,12 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import io.ejat.framework.spi.ValidAnnotatedFields;
+import io.ejat.ipnetwork.IIpPort;
 import io.ejat.zos.internal.ZosManagerField;
 
 /**
- * Represents a zOS Image that has been provisioned for the test
+ * Represents a provisioned IP Port for a zOS Image that has been provisioned for the test
  * 
- * <p>Used to populate a {@link IZosImage} field</p>
+ * <p>Used to populate a {@link io.ejat.ipnetwork.IIpPort} field</p>
  * 
  * @author Michael Baylis
  *
@@ -19,22 +20,19 @@ import io.ejat.zos.internal.ZosManagerField;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 @ZosManagerField
-@ValidAnnotatedFields({ IZosImage.class })
-public @interface ZosImage {
+@ValidAnnotatedFields({ IIpPort.class })
+public @interface ZosIpPort {
 	
 	/**
 	 * The tag of the zOS Image this variable is to be populated with
 	 */
 	String imageTag() default "primary";
 	
-	/**
-	 * Capabilities required of this zOS Image, if any.
-	 */
-	String[] capabilities() default {};
 	
 	/**
-	 * Set a variable prefix to be filled in for this zOS Image
-	 * TODO: ****** TO BE SPECED OUT FURTHER  *****
+	 * The type of IP Port you require, this can be used to obtain ATTLS ports
+	 * The default is a standard non-special IP port
 	 */
-	String variablePrefix() default "";
+	String type() default "standard";
+	
 }
