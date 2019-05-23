@@ -9,8 +9,13 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import io.ejat.framework.spi.AbstractManager;
+import io.ejat.framework.spi.IConfigurationPropertyStoreService;
 import io.ejat.framework.spi.IDynamicResource;
 import io.ejat.framework.spi.IDynamicStatusStoreService;
+import io.ejat.framework.spi.creds.CredentialsException;
+import io.ejat.framework.spi.creds.ICredentials;
+import io.ejat.framework.spi.creds.ICredentialsService;
 import io.ejat.ipnetwork.spi.IIpHostSpi;
 import io.ejat.zos.IZosImage;
 import io.ejat.zos.ZosManagerException;
@@ -20,21 +25,33 @@ public class ZosImageImpl implements IZosImage {
 	private final static Log logger = LogFactory.getLog(ZosImageImpl.class);
 
 	private final ZosManagerImpl zosManager;
+	private final IConfigurationPropertyStoreService cps;
 	private final IDynamicStatusStoreService dss;
 	private final IDynamicResource dynamicResource;
 
 	private final String imageId;
 	private final String clusterId;
+	private final String sysplexID;
+	private String defaultCredentialsId;
+	private ICredentials defaultCedentials;
 
 	private String allocatedSlotName;
 	private IIpHostSpi ipHost;
 
-	public ZosImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) {
+	public ZosImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) throws ZosManagerException {
 		this.zosManager = zosManager;
 		this.dss = zosManager.getDSS();
+		this.cps = zosManager.getCPS();
 		this.imageId    = imageId;
 		this.clusterId  = clusterId;
 		this.dynamicResource = this.dss.getDynamicResource("image." + this.imageId);
+
+		try {
+			this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
+			this.defaultCredentialsId = AbstractManager.nulled(this.cps.getProperty("image", "credentials", this.imageId));
+		} catch(Exception e) {
+			throw new ZosManagerException("Problem populating Image " + this.imageId + " properties", e);
+		}
 	}
 
 	@Override
@@ -44,8 +61,7 @@ public class ZosImageImpl implements IZosImage {
 
 	@Override
 	public String getSysplexID() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sysplexID;
 	}
 
 	@Override
@@ -237,7 +253,7 @@ public class ZosImageImpl implements IZosImage {
 					}
 				}
 			}
-			
+
 			//*** Delete the slot records
 			HashSet<String> props = new HashSet<>();
 			props.add(prefix);
@@ -247,6 +263,33 @@ public class ZosImageImpl implements IZosImage {
 			logger.error("Failed to discard slot " + slot + " on image " + imageId,e);
 		}
 
+	}
+	
+	
+	@Override
+	public ICredentials getDefaultCredentials() throws ZosManagerException {
+		if (this.defaultCedentials != null) {
+			return this.defaultCedentials;
+		}
+		
+		if (this.defaultCredentialsId == null) {
+			this.defaultCredentialsId = "zos";
+			logger.warn("Credentials ID not set for zOS Image " + this.imageId + ", defaulting to 'zos'");
+		}
+		
+		try {
+			ICredentialsService credsService = zosManager.getFramework().getCredentialsService();
+			
+			this.defaultCedentials = credsService.getCredentials(this.defaultCredentialsId);
+		} catch (CredentialsException e) {
+			throw new ZosManagerException("Unable to acquire the credentials for id " + this.defaultCredentialsId, e);
+		}
+		
+		if (this.defaultCedentials == null) {
+			throw new ZosManagerException("zOS Credentials missing for image " + this.imageId + " id " + this.defaultCredentialsId);
+		}
+		
+		return defaultCedentials;
 	}
 
 }
