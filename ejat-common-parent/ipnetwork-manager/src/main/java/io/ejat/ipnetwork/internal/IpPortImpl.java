@@ -48,7 +48,6 @@ public class IpPortImpl implements IIpPort {
 		HashMap<String, String> otherProps = new HashMap<>();
 		otherProps.put("port.run." + runName + "." + dssPrefix, "active");
 		otherProps.put(dssPrefix + ".type", type);
-		otherProps.put(dssPrefix + ".allocated", Instant.now().toString());
 		
 		if (!dss.putSwap(dssPrefix, null, runName, otherProps)) {
 			return null;
@@ -80,7 +79,6 @@ public class IpPortImpl implements IIpPort {
 		String dssKey = "host." + hostId + ".port." + port;
 		dssProperties = new HashSet<>();
 		dssProperties.add(dssKey);
-		dssProperties.add(dssKey + ".allocated");
 		dssProperties.add(dssKey + ".type");
 		dssProperties.add("port.run." + runName + "." + dssKey);
 		dss.delete(dssProperties);

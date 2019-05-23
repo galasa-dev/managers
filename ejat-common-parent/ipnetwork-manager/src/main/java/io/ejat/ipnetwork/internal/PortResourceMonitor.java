@@ -60,7 +60,7 @@ public class PortResourceMonitor implements Runnable {
 		}
 
 		this.resourceManagement.resourceManagementRunSuccessful();
-		logger.info("Finsihed Run Port search");
+		logger.info("Finished Run Port search");
 	}
 
 	public void runFinishedOrDeleted(String runName) {
