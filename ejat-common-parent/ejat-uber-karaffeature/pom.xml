@@ -43,6 +43,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<featureName>cirillo</featureName>
+					<requiredFeatures>scr,obr,config</requiredFeatures>
 				</configuration>
 			</plugin>
 		</plugins>
