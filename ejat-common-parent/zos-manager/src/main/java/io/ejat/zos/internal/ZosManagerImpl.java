@@ -24,6 +24,7 @@ import io.ejat.framework.spi.IFramework;
 import io.ejat.framework.spi.IManager;
 import io.ejat.framework.spi.ManagerException;
 import io.ejat.framework.spi.ResourceUnavailableException;
+import io.ejat.framework.spi.utils.DssUtils;
 import io.ejat.ipnetwork.IIpHost;
 import io.ejat.ipnetwork.IIpPort;
 import io.ejat.ipnetwork.spi.IIpNetworkManagerSpi;
@@ -196,6 +197,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 				logger.info("zOS Image " + image.getImageID() + " selected for zosTag '" + tag + "'");
 				return image;
 			} else {
+				DssUtils.incrementMetric(dss, "metrics.slots.insufficent");
 				throw new ZosManagerException("Unable to provision zOS Image tagged " + tag + " on " + imageID + " as there is insufficient capacity");
 			}
 		} 
@@ -272,7 +274,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		}
 
 		//*** Can do some other stuff in the future to reuse already allocated lpars,  but not for now
-
+		DssUtils.incrementMetric(dss, "metrics.slots.insufficent");
 		throw new ZosManagerException("Insufficent capacity for images in cluster " + clusterId);
 	}
 
