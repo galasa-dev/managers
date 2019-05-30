@@ -50,6 +50,7 @@
 						org.apache.felix.gogo.shell,
 						dev.cirillo.k8s.controller,
 						dev.cirillo.framework.resource.management,
+						dev.cirillo.framework.metrics,
 						dev.cirillo.maven.repository,
 						org.osgi.service.cm,
 						io.prometheus.simpleclient_common,
