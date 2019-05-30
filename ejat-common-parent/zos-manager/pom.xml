@@ -33,11 +33,17 @@
 			<groupId>ejat</groupId>
 			<artifactId>ejat-framework</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ejat-common</groupId>
 			<artifactId>ipnetwork-manager</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.prometheus</groupId>
+			<artifactId>simpleclient</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
