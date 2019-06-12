@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>dev.voras</groupId>
+		<artifactId>voras-core-parent</artifactId>
+		<version>0.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>voras-common-parent</artifactId>
+	<version>0.3.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>Voras Common Managers</name>
+	
+	<properties>
+		<dev.voras.common.ipnetwork.manager>0.3.0-SNAPSHOT</dev.voras.common.ipnetwork.manager>
+		<dev.voras.common.zos.manager>0.3.0-SNAPSHOT</dev.voras.common.zos.manager>
+		<dev.voras.common.zosbatch.zosmf.manager>0.3.0-SNAPSHOT</dev.voras.common.zosbatch.zosmf.manager>
+		<dev.voras.common.zos3270.manager>0.3.0-SNAPSHOT</dev.voras.common.zos3270.manager>
+		<dev.voras.common.obr>0.3.0-SNAPSHOT</dev.voras.common.obr>
+		
+		<dev.voras.uber.obr>0.3.0-SNAPSHOT</dev.voras.uber.obr>
+		<dev.voras.uber.karaffeature>0.3.0-SNAPSHOT</dev.voras.uber.karaffeature>
+		
+		<voras-bom>0.3.0-SNAPSHOT</voras-bom>
+	</properties>
+
+	<modules>
+		<module>dev.voras.common.ipnetwork.manager</module>
+		<module>dev.voras.common.zos.manager</module>
+		<module>dev.voras.common.zosbatch.zosmf.manager</module>
+		<module>dev.voras.common.zos3270.manager</module>
+		<module>dev.voras.common.obr</module>
+		<module>dev.voras.uber.obr</module>
+		<module>dev.voras.uber.karaffeature</module>
+		<module>voras-bom</module>
+	</modules>
+
+</project>
