@@ -1,6 +1,6 @@
 package dev.voras.common.zos;
 
-import dev.voras.framework.spi.ManagerException;
+import dev.voras.ManagerException;
 
 public class ZosManagerException extends ManagerException {
 	private static final long serialVersionUID = 1L;

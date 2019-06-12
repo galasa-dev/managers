@@ -16,7 +16,7 @@ import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IDynamicResource;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.creds.CredentialsException;
-import dev.voras.framework.spi.creds.ICredentials;
+import dev.voras.ICredentials;
 import dev.voras.framework.spi.creds.ICredentialsService;
 import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 
