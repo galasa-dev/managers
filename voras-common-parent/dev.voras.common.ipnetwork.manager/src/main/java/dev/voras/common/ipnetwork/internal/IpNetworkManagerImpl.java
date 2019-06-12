@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
+import dev.voras.ManagerException;
 import dev.voras.common.ipnetwork.IpNetworkManagerException;
 import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 import dev.voras.common.ipnetwork.spi.IIpNetworkManagerSpi;
@@ -18,7 +19,6 @@ import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IManager;
 import dev.voras.framework.spi.IResourcePoolingService;
-import dev.voras.framework.spi.ManagerException;
 
 @Component(service = { IManager.class })
 public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkManagerSpi {

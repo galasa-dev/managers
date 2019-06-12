@@ -2,7 +2,7 @@ package dev.voras.common.zos;
 
 import javax.validation.constraints.NotNull;
 
-import dev.voras.framework.spi.creds.ICredentials;
+import dev.voras.ICredentials;
 
 /**
  * <p>Represents a zOS Image (or lpar).</p>
