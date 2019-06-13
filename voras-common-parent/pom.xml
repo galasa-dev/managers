@@ -15,17 +15,17 @@
 	<packaging>pom</packaging>
 
 	<name>Voras Common Managers</name>
-	
+
 	<properties>
 		<dev.voras.common.ipnetwork.manager>0.3.0-SNAPSHOT</dev.voras.common.ipnetwork.manager>
 		<dev.voras.common.zos.manager>0.3.0-SNAPSHOT</dev.voras.common.zos.manager>
 		<dev.voras.common.zosbatch.zosmf.manager>0.3.0-SNAPSHOT</dev.voras.common.zosbatch.zosmf.manager>
 		<dev.voras.common.zos3270.manager>0.3.0-SNAPSHOT</dev.voras.common.zos3270.manager>
 		<dev.voras.common.obr>0.3.0-SNAPSHOT</dev.voras.common.obr>
-		
+
 		<dev.voras.uber.obr>0.3.0-SNAPSHOT</dev.voras.uber.obr>
 		<dev.voras.uber.karaffeature>0.3.0-SNAPSHOT</dev.voras.uber.karaffeature>
-		
+
 		<voras-bom>0.3.0-SNAPSHOT</voras-bom>
 	</properties>
 
@@ -39,5 +39,15 @@
 		<module>dev.voras.uber.karaffeature</module>
 		<module>voras-bom</module>
 	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${commons-logging}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
 
 </project>
