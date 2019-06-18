@@ -40,6 +40,18 @@
 			<version>${dev.voras.common.ipnetwork.manager}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.linux.manager</artifactId>
+			<version>${dev.voras.common.linux.manager}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.openstack.manager</artifactId>
+			<version>${dev.voras.common.openstack.manager}</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 </project>
