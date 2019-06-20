@@ -1,4 +1,4 @@
-package dev.voras.artifact.internal;
+package dev.voras.common.artifact.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 
-import dev.voras.artifact.ISkeletonProcessor;
-import dev.voras.artifact.SkeletonProcessorException;
-import io.ejat.framework.spi.IFramework;
+import dev.voras.common.artifact.ISkeletonProcessor;
+import dev.voras.common.artifact.SkeletonProcessorException;
+import dev.voras.framework.spi.IFramework;
 /**
  * A simple skeleton processor to replace velocity
  * 

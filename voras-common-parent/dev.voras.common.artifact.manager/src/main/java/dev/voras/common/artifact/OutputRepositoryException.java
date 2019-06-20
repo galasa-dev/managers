@@ -1,6 +1,6 @@
-package dev.voras.artifact;
+package dev.voras.common.artifact;
 
-import io.ejat.framework.spi.ManagerException;
+import dev.voras.ManagerException;
 
 public class OutputRepositoryException extends ManagerException {
 	private static final long serialVersionUID = 1L;

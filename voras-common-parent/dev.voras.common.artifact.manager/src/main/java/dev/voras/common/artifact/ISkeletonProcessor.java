@@ -1,4 +1,4 @@
-package dev.voras.artifact;
+package dev.voras.common.artifact;
 
 import java.io.InputStream;
 import java.util.Map;

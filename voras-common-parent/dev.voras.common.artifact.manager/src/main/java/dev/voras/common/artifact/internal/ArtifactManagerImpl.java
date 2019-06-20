@@ -1,4 +1,4 @@
-package dev.voras.artifact.internal;
+package dev.voras.common.artifact.internal;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -11,17 +11,17 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.voras.artifact.ArtifactManager;
-import dev.voras.artifact.IArtifactManager;
-import dev.voras.artifact.IBundleResources;
-import dev.voras.artifact.ISkeletonProcessor;
-import dev.voras.artifact.OutputRepositoryException;
-import dev.voras.artifact.SkeletonProcessorException;
-import dev.voras.artifact.ISkeletonProcessor.SkeletonType;
-import io.ejat.framework.spi.AbstractManager;
-import io.ejat.framework.spi.GenerateAnnotatedField;
-import io.ejat.framework.spi.ManagerException;
-import io.ejat.framework.spi.ResourceUnavailableException;
+import dev.voras.common.artifact.ArtifactManager;
+import dev.voras.common.artifact.IArtifactManager;
+import dev.voras.common.artifact.IBundleResources;
+import dev.voras.common.artifact.ISkeletonProcessor;
+import dev.voras.common.artifact.OutputRepositoryException;
+import dev.voras.common.artifact.SkeletonProcessorException;
+import dev.voras.common.artifact.ISkeletonProcessor.SkeletonType;
+import dev.voras.framework.spi.AbstractManager;
+import dev.voras.framework.spi.GenerateAnnotatedField;
+import dev.voras.ManagerException;
+import dev.voras.framework.spi.ResourceUnavailableException;
 
 public class ArtifactManagerImpl extends AbstractManager implements IArtifactManager {
 

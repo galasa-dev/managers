@@ -1,4 +1,4 @@
-package dev.voras.artifact.internal;
+package dev.voras.common.artifact.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,9 +14,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
-import dev.voras.artifact.ISkeletonProcessor;
-import dev.voras.artifact.SkeletonProcessorException;
-import io.ejat.framework.spi.IFramework;
+import dev.voras.common.artifact.ISkeletonProcessor;
+import dev.voras.common.artifact.SkeletonProcessorException;
+import dev.voras.framework.spi.IFramework;
 
 
 public class VelocitySkeletonProcessor  implements ISkeletonProcessor {

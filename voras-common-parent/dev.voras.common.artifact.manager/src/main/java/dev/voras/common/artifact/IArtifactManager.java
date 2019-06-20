@@ -1,11 +1,11 @@
-package dev.voras.artifact;
+package dev.voras.common.artifact;
 
 import java.io.InputStream;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import io.ejat.framework.spi.IManager;
+import dev.voras.framework.spi.IManager;
 
 
 /**

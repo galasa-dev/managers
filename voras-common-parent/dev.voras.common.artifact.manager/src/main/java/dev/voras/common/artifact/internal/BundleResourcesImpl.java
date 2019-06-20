@@ -1,4 +1,4 @@
-package dev.voras.artifact.internal;
+package dev.voras.common.artifact.internal;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -32,12 +32,12 @@ import org.osgi.framework.FrameworkUtil;
 import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarOutputStream;
 
-import dev.voras.artifact.IBundleResources;
-import dev.voras.artifact.ISkeletonProcessor;
-import dev.voras.artifact.SkeletonProcessorException;
-import dev.voras.artifact.TestBundleResourceException;
-import dev.voras.artifact.ISkeletonProcessor.SkeletonType;
-import io.ejat.framework.spi.IFramework;
+import dev.voras.common.artifact.IBundleResources;
+import dev.voras.common.artifact.ISkeletonProcessor;
+import dev.voras.common.artifact.SkeletonProcessorException;
+import dev.voras.common.artifact.TestBundleResourceException;
+import dev.voras.common.artifact.ISkeletonProcessor.SkeletonType;
+import dev.voras.framework.spi.IFramework;
 
 public class BundleResourcesImpl implements IBundleResources {
 

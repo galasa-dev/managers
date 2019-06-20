@@ -1,11 +1,11 @@
-package dev.voras.artifact;
+package dev.voras.common.artifact;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import io.ejat.framework.spi.ValidAnnotatedFields;
+import dev.voras.framework.spi.ValidAnnotatedFields;
 
 /**
  * Used to annotate annotations that are to be used for Test Class fields. To be
