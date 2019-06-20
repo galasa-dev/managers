@@ -11,10 +11,10 @@ import org.apache.commons.logging.LogFactory;
 import dev.voras.http.HttpClient;
 import dev.voras.http.IHttpClient;
 import dev.voras.http.IHttpManager;
-import io.ejat.framework.spi.AbstractManager;
-import io.ejat.framework.spi.GenerateAnnotatedField;
-import io.ejat.framework.spi.ManagerException;
-import io.ejat.framework.spi.ResourceUnavailableException;
+import dev.voras.framework.spi.AbstractManager;
+import dev.voras.framework.spi.GenerateAnnotatedField;
+import dev.voras.ManagerException;
+import dev.voras.framework.spi.ResourceUnavailableException;
 
 public class HttpManagerImpl extends AbstractManager implements IHttpManager {
 

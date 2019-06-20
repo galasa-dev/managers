@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import dev.voras.http.internal.HttpManagerField;
-import io.ejat.framework.spi.ValidAnnotatedFields;
+import dev.voras.framework.spi.ValidAnnotatedFields;
 
 /**
  * Used to annotate annotations that are to be used for Test Class fields. To be

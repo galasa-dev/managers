@@ -1,6 +1,6 @@
 package dev.voras.http.internal;
 
-import io.ejat.framework.spi.ManagerException;
+import dev.voras.ManagerException;
 
 public class HttpClientException extends ManagerException {
 	private static final long serialVersionUID = 1L;
