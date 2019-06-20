@@ -23,6 +23,8 @@
 		<dev.voras.common.zos3270.manager>0.3.0-SNAPSHOT</dev.voras.common.zos3270.manager>
 		<dev.voras.common.linux.manager>0.3.0-SNAPSHOT</dev.voras.common.linux.manager>
 		<dev.voras.common.openstack.manager>0.3.0-SNAPSHOT</dev.voras.common.openstack.manager>
+		<dev.voras.common.http.manager>0.3.0-SNAPSHOT</dev.voras.common.http.manager>
+		<dev.voras.common.artifact.manager>0.3.0-SNAPSHOT</dev.voras.common.artifact.manager>
 		<dev.voras.common.obr>0.3.0-SNAPSHOT</dev.voras.common.obr>
 
 		<dev.voras.uber.obr>0.3.0-SNAPSHOT</dev.voras.uber.obr>
@@ -36,6 +38,8 @@
 		<module>dev.voras.common.zos.manager</module>
 		<module>dev.voras.common.zosbatch.zosmf.manager</module>
 		<module>dev.voras.common.zos3270.manager</module>
+		<module>dev.voras.common.http.manager</module>
+		<module>dev.voras.common.artifact.manager</module>
 		<module>dev.voras.common.obr</module>
 		<module>dev.voras.uber.obr</module>
 		<module>dev.voras.uber.karaffeature</module>

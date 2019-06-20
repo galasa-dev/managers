@@ -5,33 +5,30 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>ejat-common</groupId>
-		<artifactId>ejat-common-parent</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<groupId>dev.voras</groupId>
+		<artifactId>voras-common-parent</artifactId>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>artifact-manager</artifactId>
+	<artifactId>dev.voras.common.artifact.manager</artifactId>
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>Artifact Manager</name>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>ejat-common</groupId>
-				<artifactId>ejat-common-bom</artifactId>
-				<version>0.3.0-SNAPSHOT</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
-			<groupId>ejat</groupId>
-			<artifactId>ejat-framework</artifactId>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.framework</artifactId>
+			<version>${dev.voras.framework}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras</artifactId>
+			<version>${dev.voras}</version>
+			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
