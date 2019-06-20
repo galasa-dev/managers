@@ -1,4 +1,4 @@
-package dev.voras.http.internal;
+package dev.voras.common.http.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -8,12 +8,12 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.voras.http.HttpClient;
-import dev.voras.http.IHttpClient;
-import dev.voras.http.IHttpManager;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.GenerateAnnotatedField;
 import dev.voras.ManagerException;
+import dev.voras.common.http.HttpClient;
+import dev.voras.common.http.IHttpClient;
+import dev.voras.common.http.IHttpManager;
 import dev.voras.framework.spi.ResourceUnavailableException;
 
 public class HttpManagerImpl extends AbstractManager implements IHttpManager {

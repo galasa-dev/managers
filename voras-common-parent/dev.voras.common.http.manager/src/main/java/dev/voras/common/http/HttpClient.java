@@ -1,11 +1,11 @@
-package dev.voras.http;
+package dev.voras.common.http;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import dev.voras.http.internal.HttpManagerField;
+import dev.voras.common.http.internal.HttpManagerField;
 import dev.voras.framework.spi.ValidAnnotatedFields;
 
 /**

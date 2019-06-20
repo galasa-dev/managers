@@ -1,4 +1,4 @@
-package dev.voras.http.internal;
+package dev.voras.common.http.internal;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package dev.voras.http;
+package dev.voras.common.http;
 
 import java.net.URI;
 import java.security.KeyStore;
@@ -12,11 +12,11 @@ import javax.net.ssl.SSLContext;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
-import dev.voras.http.internal.ContentType;
-import dev.voras.http.internal.HttpClientException;
-import dev.voras.http.internal.HttpClientRequest;
-import dev.voras.http.internal.HttpClientResponse;
-import dev.voras.http.internal.RequestPart;
+import dev.voras.common.http.internal.ContentType;
+import dev.voras.common.http.internal.HttpClientException;
+import dev.voras.common.http.internal.HttpClientRequest;
+import dev.voras.common.http.internal.HttpClientResponse;
+import dev.voras.common.http.internal.RequestPart;
 
 public interface IHttpClient {
 	/**
@@ -89,7 +89,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with a JAXB content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Object> deleteJaxb(String url, Class<?>[] responseTypes) throws HttpClientException;
 	
@@ -100,7 +100,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<JSONObject> deleteJson(String url) throws HttpClientException;
 	
@@ -110,7 +110,7 @@ public interface IHttpClient {
 	 * 
 	 * @param url
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> deleteText(String url) throws HttpClientException;
 	
@@ -120,7 +120,7 @@ public interface IHttpClient {
 	 *
 	 * @param request
 	 * @return - {@link HttpClientResponse} with a byte array content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException;
 	
@@ -133,7 +133,7 @@ public interface IHttpClient {
 	 * @param request
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with a JAXB content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>[] responseTypes)
 			throws HttpClientException;
@@ -145,7 +145,7 @@ public interface IHttpClient {
 	 * @param request
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<JSONObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException;
 
@@ -155,7 +155,7 @@ public interface IHttpClient {
 	 * 
 	 * @param request
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException;
 	
@@ -166,7 +166,7 @@ public interface IHttpClient {
 	 * @param request
 	 * @return - {@link HttpClientResponse} with a {@link Document} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException;
 
@@ -220,7 +220,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with a JAXB content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Object> getJaxb(String url, Class<?>[] responseTypes) throws HttpClientException;
 
@@ -231,7 +231,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<JSONObject> getJson(String url) throws HttpClientException;
 
@@ -248,7 +248,7 @@ public interface IHttpClient {
 	 * 
 	 * @param url
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> getText(String url) throws HttpClientException;
 
@@ -275,7 +275,7 @@ public interface IHttpClient {
 	 * 
 	 * @param url
 	 * @return - {@link HttpClientResponse}
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> head(String url) throws HttpClientException;
 
@@ -295,7 +295,7 @@ public interface IHttpClient {
 	 * @param jaxbObject
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with a JAXB content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>[] responseTypes)
 			throws HttpClientException;
@@ -313,7 +313,7 @@ public interface IHttpClient {
 	 * @param json
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<JSONObject> postJson(String url, JSONObject json) throws HttpClientException;
 
@@ -326,7 +326,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @param text
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> postText(String url, String text) throws HttpClientException;
 
@@ -349,7 +349,7 @@ public interface IHttpClient {
 	 * @param jaxbObject
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with a JAXB content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>[] responseTypes)
 			throws HttpClientException;
@@ -388,7 +388,7 @@ public interface IHttpClient {
 	 * @param json
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content
 	 *         type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<JSONObject> putJson(String url, JSONObject json) throws HttpClientException;
 
@@ -406,7 +406,7 @@ public interface IHttpClient {
 	 * @param url
 	 * @param text
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	HttpClientResponse<String> putText(String url, String text) throws HttpClientException;
 
@@ -463,7 +463,7 @@ public interface IHttpClient {
 	 * Set the SSL Context to a Trust All context
 	 * 
 	 * @return the updated client
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public IHttpClient setTrustingSSLContext() throws HttpClientException;
 
@@ -475,7 +475,7 @@ public interface IHttpClient {
 	 * @param alias
 	 * @param password
 	 * @return  the updated client
-	 * @throws JatHttpClientException
+	 * @throws HttpClientException
 	 */
 	public IHttpClient setupClientAuth(KeyStore clientKeyStore, KeyStore serverKeyStore, String alias, String password) throws HttpClientException;
 

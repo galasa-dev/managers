@@ -1,4 +1,4 @@
-package dev.voras.http.internal;
+package dev.voras.common.http.internal;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;

@@ -1,4 +1,4 @@
-package dev.voras.http;
+package dev.voras.common.http;
 
 /**
  * Provides test code access to HTTP Manager to execute HTTP requests

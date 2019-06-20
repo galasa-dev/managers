@@ -1,4 +1,4 @@
-package dev.voras.http.internal;
+package dev.voras.common.http.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -68,7 +68,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
-import dev.voras.http.IHttpClient;
+import dev.voras.common.http.IHttpClient;
 
 public class HttpClientImpl implements IHttpClient{
 	
@@ -139,7 +139,7 @@ public class HttpClientImpl implements IHttpClient{
 	 * Set the SSL Context to a Trust All context
 	 * 
 	 * @return the updated client
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public IHttpClient setTrustingSSLContext() throws HttpClientException {
 
@@ -167,7 +167,7 @@ public class HttpClientImpl implements IHttpClient{
 	 * @param alias
 	 * @param password
 	 * @return  the updated client
-	 * @throws JatHttpClientException
+	 * @throws HttpClientException
 	 */
 	public IHttpClient setupClientAuth(KeyStore clientKeyStore, KeyStore serverKeyStore, String alias, String password) throws HttpClientException {
 

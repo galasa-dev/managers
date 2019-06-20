@@ -1,4 +1,4 @@
-package dev.voras.http.internal;
+package dev.voras.common.http.internal;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -139,7 +139,7 @@ public class HttpClientResponse<T> {
 	 * 
 	 * @param httpResponse
 	 * @return - {@link HttpClientResponse} with a byte array content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<byte[]> byteResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
 		return byteResponse(httpResponse, true);
@@ -153,7 +153,7 @@ public class HttpClientResponse<T> {
 	 * @param httpResponse
 	 * @param contentOnBadResponse
 	 * @return - {@link HttpClientResponse} with a byte array content type
-	 * @throws JatHttpClientException
+	 * @throws HttpClientException
 	 */
 	public static HttpClientResponse<byte[]> byteResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
@@ -183,7 +183,7 @@ public class HttpClientResponse<T> {
 	 * 
 	 * @param httpResponse
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<String> textResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
 		return textResponse(httpResponse, true);
@@ -197,7 +197,7 @@ public class HttpClientResponse<T> {
 	 * @param httpResponse
 	 * @param contentOnBadResponse
 	 * @return - {@link HttpClientResponse} with a {@link String} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<String> textResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
@@ -229,7 +229,7 @@ public class HttpClientResponse<T> {
 	 * 
 	 * @param httpResponse
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<JSONObject> jsonResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
 		return jsonResponse(httpResponse, true);
@@ -243,7 +243,7 @@ public class HttpClientResponse<T> {
 	 * @param httpResponse
 	 * @param contentOnBadResponse
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<JSONObject> jsonResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
@@ -276,7 +276,7 @@ public class HttpClientResponse<T> {
 	 * 
 	 * @param httpResponse
 	 * @return - {@link HttpClientResponse} with a {@link Document} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<Document> xmlResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
 		return xmlResponse(httpResponse, true);
@@ -290,7 +290,7 @@ public class HttpClientResponse<T> {
 	 * @param httpResponse
 	 * @param contentOnBadResponse
 	 * @return - {@link HttpClientResponse} with a {@link Document} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<Document> xmlResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
@@ -329,7 +329,7 @@ public class HttpClientResponse<T> {
 	 * @param httpResponse
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with an {@link Object} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<Object> jaxbResponse(CloseableHttpResponse httpResponse, Class<?>... responseTypes) throws HttpClientException {
 		return jaxbResponse(httpResponse, false, responseTypes);
@@ -345,7 +345,7 @@ public class HttpClientResponse<T> {
 	 * @param contentOnBadResponse
 	 * @param responseTypes
 	 * @return - {@link HttpClientResponse} with an {@link Object} content type
-	 * @throws JatHttpClientException 
+	 * @throws HttpClientException 
 	 */
 	public static HttpClientResponse<Object> jaxbResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse, Class<?>... responseTypes) throws HttpClientException {
 
