@@ -12,8 +12,9 @@ import javax.net.ssl.SSLContext;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
+import dev.voras.common.http.HttpClientException;
+
 import dev.voras.common.http.internal.ContentType;
-import dev.voras.common.http.internal.HttpClientException;
 import dev.voras.common.http.internal.HttpClientRequest;
 import dev.voras.common.http.internal.HttpClientResponse;
 import dev.voras.common.http.internal.RequestPart;

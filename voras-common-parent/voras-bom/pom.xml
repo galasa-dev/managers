@@ -51,6 +51,16 @@
 				<version>${dev.voras.common.openstack.manager}</version>
 			</dependency>
 			<dependency>
+				<groupId>dev.voras</groupId>
+				<artifactId>dev.voras.common.http.manager</artifactId>
+				<version>${dev.voras.common.http.manager}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.voras</groupId>
+				<artifactId>dev.voras.common.artifact.manager</artifactId>
+				<version>${dev.voras.common.artifact.manager}</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io}</version>

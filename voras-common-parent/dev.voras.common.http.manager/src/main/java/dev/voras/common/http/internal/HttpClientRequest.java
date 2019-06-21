@@ -28,6 +28,8 @@ import org.apache.http.entity.StringEntity;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
+import dev.voras.common.http.HttpClientException;
+
 /**
  * Representation of an HTTP Request as used in {@link JatHttpClient}.
  * This class has a builder format, and after creation, at least {@link #setUrl(String)}

@@ -1,4 +1,4 @@
-package dev.voras.common.http.internal;
+package dev.voras.common.http;
 
 import dev.voras.ManagerException;
 

@@ -24,6 +24,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import dev.voras.common.http.HttpClientException;
+
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter
  * describes the content type of the response. Use the static methods to create

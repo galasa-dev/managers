@@ -69,6 +69,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 
 import dev.voras.common.http.IHttpClient;
+import dev.voras.common.http.HttpClientException;
 
 public class HttpClientImpl implements IHttpClient{
 	
