@@ -9,14 +9,14 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-import org.json.JSONObject;
 import org.w3c.dom.Document;
+
+import com.google.gson.JsonObject;
 
 import dev.voras.common.http.HttpClientException;
 
 import dev.voras.common.http.internal.ContentType;
 import dev.voras.common.http.internal.HttpClientRequest;
-import dev.voras.common.http.internal.HttpClientResponse;
 import dev.voras.common.http.internal.RequestPart;
 
 public interface IHttpClient {
@@ -103,7 +103,7 @@ public interface IHttpClient {
 	 *         type
 	 * @throws HttpClientException 
 	 */
-	HttpClientResponse<JSONObject> deleteJson(String url) throws HttpClientException;
+	HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException;
 	
 	/**
 	 * Issue an HTTP DELETE to the provided URL, receiving a {@link String} in
@@ -148,7 +148,7 @@ public interface IHttpClient {
 	 *         type
 	 * @throws HttpClientException 
 	 */
-	HttpClientResponse<JSONObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException;
+	HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException;
 
 	/**
 	 * Execute an {@link HttpClientRequest} returning a {@link String} available
@@ -234,7 +234,7 @@ public interface IHttpClient {
 	 *         type
 	 * @throws HttpClientException 
 	 */
-	HttpClientResponse<JSONObject> getJson(String url) throws HttpClientException;
+	HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException;
 
 	/**
 	 * Get the SSL context used by this client
@@ -316,7 +316,7 @@ public interface IHttpClient {
 	 *         type
 	 * @throws HttpClientException 
 	 */
-	HttpClientResponse<JSONObject> postJson(String url, JSONObject json) throws HttpClientException;
+	HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException;
 
 	Object postJson(String path, String data, boolean retry) throws HttpClientException;
 
@@ -391,7 +391,7 @@ public interface IHttpClient {
 	 *         type
 	 * @throws HttpClientException 
 	 */
-	HttpClientResponse<JSONObject> putJson(String url, JSONObject json) throws HttpClientException;
+	HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException;
 
 	Object putJson(String path, String data, boolean retry) throws HttpClientException;
 

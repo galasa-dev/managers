@@ -1,4 +1,4 @@
-package dev.voras.common.http.internal;
+package dev.voras.common.http;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,14 +17,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import dev.voras.common.http.HttpClientException;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter
@@ -233,7 +233,7 @@ public class HttpClientResponse<T> {
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
 	 * @throws HttpClientException 
 	 */
-	public static HttpClientResponse<JSONObject> jsonResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
+	public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse) throws HttpClientException {
 		return jsonResponse(httpResponse, true);
 	}
 
@@ -247,16 +247,17 @@ public class HttpClientResponse<T> {
 	 * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
 	 * @throws HttpClientException 
 	 */
-	public static HttpClientResponse<JSONObject> jsonResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
+	public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
-		HttpClientResponse<JSONObject> response = new HttpClientResponse<JSONObject>();
+		HttpClientResponse<JsonObject> response = new HttpClientResponse<JsonObject>();
 		try{
 			response.populateGenericValues(httpResponse);
 
 			if (httpResponse.getEntity() != null) {
 				if (response.getStatusCode() == HttpStatus.SC_OK || contentOnBadResponse) {
-					JSONTokener tokener = new JSONTokener(new InputStreamReader(httpResponse.getEntity().getContent()));
-					JSONObject json = new JSONObject(tokener);
+					JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+					JsonElement jsonElement = new Gson().fromJson(reader, JsonElement.class);
+					JsonObject json = jsonElement.getAsJsonObject();
 					response.setContent(json);
 				} else {
 					EntityUtils.consume(httpResponse.getEntity());
@@ -266,9 +267,7 @@ public class HttpClientResponse<T> {
 			httpResponse.close();
 		} catch (IOException e) {
 			throw new HttpClientException("Unable to extract response body to JSON object", e);
-		} catch (JSONException e) {
-			throw new HttpClientException("Unable to extract response body to JSON object", e);
-		}
+		} 
 
 		return response;
 	}

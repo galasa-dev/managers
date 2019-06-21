@@ -65,11 +65,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
+
+import com.google.gson.JsonObject;
 
 import dev.voras.common.http.IHttpClient;
 import dev.voras.common.http.HttpClientException;
+import dev.voras.common.http.HttpClientResponse;
 
 public class HttpClientImpl implements IHttpClient{
 	
@@ -341,7 +343,9 @@ public class HttpClientImpl implements IHttpClient{
 		while (true) {
 			CloseableHttpResponse response = null;
 			try {
-
+				if(httpClient == null) {
+					this.build();
+				}
 				response = httpClient.execute(request, httpContext);
 				StatusLine status = response.getStatusLine();
 				if (status.getStatusCode() != HttpStatus.SC_OK 
@@ -847,7 +851,7 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
-	public HttpClientResponse<JSONObject> getJson(String url) throws HttpClientException {
+	public HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException {
 
 		HttpClientRequest request = HttpClientRequest.newGetRequest(url,
 				new ContentType[] { ContentType.APPLICATION_JSON });
@@ -857,7 +861,7 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
-	public HttpClientResponse<JSONObject> putJson(String url, JSONObject json) throws HttpClientException {
+	public HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException {
 
 		HttpClientRequest request = HttpClientRequest.newPutRequest(url,
 				new ContentType[] { ContentType.APPLICATION_JSON },
@@ -869,7 +873,7 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
-	public HttpClientResponse<JSONObject> postJson(String url, JSONObject json) throws HttpClientException {
+	public HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException {
 
 		HttpClientRequest request = HttpClientRequest.newPostRequest(url,
 				new ContentType[] { ContentType.APPLICATION_JSON },
@@ -881,7 +885,7 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
-	public HttpClientResponse<JSONObject> deleteJson(String url) throws HttpClientException {
+	public HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException {
 
 		HttpClientRequest request = HttpClientRequest.newDeleteRequest(url,
 				new ContentType[] { ContentType.APPLICATION_JSON });
@@ -891,7 +895,7 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
-	public HttpClientResponse<JSONObject> executeJsonRequest(
+	public HttpClientResponse<JsonObject> executeJsonRequest(
 			HttpClientRequest request) throws HttpClientException {
 
 		return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
@@ -987,6 +991,10 @@ public class HttpClientImpl implements IHttpClient{
 	}
 	@Override
 	public void close() {
+		if(this.httpClient == null) {
+			return;
+		}
+		
 		try {
 			httpClient.close();
 		} catch (IOException e) {

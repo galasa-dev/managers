@@ -25,8 +25,9 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
+
+import com.google.gson.JsonObject;
 
 import dev.voras.common.http.HttpClientException;
 
@@ -200,7 +201,7 @@ public class HttpClientRequest {
 	 * @param json
 	 * @return - the updated request
 	 */
-	public HttpClientRequest setJSONBody(JSONObject json) {
+	public HttpClientRequest setJSONBody(JsonObject json) {
 		return setBody(json.toString());
 	}
 
