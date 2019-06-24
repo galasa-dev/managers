@@ -15,4 +15,36 @@
 
 	<name>Voras Linux Manager</name>
 
+	<dependencies>
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.framework</artifactId>
+			<version>${dev.voras.framework}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras</artifactId>
+			<version>${dev.voras}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.ipnetwork.manager</artifactId>
+			<version>${dev.voras.common.ipnetwork.manager}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.prometheus</groupId>
+			<artifactId>simpleclient</artifactId>
+			<version>${prometheus.simpleclient}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+	</dependencies>
+
+
 </project>
