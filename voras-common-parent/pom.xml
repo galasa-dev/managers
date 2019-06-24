@@ -25,6 +25,7 @@
 		<dev.voras.common.openstack.manager>0.3.0-SNAPSHOT</dev.voras.common.openstack.manager>
 		<dev.voras.common.http.manager>0.3.0-SNAPSHOT</dev.voras.common.http.manager>
 		<dev.voras.common.artifact.manager>0.3.0-SNAPSHOT</dev.voras.common.artifact.manager>
+		<org.apache.velocity.version>1.7</org.apache.velocity.version>
 		<dev.voras.common.obr>0.3.0-SNAPSHOT</dev.voras.common.obr>
 
 		<dev.voras.uber.obr>0.3.0-SNAPSHOT</dev.voras.uber.obr>

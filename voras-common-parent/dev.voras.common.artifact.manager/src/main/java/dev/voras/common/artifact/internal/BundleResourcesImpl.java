@@ -29,14 +29,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
-import org.xeustechnologies.jtar.TarEntry;
-import org.xeustechnologies.jtar.TarOutputStream;
 
 import dev.voras.common.artifact.IBundleResources;
 import dev.voras.common.artifact.ISkeletonProcessor;
+import dev.voras.common.artifact.ISkeletonProcessor.SkeletonType;
 import dev.voras.common.artifact.SkeletonProcessorException;
 import dev.voras.common.artifact.TestBundleResourceException;
-import dev.voras.common.artifact.ISkeletonProcessor.SkeletonType;
 import dev.voras.framework.spi.IFramework;
 
 public class BundleResourcesImpl implements IBundleResources {
@@ -306,85 +304,6 @@ public class BundleResourcesImpl implements IBundleResources {
 		logger.error("Unparsable versionRange: '" + range + "'");
 
 		return false;
-	}
-
-	@Override
-	public InputStream tarDirectoryContents(String resourcesDirectory, Map<String, InputStream> directoryContents, String encoding, boolean gzip) throws TestBundleResourceException {
-		try {
-			
-			resourcesDirectory = resourcesDirectory.replaceFirst("\\/*" + RESOURCES_DIRECTORY + "\\/*", "");
-
-			// Create a byte array output stream to write to
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();		
-			TarOutputStream taros;
-
-			// If gzip compression is requested output via gzip and buffer, otherwise go straight to buffer
-			if (gzip) {				
-				taros = new TarOutputStream(new GZIPOutputStream(new BufferedOutputStream(baos)));				
-			} else {
-				taros = new TarOutputStream(new BufferedOutputStream(baos));
-			}
-
-			// If there is no encoding required then this is a binary copy
-			// we just want to write the bytes straight into the tarball
-			// so we don't risk corrupting anything that is actually binary
-			if (encoding == null) {
-
-				// Create our tarball
-				for (Entry<String, InputStream> entry : directoryContents.entrySet()) {
-
-					byte[] b = IOUtils.toByteArray(entry.getValue());
-
-					// TarEntry needs to be instantiated with a File - use a dummy and set the size manually to avoid IOExceptions
-					String tarEntryName = entry.getKey().replaceFirst("\\/*" + RESOURCES_DIRECTORY + "\\/*" + resourcesDirectory, "");
-					TarEntry tarEntry = new TarEntry(new File(entry.getKey()), tarEntryName);
-					tarEntry.setSize(b.length);
-
-					// Start the new entry
-					taros.putNextEntry(tarEntry);
-					
-					// Write the entry's content
-					taros.write(b);
-					
-					taros.flush();
-				}
-			
-			// If there is encoding required then we assume that everything
-			// we are given can be safely converted to a char[] without risk 
-			// of corruption - if anyone wanted their actual binary re-encoded
-			// they are going to get nonsense anyway...
-			} else {
-				OutputStreamWriter osw = new OutputStreamWriter(taros, encoding);
-
-				// Create our tarball
-				for (Entry<String, InputStream> entry : directoryContents.entrySet()) {
-
-					char[] c = IOUtils.toCharArray(entry.getValue());
-
-					// TarEntry needs to be instantiated with a File - use a dummy and set the size manually to avoid IOExceptions
-					String tarEntryName = entry.getKey().replaceFirst("\\/*" + RESOURCES_DIRECTORY + "\\/*" + resourcesDirectory, "");
-					TarEntry tarEntry = new TarEntry(new File(entry.getKey()), tarEntryName);
-					tarEntry.setSize(c.length);
-
-					// Start the new entry
-					taros.putNextEntry(tarEntry);
-
-					// Write the entry's content through the writer to convert 
-					osw.write(c);
-
-					osw.flush();
-					taros.flush();
-				}
-
-				osw.close();
-			}
-			
-			taros.close();
-
-			return new ByteArrayInputStream(baos.toByteArray()); 
-		} catch (IOException e) {
-			throw new TestBundleResourceException("Error attempting to create tar", e);
-		}
 	}
 
 	@Override

@@ -75,16 +75,6 @@ public interface IBundleResources {
 	public InputStream retrieveJar(String symbolicName, String version, String directory) throws TestBundleResourceException;
 	
 	/**
-	 * Convert the contents of a directory (as returned by {@link #retrieveDirectoryContents(String)} or {@link #retrieveSkeletonDirectoryContents(String, HashMap)}
-	 * into a zip input stream for quicker deployment.
-	 * 
-	 * @param directoryContents
-	 * @return
-	 * @throws TestBundleResourceException
-	 */
-	public InputStream tarDirectoryContents(String resourcesDirectory, Map<String, InputStream> directoryContents, String encoding, boolean gzip) throws TestBundleResourceException;
-	
-	/**
 	 * Convert an input stream into a list of strings
 	 * 
 	 * @param file

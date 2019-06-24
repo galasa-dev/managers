@@ -1,11 +1,6 @@
 package dev.voras.common.artifact;
 
-import java.io.InputStream;
-import java.util.List;
-
-import javax.xml.bind.JAXBException;
-
-import dev.voras.framework.spi.IManager;
+import dev.voras.common.artifact.ISkeletonProcessor.SkeletonType;
 
 
 /**
@@ -15,7 +10,7 @@ import dev.voras.framework.spi.IManager;
  * @author James Bartlett
  *
  */
-public interface IArtifactManager extends IManager  {
+public interface IArtifactManager {
 
 	/**
 	 * Return an {@link IBundleResources} object to assist in retrieving artifacts from within
