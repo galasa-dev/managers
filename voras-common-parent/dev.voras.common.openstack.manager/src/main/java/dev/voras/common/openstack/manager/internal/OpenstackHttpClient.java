@@ -41,14 +41,20 @@ import dev.voras.common.openstack.manager.internal.json.Server;
 import dev.voras.common.openstack.manager.internal.json.ServerResponse;
 import dev.voras.common.openstack.manager.internal.json.ServersResponse;
 import dev.voras.common.openstack.manager.internal.json.User;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackCredentialsId;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackDomainName;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackIdentityUri;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackProjectName;
+import dev.voras.framework.spi.ConfigurationPropertyStoreException;
+import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IFramework;
 
 public class OpenstackHttpClient {
 	
 	private final static Log logger = LogFactory.getLog(OpenstackHttpClient.class);
 
-	private final OpenstackProperties     openstackProperties;
-	private final IFramework              framework;
+	private final IFramework                         framework;
+	private final IConfigurationPropertyStoreService cps;
 	
 	private final CloseableHttpClient     httpClient;
 	private OpenstackToken                openstackToken;
@@ -59,9 +65,9 @@ public class OpenstackHttpClient {
 
 	private Gson                          gson = new GsonBuilder().setPrettyPrinting().create();
 
-	protected OpenstackHttpClient(IFramework framework, OpenstackProperties openstackProperties) {
+	protected OpenstackHttpClient(IFramework framework) throws ConfigurationPropertyStoreException {
 		this.framework           = framework;
-		this.openstackProperties = openstackProperties;
+		this.cps                 = this.framework.getConfigurationPropertyService(OpenstackManagerImpl.NAMESPACE);
 		this.httpClient          = HttpClients.createDefault();
 	}
 	
@@ -75,11 +81,11 @@ public class OpenstackHttpClient {
 
 	private boolean connectToOpenstack() throws OpenstackManagerException {
 		try {
-			String credentialsId = this.openstackProperties.getCredentialsId();
+			String credentialsId = OpenStackCredentialsId.get(this.cps);
 
 			ICredentials credentials = null;
 			try {
-				credentials = framework.getCredentialsService().getCredentials(credentialsId);
+				credentials = this.framework.getCredentialsService().getCredentials(credentialsId);
 			} catch(Exception e) {
 				logger.warn("OpenStack is not available due to missing credentials " + credentialsId);
 				return false;
@@ -92,9 +98,9 @@ public class OpenstackHttpClient {
 
 			ICredentialsUsernamePassword usernamePassword = (ICredentialsUsernamePassword) credentials;
 
-			String identityEndpoint = this.openstackProperties.getServerIdentityUri();
-			String domain = this.openstackProperties.getServerIdentityDomain();
-			String project = this.openstackProperties.getServerIdentityProject();
+			String identityEndpoint = OpenStackIdentityUri.get(this.cps);
+			String domain = OpenStackDomainName.get(this.cps);
+			String project = OpenStackProjectName.get(this.cps);
 
 			if (identityEndpoint == null || domain == null || project == null) {
 				logger.warn("Openstack is unavailable due to identity, domain or project is missing in CPS");

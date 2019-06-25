@@ -16,7 +16,6 @@ public class ServerResourceMonitor implements Runnable {
 
 	private final IFramework                 framework;
 	private final IResourceManagement        resourceManagement;
-	private final OpenstackProperties        openstackProperties;
 	private final OpenstackHttpClient        openstackHttpClient;
 	private final IDynamicStatusStoreService dss;
 	private final Log                        logger = LogFactory.getLog(this.getClass());
@@ -26,13 +25,11 @@ public class ServerResourceMonitor implements Runnable {
 	public ServerResourceMonitor(IFramework framework, 
 			IResourceManagement resourceManagement,
 			IDynamicStatusStoreService dss, 
-			OpenstackHttpClient openstackHttpClient,
-			OpenstackProperties openstackProperties) {
+			OpenstackHttpClient openstackHttpClient) {
 		this.framework          = framework;
 		this.resourceManagement = resourceManagement;
 		this.dss = dss;
 		this.openstackHttpClient = openstackHttpClient;
-		this.openstackProperties = openstackProperties;
 		this.logger.info("OpenStack Server resource monitor initialised");
 	}
 
@@ -55,7 +52,7 @@ public class ServerResourceMonitor implements Runnable {
 						logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
 
 						try {
-							OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient, this.openstackProperties);
+							OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
 						} catch(Exception e) {
 							logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
 						}

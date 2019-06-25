@@ -31,6 +31,7 @@ import dev.voras.common.openstack.manager.internal.json.Server;
 import dev.voras.common.openstack.manager.internal.json.ServerRequest;
 import dev.voras.common.openstack.manager.internal.json.ServerResponse;
 import dev.voras.common.openstack.manager.internal.json.VorasMetadata;
+import dev.voras.common.openstack.manager.internal.properties.GenerateTimeout;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
 import dev.voras.framework.spi.DynamicStatusStoreException;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
@@ -161,7 +162,7 @@ public class OpenstackLinuxImageImpl implements ILinuxProvisionedImage {
 		Gson gson = this.manager.getGson();
 
 		String flavor = "m1.small";
-		int generateTimeout = this.manager.getProperties().getTimeout(); 
+		int generateTimeout = GenerateTimeout.get(this.manager.getCps()); 
 		generateTimeout = 1;
 
 		Server server = new Server();
@@ -268,6 +269,9 @@ public class OpenstackLinuxImageImpl implements ILinuxProvisionedImage {
 
 			//*** Assign a floating IPv4 address
 			this.openstackFloatingip = this.manager.allocateFloatingip(this.openstackPort, network);
+
+			//*** Assign a floating IPv4 address
+			this.password = this.manager.retrieveServerPassword(this.openstackServer);
 
 			System.out.println("done");
 

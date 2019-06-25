@@ -61,9 +61,18 @@ import dev.voras.common.openstack.manager.internal.json.Project;
 import dev.voras.common.openstack.manager.internal.json.Scope;
 import dev.voras.common.openstack.manager.internal.json.Server;
 import dev.voras.common.openstack.manager.internal.json.User;
+import dev.voras.common.openstack.manager.internal.properties.LinuxImageCapabilities;
+import dev.voras.common.openstack.manager.internal.properties.LinuxImages;
+import dev.voras.common.openstack.manager.internal.properties.MaximumInstances;
+import dev.voras.common.openstack.manager.internal.properties.NamePool;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackCredentialsId;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackDomainName;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackIdentityUri;
+import dev.voras.common.openstack.manager.internal.properties.OpenStackProjectName;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
 import dev.voras.framework.spi.DynamicStatusStoreException;
+import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IManager;
@@ -77,8 +86,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 	private final static Log logger = LogFactory.getLog(OpenstackManagerImpl.class);
 
-	private OpenstackProperties openstackProperties;
 	private IDynamicStatusStoreService dss;
+	private IConfigurationPropertyStoreService cps;
 	private IIpNetworkManagerSpi ipManager;
 	private ILinuxManagerSpi     linuxManager;
 
@@ -108,7 +117,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		try {
 			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-			this.openstackProperties = new OpenstackProperties(framework);
+			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
 		} catch (Exception e) {
 			throw new LinuxManagerException("Unable to request framework services", e);
 		}
@@ -183,7 +192,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		//*** Locate the possible images that are available for selection
 		try {
-			List<String> possibleImages = openstackProperties.getLinuxImages(operatingSystem, null);
+			List<String> possibleImages = LinuxImages.get(cps, operatingSystem, null);
 
 			//*** Filter out those that don't have the necessary capabilities
 			if (!capabilities.isEmpty()) {
@@ -191,7 +200,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 				imageSearch:
 					while(imageIterator.hasNext()) {
 						String image = imageIterator.next();
-						List<String> imageCapabilities = openstackProperties.getLinuxImageCapabilities(image);
+						List<String> imageCapabilities = LinuxImageCapabilities.get(this.cps, image);
 						for(String requestedCapability : capabilities) {
 							if (!imageCapabilities.contains(requestedCapability)) {
 								imageIterator.remove();
@@ -240,7 +249,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 	private String reserveInstance() throws DynamicStatusStoreException, InterruptedException, InsufficientResourcesAvailableException, ConfigurationPropertyStoreException {
 
 		//*** Get the current and maximum instances
-		int maxInstances = this.openstackProperties.getMaxInstances();
+		int maxInstances = MaximumInstances.get(cps);
 
 		int currentInstances = 0;
 
@@ -268,7 +277,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		String actualInstanceName = null;
 
-		List<String> instanceNamePool = this.openstackProperties.getInstanceNamePool();
+		List<String> instanceNamePool = NamePool.get(cps);
 		IResourcePoolingService poolingService = this.getFramework().getResourcePoolingService();
 
 		ArrayList<String> exclude = new ArrayList<>();
@@ -300,7 +309,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 	private boolean connectToOpenstack() throws OpenstackManagerException {
 		try {
-			String credentialsId = this.openstackProperties.getCredentialsId();
+			String credentialsId = OpenStackCredentialsId.get(this.cps);
 
 			ICredentials credentials = null;
 			try {
@@ -317,9 +326,9 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 			ICredentialsUsernamePassword usernamePassword = (ICredentialsUsernamePassword) credentials;
 
-			String identityEndpoint = this.openstackProperties.getServerIdentityUri();
-			String domain = this.openstackProperties.getServerIdentityDomain();
-			String project = this.openstackProperties.getServerIdentityProject();
+			String identityEndpoint = OpenStackIdentityUri.get(this.cps);
+			String domain = OpenStackDomainName.get(this.cps);
+			String project = OpenStackProjectName.get(this.cps);
 
 			if (identityEndpoint == null || domain == null || project == null) {
 				logger.warn("Openstack is unavailable due to identity, domain or project is missing in CPS");
@@ -613,6 +622,32 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 		}
 	}
 
+	public String retrieveServerPassword(@NotNull Server server) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve all the ports and extract the correct one
+
+			HttpGet get = new HttpGet(this.openstackComputeUri + "/servers/" + server.id + "/os-server-password");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+				System.out.println(entity);
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list os password failed - " + status);
+				}
+
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to retrieve the server os password", e);
+		}
+	}
+
 	public void deleteFloatingip(Floatingip openstackFloatingip) throws OpenstackManagerException {
 		try { 
 			HttpDelete post = new HttpDelete(this.openstackNetworkUri + "/v2.0/floatingips/" + openstackFloatingip.id);
@@ -678,8 +713,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 		return this.gson;
 	}
 
-	public OpenstackProperties getProperties() {
-		return this.openstackProperties;
+	public IConfigurationPropertyStoreService getCps() {
+		return this.cps;
 	}
 
 }

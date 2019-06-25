@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.osgi.service.component.annotations.Component;
 
+import dev.voras.framework.spi.ConfigurationPropertyStoreException;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IResourceManagement;
@@ -16,7 +17,6 @@ public class OpenstackResourceManagement implements IResourceManagementProvider 
 	private IFramework                         framework;
 	private IResourceManagement                resourceManagement;
 	private IDynamicStatusStoreService         dss;
-	private OpenstackProperties                openstackProperties;
 	private OpenstackHttpClient                openstackHttpClient;
 	
 	private ServerResourceMonitor              serverResourceMonitor;
@@ -28,16 +28,19 @@ public class OpenstackResourceManagement implements IResourceManagementProvider 
 		this.resourceManagement = resourceManagement;
 		try {
 			this.dss = this.framework.getDynamicStatusStoreService(OpenstackManagerImpl.NAMESPACE);
-			this.openstackProperties = new OpenstackProperties(this.framework);
 		} catch (Exception e) {
 			throw new ResourceManagerException("Unable to initialise OpenStack resource monitor", e);
 		}
 		
-		this.openstackHttpClient = new OpenstackHttpClient(this.framework, this.openstackProperties);
+		try {
+			this.openstackHttpClient = new OpenstackHttpClient(this.framework);
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ResourceManagerException("Unable to initialise the OpenStack HTTP Client", e);
+		}
 		
 		// TODO Must add a check every 5 minutes to tidy up all the properties that may have been left hanging
 		
-		serverResourceMonitor = new ServerResourceMonitor(framework, resourceManagement, dss, this.openstackHttpClient, this.openstackProperties);
+		serverResourceMonitor = new ServerResourceMonitor(framework, resourceManagement, dss, this.openstackHttpClient);
 		
 		return true;
 	}
