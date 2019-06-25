@@ -21,7 +21,7 @@ import dev.voras.framework.spi.IFramework;
 
 public class VelocitySkeletonProcessor  implements ISkeletonProcessor {
 	
-	private final static Log logger = LogFactory.getLog(VelocitySkeletonProcessor.class);
+	private static final Log logger = LogFactory.getLog(VelocitySkeletonProcessor.class);
 	
 
 	public VelocitySkeletonProcessor(IFramework framework) {
@@ -37,7 +37,7 @@ public class VelocitySkeletonProcessor  implements ISkeletonProcessor {
 		
 		logger.info("Processing skeleton with Velocity");
 		
-		InputStream safeEOF = new ByteArrayInputStream(new String(" ").getBytes());
+		InputStream safeEOF = new ByteArrayInputStream(" ".getBytes());
 		InputStream streamPlus = new SequenceInputStream(skeleton, safeEOF);
 		InputStreamReader ir = new InputStreamReader(streamPlus);
 		
