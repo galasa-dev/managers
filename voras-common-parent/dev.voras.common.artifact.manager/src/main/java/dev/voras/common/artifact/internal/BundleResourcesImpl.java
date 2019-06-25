@@ -96,9 +96,7 @@ public class BundleResourcesImpl implements IBundleResources {
 				throw new TestBundleResourceException(e);
 			}
 
-			if (is != null) {
-				return is;
-			}
+			return is;
 		}
 
 		throw new TestBundleResourceException("No such artifact: " + filename + " in bundle " + bundle.getSymbolicName());
