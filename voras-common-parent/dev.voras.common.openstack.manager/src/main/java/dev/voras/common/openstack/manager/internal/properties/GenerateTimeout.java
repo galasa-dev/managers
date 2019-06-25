@@ -1,8 +1,6 @@
 package dev.voras.common.openstack.manager.internal.properties;
 
-import org.apache.commons.logging.LogFactory;
-
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
+import dev.voras.common.openstack.manager.OpenstackManagerException;
 import dev.voras.framework.spi.cps.CpsProperties;
 
 /**
@@ -23,9 +21,8 @@ import dev.voras.framework.spi.cps.CpsProperties;
  */
 public class GenerateTimeout extends CpsProperties {
 	
-	public static int get(IConfigurationPropertyStoreService cps) {
-		return getIntWithDefault(cps, 
-				                 LogFactory.getLog(GenerateTimeout.class), 
+	public static int get() throws OpenstackManagerException {
+		return getIntWithDefault(OpenstackPropertiesSingleton.cps(), 
 				                 5, 
 				                 "timeout", 
 				                 "generate");

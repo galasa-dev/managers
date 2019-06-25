@@ -81,7 +81,7 @@ public class OpenstackHttpClient {
 
 	private boolean connectToOpenstack() throws OpenstackManagerException {
 		try {
-			String credentialsId = OpenStackCredentialsId.get(this.cps);
+			String credentialsId = OpenStackCredentialsId.get();
 
 			ICredentials credentials = null;
 			try {
@@ -98,9 +98,9 @@ public class OpenstackHttpClient {
 
 			ICredentialsUsernamePassword usernamePassword = (ICredentialsUsernamePassword) credentials;
 
-			String identityEndpoint = OpenStackIdentityUri.get(this.cps);
-			String domain = OpenStackDomainName.get(this.cps);
-			String project = OpenStackProjectName.get(this.cps);
+			String identityEndpoint = OpenStackIdentityUri.get();
+			String domain = OpenStackDomainName.get();
+			String project = OpenStackProjectName.get();
 
 			if (identityEndpoint == null || domain == null || project == null) {
 				logger.warn("Openstack is unavailable due to identity, domain or project is missing in CPS");

@@ -2,10 +2,10 @@ package dev.voras.common.openstack.manager.internal.properties;
 
 import java.util.List;
 
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.LogConfigurationException;
 
 import dev.voras.Constants;
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
+import dev.voras.common.openstack.manager.OpenstackManagerException;
 import dev.voras.framework.spi.cps.CpsProperties;
 
 /**
@@ -26,9 +26,8 @@ import dev.voras.framework.spi.cps.CpsProperties;
  */
 public class NamePool extends CpsProperties {
 	
-	public static List<String> get(IConfigurationPropertyStoreService cps) {
-		return getStringListWithDefault(cps, 
-				               LogFactory.getLog(NamePool.class), 
+	public static List<String> get() throws OpenstackManagerException, LogConfigurationException {
+		return getStringListWithDefault(OpenstackPropertiesSingleton.cps(), 
 				               Constants.LITERAL_NAME + "{0-9}{0-9}",
 				               "server", 
 				               "name.pool");

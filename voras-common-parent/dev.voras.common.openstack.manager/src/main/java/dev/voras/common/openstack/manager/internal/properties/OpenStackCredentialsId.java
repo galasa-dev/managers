@@ -1,8 +1,8 @@
 package dev.voras.common.openstack.manager.internal.properties;
 
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.LogConfigurationException;
 
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
+import dev.voras.common.openstack.manager.OpenstackManagerException;
 import dev.voras.framework.spi.cps.CpsProperties;
 
 /**
@@ -22,9 +22,8 @@ import dev.voras.framework.spi.cps.CpsProperties;
  */
 public class OpenStackCredentialsId extends CpsProperties {
 	
-	public static String get(IConfigurationPropertyStoreService cps) {
-		return getStringWithDefault(cps, 
-				               LogFactory.getLog(OpenStackCredentialsId.class), 
+	public static String get() throws OpenstackManagerException, LogConfigurationException {
+		return getStringWithDefault(OpenstackPropertiesSingleton.cps(), 
 				               "openstack",
 				               "server", 
 				               "credentials.id");

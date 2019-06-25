@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.LogFactory;
 
 import dev.voras.common.linux.OperatingSystem;
+import dev.voras.common.openstack.manager.OpenstackManagerException;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.cps.CpsProperties;
 
 /**
@@ -33,13 +33,12 @@ import dev.voras.framework.spi.cps.CpsProperties;
 public class LinuxImages extends CpsProperties {
 	
 	public static @NotNull List<String> get(
-			@NotNull IConfigurationPropertyStoreService cps,
 			@NotNull OperatingSystem operatingSystem, 
 			String version) 
-					throws ConfigurationPropertyStoreException {
+					throws ConfigurationPropertyStoreException, OpenstackManagerException {
 		
 		if (version != null) {
-			return getStringList(cps, 
+			return getStringList(OpenstackPropertiesSingleton.cps(), 
 		               LogFactory.getLog(LinuxImages.class), 
 		               "linux", 
 		               "images",
@@ -47,7 +46,7 @@ public class LinuxImages extends CpsProperties {
 		               version);
 		}
 		
-		return getStringList(cps, 
+		return getStringList(OpenstackPropertiesSingleton.cps(), 
 	               LogFactory.getLog(LinuxImages.class), 
 	               "linux", 
 	               "images",

@@ -69,6 +69,7 @@ import dev.voras.common.openstack.manager.internal.properties.OpenStackCredentia
 import dev.voras.common.openstack.manager.internal.properties.OpenStackDomainName;
 import dev.voras.common.openstack.manager.internal.properties.OpenStackIdentityUri;
 import dev.voras.common.openstack.manager.internal.properties.OpenStackProjectName;
+import dev.voras.common.openstack.manager.internal.properties.OpenstackPropertiesSingleton;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
 import dev.voras.framework.spi.DynamicStatusStoreException;
@@ -87,7 +88,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 	private final static Log logger = LogFactory.getLog(OpenstackManagerImpl.class);
 
 	private IDynamicStatusStoreService dss;
-	private IConfigurationPropertyStoreService cps;
 	private IIpNetworkManagerSpi ipManager;
 	private ILinuxManagerSpi     linuxManager;
 
@@ -117,7 +117,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		try {
 			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
+			OpenstackPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
 		} catch (Exception e) {
 			throw new LinuxManagerException("Unable to request framework services", e);
 		}
@@ -192,7 +192,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		//*** Locate the possible images that are available for selection
 		try {
-			List<String> possibleImages = LinuxImages.get(cps, operatingSystem, null);
+			List<String> possibleImages = LinuxImages.get(operatingSystem, null);
 
 			//*** Filter out those that don't have the necessary capabilities
 			if (!capabilities.isEmpty()) {
@@ -200,7 +200,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 				imageSearch:
 					while(imageIterator.hasNext()) {
 						String image = imageIterator.next();
-						List<String> imageCapabilities = LinuxImageCapabilities.get(this.cps, image);
+						List<String> imageCapabilities = LinuxImageCapabilities.get(image);
 						for(String requestedCapability : capabilities) {
 							if (!imageCapabilities.contains(requestedCapability)) {
 								imageIterator.remove();
@@ -246,10 +246,10 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 		}
 	}
 
-	private String reserveInstance() throws DynamicStatusStoreException, InterruptedException, InsufficientResourcesAvailableException, ConfigurationPropertyStoreException {
+	private String reserveInstance() throws DynamicStatusStoreException, InterruptedException, InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
 
 		//*** Get the current and maximum instances
-		int maxInstances = MaximumInstances.get(cps);
+		int maxInstances = MaximumInstances.get();
 
 		int currentInstances = 0;
 
@@ -277,7 +277,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 		String actualInstanceName = null;
 
-		List<String> instanceNamePool = NamePool.get(cps);
+		List<String> instanceNamePool = NamePool.get();
 		IResourcePoolingService poolingService = this.getFramework().getResourcePoolingService();
 
 		ArrayList<String> exclude = new ArrayList<>();
@@ -309,7 +309,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 	private boolean connectToOpenstack() throws OpenstackManagerException {
 		try {
-			String credentialsId = OpenStackCredentialsId.get(this.cps);
+			String credentialsId = OpenStackCredentialsId.get();
 
 			ICredentials credentials = null;
 			try {
@@ -326,9 +326,9 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 			ICredentialsUsernamePassword usernamePassword = (ICredentialsUsernamePassword) credentials;
 
-			String identityEndpoint = OpenStackIdentityUri.get(this.cps);
-			String domain = OpenStackDomainName.get(this.cps);
-			String project = OpenStackProjectName.get(this.cps);
+			String identityEndpoint = OpenStackIdentityUri.get();
+			String domain = OpenStackDomainName.get();
+			String project = OpenStackProjectName.get();
 
 			if (identityEndpoint == null || domain == null || project == null) {
 				logger.warn("Openstack is unavailable due to identity, domain or project is missing in CPS");
@@ -711,10 +711,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 	protected Gson getGson() {
 		return this.gson;
-	}
-
-	public IConfigurationPropertyStoreService getCps() {
-		return this.cps;
 	}
 
 }

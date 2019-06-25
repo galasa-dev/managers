@@ -162,7 +162,7 @@ public class OpenstackLinuxImageImpl implements ILinuxProvisionedImage {
 		Gson gson = this.manager.getGson();
 
 		String flavor = "m1.small";
-		int generateTimeout = GenerateTimeout.get(this.manager.getCps()); 
+		int generateTimeout = GenerateTimeout.get(); 
 		generateTimeout = 1;
 
 		Server server = new Server();

@@ -1,9 +1,9 @@
 package dev.voras.common.openstack.manager.internal.properties;
 
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.LogConfigurationException;
 
+import dev.voras.common.openstack.manager.OpenstackManagerException;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.cps.CpsProperties;
 
 /**
@@ -23,9 +23,8 @@ import dev.voras.framework.spi.cps.CpsProperties;
  */
 public class OpenStackIdentityUri extends CpsProperties {
 	
-	public static String get(IConfigurationPropertyStoreService cps) throws ConfigurationPropertyStoreException {
-		return getStringNulled(cps, 
-				               LogFactory.getLog(OpenStackIdentityUri.class), 
+	public static String get() throws ConfigurationPropertyStoreException, OpenstackManagerException, LogConfigurationException {
+		return getStringNulled(OpenstackPropertiesSingleton.cps(), 
 				               "server", 
 				               "identity.uri");
 	}
