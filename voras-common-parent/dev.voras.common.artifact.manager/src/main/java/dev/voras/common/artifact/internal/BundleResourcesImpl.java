@@ -382,7 +382,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 	private List<String> listDirectory(Bundle bundle, String directory, String fileExtension) {
 
-		List<String> directoryContents = new ArrayList<String>();
+		List<String> directoryContents = new ArrayList<>();
 
 		directory = normalisePath(directory);
 
@@ -391,7 +391,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		if (entryPaths != null) {
 
 			while (entryPaths.hasMoreElements()) {
-				String entryPath = (String) entryPaths.nextElement();
+				String entryPath = entryPaths.nextElement();
 
 				if (entryPath.endsWith(FILE_SEPARATOR)) {
 
@@ -406,7 +406,9 @@ public class BundleResourcesImpl implements IBundleResources {
 
 				if (fileExtension != null) {
 					fileExtension = "." + fileExtension.toLowerCase();
-					if (entryPath.toLowerCase().endsWith(fileExtension)) directoryContents.add(entryPath);
+					if (entryPath.toLowerCase().endsWith(fileExtension)) {
+						directoryContents.add(entryPath);
+					}
 				} else {
 					directoryContents.add(entryPath);
 				}
@@ -420,9 +422,15 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		rawPath = rawPath.replaceAll("[\\/\\\\]", FILE_SEPARATOR);
 
-		if (rawPath.startsWith("." + FILE_SEPARATOR)) rawPath = rawPath.replaceFirst("\\.", "");
-		if (!rawPath.startsWith(FILE_SEPARATOR)) rawPath = FILE_SEPARATOR + rawPath;
-		if (!rawPath.startsWith(FILE_SEPARATOR + "resources")) rawPath = FILE_SEPARATOR + "resources" + rawPath;
+		if (rawPath.startsWith("." + FILE_SEPARATOR)) 
+			rawPath = rawPath.replaceFirst("\\.", "");
+		
+		if (!rawPath.startsWith(FILE_SEPARATOR)) 
+			rawPath = FILE_SEPARATOR + rawPath;
+		
+		if (!rawPath.startsWith(FILE_SEPARATOR + "resources")) 
+			rawPath = FILE_SEPARATOR + "resources" + rawPath;
+		
 		rawPath = rawPath.replaceAll("\\/+", "/");
 		rawPath = rawPath.replaceFirst(FILE_SEPARATOR, "");
 
@@ -462,7 +470,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		if (parameters == null || parameters.isEmpty()) {
 			return skeletons;
 		}
-		HashMap<String, InputStream> processedSkeletons = new HashMap<String, InputStream>();
+		HashMap<String, InputStream> processedSkeletons = new HashMap<>();
 
 		for (Entry<String, InputStream> entry : skeletons.entrySet()) {
 			InputStream is;
@@ -482,7 +490,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		String line = null;
-		List<String> lines = new ArrayList<String>();
+		List<String> lines = new ArrayList<>();
 
 		while ((line = br.readLine()) != null) {
 			lines.add(line);
@@ -498,7 +506,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		String line = null;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		while ((line = br.readLine()) != null) {
 			sb.append(line);

@@ -41,7 +41,7 @@ public class HttpClientResponse<T> {
 	private String statusMessage; 
 	private String protocolVersion;
 	private T content;
-	private final Map<String, String> headers = new HashMap<String, String>();
+	private final Map<String, String> headers = new HashMap<>();
 
 	private HttpClientResponse() {
 	}
@@ -159,7 +159,7 @@ public class HttpClientResponse<T> {
 	 */
 	public static HttpClientResponse<byte[]> byteResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
-		HttpClientResponse<byte[]> response = new HttpClientResponse<byte[]>();
+		HttpClientResponse<byte[]> response = new HttpClientResponse<>();
 		try {
 
 			response.populateGenericValues(httpResponse);
@@ -203,7 +203,7 @@ public class HttpClientResponse<T> {
 	 */
 	public static HttpClientResponse<String> textResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
-		HttpClientResponse<String> response = new HttpClientResponse<String>();
+		HttpClientResponse<String> response = new HttpClientResponse<>();
 		try {
 
 			response.populateGenericValues(httpResponse);
@@ -249,7 +249,7 @@ public class HttpClientResponse<T> {
 	 */
 	public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
-		HttpClientResponse<JsonObject> response = new HttpClientResponse<JsonObject>();
+		HttpClientResponse<JsonObject> response = new HttpClientResponse<>();
 		try{
 			response.populateGenericValues(httpResponse);
 
@@ -295,7 +295,7 @@ public class HttpClientResponse<T> {
 	 */
 	public static HttpClientResponse<Document> xmlResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse) throws HttpClientException {
 
-		HttpClientResponse<Document> response = new HttpClientResponse<Document>();
+		HttpClientResponse<Document> response = new HttpClientResponse<>();
 		try{
 			response.populateGenericValues(httpResponse);
 
@@ -350,7 +350,7 @@ public class HttpClientResponse<T> {
 	 */
 	public static HttpClientResponse<Object> jaxbResponse(CloseableHttpResponse httpResponse, boolean contentOnBadResponse, Class<?>... responseTypes) throws HttpClientException {
 
-		HttpClientResponse<Object> response = new HttpClientResponse<Object>();
+		HttpClientResponse<Object> response = new HttpClientResponse<>();
 		try{
 
 			response.populateGenericValues(httpResponse);
@@ -366,9 +366,7 @@ public class HttpClientResponse<T> {
 			}
 
 			httpResponse.close();
-		} catch (IOException e) {
-			throw new HttpClientException("Unable to extract response body to JSON object", e);
-		} catch (JAXBException e) {
+		} catch (IOException | JAXBException e) {
 			throw new HttpClientException("Unable to extract response body to JSON object", e);
 		}
 
