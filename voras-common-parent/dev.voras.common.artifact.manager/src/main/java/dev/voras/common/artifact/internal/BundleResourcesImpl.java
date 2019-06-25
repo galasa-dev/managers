@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,7 +41,6 @@ public class BundleResourcesImpl implements IBundleResources {
 	private static final String FILE_SEPARATOR = "/";
 
 	private final Bundle bundle;	
-	private final Class<?> owningClass;
 
 	private final ISkeletonProcessor velocitySkeletonProcessor;
 	private final ISkeletonProcessor ppSkeletonProcessor;
@@ -50,8 +48,6 @@ public class BundleResourcesImpl implements IBundleResources {
 	private static final Log logger = LogFactory.getLog(BundleResourcesImpl.class);
 
 	public BundleResourcesImpl(Class<?> owningClass, IFramework framework) {
-
-		this.owningClass = owningClass;
 		this.bundle = FrameworkUtil.getBundle(owningClass);
 
 		this.velocitySkeletonProcessor = new VelocitySkeletonProcessor(framework);
@@ -120,7 +116,7 @@ public class BundleResourcesImpl implements IBundleResources {
 				jis = retrieveFile(expectedJarName);
 				return jis;
 			} catch (TestBundleResourceException e) {
-				logger.debug("Failed to find jar under expected name. Will inspect manifests to locate it.");
+				logger.debug("Failed to find jar under expected name. Will inspect manifests to locate it.",e);
 			}
 		}
 
@@ -275,8 +271,8 @@ public class BundleResourcesImpl implements IBundleResources {
 		Matcher m = p.matcher(range);
 
 		if (m.find()) {
-			boolean exclusiveLower = m.group(1).equals("(");
-			boolean exclusiveUpper = m.group(4).equals(")");
+			boolean exclusiveLower = "(".equals(m.group(1));
+			boolean exclusiveUpper = ")".equals(m.group(4));
 
 			String lower = m.group(2);
 			String upper = m.group(3).replaceFirst(",", "");
