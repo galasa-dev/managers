@@ -25,7 +25,7 @@ public class ZosProperties {
 		try {
 			String batchBundleName = ZosManagerImpl.nulled(this.cps.getProperty("bundle.extra", "batch.manager"));
 			if (batchBundleName == null)  {
-				return "dev.voras.zosbatch.zosmf.manager";
+				return "dev.voras.common.zosbatch.zosmf.manager";
 			}
 			return batchBundleName;
 		} catch (ConfigurationPropertyStoreException e) {
