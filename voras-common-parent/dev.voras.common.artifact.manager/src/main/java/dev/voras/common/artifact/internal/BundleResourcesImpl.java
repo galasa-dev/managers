@@ -92,10 +92,9 @@ public class BundleResourcesImpl implements IBundleResources {
 			try {
 				is = fileURL.openStream();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("IO Error accessing file: " + filename , e);
+				throw new TestBundleResourceException(e);
 			}
-//			is = owningClass.getResourceAsStream("/" + filename);
 
 			if (is != null) {
 				return is;
