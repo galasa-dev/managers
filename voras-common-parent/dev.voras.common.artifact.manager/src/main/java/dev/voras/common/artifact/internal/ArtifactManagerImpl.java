@@ -27,7 +27,7 @@ import dev.voras.framework.spi.ResourceUnavailableException;
 @Component(service = { IManager.class })
 public class ArtifactManagerImpl extends AbstractManager implements IArtifactManager {
 
-    private final static Log logger = LogFactory.getLog(ArtifactManagerImpl.class);
+    private static final Log logger = LogFactory.getLog(ArtifactManagerImpl.class);
 
     @GenerateAnnotatedField(annotation=ArtifactManager.class)
 	public IArtifactManager fillField(Field field, List<Annotation> annotations) {
@@ -41,6 +41,7 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
 
 	@Override
 	public void provisionStop() {
+		//Nothing is provisioned by this manager so we don't have anything to stop
 	}
 
 	@Override

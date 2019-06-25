@@ -47,7 +47,7 @@ public class BundleResourcesImpl implements IBundleResources {
 	private final ISkeletonProcessor velocitySkeletonProcessor;
 	private final ISkeletonProcessor ppSkeletonProcessor;
 	
-	private final static Log logger = LogFactory.getLog(BundleResourcesImpl.class);
+	private static final Log logger = LogFactory.getLog(BundleResourcesImpl.class);
 
 	public BundleResourcesImpl(Class<?> owningClass, IFramework framework) {
 
@@ -58,9 +58,9 @@ public class BundleResourcesImpl implements IBundleResources {
 		this.ppSkeletonProcessor = new PlusPlusSkeletonProcessor(framework);
 	}
 
-	public HashMap<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException {
+	public Map<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException {
 
-		HashMap<String, InputStream> directoryContents = new HashMap<String, InputStream>();
+		HashMap<String, InputStream> directoryContents = new HashMap<>();
 
 		List<String> contentPaths = listDirectory(bundle, directory, null);
 
@@ -87,7 +87,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		if (fileURL != null) {
 			String urlString = fileURL.toString();
 			if (!urlString.contains(filename)) {
-				throw new TestBundleResourceException("The found artifact '" + fileURL.getPath().toString() + "' does not match the case of '" + filename + "'");
+				throw new TestBundleResourceException("The found artifact '" + fileURL.getPath() + "' does not match the case of '" + filename + "'");
 			}
 			try {
 				is = fileURL.openStream();
@@ -108,13 +108,13 @@ public class BundleResourcesImpl implements IBundleResources {
 	public InputStream retrieveJar(String symbolicName, String version, String directory) throws TestBundleResourceException {
 
 		// Ensure our directory name begins with a file separator so that we always search relative to the bundle root
-		if ((!directory.equals("")) && (!directory.startsWith(FILE_SEPARATOR))) {
+		if ((!"".equals(directory)) && (!directory.startsWith(FILE_SEPARATOR))) {
 			directory = FILE_SEPARATOR + directory;
 		}
 
 		// If we have a version then hopefully the jar is neatly named <symbolicName>_<version>.jar and we can do a simple file locate
 		InputStream jis = null;
-		if (!version.equals("")) {
+		if (!"".equals(version)) {
 			String expectedJarName = directory + symbolicName + "_" + version + ".jar";
 			try {
 				jis = retrieveFile(expectedJarName);
@@ -128,7 +128,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		List<String> foundJars = listDirectory(bundle, directory, "jar");
 
 		// Assuming we have some jars to inspect, lets inspect them
-		if (foundJars.size() > 0) {
+		if (!foundJars.isEmpty()) {
 			String bestJar = null;
 			String bestVersion = "0.0.0";
 			for (String jar : foundJars) {
@@ -462,7 +462,7 @@ public class BundleResourcesImpl implements IBundleResources {
 	public Map<String, InputStream> retrieveSkeletonDirectoryContents(String directory, Map<String, Object> parameters, int skeletonType)
 			throws TestBundleResourceException {
 
-		HashMap<String, InputStream> skeletons = retrieveDirectoryContents(directory);
+		Map<String, InputStream> skeletons = retrieveDirectoryContents(directory);
 		if (parameters == null || parameters.isEmpty()) {
 			return skeletons;
 		}
