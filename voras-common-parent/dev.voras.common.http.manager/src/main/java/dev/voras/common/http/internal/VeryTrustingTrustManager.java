@@ -8,11 +8,11 @@ import javax.net.ssl.X509TrustManager;
 public class VeryTrustingTrustManager implements X509TrustManager {
 
 	@Override
-	public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+	public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { //NOSONAR
 	}
 
 	@Override
-	public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+	public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { //NOSONAR
 	}
 
 	@Override

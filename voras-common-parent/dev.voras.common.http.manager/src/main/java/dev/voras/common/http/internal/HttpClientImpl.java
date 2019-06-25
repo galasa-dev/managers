@@ -150,7 +150,7 @@ public class HttpClientImpl implements IHttpClient{
 			boolean ibmJdk = System.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
 			SSLContext sslContext;
 			if(ibmJdk)
-				sslContext = SSLContext.getInstance("SSL_TLSv2");
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
 			else
 				sslContext = SSLContext.getInstance("TLSv1.2");
 			sslContext.init(null, new TrustManager[] { new VeryTrustingTrustManager() }, new SecureRandom());
@@ -182,8 +182,8 @@ public class HttpClientImpl implements IHttpClient{
 			// Create the Trust Managers
 			TrustManager trustManagers[] = { new ClientAuthTrustManager(serverKeyStore, alias) };
 
-			// Create the SSL Conetext
-			SSLContext ctx = SSLContext.getInstance("TLS");
+			// Create the SSL Context
+			SSLContext ctx = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
 			ctx.init(kmf.getKeyManagers(), trustManagers, null);
 
 			setSSLContext(ctx);
@@ -361,6 +361,7 @@ public class HttpClientImpl implements IHttpClient{
 						try {
 							Thread.sleep(2000);
 						} catch (InterruptedException e1) {
+							Thread.currentThread().interrupt();
 							throw new HttpClientException(
 									"JAT HTTP Client retry failed due to interruption",
 									e1);

@@ -30,7 +30,7 @@ public class ClientAuthTrustManager implements X509TrustManager {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-				throws CertificateException {
+				throws CertificateException { //NOSONAR
 		}
 
 		@Override
