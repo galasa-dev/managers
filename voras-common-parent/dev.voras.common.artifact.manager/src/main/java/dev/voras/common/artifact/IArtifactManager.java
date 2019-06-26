@@ -20,14 +20,14 @@ public interface IArtifactManager {
 	 * hold of the correct bundle
 	 * @return {@link IBundleResources}
 	 */
-	public IBundleResources getBundleResources(Class<?> owningClass);
+	IBundleResources getBundleResources(Class<?> owningClass);
 	
 	/**
 	 * Return an {@link ISkeletonProcessor} object to perform substitutions on skeleton files
 	 * 
 	 * @return {@link ISkeletonProcessor}
 	 */
-	public ISkeletonProcessor getSkeletonProcessor();
+	ISkeletonProcessor getSkeletonProcessor();
 	
 	/**
 	 * Return an {@link ISkeletonProcessor} object to perform substitutions on skeleton files
@@ -37,6 +37,6 @@ public interface IArtifactManager {
 	 * @return {@link ISkeletonProcessor}
 	 * @throws SkeletonProcessorException
 	 */
-	public ISkeletonProcessor getSkeletonProcessor(int skeletonType) throws SkeletonProcessorException;
+	ISkeletonProcessor getSkeletonProcessor(int skeletonType) throws SkeletonProcessorException;
 	
 }

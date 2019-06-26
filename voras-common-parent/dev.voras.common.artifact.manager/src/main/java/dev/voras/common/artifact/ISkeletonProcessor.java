@@ -11,6 +11,6 @@ public interface ISkeletonProcessor {
 		public static final int VELOCITY = 1;
 	}
 
-	public InputStream processSkeleton(InputStream skeleton, Map<String, Object> parameters) throws SkeletonProcessorException;
+	InputStream processSkeleton(InputStream skeleton, Map<String, Object> parameters) throws SkeletonProcessorException;
 
 }

@@ -13,8 +13,6 @@ import org.w3c.dom.Document;
 
 import com.google.gson.JsonObject;
 
-import dev.voras.common.http.HttpClientException;
-
 import dev.voras.common.http.internal.ContentType;
 import dev.voras.common.http.internal.HttpClientRequest;
 import dev.voras.common.http.internal.RequestPart;
@@ -33,19 +31,19 @@ public interface IHttpClient {
 	 * 
 	 * @param responseCode
 	 */
-	public void addOkResponseCode(int responseCode);
+	void addOkResponseCode(int responseCode);
 	
 	/**
 	 * Build the client
 	 * 
 	 * @return the built client
 	 */
-	public IHttpClient build();
+	IHttpClient build();
 	
 	/**
 	 * close the underlying HTTPClient
 	 */
-	public void close();
+	void close();
 	
 	/**
 	 * Issue DELETE request to the given path, request will be retried if retry is set
@@ -241,7 +239,7 @@ public interface IHttpClient {
 	 * 
 	 * @return the {@link SSLContext} or null if there is none
 	 */
-	public SSLContext getSSLContext();
+	SSLContext getSSLContext();
 
 	/**
 	 * Issue an HTTP GET to the provided URL, receiving a {@link String} in the
@@ -258,7 +256,7 @@ public interface IHttpClient {
 	 * 
 	 * @return the username
 	 */
-	public String getUsername();
+	String getUsername();
 
 	/**
 	 * Get the username set for this client for a specific scope
@@ -266,7 +264,7 @@ public interface IHttpClient {
 	 * @param scope
 	 * @return the username
 	 */
-	public String getUsername(URI scope);
+	String getUsername(URI scope);
 
 	/**
 	 * Execute an {@link HttpClientRequest} returning a JAXB object available
@@ -424,7 +422,7 @@ public interface IHttpClient {
 	 * @param password
 	 * @return the updated client
 	 */
-	public IHttpClient setAuthorisation(String username, String password);
+	IHttpClient setAuthorisation(String username, String password);
 
 	/**
 	 * Set the username and password for a specific scope
@@ -434,7 +432,7 @@ public interface IHttpClient {
 	 * @param scope
 	 * @return the updated client
 	 */
-	public IHttpClient setAuthorisation(String username, String password, URI scope);
+	IHttpClient setAuthorisation(String username, String password, URI scope);
 
 	/**
 	 * Set the hostname verifier
@@ -443,14 +441,14 @@ public interface IHttpClient {
 	 * @param hostnameVerifier
 	 * @return the updated client
 	 */
-	public IHttpClient setHostnameVerifier(HostnameVerifier hostnameVerifier);
+	IHttpClient setHostnameVerifier(HostnameVerifier hostnameVerifier);
 
 	/**
 	 * Set the hostname verifier to a no-op verifier
 	 * 
 	 * @return the updated client
 	 */
-	public IHttpClient setNoopHostnameVerifier();
+	IHttpClient setNoopHostnameVerifier();
 
 	/**
 	 * Set the SSL Context
@@ -458,7 +456,7 @@ public interface IHttpClient {
 	 * @param sslContext
 	 * @return the updated client
 	 */
-	public IHttpClient setSSLContext(SSLContext sslContext);
+	IHttpClient setSSLContext(SSLContext sslContext);
 
 	/**
 	 * Set the SSL Context to a Trust All context
@@ -466,7 +464,7 @@ public interface IHttpClient {
 	 * @return the updated client
 	 * @throws HttpClientException 
 	 */
-	public IHttpClient setTrustingSSLContext() throws HttpClientException;
+	IHttpClient setTrustingSSLContext() throws HttpClientException;
 
 	/**
 	 * Set up Client Authentication SSL Context and install
@@ -478,13 +476,13 @@ public interface IHttpClient {
 	 * @return  the updated client
 	 * @throws HttpClientException
 	 */
-	public IHttpClient setupClientAuth(KeyStore clientKeyStore, KeyStore serverKeyStore, String alias, String password) throws HttpClientException;
+	IHttpClient setupClientAuth(KeyStore clientKeyStore, KeyStore serverKeyStore, String alias, String password) throws HttpClientException;
 
 	/**
 	 * Set the URI endpoint for this client
 	 * @param host
 	 */
-	public void setURI(URI host);
+	void setURI(URI host);
 
 }
 
