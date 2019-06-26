@@ -2,7 +2,6 @@ package dev.voras.common.artifact;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException
 	 */
-	public InputStream retrieveFile(String path) throws TestBundleResourceException;
+	InputStream retrieveFile(String path) throws TestBundleResourceException;
 
 	/**
 	 * Retrieve a single file as an InputStream, if the file is a skeleton then any required substitutions
@@ -30,7 +29,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException
 	 */
-	public InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters, int skeletonType) throws TestBundleResourceException;
+	InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters, int skeletonType) throws TestBundleResourceException;
 
 
 	/**
@@ -42,7 +41,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException 
 	 */
-	public InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters) throws TestBundleResourceException;
+	InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters) throws TestBundleResourceException;
 	
 	/**
 	 * For a directory, retrieve a map of file paths within it, and InputStreams for those files. 
@@ -51,7 +50,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException
 	 */
-	public Map<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException;
+	Map<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException;
 	
 	/**
 	 * For a directory, retrieve a map of file paths within it, and InputStreams for those files, if the file is a skeleton then any required substitutions
@@ -61,7 +60,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException
 	 */
-	public Map<String, InputStream> retrieveSkeletonDirectoryContents(String directory, Map<String, Object> parameters, int skeletonType) throws TestBundleResourceException;
+	Map<String, InputStream> retrieveSkeletonDirectoryContents(String directory, Map<String, Object> parameters, int skeletonType) throws TestBundleResourceException;
 	
 	/**
 	 * Retrieve a jar file as an input stream
@@ -72,7 +71,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws TestBundleResourceException
 	 */
-	public InputStream retrieveJar(String symbolicName, String version, String directory) throws TestBundleResourceException;
+	InputStream retrieveJar(String symbolicName, String version, String directory) throws TestBundleResourceException;
 	
 	/**
 	 * Convert an input stream into a list of strings
@@ -81,7 +80,7 @@ public interface IBundleResources {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<String> streamAsList(InputStream file) throws IOException;
+	List<String> streamAsList(InputStream file) throws IOException;
 
 	/**
 	 * Convert an input stream into a string
@@ -90,9 +89,8 @@ public interface IBundleResources {
 	 * @return
 	 * @throws IOException
 	 */
-	public String streamAsString(InputStream file) throws IOException;
+	String streamAsString(InputStream file) throws IOException;
 
-	public InputStream zipDirectoryContents(String resourcesDirectory, Map<String, Object> parameters, String encoding,
-			boolean gzip) throws TestBundleResourceException;
+	InputStream zipDirectoryContents(String resourcesDirectory, Map<String, Object> parameters, String encoding,boolean gzip) throws TestBundleResourceException;
 	
 }

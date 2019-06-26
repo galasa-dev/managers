@@ -19,12 +19,12 @@ public enum ContentType {
 	private final org.apache.http.entity.ContentType c;
 	private final String custom;
 	
-	private ContentType(org.apache.http.entity.ContentType c) {
+	ContentType(org.apache.http.entity.ContentType c) {
 		this.c = c;
 		this.custom = null;
 	}
 	
-	private ContentType(String custom) {
+	ContentType(String custom) {
 		this.c = null;
 		this.custom = custom;
 	}

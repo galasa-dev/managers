@@ -75,12 +75,12 @@ import dev.voras.common.http.HttpClientResponse;
 
 public class HttpClientImpl implements IHttpClient{
 	
-	private final static String JAVA_VENDOR_PROPERTY = "java.vendor";
+	private static final String JAVA_VENDOR_PROPERTY = "java.vendor";
 	
 	private CloseableHttpClient httpClient;
 	protected URI host = null;
 
-	private final List<Header> commonHeaders = new ArrayList<Header>();
+	private final List<Header> commonHeaders = new ArrayList<>();
 	
 	private final int timeout = -1;
 
@@ -89,7 +89,7 @@ public class HttpClientImpl implements IHttpClient{
 	private HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
 	private CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 	private HttpClientContext httpContext = null;
-	private Set<Integer> okResponseCodes = new HashSet<Integer>();
+	private Set<Integer> okResponseCodes = new HashSet<>();
 	
 	private Log logger;
 	
@@ -134,8 +134,6 @@ public class HttpClientImpl implements IHttpClient{
 	 */
 	public void addOkResponseCode(int responseCode) {
 		okResponseCodes.add(responseCode);
-
-		return;
 	}
 
 	/**
@@ -150,7 +148,7 @@ public class HttpClientImpl implements IHttpClient{
 			boolean ibmJdk = System.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
 			SSLContext sslContext;
 			if(ibmJdk)
-				sslContext = SSLContext.getInstance("SSL_TLSv2");
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
 			else
 				sslContext = SSLContext.getInstance("TLSv1.2");
 			sslContext.init(null, new TrustManager[] { new VeryTrustingTrustManager() }, new SecureRandom());
@@ -182,8 +180,8 @@ public class HttpClientImpl implements IHttpClient{
 			// Create the Trust Managers
 			TrustManager trustManagers[] = { new ClientAuthTrustManager(serverKeyStore, alias) };
 
-			// Create the SSL Conetext
-			SSLContext ctx = SSLContext.getInstance("TLS");
+			// Create the SSL Context
+			SSLContext ctx = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
 			ctx.init(kmf.getKeyManagers(), trustManagers, null);
 
 			setSSLContext(ctx);
@@ -361,6 +359,7 @@ public class HttpClientImpl implements IHttpClient{
 						try {
 							Thread.sleep(2000);
 						} catch (InterruptedException e1) {
+							Thread.currentThread().interrupt();
 							throw new HttpClientException(
 									"JAT HTTP Client retry failed due to interruption",
 									e1);
@@ -372,9 +371,7 @@ public class HttpClientImpl implements IHttpClient{
 
 				HttpEntity entity = response.getEntity();
 
-				byte[] content = IOUtils.toByteArray(entity.getContent());
-
-				return content;
+				return IOUtils.toByteArray(entity.getContent());
 
 			} catch (Exception e) {
 				throw new HttpClientException(e);
@@ -397,13 +394,13 @@ public class HttpClientImpl implements IHttpClient{
 			throws HttpClientException {
 
 		if (queryParams == null) {
-			queryParams = new HashMap<String, String>();
+			queryParams = new HashMap<>();
 		}
 
 		// Create a multi-valued map since we can have more than one value for each param in the path
-		Map<String,List<String>> multiMap = new HashMap<String,List<String>>();
+		Map<String,List<String>> multiMap = new HashMap<>();
 		for(Entry<String,String> entry : queryParams.entrySet()) {
-			List<String> list = new ArrayList<String>();
+			List<String> list = new ArrayList<>();
 			list.add(entry.getValue());
 			multiMap.put(entry.getKey(), list);
 		}
@@ -426,7 +423,7 @@ public class HttpClientImpl implements IHttpClient{
 					if(multiMap.containsKey(param)) {
 						multiMap.get(param).add(value);
 					} else {
-						List<String> list = new ArrayList<String>();
+						List<String> list = new ArrayList<>();
 						list.add(value);
 						multiMap.put(param, list);
 					}

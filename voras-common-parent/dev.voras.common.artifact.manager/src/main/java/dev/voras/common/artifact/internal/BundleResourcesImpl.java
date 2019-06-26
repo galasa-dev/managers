@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,25 +41,22 @@ public class BundleResourcesImpl implements IBundleResources {
 	private static final String FILE_SEPARATOR = "/";
 
 	private final Bundle bundle;	
-	private final Class<?> owningClass;
 
 	private final ISkeletonProcessor velocitySkeletonProcessor;
 	private final ISkeletonProcessor ppSkeletonProcessor;
 	
-	private final static Log logger = LogFactory.getLog(BundleResourcesImpl.class);
+	private static final Log logger = LogFactory.getLog(BundleResourcesImpl.class);
 
 	public BundleResourcesImpl(Class<?> owningClass, IFramework framework) {
-
-		this.owningClass = owningClass;
 		this.bundle = FrameworkUtil.getBundle(owningClass);
 
 		this.velocitySkeletonProcessor = new VelocitySkeletonProcessor(framework);
 		this.ppSkeletonProcessor = new PlusPlusSkeletonProcessor(framework);
 	}
 
-	public HashMap<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException {
+	public Map<String, InputStream> retrieveDirectoryContents(String directory) throws TestBundleResourceException {
 
-		HashMap<String, InputStream> directoryContents = new HashMap<String, InputStream>();
+		HashMap<String, InputStream> directoryContents = new HashMap<>();
 
 		List<String> contentPaths = listDirectory(bundle, directory, null);
 
@@ -87,19 +83,16 @@ public class BundleResourcesImpl implements IBundleResources {
 		if (fileURL != null) {
 			String urlString = fileURL.toString();
 			if (!urlString.contains(filename)) {
-				throw new TestBundleResourceException("The found artifact '" + fileURL.getPath().toString() + "' does not match the case of '" + filename + "'");
+				throw new TestBundleResourceException("The found artifact '" + fileURL.getPath() + "' does not match the case of '" + filename + "'");
 			}
 			try {
 				is = fileURL.openStream();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("IO Error accessing file: " + filename , e);
+				throw new TestBundleResourceException(e);
 			}
-//			is = owningClass.getResourceAsStream("/" + filename);
 
-			if (is != null) {
-				return is;
-			}
+			return is;
 		}
 
 		throw new TestBundleResourceException("No such artifact: " + filename + " in bundle " + bundle.getSymbolicName());
@@ -111,19 +104,19 @@ public class BundleResourcesImpl implements IBundleResources {
 	public InputStream retrieveJar(String symbolicName, String version, String directory) throws TestBundleResourceException {
 
 		// Ensure our directory name begins with a file separator so that we always search relative to the bundle root
-		if ((!directory.equals("")) && (!directory.startsWith(FILE_SEPARATOR))) {
+		if ((!"".equals(directory)) && (!directory.startsWith(FILE_SEPARATOR))) {
 			directory = FILE_SEPARATOR + directory;
 		}
 
 		// If we have a version then hopefully the jar is neatly named <symbolicName>_<version>.jar and we can do a simple file locate
 		InputStream jis = null;
-		if (!version.equals("")) {
+		if (!"".equals(version)) {
 			String expectedJarName = directory + symbolicName + "_" + version + ".jar";
 			try {
 				jis = retrieveFile(expectedJarName);
 				return jis;
 			} catch (TestBundleResourceException e) {
-				logger.debug("Failed to find jar under expected name. Will inspect manifests to locate it.");
+				logger.debug("Failed to find jar under expected name. Will inspect manifests to locate it.",e);
 			}
 		}
 
@@ -131,7 +124,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		List<String> foundJars = listDirectory(bundle, directory, "jar");
 
 		// Assuming we have some jars to inspect, lets inspect them
-		if (foundJars.size() > 0) {
+		if (!foundJars.isEmpty()) {
 			String bestJar = null;
 			String bestVersion = "0.0.0";
 			for (String jar : foundJars) {
@@ -278,8 +271,8 @@ public class BundleResourcesImpl implements IBundleResources {
 		Matcher m = p.matcher(range);
 
 		if (m.find()) {
-			boolean exclusiveLower = m.group(1).equals("(");
-			boolean exclusiveUpper = m.group(4).equals(")");
+			boolean exclusiveLower = "(".equals(m.group(1));
+			boolean exclusiveUpper = ")".equals(m.group(4));
 
 			String lower = m.group(2);
 			String upper = m.group(3).replaceFirst(",", "");
@@ -389,7 +382,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 	private List<String> listDirectory(Bundle bundle, String directory, String fileExtension) {
 
-		List<String> directoryContents = new ArrayList<String>();
+		List<String> directoryContents = new ArrayList<>();
 
 		directory = normalisePath(directory);
 
@@ -398,7 +391,7 @@ public class BundleResourcesImpl implements IBundleResources {
 		if (entryPaths != null) {
 
 			while (entryPaths.hasMoreElements()) {
-				String entryPath = (String) entryPaths.nextElement();
+				String entryPath = entryPaths.nextElement();
 
 				if (entryPath.endsWith(FILE_SEPARATOR)) {
 
@@ -413,7 +406,9 @@ public class BundleResourcesImpl implements IBundleResources {
 
 				if (fileExtension != null) {
 					fileExtension = "." + fileExtension.toLowerCase();
-					if (entryPath.toLowerCase().endsWith(fileExtension)) directoryContents.add(entryPath);
+					if (entryPath.toLowerCase().endsWith(fileExtension)) {
+						directoryContents.add(entryPath);
+					}
 				} else {
 					directoryContents.add(entryPath);
 				}
@@ -427,9 +422,15 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		rawPath = rawPath.replaceAll("[\\/\\\\]", FILE_SEPARATOR);
 
-		if (rawPath.startsWith("." + FILE_SEPARATOR)) rawPath = rawPath.replaceFirst("\\.", "");
-		if (!rawPath.startsWith(FILE_SEPARATOR)) rawPath = FILE_SEPARATOR + rawPath;
-		if (!rawPath.startsWith(FILE_SEPARATOR + "resources")) rawPath = FILE_SEPARATOR + "resources" + rawPath;
+		if (rawPath.startsWith("." + FILE_SEPARATOR)) 
+			rawPath = rawPath.replaceFirst("\\.", "");
+		
+		if (!rawPath.startsWith(FILE_SEPARATOR)) 
+			rawPath = FILE_SEPARATOR + rawPath;
+		
+		if (!rawPath.startsWith(FILE_SEPARATOR + "resources")) 
+			rawPath = FILE_SEPARATOR + "resources" + rawPath;
+		
 		rawPath = rawPath.replaceAll("\\/+", "/");
 		rawPath = rawPath.replaceFirst(FILE_SEPARATOR, "");
 
@@ -465,11 +466,11 @@ public class BundleResourcesImpl implements IBundleResources {
 	public Map<String, InputStream> retrieveSkeletonDirectoryContents(String directory, Map<String, Object> parameters, int skeletonType)
 			throws TestBundleResourceException {
 
-		HashMap<String, InputStream> skeletons = retrieveDirectoryContents(directory);
+		Map<String, InputStream> skeletons = retrieveDirectoryContents(directory);
 		if (parameters == null || parameters.isEmpty()) {
 			return skeletons;
 		}
-		HashMap<String, InputStream> processedSkeletons = new HashMap<String, InputStream>();
+		HashMap<String, InputStream> processedSkeletons = new HashMap<>();
 
 		for (Entry<String, InputStream> entry : skeletons.entrySet()) {
 			InputStream is;
@@ -489,7 +490,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		String line = null;
-		List<String> lines = new ArrayList<String>();
+		List<String> lines = new ArrayList<>();
 
 		while ((line = br.readLine()) != null) {
 			lines.add(line);
@@ -505,7 +506,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		String line = null;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		while ((line = br.readLine()) != null) {
 			sb.append(line);
