@@ -4,21 +4,21 @@ import com.google.gson.annotations.SerializedName;
 
 public class Server {
 
-	public String  id;
-	public String  name;
-	public String  imageRef;
-	public String  flavorRef;
-	public String  networks;
-	public String  availability_zone;
-	public String  adminPass;
-	public String  key_name;
+	public String  id; // NOSONAR
+	public String  name; // NOSONAR
+	public String  imageRef; // NOSONAR
+	public String  flavorRef; // NOSONAR
+	public String  networks; // NOSONAR
+	public String  availability_zone; // NOSONAR
+	public String  adminPass; // NOSONAR
+	public String  key_name; // NOSONAR
 	
 	@SerializedName("OS-EXT-STS:power_state")
-	public Integer power_state;
+	public Integer power_state; // NOSONAR
 	
 	@SerializedName("OS-EXT-STS:task_state")
-	public String task_state;
+	public String task_state; // NOSONAR
 	
-	public VorasMetadata metadata;
+	public VorasMetadata metadata; // NOSONAR
 	
 }

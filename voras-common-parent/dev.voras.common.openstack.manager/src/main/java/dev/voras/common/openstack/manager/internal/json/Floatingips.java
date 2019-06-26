@@ -2,8 +2,8 @@ package dev.voras.common.openstack.manager.internal.json;
 
 import java.util.List;
 
-public class PortsResponse {
+public class Floatingips {
 	
-	public List<Port> ports; // NOSONAR
+	public List<Floatingip> floatingips; // NOSONAR
 
 }

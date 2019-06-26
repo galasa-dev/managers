@@ -4,6 +4,6 @@ import java.util.List;
 
 public class ServersResponse {
 	
-	public List<Server> servers;
+	public List<Server> servers; // NOSONAR
 
 }

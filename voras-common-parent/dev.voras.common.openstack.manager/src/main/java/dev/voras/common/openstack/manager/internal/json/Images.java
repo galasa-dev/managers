@@ -4,6 +4,6 @@ import java.util.List;
 
 public class Images {
 	
-	public List<Image> images;
+	public List<Image> images; // NOSONAR
 
 }

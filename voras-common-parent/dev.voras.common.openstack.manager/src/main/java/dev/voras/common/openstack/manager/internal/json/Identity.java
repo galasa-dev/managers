@@ -4,6 +4,6 @@ import java.util.List;
 
 public class Identity {
 
-	public List<String> methods;
-	public Password password;
+	public List<String> methods; // NOSONAR
+	public Password password; // NOSONAR
 }

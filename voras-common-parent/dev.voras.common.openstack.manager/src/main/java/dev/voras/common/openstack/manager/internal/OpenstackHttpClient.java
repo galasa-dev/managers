@@ -33,11 +33,23 @@ import dev.voras.common.openstack.manager.internal.json.AuthTokenResponse;
 import dev.voras.common.openstack.manager.internal.json.AuthTokens;
 import dev.voras.common.openstack.manager.internal.json.Domain;
 import dev.voras.common.openstack.manager.internal.json.Endpoint;
+import dev.voras.common.openstack.manager.internal.json.Flavor;
+import dev.voras.common.openstack.manager.internal.json.Flavors;
+import dev.voras.common.openstack.manager.internal.json.Floatingip;
+import dev.voras.common.openstack.manager.internal.json.FloatingipRequestResponse;
+import dev.voras.common.openstack.manager.internal.json.Floatingips;
 import dev.voras.common.openstack.manager.internal.json.Identity;
+import dev.voras.common.openstack.manager.internal.json.Image;
+import dev.voras.common.openstack.manager.internal.json.Images;
+import dev.voras.common.openstack.manager.internal.json.Network;
+import dev.voras.common.openstack.manager.internal.json.Networks;
 import dev.voras.common.openstack.manager.internal.json.Password;
+import dev.voras.common.openstack.manager.internal.json.Port;
+import dev.voras.common.openstack.manager.internal.json.PortsResponse;
 import dev.voras.common.openstack.manager.internal.json.Project;
 import dev.voras.common.openstack.manager.internal.json.Scope;
 import dev.voras.common.openstack.manager.internal.json.Server;
+import dev.voras.common.openstack.manager.internal.json.ServerRequest;
 import dev.voras.common.openstack.manager.internal.json.ServerResponse;
 import dev.voras.common.openstack.manager.internal.json.ServersResponse;
 import dev.voras.common.openstack.manager.internal.json.User;
@@ -46,7 +58,6 @@ import dev.voras.common.openstack.manager.internal.properties.OpenStackDomainNam
 import dev.voras.common.openstack.manager.internal.properties.OpenStackIdentityUri;
 import dev.voras.common.openstack.manager.internal.properties.OpenStackProjectName;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IFramework;
 
 public class OpenstackHttpClient {
@@ -54,7 +65,6 @@ public class OpenstackHttpClient {
 	private final static Log logger = LogFactory.getLog(OpenstackHttpClient.class);
 
 	private final IFramework                         framework;
-	private final IConfigurationPropertyStoreService cps;
 	
 	private final CloseableHttpClient     httpClient;
 	private OpenstackToken                openstackToken;
@@ -67,19 +77,24 @@ public class OpenstackHttpClient {
 
 	protected OpenstackHttpClient(IFramework framework) throws ConfigurationPropertyStoreException {
 		this.framework           = framework;
-		this.cps                 = this.framework.getConfigurationPropertyService(OpenstackManagerImpl.NAMESPACE);
 		this.httpClient          = HttpClients.createDefault();
+
 	}
 	
 	protected void checkToken() throws OpenstackManagerException {
 		if (openstackToken == null || !openstackToken.isOk()) {
+			this.openstackToken = null;
 			if (!connectToOpenstack()) {
 				throw new OpenstackManagerException("Unable to re-authenticate with the OpenStack server");
 			}
 		}
 	}
 
-	private boolean connectToOpenstack() throws OpenstackManagerException {
+	protected boolean connectToOpenstack() throws OpenstackManagerException {
+		if (this.openstackToken != null) {
+			return true;
+		}
+		
 		try {
 			String credentialsId = OpenStackCredentialsId.get();
 
@@ -241,7 +256,7 @@ public class OpenstackHttpClient {
 		try {
 			checkToken();
 
-			//*** Retrieve a list of the networks available and select one
+			//*** Delete the server
 
 			HttpDelete delete = new HttpDelete(this.openstackComputeUri + "/servers/" + server.id);
 			delete.addHeader(this.openstackToken.getHeader());
@@ -270,7 +285,7 @@ public class OpenstackHttpClient {
 		try {
 			checkToken();
 
-			//*** Retrieve a list of the networks available and select one
+			//*** Get the server 
 
 			HttpGet get = new HttpGet(this.openstackComputeUri + "/servers/" + id);
 			get.addHeader(this.openstackToken.getHeader());
@@ -299,6 +314,359 @@ public class OpenstackHttpClient {
 			throw new OpenstackManagerException("Unable to list servers ", e);
 		}
 	}
+
+	public Server createServer(@NotNull ServerRequest serverRequest) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			HttpPost get = new HttpPost(this.openstackComputeUri + "/servers");
+			get.addHeader(this.openstackToken.getHeader());
+			get.setEntity(new StringEntity(gson.toJson(serverRequest)));
+
+			try (CloseableHttpResponse response = this.httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_ACCEPTED) {
+					throw new OpenstackManagerException("OpenStack create server failed - " + status + "\n" + entity);
+				}
+
+				ServerResponse serverResponse = gson.fromJson(entity, ServerResponse.class);
+				if (serverResponse.server == null) {
+					throw new OpenstackManagerException("Unexpected response from create server, server is missing:-\n" + entity);
+				}
+
+				if (serverResponse.server.id == null) {
+					throw new OpenstackManagerException("OpenStack did not return a server id");
+				}
+
+				if (serverResponse.server.adminPass == null) {
+					throw new OpenstackManagerException("OpenStack did not return a password");
+				}
+				
+				return serverResponse.server;
+			}
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to create server ", e);
+		}
+	}
+
+	public Floatingip findFloatingIpByName(String fipName) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve a list of the floating ips allocated to the project
+
+			HttpGet get = new HttpGet(this.openstackNetworkUri + "/v2.0/floatingips");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list floating ips failed - " + status);
+				}
+
+				Floatingips fips = this.gson.fromJson(entity, Floatingips.class);
+				if (fips != null && fips.floatingips != null) {
+					for(Floatingip fip : fips.floatingips) {
+						if (fipName.equals(fip.floating_ip_address)) {
+							return fip;
+						}
+					}
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to list floating ips ", e);
+		}
+	}
+
+	public void deleteFloatingIp(Floatingip floatingip) throws OpenstackManagerException {
+		if (floatingip.id == null) {
+			return;
+		}
+		
+		try {
+			checkToken();
+
+			//*** Delete floating ip from project
+
+			HttpDelete delete = new HttpDelete(this.openstackNetworkUri + "/v2.0/floatingips/" + floatingip.id);
+			delete.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(delete)) {
+				StatusLine status = response.getStatusLine();
+				EntityUtils.consume(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
+					throw new OpenstackManagerException("OpenStack delete floatingip failed - " + status);
+				}
+			}
+			return;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to floatingip server ", e);
+		}
+	}
+
+	public Floatingip getFloatingIp(String id) throws OpenstackManagerException {
+		if (id == null) {
+			return null;
+		}
+		
+		try {
+			checkToken();
+
+			//*** Retrieve the floating ip
+
+			HttpGet get = new HttpGet(this.openstackNetworkUri + "/v2.0/floatingips/" + id);
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+				
+				if (status.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+					return null;
+				}
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack get floatingip failed - " + status);
+				}
+
+				FloatingipRequestResponse fipResponse = this.gson.fromJson(entity, FloatingipRequestResponse.class);
+				if (fipResponse != null && fipResponse.floatingip != null) {
+					return fipResponse.floatingip;
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to get floatingip ", e);
+		}
+	}
+
+	public Port retrievePort(@NotNull String deviceId) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve all the ports and extract the correct one
+
+			HttpGet get = new HttpGet(this.openstackNetworkUri + "/v2.0/ports");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list port failed - " + status);
+				}
+
+				PortsResponse portsResponse = this.gson.fromJson(entity, PortsResponse.class);
+				if (portsResponse != null && portsResponse.ports != null) {
+					for(Port port : portsResponse.ports) {
+						if (deviceId.equals(port.device_id)) {
+							return port;
+						}
+					}
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to retrieve the server port", e);
+		}
+	}
+
+	public String retrieveServerPassword(@NotNull Server server) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve all the ports and extract the correct one
+
+			HttpGet get = new HttpGet(this.openstackComputeUri + "/servers/" + server.id + "/os-server-password");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+				System.out.println(entity);
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list os password failed - " + status);
+				}
+
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to retrieve the server os password", e);
+		}
+	}
+
+	protected String getImageId(@NotNull String image) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve a list of the images
+
+			HttpGet get = new HttpGet(this.openstackImageUri + "/v2.5/images");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list image failed - " + status);
+				}
+
+				Images images = gson.fromJson(entity, Images.class);
+				if (images != null && images.images != null) {
+					for(Image i : images.images) {
+						if (i.name != null) {
+							if (image.equals(i.name)) {
+								return i.id;
+							}
+						}
+					}
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to list image " + image, e);
+		}
+	}
+
+	protected String getFlavourId(@NotNull String flavour) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve a list of the images
+
+			HttpGet get = new HttpGet(this.openstackComputeUri + "/flavors");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list image failed - " + status);
+				}
+
+				Flavors flavours = gson.fromJson(entity, Flavors.class);
+				if (flavours != null && flavours.flavors != null) {
+					for(Flavor f : flavours.flavors) {
+						if (f.name != null) {
+							if (flavour.equals(f.name)) {
+								return f.id;
+							}
+						}
+					}
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to list flavour " + flavour, e);
+		}
+	}
+
+	public Floatingip allocateFloatingip(Port port, Network network) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			Floatingip fip = new Floatingip();
+			fip.port_id    = port.id;
+			fip.floating_network_id = network.id;
+			fip.description = "voras_run=" + this.framework.getTestRunName();
+
+			FloatingipRequestResponse fipRequest = new FloatingipRequestResponse();
+			fipRequest.floatingip = fip;
+
+			//*** Allocate a floating ip
+
+			HttpPost post = new HttpPost(this.openstackNetworkUri + "/v2.0/floatingips");
+			post.addHeader(this.openstackToken.getHeader());
+			post.setEntity(new StringEntity(this.gson.toJson(fipRequest), ContentType.APPLICATION_JSON));
+
+			try (CloseableHttpResponse response = httpClient.execute(post)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_CREATED) {
+					throw new OpenstackManagerException("OpenStack list image failed - " + status);
+				}
+
+				FloatingipRequestResponse fipResponse = this.gson.fromJson(entity, FloatingipRequestResponse.class);
+				if (fipResponse != null && fipResponse.floatingip != null) {
+					return fipResponse.floatingip;
+				}
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to list floating ips ", e);
+		}
+	}
+
+	public Network findExternalNetwork(String externalNetwork) throws OpenstackManagerException {
+		try {
+			checkToken();
+
+			//*** Retrieve a list of the networks available and select one
+
+			HttpGet get = new HttpGet(this.openstackNetworkUri + "/v2.0/networks");
+			get.addHeader(this.openstackToken.getHeader());
+
+			try (CloseableHttpResponse response = httpClient.execute(get)) {
+				StatusLine status = response.getStatusLine();
+				String entity = EntityUtils.toString(response.getEntity());
+
+				if (status.getStatusCode() != HttpStatus.SC_OK) {
+					throw new OpenstackManagerException("OpenStack list networks failed - " + status);
+				}
+				System.out.println(entity);
+
+				Networks networks = this.gson.fromJson(entity, Networks.class);
+				if (networks != null && networks.networks != null) {
+					for(Network network : networks.networks) {
+						if (externalNetwork != null && externalNetwork.equals(network.name)) {
+							return network;
+						} else {
+							if (network.route_external) {
+								return network;
+							}
+						}
+					}
+				}
+
+
+			}
+			return null;
+		} catch(OpenstackManagerException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new OpenstackManagerException("Unable to list floating ips ", e);
+		}
+	}
+
+
 
 
 

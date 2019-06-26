@@ -4,5 +4,5 @@ import java.util.List;
 
 public class Flavors {
 
-	public List<Flavor> flavors; 
+	public List<Flavor> flavors;  // NOSONAR
 }

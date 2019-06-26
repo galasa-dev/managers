@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Api {
 	
-	public String name;
-	public String type;
-	public String id;
-	public List<Endpoint> endpoints;
+	public String name; // NOSONAR
+	public String type; // NOSONAR
+	public String id; // NOSONAR
+	public List<Endpoint> endpoints; // NOSONAR
 
 }

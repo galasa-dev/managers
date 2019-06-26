@@ -2,6 +2,6 @@ package dev.voras.common.openstack.manager.internal.json;
 
 public class FloatingipRequestResponse {
 	
-	public Floatingip floatingip;
+	public Floatingip floatingip; // NOSONAR
 
 }

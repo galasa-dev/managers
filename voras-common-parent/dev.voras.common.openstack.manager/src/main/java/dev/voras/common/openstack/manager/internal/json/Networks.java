@@ -4,6 +4,6 @@ import java.util.List;
 
 public class Networks {
 	
-	public List<Network> networks;
+	public List<Network> networks; // NOSONAR
 
 }

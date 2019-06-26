@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Token {
 	
-	public String expires_at;
+	public String expires_at; // NOSONAR
 	
-	public List<Api> catalog;
+	public List<Api> catalog; // NOSONAR
 
 
 

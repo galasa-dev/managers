@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Port {
 	
-	public String id;
-	public String device_id;
+	public String id; // NOSONAR
+	public String device_id; // NOSONAR
 	
-	public List<DnsAssignment> dns_assignment;
+	public List<DnsAssignment> dns_assignment; // NOSONAR
 
 }

@@ -12,7 +12,7 @@ import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IResourceManagement;
 
-public class ServerResourceMonitor implements Runnable {
+public class FloatingIpResourceMonitor implements Runnable {
 
 	private final IFramework                 framework;
 	private final IResourceManagement        resourceManagement;
@@ -20,9 +20,9 @@ public class ServerResourceMonitor implements Runnable {
 	private final IDynamicStatusStoreService dss;
 	private final Log                        logger = LogFactory.getLog(this.getClass());
 	
-	private final Pattern                    serverPattern = Pattern.compile("^run\\.(\\w+)\\.compute\\.(\\w+)$");
+	private final Pattern                    fipPattern = Pattern.compile("^run\\.(\\w+)\\.floatingip\\.(\\w+)$");
 
-	public ServerResourceMonitor(IFramework framework, 
+	public FloatingIpResourceMonitor(IFramework framework, 
 			IResourceManagement resourceManagement,
 			IDynamicStatusStoreService dss, 
 			OpenstackHttpClient openstackHttpClient) {
@@ -30,12 +30,12 @@ public class ServerResourceMonitor implements Runnable {
 		this.resourceManagement = resourceManagement;
 		this.dss = dss;
 		this.openstackHttpClient = openstackHttpClient;
-		this.logger.info("OpenStack Server resource monitor initialised");
+		this.logger.info("OpenStack FloatingIP resource monitor initialised");
 	}
 
 	@Override
 	public void run() {
-		logger.info("Starting OpenStack Server search");
+		logger.info("Starting OpenStack FloatingIP search");
 		try {
 			//*** Find all the runs with slots
 			Map<String, String> computeServers = dss.getPrefix("run.");
@@ -43,49 +43,53 @@ public class ServerResourceMonitor implements Runnable {
 			Set<String> activeRunNames = this.framework.getFrameworkRuns().getActiveRunNames();
 
 			for(String key : computeServers.keySet()) {
-				Matcher matcher = serverPattern.matcher(key);
+				Matcher matcher = fipPattern.matcher(key);
 				if (matcher.find()) {
-					String serverName = matcher.group(2);
+					String floatingip = matcher.group(2);
 					String runName    = matcher.group(1);
 
 					if (!activeRunNames.contains(runName)) {
-						logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
+						logger.info("Discarding OpenStack FloatingIP " + floatingip + " as run " + runName + " has gone");
 
 						try {
-							OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
+							String fip = floatingip.replaceAll("_", ".");
+							
+							OpenstackServerImpl.deleteFloatingIpByName(fip, runName, dss, this.openstackHttpClient);
 						} catch(Exception e) {
-							logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
+							logger.error("Failed to discard OpenStack FloatingIP " + floatingip + " for run " + runName);
 						}
 					}
 				}
 			}
 		} catch(Exception e) {
-			logger.error("Failure during OpenStack server scan",e);
+			logger.error("Failure during OpenStack FloatingIP scan",e);
 		}
 
 		this.resourceManagement.resourceManagementRunSuccessful();
-		logger.info("Finished OpenStack Server search");
+		logger.info("Finished OpenStack FloatingIP search");
 	}
 
 	public void runFinishedOrDeleted(String runName) {
 		try {
-			Map<String, String> serverRuns = dss.getPrefix("run." + runName + ".");
-			for(String key : serverRuns.keySet()) {
-				Matcher matcher = serverPattern.matcher(key);
+			Map<String, String> fipRuns = dss.getPrefix("run." + runName + ".");
+			for(String key : fipRuns.keySet()) {
+				Matcher matcher = fipPattern.matcher(key);
 				if (matcher.find()) {
-					String serverName = matcher.group(2);
+					String floatingip = matcher.group(2);
 
-					logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
+					logger.info("Discarding OpenStack FloatingIP " + floatingip + " as run " + runName + " has gone");
 
 					try {
-						OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
+						String fip = floatingip.replaceAll("_", ".");
+						
+						OpenstackServerImpl.deleteFloatingIpByName(fip, runName, dss, this.openstackHttpClient);
 					} catch(Exception e) {
-						logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
+						logger.error("Failed to discard OpenStack FloatingIP " + floatingip + " for run " + runName);
 					}
 				}
 			}
 		} catch(Exception e) {
-			logger.error("Failed to delete OpenStack Compute Server for run " + runName);
+			logger.error("Failed to delete OpenStack FloatingIP for run " + runName);
 		}
 	}
 

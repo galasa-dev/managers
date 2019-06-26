@@ -2,7 +2,7 @@ package dev.voras.common.openstack.manager.internal.json;
 
 public class Project {
 
-	public String name;
-	public Domain domain;
+	public String name; // NOSONAR
+	public Domain domain; // NOSONAR
 
 }

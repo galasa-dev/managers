@@ -4,10 +4,10 @@ import com.google.gson.annotations.SerializedName;
 
 public class Network {
 	
-	public String id;
-	public String name;
+	public String id; // NOSONAR
+	public String name; // NOSONAR
 	
 	@SerializedName("router:external")
-	public boolean route_external;
+	public boolean route_external; // NOSONAR
 
 }

@@ -2,6 +2,6 @@ package dev.voras.common.openstack.manager.internal.json;
 
 public class Auth {
 
-	public Identity identity;
-	public Scope    scope;
+	public Identity identity; // NOSONAR
+	public Scope    scope; // NOSONAR
 }
