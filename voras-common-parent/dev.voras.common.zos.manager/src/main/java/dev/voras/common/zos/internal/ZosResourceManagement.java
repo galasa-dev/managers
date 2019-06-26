@@ -29,7 +29,7 @@ public class ZosResourceManagement implements IResourceManagementProvider {
 			this.dss = this.framework.getDynamicStatusStoreService("zos");
 			this.cps = this.framework.getConfigurationPropertyService("zos");
 		} catch (Exception e) {
-			throw new ResourceManagerException("Unable to initialise IP Network resource monitor", e);
+			throw new ResourceManagerException("Unable to initialise zOS resource monitor", e);
 		}
 		
 		// TODO Must add a check every 5 minutes to tidy up all the properties that may have been left hanging
