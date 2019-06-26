@@ -116,7 +116,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 		server.availability_zone = "nova"; // TODO cps
 		server.metadata = new VorasMetadata();
 		server.metadata.voras_run = this.manager.getFramework().getTestRunName();
-		server.key_name = "Michael Baylis"; // TODO cps
+		server.key_name = "voras"; // TODO cps
 
 		if (server.imageRef == null) {
 			throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
