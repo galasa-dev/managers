@@ -32,13 +32,13 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 	public final String image;
 	public final String tag;
 
-	public String id;
-	public String username;
-	public String password;
+	private String id;
+	private String username;
+	private String password;
 
-	public Server openstackServer;
-	public Port   openstackPort;
-	public Floatingip openstackFloatingip;
+	private Server openstackServer;
+	private Port   openstackPort;
+	private Floatingip openstackFloatingip;
 
 	public OpenstackLinuxImageImpl(@NotNull OpenstackManagerImpl manager,
 			@NotNull OpenstackHttpClient openstackHttpClient,
@@ -60,12 +60,12 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
 	@Override
 	public @NotNull IIpHost getIpHost() {
-		return null;
+		return new OpenstackIpHost();
 	}
 
 	@Override
 	public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
-		return null;
+		return new OpenstackUsernamePasswordCredentials();
 	}
 
 	public void discard() {

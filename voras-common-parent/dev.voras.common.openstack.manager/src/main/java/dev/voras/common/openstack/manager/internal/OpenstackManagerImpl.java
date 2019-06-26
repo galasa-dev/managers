@@ -195,6 +195,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 			//*** We don't have any spare capacity, so return gracefully
 			return null;
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new OpenstackManagerException("Processing interrupted", e);
 		}
 	}

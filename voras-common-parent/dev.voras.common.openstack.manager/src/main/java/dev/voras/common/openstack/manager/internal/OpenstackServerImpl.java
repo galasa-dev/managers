@@ -48,6 +48,7 @@ public class OpenstackServerImpl {
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					logger.warn("Wait for server delete interrupted",e);
 					return;
 				}
@@ -136,6 +137,7 @@ public class OpenstackServerImpl {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					logger.warn("Wait for server delete interrupted",e);
 					return;
 				}

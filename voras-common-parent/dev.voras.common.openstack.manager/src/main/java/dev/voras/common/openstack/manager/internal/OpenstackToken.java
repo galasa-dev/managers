@@ -22,7 +22,7 @@ public class OpenstackToken {
 	
 	public boolean isOk() {
 		Instant now = Instant.now();
-		now.plus(5, ChronoUnit.MINUTES);
+		now = now.plus(5, ChronoUnit.MINUTES);
 		
 		if (now.compareTo(expires) > 0) {
 			return false;

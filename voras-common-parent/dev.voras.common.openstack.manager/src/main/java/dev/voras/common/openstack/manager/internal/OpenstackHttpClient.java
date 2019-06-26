@@ -69,9 +69,9 @@ public class OpenstackHttpClient {
 	private final CloseableHttpClient     httpClient;
 	private OpenstackToken                openstackToken;
 
-	public String openstackImageUri;
-	public String openstackComputeUri;
-	public String openstackNetworkUri;
+	private String openstackImageUri;
+	private String openstackComputeUri;
+	private String openstackNetworkUri;
 
 	private Gson                          gson = new GsonBuilder().setPrettyPrinting().create();
 
