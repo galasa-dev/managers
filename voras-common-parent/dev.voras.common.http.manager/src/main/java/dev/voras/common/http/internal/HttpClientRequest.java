@@ -37,7 +37,7 @@ import dev.voras.common.http.HttpClientException;
  * must be called before use, as well as one of the setBody(...) methods if this is a PUT
  * or POST request
  * 
- * @author James Bartlett
+ * @author Will Yates
  *
  */
 public class HttpClientRequest {
@@ -52,8 +52,8 @@ public class HttpClientRequest {
 	}
 
 	private final RequestType type;
-	private final Map<String, String> headers = new HashMap<String, String>();	
-	private final Map<String, String> parameters = new HashMap<String, String>();	
+	private final Map<String, String> headers = new HashMap<>();	
+	private final Map<String, String> parameters = new HashMap<>();	
 	private URIBuilder uriBuilder;
 	
 	private HttpEntity content;

@@ -178,7 +178,7 @@ public class HttpClientImpl implements IHttpClient{
 			kmf.init(clientKeyStore, password.toCharArray());
 
 			// Create the Trust Managers
-			TrustManager trustManagers[] = { new ClientAuthTrustManager(serverKeyStore, alias) };
+			TrustManager[] trustManagers = { new ClientAuthTrustManager(serverKeyStore, alias) };
 
 			// Create the SSL Context
 			SSLContext ctx = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
@@ -463,10 +463,8 @@ public class HttpClientImpl implements IHttpClient{
 
 		String commonPath = ub.getPath();
 
-		if (commonPath != null) {
-			if (!path.toLowerCase().startsWith(commonPath.toLowerCase())) {
+		if (commonPath != null && !path.toLowerCase().startsWith(commonPath.toLowerCase())) {
 				path = commonPath + path;
-			}
 		}
 		ub.setPath(path);
 	}
@@ -476,10 +474,10 @@ public class HttpClientImpl implements IHttpClient{
 		try {
 			if (jaxbClasses != null && jaxbClasses.length > 0) {
 				JAXBContext ctx = JAXBContext.newInstance(jaxbClasses);
-				Object o = ctx.createUnmarshaller().unmarshal(new ByteArrayInputStream(content));
-				return o;
+				return ctx.createUnmarshaller().unmarshal(new ByteArrayInputStream(content));
 			}
 		} catch (JAXBException e) {
+			throw new HttpClientException("Issue unmarshalling response", e);
 		}
 
 		return new String(content);
@@ -613,14 +611,12 @@ public class HttpClientImpl implements IHttpClient{
 					throws HttpClientException {
 
 		byte[] dataBytes = marshall(data, jaxbClasses);
-		data = null;
 		
 		HttpPut put = new HttpPut(buildUri(path, queryParams));
 		put.setEntity(new ByteArrayEntity(dataBytes));
 		addHeaders(put, contentType, acceptTypes);
 
 		byte[] response = execute(put, retry);
-		dataBytes = null;
 		
 		return unmarshall(response, jaxbClasses);
 	}
