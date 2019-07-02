@@ -185,6 +185,7 @@ public class SSHClient implements ICommandShell {
 							"Error whilst issuing command to ssh '" + command + "'",
 							e);
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					throw new SSHException(
 							"Interrupted while trying to retrieve output", e);
 				} catch (ExecutionException e) {
@@ -290,14 +291,14 @@ public class SSHClient implements ICommandShell {
 				((ChannelShell)channel).setPty(true);
 				((ChannelShell)channel).setPtyType("ansi", 2048, 24, 0, 0);	
 				channel.connect();
-				Thread.sleep(5000);
+				Thread.sleep(5000); // NOSONAR  - Sleep is sufficent
 			}
 
 			lastCommandTimestamp = System.currentTimeMillis();
 			// Set a special prompt so we can easily identify responses to our commands
 			logger.trace("Setting special prompt '" + specialPrompt + "'");
 			retrieveOutputFromShell(channel, changePromptCommand, timeout);
-			Thread.sleep(500);
+			Thread.sleep(500); // NOSONAR  - Sleep is sufficent
 
 			// Issue the desired command and retrieve the response to a string
 			lastCommandTimestamp = System.currentTimeMillis();
@@ -313,6 +314,7 @@ public class SSHClient implements ICommandShell {
 		} catch (JSchException e) {
 			throw new SSHException(e);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new SSHException(
 					"Interrupted while trying to retrieve output", e);
 		} catch (ExecutionException e) {
@@ -353,8 +355,9 @@ public class SSHClient implements ICommandShell {
 
 				// Slight delay to allow the connection to stabilise
 				try {
-					Thread.sleep(200);
+					Thread.sleep(200);  // NOSONAR  - Sleep is sufficent
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					throw new SSHException(
 							"Interrupted trying to authenticate using SSH", e);
 				}
@@ -372,7 +375,7 @@ public class SSHClient implements ICommandShell {
 						session.disconnect();
 						session = null;
 					}
-					Thread.sleep(5000);
+					Thread.sleep(5000);  // NOSONAR  - Sleep is sufficent
 					connect(retry - 1);
 				} else {
 					throw e;
@@ -381,6 +384,7 @@ public class SSHClient implements ICommandShell {
 		} catch (SSHException e) {
 			throw e;
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new SSHException(
 					"Interrupted while trying to retrieve output", e);
 		} catch (Exception e) {
@@ -518,7 +522,7 @@ public class SSHClient implements ICommandShell {
 		// Get the input stream from the current session
 		final InputStream in = channel.getInputStream();
 		OutputStream os = channel.getOutputStream();
-		in.skip(in.available());
+		in.skip(in.available()); // NOSONAR - Dont care what is on the buffer to start with
 
 		// Remove any unwanted trailing end-of-line characters
 		command = command.trim();	

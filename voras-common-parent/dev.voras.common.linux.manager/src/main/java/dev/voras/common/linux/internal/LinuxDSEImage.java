@@ -39,12 +39,12 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 
 	@Override
 	public @NotNull IIpHost getIpHost() {
-		return null;
+		throw new UnsupportedOperationException("need to write");
 	}
 
 	@Override
 	public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
-		return null;
+		throw new UnsupportedOperationException("need to write");
 	}
 
 	@Override

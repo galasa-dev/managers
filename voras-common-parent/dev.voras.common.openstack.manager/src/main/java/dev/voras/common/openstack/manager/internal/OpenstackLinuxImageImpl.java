@@ -197,8 +197,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
 	@Override
 	public @NotNull ICommandShell getCommandShell() throws LinuxManagerException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("need to write");
 	}
 
 
