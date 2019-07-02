@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.voras.ICredentials;
+import dev.voras.common.ipnetwork.ICommandShell;
 import dev.voras.common.ipnetwork.IIpHost;
 import dev.voras.common.linux.LinuxManagerException;
 import dev.voras.common.linux.spi.ILinuxProvisionedImage;
@@ -191,6 +192,13 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 			throw new OpenstackManagerException("Unable to start OpenStack Linux server", e);
 		}
 
+	}
+
+
+	@Override
+	public @NotNull ICommandShell getCommandShell() throws LinuxManagerException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

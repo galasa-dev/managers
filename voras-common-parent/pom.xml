@@ -28,6 +28,8 @@
 		<org.apache.velocity.version>1.7</org.apache.velocity.version>
 		<dev.voras.common.obr>0.3.0-SNAPSHOT</dev.voras.common.obr>
 
+		<com.jcraft.jsch>0.1.55</com.jcraft.jsch>
+
 		<dev.voras.uber.obr>0.3.0-SNAPSHOT</dev.voras.uber.obr>
 		<dev.voras.uber.karaffeature>0.3.0-SNAPSHOT</dev.voras.uber.karaffeature>
 

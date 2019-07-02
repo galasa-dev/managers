@@ -19,6 +19,7 @@ import dev.voras.common.linux.ILinuxImage;
 import dev.voras.common.linux.LinuxImage;
 import dev.voras.common.linux.LinuxManagerException;
 import dev.voras.common.linux.OperatingSystem;
+import dev.voras.common.linux.internal.properties.LinuxPropertiesSingleton;
 import dev.voras.common.linux.spi.ILinuxManagerSpi;
 import dev.voras.common.linux.spi.ILinuxProvisioner;
 import dev.voras.framework.spi.AbstractManager;
@@ -60,7 +61,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 			this.provisioners.add(provisioner);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see dev.voras.framework.spi.AbstractManager#initialise(dev.voras.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
 	 */
@@ -78,12 +79,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
 		try {
 			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
+			LinuxPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
 		} catch (Exception e) {
 			throw new LinuxManagerException("Unable to request framework services", e);
 		}
+
+		//*** Ensure our DSE Provisioner is at the top of the list
+		this.provisioners.add(new LinuxDSEProvisioner(this));
 	}
-	
+
 	@Override
 	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
 			throws ManagerException {
@@ -108,7 +112,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
 		//*** First add our default provisioning agent to the end
 		this.provisioners.add(new LinuxDefaultProvisioner());
-		
+
 		//*** Get all our annotated fields
 		List<AnnotatedField> annotatedFields = findAnnotatedFields(LinuxManagerField.class);
 
@@ -143,21 +147,21 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 		if (taggedImages.containsKey(tag)) {
 			return taggedImages.get(tag);
 		}
-		
-		
-		
+
+
+
 		//*** Need a new linux image,  lets ask the provisioners for one
 		OperatingSystem operatingSystem = annotationLinuxImage.operatingSystem();
 		if (operatingSystem == null) {
 			operatingSystem = OperatingSystem.any;
 		}
-		
+
 		String[] capabilities = annotationLinuxImage.capabilities();
 		if (capabilities == null) {
 			capabilities = new String[0];
 		}
 		List<String> capabilitiesTrimmed = AbstractManager.trim(capabilities);
-		
+
 		ILinuxImage image = null;
 		for(ILinuxProvisioner provisioner : this.provisioners) {
 			try {
@@ -170,14 +174,26 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 				break;
 			}
 		}
-		
+
 		if (image == null) {
 			throw new ResourceUnavailableException("There are no linux images available for provisioning the @LinuxImage tagged " + tag);
 		}
-		
+
 		taggedImages.put(tag, image);
-		
+
 		return image;
+	}
+
+	protected IConfigurationPropertyStoreService getCps() {
+		return this.cps;
+	}
+
+	protected IDynamicStatusStoreService getDss() {
+		return this.dss;
+	}
+
+	protected IIpNetworkManagerSpi getIpNetworkManager() {
+		return this.ipManager;
 	}
 
 }
