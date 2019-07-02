@@ -194,6 +194,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 			ZosImageImpl image = new ZosImageImpl(this, imageID, null);
 			if (image.allocateImage()) {
 				logger.info("zOS Image " + image.getImageID() + " selected for zosTag '" + tag + "'");
+				images.put(image.getImageID(), image);
 				taggedImages.put(tag, image);
 				return image;
 			} else {
