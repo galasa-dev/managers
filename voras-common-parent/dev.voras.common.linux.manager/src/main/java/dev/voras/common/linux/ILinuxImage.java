@@ -3,6 +3,7 @@ package dev.voras.common.linux;
 import javax.validation.constraints.NotNull;
 
 import dev.voras.ICredentials;
+import dev.voras.common.ipnetwork.ICommandShell;
 import dev.voras.common.ipnetwork.IIpHost;
 
 /**
@@ -39,4 +40,7 @@ public interface ILinuxImage {
 	 */
 	@NotNull
 	ICredentials getDefaultCredentials() throws LinuxManagerException;
+	
+	@NotNull
+	ICommandShell getCommandShell() throws LinuxManagerException;
 }

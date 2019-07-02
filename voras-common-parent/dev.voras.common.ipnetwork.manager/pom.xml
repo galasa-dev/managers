@@ -28,6 +28,12 @@
 			<version>${dev.voras}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>com.jcraft.jsch</artifactId>
+			<version>${com.jcraft.jsch}</version>
+			<scope>provided</scope>
+		</dependency>
 
 	</dependencies>
 
