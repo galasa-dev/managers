@@ -70,11 +70,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 
 	private FileSystem createFileSystem() throws LinuxManagerException {
 		try {
-			ICredentials credentials = linuxManager.getFramework().getCredentialsService().getCredentials(this.sshCredentialsId);
-			
-			if (credentials == null) {
-				throw new LinuxManagerException("Unable to locate credentials " + this.sshCredentialsId + " for use with SSH command shell");
-			}
+			ICredentials credentials = getDefaultCredentials();
 			
 			return this.linuxManager.getIpNetworkManager().getFileSystem(this.hostname4, this.sshPort, credentials); 
 		} catch (LinuxManagerException e) {
@@ -87,10 +83,6 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 	private ICommandShell createCommandShell() throws LinuxManagerException {
 		try {
 			ICredentials credentials = getDefaultCredentials();
-			
-			if (credentials == null) {
-				throw new LinuxManagerException("Unable to locate credentials " + this.sshCredentialsId + " for use with SSH command shell");
-			}
 			
 			return this.linuxManager.getIpNetworkManager().getCommandShell(this.hostname4, this.sshPort, credentials); 
 		} catch (LinuxManagerException e) {
@@ -113,7 +105,11 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 	@Override
 	public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
 		try {
-			return this.linuxManager.getFramework().getCredentialsService().getCredentials(this.sshCredentialsId);
+			ICredentials creds = this.linuxManager.getFramework().getCredentialsService().getCredentials(this.sshCredentialsId);
+			if (creds == null) {
+				throw new LinuxManagerException("Unable to obtain default credentials for linux host tagged " + this.tag + ", credentials id " + this.sshCredentialsId + " is missing");
+			}
+			return creds;
 		} catch (CredentialsException e) {
 			throw new LinuxManagerException("Unable to obtain default credentials for linux host tagged " + this.tag, e);
 		}
@@ -121,19 +117,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 
 	@Override
 	public @NotNull ICommandShell getCommandShell() throws LinuxManagerException {
-		try {
-			ICredentials credentials = getDefaultCredentials();
-			
-			if (credentials == null) {
-				throw new LinuxManagerException("Unable to locate credentials " + this.sshCredentialsId + " for use with SSH command shell");
-			}
-			
-			return this.linuxManager.getIpNetworkManager().getCommandShell(this.hostname4, this.sshPort, credentials); 
-		} catch (LinuxManagerException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new LinuxManagerException("Unable to initialise the command shell", e);
-		}
+		return this.commandShell;
 	}
 
 	@Override
