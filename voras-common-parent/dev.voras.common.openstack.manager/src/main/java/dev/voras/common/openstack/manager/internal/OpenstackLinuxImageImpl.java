@@ -1,5 +1,7 @@
 package dev.voras.common.openstack.manager.internal;
 
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -11,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.voras.ICredentials;
 import dev.voras.common.ipnetwork.ICommandShell;
 import dev.voras.common.ipnetwork.IIpHost;
+import dev.voras.common.ipnetwork.IpNetworkManagerException;
 import dev.voras.common.linux.LinuxManagerException;
 import dev.voras.common.linux.spi.ILinuxProvisionedImage;
 import dev.voras.common.openstack.manager.OpenstackManagerException;
@@ -22,6 +25,7 @@ import dev.voras.common.openstack.manager.internal.json.ServerRequest;
 import dev.voras.common.openstack.manager.internal.json.VorasMetadata;
 import dev.voras.common.openstack.manager.internal.properties.GenerateTimeout;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
+import dev.voras.framework.spi.creds.CredentialsException;
 
 public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
 
@@ -37,9 +41,21 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 	private String username;
 	private String password;
 
+	private String hostname;
+
 	private Server openstackServer;
 	private Port   openstackPort;
 	private Floatingip openstackFloatingip;
+
+	private OpenstackIpHost ipHost;
+
+	private ICommandShell commandShell;
+
+	private FileSystem fileSystem;
+
+	private Path pathRoot;
+	private Path pathTemp;
+	private Path pathHome;
 
 	public OpenstackLinuxImageImpl(@NotNull OpenstackManagerImpl manager,
 			@NotNull OpenstackHttpClient openstackHttpClient,
@@ -61,12 +77,16 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
 	@Override
 	public @NotNull IIpHost getIpHost() {
-		return new OpenstackIpHost();
+		return this.ipHost;
 	}
 
 	@Override
 	public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
-		return new OpenstackUsernamePasswordCredentials();
+		try {
+			return this.manager.getFramework().getCredentialsService().getCredentials("sshvoras"); // TODO cps
+		} catch (CredentialsException e) {
+			throw new LinuxManagerException("Unable to obtain default credentials for openstack linux server" + this.tag, e);
+		}
 	}
 
 	public void discard() {
@@ -103,8 +123,8 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 	}
 
 
-	public void generate() throws OpenstackManagerException, ConfigurationPropertyStoreException {
-		logger.info("Generating OpenStack Linux instance " + this.instanceName + " with image " + this.image + " for tag " + this.tag);
+	public void build() throws OpenstackManagerException, ConfigurationPropertyStoreException {
+		logger.info("Building OpenStack Linux instance " + this.instanceName + " with image " + this.image + " for tag " + this.tag);
 
 		String flavor = "m1.small";
 		int generateTimeout = GenerateTimeout.get(); 
@@ -136,21 +156,24 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 			this.openstackServer = this.openstackHttpClient.createServer(serverRequest);
 			this.id = this.openstackServer.id;
 			this.password = this.openstackServer.adminPass;
-			
+
 			Instant expire = Instant.now();
 			expire = expire.plus(generateTimeout, ChronoUnit.MINUTES);
 
 			String serverJson = "";
 			String state = null;
+			boolean up = false;
 			while(expire.compareTo(Instant.now()) > 0) {
 				Thread.sleep(5000);
 
 				Server checkServer = this.openstackHttpClient.getServer(this.id);
 				if (checkServer != null) {
+					serverJson = this.manager.getGson().toJson(checkServer);
 					if (checkServer.power_state != null) {
 						if (checkServer.power_state == 1) {
-							logger.info("OpenStack Linux instance " + this.instanceName + " is running");
+							logger.info("OpenStack Linux instance " + this.instanceName + " has been built and is running, compute server id = " + this.openstackServer.id);
 							this.openstackServer = checkServer;
+							up = true;
 							break;
 						}
 						state = checkServer.task_state;
@@ -160,10 +183,10 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 				logger.trace("Still waiting for OpenStack Linux instance " + this.instanceName + " to be built, task=" + state);  // TODO switch to trace
 			}
 
-			if (this.openstackServer == null) {
+			if (!up) {
 				throw new OpenstackManagerException("OpenStack failed to build the server in time, last response was:-\n" + serverJson);
 			}
-
+			
 			//*** Get the network port details
 			this.openstackPort = this.openstackHttpClient.retrievePort(this.openstackServer.id);
 			if (this.openstackPort == null) {
@@ -179,15 +202,39 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
 			//*** Assign a floating IPv4 address
 			this.openstackFloatingip = this.openstackHttpClient.allocateFloatingip(this.openstackPort, network);
-			
+			logger.info("OpenStack Linux Server " + this.instanceName + " assigned IP address " + this.openstackFloatingip.floating_ip_address);
+
 			//*** Create the DSS properties to manager the Floating IP Address
 			registerFloatingIp(this.manager.getDSS(), this.manager.getFramework().getTestRunName(), this.openstackFloatingip);
-
-			//*** Assign a floating IPv4 address
-			this.password = this.openstackHttpClient.retrieveServerPassword(this.openstackServer);
 			
-			System.out.println("done");
-
+			//*** Default hostname to the floatingip
+			this.hostname = this.openstackFloatingip.floating_ip_address;
+			
+			//*** Create the IPHost
+			this.ipHost = new OpenstackIpHost(this.hostname);
+			
+			//*** Create the Commandshell
+			this.commandShell = this.manager.getIpNetworkManager().getCommandShell(hostname, 22, getDefaultCredentials());
+			
+			//*** Create the filesystem
+			this.fileSystem = this.manager.getIpNetworkManager().getFileSystem(hostname, 22, getDefaultCredentials());
+			
+			this.pathRoot         = this.fileSystem.getPath("/");
+			this.pathTemp         = this.fileSystem.getPath("/tmp");
+			
+			try {
+				String homeDir = this.commandShell.issueCommand("pwd");
+				if (homeDir ==  null) {
+					throw new LinuxManagerException("Unable to determine home directory, response null");
+				}
+				homeDir = homeDir.replaceAll("\\r\\n?|\\n", "");
+				this.pathHome = this.fileSystem.getPath(homeDir);
+				logger.info("Home directory for linux image tagged " + tag + " is " + homeDir);
+			} catch (IpNetworkManagerException e) {
+				throw new OpenstackManagerException("Unable to determine home directory", e);
+			}
+		} catch(OpenstackManagerException e) {
+			throw e;
 		} catch(Exception e) {
 			throw new OpenstackManagerException("Unable to start OpenStack Linux server", e);
 		}
@@ -197,7 +244,25 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
 	@Override
 	public @NotNull ICommandShell getCommandShell() throws LinuxManagerException {
-		throw new UnsupportedOperationException("need to write");
+		return this.commandShell;
+	}
+
+
+	@Override
+	public @NotNull Path getRoot() throws LinuxManagerException {
+		return this.pathRoot;
+	}
+
+
+	@Override
+	public @NotNull Path getHome() throws LinuxManagerException {
+		return this.pathHome;
+	}
+
+
+	@Override
+	public @NotNull Path getTmp() throws LinuxManagerException {
+		return this.pathTemp;
 	}
 
 

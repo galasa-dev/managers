@@ -108,7 +108,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 	public void provisionBuild() throws ManagerException, ResourceUnavailableException {
 		for(OpenstackLinuxImageImpl instance : instances) {
 			try {
-				instance.generate();
+				instance.build();
 			} catch(ConfigurationPropertyStoreException e) {
 				throw new OpenstackManagerException("Problem building OpenStack servers", e);
 			}
@@ -263,6 +263,10 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
 	protected Gson getGson() {
 		return this.gson;
+	}
+	
+	protected IIpNetworkManagerSpi getIpNetworkManager() {
+		return this.ipManager;
 	}
 
 }
