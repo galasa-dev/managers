@@ -369,6 +369,10 @@ public class SSHClient implements ICommandShell {
 				this.keepAliveThread.start();
 
 			} catch (Exception e) {
+				if ("Auth fail".equals(e.getMessage())) {
+					throw e;
+				}
+				
 				if (retry > 0) {
 					logger.trace("Exception caught during SSH connection, will retry.", e);
 					if (session != null && session.isConnected()) {

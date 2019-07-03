@@ -1,5 +1,7 @@
 package dev.voras.common.ipnetwork.spi;
 
+import java.nio.file.FileSystem;
+
 import javax.validation.constraints.NotNull;
 
 import dev.voras.ICredentials;
@@ -13,5 +15,8 @@ public interface IIpNetworkManagerSpi {
 
 	@NotNull
 	ICommandShell getCommandShell(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException;
+
+	@NotNull
+	FileSystem getFileSystem(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException;
 
 }

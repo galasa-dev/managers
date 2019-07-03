@@ -1,12 +1,12 @@
-package dev.voras.common.openstack.manager.internal;
+package dev.voras.common.linux.internal;
 
 import dev.voras.common.ipnetwork.IIpHost;
 
-public class OpenstackIpHost implements IIpHost {
+public class LinuxDSEIpHost implements IIpHost {
 	
 	private final String hostname;
 	
-	public OpenstackIpHost(String hostname) {
+	protected LinuxDSEIpHost(String hostname) {
 		this.hostname = hostname;
 	}
 

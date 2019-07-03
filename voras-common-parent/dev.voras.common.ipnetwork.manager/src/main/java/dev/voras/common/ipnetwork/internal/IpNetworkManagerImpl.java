@@ -1,5 +1,6 @@
 package dev.voras.common.ipnetwork.internal;
 
+import java.nio.file.FileSystem;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import dev.voras.common.ipnetwork.ICommandShell;
 import dev.voras.common.ipnetwork.IpNetworkManagerException;
 import dev.voras.common.ipnetwork.internal.ssh.SSHClient;
 import dev.voras.common.ipnetwork.internal.ssh.SSHException;
+import dev.voras.common.ipnetwork.internal.ssh.filesystem.SSHFileSystem;
 import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 import dev.voras.common.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
@@ -99,6 +101,11 @@ public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkM
 	@Override
 	public @NotNull ICommandShell getCommandShell(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException {
 		return new SSHClient(hostname, port, credentials, 60000);
+	}
+
+	@Override
+	public @NotNull FileSystem getFileSystem(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException {
+		return new SSHFileSystem(hostname, port, credentials);
 	}
 
 }

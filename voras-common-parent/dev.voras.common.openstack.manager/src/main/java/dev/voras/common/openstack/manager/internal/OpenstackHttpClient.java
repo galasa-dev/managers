@@ -500,7 +500,6 @@ public class OpenstackHttpClient {
 			try (CloseableHttpResponse response = httpClient.execute(get)) {
 				StatusLine status = response.getStatusLine();
 				String entity = EntityUtils.toString(response.getEntity());
-				System.out.println(entity);
 				if (status.getStatusCode() != HttpStatus.SC_OK) {
 					throw new OpenstackManagerException("OpenStack list os password failed - " + status);
 				}
@@ -641,7 +640,6 @@ public class OpenstackHttpClient {
 				if (status.getStatusCode() != HttpStatus.SC_OK) {
 					throw new OpenstackManagerException("OpenStack list networks failed - " + status);
 				}
-				System.out.println(entity);
 
 				Networks networks = this.gson.fromJson(entity, Networks.class);
 				if (networks != null && networks.networks != null) {

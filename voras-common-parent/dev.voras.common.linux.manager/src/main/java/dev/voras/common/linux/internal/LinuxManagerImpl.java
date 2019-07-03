@@ -14,9 +14,11 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.voras.ManagerException;
+import dev.voras.common.ipnetwork.IIpHost;
 import dev.voras.common.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.voras.common.linux.ILinuxImage;
 import dev.voras.common.linux.LinuxImage;
+import dev.voras.common.linux.LinuxIpHost;
 import dev.voras.common.linux.LinuxManagerException;
 import dev.voras.common.linux.OperatingSystem;
 import dev.voras.common.linux.internal.properties.LinuxPropertiesSingleton;
@@ -24,6 +26,7 @@ import dev.voras.common.linux.spi.ILinuxManagerSpi;
 import dev.voras.common.linux.spi.ILinuxProvisioner;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.AnnotatedField;
+import dev.voras.framework.spi.GenerateAnnotatedField;
 import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
 import dev.voras.framework.spi.IFramework;
@@ -100,6 +103,20 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 		if (ipManager == null) {
 			throw new LinuxManagerException("The IP Network Manager is not available");
 		}
+	}
+	
+	@Override
+	public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
+		for(ILinuxProvisioner provisioner : provisioners) {
+			if (provisioner instanceof LinuxDSEProvisioner) {
+				continue;
+			}
+			
+			if (otherManager == provisioner) {
+				return true;
+			}
+		}
+		return super.areYouProvisionalDependentOn(otherManager);
 	}
 
 
@@ -183,6 +200,48 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
 		return image;
 	}
+	
+	@Override
+	public void provisionBuild() throws ManagerException, ResourceUnavailableException {
+		super.provisionBuild();
+		
+		//*** We need to find all out IIpHosts for the images that we build and have an annotation for
+		
+		//*** Get all our annotated fields
+		List<AnnotatedField> annotatedFields = findAnnotatedFields(LinuxManagerField.class);
+
+		//*** First, locate all the ILinuxImage fields
+		//*** And then generate them
+		Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
+		while(annotatedFieldIterator.hasNext()) {
+			AnnotatedField annotatedField = annotatedFieldIterator.next();
+			final Field field = annotatedField.getField();
+			final List<Annotation> annotations = annotatedField.getAnnotations();
+
+			if (field.getType() == IIpHost.class) {
+				IIpHost iIpHost = generateIpHost(field, annotations);
+				registerAnnotatedField(field, iIpHost);
+			}
+		}
+		
+	}
+
+	public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws LinuxManagerException {
+		LinuxIpHost annotationHost = field.getAnnotation(LinuxIpHost.class);
+
+		//*** Default the tag to primary
+		String tag = defaultString(annotationHost.imageTag(), "primary");
+
+		//*** Ensure we have this tagged host
+		ILinuxImage image = taggedImages.get(tag);
+		if (image == null) { 
+			throw new LinuxManagerException("Unable to provision an IP Host for field " + field.getName() + " as no @LinuxImage for the tag '" + tag + "' was present");
+		}
+
+		return image.getIpHost();
+	}
+	
+
 
 	protected IConfigurationPropertyStoreService getCps() {
 		return this.cps;

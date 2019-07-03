@@ -1,5 +1,7 @@
 package dev.voras.common.linux;
 
+import java.nio.file.Path;
+
 import javax.validation.constraints.NotNull;
 
 import dev.voras.ICredentials;
@@ -33,7 +35,7 @@ public interface ILinuxImage {
 	IIpHost getIpHost();
 	
 	/**
-	 * Retrieve the default credentials for the zOS Image. 
+	 * Retrieve the default credentials for the Image. 
 	 * 
 	 * @return The default credentials - see {@link dev.voras.framework.spi.creds.ICredentials}
 	 * @throws LinuxManagerException if the credentials are missing or there is a problem with the credentials store
@@ -43,4 +45,15 @@ public interface ILinuxImage {
 	
 	@NotNull
 	ICommandShell getCommandShell() throws LinuxManagerException;
+	
+	@NotNull
+	Path getRoot() throws LinuxManagerException;
+	
+	@NotNull
+	Path getHome() throws LinuxManagerException;
+	
+	@NotNull
+	Path getTmp() throws LinuxManagerException;
+	
+	
 }
