@@ -49,6 +49,7 @@
 		<module>voras-bom</module>
 		<module>dev.voras.common.linux.manager</module>
 		<module>dev.voras.common.openstack.manager</module>
+		<module>voras-uber-javadoc</module>
 	</modules>
 
 	<dependencies>
