@@ -35,6 +35,18 @@
 			<version>${dev.voras.common.zos.manager}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.http.manager</artifactId>
+			<version>${dev.voras.common.http.manager}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3}</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 </project>

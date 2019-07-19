@@ -8,7 +8,7 @@ import java.util.List;
  * @author Michael Baylis
  *
  */
-public interface IBatchJob {
+public interface IZosBatchJob {
 	
 	/**
 	 * Wait for a job to complete. Return the
@@ -28,5 +28,9 @@ public interface IBatchJob {
 	 * @throws ZosBatchException
 	 */
 	List<String> retrieveOutput() throws ZosBatchException;
+
+	String getJcl() throws ZosBatchException;
+
+	IZosBatchJobname getJobname() throws ZosBatchException;
 
 }

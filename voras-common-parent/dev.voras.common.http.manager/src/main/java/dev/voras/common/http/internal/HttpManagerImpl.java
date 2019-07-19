@@ -25,7 +25,7 @@ import dev.voras.framework.spi.ResourceUnavailableException;
 @Component(service = { IManager.class })
 public class HttpManagerImpl extends AbstractManager implements IHttpManager {
 
-    private static final Log logger = LogFactory.getLog(HttpManagerImpl.class);
+    static final Log logger = LogFactory.getLog(HttpManagerImpl.class);
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
 
     @GenerateAnnotatedField(annotation=HttpClient.class)
@@ -69,5 +69,13 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManager {
 		}
 
 		activeManagers.add(this);
+	}
+
+
+	@Override
+	public @NotNull IHttpClient newHttpClient() {
+		IHttpClient client = new HttpClientImpl(logger);
+    	instantiatedClients.add(client);
+		return client;
 	}
 }

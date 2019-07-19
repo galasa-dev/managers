@@ -38,6 +38,15 @@ public interface IZosImage {
 	String getClusterID();
 
 	/**
+	 * Get the default host name for this Image
+	 * 
+	 * @return a non-null String representing the default host name 
+	 * @throws ZosManagerException 
+	 */
+	@NotNull
+	String getDefaultHostname() throws ZosManagerException;
+
+	/**
 	 * Retrieve the default credentials for the zOS Image. 
 	 * 
 	 * @return The default credentials - see {@link dev.voras.framework.spi.creds.ICredentials}

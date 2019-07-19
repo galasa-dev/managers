@@ -10,18 +10,19 @@ import dev.voras.common.zos.IZosImage;
  * @author Michael Baylis
  *
  */
-public interface IZosBatchManager {
+public interface IZosBatch {
 	
 	/**
 	 * Submit a job.
 	 * 
 	 * @param jcl - The JCL to submit.   Must not include the JOB statement
-	 * @param jobname - {@link IJobname} A provisioned jobname, if null, a new unique jobname will be provisioned.
+	 * @param jobname - {@link IZosBatchJobname} A provisioned jobname, if null, a new unique jobname will be provisioned.
 	 * @param image - {@link IZosImage} The zOS image the job is to run on
-	 * @return {@link IBatchJob} A representation of the batchjob
+	 * @return {@link IZosBatchJob} A representation of the batchjob
 	 * @throws ZosBatchException
+	 * @throws ZosBatchManagerException 
 	 */
 	@NotNull
-	IBatchJob submitJob(@NotNull String jcl, IJobname jobname, @NotNull IZosImage image) throws ZosBatchException;
+	IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, @NotNull IZosImage image) throws ZosBatchException, ZosBatchManagerException;
 
 }
