@@ -22,6 +22,11 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.voras</groupId>
+				<artifactId>dev.voras.framework</artifactId>
+				<version>${dev.voras.framework}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.voras</groupId>
 				<artifactId>dev.voras.core.manager</artifactId>
 				<version>${dev.voras.core.manager}</version>
 			</dependency>
@@ -107,6 +112,13 @@
 				<version>${gson}</version>
 				<scope>compile</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${assertj-core}</version>
+				<scope>provided</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

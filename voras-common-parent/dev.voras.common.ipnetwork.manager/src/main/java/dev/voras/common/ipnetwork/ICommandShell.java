@@ -126,5 +126,12 @@ public interface ICommandShell {
 	 */
 	public String issueCommandToShell(String command, boolean newShell, long timeout)
 			throws IpNetworkManagerException;
+
+	/**
+	 * Ask the shell to log the result strings for all shell commands
+	 * 
+	 * @param report whether the shell should log the results of the shell commands
+	 */
+	public void reportResultStrings(boolean report);
 	
 }
