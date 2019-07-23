@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileStore;
@@ -17,10 +18,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import dev.voras.common.ipnetwork.internal.ssh.SSHException;
@@ -85,8 +90,17 @@ public class SSHFileSystemProvider extends FileSystemProvider {
 
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
+		ChannelSftp channel = null;
+		try { 
+			channel = fileSystem.getFileChannel();
+			channel.mkdir(dir.toAbsolutePath().toString());
+		} catch(Exception e) {
+			throw new IOException("Unable to create directory via SFTP", e);
+		} finally {
+			if (channel != null) {
+				channel.disconnect();
+			}
+		}
 	}
 
 	@Override
@@ -94,7 +108,29 @@ public class SSHFileSystemProvider extends FileSystemProvider {
 		ChannelSftp channel = null;
 		try { 
 			channel = fileSystem.getFileChannel();
-			channel.rm(path.toAbsolutePath().toString());
+			
+			SftpATTRS attrs = channel.lstat(path.toAbsolutePath().toString());
+			if (attrs.isReg()) {
+				channel.rm(path.toAbsolutePath().toString());
+			} else {
+				@SuppressWarnings("unchecked")
+				Vector<LsEntry> v = channel.ls(path.toAbsolutePath().toString());
+				
+				Iterator<LsEntry> i = v.iterator();
+				while(i.hasNext()) {
+					LsEntry e = i.next();
+					if (e.getFilename().equals(".") || e.getFilename().equals("..")) {
+						i.remove();
+					}
+				}
+				
+				if (!v.isEmpty()) {
+					throw new DirectoryNotEmptyException(path.toAbsolutePath().toString());
+				}
+				
+				channel.rmdir(path.toAbsolutePath().toString());
+			}
+			
 		} catch(SftpException e) {
 			if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new NoSuchFileException(path.toAbsolutePath().toString());
@@ -177,11 +213,11 @@ public class SSHFileSystemProvider extends FileSystemProvider {
 		return this.fileSystem;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options)
 			throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return (A) new SSHBasicAttributes(fileSystem);
 	}
 
 	@Override

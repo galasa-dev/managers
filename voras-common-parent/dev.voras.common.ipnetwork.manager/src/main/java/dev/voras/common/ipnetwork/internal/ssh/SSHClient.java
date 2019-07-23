@@ -55,6 +55,8 @@ public class SSHClient implements ICommandShell {
 
 	private long    lastCommandTimestamp;
 
+	private boolean logShellResults;
+
 	private final static String specialPrompt = "[VorasPrompt]";
 
 	// Default value: Linux command
@@ -174,7 +176,9 @@ public class SSHClient implements ICommandShell {
 					// string
 					String response = retrieveOutput(command, timeout);
 
-					logger.trace("Received '" + response);
+					if (logShellResults) {
+						logger.trace("Received '" + response);
+					}
 					lastCommandTimestamp = System.currentTimeMillis();
 
 					return response;
@@ -372,7 +376,7 @@ public class SSHClient implements ICommandShell {
 				if ("Auth fail".equals(e.getMessage())) {
 					throw e;
 				}
-				
+
 				if (retry > 0) {
 					logger.trace("Exception caught during SSH connection, will retry.", e);
 					if (session != null && session.isConnected()) {
@@ -638,6 +642,11 @@ public class SSHClient implements ICommandShell {
 		}
 
 
+	}
+
+	@Override
+	public void reportResultStrings(boolean report) {
+		this.logShellResults = report;
 	}
 
 }
