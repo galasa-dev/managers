@@ -754,7 +754,7 @@ public class Screen {
 		buildPreviousStartOfFields();
 	}
 
-	public List<Field> getFields() {
+	public synchronized List<Field> getFields() {
 		return this.fields;
 	}
 	
