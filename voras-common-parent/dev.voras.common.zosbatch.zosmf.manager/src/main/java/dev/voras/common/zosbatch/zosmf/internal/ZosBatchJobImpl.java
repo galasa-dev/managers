@@ -103,8 +103,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 				
 				Thread.sleep(500);
 	        } catch (InterruptedException e) {
-	        	throw new ZosBatchException("ERROR", e);
-			}
+	        	logger.error("waitForJob Interrupted", e);
+	        	Thread.currentThread().interrupt();
+	        }
 		}
 		return 0;
 	}
