@@ -7,7 +7,7 @@ import dev.voras.common.zos3270.spi.DatastreamException;
 
 public class BufferAddress {
 
-	private static final byte[] chars = new byte[] { 
+	public static final byte[] chars = new byte[] { 
 			(byte)0x40, (byte)0xc1, (byte)0xc2, (byte)0xc3, 
 			(byte)0xc4, (byte)0xc5, (byte)0xc6, (byte)0xc7, 
 			(byte)0xc8, (byte)0xc9, (byte)0x4a, (byte)0x4b, 

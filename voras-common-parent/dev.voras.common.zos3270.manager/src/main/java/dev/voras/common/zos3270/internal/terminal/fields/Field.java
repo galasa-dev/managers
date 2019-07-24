@@ -1,8 +1,11 @@
 package dev.voras.common.zos3270.internal.terminal.fields;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
+
+import dev.voras.common.zos3270.internal.datastream.Order;
 
 /**
  * <p>Represent a working field on the screen</p>
@@ -22,6 +25,8 @@ public abstract class Field {
 	protected int end;
 	
 	protected FieldStartOfField previousStartOfField = null;
+	
+	protected List<Order> orders;
 
 	/**
 	 * Create a field with a start and end position
@@ -160,4 +165,5 @@ public abstract class Field {
     public String getFieldWithoutNulls() {
         return null; //NOSONAR
     }
+    
 }

@@ -40,4 +40,18 @@ public class OrderRepeatToAddress extends Order {
 		return this.repeatChar;
 	}
 	
+	public byte[] getBytes() {
+		byte[] ba = this.bufferAddress.getCharRepresentation();
+		
+		byte[] buffer = new byte[4];
+		buffer[0] = ID;
+		buffer[1] = ba[0];
+		buffer[2] = ba[1];
+		buffer[3] = String.valueOf(repeatChar).getBytes(ebcdic)[0];
+		
+		return buffer;
+	}
+
+
+	
 }

@@ -3,7 +3,7 @@ package dev.voras.common.zos3270.internal.terminal.fields;
 import java.util.List;
 
 /**
- * Creat a Start of Field position, represents to SF order
+ * Create a Start of Field position, represents to SF order
  * 
  * @author Michael Baylis
  *

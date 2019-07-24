@@ -9,4 +9,8 @@ public class OrderInsertCursor extends Order {
 		return "IC";
 	}
 	
+	public byte[] getBytes() {
+		return new byte[] {ID};
+	}
+
 }

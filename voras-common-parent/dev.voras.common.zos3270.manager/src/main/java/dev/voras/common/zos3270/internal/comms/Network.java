@@ -22,11 +22,15 @@ public class Network /* extends Thread */{
 	public static final byte SE = -16;
 	public static final byte EOR = -17;
 
+	public static final byte ASSOCIATE = 0;
 	public static final byte CONNECT = 1;
 	public static final byte DEVICE_TYPE = 2;
 	public static final byte RESPONSES = 2;
 	public static final byte FUNCTIONS = 3;
 	public static final byte IS = 4;
+	public static final byte INV_DEVICE_TYPE = 4;
+	public static final byte REASON = 5;
+	public static final byte REJECT = 6;
 	public static final byte REQUEST = 7;
 	public static final byte SEND = 8;
 	public static final byte TN3270E = 40;
