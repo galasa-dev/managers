@@ -229,6 +229,22 @@ public class FieldText extends Field {
 		this.previousStartOfField.setFieldModified();
 	}
 	
+	public void nullify() {
+		for(int i = 0; i < this.text.length; i++) {
+			this.text[i] = 0;
+		}
+	}
+	
+	public void setContents(String newContents) {
+		char[] typeTextChars = newContents.toCharArray();
+		
+		for(int i = 0; i < typeTextChars.length && i < this.text.length; i++) {
+			this.text[i] = typeTextChars[i];
+		}
+	}
+
+
+	
 	/* (non-Javadoc)
 	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isModified()
 	 */

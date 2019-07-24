@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
@@ -116,6 +117,12 @@ public class NetworkThread extends Thread {
     public static Inbound3270Message process3270Datastream(CommandCode commandCode, ByteBuffer buffer) throws DatastreamException {
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
+        List<Order> orders = processOrders(buffer);
+        
+        return new Inbound3270Message(commandCode, writeControlCharacter, orders);
+    }
+    
+    public static List<Order> processOrders(ByteBuffer buffer) throws DatastreamException {
         OrderText orderText = null;
 
         ArrayList<Order> orders = new ArrayList<>();
@@ -152,7 +159,7 @@ public class NetworkThread extends Thread {
                 orderText.append(orderByte);
             }
         }
-        return new Inbound3270Message(commandCode, writeControlCharacter, orders);
+        return orders;
     }
 
     public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer) throws NetworkException {

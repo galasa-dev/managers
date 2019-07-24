@@ -24,6 +24,26 @@ public class WriteControlCharacter {
 		keyboardReset = bitSet.get(1);
 		resetMDT      = bitSet.get(0);
 	}
+	
+	public WriteControlCharacter(
+			boolean nop,
+			boolean reset,
+			boolean printer1,
+			boolean printer2,
+			boolean startPrinter,
+			boolean soundAlarm,
+			boolean keyboardReset,
+			boolean resetMDT) {
+		this.nop           = nop;
+		this.reset         = reset;
+		this.printer1      = printer1;
+		this.printer2      = printer2;
+		this.startPrinter  = startPrinter;
+		this.soundAlarm    = soundAlarm;
+		this.keyboardReset = keyboardReset;
+		this.resetMDT      = resetMDT;
+	}
+
 
 	public boolean isNop() {
 		return nop;
@@ -55,6 +75,20 @@ public class WriteControlCharacter {
 
 	public boolean isResetMDT() {
 		return resetMDT;
+	}
+
+	public byte[] getBytes() {
+		BitSet bitSet = new BitSet(8);
+		bitSet.set(7, nop);
+		bitSet.set(6, reset);
+		bitSet.set(5, printer1);
+		bitSet.set(4, printer2);
+		bitSet.set(3, startPrinter);
+		bitSet.set(2, soundAlarm);
+		bitSet.set(1, keyboardReset);
+		bitSet.set(0, resetMDT);
+		
+		return bitSet.toByteArray();
 	}
 
 }

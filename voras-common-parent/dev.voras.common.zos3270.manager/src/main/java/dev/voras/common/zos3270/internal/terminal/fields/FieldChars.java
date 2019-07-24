@@ -121,9 +121,10 @@ public class FieldChars extends Field {
 		//*** If merging with a text field, create a new text field and merge with the next one
 		//*** and remove from list
 		FieldText replacementField = new FieldText(this);
-		replacementField.merge(allFields, nextField);
-		allFields.add(allFields.indexOf(this), replacementField);
+		int pos = allFields.indexOf(this); 
+		allFields.add(pos, replacementField);  // TODO this does not appear to be working
 		allFields.remove(this);
+		replacementField.merge(allFields, nextField);
 	}
 
 	/* (non-Javadoc)

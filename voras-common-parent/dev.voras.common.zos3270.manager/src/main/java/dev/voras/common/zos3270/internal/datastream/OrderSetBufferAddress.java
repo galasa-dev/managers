@@ -38,4 +38,9 @@ public class OrderSetBufferAddress extends Order {
 		return rep;
 	}
 	
+	@Override
+	public byte[] getBytes() {
+		return getCharRepresentation();
+	}
+	
 }

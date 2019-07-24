@@ -7,4 +7,6 @@ public abstract class Order {
 		return "Ignore SQ";
 	}
 
+	public abstract byte[] getBytes();
+
 }

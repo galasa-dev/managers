@@ -29,5 +29,10 @@ public class OrderText extends Order {
 	public String getText() {
 		return text.toString();
 	}
+
+	@Override
+	public byte[] getBytes() {
+		throw new UnsupportedOperationException("Needs to be written");
+	}
 	
 }

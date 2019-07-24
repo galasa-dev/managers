@@ -1,6 +1,7 @@
 package dev.voras.common.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
+import java.util.BitSet;
 
 public class OrderStartField extends Order {
 	
@@ -111,6 +112,34 @@ public class OrderStartField extends Order {
 		sb.append(")");
 		
 		return sb.toString();
+	}
+
+	@Override
+	public byte[] getBytes() {
+		
+		byte[] buffer = new byte[2];
+		buffer[0] = ID;
+		
+		BitSet bitSet = new BitSet(8);
+		bitSet.set(5, fieldProtected);
+		bitSet.set(4, fieldNumeric);
+		
+		if (!fieldDisplay) {
+			bitSet.set(3, true);
+			bitSet.set(2, true);
+		} else if (fieldIntenseDisplay) {
+			bitSet.set(3, true);
+			bitSet.set(2, false);
+		} else if (fieldSelectorPen) {
+			bitSet.set(3, false);
+			bitSet.set(2, true);
+		}
+		bitSet.set(0, fieldModifed);
+		
+		int preConverted = bitSet.toByteArray()[0];
+		buffer[1] = BufferAddress.chars[preConverted];
+		
+		return buffer;
 	}
 	
 }
