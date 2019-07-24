@@ -1,34 +1,37 @@
 package test.force.codecoverage;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import dev.voras.common.zosbatch.zosmf.internal.ZosBatchZosmfManager;
 import dev.voras.common.zos.IZosImage;
-import dev.voras.common.zosbatch.IBatchJob;
-import dev.voras.common.zosbatch.IJobname;
-import dev.voras.common.zosbatch.ZosBatchException;
+import dev.voras.common.zosbatch.IZosBatchJob;
+import dev.voras.common.zosbatch.IZosBatchJobname;
+import dev.voras.common.zosbatch.ZosBatchManagerException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ManagerTest {
 	
 	@Mock
-	private IJobname jobname;
+	private IZosBatchJobname jobname;
 	
 	@Mock
 	private IZosImage image;
 	
+	@Mock
+	private IZosBatchJob zosBatchJob;
+	
 	@Test
-	public void testZosManagerException() throws ZosBatchException {
-		ZosBatchZosmfManager batchManager = new ZosBatchZosmfManager();
+	public void testZosManagerException() throws ZosBatchManagerException {
 		
-		IBatchJob batchJob = batchManager.submitJob("Boo", jobname, image);
-		
-		Assert.assertEquals("dummy", 0, batchJob.waitForJob());
-		Assert.assertEquals("dummy", null, batchJob.retrieveOutput());
+		Assert.assertEquals("dummy", 0, zosBatchJob.waitForJob());		
+		List<String> expected = Arrays.asList();
+		Assert.assertEquals("dummy", expected, zosBatchJob.retrieveOutput());
 	}
 	
 	

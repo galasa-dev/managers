@@ -69,6 +69,11 @@ public class ZosImageImpl implements IZosImage {
 		return this.clusterId;
 	}
 
+	@Override
+	public @NotNull String getDefaultHostname() throws ZosManagerException {
+		return ipHost.getHostname() != null ? ipHost.getHostname() : zosManager.getZosProperties().getHostId(this);
+	}
+
 	public boolean hasCapacity() throws ZosManagerException {
 		if (getCurrentUsage() >= 1.0f) {
 			return false;

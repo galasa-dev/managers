@@ -6,14 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Requests a unique provisioned Jobname for running Jobs or STCs on a zOS Image.
- * 
- * <p>Used to populate a {@link IJobname} field</p>
- * 
+ * Used to annotate annotations that are to be used for Test Class fields. To be
+ * populated by the Manager.
+ *
  * @author Michael Baylis
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface Jobname {
+@Target({ ElementType.TYPE })
+public @interface ZosBatchField {
+
 }

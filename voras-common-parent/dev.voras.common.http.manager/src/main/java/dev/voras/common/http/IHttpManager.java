@@ -1,5 +1,7 @@
 package dev.voras.common.http;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Provides test code access to HTTP Manager to execute HTTP requests
  * 
@@ -8,5 +10,6 @@ package dev.voras.common.http;
 
  public interface IHttpManager {
 
-    
+		@NotNull
+		IHttpClient newHttpClient();
  }

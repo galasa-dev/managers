@@ -70,4 +70,12 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManager {
 
 		activeManagers.add(this);
 	}
+
+
+	@Override
+	public @NotNull IHttpClient newHttpClient() {
+		IHttpClient client = new HttpClientImpl(logger);
+    	instantiatedClients.add(client);
+		return client;
+	}
 }
