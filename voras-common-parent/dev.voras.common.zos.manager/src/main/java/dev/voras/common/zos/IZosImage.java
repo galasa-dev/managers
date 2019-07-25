@@ -3,6 +3,7 @@ package dev.voras.common.zos;
 import javax.validation.constraints.NotNull;
 
 import dev.voras.ICredentials;
+import dev.voras.common.ipnetwork.IIpHost;
 
 /**
  * <p>Represents a zOS Image (or lpar).</p>
@@ -54,4 +55,10 @@ public interface IZosImage {
 	 */
 	@NotNull
 	ICredentials getDefaultCredentials() throws ZosManagerException;
+	
+	/**
+	 * @return The default IP Host representing the zOS Image IP Stack
+	 */
+	@NotNull
+	IIpHost getIpHost();
 }

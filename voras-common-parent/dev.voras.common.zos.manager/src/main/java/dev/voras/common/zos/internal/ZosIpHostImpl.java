@@ -1,19 +1,19 @@
-package dev.voras.common.linux.internal;
+package dev.voras.common.zos.internal;
 
 import dev.voras.common.ipnetwork.IIpPort;
 import dev.voras.common.ipnetwork.IpNetworkManagerException;
 import dev.voras.common.ipnetwork.spi.AbstractGenericIpHost;
 import dev.voras.framework.spi.creds.CredentialsException;
 
-public class LinuxDSEIpHost extends AbstractGenericIpHost {
-	
-	protected LinuxDSEIpHost(LinuxManagerImpl linuxManager, String hostid) throws IpNetworkManagerException, CredentialsException {
-		super(linuxManager.getCps(), linuxManager.getDss(), linuxManager.getFramework().getCredentialsService(), "image", hostid);
+public class ZosIpHostImpl extends AbstractGenericIpHost {
+	public ZosIpHostImpl(ZosManagerImpl zosManager, String imageId) throws IpNetworkManagerException, CredentialsException {
+		super(zosManager.getCPS(), zosManager.getDSS(), zosManager.getFramework().getCredentialsService(), "image", imageId);
 	}
 
 	@Override
 	public IIpPort provisionPort(String type) throws IpNetworkManagerException {
 		throw new UnsupportedOperationException("Not written yet");
 	}
+
 
 }

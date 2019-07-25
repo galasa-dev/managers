@@ -119,5 +119,9 @@ public class Terminal implements ITerminal {
         return this;
     }
 
+	public String getHostPort() {
+		return this.network.getHostPort();
+	}
+
 
 }

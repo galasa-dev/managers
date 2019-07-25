@@ -1,7 +1,6 @@
 package dev.voras.common.ipnetwork.internal;
 
 import java.nio.file.FileSystem;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -13,11 +12,10 @@ import org.osgi.service.component.annotations.Component;
 import dev.voras.ICredentials;
 import dev.voras.ManagerException;
 import dev.voras.common.ipnetwork.ICommandShell;
+import dev.voras.common.ipnetwork.IIpHost;
 import dev.voras.common.ipnetwork.IpNetworkManagerException;
 import dev.voras.common.ipnetwork.internal.ssh.SSHClient;
-import dev.voras.common.ipnetwork.internal.ssh.SSHException;
 import dev.voras.common.ipnetwork.internal.ssh.filesystem.SSHFileSystem;
-import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 import dev.voras.common.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.IConfigurationPropertyStoreService;
@@ -36,8 +34,6 @@ public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkM
 	private IFramework framework;
 	private IConfigurationPropertyStoreService cps;
 	private IDynamicStatusStoreService dss;
-
-	private final HashMap<String, IpHostImpl> hosts = new HashMap<>();
 
 	@Override
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
@@ -63,29 +59,6 @@ public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkM
 		activeManagers.add(this);
 	}
 
-	@Override
-	public @NotNull IIpHostSpi buildHost(String hostId) throws IpNetworkManagerException {
-		if (this.hosts.containsKey(hostId)) {
-			return this.hosts.get(hostId);
-		}
-
-		IpHostImpl newHost = new IpHostImpl(this, hostId);
-		this.hosts.put(hostId, newHost);
-
-		return newHost;
-	}
-	
-	@Override
-	public void provisionDiscard() {
-		
-		//*** discard anything the hosts created
-		for(IpHostImpl host : hosts.values()) {
-			host.provisionDiscard();
-		}
-		
-		super.provisionDiscard();
-	}
-
 	public IConfigurationPropertyStoreService getCPS() {
 		return this.cps;
 	}
@@ -99,13 +72,13 @@ public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkM
 	}
 
 	@Override
-	public @NotNull ICommandShell getCommandShell(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException {
-		return new SSHClient(hostname, port, credentials, 60000);
+	public @NotNull ICommandShell getCommandShell(IIpHost ipHost, ICredentials credentials) throws IpNetworkManagerException {
+		return new SSHClient(ipHost.getHostname(), ipHost.getSshPort(), credentials, 60000);
 	}
 
 	@Override
-	public @NotNull FileSystem getFileSystem(String hostname, int port, ICredentials credentials) throws IpNetworkManagerException {
-		return new SSHFileSystem(hostname, port, credentials);
+	public @NotNull FileSystem getFileSystem(IIpHost ipHost) throws IpNetworkManagerException {
+		return new SSHFileSystem(ipHost.getHostname(), ipHost.getSshPort(), ipHost.getDefaultCredentials());
 	}
 
 }

@@ -4,74 +4,26 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.voras.common.zos.IZosImage;
 import dev.voras.common.zos.ZosManagerException;
-import dev.voras.framework.spi.AbstractManager;
-import dev.voras.framework.spi.IConfigurationPropertyStoreService;
 import dev.voras.framework.spi.IDynamicResource;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
-import dev.voras.framework.spi.creds.CredentialsException;
-import dev.voras.ICredentials;
-import dev.voras.framework.spi.creds.ICredentialsService;
-import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 
-public class ZosImageImpl implements IZosImage {
+public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 
-	private final static Log logger = LogFactory.getLog(ZosImageImpl.class);
+	private final static Log logger = LogFactory.getLog(ZosProvisionedImageImpl.class);
 
-	private final ZosManagerImpl zosManager;
-	private final IConfigurationPropertyStoreService cps;
 	private final IDynamicStatusStoreService dss;
 	private final IDynamicResource dynamicResource;
 
-	private final String imageId;
-	private final String clusterId;
-	private final String sysplexID;
-	private String defaultCredentialsId;
-	private ICredentials defaultCedentials;
-
 	private String allocatedSlotName;
-	private IIpHostSpi ipHost;
 
-	public ZosImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) throws ZosManagerException {
-		this.zosManager = zosManager;
+	public ZosProvisionedImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) throws ZosManagerException {
+		super(zosManager, imageId, clusterId);
 		this.dss = zosManager.getDSS();
-		this.cps = zosManager.getCPS();
-		this.imageId    = imageId;
-		this.clusterId  = clusterId;
-		this.dynamicResource = this.dss.getDynamicResource("image." + this.imageId);
-
-		try {
-			this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
-			this.defaultCredentialsId = AbstractManager.nulled(this.cps.getProperty("image", "credentials", this.imageId));
-		} catch(Exception e) {
-			throw new ZosManagerException("Problem populating Image " + this.imageId + " properties", e);
-		}
-	}
-
-	@Override
-	public String getImageID() {
-		return this.imageId;
-	}
-
-	@Override
-	public String getSysplexID() {
-		return this.sysplexID;
-	}
-
-	@Override
-	public String getClusterID() {
-		return this.clusterId;
-	}
-
-	@Override
-	public @NotNull String getDefaultHostname() throws ZosManagerException {
-		return ipHost.getHostname() != null ? ipHost.getHostname() : zosManager.getZosProperties().getHostId(this);
+		this.dynamicResource = this.dss.getDynamicResource("image." + getImageID());
 	}
 
 	public boolean hasCapacity() throws ZosManagerException {
@@ -82,35 +34,35 @@ public class ZosImageImpl implements IZosImage {
 	}
 
 	public Float getCurrentUsage() throws ZosManagerException {
-		ZosProperties zosProperties = zosManager.getZosProperties();
-		IDynamicStatusStoreService dss = zosManager.getDSS();
+		ZosProperties zosProperties = getZosManager().getZosProperties();
+		IDynamicStatusStoreService dss = getZosManager().getDSS();
 
-		float maxSlots = zosProperties.getImageMaxSlots(this.imageId);
+		float maxSlots = zosProperties.getImageMaxSlots(getImageID());
 		if (maxSlots <= 0.0f) {
 			return 1.0f;
 		}
 
 		float usedSlots = 0.0f;
 		try {
-			String currentSlots = dss.get("image." + this.imageId + ".current.slots");
+			String currentSlots = dss.get("image." + getImageID() + ".current.slots");
 			if (currentSlots != null) {
 				usedSlots = Integer.parseInt(currentSlots);
 			}
 		} catch (Exception e) {
-			throw new ZosManagerException("Problem finding used slots for zOS Image " + imageId, e);
+			throw new ZosManagerException("Problem finding used slots for zOS Image " + getImageID(), e);
 		}
 
 		return usedSlots / maxSlots;
 	}
 
 	public boolean allocateImage() throws ZosManagerException {
-		ZosProperties zosProperties = zosManager.getZosProperties();
-		String runName = zosManager.getFramework().getTestRunName();
+		ZosProperties zosProperties = getZosManager().getZosProperties();
+		String runName = getZosManager().getFramework().getTestRunName();
 
-		int maxSlots = zosProperties.getImageMaxSlots(this.imageId);
+		int maxSlots = zosProperties.getImageMaxSlots(getImageID());
 		try {
 			int usedSlots = 0;
-			String currentSlots = dss.get("image." + this.imageId + ".current.slots");
+			String currentSlots = dss.get("image." + getImageID() + ".current.slots");
 			if (currentSlots != null) {
 				usedSlots = Integer.parseInt(currentSlots);
 			}
@@ -121,7 +73,7 @@ public class ZosImageImpl implements IZosImage {
 
 			//*** allocate a slot
 			usedSlots++;		
-			if (!dss.putSwap("image." + this.imageId + ".current.slots", currentSlots, Integer.toString(usedSlots))) {
+			if (!dss.putSwap("image." + getImageID() + ".current.slots", currentSlots, Integer.toString(usedSlots))) {
 				//*** The value of the current slots changed whilst this was running,  so we need to try again with the updated value
 				Thread.sleep(200); //*** To avoid race conditions
 				return allocateImage();
@@ -139,7 +91,7 @@ public class ZosImageImpl implements IZosImage {
 
 				//*** Try setting the control properties
 				String allocated = Instant.now().toString();
-				String prefix = "image." + this.imageId + ".slot." + actualSlotname;
+				String prefix = "image." + getImageID() + ".slot." + actualSlotname;
 				HashMap<String, String> otherProps = new HashMap<>();
 				otherProps.put("slot.run." + runName + "." + prefix, "active");
 				if (dss.putSwap(prefix, null, runName, otherProps)) {
@@ -154,12 +106,8 @@ public class ZosImageImpl implements IZosImage {
 					break;
 				}
 			}
-
-			//*** Obtain a IpHost for the image
-			String hostId = zosManager.getZosProperties().getHostId(this);
-			this.ipHost = zosManager.getIpManager().buildHost(hostId);
 		} catch (Exception e) {
-			throw new ZosManagerException("Problem finding used slots for zOS Image " + imageId, e);
+			throw new ZosManagerException("Problem finding used slots for zOS Image " + getImageID(), e);
 		}
 
 		return true;
@@ -171,7 +119,7 @@ public class ZosImageImpl implements IZosImage {
 
 	public void freeImage() {
 		try {
-			String currentSlots = dss.get("image." + this.imageId + ".current.slots");
+			String currentSlots = dss.get("image." + getImageID() + ".current.slots");
 
 			if (currentSlots == null) {
 				return; // Missing value, no need to update
@@ -183,7 +131,7 @@ public class ZosImageImpl implements IZosImage {
 				usedSlots = 0;
 			}
 
-			String runName = zosManager.getFramework().getTestRunName();
+			String runName = getZosManager().getFramework().getTestRunName();
 
 			//*** Remove the userview set
 			String resPrefix = "slot." + this.allocatedSlotName;
@@ -194,10 +142,10 @@ public class ZosImageImpl implements IZosImage {
 			dynamicResource.delete(resProps);
 
 			//*** Remove the control set
-			String prefix = "image." + this.imageId + ".slot." + this.allocatedSlotName;
+			String prefix = "image." + getImageID() + ".slot." + this.allocatedSlotName;
 			HashMap<String, String> otherProps = new HashMap<>();
-			otherProps.put("slot.run." + zosManager.getFramework().getTestRunName() + "." + prefix, "free");
-			if (!dss.putSwap("image." + this.imageId + ".current.slots", currentSlots, Integer.toString(usedSlots), otherProps)) {
+			otherProps.put("slot.run." + getZosManager().getFramework().getTestRunName() + "." + prefix, "free");
+			if (!dss.putSwap("image." + getImageID() + ".current.slots", currentSlots, Integer.toString(usedSlots), otherProps)) {
 				//*** The value of the current slots changed whilst this was running,  so we need to try again with the updated value
 				Thread.sleep(200); //*** To avoid race conditions
 				freeImage();
@@ -209,17 +157,12 @@ public class ZosImageImpl implements IZosImage {
 			delProps.add(prefix);
 			dss.delete(delProps);
 
-			dss.delete("image." + this.imageId + ".current.slot." + this.allocatedSlotName);
+			dss.delete("image." + getImageID() + ".current.slot." + this.allocatedSlotName);
 
-			logger.info("Discard slot name " + this.allocatedSlotName + " for zOS Image " + this.imageId);
+			logger.info("Discard slot name " + this.allocatedSlotName + " for zOS Image " + getImageID());
 		} catch (Exception e) {
-			logger.warn("Failed to free slot on image " + this.imageId + ", slot " + this.allocatedSlotName + ", leaving for manager clean up routines", e);
+			logger.warn("Failed to free slot on image " + getImageID() + ", slot " + this.allocatedSlotName + ", leaving for manager clean up routines", e);
 		}
-	}
-
-	@NotNull
-	protected IIpHostSpi getIpHost() {
-		return this.ipHost;
 	}
 
 	public static void deleteDss(String runName, String imageId, String slot, IDynamicStatusStoreService dss) {
@@ -269,32 +212,4 @@ public class ZosImageImpl implements IZosImage {
 		}
 
 	}
-	
-	
-	@Override
-	public ICredentials getDefaultCredentials() throws ZosManagerException {
-		if (this.defaultCedentials != null) {
-			return this.defaultCedentials;
-		}
-		
-		if (this.defaultCredentialsId == null) {
-			this.defaultCredentialsId = "zos";
-			logger.warn("Credentials ID not set for zOS Image " + this.imageId + ", defaulting to 'zos'");
-		}
-		
-		try {
-			ICredentialsService credsService = zosManager.getFramework().getCredentialsService();
-			
-			this.defaultCedentials = credsService.getCredentials(this.defaultCredentialsId);
-		} catch (CredentialsException e) {
-			throw new ZosManagerException("Unable to acquire the credentials for id " + this.defaultCredentialsId, e);
-		}
-		
-		if (this.defaultCedentials == null) {
-			throw new ZosManagerException("zOS Credentials missing for image " + this.imageId + " id " + this.defaultCredentialsId);
-		}
-		
-		return defaultCedentials;
-	}
-
 }

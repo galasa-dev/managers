@@ -211,13 +211,13 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 			this.hostname = this.openstackFloatingip.floating_ip_address;
 			
 			//*** Create the IPHost
-			this.ipHost = new OpenstackIpHost(this.hostname);
+			this.ipHost = new OpenstackIpHost(this.hostname, getDefaultCredentials());
 			
 			//*** Create the Commandshell
-			this.commandShell = this.manager.getIpNetworkManager().getCommandShell(hostname, 22, getDefaultCredentials());
+			this.commandShell = this.manager.getIpNetworkManager().getCommandShell(this.ipHost, this.ipHost.getDefaultCredentials());
 			
 			//*** Create the filesystem
-			this.fileSystem = this.manager.getIpNetworkManager().getFileSystem(hostname, 22, getDefaultCredentials());
+			this.fileSystem = this.manager.getIpNetworkManager().getFileSystem(this.getIpHost());
 			
 			this.pathRoot         = this.fileSystem.getPath("/");
 			this.pathTemp         = this.fileSystem.getPath("/tmp");

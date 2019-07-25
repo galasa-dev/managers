@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,11 +20,11 @@ import dev.voras.common.ipnetwork.IIpHost;
 import dev.voras.common.ipnetwork.IIpPort;
 import dev.voras.common.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.voras.common.zos.IZosImage;
-import dev.voras.common.zos.IZosManager;
 import dev.voras.common.zos.ZosImage;
 import dev.voras.common.zos.ZosIpHost;
 import dev.voras.common.zos.ZosIpPort;
 import dev.voras.common.zos.ZosManagerException;
+import dev.voras.common.zos.spi.IZosManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.AnnotatedField;
 import dev.voras.framework.spi.GenerateAnnotatedField;
@@ -35,7 +36,7 @@ import dev.voras.framework.spi.ResourceUnavailableException;
 import dev.voras.framework.spi.utils.DssUtils;
 
 @Component(service = { IManager.class })
-public class ZosManagerImpl extends AbstractManager implements IZosManager {
+public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	protected final static String NAMESPACE = "zos";
 
 	private final static Log logger = LogFactory.getLog(ZosManagerImpl.class);
@@ -45,8 +46,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 	private IDynamicStatusStoreService dss;
 	private IIpNetworkManagerSpi ipManager;
 
-	private final HashMap<String, ZosImageImpl> taggedImages = new HashMap<>();
-	private final HashMap<String, ZosImageImpl> images = new HashMap<>();
+	private final HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
+	private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
 
 	/* 
 	 * By default we need to load the zosmf batch implementation, but provide the ability for 
@@ -162,8 +163,10 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 	public void provisionDiscard() {
 		//*** Free up any slots we have allocated for this run;
 
-		for(ZosImageImpl image : images.values()) {
-			image.freeImage();
+		for(ZosBaseImageImpl image : images.values()) {
+			if (image instanceof ZosProvisionedImageImpl) {
+				((ZosProvisionedImageImpl)image).freeImage();
+			}
 		}
 	}
 
@@ -181,17 +184,36 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 			return taggedImages.get(tag);
 		}
 
-		//*** See if the image ID is already set for this tag
-		String imageID = zosProperties.getImageIdForTag(tag);
+		//*** Check to see if we have a DSE for this tag
+		String imageID = zosProperties.getDseImageIdForTag(tag);
 		if (imageID != null) {
-			//*** Do we already have it
+			logger.info("zOS DSE Image " + imageID + " selected for zosTag '" + tag + "'");
+			
+			//*** Check to see if the image has already been allocated
 			if (images.containsKey(imageID)) {
-				ZosImageImpl selectedImage = images.get(imageID);
+				ZosBaseImageImpl selectedImage = images.get(imageID);
 				taggedImages.put(tag, selectedImage);
 				return selectedImage;
 			}
 
-			ZosImageImpl image = new ZosImageImpl(this, imageID, null);
+			ZosDseImageImpl image = new ZosDseImageImpl(this, imageID, null);
+			images.put(image.getImageID(), image);
+			taggedImages.put(tag, image);
+			return image;
+		}
+		
+		
+		//*** See if the we need to run on a specific image,  not DSE
+		imageID = zosProperties.getImageIdForTag(tag);
+		if (imageID != null) {
+			//*** Do we already have it
+			if (images.containsKey(imageID)) {
+				ZosBaseImageImpl selectedImage = images.get(imageID);
+				taggedImages.put(tag, selectedImage);
+				return selectedImage;
+			}
+
+			ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, imageID, null);
 			if (image.allocateImage()) {
 				logger.info("zOS Image " + image.getImageID() + " selected for zosTag '" + tag + "'");
 				images.put(image.getImageID(), image);
@@ -214,7 +236,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		String tag = defaultString(annotationHost.imageTag(), "primary");
 
 		//*** Ensure we have this tagged host
-		ZosImageImpl image = taggedImages.get(tag);
+		ZosBaseImageImpl image = taggedImages.get(tag);
 		if (image == null) { 
 			throw new ZosManagerException("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + tag + "' was present");
 		}
@@ -231,7 +253,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		String type = defaultString(annotationPort.type(), "standard");
 
 		//*** Ensure we have this tagged host
-		ZosImageImpl image = taggedImages.get(tag);
+		ZosBaseImageImpl image = taggedImages.get(tag);
 		if (image == null) { 
 			throw new ZosManagerException("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + tag + "' was present");
 		}
@@ -243,7 +265,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		}
 	}
 
-	protected ZosImageImpl selectNewImage(String tag) throws ZosManagerException {
+	protected ZosProvisionedImageImpl selectNewImage(String tag) throws ZosManagerException {
 		//***  Need the cluster we can allocate an image from
 		String clusterId = zosProperties.getClusterIdForTag(tag);
 		if (clusterId == null) {
@@ -253,7 +275,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 		//*** Find a list of images
 		List<ImageUsage> definedImages = new ArrayList<>();
 		for(String definedImage : zosProperties.getClusterImages(clusterId)) {
-			ZosImageImpl image = new ZosImageImpl(this, definedImage, clusterId);
+			ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, definedImage, clusterId);
 			definedImages.add(new ImageUsage(image));
 		}
 
@@ -293,10 +315,10 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 
 
 	private static class ImageUsage implements Comparable<ImageUsage> {
-		private final ZosImageImpl image;
+		private final ZosProvisionedImageImpl image;
 		private       Float        usage;
 
-		public ImageUsage(ZosImageImpl image) throws ZosManagerException {
+		public ImageUsage(ZosProvisionedImageImpl image) throws ZosManagerException {
 			this.image = image;
 			usage = image.getCurrentUsage();
 		}
@@ -310,6 +332,17 @@ public class ZosManagerImpl extends AbstractManager implements IZosManager {
 
 	protected IIpNetworkManagerSpi getIpManager() {
 		return this.ipManager;
+	}
+
+	@Override
+	public @NotNull IZosImage getImageForTag(String tag) throws ZosManagerException {
+		Objects.nonNull(tag);
+		
+		IZosImage image = this.taggedImages.get(tag);
+		if (image == null) {
+			throw new ZosManagerException("Unable to locate zOS Image for tag " + tag);
+		}
+		return image;
 	}
 
 

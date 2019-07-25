@@ -54,7 +54,7 @@ public class SlotResourceMonitor implements Runnable {
 						logger.info("Discarding slot " + slot + " on image " + imageId + " as run " + runName + " has gone");
 
 						try {
-							ZosImageImpl.deleteDss(runName, imageId, slot, dss);
+							ZosProvisionedImageImpl.deleteDss(runName, imageId, slot, dss);
 						} catch(Exception e) {
 							logger.error("Failed to discard slot " + slot + " on image " + imageId + " as run " + runName);
 						}
@@ -81,7 +81,7 @@ public class SlotResourceMonitor implements Runnable {
 					logger.info("Discarding slot " + slot + " on image " + imageId + " as run " + runName + " has gone");
 
 					try {
-						ZosImageImpl.deleteDss(runName, imageId, slot, dss);
+						ZosProvisionedImageImpl.deleteDss(runName, imageId, slot, dss);
 					} catch(Exception e) {
 						logger.error("Failed to discard slot " + slot + " on image " + imageId + " as run " + runName);
 					}

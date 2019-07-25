@@ -20,8 +20,29 @@
 	<dependencies>
 		<dependency>
 			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras</artifactId>
+			<version>${dev.voras}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
 			<artifactId>dev.voras.framework</artifactId>
 			<version>${dev.voras.framework}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.zos.manager</artifactId>
+			<version>${dev.voras.common.zos.manager}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.ipnetwork.manager</artifactId>
+			<version>${dev.voras.common.ipnetwork.manager}</version>
 			<scope>provided</scope>
 		</dependency>
 

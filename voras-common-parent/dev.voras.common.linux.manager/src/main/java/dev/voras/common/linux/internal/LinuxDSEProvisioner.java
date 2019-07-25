@@ -7,8 +7,6 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.voras.common.linux.LinuxManagerException;
 import dev.voras.common.linux.OperatingSystem;
-import dev.voras.common.linux.internal.properties.Hostname4;
-import dev.voras.common.linux.internal.properties.Hostname6;
 import dev.voras.common.linux.spi.ILinuxProvisionedImage;
 import dev.voras.common.linux.spi.ILinuxProvisioner;
 import dev.voras.framework.spi.IConfigurationPropertyStoreService;
@@ -30,16 +28,15 @@ public class LinuxDSEProvisioner implements ILinuxProvisioner {
 	public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities) throws LinuxManagerException {
 
 		try {
-			String hostname4 = Hostname4.get(tag);
-			String hostname6 = Hostname6.get(tag);
-			
-			if (hostname4 == null && hostname6 == null) {
+			String hostid = LinuxManagerImpl.nulled(this.cps.getProperty("linux.dse.tag", tag + ".hostid"));
+
+			if (hostid == null) {
 				return null;
 			}
 			
-			logger.info("Loaded DSE for Linux Image tagged " + tag);
+			logger.info("Loading DSE for Linux Image tagged " + tag);
 			
-			return new LinuxDSEImage(manager, this.cps, tag, hostname4, hostname6);
+			return new LinuxDSEImage(manager, this.cps, tag, hostid);
 		} catch(Exception e) {
 			throw new LinuxManagerException("Unable to provision the Linux DSE", e);
 		}
