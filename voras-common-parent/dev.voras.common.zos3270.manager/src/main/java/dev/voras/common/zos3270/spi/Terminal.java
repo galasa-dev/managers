@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.voras.common.zos3270.AttentionIdentification;
 import dev.voras.common.zos3270.FieldNotFoundException;
 import dev.voras.common.zos3270.ITerminal;
 import dev.voras.common.zos3270.KeyboardLockedException;
@@ -12,7 +13,6 @@ import dev.voras.common.zos3270.TextNotFoundException;
 import dev.voras.common.zos3270.TimeoutException;
 import dev.voras.common.zos3270.internal.comms.Network;
 import dev.voras.common.zos3270.internal.comms.NetworkThread;
-import dev.voras.common.zos3270.internal.datastream.AttentionIdentification;
 
 public class Terminal implements ITerminal {
 

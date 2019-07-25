@@ -3,6 +3,7 @@ package dev.voras.common.zos3270.internal.terminal;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import dev.voras.common.zos3270.AttentionIdentification;
 import dev.voras.common.zos3270.IScreenUpdateListener;
 import dev.voras.common.zos3270.TextNotFoundException;
 import dev.voras.common.zos3270.Zos3270Exception;
@@ -23,7 +24,7 @@ public class ScreenUpdateTextListener implements IScreenUpdateListener {
             throw new UnsupportedOperationException("Shouldn't happen",e); 
         }
 
-        screenUpdated();
+        screenUpdated(Direction.Received, null);
         if (this.textFound.availablePermits() > 0) {
             return;
         }
@@ -31,7 +32,7 @@ public class ScreenUpdateTextListener implements IScreenUpdateListener {
     }
 
     @Override
-    public void screenUpdated() {
+    public void screenUpdated(Direction direction, AttentionIdentification aid) {
         try {
             screen.searchFieldContaining(searchText);
             this.textFound.release();            

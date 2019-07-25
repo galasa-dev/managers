@@ -14,15 +14,16 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.voras.common.zos3270.AttentionIdentification;
 import dev.voras.common.zos3270.FieldNotFoundException;
 import dev.voras.common.zos3270.IScreenUpdateListener;
+import dev.voras.common.zos3270.IScreenUpdateListener.Direction;
 import dev.voras.common.zos3270.KeyboardLockedException;
 import dev.voras.common.zos3270.TextNotFoundException;
 import dev.voras.common.zos3270.TimeoutException;
 import dev.voras.common.zos3270.Zos3270Exception;
 import dev.voras.common.zos3270.internal.comms.Inbound3270Message;
 import dev.voras.common.zos3270.internal.comms.Network;
-import dev.voras.common.zos3270.internal.datastream.AttentionIdentification;
 import dev.voras.common.zos3270.internal.datastream.BufferAddress;
 import dev.voras.common.zos3270.internal.datastream.CommandCode;
 import dev.voras.common.zos3270.internal.datastream.CommandEraseWrite;
@@ -293,7 +294,7 @@ public class Screen {
 		buildPreviousStartOfFields();
 
 		for(IScreenUpdateListener listener : updateListeners) {
-			listener.screenUpdated();
+			listener.screenUpdated(Direction.Received,  null);
 		}
 
 
@@ -740,6 +741,10 @@ public class Screen {
 
 			String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
 			logger.trace("outbound=" + hex);
+			
+			for(IScreenUpdateListener listener : updateListeners) {
+				listener.screenUpdated(Direction.Sending, aid);
+			}
 
 			return outboundBuffer.toByteArray();
 		} catch(IOException e) {
