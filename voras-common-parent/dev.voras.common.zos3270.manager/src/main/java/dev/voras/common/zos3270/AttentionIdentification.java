@@ -1,4 +1,4 @@
-package dev.voras.common.zos3270.internal.datastream;
+package dev.voras.common.zos3270;
 
 public enum AttentionIdentification {
 	

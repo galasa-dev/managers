@@ -3,6 +3,7 @@ package dev.voras.common.zos3270.spi;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.voras.common.zos3270.AttentionIdentification;
 import dev.voras.common.zos3270.IScreenUpdateListener;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
@@ -21,12 +22,18 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 	}
 
 	@Override
-	public synchronized void screenUpdated() {
+	public synchronized void screenUpdated(Direction direction, AttentionIdentification aid) {
 		String update = terminalId + "-" + (updateId++);
 		
 		String screenData = getScreen().printScreenTextWithCursor();
+		String aidString;
+		if (aid != null) {
+			aidString = ", " + aid.toString();
+		} else {
+			aidString = " update";
+		}
 		
-		logger.debug("Update to 3270 screen " + this.terminalId + ", updateId=" + update + "\n" + screenData);
+		logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update + "\n" + screenData);
 	}
 
 	public String getId() {
