@@ -8,17 +8,18 @@ import javax.validation.constraints.NotNull;
 
 import dev.voras.common.ipnetwork.IIpHost;
 import dev.voras.common.ipnetwork.IIpPort;
+import dev.voras.common.ipnetwork.spi.IIpHostSpi;
 import dev.voras.framework.spi.DynamicStatusStoreException;
 import dev.voras.framework.spi.IDynamicResource;
 import dev.voras.framework.spi.IDynamicStatusStoreService;
 
 public class IpPortImpl implements IIpPort {
 
-	private final IpHostImpl host;
+	private final IIpHostSpi host;
 	private final int port;
 	private final String type;
 
-	private IpPortImpl(@NotNull IpHostImpl host, int port, @NotNull String type) {
+	private IpPortImpl(@NotNull IIpHostSpi host, int port, @NotNull String type) {
 		this.host = host;
 		this.port = port;
 		this.type = type;
@@ -39,10 +40,10 @@ public class IpPortImpl implements IIpPort {
 		return this.type;
 	}
 	
-	protected static IpPortImpl allocateDss(String runName, IpHostImpl host, int port, String type, IDynamicStatusStoreService dss) throws DynamicStatusStoreException {
+	protected static IpPortImpl allocateDss(String runName, IIpHostSpi host, int port, String type, IDynamicStatusStoreService dss) throws DynamicStatusStoreException {
 		String sPort = Integer.toString(port);
 		
-		String dssPrefix = "host." + host.getHostId() + ".port." + sPort;
+		String dssPrefix = host.getPrefixHost() + ".port." + sPort;
 		
 		//*** First try and assign a control set,  if this fails to swap,  then the port has been allocated by someone else
 		HashMap<String, String> otherProps = new HashMap<>();
@@ -53,7 +54,7 @@ public class IpPortImpl implements IIpPort {
 			return null;
 		}
 		
-		IDynamicResource dssResource = dss.getDynamicResource("host." + host.getHostId() + ".port");
+		IDynamicResource dssResource = dss.getDynamicResource(host.getPrefixHost() + ".port");
 		otherProps = new HashMap<>();
 		otherProps.put(sPort, runName);
 		otherProps.put(sPort + ".type", type);
@@ -63,8 +64,8 @@ public class IpPortImpl implements IIpPort {
 		return new IpPortImpl(host, port, type);
 	}
 
-	protected static void deleteDss(String runName, String hostId, String port, IDynamicStatusStoreService dss) throws DynamicStatusStoreException {
-		IDynamicResource dssResource = dss.getDynamicResource("host." + hostId + ".port");
+	protected static void deleteDss(String runName, String prefixHost, String port, IDynamicStatusStoreService dss) throws DynamicStatusStoreException {
+		IDynamicResource dssResource = dss.getDynamicResource(prefixHost + ".port");
 		
 		//*** Delete the user view set first before the control set
 		HashSet<String> dssProperties = new HashSet<>();
@@ -76,7 +77,7 @@ public class IpPortImpl implements IIpPort {
 		
 
 		//*** Delete the control set
-		String dssKey = "host." + hostId + ".port." + port;
+		String dssKey = prefixHost + ".port." + port;
 		dssProperties = new HashSet<>();
 		dssProperties.add(dssKey);
 		dssProperties.add(dssKey + ".type");
@@ -86,7 +87,7 @@ public class IpPortImpl implements IIpPort {
 	}
 
 	protected void discard(String runName, IDynamicStatusStoreService dss) throws DynamicStatusStoreException {
-		IpPortImpl.deleteDss(runName, this.host.getHostId(), Integer.toString(port), dss);
+		IpPortImpl.deleteDss(runName, this.host.getPrefixHost(), Integer.toString(port), dss);
 	}
 
 }

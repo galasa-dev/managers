@@ -475,7 +475,7 @@ public class Screen {
 		return screenSB.toString();
 	}
 
-	public Object printScreenTextWithCursor() {
+	public String printScreenTextWithCursor() {
 		int cursorRow = screenCursor / columns;
 		int cursorCol = screenCursor % columns;
 

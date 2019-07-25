@@ -41,6 +41,14 @@ public class ZosProperties {
 		}
 	}
 
+	public String getDseImageIdForTag(String tag) throws ZosManagerException {
+		try {
+			return ZosManagerImpl.nulled(this.cps.getProperty("dse.tag", "imageid", tag));
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosManagerException("Problem asking the CPS for the image DSE id for tag '"  + tag + "'", e); 
+		}
+	}
+
 	public String getClusterIdForTag(String tag) throws ZosManagerException {
 		try {
 			return ZosManagerImpl.nulled(this.cps.getProperty("tag", "clusterid", tag));
@@ -85,7 +93,7 @@ public class ZosProperties {
 	 * @throws ZosManagerException if there are issues with the CPS
 	 */
 	@NotNull
-	public String getHostId(ZosImageImpl image) throws ZosManagerException {
+	public String getHostId(ZosProvisionedImageImpl image) throws ZosManagerException {
 		String imageId = image.getImageID();
 		try {
 			String hostid = ZosManagerImpl.nulled(this.cps.getProperty("image." + image.getImageID(), "iphostid"));
@@ -97,10 +105,4 @@ public class ZosProperties {
 			throw new ZosManagerException("Problem asking the CPS for the zOS image "  + imageId + " ip host id", e); 
 		}
 	}
-
-
-
-
-
-
 }

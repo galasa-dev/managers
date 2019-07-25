@@ -7,5 +7,7 @@ import dev.voras.common.ipnetwork.IpNetworkManagerException;
 public interface IIpHostSpi extends IIpHost {
 
 	IIpPort provisionPort(String type) throws IpNetworkManagerException;
+	
+	String getPrefixHost();
 
 }

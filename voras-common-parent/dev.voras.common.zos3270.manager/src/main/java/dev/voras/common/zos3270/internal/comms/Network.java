@@ -116,30 +116,34 @@ public class Network /* extends Thread */{
 		try {
 			expect(inputStream, IAC, DO, TN3270E);
 
-			outputStream.write(IAC);
-			outputStream.write(WILL);
-			outputStream.write(TN3270E);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(IAC);
+			baos.write(WILL);
+			baos.write(TN3270E);
+			outputStream.write(baos.toByteArray());
 			outputStream.flush();
 
 			expect(inputStream, IAC, SB, TN3270E, SEND, DEVICE_TYPE, IAC, SE);
 
 			byte[] deviceType = "IBM-3278-2".getBytes(ascii7);
 
-			outputStream.write(IAC);
-			outputStream.write(SB);
-			outputStream.write(TN3270E);
-			outputStream.write(DEVICE_TYPE);
-			outputStream.write(REQUEST);
-			outputStream.write(deviceType);
-			outputStream.write(IAC);
-			outputStream.write(SE);
+			baos = new ByteArrayOutputStream();
+			baos.write(IAC);
+			baos.write(SB);
+			baos.write(TN3270E);
+			baos.write(DEVICE_TYPE);
+			baos.write(REQUEST);
+			baos.write(deviceType);
+			baos.write(IAC);
+			baos.write(SE);
+			outputStream.write(baos.toByteArray());
 			outputStream.flush();
 
 			expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE, IS);
 			expect(inputStream, deviceType);
 			expect(inputStream, CONNECT);
 
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream();
 			byte[] data = new byte[1];
 			while(true) {
 				int length = inputStream.read(data);
@@ -157,13 +161,15 @@ public class Network /* extends Thread */{
 
 			new String(baos.toByteArray(), ascii7);
 
-			outputStream.write(IAC);
-			outputStream.write(SB);
-			outputStream.write(TN3270E);
-			outputStream.write(FUNCTIONS);
-			outputStream.write(REQUEST);
-			outputStream.write(IAC);
-			outputStream.write(SE);
+			baos = new ByteArrayOutputStream();
+			baos.write(IAC);
+			baos.write(SB);
+			baos.write(TN3270E);
+			baos.write(FUNCTIONS);
+			baos.write(REQUEST);
+			baos.write(IAC);
+			baos.write(SE);
+			outputStream.write(baos.toByteArray());
 			outputStream.flush();
 
 			expect(inputStream, IAC, SB, TN3270E, FUNCTIONS, IS, IAC, SE);
@@ -199,14 +205,20 @@ public class Network /* extends Thread */{
 			byte[] header = new byte[] {0,0,0,0,0};
 			byte[] trailer = new byte[] {(byte) 0xff,(byte) 0xef};
 			
-			outputStream.write(header);
-			outputStream.write(outboundDatastream);
-			outputStream.write(trailer);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			baos.write(header);
+			baos.write(outboundDatastream);
+			baos.write(trailer);
+			outputStream.write(baos.toByteArray());
 			outputStream.flush();
 		} catch(IOException e) {
 			throw new NetworkException("Unable to write outbound datastream", e);
 		}
 		
+	}
+
+	public String getHostPort() {
+		return this.host + ":" + Integer.toString(this.port);
 	}
 
 }
