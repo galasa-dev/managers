@@ -30,6 +30,12 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.voras</groupId>
+			<artifactId>dev.voras.common.zosmf.manager</artifactId>
+			<version>${dev.voras.common.zosmf.manager}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.voras</groupId>
 			<artifactId>dev.voras.common.zosbatch.zosmf.manager</artifactId>
 			<version>${dev.voras.common.zosbatch.zosmf.manager}</version>
 			<scope>compile</scope>
