@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.voras.common.zos.ZosManagerException;
 import dev.voras.common.zosbatch.ZosBatchManagerException;
 import dev.voras.framework.spi.ConfigurationPropertyStoreException;
 import dev.voras.framework.spi.IConfigurationPropertyStoreService;
@@ -17,14 +16,14 @@ public class ZosBatchProperties {
 	
 	private final IConfigurationPropertyStoreService cps;
 	
-	private static final String DEFAULT_JOBNAME_PREFIX = "V";
+	private static final String DEFAULT_JOBNAME_PREFIX = "G";
 	private static final int DEFAULT_JOB_WAIT_TIMEOUT = 5 * 60 * 100;
 
-	public ZosBatchProperties(@NotNull IFramework framework) throws ZosManagerException {
+	public ZosBatchProperties(@NotNull IFramework framework) throws ZosBatchManagerException {
 		try {
 			this.cps = framework.getConfigurationPropertyService(ZosBatchManagerImpl.NAMESPACE);
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Unable to request CPS for the z/OSMF Batch Manager", e);
+			throw new ZosBatchManagerException("Unable to request CPS for the z/OSMF Batch Manager", e);
 		}
 	}
 

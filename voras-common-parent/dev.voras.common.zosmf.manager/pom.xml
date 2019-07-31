@@ -10,11 +10,11 @@
 		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>dev.voras.common.zosbatch.zosmf.manager</artifactId>
+	<artifactId>dev.voras.common.zosmf.manager</artifactId>
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS Batch Manager - zOS/MF Implementation</name>
+	<name>zOS/MF Manager</name>
 
 	<dependencies>
 		<dependency>
@@ -33,12 +33,6 @@
 			<groupId>dev.voras</groupId>
 			<artifactId>dev.voras.common.zos.manager</artifactId>
 			<version>${dev.voras.common.zos.manager}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>dev.voras</groupId>
-			<artifactId>dev.voras.common.zosmf.manager</artifactId>
-			<version>${dev.voras.common.zosmf.manager}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

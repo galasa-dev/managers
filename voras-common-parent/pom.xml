@@ -19,6 +19,7 @@
 	<properties>
 		<dev.voras.common.ipnetwork.manager>0.3.0-SNAPSHOT</dev.voras.common.ipnetwork.manager>
 		<dev.voras.common.zos.manager>0.3.0-SNAPSHOT</dev.voras.common.zos.manager>
+		<dev.voras.common.zosmf.manager>0.3.0-SNAPSHOT</dev.voras.common.zosmf.manager>
 		<dev.voras.common.zosbatch.zosmf.manager>0.3.0-SNAPSHOT</dev.voras.common.zosbatch.zosmf.manager>
 		<dev.voras.common.zos3270.manager>0.3.0-SNAPSHOT</dev.voras.common.zos3270.manager>
 		<dev.voras.common.linux.manager>0.3.0-SNAPSHOT</dev.voras.common.linux.manager>
@@ -39,6 +40,7 @@
 	<modules>
 		<module>dev.voras.common.ipnetwork.manager</module>
 		<module>dev.voras.common.zos.manager</module>
+		<module>dev.voras.common.zosmf.manager</module>
 		<module>dev.voras.common.zosbatch.zosmf.manager</module>
 		<module>dev.voras.common.zos3270.manager</module>
 		<module>dev.voras.common.http.manager</module>
