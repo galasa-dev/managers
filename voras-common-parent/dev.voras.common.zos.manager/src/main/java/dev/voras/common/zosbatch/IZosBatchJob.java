@@ -1,7 +1,5 @@
 package dev.voras.common.zosbatch;
 
-import java.util.List;
-
 /**
  * <p>Represents a zOS Batch Job.</p>
  * 
@@ -27,7 +25,7 @@ public interface IZosBatchJob {
 	 * @return Lines of output
 	 * @throws ZosBatchException
 	 */
-	List<String> retrieveOutput() throws ZosBatchException;
+	IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
 
 	String getJcl() throws ZosBatchException;
 

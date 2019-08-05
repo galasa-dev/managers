@@ -15,6 +15,7 @@ import dev.voras.ManagerException;
 import dev.voras.common.http.HttpClient;
 import dev.voras.common.http.IHttpClient;
 import dev.voras.common.http.IHttpManager;
+import dev.voras.common.http.spi.IHttpManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.AnnotatedField;
 import dev.voras.framework.spi.GenerateAnnotatedField;
@@ -23,7 +24,7 @@ import dev.voras.framework.spi.IManager;
 import dev.voras.framework.spi.ResourceUnavailableException;
 
 @Component(service = { IManager.class })
-public class HttpManagerImpl extends AbstractManager implements IHttpManager {
+public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi {
 
     private static final Log logger = LogFactory.getLog(HttpManagerImpl.class);
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
