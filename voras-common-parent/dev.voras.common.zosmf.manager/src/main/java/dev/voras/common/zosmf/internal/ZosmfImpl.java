@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 
 import dev.voras.ICredentials;
 import dev.voras.ICredentialsUsernamePassword;
@@ -18,9 +19,20 @@ import dev.voras.common.zosmf.IZosmfResponse;
 import dev.voras.common.zosmf.ZosmfException;
 import dev.voras.common.zosmf.ZosmfManagerException;
 
+/**
+ * Implementation of {@link IZosmf}
+ *
+ */
 public class ZosmfImpl implements IZosmf {
+	//TODO: Retry invalid requests
+	
 	
 	private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
+	
+	private static final String X_IBM_JOB_MODIFY_VERSION = "X-IBM-Job-Modify-Version";
+	private static final String X_IBM_REQUESTED_METHOD = "X-IBM-Requested-Method";
+	//TODO: Investigate this
+	private static final String X_IBM_BYPASS_STATUS = "X-IBM-Bypass-Status";
 
 	private String imageTag;
 	private IZosImage image;
@@ -46,14 +58,21 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putText(String uri, String text) throws ZosmfException {
+	public void setHeader(String key, String value) {
+		httpClient.addCommonHeader(key, value);
+	}
+
+	@Override
+	public IZosmfResponse putText(String path, String text) throws ZosmfException {
 		ZosmfResponseImpl zosmfResponse;
 		try {
-			String url = this.zosmfUrl + validUri(uri);
+			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
+			setHeader(X_IBM_REQUESTED_METHOD, "PUT");
+			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.putText(url, text);
-			logger.debug(zosmfResponse.getStatusLine() + " - " + url);
-			if (zosmfResponse.getStatusCode() != 201) {
+			logger.debug(zosmfResponse.getStatusLine() + " - PUT " + url);
+			if (zosmfResponse.getStatusCode() != HttpStatus.SC_CREATED) {
 				//TODO
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
@@ -64,14 +83,16 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse getText(String uri) throws ZosmfManagerException {
+	public IZosmfResponse get(String path) throws ZosmfException {
 		ZosmfResponseImpl zosmfResponse;
 		try {
-			String url = this.zosmfUrl + validUri(uri);
+			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
+			setHeader(X_IBM_REQUESTED_METHOD, "GET");
+			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.getText(url);
-			logger.debug(zosmfResponse.getStatusLine() + " - " + url);
-			if (zosmfResponse.getStatusCode() != 201) {
+			logger.debug(zosmfResponse.getStatusLine() + " - GET " + url);
+			if (zosmfResponse.getStatusCode() != HttpStatus.SC_CREATED) {
 				//TODO
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
@@ -82,16 +103,18 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse getJson(String uri) throws ZosmfManagerException {
+	public IZosmfResponse getJson(String path) throws ZosmfException {
 		ZosmfResponseImpl zosmfResponse;
 		try {
-			String url = this.zosmfUrl + validUri(uri);
+			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
+			setHeader(X_IBM_REQUESTED_METHOD, "GET");
+			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.getJson(url);
-			if (zosmfResponse.getStatusCode() != 200) {
+			if (zosmfResponse.getStatusCode() != HttpStatus.SC_OK) {
 				//TODO
 			}
-			logger.debug(zosmfResponse.getStatusLine() + " - " + url);
+			logger.debug(zosmfResponse.getStatusLine() + " - GET " + url);
 		} catch (MalformedURLException | HttpClientException  e) {
 			throw new ZosmfException("Problem with GET to z/OSMF server", e);
 		}
@@ -100,12 +123,28 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse getJsonArray(String uri) throws ZosmfManagerException {
-		return getText(uri);
+	public IZosmfResponse deleteJson(String path) throws ZosmfException {
+
+		ZosmfResponseImpl zosmfResponse;
+		try {
+			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
+			setHeader(X_IBM_REQUESTED_METHOD, "DELETE");
+			String url = this.zosmfUrl + validPath(path);
+			zosmfResponse = new ZosmfResponseImpl(url);
+			zosmfResponse.httpClientresponse = httpClient.deleteJson(url);
+			if (zosmfResponse.getStatusCode() != HttpStatus.SC_OK) {
+				//TODO
+			}
+			logger.debug(zosmfResponse.getStatusLine() + " - DELETE " + url);
+		} catch (MalformedURLException | HttpClientException  e) {
+			throw new ZosmfException("Problem with GET to z/OSMF server", e);
+		}
+		
+		return zosmfResponse;
 	}
 
-	private String validUri(String uri) {
-		return uri.startsWith("/") ? uri : "/" + uri;
+	private String validPath(String path) {
+		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	private void initialize() throws ZosmfException {

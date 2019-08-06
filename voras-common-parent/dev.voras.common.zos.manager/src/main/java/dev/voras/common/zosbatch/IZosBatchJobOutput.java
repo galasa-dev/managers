@@ -1,21 +1,41 @@
 package dev.voras.common.zosbatch;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * <p>Represents a zOS Batch Job output</p>
+ * Represents a zOS Batch Job output
  *
  */
-public interface IZosBatchJobOutput {
-	
-	String getJcl() throws ZosBatchException;
+public interface IZosBatchJobOutput extends Iterable<IZosBatchJobOutputSpoolFile>{
 
-	String getJobname() throws ZosBatchException;
+	/**
+	 * Returns the zOS batch jobname
+	 * 
+	 * @return jobname
+	 * @throws ZosBatchException
+	 */
+	public String getJobname() throws ZosBatchException;
 
-	String getJobid() throws ZosBatchException;
+	/**
+	 * Returns the zOS batch jobid
+	 * 
+	 * @return jobid
+	 * @throws ZosBatchException
+	 */
+	public String getJobid() throws ZosBatchException;
 
-	Map<String, String> getOutput();
+	/**
+	 * Returns the zOS batch job spool files
+	 * 
+	 * @return An {@link List} of {@link IZosBatchJobOutputSpoolFile}
+	 */
+	public List<IZosBatchJobOutputSpoolFile> getSpoolFiles();
 
-	String[] toArray();
+	/**
+	 * Returns the zOS batch job spool files as a {@link List} of spool files
+	 * 
+	 * @return a {@Link List} of spool files 
+	 */
+	public List<String> toList();
 
 }
