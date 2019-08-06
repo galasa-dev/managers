@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
+import java.util.Iterator;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,6 +21,7 @@ import dev.voras.ResultArchiveStoreContentType;
 import dev.voras.common.zos.IZosImage;
 import dev.voras.common.zosbatch.IZosBatchJob;
 import dev.voras.common.zosbatch.IZosBatchJobOutput;
+import dev.voras.common.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.voras.common.zosbatch.IZosBatchJobname;
 import dev.voras.common.zosbatch.ZosBatchException;
 import dev.voras.common.zosbatch.ZosBatchManagerException;
@@ -229,7 +231,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			logger.info(testMethodName);
 			String dirName = this.jobname + "_" + this.jobid + "_" + this.retcode.replace(" ", "-");
 			logger.info("    " + dirName);
-			this.jobOutput.forEach(spoolFile -> {
+			Iterator<IZosBatchJobOutputSpoolFile> iterator = this.jobOutput.iterator();
+			while (iterator.hasNext()) {
+				IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
 				StringBuilder fileName = new StringBuilder();
 				fileName.append(spoolFile.getJobname());
 				fileName.append("_");
@@ -241,12 +245,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 				fileName.append(".txt");
 				logger.info("        " + fileName.toString());
 				storeArtifact(spoolFile.getRecords(), dirName, fileName.toString());
-			});
+			}
 			this.jobArchived = true;
 		}
 	}
 
-	private void storeArtifact(String content, String... artifactPathElements) {
+	private void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
 		try {
 			Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
 			for (String artifactPathElement : artifactPathElements) {
@@ -255,8 +259,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
 			Files.write(artifactPath, content.getBytes()); 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ZosBatchException("Unable to store artifact", e);
 		}		
 	}
 
