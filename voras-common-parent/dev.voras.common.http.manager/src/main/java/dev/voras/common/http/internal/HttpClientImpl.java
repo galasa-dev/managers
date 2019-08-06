@@ -777,9 +777,14 @@ public class HttpClientImpl implements IHttpClient{
 	
 	@Override
 	public void addCommonHeader(String name, String value) {
+		List<Header> toRemove = new ArrayList<>();
+		commonHeaders.forEach(header -> {
+			if (header.getName().equals(name)) {
+				toRemove.add(header);
+			}
+		});
+		commonHeaders.removeAll(toRemove);
 		commonHeaders.add(new BasicHeader(name, value));
-
-		return;
 	}
 
 	
