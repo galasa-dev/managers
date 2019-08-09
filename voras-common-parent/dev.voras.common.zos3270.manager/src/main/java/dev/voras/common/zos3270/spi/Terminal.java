@@ -13,6 +13,7 @@ import dev.voras.common.zos3270.TextNotFoundException;
 import dev.voras.common.zos3270.TimeoutException;
 import dev.voras.common.zos3270.internal.comms.Network;
 import dev.voras.common.zos3270.internal.comms.NetworkThread;
+import dev.voras.common.zos3270.internal.terminal.fields.Field;
 
 public class Terminal implements ITerminal {
 
@@ -273,6 +274,43 @@ public class Terminal implements ITerminal {
     public ITerminal reportScreenWithCursor() {
         logger.info("\n" + screen.printScreenTextWithCursor());
         return this;
+    }
+
+    /**
+     * Returns the screen print out as a String. 
+     * For use in edge testing cases. 
+     * 
+     * @return Screen as String
+     */
+    public String retrieveScreen() {
+        return screen.printScreen();
+    }
+
+    /**
+     * Return a String of the contents of the current Field. 
+     * Current field is the one which the cursor is at. 
+     * 
+     * @return Current Field as String
+     */
+    public String retrieveFieldAtCursor() {
+        int cursorPos = screen.getCursor();
+        Field cursorField = screen.locateFieldsAt(cursorPos);
+        return cursorField.getFieldWithoutNulls();
+    }
+
+    /**
+     * Returns a String of text in a Field with a given name.
+     * 
+     * @param fieldName Name of the field to be extracted from
+     * @return String which has been extracted from the field
+     * @throws TextNotFoundException
+     */
+    public String retrieveFieldTextAfterFieldWithString(String fieldName) throws TextNotFoundException, KeyboardLockedException, FieldNotFoundException {
+        int cursorPos = screen.getCursor();
+        this.positionCursorToFieldContaining(fieldName).tab();
+        String text = retrieveFieldAtCursor();
+        screen.setCursor(cursorPos);
+        return text;
     }
 
 	public String getHostPort() {

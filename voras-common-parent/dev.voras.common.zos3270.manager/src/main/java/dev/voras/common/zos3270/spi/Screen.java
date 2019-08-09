@@ -174,6 +174,10 @@ public class Screen {
 		return this.screenCursor;
 	}
 
+	public void setCursor(int index) {
+		this.screenCursor = index;
+	}
+
 	public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
 		CommandCode commandCode = inbound.getCommandCode();
 		if (commandCode instanceof CommandWriteStructured) {

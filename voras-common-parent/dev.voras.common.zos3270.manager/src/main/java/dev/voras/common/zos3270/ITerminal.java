@@ -54,5 +54,9 @@ public interface ITerminal {
 	 * @return ITerminal for chaining
 	 */
 	ITerminal reportScreen();
-    ITerminal reportScreenWithCursor();
+	ITerminal reportScreenWithCursor();
+	
+	String retrieveScreen();
+	String retrieveFieldAtCursor();
+	String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException, KeyboardLockedException, FieldNotFoundException;
 }
