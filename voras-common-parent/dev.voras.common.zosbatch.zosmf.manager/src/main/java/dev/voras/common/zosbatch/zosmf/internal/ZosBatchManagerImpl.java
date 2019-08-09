@@ -1,6 +1,8 @@
 package dev.voras.common.zosbatch.zosmf.internal;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +55,16 @@ public class ZosBatchManagerImpl extends AbstractManager {
 
 	private final HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
 	
+	protected static Path archivePath;
+	public static void setArchivePath(Path archivePath) {
+		ZosBatchManagerImpl.archivePath = archivePath;
+	}
+	
+	protected static Method currentTestMethod;
+	public static void setCurrentTestMethod(Method testMethod) {
+		ZosBatchManagerImpl.currentTestMethod = testMethod;
+	}
+	
 	/* (non-Javadoc)
 	 * @see dev.voras.framework.spi.AbstractManager#initialise(dev.voras.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
 	 */
@@ -68,9 +80,42 @@ public class ZosBatchManagerImpl extends AbstractManager {
 		if (!ourFields.isEmpty()) {
 			youAreRequired(allManagers, activeManagers);
 		}
+		
+		Path artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+    	setArchivePath(artifactsRoot.resolve("zosBatchJobs"));
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see dev.voras.framework.spi.AbstractManager#provisionGenerate()
+	 */
+	@Override
+	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+		// Get all our annotated fields
+		List<AnnotatedField> annotatedFields = findAnnotatedFields(ZosBatchField.class);
+	
+		// Process annotations
+		Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
+		while(annotatedFieldIterator.hasNext()) {
+			AnnotatedField annotatedField = annotatedFieldIterator.next();
+			final Field field = annotatedField.getField();
+	
+			if (field.getType() == IZosBatch.class) {
+				IZosBatch zosBatch = generateZosBatch(field);
+				registerAnnotatedField(field, zosBatch);
+			}
+			if (field.getType() == IZosBatchJobname.class) {
+				IZosBatchJobname zosBatchJobname = generateZosBatchJobname(field);
+				registerAnnotatedField(field, zosBatchJobname);
+			}
+			
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see dev.voras.framework.spi.AbstractManager#youAreRequired()
+	 */
 	@Override
 	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
 			throws ManagerException {
@@ -106,33 +151,35 @@ public class ZosBatchManagerImpl extends AbstractManager {
     		   otherManager instanceof IZosmfManagerSpi ||
     		   otherManager instanceof IHttpManagerSpi;
     }
-	
-	
-	/* (non-Javadoc)
-	 * @see dev.voras.framework.spi.AbstractManager#provisionGenerate()
-	 */
-	@Override
-	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		// Get all our annotated fields
-		List<AnnotatedField> annotatedFields = findAnnotatedFields(ZosBatchField.class);
 
-		// Process annotations
-		Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
-		while(annotatedFieldIterator.hasNext()) {
-			AnnotatedField annotatedField = annotatedFieldIterator.next();
-			final Field field = annotatedField.getField();
+    /*
+     * (non-Javadoc)
+     * 
+     * @see io.ejat.framework.spi.IManager#startOfTestMethod()
+     */
+    @Override
+    public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
+    	setCurrentTestMethod(testMethod);
+    }
 
-			if (field.getType() == IZosBatch.class) {
-				IZosBatch zosBatch = generateZosBatch(field);
-				registerAnnotatedField(field, zosBatch);
-			}
-			if (field.getType() == IZosBatchJobname.class) {
-				IZosBatchJobname zosBatchJobname = generateZosBatchJobname(field);
-				registerAnnotatedField(field, zosBatchJobname);
-			}
-			
+    /*
+     * (non-Javadoc)
+     * 
+     * @see io.ejat.framework.spi.IManager#endOfTestMethod(java.lang.String,
+     * java.lang.Throwable)
+     */
+    @Override
+    public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+    	for (HashMap.Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
+    		entry.getValue().cleanup();
 		}
-	}
+    	
+    	
+
+    	setCurrentTestMethod(null);
+    	
+        return null;
+    }
 	
 	
 	private IZosBatch generateZosBatch(Field field) {
@@ -142,12 +189,12 @@ public class ZosBatchManagerImpl extends AbstractManager {
 		String tag = defaultString(annotationZosBatch.imageTag(), "primary");
 
 		//*** Have we already generated this tag
-		if (taggedZosBatches.containsKey(tag)) {
-			return taggedZosBatches.get(tag);
+		if (this.taggedZosBatches.containsKey(tag)) {
+			return this.taggedZosBatches.get(tag);
 		}
 
 		IZosBatch zosBatch = new ZosBatchImpl();
-		taggedZosBatches.put(tag, (ZosBatchImpl) zosBatch);
+		this.taggedZosBatches.put(tag, (ZosBatchImpl) zosBatch);
 		
 		return zosBatch;
 	}
