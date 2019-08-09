@@ -265,7 +265,7 @@ public class Terminal implements ITerminal {
 
     @Override
     public ITerminal reportScreen() {
-        logger.trace("\n" + screen.printScreen());
+        logger.info("\n" + screen.printScreen());
         return this;
     }
 
