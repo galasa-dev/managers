@@ -58,5 +58,5 @@ public interface ITerminal {
 	
 	String retrieveScreen();
 	String retrieveFieldAtCursor();
-	String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException, KeyboardLockedException, FieldNotFoundException;
+	String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException;
 }

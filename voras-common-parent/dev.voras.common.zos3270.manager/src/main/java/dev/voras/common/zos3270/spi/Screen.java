@@ -609,6 +609,22 @@ public class Screen {
 		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");		
 	}
 
+	public synchronized String getValueFromFieldContaining(@NotNull String text) throws TextNotFoundException {
+		int last = this.fields.indexOf(this.fields.getLast());
+		for(Field field : this.fields) {
+			if (field.containsText(text)) {
+				int index = this.fields.indexOf(field);
+				for (int i = index + 1; i < last; i++) {
+					String output = this.fields.get(i).getFieldWithoutNulls();
+					if (output != null)
+						return output;
+				}
+			}
+		}
+
+		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");	
+	}
+
 
 	public void waitForTextInField(String text, int maxWait) throws TextNotFoundException {
 		try {

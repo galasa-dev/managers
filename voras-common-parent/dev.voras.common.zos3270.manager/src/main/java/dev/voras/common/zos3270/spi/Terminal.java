@@ -305,11 +305,8 @@ public class Terminal implements ITerminal {
      * @return String which has been extracted from the field
      * @throws TextNotFoundException
      */
-    public String retrieveFieldTextAfterFieldWithString(String fieldName) throws TextNotFoundException, KeyboardLockedException, FieldNotFoundException {
-        int cursorPos = screen.getCursor();
-        this.positionCursorToFieldContaining(fieldName).tab();
-        String text = retrieveFieldAtCursor();
-        screen.setCursor(cursorPos);
+    public String retrieveFieldTextAfterFieldWithString(String fieldName) throws TextNotFoundException {
+        String text = screen.getValueFromFieldContaining(fieldName);
         return text;
     }
 
