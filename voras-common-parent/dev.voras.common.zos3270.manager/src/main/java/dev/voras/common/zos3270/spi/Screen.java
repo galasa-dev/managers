@@ -610,9 +610,15 @@ public class Screen {
 	}
 
 	public synchronized String getValueFromFieldContaining(@NotNull String text) throws TextNotFoundException {
+		Boolean foundHeader = false;
 		for(Field field : this.fields) {
-			if (field.containsText(text)) {
-				return this.fields.get(this.fields.indexOf(field) + 2).getFieldWithoutNulls();
+			if(!foundHeader){
+				if (field.containsText(text)) {
+					foundHeader = true;
+				}
+			} else {
+				if((field instanceof FieldText) || (field instanceof FieldChars))
+					return field.getFieldWithoutNulls();
 			}
 		}
 
