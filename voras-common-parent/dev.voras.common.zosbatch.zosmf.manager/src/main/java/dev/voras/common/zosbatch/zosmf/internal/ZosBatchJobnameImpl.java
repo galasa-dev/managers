@@ -7,6 +7,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import dev.voras.common.zosbatch.IZosBatchJobname;
 import dev.voras.common.zosbatch.ZosBatchException;
 import dev.voras.common.zosbatch.ZosBatchManagerException;
+import dev.voras.common.zosbatch.zosmf.internal.properties.JobnamePrefix;
 
 public class ZosBatchJobnameImpl implements IZosBatchJobname {
 	
@@ -17,7 +18,7 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
 	public ZosBatchJobnameImpl(@NotNull @NotNull String imageId) throws ZosBatchException {
 
 		try {
-			jobNamePrefix = ZosBatchManagerImpl.zosBatchProperties.getJobnamePrefix(imageId);
+			jobNamePrefix = JobnamePrefix.get(imageId);
 		} catch (ZosBatchManagerException e) {
 			throw new ZosBatchException("Problem getting batch jobname prefix", e);
 		}

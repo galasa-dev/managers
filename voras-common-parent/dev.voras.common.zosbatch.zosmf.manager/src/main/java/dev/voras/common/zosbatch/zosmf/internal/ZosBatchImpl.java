@@ -42,7 +42,7 @@ public class ZosBatchImpl implements IZosBatch {
 	public void cleanup() throws ZosBatchException {
 		
 		Iterator<ZosBatchJobImpl> iterator = zosBatchJobs.iterator();
-		if (iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			ZosBatchJobImpl zosBatchJob = iterator.next();
 			if (!zosBatchJob.isArchived()) {
 				zosBatchJob.archiveJobOutput();
