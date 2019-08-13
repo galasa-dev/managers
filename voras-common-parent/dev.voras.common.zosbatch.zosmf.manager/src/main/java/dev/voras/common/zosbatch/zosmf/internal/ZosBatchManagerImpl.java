@@ -1,10 +1,10 @@
 package dev.voras.common.zosbatch.zosmf.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -22,9 +22,12 @@ import dev.voras.common.zosbatch.ZosBatch;
 import dev.voras.common.zosbatch.ZosBatchField;
 import dev.voras.common.zosbatch.ZosBatchJobname;
 import dev.voras.common.zosbatch.ZosBatchManagerException;
+import dev.voras.common.zosbatch.zosmf.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.voras.common.zosmf.spi.IZosmfManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.AnnotatedField;
+import dev.voras.framework.spi.ConfigurationPropertyStoreException;
+import dev.voras.framework.spi.GenerateAnnotatedField;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IManager;
 import dev.voras.framework.spi.ResourceUnavailableException;
@@ -33,11 +36,6 @@ import dev.voras.framework.spi.ResourceUnavailableException;
 public class ZosBatchManagerImpl extends AbstractManager {
 	protected static final String NAMESPACE = "zosbatch";
 
-	protected static ZosBatchProperties zosBatchProperties;
-	public static void setZosBatchProperties(ZosBatchProperties zosBatchProperties) {
-		ZosBatchManagerImpl.zosBatchProperties = zosBatchProperties;
-	}
-	
 	protected static IZosManagerSpi zosManager;
 	public static void setZosManager(IZosManagerSpi zosManager) {
 		ZosBatchManagerImpl.zosManager = zosManager;
@@ -72,7 +70,11 @@ public class ZosBatchManagerImpl extends AbstractManager {
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, testClass);
-		setZosBatchProperties(new ZosBatchProperties(framework));
+		try {
+			ZosBatchZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosBatchManagerException("Unable to request framework services", e);
+		}
 
 		//*** Check to see if any of our annotations are present in the test class
 		//*** If there is,  we need to activate
@@ -91,25 +93,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
 	 */
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		// Get all our annotated fields
-		List<AnnotatedField> annotatedFields = findAnnotatedFields(ZosBatchField.class);
-	
-		// Process annotations
-		Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
-		while(annotatedFieldIterator.hasNext()) {
-			AnnotatedField annotatedField = annotatedFieldIterator.next();
-			final Field field = annotatedField.getField();
-	
-			if (field.getType() == IZosBatch.class) {
-				IZosBatch zosBatch = generateZosBatch(field);
-				registerAnnotatedField(field, zosBatch);
-			}
-			if (field.getType() == IZosBatchJobname.class) {
-				IZosBatchJobname zosBatchJobname = generateZosBatchJobname(field);
-				registerAnnotatedField(field, zosBatchJobname);
-			}
-			
-		}
+		generateAnnotatedFields(ZosBatchField.class);
 	}
 
 
@@ -130,7 +114,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
 		}
 		setZosmfManager(addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class));
 		if (zosmfManager == null) {
-			throw new ZosBatchManagerException("The zOS/MF Manager is not available");
+			throw new ZosBatchManagerException("The zOSMF Manager is not available");
 		}
 		setHttpManager(addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class));
 		if (httpManager == null) {
@@ -173,16 +157,14 @@ public class ZosBatchManagerImpl extends AbstractManager {
     	for (HashMap.Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
     		entry.getValue().cleanup();
 		}
-    	
-    	
 
     	setCurrentTestMethod(null);
     	
         return null;
     }
 	
-	
-	private IZosBatch generateZosBatch(Field field) {
+    @GenerateAnnotatedField(annotation=ZosBatch.class)
+	public IZosBatch generateZosBatch(Field field, List<Annotation> annotations) {
 		ZosBatch annotationZosBatch = field.getAnnotation(ZosBatch.class);
 
 		//*** Default the tag to primary
@@ -199,8 +181,8 @@ public class ZosBatchManagerImpl extends AbstractManager {
 		return zosBatch;
 	}
 	
-	
-	private IZosBatchJobname generateZosBatchJobname(Field field) throws ZosBatchManagerException {
+    @GenerateAnnotatedField(annotation=ZosBatchJobname.class)
+	public IZosBatchJobname generateZosBatchJobname(Field field, List<Annotation> annotations) throws ZosBatchManagerException {
 		ZosBatchJobname annotationZosBatchJobname = field.getAnnotation(ZosBatchJobname.class);
 
 		//*** Default the tag to primary

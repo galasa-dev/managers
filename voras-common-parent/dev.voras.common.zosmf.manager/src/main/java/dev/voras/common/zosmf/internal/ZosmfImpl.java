@@ -3,6 +3,7 @@ package dev.voras.common.zosmf.internal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,21 +19,20 @@ import dev.voras.common.zosmf.IZosmf;
 import dev.voras.common.zosmf.IZosmfResponse;
 import dev.voras.common.zosmf.ZosmfException;
 import dev.voras.common.zosmf.ZosmfManagerException;
+import dev.voras.common.zosmf.internal.properties.ServerHostname;
+import dev.voras.common.zosmf.internal.properties.ServerImages;
+import dev.voras.common.zosmf.internal.properties.ServerPort;
 
 /**
  * Implementation of {@link IZosmf}
  *
  */
 public class ZosmfImpl implements IZosmf {
-	//TODO: Retry invalid requests
-	
 	
 	private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
 	
 	private static final String X_IBM_JOB_MODIFY_VERSION = "X-IBM-Job-Modify-Version";
 	private static final String X_IBM_REQUESTED_METHOD = "X-IBM-Requested-Method";
-	//TODO: Investigate this
-	private static final String X_IBM_BYPASS_STATUS = "X-IBM-Bypass-Status";
 
 	private String imageTag;
 	private IZosImage image;
@@ -51,9 +51,10 @@ public class ZosmfImpl implements IZosmf {
 			try {
 				this.image = ZosmfManagerImpl.zosManager.getImageForTag(this.imageTag);
 			} catch (ZosManagerException e) {
-				throw new ZosmfException(e); 
+				throw new ZosmfException(e);
 			}
 		}
+		
 		initialize();
 	}
 
@@ -64,19 +65,20 @@ public class ZosmfImpl implements IZosmf {
 
 	@Override
 	public IZosmfResponse putText(String path, String text) throws ZosmfException {
+		String method = "PUT";
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, "PUT");
+			setHeader(X_IBM_REQUESTED_METHOD, method);
 			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.putText(url, text);
-			logger.debug(zosmfResponse.getStatusLine() + " - PUT " + url);
-			if (zosmfResponse.getStatusCode() != HttpStatus.SC_CREATED) {
-				//TODO
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with PUT to z/OSMF server", e);
+			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
 		}
 		
 		return zosmfResponse;
@@ -84,63 +86,49 @@ public class ZosmfImpl implements IZosmf {
 
 	@Override
 	public IZosmfResponse get(String path) throws ZosmfException {
+		String method = "GET";
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, "GET");
+			setHeader(X_IBM_REQUESTED_METHOD, method);
 			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.getText(url);
-			logger.debug(zosmfResponse.getStatusLine() + " - GET " + url);
-			if (zosmfResponse.getStatusCode() != HttpStatus.SC_CREATED) {
-				//TODO
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem wth GET to z/OSMF server", e);
+			throw new ZosmfException("Problem wth " + method + " to zOSMF server", e);
 		}
 		
 		return zosmfResponse;
 	}
 
 	@Override
-	public IZosmfResponse getJson(String path) throws ZosmfException {
+	public IZosmfResponse delete(String path) throws ZosmfException {
+		String method = "DELETE";
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, "GET");
-			String url = this.zosmfUrl + validPath(path);
-			zosmfResponse = new ZosmfResponseImpl(url);
-			zosmfResponse.httpClientresponse = httpClient.getJson(url);
-			if (zosmfResponse.getStatusCode() != HttpStatus.SC_OK) {
-				//TODO
-			}
-			logger.debug(zosmfResponse.getStatusLine() + " - GET " + url);
-		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with GET to z/OSMF server", e);
-		}
-		
-		return zosmfResponse;
-	}
-
-	@Override
-	public IZosmfResponse deleteJson(String path) throws ZosmfException {
-
-		ZosmfResponseImpl zosmfResponse;
-		try {
-			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, "DELETE");
+			setHeader(X_IBM_REQUESTED_METHOD, method);
 			String url = this.zosmfUrl + validPath(path);
 			zosmfResponse = new ZosmfResponseImpl(url);
 			zosmfResponse.httpClientresponse = httpClient.deleteJson(url);
-			if (zosmfResponse.getStatusCode() != HttpStatus.SC_OK) {
-				//TODO
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
-			logger.debug(zosmfResponse.getStatusLine() + " - DELETE " + url);
 		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with GET to z/OSMF server", e);
+			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
 		}
 		
 		return zosmfResponse;
+	}
+
+	@Override
+	public IZosImage getImage() {
+		return this.image;
 	}
 
 	private String validPath(String path) {
@@ -149,17 +137,29 @@ public class ZosmfImpl implements IZosmf {
 
 	private void initialize() throws ZosmfException {
 		
+		String imageId = image.getImageID();
+		String clusterId = image.getClusterID();
+		List<String> configuredZosmfs;
+		try {
+			configuredZosmfs = ServerImages.get(clusterId);
+		} catch (ZosmfManagerException e) {
+			throw new ZosmfException(e);
+		}		
+		if (!configuredZosmfs.contains(imageId)) {
+			throw new ZosmfException("zOSMF server not configured for image '" + imageId + "' on cluster '" + clusterId + "' tag '" + imageTag + "'");
+		}
+		
 		String zosmfHostname;
 		try {
-			zosmfHostname = image.getDefaultHostname();
+			zosmfHostname = ServerHostname.get(image.getImageID());
 		} catch (ZosManagerException e) {
-			throw new ZosmfException("Problem getting default hostname for image " + image.getImageID(), e);
+			throw new ZosmfException("Problem getting hostname for image " + image.getImageID(), e);
 		}
 		String zosmfPort;
 		try {
-			zosmfPort = ZosmfManagerImpl.zosmfProperties.getZosmfPort(image.getImageID());
+			zosmfPort = ServerPort.get(image.getImageID());
 		} catch (ZosmfManagerException e) {
-			throw new ZosmfException("Problem getting default port for Z/OSMF server on " + image.getImageID(), e);
+			throw new ZosmfException("Problem getting port for zOSMF server on " + image.getImageID(), e);
 		}
 		this.zosmfUrl = "https://" + zosmfHostname + ":" + zosmfPort;
 
@@ -177,4 +177,11 @@ public class ZosmfImpl implements IZosmf {
 			throw new ZosmfException("Unable to create HTTP Client", e);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return this.image.getImageID() + " " + this.zosmfUrl;
+	}
+	
+	
 }

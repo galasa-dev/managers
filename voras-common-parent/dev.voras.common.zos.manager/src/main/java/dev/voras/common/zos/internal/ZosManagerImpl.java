@@ -46,6 +46,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	private IDynamicStatusStoreService dss;
 	private IIpNetworkManagerSpi ipManager;
 
+	private final ArrayList<ImageUsage> definedImages = new ArrayList<>();
+
 	private final HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
 	private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
 
@@ -273,7 +275,6 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		}
 
 		//*** Find a list of images
-		List<ImageUsage> definedImages = new ArrayList<>();
 		for(String definedImage : zosProperties.getClusterImages(clusterId)) {
 			ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, definedImage, clusterId);
 			definedImages.add(new ImageUsage(image));
@@ -327,6 +328,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		public int compareTo(ImageUsage o) {
 			return usage.compareTo(o.usage);
 		}
+		
+		@Override
+		public String toString()  {
+			return image.getImageID();			
+		}
+
 	}
 
 
@@ -345,7 +352,27 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		return image;
 	}
 
-
-
-
+	@Override
+	public IZosImage getImage(String imageId) throws ZosManagerException {
+		Objects.nonNull(imageId);
+		
+		IZosImage zosImage = this.images.get(imageId);
+		if (zosImage == null) {
+			for(ImageUsage imageUsage : definedImages) {
+				if (this.images.containsKey(imageUsage.image.getImageID()) || !imageUsage.image.getImageID().equals(imageId)) {
+					continue;
+				}
+	
+				if (imageUsage.image.allocateImage()) {
+					logger.info("zOS Image " + imageUsage.image.getImageID() + " selected with slot name " + imageUsage.image.getSlotName());
+					images.put(imageUsage.image.getImageID(), imageUsage.image);
+	
+					return imageUsage.image;
+				}
+			}
+		} else {
+			logger.info("zOS Image " + zosImage.getImageID() + " selected with slot name " + ((ZosProvisionedImageImpl) zosImage).getSlotName());			
+		}
+		return zosImage;
+	}
 }

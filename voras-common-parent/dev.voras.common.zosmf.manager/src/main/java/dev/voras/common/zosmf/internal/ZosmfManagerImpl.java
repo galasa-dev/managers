@@ -1,12 +1,14 @@
 package dev.voras.common.zosmf.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.voras.ManagerException;
@@ -18,22 +20,23 @@ import dev.voras.common.zosmf.IZosmf;
 import dev.voras.common.zosmf.Zosmf;
 import dev.voras.common.zosmf.ZosmfException;
 import dev.voras.common.zosmf.ZosmfManagerException;
+import dev.voras.common.zosmf.internal.properties.ServerImages;
+import dev.voras.common.zosmf.internal.properties.ZosmfPropertiesSingleton;
 import dev.voras.common.zosmf.spi.IZosmfManagerSpi;
 import dev.voras.framework.spi.AbstractManager;
 import dev.voras.framework.spi.AnnotatedField;
+import dev.voras.framework.spi.ConfigurationPropertyStoreException;
+import dev.voras.framework.spi.GenerateAnnotatedField;
 import dev.voras.framework.spi.IFramework;
 import dev.voras.framework.spi.IManager;
 import dev.voras.framework.spi.ResourceUnavailableException;
 
 @Component(service = { IManager.class })
 public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSpi {
+	
+	private static final Log logger = LogFactory.getLog(ZosmfManagerImpl.class);
+	
 	protected static final String NAMESPACE = "zosmf";
-
-	protected static ZosmfProperties zosmfProperties;
-	public static void setZosmfProperties(ZosmfProperties zosmfProperties) {
-		ZosmfManagerImpl.zosmfProperties = zosmfProperties;
-	}
-
 	
 	protected static IZosManagerSpi zosManager;
 	public static void setZosManager(IZosManagerSpi zosManager) {
@@ -45,7 +48,8 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 		ZosmfManagerImpl.httpManager = httpManager;
 	}
 
-	private final HashMap<String, ZosmfImpl> taggedZosmfs = new HashMap<>();
+	private final HashMap<String, IZosmf> taggedZosmfs = new HashMap<>();
+	private final HashMap<String, IZosmf> zosmfs = new HashMap<>();
 	
 	/* (non-Javadoc)
 	 * @see dev.voras.framework.spi.AbstractManager#initialise(dev.voras.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -54,7 +58,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, testClass);
-		setZosmfProperties(new ZosmfProperties(framework));
+		try {
+			ZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosmfManagerException("Unable to request framework services", e);
+		}
 
 		//*** Check to see if any of our annotations are present in the test class
 		//*** If there is,  we need to activate
@@ -102,24 +110,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 	 */
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		// Get all our annotated fields
-		List<AnnotatedField> annotatedFields = findAnnotatedFields(ZosmfManagerField.class);
-
-		// Process annotations
-		Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
-		while(annotatedFieldIterator.hasNext()) {
-			AnnotatedField annotatedField = annotatedFieldIterator.next();
-			final Field field = annotatedField.getField();
-
-			if (field.getType() == IZosmf.class) {
-				IZosmf zosmf = generateZosmf(field);
-				registerAnnotatedField(field, zosmf);
-			}			
-		}
+		generateAnnotatedFields(ZosmfManagerField.class);
 	}
 	
-	
-	private IZosmf generateZosmf(Field field) throws ZosmfManagerException {
+	@GenerateAnnotatedField(annotation=Zosmf.class)
+	public IZosmf generateZosmf(Field field, List<Annotation> annotations) throws ZosmfManagerException {
 		Zosmf annotationZosmf = field.getAnnotation(Zosmf.class);
 
 		//*** Default the tag to primary
@@ -130,8 +125,9 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 			return taggedZosmfs.get(tag);
 		}
 
-		IZosmf zosmf = new ZosmfImpl(tag);
-		taggedZosmfs.put(tag, (ZosmfImpl) zosmf);
+		ZosmfImpl zosmf = new ZosmfImpl(tag);
+		taggedZosmfs.put(tag, zosmf);
+		zosmfs.put(zosmf.getImage().getImageID(), zosmf);
 		
 		return zosmf;
 	}
@@ -140,5 +136,20 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 	@Override
 	public IZosmf newZosmf(IZosImage image) throws ZosmfException {
 		return new ZosmfImpl(image);
+	}
+
+
+	@Override
+	public HashMap<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException {
+		try {
+			for (String imageId : ServerImages.get(clusterId)) {
+				logger.info("Requesting zOS image " + imageId + " for zOSMF server");
+				IZosImage zosmfImage = zosManager.getImage(imageId);
+				this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+			}
+		} catch (ZosManagerException e) {
+			throw new ZosmfManagerException("Unable to get zOSMF servers for cluster " + clusterId, e);
+		}
+		return zosmfs;
 	}
 }

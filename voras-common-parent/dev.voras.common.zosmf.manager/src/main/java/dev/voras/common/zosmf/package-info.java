@@ -1,4 +1,4 @@
 /**
- * zOS/MF Manager - TPI
+ * zOSMF Manager - TPI
  */
 package dev.voras.common.zosmf;
