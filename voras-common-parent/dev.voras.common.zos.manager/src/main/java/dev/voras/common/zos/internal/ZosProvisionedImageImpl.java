@@ -100,7 +100,7 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 					String resPrefix = "slot." + this.allocatedSlotName;
 					//*** Set the user view properties
 					HashMap<String, String> resProps = new HashMap<>();
-					resProps.put(resPrefix, runName);
+					resProps.put(resPrefix + ".run", runName);
 					resProps.put(resPrefix + ".allocated", allocated);
 					dynamicResource.put(resProps);
 					break;
@@ -137,7 +137,7 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 			String resPrefix = "slot." + this.allocatedSlotName;
 			//*** delete the user view properties
 			HashSet<String> resProps = new HashSet<>();
-			resProps.add(resPrefix);
+			resProps.add(resPrefix + ".run");
 			resProps.add(resPrefix + ".allocated");
 			dynamicResource.delete(resProps);
 
@@ -175,7 +175,7 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 			String resPrefix = "slot." + slot;
 
 			HashSet<String> resProps = new HashSet<>();
-			resProps.add(resPrefix);
+			resProps.add(resPrefix + ".run");
 			resProps.add(resPrefix + ".allocated");
 			dynamicResource.delete(resProps);
 

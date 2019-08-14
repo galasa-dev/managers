@@ -32,7 +32,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 
 		try {
 			this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
-			this.defaultCredentialsId = AbstractManager.nulled(this.cps.getProperty("image", "credentials", this.imageId));
+			this.defaultCredentialsId = AbstractManager.defaultString(this.cps.getProperty("image", "credentials", this.imageId), "zos");
 		} catch(Exception e) {
 			throw new ZosManagerException("Problem populating Image " + this.imageId + " properties", e);
 		}
