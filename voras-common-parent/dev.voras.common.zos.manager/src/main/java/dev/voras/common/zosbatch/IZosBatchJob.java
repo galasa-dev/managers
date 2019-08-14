@@ -1,7 +1,5 @@
 package dev.voras.common.zosbatch;
 
-import java.util.List;
-
 /**
  * <p>Represents a zOS Batch Job.</p>
  * 
@@ -19,7 +17,7 @@ public interface IZosBatchJob {
 	 * @return highest CC
 	 * @throws ZosBatchException
 	 */
-	int waitForJob() throws ZosBatchException;
+	public int waitForJob() throws ZosBatchException;
 
 	/**
 	 * Retrieve all the output of the batch job
@@ -27,10 +25,13 @@ public interface IZosBatchJob {
 	 * @return Lines of output
 	 * @throws ZosBatchException
 	 */
-	List<String> retrieveOutput() throws ZosBatchException;
+	public IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
 
-	String getJcl() throws ZosBatchException;
-
-	IZosBatchJobname getJobname() throws ZosBatchException;
+	/**
+	 * Purge the batch job from the queue
+	 * 
+	 * @throws ZosBatchException
+	 */
+	public void purgeJob() throws ZosBatchException;
 
 }

@@ -174,6 +174,10 @@ public class Screen {
 		return this.screenCursor;
 	}
 
+	public void setCursor(int index) {
+		this.screenCursor = index;
+	}
+
 	public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
 		CommandCode commandCode = inbound.getCommandCode();
 		if (commandCode instanceof CommandWriteStructured) {
@@ -603,6 +607,22 @@ public class Screen {
 		}
 
 		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");		
+	}
+
+	public synchronized String getValueFromFieldContaining(@NotNull String text) throws TextNotFoundException {
+		Boolean foundHeader = false;
+		for(Field field : this.fields) {
+			if(!foundHeader){
+				if (field.containsText(text)) {
+					foundHeader = true;
+				}
+			} else {
+				if((field instanceof FieldText) || (field instanceof FieldChars))
+					return field.getFieldWithoutNulls();
+			}
+		}
+
+		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");	
 	}
 
 

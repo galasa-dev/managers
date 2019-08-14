@@ -23,6 +23,6 @@ public interface IZosBatch {
 	 * @throws ZosBatchManagerException 
 	 */
 	@NotNull
-	IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, @NotNull IZosImage image) throws ZosBatchException, ZosBatchManagerException;
+	public IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, @NotNull IZosImage image) throws ZosBatchException;
 
 }

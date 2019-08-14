@@ -96,4 +96,9 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 	public ZosIpHostImpl getIpHost() {
 		return this.ipHost;
 	}
+	
+	@Override
+	public String toString() {
+		return this.imageId;
+	}
 }
