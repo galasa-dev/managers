@@ -47,6 +47,16 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.common.zosBatch.zosmf.manager</artifactId>
+				<version>${dev.galasa.common.zosbatch.zosmf.manager}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.common.zosmf.manager</artifactId>
+				<version>${dev.galasa.common.zosmf.manager}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.common.linux.manager</artifactId>
 				<version>${dev.galasa.common.linux.manager}</version>
 			</dependency>
