@@ -1,0 +1,9 @@
+package dev.galasa.common.openstack.manager.internal.json;
+
+import java.util.List;
+
+public class Networks {
+	
+	public List<Network> networks; // NOSONAR
+
+}
