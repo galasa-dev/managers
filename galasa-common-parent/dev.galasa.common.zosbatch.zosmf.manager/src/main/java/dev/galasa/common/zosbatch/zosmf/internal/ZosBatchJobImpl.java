@@ -48,7 +48,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	private IZosImage jobImage;
 	private IZosBatchJobname jobname;
 	private String jcl;	
-	private int defaultJobTimeout;
+	private int jobWaitTimeout;
 	private IZosmf currentZosmf;
 	private String currentZosmfImageId;
 	private final HashMap<String, IZosmf> zosmfs = new LinkedHashMap<>();
@@ -75,7 +75,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		this.jcl = jcl;
 		storeArtifact(this.jcl, this.jobname + "_supplied_JCL.txt");
 		try {
-			this.defaultJobTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
+			this.jobWaitTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
 		} catch (ZosBatchManagerException e) {
 			throw new ZosBatchException("Unable to get job timeout property value", e);
 		}
@@ -127,8 +127,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
 	@Override
 	public int waitForJob() throws ZosBatchException {
-
-		long timeoutTime = Calendar.getInstance().getTimeInMillis()	+ defaultJobTimeout;
+		logger.info("Waiting " + jobWaitTimeout + " seconds for "+ this.jobid + " " + this.jobname.getName() + " to complete");
+		
+		long timeoutTime = Calendar.getInstance().getTimeInMillis()	+ (jobWaitTimeout * 1000);
 		while (Calendar.getInstance().getTimeInMillis() < timeoutTime) {
 			try {
 				updateJobStatus();
@@ -144,7 +145,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 					return 9999;
 				}
 				
-				Thread.sleep(500);
+				Thread.sleep(1000);
 	        } catch (InterruptedException e) {
 	        	logger.error("waitForJob Interrupted", e);
 	        	Thread.currentThread().interrupt();
