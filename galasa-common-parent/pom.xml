@@ -14,7 +14,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Voras Common Managers</name>
+	<name>Galasa Common Managers</name>
 
 	<properties>
 		<dev.galasa.common.ipnetwork.manager>0.3.0-SNAPSHOT</dev.galasa.common.ipnetwork.manager>

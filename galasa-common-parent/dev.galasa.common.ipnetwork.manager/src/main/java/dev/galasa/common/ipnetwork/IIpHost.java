@@ -37,6 +37,14 @@ public interface IIpHost {
 	 * @throws IpNetworkManagerException if there is a problem accessing the CPS
 	 */
 	int getTelnetPort() throws IpNetworkManagerException;
+
+	/**
+	 * Get the Webnet port, defaults to 23
+	 * 
+	 * @return Webnet port
+	 * @throws IpNetworkManagerException if there is a problem accessing the CPS
+	 */
+	int getWebnetPort() throws IpNetworkManagerException;
 	
 	/**
 	 * Is the Telnet port secured by TLS, default false
@@ -75,7 +83,6 @@ public interface IIpHost {
 	 * @throws IpNetworkManagerException
 	 */
 	@NotNull
-	ICredentials getDefaultCredentials() throws IpNetworkManagerException;
-	
+	ICredentials getDefaultCredentials() throws IpNetworkManagerException;	
 	
 }
