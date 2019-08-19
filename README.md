@@ -3,5 +3,5 @@
 ![SonarQube Badge](https://cicscit.hursley.ibm.com/sonar/api/project_badges/measure?project=eJATv3Common&metric=code_smells)
 
 # common
-eJAT Common Managers
+Galasa Common Managers
 

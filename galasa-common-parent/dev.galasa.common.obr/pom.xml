@@ -13,7 +13,7 @@
 	<artifactId>dev.galasa.common.obr</artifactId>
 	<packaging>galasa-obr</packaging>
 
-	<name>Voras Common OBR</name>
+	<name>Galasa Common OBR</name>
 
 	<dependencies>
 		<dependency>

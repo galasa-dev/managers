@@ -125,9 +125,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * io.ejat.framework.spi.IManager#areYouProvisionalDependentOn(io.ejat.framework
-     * .spi.IManager)
+     * @see dev.galasa.framework.spi.IManager#areYouProvisionalDependentOn(dev.galasa.framework.spi.IManager)
      */
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
@@ -139,7 +137,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     /*
      * (non-Javadoc)
      * 
-     * @see io.ejat.framework.spi.IManager#startOfTestMethod()
+     * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
     public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
@@ -149,8 +147,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     /*
      * (non-Javadoc)
      * 
-     * @see io.ejat.framework.spi.IManager#endOfTestMethod(java.lang.String,
-     * java.lang.Throwable)
+     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {

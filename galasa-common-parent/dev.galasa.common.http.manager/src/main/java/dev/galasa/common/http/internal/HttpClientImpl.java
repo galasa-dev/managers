@@ -361,7 +361,7 @@ public class HttpClientImpl implements IHttpClient{
 						} catch (InterruptedException e1) {
 							Thread.currentThread().interrupt();
 							throw new HttpClientException(
-									"JAT HTTP Client retry failed due to interruption",
+									"Galasa HTTP Client retry failed due to interruption",
 									e1);
 						}
 						continue;

@@ -32,7 +32,7 @@ import dev.galasa.common.ipnetwork.internal.ssh.SSHException;
 
 
 /**
- * SSH FileStore for Voras
+ * SSH FileStore for Galasa
  * 
  * @author Michael Baylis
  * 

@@ -22,7 +22,7 @@ import dev.galasa.common.openstack.manager.internal.json.Network;
 import dev.galasa.common.openstack.manager.internal.json.Port;
 import dev.galasa.common.openstack.manager.internal.json.Server;
 import dev.galasa.common.openstack.manager.internal.json.ServerRequest;
-import dev.galasa.common.openstack.manager.internal.json.VorasMetadata;
+import dev.galasa.common.openstack.manager.internal.json.GalasaMetadata;
 import dev.galasa.common.openstack.manager.internal.properties.GenerateTimeout;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.creds.CredentialsException;
@@ -135,7 +135,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 		server.imageRef = this.openstackHttpClient.getImageId(this.image);
 		server.flavorRef = this.openstackHttpClient.getFlavourId(flavor);
 		server.availability_zone = "nova"; // TODO cps
-		server.metadata = new VorasMetadata();
+		server.metadata = new GalasaMetadata();
 		server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
 		server.key_name = "galasa"; // TODO cps
 

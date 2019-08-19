@@ -32,7 +32,7 @@ import com.google.gson.JsonObject;
 import dev.galasa.common.http.HttpClientException;
 
 /**
- * Representation of an HTTP Request as used in {@link JatHttpClient}.
+ * Representation of an HTTP Request as used in {@link HttpClientImpl}.
  * This class has a builder format, and after creation, at least {@link #setUrl(String)}
  * must be called before use, as well as one of the setBody(...) methods if this is a PUT
  * or POST request
@@ -231,10 +231,10 @@ public class HttpClientRequest {
 
 	/**
 	 * Build the {@link HttpUriRequest} that underlies this object. Only for use by
-	 * the {@link JatHttpClient}
+	 * the {@link HttpClientImpl}
 	 * 
 	 * @return An {@link HttpUriRequest}
-	 * @throws JatHttpClientException
+	 * @throws HttpClientException
 	 */
 	HttpUriRequest buildRequest() throws HttpClientException {
 		

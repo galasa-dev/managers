@@ -14,11 +14,11 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * This property indicates what names will be given to the compute servers when they are created. 
  * </p><p>
  * The property is:-<br><br>
- * openstack.server.name.pool=VORAS{0-9}{0-9}
+ * openstack.server.name.pool=GALASA{0-9}{0-9}
  * </p><p>
  * Can be a comma separated list of static or generated names, eg BOB1,BOB9,BOB5
  * </p><p>
- * default value is VORAS{0-9}{0-9}
+ * default value is GALASA{0-9}{0-9}
  * </p>
  * 
  * @author Michael Baylis
