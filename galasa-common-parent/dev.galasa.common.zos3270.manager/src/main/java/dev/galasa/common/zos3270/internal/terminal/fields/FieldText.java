@@ -65,7 +65,7 @@ public class FieldText extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#toString()
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#toString()
 	 */
 	@Override
 	public String toString() {
@@ -76,7 +76,7 @@ public class FieldText extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#split(java.util.List, int, int)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#split(java.util.List, int, int)
 	 */
 	@Override
 	public void split(List<Field> originalFields, int splitStart, int splitEnd) {
@@ -140,7 +140,7 @@ public class FieldText extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldString(java.lang.StringBuilder)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#getFieldString(java.lang.StringBuilder)
 	 */
 	@Override
 	public void getFieldString(StringBuilder sb) {
@@ -155,7 +155,7 @@ public class FieldText extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#merge(java.util.List, io.ejat.zos3270.internal.terminal.fields.Field)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#merge(java.util.List, dev.galasa.zos3270.internal.terminal.fields.Field)
 	 */
 	@Override
 	public void merge(List<Field> allFields, Field nextField) {
@@ -192,7 +192,7 @@ public class FieldText extends Field {
 	
 	
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#containsText(java.lang.String)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#containsText(java.lang.String)
 	 */
 	@Override
 	public boolean containsText(@NotNull String searchText) {
@@ -205,7 +205,7 @@ public class FieldText extends Field {
 	
 	
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isTypeable()
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#isTypeable()
 	 */
 	@Override
 	public boolean isTypeable() {
@@ -246,7 +246,7 @@ public class FieldText extends Field {
 
 	
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#isModified()
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#isModified()
 	 */
 	@Override
 	public boolean isModified() {
@@ -255,7 +255,7 @@ public class FieldText extends Field {
 	
 	
     /* (non-Javadoc)
-     * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
+     * @see dev.galasa.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
      */
     @Override
     public byte[] getFieldEbcdicWithoutNulls() {
@@ -263,7 +263,7 @@ public class FieldText extends Field {
     }
 
     /* (non-Javadoc)
-     * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
+     * @see dev.galasa.zos3270.internal.terminal.fields.Field#getFieldEbcdicWithoutNulls()
      */
     @Override
     public String getFieldWithoutNulls() {

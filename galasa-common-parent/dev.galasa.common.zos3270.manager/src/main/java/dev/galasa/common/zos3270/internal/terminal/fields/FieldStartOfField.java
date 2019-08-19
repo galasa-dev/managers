@@ -39,7 +39,7 @@ public class FieldStartOfField extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#toString()
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#toString()
 	 */
 	@Override
 	public String toString() {
@@ -47,7 +47,7 @@ public class FieldStartOfField extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#split(java.util.List, int, int)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#split(java.util.List, int, int)
 	 */
 	@Override
 	public void split(List<Field> originalFields, int splitStart, int splitEnd) {
@@ -60,7 +60,7 @@ public class FieldStartOfField extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#getFieldString(java.lang.StringBuilder)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#getFieldString(java.lang.StringBuilder)
 	 */
 	@Override
 	public void getFieldString(StringBuilder sb) {
@@ -68,7 +68,7 @@ public class FieldStartOfField extends Field {
 	}
 
 	/* (non-Javadoc)
-	 * @see io.ejat.zos3270.internal.terminal.fields.Field#merge(java.util.List, io.ejat.zos3270.internal.terminal.fields.Field)
+	 * @see dev.galasa.zos3270.internal.terminal.fields.Field#merge(java.util.List, dev.galasa.zos3270.internal.terminal.fields.Field)
 	 */
 	@Override
 	public void merge(List<Field> allFields, Field nextField) {

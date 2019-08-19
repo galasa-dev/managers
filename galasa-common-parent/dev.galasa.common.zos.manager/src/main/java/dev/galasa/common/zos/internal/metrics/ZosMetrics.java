@@ -34,7 +34,7 @@ public class ZosMetrics implements IMetricsProvider, Runnable {
 		}
 
 		this.noSlots = Gauge.build()
-				.name("cirillo_zos_insufficent_slots_total")
+				.name("galasa_zos_insufficent_slots_total")
 				.help("How many times insufficent slots has occurred")
 				.register();
 

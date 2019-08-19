@@ -67,9 +67,6 @@ public class BundleResourcesImpl implements IBundleResources {
 		return directoryContents;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.ibm.cics.jatp.junit.artifacts.IArtifactLocator#locateFile(java.lang.Class, java.lang.String)
-	 */
 	public InputStream retrieveFile(String filename) throws TestBundleResourceException {
 
 		filename = normalisePath(filename);
