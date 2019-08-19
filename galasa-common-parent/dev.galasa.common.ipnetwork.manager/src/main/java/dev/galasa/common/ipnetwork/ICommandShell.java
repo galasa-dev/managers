@@ -73,7 +73,7 @@ public interface ICommandShell {
 	 * @param command
 	 *            - command to issue
 	 * @return the output of the command (stdout and stderr)
-	 * @throws JATPException
+	 * @throws IpNetworkManagerException
 	 */
 	public String issueCommandToShell(String command)
 			throws IpNetworkManagerException;
@@ -88,7 +88,7 @@ public interface ICommandShell {
 	 *            - command to issue
 	 *            - if true will start a new
 	 * @return the output of the command (stdout and stderr)
-	 * @throws JATPException
+	 * @throws IpNetworkManagerException
 	 */
 	public String issueCommandToShell(String command, long timeout)
 			throws IpNetworkManagerException;
@@ -104,7 +104,7 @@ public interface ICommandShell {
 	 * @param newShell
 	 *            - if true will start a new
 	 * @return the output of the command (stdout and stderr)
-	 * @throws JATPException
+	 * @throws IpNetworkManagerException
 	 */
 	public String issueCommandToShell(String command, boolean newShell)
 			throws IpNetworkManagerException;
@@ -122,7 +122,7 @@ public interface ICommandShell {
 	 *            - time (in milliseconds) to wait with no new output appearing
 	 *            before timing out
 	 * @return the output of the command
-	 * @throws JATPException
+	 * @throws IpNetworkManagerException
 	 */
 	public String issueCommandToShell(String command, boolean newShell, long timeout)
 			throws IpNetworkManagerException;

@@ -19,6 +19,6 @@ public class Server {
 	@SerializedName("OS-EXT-STS:task_state")
 	public String task_state; // NOSONAR
 	
-	public VorasMetadata metadata; // NOSONAR
+	public GalasaMetadata metadata; // NOSONAR
 	
 }

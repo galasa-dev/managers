@@ -31,7 +31,7 @@ import dev.galasa.common.ipnetwork.ICommandShell;
 
 
 /**
- * SSH client for Voras
+ * SSH client for Galasa
  * 
  * @author James Bartlett
  * 
@@ -57,7 +57,7 @@ public class SSHClient implements ICommandShell {
 
 	private boolean logShellResults;
 
-	private final static String specialPrompt = "[VorasPrompt]";
+	private final static String specialPrompt = "[GalasaPrompt]";
 
 	// Default value: Linux command
 	private String changePromptCommand = "PS1=" + specialPrompt;
@@ -600,7 +600,7 @@ public class SSHClient implements ICommandShell {
 		public KeepAliveThread(Session session) {
 			this.monitorSession = session;
 			this.setDaemon(true);
-			this.setName("JATSSHClient timeout thread");
+			this.setName("GalasaSSHClient timeout thread");
 
 			//			if (configurationProperties != null) {
 			//				String idleTimeoutString = configurationProperties.getProperty("core.ssh.idle.timeout", "60000"); 

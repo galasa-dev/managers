@@ -1,6 +1,6 @@
 package dev.galasa.common.openstack.manager.internal.json;
 
-public class VorasMetadata {
+public class GalasaMetadata {
 	
 	public String galasa_run; // NOSONAR
 
