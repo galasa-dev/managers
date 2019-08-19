@@ -165,4 +165,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 		return this.dss;
 	}
 
+	public Zos3270TerminalImpl getTerminal() throws Zos3270ManagerException {
+		return this.terminals.get(0);
+	}
 }
