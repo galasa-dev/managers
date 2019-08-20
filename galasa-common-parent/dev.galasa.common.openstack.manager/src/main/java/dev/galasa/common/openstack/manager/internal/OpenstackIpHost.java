@@ -36,10 +36,6 @@ public class OpenstackIpHost implements IIpHost {
 		return 22;
 	}
 
-	public int getWebnetPort() throws IpNetworkManagerException {
-		return 22; //Might be wrong, who knows
-	}
-
 	@Override
 	public boolean isTelnetPortTls() throws IpNetworkManagerException {
 		return false;

@@ -82,19 +82,6 @@ public abstract class AbstractGenericIpHost implements IIpHostSpi {
 	}
 
 	@Override
-	public int getWebnetPort() throws IpNetworkManagerException {
-		try {
-			String temp = AbstractManager.nulled(this.cps.getProperty(this.prefix, "webnet.port", this.hostid));
-			if (temp == null) {
-				return 23;
-			}
-			return Integer.parseInt(temp);
-		} catch(Exception e) {
-			throw new IpNetworkManagerException("Unable to retrieve webnet port property for host " + this.hostid, e);
-		}
-	}
-
-	@Override
 	public boolean isTelnetPortTls() throws IpNetworkManagerException {
 		try {
 			return Boolean.parseBoolean(AbstractManager.nulled(this.cps.getProperty(this.prefix, "telnet.tls", this.hostid)));
