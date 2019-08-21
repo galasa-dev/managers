@@ -33,6 +33,18 @@ public class ZosProperties {
 		}
 	}
 
+	public String getCommandExtraBundle() throws ZosManagerException {
+		try {
+			String commandBundleName = ZosManagerImpl.nulled(this.cps.getProperty("bundle.extra", "command.manager"));
+			if (commandBundleName == null)  {
+				return "dev.galasa.common.zosconsole.zosmf.manager";
+			}
+			return commandBundleName;
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosManagerException("Problem asking CPS for the command manager extra bundle name", e); 
+		}
+	}
+
 	public String getImageIdForTag(String tag) throws ZosManagerException {
 		try {
 			return ZosManagerImpl.nulled(this.cps.getProperty("tag", "imageid", tag));
