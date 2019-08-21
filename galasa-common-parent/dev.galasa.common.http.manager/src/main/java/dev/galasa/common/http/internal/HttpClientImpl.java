@@ -850,9 +850,9 @@ public class HttpClientImpl implements IHttpClient{
 	
 	@Override
 	public HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException {
-
-		HttpClientRequest request = HttpClientRequest.newGetRequest(url,
-				new ContentType[] { ContentType.APPLICATION_JSON });
+		HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(), new ContentType[] { ContentType.APPLICATION_JSON });
+//		HttpClientRequest request = HttpClientRequest.newGetRequest(url,
+//				new ContentType[] { ContentType.APPLICATION_JSON });
 
 		return executeJsonRequest(request);
 	}
@@ -972,14 +972,13 @@ public class HttpClientImpl implements IHttpClient{
 	}
 
 	private CloseableHttpResponse execute(HttpUriRequest request) throws HttpClientException {
-
-		//		CloseableHttpResponse response = null;
-
 		for (Header header : commonHeaders) {
 			request.addHeader(header);
 		}
 
-		//		try {
+		if(httpClient == null) {
+			this.build();
+		}
 
 		try {
 			return httpClient.execute(request, httpContext);
@@ -987,6 +986,7 @@ public class HttpClientImpl implements IHttpClient{
 			throw new HttpClientException("Error executing http request", e);
 		}
 	}
+	
 	@Override
 	public void close() {
 		if(this.httpClient == null) {
