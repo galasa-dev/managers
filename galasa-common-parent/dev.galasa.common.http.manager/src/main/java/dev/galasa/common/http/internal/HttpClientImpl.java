@@ -851,9 +851,6 @@ public class HttpClientImpl implements IHttpClient{
 	@Override
 	public HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException {
 		HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(), new ContentType[] { ContentType.APPLICATION_JSON });
-//		HttpClientRequest request = HttpClientRequest.newGetRequest(url,
-//				new ContentType[] { ContentType.APPLICATION_JSON });
-
 		return executeJsonRequest(request);
 	}
 
