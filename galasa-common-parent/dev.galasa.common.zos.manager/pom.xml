@@ -21,28 +21,24 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
 			<version>${dev.galasa.framework}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
 			<version>${dev.galasa}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.common.ipnetwork.manager</artifactId>
 			<version>${dev.galasa.common.ipnetwork.manager}</version>
-			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient</artifactId>
 			<version>${prometheus.simpleclient}</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

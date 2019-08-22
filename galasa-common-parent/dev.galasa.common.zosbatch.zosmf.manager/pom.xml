@@ -21,37 +21,31 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
 			<version>${dev.galasa.framework}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
 			<version>${dev.galasa}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.common.zos.manager</artifactId>
 			<version>${dev.galasa.common.zos.manager}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.common.zosmf.manager</artifactId>
 			<version>${dev.galasa.common.zosmf.manager}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.common.http.manager</artifactId>
 			<version>${dev.galasa.common.http.manager}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang3}</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
