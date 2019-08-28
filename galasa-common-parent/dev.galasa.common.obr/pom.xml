@@ -42,6 +42,12 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.common.zosconsole.zosmf.manager</artifactId>
+			<version>${dev.galasa.common.zosconsole.zosmf.manager}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.common.ipnetwork.manager</artifactId>
 			<version>${dev.galasa.common.ipnetwork.manager}</version>
 			<scope>compile</scope>

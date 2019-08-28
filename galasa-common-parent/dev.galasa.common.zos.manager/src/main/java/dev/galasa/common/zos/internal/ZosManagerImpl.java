@@ -60,12 +60,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		this.zosProperties = new ZosProperties(framework);
 
 		ArrayList<String> bundles = new ArrayList<>();
-		String batchBundleName = this.zosProperties.getBatchExtraBundle();
-		if (batchBundleName == null)  {
-			batchBundleName = "dev.galasa.common.zosbatch.zosmf.manager";
-		}
-
-		bundles.add(batchBundleName);
+		
+		bundles.add(this.zosProperties.getBatchExtraBundle());
+		bundles.add(this.zosProperties.getCommandExtraBundle());
 
 		return bundles;
 	}
