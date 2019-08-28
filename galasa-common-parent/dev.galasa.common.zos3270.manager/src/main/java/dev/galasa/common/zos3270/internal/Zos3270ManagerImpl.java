@@ -164,5 +164,4 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 	protected IDynamicStatusStoreService getDss() {
 		return this.dss;
 	}
-
 }

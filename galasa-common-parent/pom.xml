@@ -54,6 +54,8 @@
 		<module>dev.galasa.common.linux.manager</module>
 		<module>dev.galasa.common.openstack.manager</module>
 		<module>galasa-uber-javadoc</module>
+		<module>dev.galasa.karaf.master.feature</module>
+		<module>galasa-master-api-server</module>
 	</modules>
 
 	<dependencies>

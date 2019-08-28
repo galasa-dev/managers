@@ -129,6 +129,13 @@
 				<scope>provided</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.service.component.annotations</artifactId>
+				<version>${org.osgi.service.component.annotations}</version>
+			</dependency>
+
+
 		</dependencies>
 	</dependencyManagement>
 

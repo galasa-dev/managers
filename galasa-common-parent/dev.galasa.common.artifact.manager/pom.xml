@@ -21,14 +21,12 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
 			<version>${dev.galasa.framework}</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
 			<version>${dev.galasa}</version>
-			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>

@@ -75,7 +75,6 @@ public interface IIpHost {
 	 * @throws IpNetworkManagerException
 	 */
 	@NotNull
-	ICredentials getDefaultCredentials() throws IpNetworkManagerException;
-	
+	ICredentials getDefaultCredentials() throws IpNetworkManagerException;	
 	
 }
