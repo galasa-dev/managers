@@ -13,11 +13,11 @@ import dev.galasa.common.zosmf.ZosmfException;
 
 public class ZosmfResponseImpl implements IZosmfResponse {
 
-	protected HttpClientResponse<?> httpClientresponse;
-	protected URL requestUrl;
+	private HttpClientResponse<?> httpClientresponse;
+	private URL requestUrl;
 
-	public ZosmfResponseImpl(String zosmfUrl) throws MalformedURLException {
-		this.requestUrl = new URL(zosmfUrl);
+	public ZosmfResponseImpl(String url, String path) throws MalformedURLException {
+		this.requestUrl = new URL(url + path); 
 	}
 
 	@Override
@@ -61,6 +61,10 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 	@Override
 	public URL getRequestUrl() {
 		return this.requestUrl;
+	}
+
+	public void setHttpClientresponse(HttpClientResponse<?> httpClientResponse) {
+		this.httpClientresponse = httpClientResponse;
 	}
 
 }

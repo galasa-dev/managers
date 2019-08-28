@@ -70,10 +70,9 @@ public class ZosmfImpl implements IZosmf {
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
 			setHeader(X_IBM_REQUESTED_METHOD, method);
-			String url = this.zosmfUrl + validPath(path);
-			zosmfResponse = new ZosmfResponseImpl(url);
-			zosmfResponse.httpClientresponse = httpClient.putText(url, text);
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			zosmfResponse.setHttpClientresponse(httpClient.putText(validPath(path), text));
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
 			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
@@ -91,10 +90,9 @@ public class ZosmfImpl implements IZosmf {
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
 			setHeader(X_IBM_REQUESTED_METHOD, method);
-			String url = this.zosmfUrl + validPath(path);
-			zosmfResponse = new ZosmfResponseImpl(url);
-			zosmfResponse.httpClientresponse = httpClient.getText(url);
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			zosmfResponse.setHttpClientresponse(httpClient.getText(validPath(path)));
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
 			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
@@ -112,10 +110,9 @@ public class ZosmfImpl implements IZosmf {
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
 			setHeader(X_IBM_REQUESTED_METHOD, method);
-			String url = this.zosmfUrl + validPath(path);
-			zosmfResponse = new ZosmfResponseImpl(url);
-			zosmfResponse.httpClientresponse = httpClient.deleteJson(url);
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + url);
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			zosmfResponse.setHttpClientresponse(httpClient.deleteJson(validPath(path)));
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
 			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
