@@ -116,7 +116,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 			
 			String terminaId = "term" + (terminalCount++);
 			
-			Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort());
+			Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(), getFramework());
 			
 			this.terminals.add(terminal);
 			logger.info("Generated a terminal for zOS Image tagged " + tag);
