@@ -26,7 +26,11 @@ public class Terminal implements ITerminal {
     private Log logger = LogFactory.getLog(getClass());
 
     public Terminal(String host, int port) {
-        network = new Network(host, port);
+        this(host, port, false);
+    }
+
+    public Terminal(String host, int port, boolean ssl) {
+        network = new Network(host, port, ssl);
         screen = new Screen(80, 24, network);
     }
 

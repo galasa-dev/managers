@@ -46,7 +46,7 @@ public class ConnectTest {
 	}
 	
 	@Test
-	public void testCreateSocket() throws UnknownHostException, IOException {
+	public void testCreateSocket() throws Exception {
 		Network network = new Network("google.com", 80);
 		try (Socket socket = network.createSocket()) {
 			Assert.assertEquals("Invalid port was set", 80, socket.getPort());
