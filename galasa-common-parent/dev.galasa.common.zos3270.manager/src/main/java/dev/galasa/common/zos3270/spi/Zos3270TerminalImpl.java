@@ -20,8 +20,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 	private final IConfidentialTextService cts;
 	private final boolean applyCtf;
 	
-	public Zos3270TerminalImpl(String id, String host, int port, IFramework framework) throws Zos3270ManagerException {
-		super(host, port);
+	public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework) throws Zos3270ManagerException {
+		super(host, port, tls);
 		this.terminalId = id;
 		
 		this.cts = framework.getConfidentialTextService();

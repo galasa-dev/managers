@@ -6,7 +6,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Hex;
 
@@ -38,16 +45,22 @@ public class Network /* extends Thread */{
 
 	public static final Charset ascii7 = Charset.forName("us-ascii");
 
-	private final String host;
-	private final int    port;
+	private final String  host;
+	private final int     port;
+	private final boolean ssl;
 
 	private Socket socket;
 	private OutputStream outputStream;
 	private InputStream inputStream;
 
 	public Network(String host, int port) {
+		this(host, port, false);
+	}
+
+	public Network(String host, int port, boolean ssl) {
 		this.host = host;
 		this.port = port;
+		this.ssl  = ssl;
 	}
 
 	public boolean connectClient() throws NetworkException {
@@ -55,7 +68,7 @@ public class Network /* extends Thread */{
 			if (socket.isConnected()) {
 				return true;
 			}
-			
+
 			close();
 		}
 
@@ -64,19 +77,19 @@ public class Network /* extends Thread */{
 			newSocket = createSocket();
 			newSocket.setTcpNoDelay(true);
 			newSocket.setKeepAlive(true);
-			
+
 			InputStream newInputStream = newSocket.getInputStream();
 			OutputStream newOutputStream = newSocket.getOutputStream();
-			
+
 			negotiate(newInputStream, newOutputStream);
-			
+
 			this.socket = newSocket;
 			this.outputStream = newOutputStream;
 			this.inputStream = newInputStream;
 			newSocket = null;
-			
+
 			return true;
-		} catch(IOException e) {
+		} catch(Exception e) {
 			throw new NetworkException("Unable to connect to Telnet server", e);
 		} finally {
 			if (newSocket != null) {
@@ -87,15 +100,30 @@ public class Network /* extends Thread */{
 			}
 		}
 	}
-	
-	public Socket createSocket() throws IOException {
-		Socket newSocket = new Socket(this.host, this.port); //NOSONAR
+
+	public Socket createSocket() throws Exception {
+		Socket newSocket = null;
+		if (!ssl) {
+			newSocket = new Socket(this.host, this.port); //NOSONAR
+		} else {
+			
+			boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
+			SSLContext sslContext;
+			if(ibmJdk) {
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
+			} else {
+				sslContext = SSLContext.getInstance("TLSv1.2");
+			}
+			sslContext.init(null, new TrustManager[] {new TrustAllCerts()}, new java.security.SecureRandom()); 
+			newSocket = sslContext.getSocketFactory().createSocket(this.host, this.port); //NOSONAR
+			((SSLSocket)newSocket).startHandshake();
+		}
 		newSocket.setTcpNoDelay(true);
 		newSocket.setKeepAlive(true);
-		
+
 		return newSocket;
 	}
-	
+
 	public void close() {
 		if (socket != null) {
 			try {
@@ -107,7 +135,7 @@ public class Network /* extends Thread */{
 			outputStream = null;
 		}
 	}
-	
+
 	public InputStream getInputStream() {
 		return this.inputStream;
 	}
@@ -204,7 +232,7 @@ public class Network /* extends Thread */{
 		try {
 			byte[] header = new byte[] {0,0,0,0,0};
 			byte[] trailer = new byte[] {(byte) 0xff,(byte) 0xef};
-			
+
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			baos.write(header);
 			baos.write(outboundDatastream);
@@ -214,11 +242,29 @@ public class Network /* extends Thread */{
 		} catch(IOException e) {
 			throw new NetworkException("Unable to write outbound datastream", e);
 		}
-		
+
 	}
 
 	public String getHostPort() {
 		return this.host + ":" + Integer.toString(this.port);
+	}
+	
+	
+	private static class TrustAllCerts implements X509TrustManager {
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {  // NOSONAR TODO proper certificate handling
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) { // NOSONAR TODO proper certificate handling
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[0];
+		}
+		
 	}
 
 }
