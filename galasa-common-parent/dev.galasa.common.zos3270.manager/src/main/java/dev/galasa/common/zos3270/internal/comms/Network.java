@@ -110,7 +110,7 @@ public class Network /* extends Thread */{
 			boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
 			SSLContext sslContext;
 			if(ibmJdk) {
-				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSANR
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
 			} else {
 				sslContext = SSLContext.getInstance("TLSv1.2");
 			}
@@ -253,11 +253,11 @@ public class Network /* extends Thread */{
 	private static class TrustAllCerts implements X509TrustManager {
 
 		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType) {
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {  // NOSONAR TODO proper certificate handling
 		}
 
 		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType) {
+		public void checkServerTrusted(X509Certificate[] chain, String authType) { // NOSONAR TODO proper certificate handling
 		}
 
 		@Override
