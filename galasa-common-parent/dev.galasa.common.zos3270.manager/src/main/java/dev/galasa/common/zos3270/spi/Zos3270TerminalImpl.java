@@ -5,6 +5,10 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.common.zos3270.AttentionIdentification;
 import dev.galasa.common.zos3270.IScreenUpdateListener;
+import dev.galasa.common.zos3270.Zos3270ManagerException;
+import dev.galasa.common.zos3270.internal.properties.ApplyConfidentialTextFiltering;
+import dev.galasa.framework.spi.IConfidentialTextService;
+import dev.galasa.framework.spi.IFramework;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 	
@@ -13,9 +17,15 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 	private final String terminalId;
 	private long         updateId;
 
-	public Zos3270TerminalImpl(String id, String host, int port) {
+	private final IConfidentialTextService cts;
+	private final boolean applyCtf;
+	
+	public Zos3270TerminalImpl(String id, String host, int port, IFramework framework) throws Zos3270ManagerException {
 		super(host, port);
 		this.terminalId = id;
+		
+		this.cts = framework.getConfidentialTextService();
+		this.applyCtf = ApplyConfidentialTextFiltering.get();
 		
 		getScreen().registerScreenUpdateListener(this);
 		
@@ -26,6 +36,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 		String update = terminalId + "-" + (updateId++);
 		
 		String screenData = getScreen().printScreenTextWithCursor();
+		if (applyCtf) {
+			screenData = cts.removeConfidentialText(screenData);
+		}
+		
 		String aidString;
 		if (aid != null) {
 			aidString = ", " + aid.toString();
