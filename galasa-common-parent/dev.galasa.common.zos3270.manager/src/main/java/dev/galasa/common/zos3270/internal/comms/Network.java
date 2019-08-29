@@ -110,12 +110,12 @@ public class Network /* extends Thread */{
 			boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
 			SSLContext sslContext;
 			if(ibmJdk) {
-				sslContext = SSLContext.getInstance("SSL_TLSv2");
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSANR
 			} else {
 				sslContext = SSLContext.getInstance("TLSv1.2");
 			}
 			sslContext.init(null, new TrustManager[] {new TrustAllCerts()}, new java.security.SecureRandom()); 
-			newSocket = sslContext.getSocketFactory().createSocket(this.host, this.port);
+			newSocket = sslContext.getSocketFactory().createSocket(this.host, this.port); //NOSONAR
 			((SSLSocket)newSocket).startHandshake();
 		}
 		newSocket.setTcpNoDelay(true);
@@ -253,11 +253,11 @@ public class Network /* extends Thread */{
 	private static class TrustAllCerts implements X509TrustManager {
 
 		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {
 		}
 
 		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		public void checkServerTrusted(X509Certificate[] chain, String authType) {
 		}
 
 		@Override
