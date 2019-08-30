@@ -1,5 +1,7 @@
 package dev.galasa.common.zosmf;
 
+import com.google.gson.JsonObject;
+
 import dev.galasa.common.zos.IZosImage;
 
 /**
@@ -20,11 +22,21 @@ public interface IZosmf {
 	 * Issue an HTTP PUT request to the zOSMF server with a request body of content type of {@code text/plain}
 	 * 
 	 * @param path identifies the zOSMF REST API
-	 * @param text the request body
+	 * @param body the request body
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse putText(String path, String text) throws ZosmfException;
+	public IZosmfResponse putText(String path, String body) throws ZosmfException;
+
+	/**
+	 * Issue an HTTP PUT request to the zOSMF server with a request body of content type of {@code application/json}
+	 * 
+	 * @param path identifies the zOSMF REST API
+	 * @param body the request body
+	 * @return the zOSMF server response
+	 * @throws ZosmfException
+	 */
+	public IZosmfResponse putJson(String path, JsonObject body) throws ZosmfException;
 
 	/**
 	 * Issue an HTTP PUT request to the zOSMF server with no request body

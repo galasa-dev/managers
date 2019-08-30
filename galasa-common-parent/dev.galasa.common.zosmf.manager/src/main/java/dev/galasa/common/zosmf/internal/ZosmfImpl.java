@@ -9,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 
+import com.google.gson.JsonObject;
+
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.common.http.HttpClientException;
@@ -64,14 +66,34 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putText(String path, String text) throws ZosmfException {
+	public IZosmfResponse putText(String path, String body) throws ZosmfException {
 		String method = "PUT";
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
 			setHeader(X_IBM_REQUESTED_METHOD, method);
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-			zosmfResponse.setHttpClientresponse(httpClient.putText(validPath(path), text));
+			zosmfResponse.setHttpClientresponse(httpClient.putText(validPath(path), body));
+			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
+			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
+			}
+		} catch (MalformedURLException | HttpClientException  e) {
+			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
+		}
+		
+		return zosmfResponse;
+	}
+
+	@Override
+	public IZosmfResponse putJson(String path, JsonObject body) throws ZosmfException {
+		String method = "PUT";
+		ZosmfResponseImpl zosmfResponse;
+		try {
+			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
+			setHeader(X_IBM_REQUESTED_METHOD, method);
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			zosmfResponse.setHttpClientresponse(httpClient.putJson(validPath(path), body));
 			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
 			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());

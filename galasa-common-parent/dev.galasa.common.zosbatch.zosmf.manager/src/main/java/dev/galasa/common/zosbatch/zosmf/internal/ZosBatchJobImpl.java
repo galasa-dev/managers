@@ -36,14 +36,9 @@ import dev.galasa.common.zosmf.IZosmf;
 import dev.galasa.common.zosmf.IZosmfResponse;
 import dev.galasa.common.zosmf.ZosmfException;
 import dev.galasa.common.zosmf.ZosmfManagerException;
+import dev.galasa.common.zosmf.ZosmfRequestType;
 
 public class ZosBatchJobImpl implements IZosBatchJob {
-	
-	private enum RequestType {
-		PUT_TEXT,
-		GET,
-		DELETE;
-	}
 	
 	private IZosImage jobImage;
 	private IZosBatchJobname jobname;
@@ -102,12 +97,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 	
 	public @NotNull IZosBatchJob submitJob() throws ZosBatchException {
-		IZosmfResponse response = sendRequest(RequestType.PUT_TEXT, RESTJOBS_PATH, jclWithJobcard(), HttpStatus.SC_CREATED);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, jclWithJobcard(), HttpStatus.SC_CREATED);
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_CREATED) {
 			throw new ZosBatchException("Unable to submit batch job " + this.jobname.getName());
 		}
 		
-		if (response.getStatusCode() == 201) {
+		if (response.getStatusCode() == HttpStatus.SC_CREATED) {
 			JsonObject content;
 			try {
 				content = response.getJsonContent();
@@ -161,7 +156,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		// First, get a list of spool files
 		this.jobOutput = new ZosBatchJobOutputImpl(this.jobname.getName(), this.jobid);
 		this.jobFilesPath = RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid + "/files";
-		IZosmfResponse response = sendRequest(RequestType.GET, this.jobFilesPath, null, HttpStatus.SC_OK);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, HttpStatus.SC_OK);
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 			throw new ZosBatchException("Unable to retreive job output");
 		}
@@ -177,7 +172,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			for (JsonElement jsonElement : jsonArray) {
 			    JsonObject spoolFile = jsonElement.getAsJsonObject();
 			    String id = spoolFile.get("id").getAsString();
-			    response = sendRequest(RequestType.GET, this.jobFilesPath + "/" + id + "/records", null, HttpStatus.SC_OK);
+			    response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath + "/" + id + "/records", null, HttpStatus.SC_OK);
 				if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 					throw new ZosBatchException("Unable to retreive job output");
 				}
@@ -196,7 +191,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public void purgeJob() throws ZosBatchException {
 		if (!this.jobPurged) {
-			IZosmfResponse response = sendRequest(RequestType.DELETE, this.jobPath, null, HttpStatus.SC_OK);
+			IZosmfResponse response = sendRequest(ZosmfRequestType.DELETE, this.jobPath, null, HttpStatus.SC_OK);
 			if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 				throw new ZosBatchException("Unable to purge job output");
 			}
@@ -229,7 +224,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return this.jobPurged;
 	}
 
-	private IZosmfResponse sendRequest(RequestType requestType, String path, String body, int expectedResponse) throws ZosBatchException {
+	private IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, String body, int expectedResponse) throws ZosBatchException {
 		IZosmfResponse response = null;
 		for (int i = 0; i <= this.retryRequest; i++) {
 			try {
@@ -293,7 +288,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	private void updateJobStatus() throws ZosBatchException {
-		IZosmfResponse response = sendRequest(RequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, HttpStatus.SC_OK);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, HttpStatus.SC_OK);
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 			return;
 		}		

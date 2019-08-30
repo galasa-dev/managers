@@ -161,7 +161,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     }
 	
     @GenerateAnnotatedField(annotation=ZosBatch.class)
-	public IZosBatch generateZosBatch(Field field, List<Annotation> annotations) {
+	public IZosBatch generateZosBatch(Field field, List<Annotation> annotations) throws ZosManagerException {
 		ZosBatch annotationZosBatch = field.getAnnotation(ZosBatch.class);
 
 		//*** Default the tag to primary
@@ -172,7 +172,8 @@ public class ZosBatchManagerImpl extends AbstractManager {
 			return this.taggedZosBatches.get(tag);
 		}
 
-		IZosBatch zosBatch = new ZosBatchImpl();
+		IZosImage image = zosManager.getImageForTag(tag);
+		IZosBatch zosBatch = new ZosBatchImpl(image);
 		this.taggedZosBatches.put(tag, (ZosBatchImpl) zosBatch);
 		
 		return zosBatch;

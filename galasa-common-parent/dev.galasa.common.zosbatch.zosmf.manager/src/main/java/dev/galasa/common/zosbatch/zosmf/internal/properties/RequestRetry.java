@@ -5,12 +5,12 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * zOS Batch job execution wait timeout
+ * zOS Batch job retry request
  * <p>
- * The value in milliseconds to wait for the zOS Batch job execution to complete when submitted via zOSMF
+ * The number of times to retry zOS Batch job request when zOSMF request fails
  * </p>
  * The property is:<br>
- * {@code zosbatch.batchjob.[imageid].request.retry=60000}
+ * {@code zosbatch.batchjob.[imageid].request.retry=5}
  * </p>
  * <p>
  * The default value is {@value #DEFAULT_REQUEST_RETRY}
