@@ -144,7 +144,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 			for (String imageId : ServerImages.get(clusterId)) {
 				logger.info("Requesting zOS image " + imageId + " for zOSMF server");
 				IZosImage zosmfImage = zosManager.getImage(imageId);
-				this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+				if (zosmfImage == null) {
+					logger.warn("zOS image " + imageId + " not configured in properties store");
+				} else {
+					this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+				}
 			}
 		} catch (ZosManagerException e) {
 			throw new ZosmfManagerException("Unable to get zOSMF servers for cluster " + clusterId, e);

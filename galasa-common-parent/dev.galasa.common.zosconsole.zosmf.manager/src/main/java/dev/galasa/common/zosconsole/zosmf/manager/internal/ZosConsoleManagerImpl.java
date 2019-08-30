@@ -10,14 +10,18 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.common.zos.IZosImage;
+import dev.galasa.common.zos.ZosManagerException;
 import dev.galasa.common.zos.spi.IZosManagerSpi;
 import dev.galasa.common.zosconsole.IZosConsole;
 import dev.galasa.common.zosconsole.ZosConsole;
 import dev.galasa.common.zosconsole.ZosConsoleField;
 import dev.galasa.common.zosconsole.ZosConsoleManagerException;
+import dev.galasa.common.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPropertiesSingleton;
 import dev.galasa.common.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -46,6 +50,11 @@ public class ZosConsoleManagerImpl extends AbstractManager {
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, testClass);
+		try {
+			ZosConsoleZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosConsoleManagerException("Unable to request framework services", e);
+		}
 
 		//*** Check to see if any of our annotations are present in the test class
 		//*** If there is,  we need to activate
@@ -100,7 +109,7 @@ public class ZosConsoleManagerImpl extends AbstractManager {
     }
 
     @GenerateAnnotatedField(annotation=ZosConsole.class)
-	public IZosConsole generateZosConsole(Field field, List<Annotation> annotations) {
+	public IZosConsole generateZosConsole(Field field, List<Annotation> annotations) throws ZosManagerException {
 		ZosConsole annotationZosConsole = field.getAnnotation(ZosConsole.class);
 
 		//*** Default the tag to primary
@@ -111,7 +120,8 @@ public class ZosConsoleManagerImpl extends AbstractManager {
 			return this.taggedZosConsoles.get(tag);
 		}
 
-		IZosConsole zosConsole = new ZosConsoleImpl();
+		IZosImage image = zosManager.getImageForTag(tag);
+		IZosConsole zosConsole = new ZosConsoleImpl(image);
 		this.taggedZosConsoles.put(tag, (ZosConsoleImpl) zosConsole);
 		
 		return zosConsole;
