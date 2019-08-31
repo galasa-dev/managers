@@ -77,6 +77,11 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public boolean isTextInField(String text) {
+        return screen.isTextInField(text);
+    }
+
+    @Override
     public Terminal waitForTextInField(String text) throws TextNotFoundException {
         screen.waitForTextInField(text, defaultWaitTime);
         return this;
