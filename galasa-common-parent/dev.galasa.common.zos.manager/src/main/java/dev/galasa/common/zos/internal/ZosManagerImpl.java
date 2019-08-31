@@ -372,4 +372,17 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		}
 		return zosImage;
 	}
+
+	@Override
+	public IZosImage getUnmanagedImage(String imageId) throws ZosManagerException {
+		Objects.nonNull(imageId);
+		IZosImage zosImage = this.images.get(imageId);
+		if (zosImage != null) {
+			return zosImage;
+		}
+		
+		ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, null);
+		this.images.put(image.getImageID(), image);
+		return image;
+	}
 }

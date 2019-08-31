@@ -26,4 +26,13 @@ public interface IZosManagerSpi extends IZosManager {
 	@NotNull
 	IZosImage getImage(String imageId) throws ZosManagerException;
 
+	/**
+	 * Returns a zOS Image for the specified image that may not have been provisioned so far
+	 * @param image the ID of the image
+	 * @return the image, never null
+	 * @throws ZosManagerException if there is no image defined
+	 */
+	@NotNull
+	IZosImage getUnmanagedImage(String imageId) throws ZosManagerException;
+
 }

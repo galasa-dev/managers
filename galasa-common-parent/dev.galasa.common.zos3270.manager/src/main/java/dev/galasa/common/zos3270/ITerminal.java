@@ -12,6 +12,7 @@ public interface ITerminal {
 
 	ITerminal waitForTextInField(String string) throws TextNotFoundException;
 	ITerminal verifyTextInField(String string) throws TextNotFoundException;
+	boolean isTextInField(String string);
 
 	ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
 	
@@ -59,4 +60,5 @@ public interface ITerminal {
 	String retrieveScreen();
 	String retrieveFieldAtCursor();
 	String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException;
+	
 }

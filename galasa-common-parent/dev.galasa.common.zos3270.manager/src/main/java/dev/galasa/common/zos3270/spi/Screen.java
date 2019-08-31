@@ -649,6 +649,16 @@ public class Screen {
 		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");		
 	}
 
+	public boolean isTextInField(String text) {
+		for(Field field : this.fields) {
+			if (field.containsText(text)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
 
 
 	public synchronized void tab() throws KeyboardLockedException, FieldNotFoundException {
