@@ -181,10 +181,15 @@ public class HttpClientImpl implements IHttpClient{
 			TrustManager[] trustManagers = { new ClientAuthTrustManager(serverKeyStore, alias) };
 
 			// Create the SSL Context
-			SSLContext ctx = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
-			ctx.init(kmf.getKeyManagers(), trustManagers, null);
+			boolean ibmJdk = System.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
+			SSLContext sslContext;
+			if(ibmJdk)
+				sslContext = SSLContext.getInstance("SSL_TLSv2"); //NOSONAR
+			else
+				sslContext = SSLContext.getInstance("TLSv1.2");
+			sslContext.init(kmf.getKeyManagers(), trustManagers, null);
 
-			setSSLContext(ctx);
+			setSSLContext(sslContext);
 		} catch (GeneralSecurityException e) {
 			throw new HttpClientException("Error attempting to create SSL context", e);
 		}
