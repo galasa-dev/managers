@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import dev.galasa.common.zosbatch.IZosBatchJobOutputSpoolFile;
 
 /**
- * Implementation of {@link IZosBatchJobOutputSpoolFile}
+ * Implementation of {@link IZosBatchJobOutputSpoolFile} using zOS/MF
  *
  */
 public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFile {

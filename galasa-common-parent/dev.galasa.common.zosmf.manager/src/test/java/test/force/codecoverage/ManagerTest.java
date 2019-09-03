@@ -18,7 +18,7 @@ public class ManagerTest {
 	@Test
 	public void testZosManagerException() throws ZosmfManagerException {
 		
-		Assert.assertEquals("dummy", null, zosmf.putText(null, null));
+		Assert.assertEquals("dummy", null, zosmf.putText(null, null, null));
 	}
 	
 	

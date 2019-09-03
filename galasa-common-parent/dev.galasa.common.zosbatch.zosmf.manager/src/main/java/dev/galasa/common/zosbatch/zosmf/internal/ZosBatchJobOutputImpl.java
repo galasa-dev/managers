@@ -11,7 +11,7 @@ import dev.galasa.common.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.common.zosbatch.ZosBatchException;
 
 /**
- * Implementation of {@link IZosBatchJobOutput}
+ * Implementation of {@link IZosBatchJobOutput} using zOS/MF
  *
  */
 public class ZosBatchJobOutputImpl implements IZosBatchJobOutput, Iterable<IZosBatchJobOutputSpoolFile> {

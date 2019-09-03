@@ -11,6 +11,10 @@ import dev.galasa.common.zosconsole.ZosConsoleException;
 import dev.galasa.common.zosconsole.ZosConsoleManagerException;
 import dev.galasa.common.zos.IZosImage;
 
+/**
+ * Implementation of {@link IZosConsole} using zOS/MF
+ *
+ */
 public class ZosConsoleImpl implements IZosConsole {
 
 	private List<ZosConsoleCommandImpl> zosConsoleCommands = new ArrayList<>();

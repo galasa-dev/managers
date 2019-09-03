@@ -32,6 +32,10 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 
+/**
+ * zOS Batch Manager implemented using zOS/MF
+ *
+ */
 @Component(service = { IManager.class })
 public class ZosBatchManagerImpl extends AbstractManager {
 	protected static final String NAMESPACE = "zosbatch";

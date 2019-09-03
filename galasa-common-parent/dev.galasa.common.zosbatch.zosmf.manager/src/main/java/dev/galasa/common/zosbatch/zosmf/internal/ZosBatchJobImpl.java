@@ -3,10 +3,13 @@ package dev.galasa.common.zosbatch.zosmf.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
@@ -38,6 +41,10 @@ import dev.galasa.common.zosmf.ZosmfException;
 import dev.galasa.common.zosmf.ZosmfManagerException;
 import dev.galasa.common.zosmf.ZosmfRequestType;
 
+/**
+ * Implementation of {@link IZosBatchJob} using zOS/MF
+ *
+ */
 public class ZosBatchJobImpl implements IZosBatchJob {
 	
 	private IZosImage jobImage;
@@ -97,7 +104,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 	
 	public @NotNull IZosBatchJob submitJob() throws ZosBatchException {
-		IZosmfResponse response = sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, jclWithJobcard(), HttpStatus.SC_CREATED);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED)));
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_CREATED) {
 			throw new ZosBatchException("Unable to submit batch job " + this.jobname.getName());
 		}
@@ -156,7 +163,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		// First, get a list of spool files
 		this.jobOutput = new ZosBatchJobOutputImpl(this.jobname.getName(), this.jobid);
 		this.jobFilesPath = RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid + "/files";
-		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, HttpStatus.SC_OK);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 			throw new ZosBatchException("Unable to retreive job output");
 		}
@@ -165,14 +172,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			JsonArray jsonArray = response.getJsonArrayContent();
 			
 			// Get the JCLIN
-			response = getCurrentZosmfServer().get(this.jobFilesPath + "/JCL/records");
+			response = getCurrentZosmfServer().get(this.jobFilesPath + "/JCL/records", new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 			this.jobOutput.addJcl(response.getTextContent());
 	
 			// Get the spool files
 			for (JsonElement jsonElement : jsonArray) {
 			    JsonObject spoolFile = jsonElement.getAsJsonObject();
 			    String id = spoolFile.get("id").getAsString();
-			    response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath + "/" + id + "/records", null, HttpStatus.SC_OK);
+			    response = sendRequest(ZosmfRequestType.GET, this.jobFilesPath + "/" + id + "/records", null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 				if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 					throw new ZosBatchException("Unable to retreive job output");
 				}
@@ -191,7 +198,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public void purgeJob() throws ZosBatchException {
 		if (!this.jobPurged) {
-			IZosmfResponse response = sendRequest(ZosmfRequestType.DELETE, this.jobPath, null, HttpStatus.SC_OK);
+			IZosmfResponse response = sendRequest(ZosmfRequestType.DELETE, this.jobPath, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 			if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 				throw new ZosBatchException("Unable to purge job output");
 			}
@@ -224,28 +231,34 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return this.jobPurged;
 	}
 
-	private IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, String body, int expectedResponse) throws ZosBatchException {
+	private IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Object body, List<Integer> validStatusCodes) throws ZosBatchException {
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		IZosmfResponse response = null;
 		for (int i = 0; i <= this.retryRequest; i++) {
 			try {
 				switch (requestType) {
 				case PUT_TEXT:
-					response = getCurrentZosmfServer().putText(path, body);
+					response = getCurrentZosmfServer().putText(path, (String) body, validStatusCodes);
+					break;
+				case PUT_JSON:
+					response = getCurrentZosmfServer().putJson(path, (JsonObject) body, validStatusCodes);
 					break;
 				case GET:
-					response = getCurrentZosmfServer().get(path);
+					response = getCurrentZosmfServer().get(path, validStatusCodes);
 					break;
 				case DELETE:
-					response = getCurrentZosmfServer().delete(path);
+					response = getCurrentZosmfServer().delete(path, validStatusCodes);
 					break;
 				default:
 					throw new ZosBatchException("Invalid request type");
 				}
 
-				if (response == null ||response.getStatusCode() == expectedResponse) {
+				if (response == null || validStatusCodes.contains(response.getStatusCode())) {
 			    	return response;
 				} else {
-					logger.error("Expected HTTP status code " + HttpStatus.SC_OK);
+					logger.error("Expected HTTP status codes: " + validStatusCodes);
 			    	getNextZosmf();
 				}
 			} catch (ZosmfManagerException e) {
@@ -288,7 +301,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	private void updateJobStatus() throws ZosBatchException {
-		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, HttpStatus.SC_OK);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 			return;
 		}		

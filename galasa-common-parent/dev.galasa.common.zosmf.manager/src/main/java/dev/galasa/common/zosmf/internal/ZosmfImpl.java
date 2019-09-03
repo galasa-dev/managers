@@ -3,6 +3,8 @@ package dev.galasa.common.zosmf.internal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -66,8 +68,11 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putText(String path, String body) throws ZosmfException {
+	public IZosmfResponse putText(String path, String body, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = "PUT";
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
@@ -75,7 +80,7 @@ public class ZosmfImpl implements IZosmf {
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
 			zosmfResponse.setHttpClientresponse(httpClient.putText(validPath(path), body));
 			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
@@ -86,8 +91,11 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putJson(String path, JsonObject body) throws ZosmfException {
+	public IZosmfResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = "PUT";
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
@@ -95,7 +103,7 @@ public class ZosmfImpl implements IZosmf {
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
 			zosmfResponse.setHttpClientresponse(httpClient.putJson(validPath(path), body));
 			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
@@ -106,8 +114,11 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse get(String path) throws ZosmfException {
+	public IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = "GET";
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
@@ -115,7 +126,7 @@ public class ZosmfImpl implements IZosmf {
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
 			zosmfResponse.setHttpClientresponse(httpClient.getText(validPath(path)));
 			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
@@ -126,8 +137,11 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse delete(String path) throws ZosmfException {
+	public IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = "DELETE";
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
 			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
@@ -135,7 +149,7 @@ public class ZosmfImpl implements IZosmf {
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
 			zosmfResponse.setHttpClientresponse(httpClient.deleteJson(validPath(path)));
 			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (zosmfResponse.getStatusCode() >= HttpStatus.SC_BAD_REQUEST) {
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
 				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
