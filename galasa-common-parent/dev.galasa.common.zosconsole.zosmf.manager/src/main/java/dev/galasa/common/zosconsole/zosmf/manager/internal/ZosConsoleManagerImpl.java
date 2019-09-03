@@ -27,6 +27,10 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 
+/**
+ * zOS Console Manager implemented using zOS/MF
+ *
+ */
 @Component(service = { IManager.class })
 public class ZosConsoleManagerImpl extends AbstractManager {
 	protected static final String NAMESPACE = "zosconsole";

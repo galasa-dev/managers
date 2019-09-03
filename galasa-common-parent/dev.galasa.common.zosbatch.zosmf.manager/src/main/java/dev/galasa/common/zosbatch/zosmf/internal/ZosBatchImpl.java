@@ -13,6 +13,10 @@ import dev.galasa.common.zosbatch.IZosBatchJobname;
 import dev.galasa.common.zosbatch.ZosBatchException;
 import dev.galasa.common.zosbatch.ZosBatchManagerException;
 
+/**
+ * Implementation of {@link IZosBatch} using zOS/MF
+ *
+ */
 public class ZosBatchImpl implements IZosBatch {
 	
 	private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();

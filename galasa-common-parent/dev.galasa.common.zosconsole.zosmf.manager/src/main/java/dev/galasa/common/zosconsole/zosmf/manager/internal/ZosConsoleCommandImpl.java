@@ -1,8 +1,11 @@
 package dev.galasa.common.zosconsole.zosmf.manager.internal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
@@ -25,6 +28,10 @@ import dev.galasa.common.zosmf.ZosmfException;
 import dev.galasa.common.zosmf.ZosmfManagerException;
 import dev.galasa.common.zosmf.ZosmfRequestType;
 
+/**
+ * Implementation of {@link IZosConsoleCommand} using zOS/MF
+ *
+ */
 public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 	
 	private String imageId;
@@ -32,7 +39,9 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 	private String command;	
 	private String commandImmediateResponse;
 	private String commandResponseKey;
-	private String commandDelayedResponse;
+	private String commandDelayedResponse = "";
+	private int commandErrorReturnCode;
+	private int commandErrorReasonCode;
 	
 	private int retryRequest;
 	private IZosmf currentZosmf;
@@ -68,25 +77,34 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 		requestBody.addProperty("cmd", this.command);
 		requestBody.addProperty("system", this.imageId);
 		
-		IZosmfResponse response = sendRequest(ZosmfRequestType.PUT_JSON, RESTCONSOLE_PATH + this.consoleName, requestBody, HttpStatus.SC_OK);
-		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
+		IZosmfResponse response = sendRequest(ZosmfRequestType.PUT_JSON, RESTCONSOLE_PATH + this.consoleName, requestBody, 
+				new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+		if (response == null || response.getStatusCode() == 0) {
 			throw new ZosConsoleException("Unable to issue console command \"" + this.command + "\"");
 		}
 		
-		if (response.getStatusCode() == HttpStatus.SC_OK) {
-			JsonObject content;
-			try {
-				content = response.getJsonContent();
-			} catch (ZosmfException e) {
-				throw new ZosConsoleException("Unable to issue console command \"" + this.command + "\"");
-			}
-		
-			logger.trace(content);
-			this.commandImmediateResponse = content.get("cmd-response").getAsString();
-			this.commandResponseKey = content.get("cmd-response-key").getAsString();
-			logger.info("Command " + this + " issued");
+		JsonObject content;
+		try {
+			content = response.getJsonContent();
+		} catch (ZosmfException e) {
+			throw new ZosConsoleException("Unable to issue console command \"" + this.command + "\"");
 		}
 		
+		logger.trace(content);
+		if (response.getStatusCode() == HttpStatus.SC_OK) {
+			this.commandImmediateResponse = content.get("cmd-response").getAsString();
+			this.commandResponseKey = content.get("cmd-response-key").getAsString();
+		} else {
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			this.commandImmediateResponse = content.get("reason").getAsString();
+			this.commandErrorReturnCode = content.get("return-code").getAsInt();
+			this.commandErrorReasonCode = content.get("reason-code").getAsInt();
+			logger.error("Command \"" + this.command + "\" failed. Reason=" + this.commandImmediateResponse + 
+					" Return Code=" + this.commandErrorReturnCode + " Reason Code=" + this.commandErrorReasonCode);
+			throw new ZosConsoleException("Console command \"" + this.command + "\" failed. Reason \"" + this.commandImmediateResponse + "\"");
+		}
+		logger.info("Command " + this + " issued");
+				
 		return this;
 	}
 
@@ -97,7 +115,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 
 	@Override
 	public String requestResponse() throws ZosConsoleException {
-		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, RESTCONSOLE_PATH + this.consoleName + "/solmsgs/" + this.commandResponseKey, null, HttpStatus.SC_OK);
+		IZosmfResponse response = sendRequest(ZosmfRequestType.GET, RESTCONSOLE_PATH + this.consoleName + "/solmsgs/" + this.commandResponseKey, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
 			//Retrieve 
 			throw new ZosConsoleException("Unable to retrieve console response for command \"" + this.command + "\"");
@@ -132,31 +150,34 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 		return null;
 	}
 	
-	private IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Object body, int expectedResponse) throws ZosConsoleException {
+	private IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Object body, List<Integer> validStatusCodes) throws ZosConsoleException {
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
 		IZosmfResponse response = null;
 		for (int i = 0; i <= this.retryRequest; i++) {
 			try {
 				switch (requestType) {
 				case PUT_TEXT:
-					response = getCurrentZosmfServer().putText(path, (String) body);
+					response = getCurrentZosmfServer().putText(path, (String) body, validStatusCodes);
 					break;
 				case PUT_JSON:
-					response = getCurrentZosmfServer().putJson(path, (JsonObject) body);
+					response = getCurrentZosmfServer().putJson(path, (JsonObject) body, validStatusCodes);
 					break;
 				case GET:
-					response = getCurrentZosmfServer().get(path);
+					response = getCurrentZosmfServer().get(path, validStatusCodes);
 					break;
 				case DELETE:
-					response = getCurrentZosmfServer().delete(path);
+					response = getCurrentZosmfServer().delete(path, validStatusCodes);
 					break;
 				default:
 					throw new ZosConsoleException("Invalid request type");
 				}
 
-				if (response == null ||response.getStatusCode() == expectedResponse) {
+				if (response == null || validStatusCodes.contains(response.getStatusCode())) {
 			    	return response;
 				} else {
-					logger.error("Expected HTTP status code " + HttpStatus.SC_OK);
+					logger.error("Expected HTTP status codes: " + validStatusCodes);
 			    	getNextZosmf();
 				}
 			} catch (ZosmfManagerException e) {

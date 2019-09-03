@@ -9,6 +9,10 @@ import dev.galasa.common.zosbatch.ZosBatchException;
 import dev.galasa.common.zosbatch.ZosBatchManagerException;
 import dev.galasa.common.zosbatch.zosmf.internal.properties.JobnamePrefix;
 
+/**
+ * Implementation of {@link IZosBatchJobname} using zOS/MF
+ *
+ */
 public class ZosBatchJobnameImpl implements IZosBatchJobname {
 	
 	private String name;
