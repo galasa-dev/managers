@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.common.zos.ZosManagerException;
+import dev.galasa.common.zos.internal.properties.ImageMaxSlots;
 import dev.galasa.framework.spi.IDynamicResource;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 
@@ -34,10 +35,9 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 	}
 
 	public Float getCurrentUsage() throws ZosManagerException {
-		ZosProperties zosProperties = getZosManager().getZosProperties();
 		IDynamicStatusStoreService dss = getZosManager().getDSS();
 
-		float maxSlots = zosProperties.getImageMaxSlots(getImageID());
+		float maxSlots = ImageMaxSlots.get(getImageID());
 		if (maxSlots <= 0.0f) {
 			return 1.0f;
 		}
@@ -56,10 +56,9 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
 	}
 
 	public boolean allocateImage() throws ZosManagerException {
-		ZosProperties zosProperties = getZosManager().getZosProperties();
 		String runName = getZosManager().getFramework().getTestRunName();
 
-		int maxSlots = zosProperties.getImageMaxSlots(getImageID());
+		int maxSlots = ImageMaxSlots.get(getImageID());
 		try {
 			int usedSlots = 0;
 			String currentSlots = dss.get("image." + getImageID() + ".current.slots");

@@ -24,9 +24,17 @@ import dev.galasa.common.zos.ZosImage;
 import dev.galasa.common.zos.ZosIpHost;
 import dev.galasa.common.zos.ZosIpPort;
 import dev.galasa.common.zos.ZosManagerException;
+import dev.galasa.common.zos.internal.properties.BatchExtraBundle;
+import dev.galasa.common.zos.internal.properties.ClusterIdForTag;
+import dev.galasa.common.zos.internal.properties.ClusterImages;
+import dev.galasa.common.zos.internal.properties.ConsoleExtraBundle;
+import dev.galasa.common.zos.internal.properties.DseImageIdForTag;
+import dev.galasa.common.zos.internal.properties.ImageIdForTag;
+import dev.galasa.common.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.common.zos.spi.IZosManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
@@ -41,7 +49,6 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 	private final static Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
-	private ZosProperties zosProperties;
 	private IConfigurationPropertyStoreService cps;
 	private IDynamicStatusStoreService dss;
 	private IIpNetworkManagerSpi ipManager;
@@ -57,12 +64,16 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	 */
 	@Override
 	public List<String> extraBundles(@NotNull IFramework framework) throws ZosManagerException {
-		this.zosProperties = new ZosProperties(framework);
-
+		try {
+			ZosPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new ZosManagerException("Unable to request framework services", e);
+		}
+		
 		ArrayList<String> bundles = new ArrayList<>();
 		
-		bundles.add(this.zosProperties.getBatchExtraBundle());
-		bundles.add(this.zosProperties.getCommandExtraBundle());
+		bundles.add(BatchExtraBundle.get());
+		bundles.add(ConsoleExtraBundle.get());
 
 		return bundles;
 	}
@@ -184,7 +195,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		}
 
 		//*** Check to see if we have a DSE for this tag
-		String imageID = zosProperties.getDseImageIdForTag(tag);
+		String imageID = DseImageIdForTag.get(tag);
 		if (imageID != null) {
 			logger.info("zOS DSE Image " + imageID + " selected for zosTag '" + tag + "'");
 			
@@ -203,7 +214,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		
 		
 		//*** See if the we need to run on a specific image,  not DSE
-		imageID = zosProperties.getImageIdForTag(tag);
+		imageID = ImageIdForTag.get(tag);
 		if (imageID != null) {
 			//*** Do we already have it
 			if (images.containsKey(imageID)) {
@@ -266,13 +277,13 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 	protected ZosProvisionedImageImpl selectNewImage(String tag) throws ZosManagerException {
 		//***  Need the cluster we can allocate an image from
-		String clusterId = zosProperties.getClusterIdForTag(tag);
+		String clusterId = ClusterIdForTag.get(tag);
 		if (clusterId == null) {
 			clusterId = "default";
 		}
 
 		//*** Find a list of images
-		for(String definedImage : zosProperties.getClusterImages(clusterId)) {
+		for(String definedImage : ClusterImages.get(clusterId)) {
 			ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, definedImage, clusterId);
 			definedImages.add(new ImageUsage(image));
 		}
@@ -306,9 +317,6 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 	public IConfigurationPropertyStoreService getCPS() {
 		return this.cps;
-	}
-	public ZosProperties getZosProperties() {
-		return this.zosProperties;
 	}
 
 
