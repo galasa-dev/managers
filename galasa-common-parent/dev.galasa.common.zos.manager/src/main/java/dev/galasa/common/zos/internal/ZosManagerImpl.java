@@ -29,6 +29,7 @@ import dev.galasa.common.zos.internal.properties.ClusterIdForTag;
 import dev.galasa.common.zos.internal.properties.ClusterImages;
 import dev.galasa.common.zos.internal.properties.ConsoleExtraBundle;
 import dev.galasa.common.zos.internal.properties.DseImageIdForTag;
+import dev.galasa.common.zos.internal.properties.FileExtraBundle;
 import dev.galasa.common.zos.internal.properties.ImageIdForTag;
 import dev.galasa.common.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.common.zos.spi.IZosManagerSpi;
@@ -74,6 +75,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		
 		bundles.add(BatchExtraBundle.get());
 		bundles.add(ConsoleExtraBundle.get());
+		bundles.add(FileExtraBundle.get());
 
 		return bundles;
 	}

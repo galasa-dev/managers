@@ -1,4 +1,4 @@
-package dev.galasa.common.zosbatch.zosmf.internal;
+package dev.galasa.common.zosfile.zosmf.manager.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -16,13 +16,11 @@ import dev.galasa.common.http.spi.IHttpManagerSpi;
 import dev.galasa.common.zos.IZosImage;
 import dev.galasa.common.zos.ZosManagerException;
 import dev.galasa.common.zos.spi.IZosManagerSpi;
-import dev.galasa.common.zosbatch.IZosBatch;
-import dev.galasa.common.zosbatch.IZosBatchJobname;
-import dev.galasa.common.zosbatch.ZosBatch;
-import dev.galasa.common.zosbatch.ZosBatchField;
-import dev.galasa.common.zosbatch.ZosBatchJobname;
-import dev.galasa.common.zosbatch.ZosBatchManagerException;
-import dev.galasa.common.zosbatch.zosmf.internal.properties.ZosBatchZosmfPropertiesSingleton;
+import dev.galasa.common.zosfile.IZosFile;
+import dev.galasa.common.zosfile.ZosFile;
+import dev.galasa.common.zosfile.ZosFileField;
+import dev.galasa.common.zosfile.ZosFileManagerException;
+import dev.galasa.common.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.common.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
@@ -33,33 +31,33 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 
 /**
- * zOS Batch Manager implemented using zOS/MF
+ * zOS File Manager implemented using zOS/MF
  *
  */
 @Component(service = { IManager.class })
-public class ZosBatchManagerImpl extends AbstractManager {
-	protected static final String NAMESPACE = "zosbatch";
+public class ZosFileManagerImpl extends AbstractManager {
+	protected static final String NAMESPACE = "zosfile";
 
 	protected static IZosManagerSpi zosManager;
 	public static void setZosManager(IZosManagerSpi zosManager) {
-		ZosBatchManagerImpl.zosManager = zosManager;
+		ZosFileManagerImpl.zosManager = zosManager;
 	}
 	
 	protected static IZosmfManagerSpi zosmfManager;
 	public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-		ZosBatchManagerImpl.zosmfManager = zosmfManager;
+		ZosFileManagerImpl.zosmfManager = zosmfManager;
 	}
 
-	private final HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
+	private final HashMap<String, ZosFileImpl> taggedZosFiles = new HashMap<>();
 	
 	protected static Path archivePath;
 	public static void setArchivePath(Path archivePath) {
-		ZosBatchManagerImpl.archivePath = archivePath;
+		ZosFileManagerImpl.archivePath = archivePath;
 	}
 	
 	protected static Method currentTestMethod;
 	public static void setCurrentTestMethod(Method testMethod) {
-		ZosBatchManagerImpl.currentTestMethod = testMethod;
+		ZosFileManagerImpl.currentTestMethod = testMethod;
 	}
 	
 	/* (non-Javadoc)
@@ -70,20 +68,17 @@ public class ZosBatchManagerImpl extends AbstractManager {
 			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, testClass);
 		try {
-			ZosBatchZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+			ZosFileZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosBatchManagerException("Unable to request framework services", e);
+			throw new ZosFileManagerException("Unable to request framework services", e);
 		}
 
 		//*** Check to see if any of our annotations are present in the test class
 		//*** If there is,  we need to activate
-		List<AnnotatedField> ourFields = findAnnotatedFields(ZosBatchField.class);
+		List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
 		if (!ourFields.isEmpty()) {
 			youAreRequired(allManagers, activeManagers);
 		}
-		
-		Path artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
-    	setArchivePath(artifactsRoot.resolve("zosBatchJobs"));
 	}
 	
 
@@ -92,7 +87,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
 	 */
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		generateAnnotatedFields(ZosBatchField.class);
+		generateAnnotatedFields(ZosFileField.class);
 	}
 
 
@@ -109,11 +104,11 @@ public class ZosBatchManagerImpl extends AbstractManager {
 		activeManagers.add(this);
 		setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
 		if (zosManager == null) {
-			throw new ZosBatchManagerException("The zOS Manager is not available");
+			throw new ZosFileManagerException("The zOS Manager is not available");
 		}
 		setZosmfManager(addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class));
 		if (zosmfManager == null) {
-			throw new ZosBatchManagerException("The zOSMF Manager is not available");
+			throw new ZosFileManagerException("The zOSMF Manager is not available");
 		}
 	}
 
@@ -146,7 +141,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-    	for (HashMap.Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
+    	for (HashMap.Entry<String, ZosFileImpl> entry : this.taggedZosFiles.entrySet()) {
     		entry.getValue().cleanup();
 		}
 
@@ -155,38 +150,22 @@ public class ZosBatchManagerImpl extends AbstractManager {
         return null;
     }
 	
-    @GenerateAnnotatedField(annotation=ZosBatch.class)
-	public IZosBatch generateZosBatch(Field field, List<Annotation> annotations) throws ZosManagerException {
-		ZosBatch annotationZosBatch = field.getAnnotation(ZosBatch.class);
+    @GenerateAnnotatedField(annotation=ZosFile.class)
+	public IZosFile generateZosFile(Field field, List<Annotation> annotations) throws ZosManagerException {
+		ZosFile annotationZosFile = field.getAnnotation(ZosFile.class);
 
 		//*** Default the tag to primary
-		String tag = defaultString(annotationZosBatch.imageTag(), "primary");
+		String tag = defaultString(annotationZosFile.imageTag(), "primary");
 
 		//*** Have we already generated this tag
-		if (this.taggedZosBatches.containsKey(tag)) {
-			return this.taggedZosBatches.get(tag);
+		if (this.taggedZosFiles.containsKey(tag)) {
+			return this.taggedZosFiles.get(tag);
 		}
 
 		IZosImage image = zosManager.getImageForTag(tag);
-		IZosBatch zosBatch = new ZosBatchImpl(image);
-		this.taggedZosBatches.put(tag, (ZosBatchImpl) zosBatch);
+		IZosFile zosFile = new ZosFileImpl(image);
+		this.taggedZosFiles.put(tag, (ZosFileImpl) zosFile);
 		
-		return zosBatch;
-	}
-	
-    @GenerateAnnotatedField(annotation=ZosBatchJobname.class)
-	public IZosBatchJobname generateZosBatchJobname(Field field, List<Annotation> annotations) throws ZosBatchManagerException {
-		ZosBatchJobname annotationZosBatchJobname = field.getAnnotation(ZosBatchJobname.class);
-
-		//*** Default the tag to primary
-		String tag = defaultString(annotationZosBatchJobname.imageTag(), "primary");
-		String imageid;
-		try {
-			IZosImage image = zosManager.getImageForTag(tag);
-			imageid = image.getImageID();
-		} catch (ZosManagerException e) {
-			throw new ZosBatchManagerException("Unable to get image for tag \"" + tag + "\"", e);
-		}
-		return new ZosBatchJobnameImpl(imageid);
+		return zosFile;
 	}
 }

@@ -22,6 +22,7 @@
 		<dev.galasa.common.zosmf.manager>0.3.0-SNAPSHOT</dev.galasa.common.zosmf.manager>
 		<dev.galasa.common.zosbatch.zosmf.manager>0.3.0-SNAPSHOT</dev.galasa.common.zosbatch.zosmf.manager>
 		<dev.galasa.common.zosconsole.zosmf.manager>0.3.0-SNAPSHOT</dev.galasa.common.zosconsole.zosmf.manager>
+		<dev.galasa.common.zosfile.zosmf.manager>0.3.0-SNAPSHOT</dev.galasa.common.zosfile.zosmf.manager>
 		<dev.galasa.common.zos3270.manager>0.3.0-SNAPSHOT</dev.galasa.common.zos3270.manager>
 		<dev.galasa.common.linux.manager>0.3.0-SNAPSHOT</dev.galasa.common.linux.manager>
 		<dev.galasa.common.openstack.manager>0.3.0-SNAPSHOT</dev.galasa.common.openstack.manager>
@@ -44,6 +45,7 @@
 		<module>dev.galasa.common.zosmf.manager</module>
 		<module>dev.galasa.common.zosbatch.zosmf.manager</module>
 		<module>dev.galasa.common.zosconsole.zosmf.manager</module>
+		<module>dev.galasa.common.zosfile.zosmf.manager</module>
 		<module>dev.galasa.common.zos3270.manager</module>
 		<module>dev.galasa.common.http.manager</module>
 		<module>dev.galasa.common.artifact.manager</module>
