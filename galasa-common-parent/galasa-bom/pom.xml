@@ -52,6 +52,16 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.common.zosconsole.zosmf.manager</artifactId>
+				<version>${dev.galasa.common.zosconsole.zosmf.manager}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.common.zosfile.zosmf.manager</artifactId>
+				<version>${dev.galasa.common.zosfile.zosmf.manager}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.common.zosmf.manager</artifactId>
 				<version>${dev.galasa.common.zosmf.manager}</version>
 			</dependency>
