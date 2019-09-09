@@ -91,7 +91,10 @@ public class NetworkThread extends Thread {
             if (messageStream.read(remainingHeader) != 4) {
                 throw new NetworkException("Missing remaining 4 byte of the telnet 3270 header");
             }
-            Inbound3270Message inbound3270Message = process3270Data(messageStream);
+            
+            ByteBuffer buffer = readTerminatedMessage(messageStream);
+            
+            Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
         } else {
             throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");	
@@ -99,8 +102,7 @@ public class NetworkThread extends Thread {
     }
 
 
-    public Inbound3270Message process3270Data(InputStream messageStream) throws IOException, NetworkException {
-        ByteBuffer buffer = readTerminatedMessage(messageStream);
+    public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
         String hex = new String(Hex.encodeHex(buffer.array()));
         logger.trace("inbound=" + hex);

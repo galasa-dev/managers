@@ -38,10 +38,10 @@ public class CommandCodeTest {
 	@Test
 	public void testCommandCodeDecipherInvalid() throws Exception {
 		try {
-			CommandCode.getCommandCode((byte)1);
+			CommandCode.getCommandCode((byte)9);
 			fail("Should have been unsupported");
 		} catch(DatastreamException e) {
-			Assert.assertTrue("Message incorrect", e.getMessage().contains("Unrecognised command code=1"));
+			Assert.assertTrue("Message incorrect", e.getMessage().contains("Unrecognised command code=9"));
 		}
 	}
 	

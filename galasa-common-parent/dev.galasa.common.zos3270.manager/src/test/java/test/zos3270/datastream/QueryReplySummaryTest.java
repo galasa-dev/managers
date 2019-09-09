@@ -15,7 +15,7 @@ public class QueryReplySummaryTest {
 	
 	@Test
 	public void testGoldenPath() {
-		Screen screen = new Screen(80,24);
+		Screen screen = new Screen(80,24, null);
 		
 		QueryReplyUsableArea qrua = new QueryReplyUsableArea(screen);
 		

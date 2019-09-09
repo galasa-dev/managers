@@ -5,13 +5,16 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import dev.galasa.common.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.common.zos3270.internal.datastream.BufferAddress;
+import dev.galasa.common.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.common.zos3270.internal.datastream.Order;
 import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.common.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.common.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.common.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.common.zos3270.internal.datastream.OrderText;
+import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.common.zos3270.spi.DatastreamException;
 import dev.galasa.common.zos3270.spi.Screen;
 
@@ -20,35 +23,40 @@ public class ScreenTest {
 	@Test
 	public void testScreenSize() {
 		Assert.assertEquals("default screen size incorrect", 1920, new Screen().getScreenSize());
-		Assert.assertEquals("small screen size incorrect", 20, new Screen(10,2).getScreenSize());
+		Assert.assertEquals("small screen size incorrect", 20, new Screen(10,2, null).getScreenSize());
 	}
 
 	
 	@Test
 	public void testErase() {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
-		Assert.assertEquals("Erase fields are incorrect", "Chars( ,0-19)", screen.printFields());
+		Assert.assertEquals("Erase fields are incorrect", 
+				"Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n", 
+				screen.printFields());
+
 	}
 	
 	
 	@Test
 	public void testEraseUsingRA() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		ArrayList<Order> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0)));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
-		Assert.assertEquals("Clear fields are incorrect", "Chars( ,0-19)", screen.printFields());
+		Assert.assertEquals("Clear fields are incorrect", 
+				"Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n", 
+				screen.printFields());
 	}
 	
 	
 	@Test
 	public void testOrders() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
 		ArrayList<Order> orders = new ArrayList<>();
@@ -63,24 +71,20 @@ public class ScreenTest {
 		orders.add(new OrderRepeatToAddress('z', new BufferAddress(17)));
 		orders.add(new OrderStartField(true, false, true, false, false, false));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
 		String fields = screen.printFields();
 		Assert.assertEquals("Screen layout is incorrect", 
-				"StartOfField(0)\n" + 
-		        "Text(Hello,1-5)\n" + 
-				"StartOfField(6)\n" + 
-		        "Chars(X,7-9)\n" +
-				"StartOfField(10)\n" +
-		        "Text(yyyzzz,11-16)\n" + 
-				"StartOfField(17)\n" +
-		        "Chars( ,18-19)",
+				"Field(pos=0,p=true,n=false,d=true,i=false,s=false,m=false,Hello)\n" + 
+				"Field(pos=6,p=false,n=false,d=false,i=false,s=false,m=false,XXX)\n" + 
+  			    "Field(pos=10,p=true,n=false,d=true,i=false,s=false,m=false,yyyzzz)\n" + 
+				"Field(pos=17,p=true,n=false,d=true,i=false,s=false,m=false,  )\n",
 		        fields);
 	}
 	
 	@Test
 	public void testOrdersInsertAndTail() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		
 		ArrayList<Order> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -90,19 +94,18 @@ public class ScreenTest {
 		orders.add(new OrderSetBufferAddress(new BufferAddress(19)));
 		orders.add(new OrderStartField(true, false, true, false, false, false));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
 		String fields = screen.printFields();
 		Assert.assertEquals("Screen layout is incorrect", 
-				"StartOfField(0)\n" + 
-		        "Chars(x,1-18)\n" +
-				"StartOfField(19)", 
+				"Field(pos=0,p=true,n=false,d=true,i=false,s=false,m=false,xxxxxxxxxxxxxxxxxx)\n" + 
+				"Field(pos=19,p=true,n=false,d=true,i=false,s=false,m=false,)\n",
 		        fields);
 	}
 
 	@Test
 	public void testOrdersJumbled() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		
 		ArrayList<Order> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
@@ -114,20 +117,18 @@ public class ScreenTest {
 		orders.add(new OrderSetBufferAddress(new BufferAddress(1)));
 		orders.add(new OrderText("abcdefghi"));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
 		String fields = screen.printFields();
-		Assert.assertEquals("Screen layout is incorrect", 
-				"StartOfField(0)\n" + 
-		        "Text(abcdefghi,1-9)\n" + 
-				"StartOfField(10)\n" + 
-		        "Text(123456789,11-19)",  
+		Assert.assertEquals("Screen layout is incorrect",
+				"Field(pos=0,p=false,n=false,d=false,i=false,s=false,m=false,abcdefghi)\n" + 
+  			    "Field(pos=10,p=false,n=false,d=false,i=false,s=false,m=false,123456789)\n",
 		        fields);
 	}
 
 	@Test
 	public void testOrdersReplacedAll() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
 		ArrayList<Order> orders = new ArrayList<>();
@@ -137,17 +138,17 @@ public class ScreenTest {
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderRepeatToAddress('X', new BufferAddress(20)));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
 		String fields = screen.printFields();
 		Assert.assertEquals("Screen layout is incorrect", 
-				"Chars(X,0-19)",  
+				"Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXXXXXXXXXXXXXXXX)\n",
 		        fields);
 	}
 	
 	@Test
 	public void testOrderReplaceMiddle() throws DatastreamException {
-		Screen screen = new Screen(10, 2);
+		Screen screen = new Screen(10, 2, null);
 		
 		ArrayList<Order> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -157,11 +158,11 @@ public class ScreenTest {
 		orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
 		orders.add(new OrderRepeatToAddress('Z', new BufferAddress(10)));
 		
-		screen.processOrders(orders);
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(), new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 		
 		String fields = screen.printFields();
 		Assert.assertEquals("Screen layout is incorrect", 
-				"Text(XXXXXZZZZZYYYYYYYYYY,0-19)",  
+				"Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXZZZZZYYYYYYYYYY)\n",
 		        fields);
 	}
 

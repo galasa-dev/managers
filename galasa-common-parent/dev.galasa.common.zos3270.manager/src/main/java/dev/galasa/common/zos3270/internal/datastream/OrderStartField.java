@@ -121,6 +121,8 @@ public class OrderStartField extends Order {
 		buffer[0] = ID;
 		
 		BitSet bitSet = new BitSet(8);
+		bitSet.set(6, false);
+		bitSet.set(7, false);
 		bitSet.set(5, fieldProtected);
 		bitSet.set(4, fieldNumeric);
 		
@@ -134,6 +136,7 @@ public class OrderStartField extends Order {
 			bitSet.set(3, false);
 			bitSet.set(2, true);
 		}
+		bitSet.set(1, false);
 		bitSet.set(0, fieldModifed);
 		
 		int preConverted = bitSet.toByteArray()[0];

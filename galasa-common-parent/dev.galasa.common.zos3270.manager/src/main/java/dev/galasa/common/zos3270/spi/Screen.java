@@ -44,10 +44,6 @@ import dev.galasa.common.zos3270.internal.datastream.StructuredField3270DS;
 import dev.galasa.common.zos3270.internal.datastream.StructuredFieldReadPartition;
 import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.common.zos3270.internal.terminal.ScreenUpdateTextListener;
-import dev.galasa.common.zos3270.internal.terminal.fields.Field;
-import dev.galasa.common.zos3270.internal.terminal.fields.FieldChars;
-import dev.galasa.common.zos3270.internal.terminal.fields.FieldStartOfField;
-import dev.galasa.common.zos3270.internal.terminal.fields.FieldText;
 
 /**
  * Screen representation of the 3270 terminal
@@ -59,16 +55,16 @@ public class Screen {
 
 	private static final String CANT_FIND_TEXT = "Unable to find a field containing '";
 
+	private final Log logger = LogFactory.getLog(getClass());
+
 	private final Network network;
 
-	private LinkedList<Field> fields = new LinkedList<>();
-
+	private final BufferHolder[] buffer;
 	private final int columns;
 	private final int rows;
 	private final int screenSize;
 
 	private int workingCursor = 0;
-
 	private int screenCursor = 0;
 
 	private Semaphore keyboardLock = new Semaphore(1, true);
@@ -76,109 +72,46 @@ public class Screen {
 
 	private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
-	private final Log logger = LogFactory.getLog(getClass());
 
-	/**
-	 * Create a default screen
-	 */
 	public Screen() {
-		this(80, 24, null);
-	}
-
-	/**
-	 * Create a default screen
-	 * 
-	 * @param columns - Number of columns
-	 * @param rows - Number of rows 
-	 */
-	public Screen(int columns, int rows) {
-		this(columns, rows, null);
+		this(80,24, null);
 	}
 
 	public Screen(int columns, int rows, Network network) {
-		try {
-			lockKeyboard();
-		} catch(KeyboardLockedException e) {
-			throw new UnsupportedOperationException("Some got a interrupt during the constructor",e);
-		}
+		this.network      = network;
 		this.columns      = columns;
 		this.rows         = rows;
 		this.screenSize   = this.columns * this.rows;
-		this.network      = network;
-	}
-
-	/**
-	 * Wait on the keyboard being free
-	 * 
-	 * @param maxWait - time in milliseconds
-	 * @throws KeyboardLockedException 
-	 */
-	public void waitForKeyboard(int maxWait) throws TimeoutException, KeyboardLockedException {
+		this.buffer       = new BufferHolder[this.screenSize];	
 		try {
-			if (!keyboardLock.tryAcquire(maxWait, TimeUnit.MILLISECONDS)) {
-				throw new TimeoutException("Wait for keyboard took longer than " + maxWait + "ms");
-			}
-		} catch(InterruptedException e) { //NOSONAR
-			throw new KeyboardLockedException("Unable to acquire keyboard lock", e);
+			lockKeyboard();
+		} catch(KeyboardLockedException e) {
+			throw new UnsupportedOperationException("Somehow got a interrupt during the constructor",e);
 		}
-		keyboardLock.release();
 	}
 
 
-	public synchronized void registerScreenUpdateListener(IScreenUpdateListener listener) {
-		updateListeners.add(listener);  
+	private synchronized void lockKeyboard() throws KeyboardLockedException {
+		if (!keyboardLockSet) {
+			logger.trace("Locking keyboard");
+			keyboardLockSet = true;
+			try {
+				keyboardLock.acquire();
+			} catch(InterruptedException e) { //NOSONAR
+				throw new KeyboardLockedException("Unable to lock the keyboard", e);
+			}
+		}
 	}
 
-	public synchronized void unregisterScreenUpdateListener(IScreenUpdateListener listener) {
-		updateListeners.remove(listener);        
+	private synchronized void unlockKeyboard() {
+		if (keyboardLockSet) {
+			logger.trace("Unlocking keyboard");
+			keyboardLockSet = false;
+			keyboardLock.release();
+		}
 	}
 
-	/**
-	 * Get the screen size, ie the buffer length
-	 * 
-	 * @return
-	 */
-	public int getScreenSize() {
-		return this.screenSize;
-	}
-
-	/**
-	 * @return The number of columns on the screen
-	 */
-	public int getNoOfColumns() {
-		return this.columns;
-	}
-
-	/**
-	 * @return The number of rows on the screen
-	 */
-	public int getNoOfRows() {
-		return this.rows;
-	}
-
-	/**
-	 * Clear the screen and fill with nulls
-	 */
-	public synchronized void erase() {
-		fields.clear();
-		fields.add(new FieldChars((char) 0, 0, screenSize - 1));
-		this.screenCursor = 0;
-	}
-
-	/**
-	 * Return the buffer address of the cursor
-	 * 
-	 * @return - Address of the cursor
-	 */
-	public int getCursor() {
-		return this.screenCursor;
-	}
-
-	public void setCursor(int index) {
-		this.screenCursor = index;
-	}
-
-	public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
+	public void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
 		CommandCode commandCode = inbound.getCommandCode();
 		if (commandCode instanceof CommandWriteStructured) {
 			processStructuredFields(inbound.getStructuredFields());
@@ -195,7 +128,10 @@ public class Screen {
 				unlockKeyboard();
 			}
 		}
+
 	}
+
+
 
 	private synchronized void processStructuredFields(List<StructuredField> structuredFields) throws DatastreamException {
 		for(StructuredField structuredField : structuredFields) {
@@ -220,7 +156,7 @@ public class Screen {
 
 	}
 
-	private void processReadPartitionQuery() throws DatastreamException {
+	private synchronized void processReadPartitionQuery() throws DatastreamException {
 		ArrayList<QueryReply> replies = new ArrayList<>();
 
 		replies.add(new QueryReplyUsableArea(this));
@@ -247,13 +183,7 @@ public class Screen {
 		}
 	}
 
-	/**
-	 * Process the 3270 datastream orders to build up the screen
-	 * 
-	 * @param orders - List of orders
-	 * @throws DatastreamException - If we discover a unknown order
-	 */
-	public synchronized void processOrders(Iterable<Order> orders) throws DatastreamException {
+	public synchronized void processOrders(List<Order> orders) throws DatastreamException {
 		logger.trace("Processing orders");
 		this.workingCursor = 0;
 		for(Order order : orders) {
@@ -272,66 +202,21 @@ public class Screen {
 			}
 		}
 
-		int pos = 0;
-		//*** Merge suitable fields,  text and chars
-		while(pos < this.fields.size()) { //NOSONAR
-			int nextPos = pos + 1;
-			if (nextPos >= this.fields.size()) {
-				break;
+		synchronized (updateListeners) {
+			for(IScreenUpdateListener listener : updateListeners) {
+				listener.screenUpdated(Direction.Received,  null);
 			}
+		}
+	}
 
-			Field thisField = this.fields.get(pos);
-			Field nextField = this.fields.get(nextPos);
-
-			if ((thisField instanceof FieldText) 
-					|| (thisField instanceof FieldChars)) {
-				if ((nextField instanceof FieldText)  //NOSONAR
-						|| (nextField instanceof FieldChars)) {
-					thisField.merge(this.fields, nextField);
-					continue; // Go round again without incrementing position
-				}
-			}
-			pos++;
+	public synchronized void erase() {
+		for(int i = 0; i < buffer.length; i++) {
+			buffer[i] = null;
 		}
 
-		//Make sure the start of fields are linked up
-		buildPreviousStartOfFields();
-
-		for(IScreenUpdateListener listener : updateListeners) {
-			listener.screenUpdated(Direction.Received,  null);
-		}
-
+		this.screenCursor = 0;
 
 	}
-	
-	public void buildPreviousStartOfFields() {
-		//*** Reset the previousStartOfField variables
-		//*** Find the LAST start of field
-		FieldStartOfField lastStartOfField= null;
-		for(int i = this.fields.size() - 1; i >= 0; i--) {
-			Field field = this.fields.get(i);
-			if (field instanceof FieldStartOfField) {
-				lastStartOfField = (FieldStartOfField) field;
-				break;
-			}
-		}
-
-		//*** No SF was found,  then the whole display must be unprotected
-		if (lastStartOfField == null) {
-			lastStartOfField = new FieldStartOfField(0, false, false, true, false, false, false);
-		}
-
-		for(int i = 0; i < this.fields.size(); i++) {
-			Field field = this.fields.get(i);
-			if (field instanceof FieldStartOfField) {
-				lastStartOfField = (FieldStartOfField) field;
-			} else {
-				field.setPreviousStartOfField(lastStartOfField);
-			}
-		}
-		
-	}
-	
 
 	/**
 	 * Process a Set Buffer Address order
@@ -342,41 +227,9 @@ public class Screen {
 		this.workingCursor = order.getBufferAddress();
 	}
 
-	/**
-	 * Process a Start Field order
-	 * 
-	 * @param order - the order to process
-	 * @throws DatastreamException 
-	 */
-	private synchronized void processSF(OrderStartField order) throws DatastreamException { //NOSONAR - will be using it soon
-		Field newField = new FieldStartOfField(this.workingCursor,
-				order.isFieldProtected(),
-				order.isFieldNumeric(),
-				order.isFieldDisplay(),
-				order.isFieldIntenseDisplay(),
-				order.isFieldSelectorPen(),
-				order.isFieldModifed());
-		insertField(newField);
-
-		this.workingCursor++;
-	}
 
 	/**
-	 * Process Text - not really an order
-	 * 
-	 * @param order - the order to process
-	 * @throws DatastreamException 
-	 */
-	private synchronized void processText(OrderText order) throws DatastreamException {		
-		String text = order.getText();
-		Field newField = new FieldText(text, this.workingCursor, (this.workingCursor + text.length()) - 1);
-		insertField(newField);
-
-		this.workingCursor += text.length();
-	}
-
-	/**
-	 * Process the Report ot Address order 
+	 * Process the Report to Address order 
 	 * 
 	 * @param order - the order to process
 	 * @throws DatastreamException 
@@ -384,91 +237,57 @@ public class Screen {
 	private synchronized void processRA(OrderRepeatToAddress order) throws DatastreamException {
 		int endOfRepeat = order.getBufferAddress();
 
-		if (endOfRepeat <= this.workingCursor) {
-			Field newField = new FieldChars(order.getChar(), this.workingCursor, this.screenSize - 1);
-			insertField(newField);
+		if (endOfRepeat > this.screenSize || endOfRepeat < 0) {
+			throw new DatastreamException("Impossible RA end address " + endOfRepeat + ", screen size is " + screenSize);
+		}
 
-			if (endOfRepeat > 0) {
-				newField = new FieldChars(order.getChar(), 0, endOfRepeat);
-				insertField(newField);
+		while(this.workingCursor != endOfRepeat) {
+			this.buffer[this.workingCursor] = new BufferChar(order.getChar());
+			if (endOfRepeat == this.screenSize && this.workingCursor == (this.screenSize - 1)) {
+				endOfRepeat = 0;
+				break;
 			}
-		} else {
-			Field newField = new FieldChars(order.getChar(), this.workingCursor, endOfRepeat - 1);
-			insertField(newField);
+			incrementWorkingCursor();
 		}
 
 		this.workingCursor = endOfRepeat;
 	}
 
-	/**
-	 * Insert a new field from the process orders
-	 * 
-	 * @param newField - The field to insert into the buffer
-	 * @throws DatastreamException 
-	 */
-	private synchronized void insertField(Field newField) throws DatastreamException {
-		//*** Easy if there are no pre-existing fields
-		if (this.fields.isEmpty()) {
-			this.fields.add(newField);
-			return;
-		}
-
-		//*** Locate all the current fields that span the new start and end positions
-		List<Field> selectedFields = locateFieldsBetween(newField.getStart(), newField.getEnd());
-		if (selectedFields.isEmpty()) {
-			//*** If there are no fields,  then find the field that is after the end address
-			int followingFieldPos = this.fields.size();
-			for(int i = 0; i < this.fields.size(); i++) {
-				if (newField.getEnd() < this.fields.get(i).getStart()) {
-					followingFieldPos = i;
-					break;
-				}
-			}
-			//*** Insert the new field into the correct position
-			this.fields.add(followingFieldPos, newField);
-		} else {
-			//*** Check to see if this is a direct replacement
-			if (selectedFields.size() == 1
-					&& selectedFields.get(0) instanceof FieldText
-					&& newField instanceof FieldText
-					&& selectedFields.get(0).getStart() == newField.getStart()
-					&& selectedFields.get(0).getEnd() == newField.getEnd()) {
-				try {
-					((FieldText)selectedFields.get(0)).type(((FieldText)newField).getFieldWithoutNulls());
-				} catch(FieldNotFoundException e) {
-					throw new DatastreamException("Unable to replace text field", e);
-				}
-			} else {
-				//*** Tell the spanned fields to split as appropriate
-				int fieldPosition = fields.indexOf(selectedFields.get(0));
-				for(Field field : selectedFields) {
-					field.split(this.fields, newField.getStart(), newField.getEnd());
-				}
-
-				//*** Insert at the appropriate place
-				if (this.fields.size() <= fieldPosition) {
-					this.fields.add(newField);
-					return;
-				}
-
-				if (newField.getStart() < fields.get(fieldPosition).getStart()) {
-					this.fields.add(fieldPosition, newField);
-				} else {
-					this.fields.add(fieldPosition + 1, newField);
-				}
-			}
+	private void incrementWorkingCursor() {
+		this.workingCursor++;
+		if (this.workingCursor >= this.screenSize) {
+			this.workingCursor = 0;
 		}
 	}
 
-	/**
-	 * Convert the fields into a string for printing or otherwise
-	 * 
-	 * @return - A representation of the screen
-	 */
-	public synchronized String printScreen() {
+	private void processSF(OrderStartField order) {
+		this.buffer[this.workingCursor] = new BufferStartOfField(this.workingCursor,
+				order.isFieldProtected(),
+				order.isFieldNumeric(),
+				order.isFieldDisplay(),
+				order.isFieldIntenseDisplay(),
+				order.isFieldSelectorPen(),
+				order.isFieldModifed());
+		incrementWorkingCursor();
+	}
+
+	private void processText(OrderText order) {
+		String text = order.getText();
+		for(int i = 0; i < text.length(); i++) {
+			this.buffer[this.workingCursor] = new BufferChar(text.charAt(i));
+			incrementWorkingCursor();
+		}
+
+	}
+
+	public String printScreen() {
 		StringBuilder sb = new StringBuilder();
-		for(Field field : this.fields) {
-			field.getFieldString(sb);
+		for(int i = 0; i < this.buffer.length; i++) {
+			if (this.buffer[i] == null) {
+				sb.append(" ");
+			} else {
+				sb.append(this.buffer[i].getStringWithoutNulls());	
+			}
 		}
 
 		StringBuilder screenSB = new StringBuilder();
@@ -478,20 +297,18 @@ public class Screen {
 			screenSB.append('\n');
 		}
 		return screenSB.toString();
-	}
+	}		
 
 	public String printScreenTextWithCursor() {
 		int cursorRow = screenCursor / columns;
 		int cursorCol = screenCursor % columns;
 
 		StringBuilder sb = new StringBuilder();
-		if (this.fields.isEmpty()) {
-			for(int i = 0; i < screenSize; i++) {
-				sb.append(' '); //Can be better
-			}
-		} else {
-			for(Field field : this.fields) {
-				field.getFieldString(sb);
+		for(int i = 0; i < this.buffer.length; i++) {
+			if (this.buffer[i] == null) {
+				sb.append(" ");
+			} else {
+				sb.append(this.buffer[i].getStringWithoutNulls());	
 			}
 		}
 
@@ -499,11 +316,12 @@ public class Screen {
 		String screenString = sb.toString();
 		int row = 0;
 		for(int i = 0; i < this.screenSize; i += this.columns) {
-			screenSB.append("= ");
+			screenSB.append("=|");
 			screenSB.append(screenString.substring(i, i + this.columns));
+			screenSB.append("|");
 			screenSB.append('\n');
 			if (row == cursorRow) {
-				screenSB.append("^ ");
+				screenSB.append("^|");
 				for(int j = 0; j < cursorCol; j++) {
 					screenSB.append(" ");
 				}
@@ -516,92 +334,44 @@ public class Screen {
 		return screenSB.toString();
 	}
 
+	public synchronized Field[] calculateFields() {
+		ArrayList<Field> fields = new ArrayList<>();
 
-
-	public synchronized String getScreenBuffer() {
-		StringBuilder sb = new StringBuilder();
-		for(Field field : this.fields) {
-			field.getFieldString(sb);
+		Field currentField = new Field();
+		for(int i = 0; i < this.buffer.length; i++) {
+			BufferHolder bh = this.buffer[i];
+			if (bh == null) {
+				currentField.appendChar((char)0x00);
+			} else if (bh instanceof BufferStartOfField) {
+				if (currentField.getStart() != -1 || currentField.length() != 1) {
+					fields.add(currentField);
+				}
+				currentField = new Field(i, (BufferStartOfField) bh);
+			} else if (bh instanceof BufferChar) {
+				currentField.appendChar(((BufferChar)bh).getChar());
+			} else {
+				throw new UnsupportedOperationException("Unrecognised buffer type " + bh.getClass().getName());
+			}
+		}		
+		if (currentField.getStart() != -1 || currentField.length() != 1) {
+			fields.add(currentField);
 		}
-		return sb.toString();
-	}
 
-	/**
-	 * Find fields that span the start and end addresses
-	 * 
-	 * @param start - The start address
-	 * @param end - The end address
-	 * @return - a list of covered fields
-	 */
-	private synchronized List<Field> locateFieldsBetween(int start, int end) {
-		ArrayList<Field> selectedFields = new ArrayList<>();
-		for(Field field : this.fields) {
-			if (field.containsPositions(start, end)) {
-				selectedFields.add(field);
+
+		//*** If the SBA were not in order,  possibility that the safeguard first field was left there 
+		if (fields.size() >= 2) {
+			if (fields.get(0).getStart() == 0 && fields.get(1).getStart() == 0) {
+				fields.remove(0);
 			}
 		}
-		return selectedFields;
+
+
+		return fields.toArray(new Field[fields.size()]);
 	}
 
-	/**
-	 * Find the field at position
-	 * 
-	 * @param pos - Cursor position
-	 * @return The field at that position or null
-	 */
-	public synchronized Field locateFieldsAt(int pos) {
-		for(Field field : this.fields) {
-			if (field.containsPosition(pos)) {
-				return field;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Produce a printable list of the fields on the screen 
-	 * 
-	 * @return - A list of the fields
-	 */
-	public synchronized String printFields() {
-		StringBuilder sb = new StringBuilder();
-		for(Field field : fields) {
-			if (sb.length() > 0) {
-				sb.append('\n');
-			}
-			sb.append(field.toString());
-		}
-		return sb.toString();
-	}
-
-	private synchronized void lockKeyboard() throws KeyboardLockedException {
-		if (!keyboardLockSet) {
-			logger.trace("Locking keyboard");
-			keyboardLockSet = true;
-			try {
-				keyboardLock.acquire();
-			} catch(InterruptedException e) { //NOSONAR
-				throw new KeyboardLockedException("Unable to lock the keyboard", e);
-			}
-		}
-	}
-
-	private synchronized void unlockKeyboard() {
-		if (keyboardLockSet) {
-			logger.trace("Unlocking keyboard");
-			keyboardLockSet = false;
-			keyboardLock.release();
-		}
-	}
-
-	public synchronized void positionCursorToFieldContaining(@NotNull String text) throws KeyboardLockedException, TextNotFoundException {
-		if (keyboardLockSet) {
-			throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
-		}
-
-		for(Field field : this.fields) {
+	public void searchFieldContaining(String text) throws TextNotFoundException {
+		for(Field field : calculateFields()) {
 			if (field.containsText(text)) {
-				this.screenCursor = field.getStart();
 				return;
 			}
 		}
@@ -609,22 +379,32 @@ public class Screen {
 		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");		
 	}
 
-	public synchronized String getValueFromFieldContaining(@NotNull String text) throws TextNotFoundException {
-		Boolean foundHeader = false;
-		for(Field field : this.fields) {
-			if(!foundHeader){
-				if (field.containsText(text)) {
-					foundHeader = true;
-				}
-			} else {
-				if((field instanceof FieldText) || (field instanceof FieldChars))
-					return field.getFieldWithoutNulls();
+	public boolean isTextInField(String text) {
+		for(Field field : calculateFields()) {
+			if (field.containsText(text)) {
+				return true;
 			}
 		}
 
-		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");	
+		return false;
 	}
 
+	/**
+	 * Wait on the keyboard being free
+	 * 
+	 * @param maxWait - time in milliseconds
+	 * @throws KeyboardLockedException 
+	 */
+	public void waitForKeyboard(int maxWait) throws TimeoutException, KeyboardLockedException {
+		try {
+			if (!keyboardLock.tryAcquire(maxWait, TimeUnit.MILLISECONDS)) {
+				throw new TimeoutException("Wait for keyboard took longer than " + maxWait + "ms");
+			}
+		} catch(InterruptedException e) { //NOSONAR
+			throw new KeyboardLockedException("Unable to acquire keyboard lock", e);
+		}
+		keyboardLock.release();
+	}
 
 	public void waitForTextInField(String text, int maxWait) throws TextNotFoundException {
 		try {
@@ -636,12 +416,14 @@ public class Screen {
 		}
 	}
 
+	public synchronized void positionCursorToFieldContaining(@NotNull String text) throws KeyboardLockedException, TextNotFoundException {
+		if (keyboardLockSet) {
+			throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+		}
 
-
-
-	public synchronized void searchFieldContaining(String text) throws TextNotFoundException {
-		for(Field field : this.fields) {
+		for(Field field : calculateFields()) {
 			if (field.containsText(text)) {
+				this.screenCursor = field.getStart();
 				return;
 			}
 		}
@@ -649,27 +431,18 @@ public class Screen {
 		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");		
 	}
 
-	public boolean isTextInField(String text) {
-		for(Field field : this.fields) {
-			if (field.containsText(text)) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-
-
 
 	public synchronized void tab() throws KeyboardLockedException, FieldNotFoundException {
 		if (keyboardLockSet) {
 			throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
 		}
 
+		Field[] fields = calculateFields();
+
 		int fieldPosition = 0;
 		Field startField = null;
-		for(; fieldPosition < this.fields.size(); fieldPosition++) {
-			Field field = this.fields.get(fieldPosition);
+		for(; fieldPosition < fields.length; fieldPosition++) {
+			Field field = fields[fieldPosition];
 			if (field.containsPosition(this.screenCursor)) {
 				startField = field;
 				break;
@@ -680,15 +453,21 @@ public class Screen {
 			throw new FieldNotFoundException("Unable to locate field to tab from, should not have happened");
 		}
 
+		if (screenCursor == startField.getStart()
+				&& !startField.isProtected()) {
+			this.screenCursor = startField.getStart() + 1;
+			return;
+		}
+
 		while(true) {
 			fieldPosition++;
-			if (fieldPosition >= this.fields.size()) {
+			if (fieldPosition >= fields.length) {
 				fieldPosition = 0;
 			}
 
-			Field field = this.fields.get(fieldPosition);
-			if (field.isTypeable()) {
-				this.screenCursor = field.getStart();
+			Field field = fields[fieldPosition];
+			if (!field.isProtected()) {
+				this.screenCursor = field.getStart() + 1;
 				return;
 			}
 
@@ -699,51 +478,105 @@ public class Screen {
 
 	}
 
+	public int getNoOfColumns() {
+		return this.columns;
+	}
+
+	public int getNoOfRows() {
+		return this.rows;
+	}
+
+	public synchronized void registerScreenUpdateListener(IScreenUpdateListener listener) {
+		synchronized (updateListeners) {
+			updateListeners.add(listener);
+		}
+	}
+
+	public synchronized void unregisterScreenUpdateListener(IScreenUpdateListener listener) {
+		synchronized (updateListeners) {
+			updateListeners.remove(listener);
+		}
+	}
+
+	public int getCursor() {
+		return this.screenCursor;
+	}
+
+	public Field locateFieldAt(int cursorPos) {
+		Field[] fields = calculateFields();
+
+		int fieldPosition = 0;
+		for(; fieldPosition < fields.length; fieldPosition++) {
+			Field field = fields[fieldPosition];
+			if (field.containsPosition(this.screenCursor)) {
+				return field;
+			}
+		}
+		return null;
+	}
+
+	public String getValueFromFieldContaining(String text) throws TextNotFoundException {
+		Boolean foundHeader = false;
+		for(Field field : calculateFields()) {
+			if(!foundHeader){
+				if (field.containsText(text)) {
+					foundHeader = true;
+				}
+			} else {
+				String foundText = field.getFieldWithoutNulls();
+				if (foundText.length() > 0) {
+					return foundText;
+				}
+			}
+		}
+
+		throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");	
+	}
+
 	public synchronized void type(String text) throws KeyboardLockedException, FieldNotFoundException {
 		if (keyboardLockSet) {
 			throw new KeyboardLockedException("Unable to type as keyboard is locked");
 		}
 
-		Field typeField = null;
-		int typeFieldPos = 0;
-		for(int i = 0; i < this.fields.size(); i++) {
-			Field field = this.fields.get(i);
-			if (field.containsPosition(this.screenCursor)) {
-				typeField = field;
-				typeFieldPos = i;
+		if (buffer[this.screenCursor] != null && !(buffer[this.screenCursor] instanceof BufferChar)) {
+			throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+		}
+
+		BufferStartOfField sf = null;
+		for(int i = this.screenCursor - 1; i >= 0; i--) {
+			if (buffer[i] instanceof BufferStartOfField) {
+				sf = (BufferStartOfField) buffer[i];
 				break;
 			}
 		}
 
-		if (typeField == null) {
-			throw new FieldNotFoundException("Unable to locate field where the cursor is pointing to, should not have happened");
-		}
-
-		if (!typeField.isTypeable()) {
+		//*** if no field found, assume unprotected
+		if (sf != null && sf.isProtected()) {
 			throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
 		}
 
-		int length = (typeField.getEnd() - typeField.getStart()) + 1;
-		if (length < text.length()) {
-			throw new FieldNotFoundException("Unable to type into field as would cause a field overflow, this is not supported at the moment");
+		if (text.length() == 0) {
+			return;
 		}
 
-		if (typeField instanceof FieldChars) {
-			FieldText textField = new FieldText((FieldChars) typeField);
-			this.fields.remove(typeFieldPos);
-			this.fields.add(typeFieldPos, textField);
-			typeField = textField;
+		for(int i = 0; i < text.length(); i++) {
+			BufferHolder bh = buffer[screenCursor];
+			if (bh != null && !(bh instanceof BufferChar)) {
+				throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+			}
+
+			buffer[screenCursor] = new BufferChar(text.charAt(i));
+			screenCursor++;
+			if (screenCursor >= screenSize) {
+				screenCursor = 0;
+			}
 		}
 
-		if (!(typeField instanceof FieldText)) {
-			throw new FieldNotFoundException("Unable to type into field as is not a text field, this is not supported at the moment");
+		if (sf != null) {
+			sf.setFieldModified();
 		}
-
-		((FieldText)typeField).type(text);
-
-		this.screenCursor += text.length();
 	}
-
+	
 	public synchronized byte[] aid(AttentionIdentification aid) throws DatastreamException, KeyboardLockedException {
 		lockKeyboard();
 
@@ -756,22 +589,47 @@ public class Screen {
 			outboundBuffer.write(cursor.getCharRepresentation());
 
 			if (aid == AttentionIdentification.CLEAR) {
-				fields.clear();
+				erase();
 			} else {
-				for(Field field : this.fields) {
-					if (field.isModified()) {
-						OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(field.getStart()));
-						outboundBuffer.write(sba.getCharRepresentation());
+				boolean fieldModified  = false;
+				boolean fieldProtected = false;
 
-						byte[] fieldText = field.getFieldEbcdicWithoutNulls();
-						outboundBuffer.write(fieldText);
+				if (!(buffer[0] instanceof BufferStartOfField)) {
+					OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
+					outboundBuffer.write(sba.getCharRepresentation());
+					fieldModified  = true;
+				}
+
+				for(int pos = 0; pos < buffer.length; pos++) {
+					BufferHolder bh = buffer[pos];
+					if (bh instanceof BufferStartOfField) {
+						BufferStartOfField bsf = (BufferStartOfField) bh;
+						fieldModified = bsf.isFieldModifed();
+						fieldProtected = bsf.isProtected();
+
+						if (fieldModified && !fieldProtected) {
+							OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(pos+1));
+							outboundBuffer.write(sba.getCharRepresentation());
+						}
+					} else if (bh instanceof BufferChar) {
+						BufferChar bc = (BufferChar) bh;
+						if (fieldModified && !fieldProtected) {
+							byte value = bc.getFieldEbcdic();
+							if (value != 0) {
+								outboundBuffer.write(value);
+							}
+						}						
 					}
 				}
+
+				String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
+				logger.trace("outbound=" + hex);
 			}
+
 
 			String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
 			logger.trace("outbound=" + hex);
-			
+
 			for(IScreenUpdateListener listener : updateListeners) {
 				listener.screenUpdated(Direction.Sending, aid);
 			}
@@ -782,26 +640,58 @@ public class Screen {
 		}
 	}
 
-	public synchronized void setFields(List<Field> fields) {
-		this.fields = new LinkedList<>(fields);
-
-		//Make sure the start of fields are linked up
-		buildPreviousStartOfFields();
+	public Object getScreenSize() {
+		return this.screenSize;
 	}
 
-	public synchronized List<Field> getFields() {
-		return this.fields;
+	public String printFields() {
+		Field fields[] = calculateFields();
+
+		StringBuilder sb = new StringBuilder();
+		for(Field field : fields) {
+			sb.append(field.toString());
+			sb.append("\n");
+		}
+
+		return sb.toString();
 	}
-	
-	public synchronized void convertCharsToText(FieldChars oldField) throws DatastreamException {
-		int pos = this.fields.indexOf(oldField);
-		if (pos < 0) {
-			throw new DatastreamException("Unable to locate chars field to convert");
+
+	public void setBuffer(BufferHolder[] newBuffer) {
+		for(int i = 0; i < this.buffer.length && i < newBuffer.length; i++) {
+			this.buffer[i] = newBuffer[i];
+		}
+	}
+
+	public void setBuffer(int col, int row, String text) {
+		int  pos = (row * 80) + col;
+		for(int i = 0; i < text.length(); i++) {
+			buffer[pos] = new BufferChar(text.charAt(i));
+			pos++;
+		}
+	}
+
+	public void nullify(int col, int row, int len) {
+		int  pos = (row * 80) + col;
+		for(int i = 0; i < len; i++) {
+			buffer[pos] = null;
+			pos++;
+		}
+	}
+
+	public Field getFieldAt(int col, int row) {
+		int  pos = (row * 80) + col;
+		
+		Field[] fields = calculateFields();
+		Field currentField = fields[0];
+		for(int i = 1; i < fields.length; i++) {
+			if (fields[i].getStart() > pos) {
+				return currentField;
+			}
+			currentField = fields[i];
 		}
 		
-		FieldText newField = new FieldText(oldField);
-		this.fields.add(pos, newField);
-		this.fields.remove(oldField);
+		
+		return currentField;
 	}
 
 }
