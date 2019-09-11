@@ -13,7 +13,6 @@ import dev.galasa.common.zos3270.TextNotFoundException;
 import dev.galasa.common.zos3270.TimeoutException;
 import dev.galasa.common.zos3270.internal.comms.Network;
 import dev.galasa.common.zos3270.internal.comms.NetworkThread;
-import dev.galasa.common.zos3270.internal.terminal.fields.Field;
 
 public class Terminal implements ITerminal {
 
@@ -31,7 +30,7 @@ public class Terminal implements ITerminal {
 
     public Terminal(String host, int port, boolean ssl) {
         network = new Network(host, port, ssl);
-        screen = new Screen(80, 24, network);
+        screen = new Screen(80, 24, this.network);
     }
 
     public synchronized void connect() throws NetworkException {
@@ -303,7 +302,7 @@ public class Terminal implements ITerminal {
      */
     public String retrieveFieldAtCursor() {
         int cursorPos = screen.getCursor();
-        Field cursorField = screen.locateFieldsAt(cursorPos);
+        Field cursorField = screen.locateFieldAt(cursorPos);
         return cursorField.getFieldWithoutNulls();
     }
 

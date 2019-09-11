@@ -1,8 +1,8 @@
 package test.zos3270.datastream;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
@@ -22,11 +22,11 @@ public class VampScreenTest {
 		URL vampFile = getClass().getClassLoader().getResource("vampstream.txt");
 		String vampHex = IOUtils.toString(vampFile.openStream(), "utf-8");
 		byte[] stream = Hex.decodeHex(vampHex);
-		ByteArrayInputStream bais = new ByteArrayInputStream(stream);
+		ByteBuffer buffer = ByteBuffer.wrap(stream);
 		
 		NetworkThread networkThread = new NetworkThread(null, null, null);
 		
-		List<Order> orders = networkThread.process3270Data(bais).getOrders();
+		List<Order> orders = networkThread.process3270Data(buffer).getOrders();
 		Assert.assertEquals("Count of orders is incorrect",  225, orders.size());
 	}
 

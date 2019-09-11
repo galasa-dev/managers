@@ -16,8 +16,10 @@ import dev.galasa.common.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.common.zos3270.internal.datastream.Order;
 import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.common.zos3270.internal.datastream.OrderRepeatToAddress;
+import dev.galasa.common.zos3270.internal.datastream.OrderSetAttribute;
 import dev.galasa.common.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.common.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.common.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.common.zos3270.internal.datastream.OrderText;
 import dev.galasa.common.zos3270.internal.datastream.StructuredField;
 import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
@@ -91,7 +93,10 @@ public class NetworkThread extends Thread {
             if (messageStream.read(remainingHeader) != 4) {
                 throw new NetworkException("Missing remaining 4 byte of the telnet 3270 header");
             }
-            Inbound3270Message inbound3270Message = process3270Data(messageStream);
+            
+            ByteBuffer buffer = readTerminatedMessage(messageStream);
+            
+            Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
         } else {
             throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");	
@@ -99,8 +104,7 @@ public class NetworkThread extends Thread {
     }
 
 
-    public Inbound3270Message process3270Data(InputStream messageStream) throws IOException, NetworkException {
-        ByteBuffer buffer = readTerminatedMessage(messageStream);
+    public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
         String hex = new String(Hex.encodeHex(buffer.array()));
         logger.trace("inbound=" + hex);
@@ -142,6 +146,12 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderStartField.ID:
                         order = new OrderStartField(buffer);
+                        break;
+                    case OrderStartFieldExtended.ID:
+                        order = new OrderStartFieldExtended(buffer);
+                        break;
+                    case OrderSetAttribute.ID:
+                        order = new OrderSetAttribute(buffer);
                         break;
                     case OrderInsertCursor.ID:
                         order = new OrderInsertCursor();

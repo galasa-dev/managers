@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
@@ -153,7 +152,7 @@ public class Network /* extends Thread */{
 
 			expect(inputStream, IAC, SB, TN3270E, SEND, DEVICE_TYPE, IAC, SE);
 
-			byte[] deviceType = "IBM-3278-2".getBytes(ascii7);
+			byte[] deviceType = "IBM-3278-2-E".getBytes(ascii7);
 
 			baos = new ByteArrayOutputStream();
 			baos.write(IAC);
@@ -168,11 +167,31 @@ public class Network /* extends Thread */{
 			outputStream.flush();
 
 			expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE, IS);
-			expect(inputStream, deviceType);
-			expect(inputStream, CONNECT);
 
 			baos = new ByteArrayOutputStream();
 			byte[] data = new byte[1];
+			while(true) {
+				int length = inputStream.read(data);
+				if (length != 1) {
+					throw new NetworkException("Negotiation terminated early, attempting to extract device type");
+				}
+
+				if (data[0] == CONNECT) {
+					break;
+				}
+
+				baos.write(data);
+			}
+			
+			String returnedDeviceType = new String(baos.toByteArray(), ascii7);
+			if ("IBM-3278-2".equals(returnedDeviceType) 
+					|| "IBM-3278-2-E".equals(returnedDeviceType)) {
+			} else {
+				throw new NetworkException("Negotiation returned unsupported devicetype '" + returnedDeviceType + "'");
+			}
+
+			baos = new ByteArrayOutputStream();
+			data = new byte[1];
 			while(true) {
 				int length = inputStream.read(data);
 				if (length != 1) {
