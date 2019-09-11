@@ -28,11 +28,14 @@ import dev.galasa.common.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.common.zos3270.internal.datastream.CommandCode;
 import dev.galasa.common.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.common.zos3270.internal.datastream.CommandWriteStructured;
+import dev.galasa.common.zos3270.internal.datastream.IAttribute;
 import dev.galasa.common.zos3270.internal.datastream.Order;
 import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.common.zos3270.internal.datastream.OrderRepeatToAddress;
+import dev.galasa.common.zos3270.internal.datastream.OrderSetAttribute;
 import dev.galasa.common.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.common.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.common.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.common.zos3270.internal.datastream.OrderText;
 import dev.galasa.common.zos3270.internal.datastream.QueryReply;
 import dev.galasa.common.zos3270.internal.datastream.QueryReplyCharactersets;
@@ -195,6 +198,10 @@ public class Screen {
 				processText((OrderText) order);
 			} else if (order instanceof OrderStartField) {
 				processSF((OrderStartField) order);
+			} else if (order instanceof OrderStartFieldExtended) {
+				processSFE((OrderStartFieldExtended) order);
+			} else if (order instanceof OrderSetAttribute) {
+				processSA((OrderSetAttribute) order);
 			} else if (order instanceof OrderInsertCursor) {
 				this.screenCursor = this.workingCursor;
 			} else {
@@ -270,6 +277,44 @@ public class Screen {
 				order.isFieldModifed());
 		incrementWorkingCursor();
 	}
+
+	private void processSFE(OrderStartFieldExtended order) {
+		List<IAttribute> attributes = order.getAttributes();
+		
+		BufferStartOfField bsf = null;
+		for(IAttribute attr : attributes) {
+			if (attr instanceof OrderStartField) {
+				OrderStartField sf = (OrderStartField) attr;
+				bsf = new BufferStartOfField(this.workingCursor,
+						sf.isFieldProtected(),
+						sf.isFieldNumeric(),
+						sf.isFieldDisplay(),
+						sf.isFieldIntenseDisplay(),
+						sf.isFieldSelectorPen(),
+						sf.isFieldModifed());
+			}
+			//TODO add processing for character attributes
+		}
+		
+		if (bsf == null) {
+			bsf = new BufferStartOfField(this.workingCursor,
+					false,
+					false,
+					true,
+					false,
+					false,
+					false);
+		}
+		
+		this.buffer[this.workingCursor] = bsf;
+		incrementWorkingCursor();
+	}
+	
+	private void processSA(OrderSetAttribute order) {
+		// TODO add processing for character attributes
+	}
+
+
 
 	private void processText(OrderText order) {
 		String text = order.getText();

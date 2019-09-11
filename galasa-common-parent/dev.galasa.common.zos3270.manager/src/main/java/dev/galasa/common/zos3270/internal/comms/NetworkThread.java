@@ -16,8 +16,10 @@ import dev.galasa.common.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.common.zos3270.internal.datastream.Order;
 import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.common.zos3270.internal.datastream.OrderRepeatToAddress;
+import dev.galasa.common.zos3270.internal.datastream.OrderSetAttribute;
 import dev.galasa.common.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.common.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.common.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.common.zos3270.internal.datastream.OrderText;
 import dev.galasa.common.zos3270.internal.datastream.StructuredField;
 import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
@@ -144,6 +146,12 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderStartField.ID:
                         order = new OrderStartField(buffer);
+                        break;
+                    case OrderStartFieldExtended.ID:
+                        order = new OrderStartFieldExtended(buffer);
+                        break;
+                    case OrderSetAttribute.ID:
+                        order = new OrderSetAttribute(buffer);
                         break;
                     case OrderInsertCursor.ID:
                         order = new OrderInsertCursor();

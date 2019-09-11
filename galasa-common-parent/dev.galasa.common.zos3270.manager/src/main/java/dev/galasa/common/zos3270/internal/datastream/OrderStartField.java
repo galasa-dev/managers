@@ -3,9 +3,10 @@ package dev.galasa.common.zos3270.internal.datastream;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
-public class OrderStartField extends Order {
+public class OrderStartField extends Order implements IAttribute {
 	
 	public static final byte ID = 0x1d;
+	public static final byte ATTRIBUTE_ID = -64;
 
 	private final boolean fieldProtected; 
 	private final boolean fieldNumeric; 

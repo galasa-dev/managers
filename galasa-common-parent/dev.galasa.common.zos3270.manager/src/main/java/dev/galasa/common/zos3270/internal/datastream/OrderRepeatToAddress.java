@@ -19,6 +19,10 @@ public class OrderRepeatToAddress extends Order {
 		this.bufferAddress = new BufferAddress(buffer);
 		
 		byte[] charByte = new byte[] {buffer.get()};
+		if (charByte[0] == -1) {
+			charByte[0] = 0x40;
+		}
+		
 		repeatChar = ebcdic.decode(ByteBuffer.wrap(charByte)).array()[0];
 	} 
 	

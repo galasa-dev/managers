@@ -9,6 +9,10 @@ public class BufferChar extends BufferHolder {
 	private final char character;
 	
 	public BufferChar(char character) {
+		if (character == -1) {
+			character = ' ';
+		}
+		
 		this.character = character;
 	}
 	
