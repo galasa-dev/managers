@@ -24,7 +24,7 @@ public class ScreenUpdateTextListener implements IScreenUpdateListener {
 			throw new UnsupportedOperationException("Shouldn't happen",e); 
 		}
 
-		synchronized (screen) {
+		synchronized (this.screen) {
 			screenUpdated(Direction.Received, null);
 			if (this.textFound.availablePermits() > 0) {
 				return;

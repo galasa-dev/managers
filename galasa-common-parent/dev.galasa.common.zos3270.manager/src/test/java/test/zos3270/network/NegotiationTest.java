@@ -122,7 +122,7 @@ public class NegotiationTest {
 		prepInput.write(TN3270E);
 		prepInput.write(DEVICE_TYPE);
 		prepInput.write(IS);
-		prepInput.write("IBM-3278-2".getBytes("us-ascii"));
+		prepInput.write("IBM-3278-2-E".getBytes("us-ascii"));
 		prepInput.write(CONNECT);
 		prepInput.write("TERM0001".getBytes("us-ascii"));
 		prepInput.write(IAC);
@@ -149,7 +149,7 @@ public class NegotiationTest {
 		prepOutput.write(TN3270E);
 		prepOutput.write(DEVICE_TYPE);
 		prepOutput.write(REQUEST);
-		prepOutput.write("IBM-3278-2".getBytes("us-ascii"));
+		prepOutput.write("IBM-3278-2-E".getBytes("us-ascii"));
 		prepOutput.write(IAC);
 		prepOutput.write(SE);
 		
