@@ -18,7 +18,7 @@ public class OrderText extends Order {
 
 	public void append(byte data) {
 		if (data == -1) {
-			data = 0x40;
+			data = 0x00;
 		}
 		
 		byte[] charByte = new byte[] {data};
