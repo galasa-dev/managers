@@ -638,14 +638,34 @@ public class Screen {
 			} else {
 				boolean fieldModified  = false;
 				boolean fieldProtected = false;
+				
+				
+				//*** Locate the first StartOfField in the buffer,  if absent,  then unformatted,  send everything back.
 
-				if (!(buffer[0] instanceof BufferStartOfField)) {
+				int start = 0;
+				int end = 0;
+				for(;start < buffer.length; start++) {
+					if (buffer[start] instanceof BufferStartOfField) {
+						break;
+					}
+				}
+				
+				if (start >= buffer.length) { // indicates unfromatted,  send it all
+					start = 0;
+					end = buffer.length - 1;
+					
 					OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
 					outboundBuffer.write(sba.getCharRepresentation());
 					fieldModified  = true;
+				} else { // formatted
+					end = start - 1;
+					if (end < 0) {
+						end = buffer.length - 1;
+					}
 				}
-
-				for(int pos = 0; pos < buffer.length; pos++) {
+				
+				int pos = start;
+				while(true) {
 					BufferHolder bh = buffer[pos];
 					if (bh instanceof BufferStartOfField) {
 						BufferStartOfField bsf = (BufferStartOfField) bh;
@@ -664,6 +684,15 @@ public class Screen {
 								outboundBuffer.write(value);
 							}
 						}						
+					}
+					
+					if (pos == end) {
+						break;
+					}
+					
+					pos++;
+					if (pos >= buffer.length) {
+						pos = 0;
 					}
 				}
 
