@@ -3,11 +3,11 @@ package test.force.codecoverage;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.FieldNotFoundException;
-import dev.galasa.common.zos3270.KeyboardLockedException;
-import dev.galasa.common.zos3270.TextNotFoundException;
-import dev.galasa.common.zos3270.TimeoutException;
-import dev.galasa.common.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TextNotFoundException;
+import dev.galasa.zos3270.TimeoutException;
+import dev.galasa.zos3270.spi.DatastreamException;
 
 public class ExceptionsTest {
 	

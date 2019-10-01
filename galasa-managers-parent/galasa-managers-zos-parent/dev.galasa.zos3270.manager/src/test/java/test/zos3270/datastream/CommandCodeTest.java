@@ -5,9 +5,9 @@ import static org.junit.Assert.fail;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.datastream.CommandCode;
-import dev.galasa.common.zos3270.internal.datastream.CommandEraseWrite;
-import dev.galasa.common.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.internal.datastream.CommandCode;
+import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.spi.DatastreamException;
 
 public class CommandCodeTest {
 	

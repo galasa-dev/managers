@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.common.zos.IZosImage;
-import dev.galasa.common.zos.ZosImage;
-import dev.galasa.common.zos3270.ITerminal;
-import dev.galasa.common.zos3270.Zos3270Terminal;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosImage;
+import dev.galasa.zos3270.ITerminal;
+import dev.galasa.zos3270.Zos3270Terminal;
 
 @Test
 public class Zos3270IVT {

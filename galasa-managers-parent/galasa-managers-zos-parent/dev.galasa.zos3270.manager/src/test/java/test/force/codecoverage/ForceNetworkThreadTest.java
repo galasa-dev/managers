@@ -3,7 +3,7 @@ package test.force.codecoverage;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.comms.NetworkThread;
+import dev.galasa.zos3270.internal.comms.NetworkThread;
 
 public class ForceNetworkThreadTest {
 	

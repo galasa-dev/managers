@@ -3,7 +3,7 @@ package test.force.codecoverage;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.ZosBatchException;
 
 public class ExceptionsTest {
 	

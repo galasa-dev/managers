@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.comms.Inbound3270Message;
-import dev.galasa.common.zos3270.internal.datastream.BufferAddress;
-import dev.galasa.common.zos3270.internal.datastream.CommandEraseWrite;
-import dev.galasa.common.zos3270.internal.datastream.Order;
-import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
-import dev.galasa.common.zos3270.internal.datastream.OrderRepeatToAddress;
-import dev.galasa.common.zos3270.internal.datastream.OrderSetBufferAddress;
-import dev.galasa.common.zos3270.internal.datastream.OrderStartField;
-import dev.galasa.common.zos3270.internal.datastream.OrderText;
-import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
-import dev.galasa.common.zos3270.spi.DatastreamException;
-import dev.galasa.common.zos3270.spi.Screen;
+import dev.galasa.zos3270.internal.comms.Inbound3270Message;
+import dev.galasa.zos3270.internal.datastream.BufferAddress;
+import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.internal.datastream.Order;
+import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
+import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
+import dev.galasa.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.zos3270.internal.datastream.OrderText;
+import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
+import dev.galasa.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.spi.Screen;
 
 public class ScreenTest {
 	

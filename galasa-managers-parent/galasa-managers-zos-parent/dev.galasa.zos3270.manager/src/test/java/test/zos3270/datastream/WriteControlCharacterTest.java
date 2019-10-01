@@ -3,7 +3,7 @@ package test.zos3270.datastream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.datastream.WriteControlCharacter;
+import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 
 public class WriteControlCharacterTest {
 	

@@ -8,11 +8,11 @@ import org.apache.commons.logging.Log;
 import com.google.gson.JsonObject;
 
 import dev.galasa.Test;
-import dev.galasa.common.http.HttpClient;
-import dev.galasa.common.http.HttpClientException;
-import dev.galasa.common.http.HttpClientResponse;
-import dev.galasa.common.http.IHttpClient;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.http.HttpClient;
+import dev.galasa.http.HttpClientException;
+import dev.galasa.http.HttpClientResponse;
+import dev.galasa.http.IHttpClient;
 
 @Test
 public class HttpManagerIVT {

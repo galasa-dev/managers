@@ -9,12 +9,12 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.comms.Network;
-import dev.galasa.common.zos3270.internal.comms.NetworkThread;
-import dev.galasa.common.zos3270.internal.datastream.CommandCode;
-import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
-import dev.galasa.common.zos3270.spi.NetworkException;
-import dev.galasa.common.zos3270.spi.Screen;
+import dev.galasa.zos3270.internal.comms.Network;
+import dev.galasa.zos3270.internal.comms.NetworkThread;
+import dev.galasa.zos3270.internal.datastream.CommandCode;
+import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.spi.NetworkException;
+import dev.galasa.zos3270.spi.Screen;
 
 public class Network3270Test {
 
