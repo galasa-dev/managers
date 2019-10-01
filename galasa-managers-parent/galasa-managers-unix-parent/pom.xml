@@ -13,6 +13,7 @@
   
   <modules>
   	<module>dev.galasa.linux.manager</module>
+  	<module>dev.galasa.linux.manager.ivt</module>
   </modules>
   
 </project>
