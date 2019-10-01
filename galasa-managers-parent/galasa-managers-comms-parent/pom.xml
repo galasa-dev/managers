@@ -14,6 +14,7 @@
   <modules>
   	<module>dev.galasa.http.manager</module>
   	<module>dev.galasa.ipnetwork.manager</module>
+  	<module>dev.galasa.http.manager.ivt</module>
   </modules>
   
 </project>
