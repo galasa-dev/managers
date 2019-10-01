@@ -3,13 +3,13 @@ package dev.galasa.linux.manager.ivt;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.common.ipnetwork.ICommandShell;
-import dev.galasa.common.ipnetwork.IIpHost;
-import dev.galasa.common.linux.ILinuxImage;
-import dev.galasa.common.linux.LinuxImage;
-import dev.galasa.common.linux.LinuxIpHost;
-import dev.galasa.common.linux.OperatingSystem;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.ipnetwork.ICommandShell;
+import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.linux.ILinuxImage;
+import dev.galasa.linux.LinuxImage;
+import dev.galasa.linux.LinuxIpHost;
+import dev.galasa.linux.OperatingSystem;
 
 @Test
 public class LinuxManagerIVT {

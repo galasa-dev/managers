@@ -10,8 +10,8 @@ import java.io.UnsupportedEncodingException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.comms.Network;
-import dev.galasa.common.zos3270.spi.NetworkException;
+import dev.galasa.zos3270.internal.comms.Network;
+import dev.galasa.zos3270.spi.NetworkException;
 import test.zos3270.util.IOExceptionInputStream;
 
 public class NegotiationTest {

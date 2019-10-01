@@ -4,8 +4,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.datastream.QueryReplyUsableArea;
-import dev.galasa.common.zos3270.spi.Screen;
+import dev.galasa.zos3270.internal.datastream.QueryReplyUsableArea;
+import dev.galasa.zos3270.spi.Screen;
 
 public class QueryReplyUsableAreaTest {
 	

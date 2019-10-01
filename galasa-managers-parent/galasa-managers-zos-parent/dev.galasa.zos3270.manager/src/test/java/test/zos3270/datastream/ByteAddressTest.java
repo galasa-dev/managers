@@ -7,8 +7,8 @@ import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.datastream.BufferAddress;
-import dev.galasa.common.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.internal.datastream.BufferAddress;
+import dev.galasa.zos3270.spi.DatastreamException;
 
 public class ByteAddressTest {
 	

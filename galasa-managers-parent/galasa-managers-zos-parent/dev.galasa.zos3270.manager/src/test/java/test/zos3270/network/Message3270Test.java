@@ -9,9 +9,9 @@ import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.comms.Network;
-import dev.galasa.common.zos3270.internal.comms.NetworkThread;
-import dev.galasa.common.zos3270.spi.NetworkException;
+import dev.galasa.zos3270.internal.comms.Network;
+import dev.galasa.zos3270.internal.comms.NetworkThread;
+import dev.galasa.zos3270.spi.NetworkException;
 
 public class Message3270Test {
 

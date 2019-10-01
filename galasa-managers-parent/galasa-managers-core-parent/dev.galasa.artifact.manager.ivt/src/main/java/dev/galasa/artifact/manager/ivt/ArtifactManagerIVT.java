@@ -7,9 +7,9 @@ import java.util.HashMap;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.common.artifact.ArtifactManager;
-import dev.galasa.common.artifact.IArtifactManager;
-import dev.galasa.common.artifact.TestBundleResourceException;
+import dev.galasa.artifact.ArtifactManager;
+import dev.galasa.artifact.IArtifactManager;
+import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
 
 @Test

@@ -4,12 +4,12 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.ICredentials;
 import dev.galasa.Test;
-import dev.galasa.common.ipnetwork.IIpHost;
-import dev.galasa.common.zos.IZosImage;
-import dev.galasa.common.zos.ZosImage;
-import dev.galasa.common.zos.ZosIpHost;
-import dev.galasa.common.zos.ZosManagerException;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosImage;
+import dev.galasa.zos.ZosIpHost;
+import dev.galasa.zos.ZosManagerException;
 
 public class ZosManagerIVT {
 	

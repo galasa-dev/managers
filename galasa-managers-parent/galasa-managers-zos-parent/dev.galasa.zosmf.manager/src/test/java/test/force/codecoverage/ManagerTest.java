@@ -6,8 +6,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import dev.galasa.common.zosmf.IZosmf;
-import dev.galasa.common.zosmf.ZosmfManagerException;
+import dev.galasa.zosmf.IZosmf;
+import dev.galasa.zosmf.ZosmfManagerException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ManagerTest {

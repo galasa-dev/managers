@@ -5,9 +5,9 @@ import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.common.zos3270.internal.datastream.OrderInsertCursor;
-import dev.galasa.common.zos3270.internal.datastream.OrderText;
-import dev.galasa.common.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderText;
+import dev.galasa.zos3270.spi.DatastreamException;
 
 public class OrderTextTest {
 	
