@@ -1,4 +1,4 @@
-# Galasa Extensions
+# Galasa Managers
 ## Project Status
 | Project | Gate | Code Smells | Code Coverage |
 | ------- | ---- | ----------- | ------------- |
