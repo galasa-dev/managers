@@ -18,7 +18,8 @@ import com.google.gson.JsonPrimitive;
  * Pojo to contain a set of terminal images. may not necessary contain all the
  * terminal images for a session.
  * 
- * These pojos are stored in a local directory for inflight tests, and in the RAS.
+ * These pojos are stored in a local directory for inflight tests, and in the
+ * RAS.
  * 
  * @author Michael Baylis
  *
@@ -33,8 +34,8 @@ public class Terminal {
     /**
      * Constructor
      * 
-     * @param id Terminal ID
-     * @param sequence Sequence number of this pojo for this terminal
+     * @param id          Terminal ID
+     * @param sequence    Sequence number of this pojo for this terminal
      * @param defaultSize Default size of the terminal
      */
     public Terminal(@NotNull String id, long sequence, @NotNull TerminalSize defaultSize) {
@@ -87,29 +88,23 @@ public class Terminal {
     public long getSequence() {
         return sequence;
     }
-   
-    
+
     public static void stripFalseBooleans(JsonObject json) {
 
         ArrayList<Entry<String, JsonElement>> entries = new ArrayList<>();
         entries.addAll(json.entrySet());
 
-        for(Entry<String, JsonElement> entry : entries) {
+        for (Entry<String, JsonElement> entry : entries) {
             JsonElement element = entry.getValue();
 
-            if (element.isJsonPrimitive()) {
-                JsonPrimitive primitive = (JsonPrimitive) element;
-                if (primitive.isBoolean()) {
-                    if (!primitive.getAsBoolean()) {
-                        json.remove(entry.getKey());
-                    }
-                }
+            if (element.isJsonPrimitive() && ((JsonPrimitive) element).isBoolean()
+                    && !((JsonPrimitive) element).getAsBoolean()) {
+                json.remove(entry.getKey());
             } else if (element.isJsonObject()) {
                 stripFalseBooleans((JsonObject) element);
-                continue;
             } else if (element.isJsonArray()) {
                 JsonArray array = (JsonArray) element;
-                for(int i = 0; i < array.size(); i++) {
+                for (int i = 0; i < array.size(); i++) {
                     if (array.get(i).isJsonObject()) {
                         stripFalseBooleans((JsonObject) array.get(i));
                     }
