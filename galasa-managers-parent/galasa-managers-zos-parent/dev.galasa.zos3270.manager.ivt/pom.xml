@@ -13,8 +13,8 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>Galasa zOS 3270 Manager IVTs</name>
-
+    <name>Galasa zOS 3270 Terminal Manager - IVTs</name>
+    
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>

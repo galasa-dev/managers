@@ -12,7 +12,9 @@
 	<artifactId>dev.galasa.zos3270.devtools</artifactId>
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
-
+	
+	<name>Galasa zOS 3270 Terminal Manager - Development Tools</name>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
