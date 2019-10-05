@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2019 IBM Corporation.
+ *******************************************************************************/
 package dev.galasa.zos3270.common.screens;
 
 import java.util.ArrayList;
@@ -5,42 +8,78 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * Pojo to contain a set of terminal images. may not necessary contain all the
+ * terminal images for a session.
+ * 
+ * These pojos are stored in a local directory for inflight tests, and in the RAS.
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class Terminal {
-	
-	private String id;
-	private List<TerminalImage> images;
-	private TerminalSize        defaultSize;
-	
-	public Terminal(@NotNull String id, @NotNull TerminalSize defaultSize) {
-		this.id          = id;
-		this.defaultSize = defaultSize;
-	}
-	
-	public @NotNull String getId() {
-		return id;
-	}
-	
-	public @NotNull List<TerminalImage> getImages() {
-		if (images == null) {
-			return new ArrayList<>();
-		}
-		return images;
-	}
-	
-	public void addImage(@NotNull TerminalImage image) {
-		if (image == null) {
-			return;
-		}
-		
-		if (this.images == null) {
-			this.images = new ArrayList<>();
-		}
-		
-		this.images.add(image);
-	}
-	
-	public @NotNull TerminalSize getDefaultSize() {
-		return this.defaultSize;
-	}
-	
+
+    private final String              id;
+    private final long                sequence;
+    private final List<TerminalImage> images = new ArrayList<>();
+    private final TerminalSize        defaultSize;
+
+    /**
+     * Constructor
+     * 
+     * @param id Terminal ID
+     * @param sequence Sequence number of this pojo for this terminal
+     * @param defaultSize Default size of the terminal
+     */
+    public Terminal(@NotNull String id, long sequence, @NotNull TerminalSize defaultSize) {
+        this.id = id;
+        this.sequence = sequence;
+        this.defaultSize = defaultSize;
+    }
+
+    /**
+     * Fetch the ID
+     * 
+     * @return id
+     */
+    public @NotNull String getId() {
+        return id;
+    }
+
+    /**
+     * Fetch the Images
+     * 
+     * @return images
+     */
+    public @NotNull List<TerminalImage> getImages() {
+        return images;
+    }
+
+    /**
+     * Add a new image to the terminal
+     * 
+     * @param image new image
+     */
+    public void addImage(@NotNull TerminalImage image) {
+        getImages().add(image);
+    }
+
+    /**
+     * Fetch the default size
+     * 
+     * @return Default size
+     */
+    public @NotNull TerminalSize getDefaultSize() {
+        return this.defaultSize;
+    }
+
+    /**
+     * Fetch the sequence number
+     * 
+     * @return sequence
+     */
+    public long getSequence() {
+        return sequence;
+    }
+
 }
