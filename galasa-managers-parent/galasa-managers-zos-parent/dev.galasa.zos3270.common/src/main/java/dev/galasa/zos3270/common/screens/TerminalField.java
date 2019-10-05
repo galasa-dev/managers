@@ -17,13 +17,13 @@ public class TerminalField {
     private final int                 row;
     private final int                 column;
 
-    private final Boolean             unformatted;
-    private final Boolean             fieldProtected;
-    private final Boolean             fieldNumeric;
-    private final Boolean             fieldDisplay;
-    private final Boolean             fieldIntenseDisplay;
-    private final Boolean             fieldSelectorPen;
-    private final Boolean             fieldModifed;
+    private final boolean             unformatted;
+    private final boolean             fieldProtected;
+    private final boolean             fieldNumeric;
+    private final boolean             fieldDisplay;
+    private final boolean             fieldIntenseDisplay;
+    private final boolean             fieldSelectorPen;
+    private final boolean             fieldModifed;
 
     private final List<FieldContents> contents = new ArrayList<>();
 
@@ -44,13 +44,13 @@ public class TerminalField {
             boolean fieldDisplay, boolean fieldIntenseDisplay, boolean fieldSelectorPen, boolean fieldModifed) {
         this.row = row;
         this.column = column;
-        this.unformatted = setBoolean(unformatted);
-        this.fieldProtected = setBoolean(fieldProtected);
-        this.fieldNumeric = setBoolean(fieldNumeric);
-        this.fieldDisplay = setBoolean(fieldDisplay);
-        this.fieldIntenseDisplay = setBoolean(fieldIntenseDisplay);
-        this.fieldSelectorPen = setBoolean(fieldSelectorPen);
-        this.fieldModifed = setBoolean(fieldModifed);
+        this.unformatted = unformatted;
+        this.fieldProtected = fieldProtected;
+        this.fieldNumeric = fieldNumeric;
+        this.fieldDisplay = fieldDisplay;
+        this.fieldIntenseDisplay = fieldIntenseDisplay;
+        this.fieldSelectorPen = fieldSelectorPen;
+        this.fieldModifed = fieldModifed;
     }
 
     /**
@@ -77,7 +77,7 @@ public class TerminalField {
      * @return Unformatted
      */
     public boolean isUnformatted() {
-        return getBoolean(unformatted);
+        return unformatted;
     }
 
     /**
@@ -86,7 +86,7 @@ public class TerminalField {
      * @return Protected
      */
     public boolean isFieldProtected() {
-        return getBoolean(fieldProtected);
+        return fieldProtected;
     }
 
     /**
@@ -95,7 +95,7 @@ public class TerminalField {
      * @return Unformatted
      */
     public boolean isFieldNumeric() {
-        return getBoolean(fieldNumeric);
+        return fieldNumeric;
     }
 
     /**
@@ -104,7 +104,7 @@ public class TerminalField {
      * @return displayable
      */
     public boolean isFieldDisplay() {
-        return getBoolean(fieldDisplay);
+        return fieldDisplay;
     }
 
     /**
@@ -113,7 +113,7 @@ public class TerminalField {
      * @return Intense
      */
     public boolean isFieldIntenseDisplay() {
-        return getBoolean(fieldIntenseDisplay);
+        return fieldIntenseDisplay;
     }
 
     /**
@@ -122,7 +122,7 @@ public class TerminalField {
      * @return selectable
      */
     public boolean isFieldSelectorPen() {
-        return getBoolean(fieldSelectorPen);
+        return fieldSelectorPen;
     }
 
     /**
@@ -131,7 +131,7 @@ public class TerminalField {
      * @return modified
      */
     public boolean isFieldModifed() {
-        return getBoolean(fieldModifed);
+        return fieldModifed;
     }
 
     /**
@@ -143,20 +143,4 @@ public class TerminalField {
         return contents;
     }
     
-    private Boolean setBoolean(boolean value) {
-        if (value) {
-            return Boolean.TRUE;
-        }
-        
-        return null;
-    }
-
-    private boolean getBoolean(Boolean value) {
-        if (value == null) {
-            return false;
-        }
-        
-        return value;
-    }
-
 }
