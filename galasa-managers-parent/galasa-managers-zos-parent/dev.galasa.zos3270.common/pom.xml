@@ -18,6 +18,18 @@
 	<name>zOS 3270 Terminal Manager - Common Packages</name>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj-core}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson-eclipse}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2019 IBM Corporation.
- *******************************************************************************/
+ */
 package dev.galasa.zos3270.common.screens;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class TerminalImage {
 
     private final TerminalSize        imageSize;
 
-    private final List<TerminalField> fields = new ArrayList<TerminalField>();
+    private final List<TerminalField> fields = new ArrayList<>();
 
     /**
      * Constructor
