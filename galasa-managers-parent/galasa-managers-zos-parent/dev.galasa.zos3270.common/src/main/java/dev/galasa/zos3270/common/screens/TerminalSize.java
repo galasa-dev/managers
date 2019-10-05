@@ -1,8 +1,46 @@
+/*******************************************************************************
+ * Copyright (c) 2019 IBM Corporation.
+ *******************************************************************************/
 package dev.galasa.zos3270.common.screens;
 
+/**
+ * Represents the terminal screen size
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class TerminalSize {
-	
-	private int cols;
-	private int rows;
+
+    private int columns;
+    private int rows;
+
+    /**
+     * Constructor
+     * 
+     * @param columns no of columns on the screen
+     * @param rows    no of rows on the screen
+     */
+    public TerminalSize(int columns, int rows) {
+        this.columns = columns;
+        this.rows = rows;
+    }
+
+    /**
+     * Fetch the columns
+     * 
+     * @return Columns
+     */
+    public int getColumns() {
+        return columns;
+    }
+
+    /**
+     * Fetch the rows
+     * 
+     * @return Rows
+     */
+    public int getRows() {
+        return rows;
+    }
 
 }
