@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270.internal.terminal;
 
 import java.util.concurrent.Semaphore;
@@ -25,7 +28,7 @@ public class ScreenUpdateTextListener implements IScreenUpdateListener {
 		}
 
 		synchronized (this.screen) {
-			screenUpdated(Direction.Received, null);
+			screenUpdated(Direction.RECEIVED, null);
 			if (this.textFound.availablePermits() > 0) {
 				return;
 			}

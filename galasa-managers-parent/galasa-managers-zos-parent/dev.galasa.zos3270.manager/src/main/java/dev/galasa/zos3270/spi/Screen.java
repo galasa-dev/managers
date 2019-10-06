@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270.spi;
 
 import java.io.ByteArrayOutputStream;
@@ -211,7 +214,7 @@ public class Screen {
 
 		synchronized (updateListeners) {
 			for(IScreenUpdateListener listener : updateListeners) {
-				listener.screenUpdated(Direction.Received,  null);
+				listener.screenUpdated(Direction.RECEIVED,  null);
 			}
 		}
 	}
@@ -705,7 +708,7 @@ public class Screen {
 			logger.trace("outbound=" + hex);
 
 			for(IScreenUpdateListener listener : updateListeners) {
-				listener.screenUpdated(Direction.Sending, aid);
+				listener.screenUpdated(Direction.SENDING, aid);
 			}
 
 			return outboundBuffer.toByteArray();

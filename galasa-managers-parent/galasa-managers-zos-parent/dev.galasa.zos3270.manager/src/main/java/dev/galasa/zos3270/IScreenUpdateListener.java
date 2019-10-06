@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270;
 
 import javax.validation.constraints.NotNull;
@@ -5,8 +8,8 @@ import javax.validation.constraints.NotNull;
 public interface IScreenUpdateListener {
 	
 	public enum Direction {
-		Received,
-		Sending
+		RECEIVED,
+		SENDING
 	}
     
     void screenUpdated(@NotNull Direction direction, AttentionIdentification aid);

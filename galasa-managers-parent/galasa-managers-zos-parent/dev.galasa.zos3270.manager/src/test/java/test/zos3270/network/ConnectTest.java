@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package test.zos3270.network;
 
 import static org.junit.Assert.fail;
