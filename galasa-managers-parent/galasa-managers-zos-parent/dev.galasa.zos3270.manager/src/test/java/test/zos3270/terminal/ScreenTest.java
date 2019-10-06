@@ -11,7 +11,7 @@ import org.junit.Test;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
-import dev.galasa.zos3270.internal.datastream.Order;
+import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
@@ -24,14 +24,14 @@ import dev.galasa.zos3270.spi.Screen;
 public class ScreenTest {
 	
 	@Test
-	public void testScreenSize() {
+	public void testScreenSize() throws InterruptedException {
 		Assert.assertEquals("default screen size incorrect", 1920, new Screen().getScreenSize());
 		Assert.assertEquals("small screen size incorrect", 20, new Screen(10,2, null).getScreenSize());
 	}
 
 	
 	@Test
-	public void testErase() {
+	public void testErase() throws InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
@@ -43,9 +43,9 @@ public class ScreenTest {
 	
 	
 	@Test
-	public void testEraseUsingRA() throws DatastreamException {
+	public void testEraseUsingRA() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0)));
 		
@@ -58,11 +58,11 @@ public class ScreenTest {
 	
 	
 	@Test
-	public void testOrders() throws DatastreamException {
+	public void testOrders() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderStartField(true, false, true, false, false, false));
 		orders.add(new OrderText("Hello"));
@@ -86,10 +86,10 @@ public class ScreenTest {
 	}
 	
 	@Test
-	public void testOrdersInsertAndTail() throws DatastreamException {
+	public void testOrdersInsertAndTail() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderRepeatToAddress('x', new BufferAddress(19)));
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -107,10 +107,10 @@ public class ScreenTest {
 	}
 
 	@Test
-	public void testOrdersJumbled() throws DatastreamException {
+	public void testOrdersJumbled() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
 		orders.add(new OrderStartField(false, false, false, false, false, false));
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -130,11 +130,11 @@ public class ScreenTest {
 	}
 
 	@Test
-	public void testOrdersReplacedAll() throws DatastreamException {
+	public void testOrdersReplacedAll() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		screen.erase();
 		
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderStartField(false, false, false, false, false, false));
 		orders.add(new OrderRepeatToAddress('X', new BufferAddress(20)));
@@ -150,10 +150,10 @@ public class ScreenTest {
 	}
 	
 	@Test
-	public void testOrderReplaceMiddle() throws DatastreamException {
+	public void testOrderReplaceMiddle() throws DatastreamException, InterruptedException {
 		Screen screen = new Screen(10, 2, null);
 		
-		ArrayList<Order> orders = new ArrayList<>();
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
 		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
 		orders.add(new OrderRepeatToAddress('X', new BufferAddress(10)));
 		orders.add(new OrderSetBufferAddress(new BufferAddress(10)));

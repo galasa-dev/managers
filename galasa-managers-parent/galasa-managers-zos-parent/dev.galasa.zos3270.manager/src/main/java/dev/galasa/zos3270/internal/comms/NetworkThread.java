@@ -14,9 +14,9 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.galasa.zos3270.internal.datastream.CommandCode;
+import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
-import dev.galasa.zos3270.internal.datastream.Order;
+import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -32,34 +32,34 @@ import dev.galasa.zos3270.spi.Screen;
 
 public class NetworkThread extends Thread {
 
-    public static final byte DT_3270_DATA    = 0;
-    public static final byte DT_SCS_DATA     = 1;
-    public static final byte DT_RESPONSE     = 2;
-    public static final byte DT_BIND_IMAGE   = 3;
-    public static final byte DT_UNBIND       = 4;
-    public static final byte DT_NVT_DATA     = 5;
-    public static final byte DT_REQUEST      = 6;
-    public static final byte DT_SSCP_LU_DATA = 7;
-    public static final byte DT_PRINT_EOJ    = 8;
+    public static final byte  DT_3270_DATA    = 0;
+    public static final byte  DT_SCS_DATA     = 1;
+    public static final byte  DT_RESPONSE     = 2;
+    public static final byte  DT_BIND_IMAGE   = 3;
+    public static final byte  DT_UNBIND       = 4;
+    public static final byte  DT_NVT_DATA     = 5;
+    public static final byte  DT_REQUEST      = 6;
+    public static final byte  DT_SSCP_LU_DATA = 7;
+    public static final byte  DT_PRINT_EOJ    = 8;
 
     private final InputStream inputStream;
     private final Screen      screen;
     private final Network     network;
 
-    private boolean endOfStream = false;
+    private boolean           endOfStream     = false;
 
-    private Log logger = LogFactory.getLog(getClass());
+    private Log               logger          = LogFactory.getLog(getClass());
 
     public NetworkThread(Screen screen, Network network, InputStream inputStream) {
-        this.screen       = screen;
-        this.network      = network;
-        this.inputStream  = inputStream;
+        this.screen = screen;
+        this.network = network;
+        this.inputStream = inputStream;
     }
 
     @Override
     public void run() {
 
-        while(!endOfStream) {
+        while (!endOfStream) {
             try {
                 processMessage(inputStream);
             } catch (NetworkException e) {
@@ -79,7 +79,6 @@ public class NetworkThread extends Thread {
         network.close();
     }
 
-
     public void processMessage(InputStream messageStream) throws IOException, NetworkException {
         byte[] header = new byte[1];
         int length = messageStream.read(header);
@@ -96,51 +95,50 @@ public class NetworkThread extends Thread {
             if (messageStream.read(remainingHeader) != 4) {
                 throw new NetworkException("Missing remaining 4 byte of the telnet 3270 header");
             }
-            
+
             ByteBuffer buffer = readTerminatedMessage(messageStream);
-            
+
             Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
         } else {
-            throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");	
+            throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
         }
     }
-
 
     public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
         String hex = new String(Hex.encodeHex(buffer.array()));
         logger.trace("inbound=" + hex);
 
-        CommandCode commandCode = CommandCode.getCommandCode(buffer.get()); 
+        AbstractCommandCode commandCode = AbstractCommandCode.getCommandCode(buffer.get());
         if (commandCode instanceof CommandWriteStructured) {
-            return processStructuredFields((CommandWriteStructured)commandCode, buffer);
+            return processStructuredFields((CommandWriteStructured) commandCode, buffer);
         } else {
             return process3270Datastream(commandCode, buffer);
         }
     }
 
-
-    public static Inbound3270Message process3270Datastream(CommandCode commandCode, ByteBuffer buffer) throws DatastreamException {
+    public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
+            throws DatastreamException {
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
-        List<Order> orders = processOrders(buffer);
-        
+        List<AbstractOrder> orders = processOrders(buffer);
+
         return new Inbound3270Message(commandCode, writeControlCharacter, orders);
     }
-    
-    public static List<Order> processOrders(ByteBuffer buffer) throws DatastreamException {
+
+    public static List<AbstractOrder> processOrders(ByteBuffer buffer) throws DatastreamException {
         OrderText orderText = null;
 
-        ArrayList<Order> orders = new ArrayList<>();
-        while(buffer.remaining() > 0) {
+        ArrayList<AbstractOrder> orders = new ArrayList<>();
+        while (buffer.remaining() > 0) {
             byte orderByte = buffer.get();
 
             if (orderByte > 0x00 && orderByte <= 0x3f) {
                 orderText = null;
 
-                Order order = null;
-                switch(orderByte) {
+                AbstractOrder order = null;
+                switch (orderByte) {
                     case OrderSetBufferAddress.ID:
                         order = new OrderSetBufferAddress(buffer);
                         break;
@@ -160,7 +158,7 @@ public class NetworkThread extends Thread {
                         order = new OrderInsertCursor();
                         break;
                     default:
-                        String byteHex = Hex.encodeHexString(new byte[] {orderByte});
+                        String byteHex = Hex.encodeHexString(new byte[] { orderByte });
                         throw new DatastreamException("Unrecognised order byte 0x" + byteHex);
                 }
                 orders.add(order);
@@ -175,10 +173,11 @@ public class NetworkThread extends Thread {
         return orders;
     }
 
-    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer) throws NetworkException {
+    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer)
+            throws NetworkException {
         ArrayList<StructuredField> structuredFields = new ArrayList<>();
 
-        while(buffer.remaining() > 0) {
+        while (buffer.remaining() > 0) {
             int length = buffer.getShort();
             if (length == 0 && buffer.remaining() != 0) {
                 throw new NetworkException("SF with length of zero was not the last SF in the buffer");
@@ -198,7 +197,7 @@ public class NetworkThread extends Thread {
         byte[] b = new byte[1];
         boolean lastByteFF = false;
         boolean terminated = false;
-        while(messageStream.read(b) == 1) {
+        while (messageStream.read(b) == 1) {
             if (b[0] == Network.IAC) {
                 if (lastByteFF) {
                     byteArrayOutputStream.write(b);

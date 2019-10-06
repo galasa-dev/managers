@@ -3,10 +3,10 @@
  */
 package dev.galasa.zos3270.internal.datastream;
 
-public class CommandEraseWrite extends CommandCode {
+public class CommandEraseWrite extends AbstractCommandCode {
 
-	public byte[] getBytes() {
-		return new byte[] {ERASE_WRITE};
-	}
-	
+    public byte[] getBytes() {
+        return new byte[] { ERASE_WRITE };
+    }
+
 }

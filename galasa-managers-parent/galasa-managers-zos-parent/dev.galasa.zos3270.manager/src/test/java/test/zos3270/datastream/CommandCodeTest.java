@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 import org.junit.Assert;
 import org.junit.Test;
 
-import dev.galasa.zos3270.internal.datastream.CommandCode;
+import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.spi.DatastreamException;
 
@@ -16,7 +16,7 @@ public class CommandCodeTest {
 	
 	@Test
 	public void testCommandCodeDecipherValid() throws Exception {
-		Assert.assertEquals("ERASE_WRITE is not correct", CommandEraseWrite.class, CommandCode.getCommandCode((byte)0xf5).getClass());
+		Assert.assertEquals("ERASE_WRITE is not correct", CommandEraseWrite.class, AbstractCommandCode.getCommandCode((byte)0xf5).getClass());
 	}
 
 	@Test
@@ -31,7 +31,7 @@ public class CommandCodeTest {
 	
 	private void unsupportedCC(byte cc) {
 		try {
-			CommandCode.getCommandCode(cc);
+			AbstractCommandCode.getCommandCode(cc);
 			fail("Should have been unsupported");
 		} catch(DatastreamException e) {
 			Assert.assertTrue("Message incorrect", e.getMessage().contains("Unsupported command code=" + cc));
@@ -41,7 +41,7 @@ public class CommandCodeTest {
 	@Test
 	public void testCommandCodeDecipherInvalid() throws Exception {
 		try {
-			CommandCode.getCommandCode((byte)9);
+			AbstractCommandCode.getCommandCode((byte)9);
 			fail("Should have been unsupported");
 		} catch(DatastreamException e) {
 			Assert.assertTrue("Message incorrect", e.getMessage().contains("Unrecognised command code=9"));
