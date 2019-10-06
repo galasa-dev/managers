@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270;
 
 import javax.validation.constraints.NotNull;
@@ -17,35 +20,35 @@ public interface ITerminal {
 	ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
 	
 	ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
-	ITerminal enter() throws DatastreamException, KeyboardLockedException, NetworkException; //NOSONAR
-	ITerminal clear() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf1() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf2() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf3() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf4() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf5() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf6() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf7() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf8() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf9() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf10() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf11() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf12() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf13() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf14() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf15() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf16() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf17() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf18() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf19() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf20() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf21() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf22() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf23() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pf24() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pa1() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pa2() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
-	ITerminal pa3() throws DatastreamException, KeyboardLockedException, NetworkException;//NOSONAR
+	ITerminal enter() throws DatastreamException, KeyboardLockedException, NetworkException; 
+	ITerminal clear() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf1() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf2() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf3() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf4() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf5() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf6() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf7() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf8() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf9() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf10() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf11() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf12() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf13() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf14() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf15() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf16() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf17() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf18() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf19() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf20() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf21() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf22() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf23() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pf24() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pa1() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pa2() throws DatastreamException, KeyboardLockedException, NetworkException;
+	ITerminal pa3() throws DatastreamException, KeyboardLockedException, NetworkException;
 	
 	
 	

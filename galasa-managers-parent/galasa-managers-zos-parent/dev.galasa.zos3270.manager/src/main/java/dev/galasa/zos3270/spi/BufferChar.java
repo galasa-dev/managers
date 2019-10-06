@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270.spi;
 
 import java.nio.charset.Charset;

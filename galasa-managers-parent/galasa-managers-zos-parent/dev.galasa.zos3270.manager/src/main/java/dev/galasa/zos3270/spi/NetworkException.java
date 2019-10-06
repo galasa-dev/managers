@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270.spi;
 
 import dev.galasa.zos3270.Zos3270Exception;

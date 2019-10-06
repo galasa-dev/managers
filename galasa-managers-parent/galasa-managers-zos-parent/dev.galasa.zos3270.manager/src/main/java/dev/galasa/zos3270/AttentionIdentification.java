@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package dev.galasa.zos3270;
 
 public enum AttentionIdentification {
@@ -50,7 +53,7 @@ public enum AttentionIdentification {
 			}
 		}
 		
-		return null;
-	}
+        return null;
+    }
 
 }

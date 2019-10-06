@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package test.force.codecoverage;
 
 import org.junit.Assert;

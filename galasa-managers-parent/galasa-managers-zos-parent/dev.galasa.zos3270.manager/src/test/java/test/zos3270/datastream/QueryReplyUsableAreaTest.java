@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 IBM Corporation.
+ */
 package test.zos3270.datastream;
 
 import org.apache.commons.codec.binary.Hex;
