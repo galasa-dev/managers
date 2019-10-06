@@ -3,6 +3,6 @@
  */
 package dev.galasa.zos3270.internal.datastream;
 
-public class CommandWrite extends CommandCode {
-	
+public class CommandWrite extends AbstractCommandCode {
+
 }

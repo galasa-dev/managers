@@ -15,7 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import dev.galasa.zos3270.internal.comms.NetworkThread;
-import dev.galasa.zos3270.internal.datastream.Order;
+import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.spi.NetworkException;
 
 public class VampScreenTest {
@@ -29,7 +29,7 @@ public class VampScreenTest {
 		
 		NetworkThread networkThread = new NetworkThread(null, null, null);
 		
-		List<Order> orders = networkThread.process3270Data(buffer).getOrders();
+		List<AbstractOrder> orders = networkThread.process3270Data(buffer).getOrders();
 		Assert.assertEquals("Count of orders is incorrect",  225, orders.size());
 	}
 

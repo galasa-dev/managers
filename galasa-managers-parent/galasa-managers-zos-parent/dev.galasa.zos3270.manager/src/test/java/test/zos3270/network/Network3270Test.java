@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
-import dev.galasa.zos3270.internal.datastream.CommandCode;
+import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Screen;
@@ -22,14 +22,14 @@ import dev.galasa.zos3270.spi.Screen;
 public class Network3270Test {
 
 	@Test
-	public void testProcessMessage() throws NetworkException, IOException {
+	public void testProcessMessage() throws NetworkException, IOException, InterruptedException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		baos.write(0x00);
 		baos.write(0x00);
 		baos.write(0x00);
 		baos.write(0x00);
 		baos.write(0x00);
-		baos.write(CommandCode.ERASE_WRITE);
+		baos.write(AbstractCommandCode.ERASE_WRITE);
 		baos.write(0x00);
 		baos.write(OrderInsertCursor.ID);
 		baos.write(Network.IAC);

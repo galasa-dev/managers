@@ -13,7 +13,7 @@ import dev.galasa.zos3270.spi.Screen;
 public class QueryReplyUsableAreaTest {
 	
 	@Test
-	public void testGoldenPath() {
+	public void testGoldenPath() throws InterruptedException {
 		Screen screen = new Screen(80,24, null);
 		
 		QueryReplyUsableArea qrua = new QueryReplyUsableArea(screen);
