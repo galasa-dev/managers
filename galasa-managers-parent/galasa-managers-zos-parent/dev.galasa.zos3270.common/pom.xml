@@ -15,7 +15,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS 3270 Terminal Manager - Common Packages</name>
+	<name>Galasa zOS 3270 Terminal Manager - Common Packages</name>
 
 	<dependencies>
         <dependency>

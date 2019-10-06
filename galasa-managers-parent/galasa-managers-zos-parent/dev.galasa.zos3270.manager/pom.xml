@@ -15,8 +15,8 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS 3270 Terminal Manager</name>
-
+    <name>Galasa zOS 3270 Terminal Manager</name>
+    
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
