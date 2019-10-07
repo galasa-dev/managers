@@ -19,7 +19,7 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class BatchExtraBundle extends CpsProperties {
 	
-	private static final String DEFAULT_BUNDLE_EXTRA_BATCH_MANAGER = "dev.galasa.common.zosbatch.zosmf.manager";
+	private static final String DEFAULT_BUNDLE_EXTRA_BATCH_MANAGER = "dev.galasa.zosbatch.zosmf.manager";
 	
 	public static String get() throws ZosManagerException {
 		try {

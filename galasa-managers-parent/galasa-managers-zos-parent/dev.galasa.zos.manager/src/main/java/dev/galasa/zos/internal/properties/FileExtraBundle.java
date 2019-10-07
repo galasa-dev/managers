@@ -19,7 +19,7 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class FileExtraBundle extends CpsProperties {
 	
-	private static final String DEFAULT_BUNDLE_EXTRA_FILE_MANAGER = "dev.galasa.common.zosfile.zosmf.manager";
+	private static final String DEFAULT_BUNDLE_EXTRA_FILE_MANAGER = "dev.galasa.zosfile.zosmf.manager";
 	
 	public static String get() throws ZosManagerException {
 		try {
