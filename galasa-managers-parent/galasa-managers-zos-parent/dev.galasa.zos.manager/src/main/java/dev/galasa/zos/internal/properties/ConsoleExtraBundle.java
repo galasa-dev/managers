@@ -19,7 +19,7 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class ConsoleExtraBundle extends CpsProperties {
 	
-	private static final String DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER = "dev.galasa.common.zosconsole.zosmf.manager";
+	private static final String DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER = "dev.galasa.zosconsole.zosmf.manager";
 	
 	public static String get() throws ZosManagerException {
 		try {

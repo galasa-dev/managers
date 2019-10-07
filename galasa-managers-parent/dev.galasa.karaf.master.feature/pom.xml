@@ -98,6 +98,9 @@
 					<requiredFeatures>
 						<feature>galasa</feature>
 					</requiredFeatures>
+					<startLevels>
+					   <startLevel>dev.galasa:dev.galasa.framework.api.launcher=85</startLevel>
+					</startLevels>
 				</configuration>
 			</plugin>
 		</plugins>
