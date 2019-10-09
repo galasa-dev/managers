@@ -1,18 +1,14 @@
 /*
- * Copyright (c) 2019 IBM Corporation.
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
  */
 package dev.galasa.zos3270.common.screens;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 /**
  * Pojo to contain a set of terminal images. may not necessary contain all the
@@ -87,30 +83,6 @@ public class Terminal {
      */
     public long getSequence() {
         return sequence;
-    }
-
-    public static void stripFalseBooleans(JsonObject json) {
-
-        ArrayList<Entry<String, JsonElement>> entries = new ArrayList<>();
-        entries.addAll(json.entrySet());
-
-        for (Entry<String, JsonElement> entry : entries) {
-            JsonElement element = entry.getValue();
-
-            if (element.isJsonPrimitive() && ((JsonPrimitive) element).isBoolean()
-                    && !((JsonPrimitive) element).getAsBoolean()) {
-                json.remove(entry.getKey());
-            } else if (element.isJsonObject()) {
-                stripFalseBooleans((JsonObject) element);
-            } else if (element.isJsonArray()) {
-                JsonArray array = (JsonArray) element;
-                for (int i = 0; i < array.size(); i++) {
-                    if (array.get(i).isJsonObject()) {
-                        stripFalseBooleans((JsonObject) array.get(i));
-                    }
-                }
-            }
-        }
     }
 
 }

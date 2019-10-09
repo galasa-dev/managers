@@ -15,10 +15,6 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.ipnetwork.IIpHost;
-import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.IZosManager;
-import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
@@ -27,13 +23,16 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.IZosManager;
+import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.Zos3270Terminal;
 import dev.galasa.zos3270.internal.properties.Zos3270PropertiesSingleton;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
-import dev.galasa.zos3270.spi.Terminal;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
 @Component(service = { IManager.class })
@@ -155,8 +154,9 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
     @Override
     public void provisionStop() {
         logger.trace("Disconnecting terminals");
-        for (Terminal terminal : terminals) {
+        for (Zos3270TerminalImpl terminal : terminals) {
             try {
+                terminal.flushTerminalCache();
                 terminal.disconnect();
             } catch (InterruptedException e) {
                 logger.warn("Thread interrupted whilst disconnecting terminals",e);
