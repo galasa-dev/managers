@@ -53,6 +53,15 @@ public class FieldContents {
      * @return the chars
      */
     public Character[] getChars() {
+        if (chars == null && text != null) {
+            char[] tc = text.toCharArray();
+            Character[] ca = new Character[tc.length];
+            for(int i = 0; i < tc.length; i++) {
+                ca[i] = tc[i];
+            }
+            return ca;
+        }
+        
         return this.chars;
     }
     
