@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.zos3270.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,14 +42,16 @@ public class TestJson {
 
         int posRow = 6;
         int posColumn = 8;
+        
+        String aid = "aidy";
 
         TerminalSize defaultSize = new TerminalSize(terminalColumns, terminalRows);
         TerminalSize altSize = new TerminalSize(altColumns, altRows);
 
         Terminal terminal = new Terminal(terminalID, terminalSequence, defaultSize);
-        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, altSize);
+        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, aid, altSize);
         terminal.addImage(image);
-        terminal.addImage(new TerminalImage(imageSequence + 1, imageID, true, imageType, altSize));
+        terminal.addImage(new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize));
 
         TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true);
         image.getFields().add(field);
@@ -55,7 +62,6 @@ public class TestJson {
         field.getContents().add(contents);
 
         JsonObject intermediateJson = (JsonObject) gson.toJsonTree(terminal);
-        Terminal.stripFalseBooleans(intermediateJson);
         String tempJson = gson.toJson(intermediateJson);
 
         Terminal testTerminal = gson.fromJson(tempJson, Terminal.class);
@@ -75,6 +81,7 @@ public class TestJson {
         assertThat(testImage.getImageSize().getRows()).isEqualTo(altRows);
         assertThat(testImage.getType()).isEqualTo(imageType);
         assertThat(testImage.isInbound()).isTrue();
+        assertThat(testImage.getAid()).isEqualTo(aid);
         assertThat(testImage.getFields().size()).isEqualTo(1);
 
         TerminalField testField = testImage.getFields().get(0);

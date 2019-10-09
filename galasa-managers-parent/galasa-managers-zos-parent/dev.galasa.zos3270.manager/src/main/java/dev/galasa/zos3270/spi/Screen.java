@@ -356,16 +356,35 @@ public class Screen {
         return screenSB.toString();
     }
 
-    public synchronized Field[] calculateFields() {
+    public synchronized @NotNull Field[] calculateFields() {
         ArrayList<Field> fields = new ArrayList<>();
 
-        Field currentField = new Field();
+        Field currentField = null;
+        
+        //*** Check to see if the the screen is wrapped or unformatted
+        if (!(this.buffer[0] instanceof BufferStartOfField)) {
+            BufferStartOfField wrapSoField = null;
+            for (int i = this.buffer.length - 1; i >= 0; i--) {
+                IBufferHolder bh = this.buffer[i];
+                if (bh instanceof BufferStartOfField) {
+                    wrapSoField = (BufferStartOfField) bh;
+                    break;
+                }
+            }
+            
+            if (wrapSoField == null) {
+                currentField = new Field();
+            } else {
+                currentField = new Field(0, wrapSoField);
+            }
+        }
+        
         for (int i = 0; i < this.buffer.length; i++) {
             IBufferHolder bh = this.buffer[i];
             if (bh == null) {
                 currentField.appendChar((char) 0x00);
             } else if (bh instanceof BufferStartOfField) {
-                if (currentField.getStart() != -1 || currentField.length() != 1) {
+                if (currentField != null) {
                     fields.add(currentField);
                 }
                 currentField = new Field(i, (BufferStartOfField) bh);
@@ -375,7 +394,7 @@ public class Screen {
                 throw new UnsupportedOperationException("Unrecognised buffer type " + bh.getClass().getName());
             }
         }
-        if (currentField.getStart() != -1 || currentField.length() != 1) {
+        if (currentField != null) {
             fields.add(currentField);
         }
 
