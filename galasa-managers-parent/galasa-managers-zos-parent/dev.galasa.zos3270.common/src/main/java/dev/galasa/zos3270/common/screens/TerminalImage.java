@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2019 IBM Corporation.
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
  */
 package dev.galasa.zos3270.common.screens;
 
@@ -24,6 +26,7 @@ public class TerminalImage {
 
     private final TerminalSize        imageSize;
 
+    private final String              aid;
     private final List<TerminalField> fields = new ArrayList<>();
 
     /**
@@ -33,13 +36,15 @@ public class TerminalImage {
      * @param id Id of this image
      * @param inbound inbound = true if received by the client
      * @param type Type of interaction, interactions can be labels so can be filtered
+     * @param aid The AttentionID for outbound messages
      * @param imageSize The size of the image if different to the default
      */
-    public TerminalImage(long sequence, @NotNull String id, boolean inbound, String type, TerminalSize imageSize) {
+    public TerminalImage(long sequence, @NotNull String id, boolean inbound, String type, String aid, TerminalSize imageSize) {
         this.sequence = sequence;
         this.id = id;
         this.inbound = inbound;
         this.type = type;
+        this.aid  = aid;
         this.imageSize = imageSize;
     }
 
@@ -86,6 +91,15 @@ public class TerminalImage {
      */
     public List<TerminalField> getFields() {
         return fields;
+    }
+    
+    /**
+     * Fetch the AID if outbound
+     * 
+     * @return the aid, only valid for outbound images
+     */
+    public String getAid() {
+        return aid;
     }
 
     /**

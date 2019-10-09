@@ -1,7 +1,11 @@
 /*
- * Copyright (c) 2019 IBM Corporation.
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
  */
 package dev.galasa.zos3270.common.screens;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Pojo to contain the onscreen contents.  May contain nulls.
@@ -11,15 +15,36 @@ package dev.galasa.zos3270.common.screens;
  */
 public class FieldContents {
 
-    private Character[] chars;
+    private final Character[] chars;
+    private final String      text;
 
     /**
      * Constructor
      * 
      * @param chars the chars in the relevant places, may contain nulls
      */
-    public FieldContents(Character[] chars) {
-        this.chars = chars;
+    public FieldContents(@NotNull Character[] chars) {
+        boolean containsNulls = false;
+        for(Character c : chars) {
+            if (c == null) {
+                containsNulls = true;
+                break;
+            }
+        }
+        
+        if (containsNulls) {
+            this.chars = chars;
+            this.text = null;
+        } else {
+            this.chars = null;
+            
+            char[] convChars = new char[chars.length];
+            for(int i = 0; i < chars.length; i++) {
+                convChars[i] = chars[i];
+            }
+            
+            this.text = new String(convChars);
+        }
     }
 
     /**
@@ -30,5 +55,5 @@ public class FieldContents {
     public Character[] getChars() {
         return this.chars;
     }
-
+    
 }

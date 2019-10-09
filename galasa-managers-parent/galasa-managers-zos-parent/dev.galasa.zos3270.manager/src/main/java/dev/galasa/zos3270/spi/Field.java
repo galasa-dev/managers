@@ -115,6 +115,10 @@ public class Field {
     public boolean isFieldModifed() {
         return fieldModifed;
     }
+    
+    public boolean isUnformatted() {
+        return (this.start == -1);
+    }
 
     public String getFieldWithoutNulls() {
         StringBuilder sb = new StringBuilder();
@@ -134,8 +138,21 @@ public class Field {
         return otext.getBytes(ebcdic);
     }
 
+    public Character[] getFieldCharsWithNulls() {
+        Character[] newChars = new Character[text.length];
+        for(int i = 0; i < text.length; i++) {
+            if (text[i] == 0) {
+                newChars[i] = null;
+            } else {
+                newChars[i] = text[i];
+            }
+        }
+        return newChars;
+    }
+
     public boolean isDummyField() {
         return this.start == -1;
     }
+
 
 }

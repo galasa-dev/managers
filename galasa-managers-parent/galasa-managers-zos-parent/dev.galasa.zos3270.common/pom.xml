@@ -22,7 +22,7 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${gson-eclipse}</version>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
