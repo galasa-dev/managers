@@ -43,13 +43,20 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>dev.galasa</groupId>
-			<artifactId>dev.galasa.framework.api.testcatalog</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.framework.api.testcatalog</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.framework.api.runs</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>com.auth0.jwt</artifactId>
