@@ -3,8 +3,10 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ import dev.galasa.zos3270.common.screens.TerminalField;
 import dev.galasa.zos3270.common.screens.TerminalImage;
 import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
+import dev.galasa.zos3270.internal.properties.LiveTerminalDirectory;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
@@ -51,6 +54,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final Path                     terminalRasDirectory;
     private int                            rasTerminalSequence;
+    private final Path                     liveTerminalDirectory;
     private int                            liveTerminalSequence;
 
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework)
@@ -65,6 +69,23 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
         terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+
+        String propLiveTerminalDirectory = LiveTerminalDirectory.get();
+        if (propLiveTerminalDirectory == null) {
+            liveTerminalDirectory = null;
+        } else {
+            try {
+                Path termDir = Paths.get(propLiveTerminalDirectory, framework.getTestRunName(), this.terminalId);
+                while(Files.exists(termDir)) {
+                    termDir = termDir.getParent().resolve(termDir.getFileName() + "A");
+                }
+
+                Files.createDirectories(termDir);
+                liveTerminalDirectory = termDir;
+            } catch(Exception e) {
+                throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
+            }
+        }
     }
 
     @Override
@@ -97,6 +118,32 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             flushTerminalCache();
         }
 
+        if (liveTerminalDirectory != null) {
+            try {
+                liveTerminalSequence++;
+                String terminalFilename = String.format("%05d", liveTerminalSequence) + ".gz";
+                Path terminalPath = liveTerminalDirectory.resolve(terminalFilename);
+
+                dev.galasa.zos3270.common.screens.Terminal liveTerminal = new dev.galasa.zos3270.common.screens.Terminal(
+                        this.terminalId, liveTerminalSequence, terminalSize);
+                liveTerminal.getImages().add(terminalImage);
+
+                JsonObject intermediateJson = (JsonObject) gson.toJsonTree(liveTerminal);
+                stripFalseBooleans(intermediateJson);
+                String tempJson = gson.toJson(intermediateJson);
+
+                if (applyCtf) {
+                    tempJson = cts.removeConfidentialText(tempJson);
+                }
+
+                try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath, StandardOpenOption.CREATE))) {
+                    IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
+                }
+            } catch(Exception e) {
+                logger.error("Failed to write live terminal image, image lost",e);
+            }
+        }
+
         logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update
                 + "\n" + screenData);
     }
@@ -126,7 +173,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 tempJson = cts.removeConfidentialText(tempJson);
             }
 
-            String terminalFilename = this.terminalId + "-" + String.format("%04d", rasTerminalSequence) + ".gz";
+            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".gz";
             Path terminalPath = terminalRasDirectory.resolve(terminalFilename);
 
             try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath, new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")), 
