@@ -22,6 +22,8 @@
   	<module>dev.galasa.zos3270.manager.ivt</module>
     <module>dev.galasa.zos3270.devtools</module>
     <module>dev.galasa.zos3270.common</module>
+    <module>dev.galasa.zos3270.ui</module>
+    <module>dev.galasa.zos.feature</module>
   </modules>
   
 </project>

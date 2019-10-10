@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Galasa zOS 3270 UI
+Bundle-SymbolicName: dev.galasa.zos3270.ui
+Bundle-Version: 0.3.0.qualifier
+Bundle-Activator: dev.galasa.zos3270.ui.Zos3270Activator
+Require-Bundle: org.eclipse.ui,
+  org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: dev.galasa.zos3270.ui
+Bundle-ActivationPolicy: lazy

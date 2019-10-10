@@ -161,6 +161,14 @@ pipeline {
                   dir('dev.galasa.zos3270.devtools') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
                   }
+
+                  dir('dev.galasa.zos3270.ui') {
+                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                  }
+
+                  dir('dev.galasa.zos.feature') {
+                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                  }
                }
             }
          }
