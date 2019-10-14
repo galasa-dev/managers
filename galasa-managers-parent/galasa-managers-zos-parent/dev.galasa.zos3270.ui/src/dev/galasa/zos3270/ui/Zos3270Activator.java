@@ -1,5 +1,8 @@
 package dev.galasa.zos3270.ui;
 
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -46,5 +49,35 @@ public class Zos3270Activator extends AbstractUIPlugin {
 	public static Zos3270Activator getDefault() {
 		return plugin;
 	}
+	
+	   /**
+     * Log a throwable
+     * 
+     * @param e
+     */
+    public static void log(Throwable e) {
+        log(new Status(IStatus.ERROR, getPluginId(), IStatus.ERROR, "Error", e)); //$NON-NLS-1$
+    }
+
+    /**
+     * Log a status
+     * 
+     * @param status
+     */
+    public static void log(IStatus status) {
+        ILog log = plugin.getLog();
+        if (log != null) {
+            log.log(status);
+        }
+    }
+
+    /**
+     * 
+     * @return - plugin ID
+     */
+    public static String getPluginId() {
+        return PLUGIN_ID;
+    }
+
 
 }
