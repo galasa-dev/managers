@@ -1,4 +1,4 @@
-package dev.galasa.zos3270.ui.internal.storedartifacts;
+package dev.galasa.zos3270.ui.storedartifacts;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +14,7 @@ import dev.galasa.zos3270.ui.Zos3270Activator;
 public class TerminalFilter implements IStoredArtifactsFilter {
 
     @Override
-    public void filter(IArtifact rootArtifact) {
+    public void filter(String runId, IArtifact rootArtifact) {
 
         try {
             //*** Locate the terminals folder if it exists
@@ -49,7 +49,7 @@ public class TerminalFilter implements IStoredArtifactsFilter {
                     }
 
                     if (foundTerminalImages) {
-                        TerminalArtifact ta = new TerminalArtifact(terminalFolder.getName(), terminalImages);
+                        TerminalArtifact ta = new TerminalArtifact(runId, terminalFolder.getName(), terminalImages);
 
                         ((ArtifactFolder)zos3270TerminalsFolder).replaceArtifact(terminalFolder, ta);
                     }

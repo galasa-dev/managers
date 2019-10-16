@@ -6,8 +6,36 @@
          name="zOS 3270 Stored Artifacts UI elements"
          point="dev.galasa.eclipse.extension.storedartifacts.filter">
       <client
-            class="dev.galasa.zos3270.ui.internal.storedartifacts.TerminalFilter">
+            class="dev.galasa.zos3270.ui.storedartifacts.TerminalFilter">
       </client>
+   </extension>
+   
+      <!-- Preferences --> 
+     <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="dev.galasa.zos3270.ui.preferences.Zos3270Preferences"
+            id="dev.galasa.zos3270.ui.preferences.Zos3270Preferences"
+            category="dev.galasa.eclipse.preferences.GalasaPreferences"
+            name="z/OS 3270 Terminals">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="dev.galasa.zos3270.ui.preferences.Zos3270PreferencesInitialiser">
+      </initializer>
+   </extension>
+   
+   <extension point="org.eclipse.ui.views">
+      <view allowMultiple="true"
+            category="dev.galasa.eclipse.views"
+            class="dev.galasa.zos3270.ui.terminal.TerminalView"
+            icon="icons/galasa-dark.png"
+            id="dev.galasa.zos3270.ui.terminal.TerminalView"
+            name="Galasa z/OS 3270 Terminal"
+            restorable="false">
+      </view>
    </extension>
 
 </plugin>
