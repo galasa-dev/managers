@@ -23,11 +23,19 @@ import dev.galasa.zosfile.IZosDataset.DSType;
  * manipulate it.
  * </p>
  * 
- * 
- * @author James Bartlett
- * 
  */
-public interface IZosFile {
+public interface IZosFileHandler {
+
+	/**
+	 * Instantiate a new {@link IZosDataset}, which can represent either an
+	 * existing dataset, or one to be created.  Member name will be ignored
+	 * 
+	 * @param dsName
+	 * @param image
+	 * @return
+	 * @throws ZosDatasetException 
+	 */
+	public IZosDataset newDataset(String dsName, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Instantiate a new {@link IZosUNIXFile}, which can represent either an
@@ -39,7 +47,7 @@ public interface IZosFile {
 	 * @param fullFilePath
 	 * @return
 	 */
-	public IZosUNIXFile newUNIXFile(String fullFilePath);
+	public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image);
 
 	/**
 	 * Store an {@link IZosUNIXFile} as a file on the given zOS image, creating the file
@@ -49,9 +57,9 @@ public interface IZosFile {
 	 * 
 	 * @param unixFile
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void store(IZosUNIXFile unixFile, IZosImage image) throws ZosFileException;
+	public void store(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Retrieve the content of UNIX file to an {@link IZosUNIXFile} from the given zOS
@@ -60,36 +68,36 @@ public interface IZosFile {
 	 * 
 	 * @param unixFile
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void retrieve(IZosUNIXFile unixFile, IZosImage image) throws ZosFileException;
+	public void retrieve(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Delete the UNIX file corresponding to an {@link IZosUNIXFile} from the given zOS image.
 	 * 
 	 * @param unixFile
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void delete(IZosUNIXFile unixFile, IZosImage image) throws ZosFileException;
+	public void delete(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Recursively delete a directory and its contents from the given zOS image.
 	 * 
 	 * @param directory
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void deleteDirectory(String directory, IZosImage image) throws ZosFileException;
+	public void deleteDirectory(String directory, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Create a directory and all required parent directories on the given zOS image.
 	 * 
 	 * @param directory
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void createDirectory(String directory, IZosImage image) throws ZosFileException;
+	public void createDirectory(String directory, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Return true if the passed {@link IZosUNIXFile} exists on the given zOS image.
@@ -97,51 +105,9 @@ public interface IZosFile {
 	 * @param unixFile
 	 * @param image
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public boolean exists(IZosUNIXFile unixFile, IZosImage image) throws ZosFileException;
-
-	/**
-	 * Instantiate a new {@link IZosDataset}, which can represent either an
-	 * existing dataset, or one to be created.
-	 * 
-	 * @param dsName
-	 * @return
-	 */
-	public IZosDataset newDataset(String dsName);
-
-	/**
-	 * Store an {@link IZosDataset} as a dataset on the given zOS image. The content
-	 * stored is that added to the dataset using the
-	 * {@link IZosDataset#setContent(String)} or
-	 * {@link IZosDataset#appendContent(String)} methods.
-	 * 
-	 * @param dataset
-	 * @param image
-	 * @throws ZosFileException
-	 */
-	public void store(IZosDataset dataset, IZosImage image) throws ZosFileException;
-
-	/**
-	 * Retrieve the content of a dataset to an {@link IZosDataset} from the given
-	 * zOS image. The content can then be obtained using the
-	 * {@link IZosDataset#getContent()} method.
-	 * 
-	 * @param dataset
-	 * @param image
-	 * @throws ZosFileException
-	 */
-	public void retrieve(IZosDataset dataset, IZosImage image) throws ZosFileException;
-
-	/**
-	 * Delete the dataset corresponding to an {@link IZosDataset} from the given
-	 * zOS image.
-	 * 
-	 * @param dataset
-	 * @param image
-	 * @throws ZosFileException
-	 */
-	public void delete(IZosDataset dataset, IZosImage image) throws ZosFileException;
+	public boolean exists(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Delete all datasets (including VSAM datasets) with the given HLQ from the
@@ -149,28 +115,18 @@ public interface IZosFile {
 	 * 
 	 * @param prefix
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosFileException;
-
-	/**
-	 * Return true if the given {@link IZosDataset} exists on the given zOS image.
-	 * 
-	 * @param dataset
-	 * @param image
-	 * @return
-	 * @throws ZosFileException
-	 */
-	public boolean exists(IZosDataset dataset, IZosImage image) throws ZosFileException;
+	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * APF authorise the given {@link IZosDataset} on the given zOS image.
 	 * 
 	 * @param dataset
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void apfAuthorise(IZosDataset dataset, IZosImage image) throws ZosFileException;
+	public void apfAuthorise(IZosDataset dataset, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Return true if the given {@link IZosDataset} is found in the APF-Auth list
@@ -179,9 +135,9 @@ public interface IZosFile {
 	 * @param dataset
 	 * @param image
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public boolean isAPFAuthorised(IZosDataset dataset, IZosImage image) throws ZosFileException;
+	public boolean isAPFAuthorised(IZosDataset dataset, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Instantiate a new {@link IZosVSAMDataset} object with the given name. The
@@ -193,7 +149,7 @@ public interface IZosFile {
 	 * @param dsName
 	 * @return
 	 */
-	public IZosVSAMDataset newVSAMDataset(String dsName);
+	public IZosVSAMDataset newVSAMDataset(String dsName, IZosImage image);
 
 	/**
 	 * Instantiate a new {@link IZosVSAMDataset} object, pre-configured with
@@ -202,7 +158,7 @@ public interface IZosFile {
 	 * @param dsName
 	 * @return
 	 */
-	public IZosVSAMDataset newKSDS(String dsName);
+	public IZosVSAMDataset newKSDS(String dsName, IZosImage image);
 
 	/**
 	 * Instantiate a new {@link IZosVSAMDataset} object, pre-configured with
@@ -211,7 +167,7 @@ public interface IZosFile {
 	 * @param dsName
 	 * @return
 	 */
-	public IZosVSAMDataset newESDS(String dsName);
+	public IZosVSAMDataset newESDS(String dsName, IZosImage image);
 
 	/**
 	 * Instantiate a new {@link IZosVSAMDataset} object, pre-configured with
@@ -220,16 +176,16 @@ public interface IZosFile {
 	 * @param dsName
 	 * @return
 	 */
-	public IZosVSAMDataset newRRDS(String dsName);
+	public IZosVSAMDataset newRRDS(String dsName, IZosImage image);
 
 	/**
 	 * Define an {@link IZosVSAMDataset} on the given zOS image.
 	 * 
 	 * @param vsam
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void define(IZosVSAMDataset vsam, IZosImage image) throws ZosFileException;
+	public void define(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Store an {@link IZosVSAMDataset} as a vsam on the given zOS image. The content
@@ -239,9 +195,9 @@ public interface IZosFile {
 	 * 
 	 * @param vsam
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void store(IZosVSAMDataset vsam, IZosImage image) throws ZosFileException;
+	public void store(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Delete the VSAM corresponding to an {@link IZosVSAMDataset} from the given
@@ -249,9 +205,9 @@ public interface IZosFile {
 	 * 
 	 * @param vsam
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public void delete(IZosVSAMDataset vsam, IZosImage image) throws ZosFileException;
+	public void delete(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * Return true if the given {@link IZosVSAMDataset} exists on the given zOS image.
@@ -259,9 +215,9 @@ public interface IZosFile {
 	 * @param vsam
 	 * @param image
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
-	public boolean exists(IZosVSAMDataset vsam, IZosImage image) throws ZosFileException;
+	public boolean exists(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException;
 
 	/**
 	 * This method retrieves an artifact from the 'resources' folder in a jat
@@ -286,12 +242,12 @@ public interface IZosFile {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public IZosUNIXFile storeResourcesFile(String resourcePath, String unixPath,
 			int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosFileException;
+			throws ZosDatasetException;
 
 	/**
 	 * This method retrieves an artifact from the 'resources' folder in a jat
@@ -316,12 +272,12 @@ public interface IZosFile {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public IZosDataset storeResourcesDataset(String resourcePath, String dsName,
 			int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosFileException;
+			throws ZosDatasetException;
 
 	/**
 	 * This method retrieves all contents of a given directory from the
@@ -352,12 +308,12 @@ public interface IZosFile {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public IZosUNIXFile storeResourcesDirectory(String resourcePath,
 			String unixPath, int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosFileException;
+			throws ZosDatasetException;
 
 	/**
 	 * This method retrieves all contents of a given directory from the
@@ -390,31 +346,30 @@ public interface IZosFile {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public IZosDataset storeResourcesPDS(String resourcePath, String dsName,
 			DSType pdsType, int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosFileException;
+			throws ZosDatasetException;
 
 	/**
 	 * Store the content of a UNIX file with the test output.
 	 * 
 	 * @param file
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public void storeFileToTestOutput(IZosUNIXFile file, IZosImage image)
-			throws ZosFileException;
+			throws ZosDatasetException;
 
 	/**
 	 * Store the content of a Dataset with the test output.
 	 * 
 	 * @param dataset
 	 * @param image
-	 * @throws ZosFileException
+	 * @throws ZosDatasetException
 	 */
 	public void storeDatasetToTestOutput(IZosDataset dataset, IZosImage image)
-			throws ZosFileException;
-
+			throws ZosDatasetException;
 }

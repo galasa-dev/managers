@@ -1,8 +1,8 @@
-package dev.galasa.zosconsole.zosmf.manager.internal.properties;
+package dev.galasa.zosmf.internal.properties;
 
-import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
+import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * zOS console retry request
@@ -10,7 +10,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * The number of times to retry zOS console request when zOSMF request fails
  * </p>
  * The property is:<br>
- * {@code zosconsole.command.[imageid].request.retry=5}
+ * {@code zosmf.server.[imageid].request.retry=5}
  * </p>
  * <p>
  * The default value is {@value #DEFAULT_REQUEST_RETRY}
@@ -21,9 +21,9 @@ public class RequestRetry extends CpsProperties {
 
 	private static final int DEFAULT_REQUEST_RETRY = 3;
 
-	public static int get(String imageId) throws ZosConsoleManagerException {
+	public static int get(String imageId) throws ZosmfManagerException {
 		try {
-			String retryString = getStringNulled(ZosConsoleZosmfPropertiesSingleton.cps(), "command", "request.retry", imageId);
+			String retryString = getStringNulled(ZosmfPropertiesSingleton.cps(), "command", "request.retry", imageId);
 
 			if (retryString == null) {
 				return DEFAULT_REQUEST_RETRY;
@@ -31,7 +31,7 @@ public class RequestRetry extends CpsProperties {
 				return Integer.parseInt(retryString);
 			}
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosConsoleManagerException("Problem asking the CPS for the console command request retry property for zOS image "  + imageId, e);
+			throw new ZosmfManagerException("Problem asking the CPS for the console command request retry property for zOS image "  + imageId, e);
 		}
 	}
 

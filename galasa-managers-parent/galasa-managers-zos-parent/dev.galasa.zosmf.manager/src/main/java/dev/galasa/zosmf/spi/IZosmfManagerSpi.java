@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosmf.IZosmf;
 import dev.galasa.zosmf.IZosmfManager;
+import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
@@ -30,4 +31,13 @@ public interface IZosmfManagerSpi extends IZosmfManager {
 	 * @throws ZosmfManagerException
 	 */
 	public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException;
+
+	/**
+	 * Returns a {@link IZosmfRestApiProcessor} for a single image
+	 * @param image
+	 * @param restrictToImage
+	 * @return {@link IZosmfRestApiProcessor}
+	 * @throws ZosmfManagerException
+	 */
+	public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException;
 }

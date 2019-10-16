@@ -18,6 +18,7 @@ import dev.galasa.http.internal.HttpClientRequest;
 import dev.galasa.http.internal.RequestPart;
 
 public interface IHttpClient {
+	
 	/**
 	 * Add a header that will be used on all http requests
 	 * 
@@ -26,6 +27,11 @@ public interface IHttpClient {
 	 */
 	void addCommonHeader(String name, String value);
 	
+	/**
+	 * Remove all headers for this http request 
+	 */
+	void clearCommonHeaders();
+
 	/**
 	 * Add a response code for the execute to ignore and treat as OK
 	 * 

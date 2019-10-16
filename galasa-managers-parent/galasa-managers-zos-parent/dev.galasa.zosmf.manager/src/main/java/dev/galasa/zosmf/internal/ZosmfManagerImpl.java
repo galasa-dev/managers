@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,6 +25,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.zosmf.IZosmf;
+import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.Zosmf;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
@@ -134,22 +136,37 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 
 	@Override
 	public IZosmf newZosmf(IZosImage image) throws ZosmfException {
+		if (zosmfs.containsKey(image.getImageID())) {
+			return zosmfs.get(image.getImageID());
+		}
 		return new ZosmfImpl(image);
 	}
 
 
-	@Override
-	public HashMap<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException {
+	public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException {
 		try {
 			for (String imageId : ServerImages.get(clusterId)) {
-				logger.info("Requesting zOS image " + imageId + " for zOSMF server");
-				IZosImage zosmfImage = zosManager.getImage(imageId);
-				this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+				if (!this.zosmfs.containsKey(imageId)) {
+					logger.info("Requesting zOS image " + imageId + " for zOSMF server");
+					IZosImage zosmfImage = zosManager.getImage(imageId);
+					this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+				}
 			}
 		} catch (ZosManagerException e) {
 			throw new ZosmfManagerException("Unable to get zOSMF servers for cluster " + clusterId, e);
 		}
 		return zosmfs;
+	}
+
+
+	@Override
+	public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException {
+		if (restrictToImage) {
+			HashMap<String, IZosmf> zosmfMap = new HashMap<>();
+			zosmfMap.put(image.getImageID(), this.zosmfs.get(image.getImageID()));
+			return new ZosmfRestApiProcessor(zosmfMap);
+		}
+		return new ZosmfRestApiProcessor(getZosmfs(image.getClusterID()));
 	}
 
 

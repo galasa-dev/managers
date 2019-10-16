@@ -4,8 +4,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
+import dev.galasa.zosfile.ZosFileManagerException;
 
 @Component(service=ZosFileZosmfPropertiesSingleton.class, immediate=true)
 public class ZosFileZosmfPropertiesSingleton {
@@ -27,20 +27,20 @@ public class ZosFileZosmfPropertiesSingleton {
 		setInstance(null);
 	}
 	
-	public static IConfigurationPropertyStoreService cps() throws ZosBatchManagerException {
+	public static IConfigurationPropertyStoreService cps() throws ZosFileManagerException {
 		if (singletonInstance != null) {
 			return singletonInstance.cps;
 		}
 		
-		throw new ZosBatchManagerException("Attempt to access manager CPS before it has been initialised");
+		throw new ZosFileManagerException("Attempt to access manager CPS before it has been initialised");
 	}
 	
-	public static void setCps(IConfigurationPropertyStoreService cps) throws ZosBatchManagerException {
+	public static void setCps(IConfigurationPropertyStoreService cps) throws ZosFileManagerException {
 		if (singletonInstance != null) {
 			singletonInstance.cps = cps;
 			return;
 		}
 		
-		throw new ZosBatchManagerException("Attempt to set manager CPS before instance created");
+		throw new ZosFileManagerException("Attempt to set manager CPS before instance created");
 	}
 }
