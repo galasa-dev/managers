@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
 
@@ -146,7 +147,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-    	for (HashMap.Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
+    	for (Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
     		entry.getValue().cleanup();
 		}
 

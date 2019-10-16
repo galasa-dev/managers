@@ -794,6 +794,12 @@ public class HttpClientImpl implements IHttpClient{
 
 	
 	@Override
+	public void clearCommonHeaders() {
+		commonHeaders.clear();
+	}
+
+	
+	@Override
 	public HttpClientResponse<byte[]> executeByteRequest(
 			HttpClientRequest request) throws HttpClientException {
 

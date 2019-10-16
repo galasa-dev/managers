@@ -558,26 +558,26 @@ public interface IZosVSAMDataset {
 	 * Get the IDCAMS define command for this VSAM cluster
 	 * 
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosVSAMDatasetException 
 	 */
-	public String getDefineCommand() throws ZosFileException;
+	public String getDefineCommand() throws ZosVSAMDatasetException;
 	
 	/**
 	 * Get the IDCAMS delete command for this VSAM cluster
 	 * 
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosVSAMDatasetException
 	 */
-	public String getDeleteCommand() throws ZosFileException;
+	public String getDeleteCommand() throws ZosVSAMDatasetException;
 
 	/**
 	 * Get the IDCAMS repro command for inputting data from an infile
 	 * 
 	 * @param infile
 	 * @return
-	 * @throws ZosFileException
+	 * @throws ZosVSAMDatasetException
 	 */
-	public String getReproCommand(String infile) throws ZosFileException;
+	public String getReproCommand(String infile) throws ZosVSAMDatasetException;
 
 	/**
 	 * Set the content to be stored in the VSAM file

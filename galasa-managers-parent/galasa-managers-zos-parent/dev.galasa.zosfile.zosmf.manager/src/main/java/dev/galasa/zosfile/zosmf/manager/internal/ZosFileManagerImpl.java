@@ -4,7 +4,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -12,15 +13,6 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.http.spi.IHttpManagerSpi;
-import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.ZosManagerException;
-import dev.galasa.zos.spi.IZosManagerSpi;
-import dev.galasa.zosfile.IZosFile;
-import dev.galasa.zosfile.ZosFile;
-import dev.galasa.zosfile.ZosFileField;
-import dev.galasa.zosfile.ZosFileManagerException;
-import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -28,7 +20,14 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zosfile.IZosFileHandler;
+import dev.galasa.zosfile.ZosFileHandler;
+import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.ZosFileManagerField;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
+import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
 /**
  * zOS File Manager implemented using zOS/MF
@@ -48,7 +47,7 @@ public class ZosFileManagerImpl extends AbstractManager {
 		ZosFileManagerImpl.zosmfManager = zosmfManager;
 	}
 
-	private final HashMap<String, ZosFileImpl> taggedZosFiles = new HashMap<>();
+	private final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
 	
 	protected static Path archivePath;
 	public static void setArchivePath(Path archivePath) {
@@ -75,10 +74,13 @@ public class ZosFileManagerImpl extends AbstractManager {
 
 		//*** Check to see if any of our annotations are present in the test class
 		//*** If there is,  we need to activate
-		List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
+		List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileManagerField.class);
 		if (!ourFields.isEmpty()) {
 			youAreRequired(allManagers, activeManagers);
 		}
+		
+		Path artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+    	setArchivePath(artifactsRoot.resolve("zosDatasets"));
 	}
 	
 
@@ -87,7 +89,7 @@ public class ZosFileManagerImpl extends AbstractManager {
 	 */
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		generateAnnotatedFields(ZosFileField.class);
+		generateAnnotatedFields(ZosFileManagerField.class);
 	}
 
 
@@ -141,8 +143,9 @@ public class ZosFileManagerImpl extends AbstractManager {
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-    	for (HashMap.Entry<String, ZosFileImpl> entry : this.taggedZosFiles.entrySet()) {
-    		entry.getValue().cleanup();
+    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = this.zosFileHandlers.iterator();
+    	while (zosFileHandlerImplIterator.hasNext()) {
+    		zosFileHandlerImplIterator.next().cleanup();
 		}
 
     	setCurrentTestMethod(null);
@@ -150,22 +153,10 @@ public class ZosFileManagerImpl extends AbstractManager {
         return null;
     }
 	
-    @GenerateAnnotatedField(annotation=ZosFile.class)
-	public IZosFile generateZosFile(Field field, List<Annotation> annotations) throws ZosManagerException {
-		ZosFile annotationZosFile = field.getAnnotation(ZosFile.class);
-
-		//*** Default the tag to primary
-		String tag = defaultString(annotationZosFile.imageTag(), "primary");
-
-		//*** Have we already generated this tag
-		if (this.taggedZosFiles.containsKey(tag)) {
-			return this.taggedZosFiles.get(tag);
-		}
-
-		IZosImage image = zosManager.getImageForTag(tag);
-		IZosFile zosFile = new ZosFileImpl(image);
-		this.taggedZosFiles.put(tag, (ZosFileImpl) zosFile);
-		
-		return zosFile;
+    @GenerateAnnotatedField(annotation=ZosFileHandler.class)
+	public IZosFileHandler generateZosFile(Field field, List<Annotation> annotations) {
+    	ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl(field.getName());
+    	this.zosFileHandlers.add(zosFileHandlerImpl);    	
+		return zosFileHandlerImpl;
 	}
 }

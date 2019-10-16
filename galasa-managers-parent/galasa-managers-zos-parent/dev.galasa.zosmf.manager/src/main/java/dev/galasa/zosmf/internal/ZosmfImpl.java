@@ -3,9 +3,12 @@ package dev.galasa.zosmf.internal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,15 +36,16 @@ import dev.galasa.zosmf.internal.properties.ServerPort;
  */
 public class ZosmfImpl implements IZosmf {
 	
-	private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
+	private static final String LOG_BODY = "body: ";
 	
-	private static final String X_IBM_JOB_MODIFY_VERSION = "X-IBM-Job-Modify-Version";
-	private static final String X_IBM_REQUESTED_METHOD = "X-IBM-Requested-Method";
+	private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
 
 	private String imageTag;
 	private IZosImage image;
 	private IHttpClient httpClient;
 	private String zosmfUrl;
+
+	private HashMap<String, String> commonHeaders = new HashMap<>();
 
 	public ZosmfImpl(IZosImage image) throws ZosmfException {
 		this.image = image;
@@ -64,73 +68,113 @@ public class ZosmfImpl implements IZosmf {
 
 	@Override
 	public void setHeader(String key, String value) {
-		httpClient.addCommonHeader(key, value);
+		this.commonHeaders.put(key, value);
 	}
 
 	@Override
-	public IZosmfResponse putText(String path, String body, List<Integer> validStatusCodes) throws ZosmfException {
-		String method = "PUT";
-		if (validStatusCodes == null) {
-			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
-		}
-		ZosmfResponseImpl zosmfResponse;
-		try {
-			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, method);
-			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-			zosmfResponse.setHttpClientresponse(httpClient.putText(validPath(path), body));
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
-				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
-			}
-		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
-		}
-		
-		return zosmfResponse;
-	}
-
-	@Override
-	public IZosmfResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws ZosmfException {
-		String method = "PUT";
-		if (validStatusCodes == null) {
-			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
-		}
-		ZosmfResponseImpl zosmfResponse;
-		try {
-			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, method);
-			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-			zosmfResponse.setHttpClientresponse(httpClient.putJson(validPath(path), body));
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
-			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
-				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
-			}
-		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
-		}
-		
-		return zosmfResponse;
+	public void clearHeaders() {
+		this.commonHeaders.clear();
+		this.httpClient.clearCommonHeaders();
 	}
 
 	@Override
 	public IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
-		String method = "GET";
+		String method = ZosmfRequestType.GET.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
 		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
-			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, method);
+			setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+			addCommonHeaders();
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-			zosmfResponse.setHttpClientresponse(httpClient.getText(validPath(path)));
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
+			logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+			zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
+			logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
 			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
-				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
+				throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem wth " + method + " to zOSMF server", e);
+			logger.error(e);
+			throw new ZosmfException(logBadRequest(method), e);
+		}
+		
+		return zosmfResponse;
+	}
+
+	@Override
+	public IZosmfResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+		String method = ZosmfRequestType.POST.name();
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
+		ZosmfResponseImpl zosmfResponse;
+		try {
+			setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+			addCommonHeaders();
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+			logger.debug(LOG_BODY + requestBody);
+			zosmfResponse.setHttpClientresponse(this.httpClient.putJson(validPath(path), requestBody));
+			logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
+				throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
+			}
+		} catch (MalformedURLException | HttpClientException  e) {
+			logger.error(e);
+			throw new ZosmfException(logBadRequest(method), e);
+		}
+		
+		return zosmfResponse;
+	}
+
+	@Override
+	public IZosmfResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+		String method = ZosmfRequestType.PUT.name();
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
+		ZosmfResponseImpl zosmfResponse;
+		try {
+			setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+			addCommonHeaders();
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+			logger.debug(LOG_BODY + requestBody);
+			zosmfResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), requestBody));
+			logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
+				throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
+			}
+		} catch (MalformedURLException | HttpClientException  e) {
+			logger.error(e);
+			throw new ZosmfException(logBadRequest(method), e);
+		}
+		
+		return zosmfResponse;
+	}
+
+	@Override
+	public IZosmfResponse putJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+		String method = ZosmfRequestType.PUT.name();
+		if (validStatusCodes == null) {
+			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+		}
+		ZosmfResponseImpl zosmfResponse;
+		try {
+			setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+			addCommonHeaders();
+			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+			logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+			logger.debug(LOG_BODY + requestBody);
+			zosmfResponse.setHttpClientresponse(this.httpClient.putJson(validPath(path), requestBody));
+			logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
+				throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
+			}
+		} catch (MalformedURLException | HttpClientException  e) {
+			logger.error(e);
+			throw new ZosmfException(logBadRequest(method), e);
 		}
 		
 		return zosmfResponse;
@@ -138,22 +182,23 @@ public class ZosmfImpl implements IZosmf {
 
 	@Override
 	public IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException {
-		String method = "DELETE";
+		String method = ZosmfRequestType.DELETE.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
 		}
 		ZosmfResponseImpl zosmfResponse;
 		try {
-			setHeader(X_IBM_JOB_MODIFY_VERSION, "2.0");
-			setHeader(X_IBM_REQUESTED_METHOD, method);
+			setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+			addCommonHeaders();
 			zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-			zosmfResponse.setHttpClientresponse(httpClient.deleteJson(validPath(path)));
-			logger.debug(zosmfResponse.getStatusLine() + " - " + method + " " + zosmfResponse.getRequestUrl());
+			logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+			zosmfResponse.setHttpClientresponse(this.httpClient.deleteJson(validPath(path)));
+			logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
 			if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
-				throw new ZosmfException("Unexpected HTTP status code: " + zosmfResponse.getStatusCode());
+				throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
 			}
 		} catch (MalformedURLException | HttpClientException  e) {
-			throw new ZosmfException("Problem with " + method + " to zOSMF server", e);
+			throw new ZosmfException(logBadRequest(method), e);
 		}
 		
 		return zosmfResponse;
@@ -162,6 +207,11 @@ public class ZosmfImpl implements IZosmf {
 	@Override
 	public IZosImage getImage() {
 		return this.image;
+	}
+
+	@Override
+	public String toString() {
+		return this.image.getImageID() + " " + this.zosmfUrl;
 	}
 
 	private String validPath(String path) {
@@ -211,9 +261,28 @@ public class ZosmfImpl implements IZosmf {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return this.image.getImageID() + " " + this.zosmfUrl;
+	private void addCommonHeaders() {
+		for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
+			logger.debug("Adding HTTP header: " + entry.getKey() + "=" + entry.getValue());
+			this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
+		}
+		
+	}
+
+	private String logRequest(String method, URL requestUrl) {
+		return "Request: " + method + " " + requestUrl;
+	}
+
+	private String logResponse(String statusLine, String method, URL requestUrl) {
+		return "Response: " + statusLine + " - " + method + " " + requestUrl;
+	}
+
+	private String logBadStatusCode(int statusCode) {
+		return "Unexpected HTTP status code: " + statusCode;
+	}
+
+	private String logBadRequest(String method) {
+		return "Problem wth " + method + " to zOSMF server";
 	}
 	
 	
