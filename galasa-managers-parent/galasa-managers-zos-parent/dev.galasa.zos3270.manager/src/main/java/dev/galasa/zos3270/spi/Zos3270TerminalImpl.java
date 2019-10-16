@@ -116,7 +116,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 aidText, terminalSize);
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
-        if (cachedImages.size() >= 2) {
+        if (cachedImages.size() >= 10) {
             flushTerminalCache();
         }
 

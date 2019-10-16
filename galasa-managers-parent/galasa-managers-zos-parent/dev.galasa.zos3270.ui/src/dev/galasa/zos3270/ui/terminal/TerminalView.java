@@ -230,7 +230,7 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
         event.gc.setFont(fontText);
         FontMetrics fontMetrics = event.gc.getFontMetrics();
         
-        int charWidth  = (int)Math.ceil(fontMetrics.getAverageCharacterWidth() * 1.1);
+        int charWidth  = fontMetrics.getAverageCharWidth();
         int charHeight = fontMetrics.getHeight();
         
         TerminalImage terminalImage = image.getTerminalImage();
