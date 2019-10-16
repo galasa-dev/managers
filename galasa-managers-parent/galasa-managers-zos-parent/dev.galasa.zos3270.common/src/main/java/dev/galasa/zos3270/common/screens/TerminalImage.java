@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
  */
 public class TerminalImage {
 
-    private final long                sequence;
+    private final int                 sequence;
     private final String              id;
     private final boolean             inbound;                                // *** Inbound means from server -> client
     private final String              type;
@@ -39,7 +39,7 @@ public class TerminalImage {
      * @param aid The AttentionID for outbound messages
      * @param imageSize The size of the image if different to the default
      */
-    public TerminalImage(long sequence, @NotNull String id, boolean inbound, String type, String aid, TerminalSize imageSize) {
+    public TerminalImage(int sequence, @NotNull String id, boolean inbound, String type, String aid, TerminalSize imageSize) {
         this.sequence = sequence;
         this.id = id;
         this.inbound = inbound;
@@ -53,7 +53,7 @@ public class TerminalImage {
      * 
      * @return sequence number
      */
-    public long getSequence() {
+    public int getSequence() {
         return sequence;
     }
 

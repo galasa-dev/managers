@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
 public class Terminal {
 
     private final String              id;
-    private final long                sequence;
+    private final int                 sequence;
     private final List<TerminalImage> images = new ArrayList<>();
     private final TerminalSize        defaultSize;
 
@@ -34,7 +34,7 @@ public class Terminal {
      * @param sequence    Sequence number of this pojo for this terminal
      * @param defaultSize Default size of the terminal
      */
-    public Terminal(@NotNull String id, long sequence, @NotNull TerminalSize defaultSize) {
+    public Terminal(@NotNull String id, int sequence, @NotNull TerminalSize defaultSize) {
         this.id = id;
         this.sequence = sequence;
         this.defaultSize = defaultSize;
@@ -81,7 +81,7 @@ public class Terminal {
      * 
      * @return sequence
      */
-    public long getSequence() {
+    public int getSequence() {
         return sequence;
     }
 

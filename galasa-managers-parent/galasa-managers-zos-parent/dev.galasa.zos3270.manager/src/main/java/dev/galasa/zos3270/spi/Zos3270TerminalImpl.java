@@ -45,7 +45,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private final Gson                     gson         = new GsonBuilder().setPrettyPrinting().create();
 
     private final String                   terminalId;
-    private long                           updateId;
+    private int                            updateId;
 
     private final IConfidentialTextService cts;
     private final boolean                  applyCtf;
@@ -99,8 +99,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
 
         String aidString;
+        String aidText = null;
         if (aid != null) {
             aidString = ", " + aid.toString();
+            aidText = aid.toString();
         } else {
             aidString = " update";
         }
@@ -111,10 +113,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         // alt
         // sizes
         TerminalImage terminalImage = new TerminalImage(updateId, update, direction == Direction.RECEIVED, null,
-                aidString, terminalSize);
+                aidText, terminalSize);
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
-        if (cachedImages.size() > 10) {
+        if (cachedImages.size() >= 2) {
             flushTerminalCache();
         }
 
