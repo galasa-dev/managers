@@ -287,6 +287,11 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
         sb.append(Integer.toString(this.images.size()));
         sb.append(" - ");
         
+        if (terminalImage.getId() != null) {
+            sb.append(terminalImage.getId());
+            sb.append(" - ");
+        }
+
         sb.append(Integer.toString(cols));
         sb.append("x");
         sb.append(Integer.toString(rows));
