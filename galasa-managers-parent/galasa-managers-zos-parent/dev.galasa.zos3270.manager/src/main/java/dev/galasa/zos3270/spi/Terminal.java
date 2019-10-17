@@ -44,9 +44,13 @@ public class Terminal implements ITerminal {
     }
 
     public void disconnect() throws InterruptedException {
-        network.close();
-        networkThread.join();
-        networkThread = null;
+        if (network != null) {
+            network.close();
+        }
+        if (networkThread != null) {
+            networkThread.join();
+            networkThread = null;
+        }
     }
 
     @Override
