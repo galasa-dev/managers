@@ -14,7 +14,7 @@ public class Zos3270PreferencesInitialiser  extends AbstractPreferenceInitialize
 		
         store.setDefault(PreferenceConstants.P_BACKGROUND_COLOUR, "0, 0, 0");
         store.setDefault(PreferenceConstants.P_NORMAL_COLOUR, "0, 204, 0");
-        store.setDefault(PreferenceConstants.P_INTENSE_COLOUR, "102, 255, 102");
+        store.setDefault(PreferenceConstants.P_INTENSE_COLOUR, "255, 255, 255");
 	}
 
 }
