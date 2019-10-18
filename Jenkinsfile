@@ -1,4 +1,5 @@
 def mvnProfile    = 'galasa-dev'
+def galasaSignJarSkip = 'true'
 
 pipeline {
 // Initially run on any agent
@@ -20,7 +21,8 @@ pipeline {
          }
          steps {
             script {
-               mvnGoal       = 'deploy sonar:sonar'
+               mvnGoal           = 'deploy sonar:sonar'
+               galasaSignJarSkip = 'false'
             }
          }
       }
@@ -147,7 +149,7 @@ pipeline {
                   }
 
                   dir('dev.galasa.zos3270.common') {
-                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Djarsigner.skip=${galasaSignJarSkip} -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
                   }
 
                   dir('dev.galasa.zos3270.manager') {
