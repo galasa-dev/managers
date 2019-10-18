@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -105,6 +106,7 @@ public class ZosDatasetImpl implements IZosDataset {
 	private static final String LOG_READING_FROM = "reading from";
 	private static final String LOG_WRITING_TO = "writing to";
 	private static final String LOG_DOES_NOT_EXIST = " does not exist";
+	private static final String LOG_ARCHIVED_TO = " archived to ";
 
 	private static final Log logger = LogFactory.getLog(ZosDatasetImpl.class);
 
@@ -274,42 +276,6 @@ public class ZosDatasetImpl implements IZosDataset {
 		store(content, null);
 	}
 
-	private void store(String content, String memberName) throws ZosDatasetException {
-		if (!exists()) {
-			throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
-		}
-		HashMap<String, String> headers = new HashMap<>();
-		headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
-
-		String path = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-		IZosmfResponse response;
-		try {
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, path, headers, content, 
-					new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-		} catch (ZosmfException e) {
-			throw new ZosDatasetException(e);
-		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
-		}
-		
-		if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
-			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR			
-			JsonObject responseBody;
-			try {
-				responseBody = response.getJsonContent();
-			} catch (ZosmfException e) {
-				throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
-			}
-			logger.trace(responseBody);
-			String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody); 
-			logger.error(displayMessage);
-			throw new ZosDatasetException(displayMessage);
-		}
-	
-		logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
-	}
-	
 	@Override
 	public String retrieve() throws ZosDatasetException {
 		if (isPDS()) {
@@ -318,49 +284,33 @@ public class ZosDatasetImpl implements IZosDataset {
 		return retrieve(null);
 	}
 	
-	private String retrieve(String memberName) throws ZosDatasetException {
-		HashMap<String, String> headers = new HashMap<>();
-		headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
-		String path = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-		IZosmfResponse response;
+	@Override
+	public void saveToTestArchive() throws ZosDatasetException {
 		try {
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, path, headers, null,
-					new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-		} catch (ZosmfException e) {
-			throw new ZosDatasetException(e);
-		}
-		String unableToRetrieveContentOfDataset = "Unable to retrieve content of data set ";
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
-		}
-		
-
-		String content;
-		if (response.getStatusCode() == HttpStatus.SC_OK) {
-			try {
-				content = response.getTextContent();
-			} catch (ZosmfException e) {
-				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+			if (exists()) {
+				if (isPDS()) {
+					Collection<String> memberList = memberList();
+					Iterator<String> memberListIterator = memberList.iterator();
+					while (memberListIterator.hasNext()) {
+						String memberName = memberListIterator.next();
+						String archiveLocation = storeArtifact(retrieve(memberName), this.dsname, memberName);
+						logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
+					}
+				} else {
+					String archiveLocation = storeArtifact(retrieve(), this.dsname);
+					logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + archiveLocation);
+				}
 			}
-		} else {
-			
-			JsonObject responseBody;
-			try {
-				responseBody = response.getJsonContent();
-			} catch (ZosmfException e) {
-				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
-			}
-			logger.trace(responseBody);	
-			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-			String displayMessage = buildErrorString(LOG_READING_FROM, responseBody); 
-			logger.error(displayMessage);
-			throw new ZosDatasetException(displayMessage);
+		} catch (ZosFileManagerException e) {
+			logger.error("Unable to save data set to archive", e);
 		}
-	
-		logger.trace("Content of data set " + quoted(joinDSN(memberName)) + " retrieved from  image " + this.image.getImageID());
-		return content;
 	}
-	
+
+	@Override
+	public boolean isPDS() throws ZosDatasetException {
+		return getDatasetAttibutesString().contains("PDS=true");
+	}
+
 	@Override
 	public void memberCreate(@NotNull String memberName) throws ZosDatasetException {
 		store("", memberName);
@@ -508,6 +458,16 @@ public class ZosDatasetImpl implements IZosDataset {
 		logger.trace("Content of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
 
 		return this.datasetMembers;
+	}
+
+	@Override
+	public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
+		try {
+			String archiveLocation = storeArtifact(memberRetrieve(memberName), this.dsname, memberName);
+			logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
+		} catch (ZosFileManagerException e) {
+			logger.error("Unable to save data set member to archive", e);
+		}
 	}
 
 	@Override
@@ -761,9 +721,107 @@ public class ZosDatasetImpl implements IZosDataset {
 		return attributes.toString();
 	}
 	
-	@Override
-	public boolean isPDS() throws ZosDatasetException {
-		return getDatasetAttibutesString().contains("PDS=true");
+	private String retrieve(String memberName) throws ZosDatasetException {
+		HashMap<String, String> headers = new HashMap<>();
+		headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+		String path = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
+		IZosmfResponse response;
+		try {
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, path, headers, null,
+					new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+		} catch (ZosmfException e) {
+			throw new ZosDatasetException(e);
+		}
+		String unableToRetrieveContentOfDataset = "Unable to retrieve content of data set ";
+		if (response == null || response.getStatusCode() == 0) {
+			throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+		}
+		
+	
+		String content;
+		if (response.getStatusCode() == HttpStatus.SC_OK) {
+			try {
+				content = response.getTextContent();
+			} catch (ZosmfException e) {
+				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+			}
+		} else {
+			
+			JsonObject responseBody;
+			try {
+				responseBody = response.getJsonContent();
+			} catch (ZosmfException e) {
+				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+			}
+			logger.trace(responseBody);	
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			String displayMessage = buildErrorString(LOG_READING_FROM, responseBody); 
+			logger.error(displayMessage);
+			throw new ZosDatasetException(displayMessage);
+		}
+	
+		logger.trace("Content of data set " + quoted(joinDSN(memberName)) + " retrieved from  image " + this.image.getImageID());
+		return content;
+	}
+
+	private void store(String content, String memberName) throws ZosDatasetException {
+		if (!exists()) {
+			throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
+		}
+		HashMap<String, String> headers = new HashMap<>();
+		headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+	
+		String path = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
+		IZosmfResponse response;
+		try {
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, path, headers, content, 
+					new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+		} catch (ZosmfException e) {
+			throw new ZosDatasetException(e);
+		}
+		if (response == null || response.getStatusCode() == 0) {
+			throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
+		}
+		
+		if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR			
+			JsonObject responseBody;
+			try {
+				responseBody = response.getJsonContent();
+			} catch (ZosmfException e) {
+				throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
+			}
+			logger.trace(responseBody);
+			String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody); 
+			logger.error(displayMessage);
+			throw new ZosDatasetException(displayMessage);
+		}
+	
+		logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
+	}
+
+	private String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
+		Path artifactPath;
+		try {
+			artifactPath = ZosFileManagerImpl.archivePath.resolve(ZosFileManagerImpl.currentTestMethod.getName());
+			String lastElement = artifactPathElements[artifactPathElements.length-1];
+			for (String artifactPathElement : artifactPathElements) {
+				if (!lastElement.equals(artifactPathElement)) {
+					artifactPath = artifactPath.resolve(artifactPathElement);
+				}
+			}
+			int i = 0;
+			String uniqueId = lastElement + ".txt";
+			while (Files.exists(artifactPath.resolve(uniqueId))) {
+				uniqueId = lastElement + "_" + StringUtils.leftPad(Integer.toString(i++), 4, '0') + ".txt";
+			}
+			artifactPath = artifactPath.resolve(uniqueId);
+			Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
+			Files.write(artifactPath, content.getBytes()); 
+		} catch (IOException e) {
+			throw new ZosFileManagerException("Unable to store artifact", e);
+		}
+		return artifactPath.toString();
 	}
 
 	private String emptyStringWhenNull(JsonObject jsonElement, String property) {
@@ -907,38 +965,6 @@ public class ZosDatasetImpl implements IZosDataset {
 		}
 	}
 
-	public void archiveDataset() {		
-		try {
-			if (exists()) {
-				if (isPDS()) {
-					Collection<String> memberList = memberList();
-					Iterator<String> memberListIterator = memberList.iterator();
-					while (memberListIterator.hasNext()) {
-						String memberName = memberListIterator.next();
-						storeArtifact(retrieve(memberName), this.dsname, memberName + ".txt");
-					}
-				} else {
-					storeArtifact(retrieve(), this.dsname + ".txt");
-				}
-			}
-		} catch (ZosFileManagerException e) {
-			logger.error("Unable to save data set to archive", e);
-		}
-	}
-
-	private void storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
-		try {
-			Path artifactPath = ZosFileManagerImpl.archivePath.resolve(ZosFileManagerImpl.currentTestMethod.getName());
-			for (String artifactPathElement : artifactPathElements) {
-				artifactPath = artifactPath.resolve(artifactPathElement);
-			}
-			Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-			Files.write(artifactPath, content.getBytes()); 
-		} catch (IOException e) {
-			throw new ZosFileManagerException("Unable to store artifact", e);
-		}		
-	}
-	
 	@Override
 	public String toString() {
 		return this.dsname;

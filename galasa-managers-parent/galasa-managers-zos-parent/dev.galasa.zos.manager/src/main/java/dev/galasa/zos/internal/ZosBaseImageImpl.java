@@ -3,7 +3,6 @@ package dev.galasa.zos.internal;
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
-import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.creds.CredentialsException;
