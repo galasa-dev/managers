@@ -46,6 +46,7 @@ pipeline {
             echo "Workspace directory: ${workspace}"
             echo "Maven Goal         : ${mvnGoal}"
             echo "Maven profile      : ${mvnProfile}"
+            echo "Skip Signing JARs  : ${galasaSignJarSkip}"
          }
       }
    
