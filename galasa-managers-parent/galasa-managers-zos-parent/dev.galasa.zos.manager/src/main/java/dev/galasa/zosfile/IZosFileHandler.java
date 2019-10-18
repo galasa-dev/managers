@@ -50,76 +50,6 @@ public interface IZosFileHandler {
 	public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image);
 
 	/**
-	 * Store an {@link IZosUNIXFile} as a file on the given zOS image, creating the file
-	 * and all required parent directories as required. The content stored is
-	 * that added to the unixFile using the {@link IZosUNIXFile#setContent(String)}
-	 * or {@link IZosUNIXFile#appendContent(String)} methods.
-	 * 
-	 * @param unixFile
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void store(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Retrieve the content of UNIX file to an {@link IZosUNIXFile} from the given zOS
-	 * image. The content can then be obtained using the
-	 * {@link IZosUNIXFile#getContent()} method.
-	 * 
-	 * @param unixFile
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void retrieve(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Delete the UNIX file corresponding to an {@link IZosUNIXFile} from the given zOS image.
-	 * 
-	 * @param unixFile
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void delete(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Recursively delete a directory and its contents from the given zOS image.
-	 * 
-	 * @param directory
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void deleteDirectory(String directory, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Create a directory and all required parent directories on the given zOS image.
-	 * 
-	 * @param directory
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void createDirectory(String directory, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Return true if the passed {@link IZosUNIXFile} exists on the given zOS image.
-	 * 
-	 * @param unixFile
-	 * @param image
-	 * @return
-	 * @throws ZosDatasetException
-	 */
-	public boolean exists(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException;
-
-	/**
-	 * Delete all datasets (including VSAM datasets) with the given HLQ from the
-	 * given zOS image
-	 * 
-	 * @param prefix
-	 * @param image
-	 * @throws ZosDatasetException
-	 */
-	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosDatasetException;
-
-	/**
 	 * APF authorise the given {@link IZosDataset} on the given zOS image.
 	 * 
 	 * @param dataset
@@ -372,4 +302,14 @@ public interface IZosFileHandler {
 	 */
 	public void storeDatasetToTestOutput(IZosDataset dataset, IZosImage image)
 			throws ZosDatasetException;
+
+	/**
+	 * Delete all datasets (including VSAM datasets) with the given HLQ from the
+	 * given zOS image
+	 * 
+	 * @param prefix
+	 * @param image
+	 * @throws ZosDatasetException
+	 */
+	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosDatasetException;
 }

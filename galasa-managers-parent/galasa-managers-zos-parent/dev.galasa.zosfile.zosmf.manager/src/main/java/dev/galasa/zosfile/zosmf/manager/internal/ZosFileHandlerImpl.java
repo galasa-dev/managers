@@ -46,42 +46,6 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
 	}
 
 	@Override
-	public void store(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		
-	}
-
-	@Override
-	public void retrieve(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		
-	}
-
-	@Override
-	public void delete(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		
-	}
-
-	@Override
-	public void deleteDirectory(String directory, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		
-	}
-
-	@Override
-	public void createDirectory(String directory, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		
-	}
-
-	@Override
-	public boolean exists(IZosUNIXFile unixFile, IZosImage image) throws ZosDatasetException {
-		// TODO Not yet implemented
-		return false;
-	}
-
-	@Override
 	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosDatasetException {
 		// TODO Not yet implemented
 		
@@ -196,7 +160,6 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
 		Iterator<ZosDatasetImpl> iterator = this.zosDatasets.iterator();
 		while (iterator.hasNext()) {
 			ZosDatasetImpl zosDataset = iterator.next();
-			zosDataset.archiveDataset();
 			if (zosDataset.created()) {
 				zosDataset.delete();				
 			}
