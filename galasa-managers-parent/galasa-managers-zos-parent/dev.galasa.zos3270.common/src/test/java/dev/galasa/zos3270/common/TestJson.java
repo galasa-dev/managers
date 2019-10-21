@@ -43,15 +43,19 @@ public class TestJson {
         int posRow = 6;
         int posColumn = 8;
         
+        int cursorRow = 3;
+        int cursorCol = 4;
+        
         String aid = "aidy";
+        String runid = "eeek";
 
         TerminalSize defaultSize = new TerminalSize(terminalColumns, terminalRows);
         TerminalSize altSize = new TerminalSize(altColumns, altRows);
 
-        Terminal terminal = new Terminal(terminalID, terminalSequence, defaultSize);
-        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, aid, altSize);
+        Terminal terminal = new Terminal(terminalID, runid, terminalSequence, defaultSize);
+        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, aid, altSize, cursorCol, cursorRow);
         terminal.addImage(image);
-        terminal.addImage(new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize));
+        terminal.addImage(new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize, cursorCol, cursorRow));
 
         TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true);
         image.getFields().add(field);
@@ -68,6 +72,7 @@ public class TestJson {
 
 
         assertThat(testTerminal.getId()).isEqualTo(terminalID);
+        assertThat(testTerminal.getRunId()).isEqualTo(runid);
         assertThat(testTerminal.getSequence()).isEqualTo(terminalSequence);
         assertThat(testTerminal.getDefaultSize().getColumns()).isEqualTo(terminalColumns);
         assertThat(testTerminal.getDefaultSize().getRows()).isEqualTo(terminalRows);
@@ -79,6 +84,8 @@ public class TestJson {
         assertThat(testImage.getSequence()).isEqualTo(imageSequence);
         assertThat(testImage.getImageSize().getColumns()).isEqualTo(altColumns);
         assertThat(testImage.getImageSize().getRows()).isEqualTo(altRows);
+        assertThat(testImage.getCursorColumn()).isEqualTo(cursorCol);
+        assertThat(testImage.getCursorRow()).isEqualTo(cursorRow);
         assertThat(testImage.getType()).isEqualTo(imageType);
         assertThat(testImage.isInbound()).isTrue();
         assertThat(testImage.getAid()).isEqualTo(aid);

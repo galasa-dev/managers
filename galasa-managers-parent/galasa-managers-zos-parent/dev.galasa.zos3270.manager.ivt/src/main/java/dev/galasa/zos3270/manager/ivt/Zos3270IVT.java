@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.zos3270.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,10 +22,10 @@ public class Zos3270IVT {
     @Logger
     public Log logger;
 
-	@ZosImage
+	@ZosImage(imageTag="simbank")
 	public IZosImage image;
 
-	@Zos3270Terminal
+	@Zos3270Terminal(imageTag="simbank")
 	public ITerminal terminal;
 
 	@Test
@@ -35,22 +40,22 @@ public class Zos3270IVT {
 		//*** Make sure the screen is ready to go and is at the logon screen
 		terminal
 		.waitForKeyboard()
-		.waitForTextInField("SIMFRAME LOGON SCREEN");
+		.waitForTextInField("SIMPLATFORM LOGON SCREEN");
 
 		//*** Logon 
 		terminal
 		.positionCursorToFieldContaining("Userid")
 		.tab()
-		.type("BOO")
+		.type("IBMUSER")
 		.positionCursorToFieldContaining("Password")
 		.tab()
-		.type("EEK")
+		.type("SYS1")
 		.enter();
 
 		//*** Select the BANKTEST application
 		terminal
 		.waitForKeyboard()
-		.waitForTextInField("SIMFRAME MAIN MENU")
+		.waitForTextInField("SIMPLATFORM MAIN MENU")
 		.positionCursorToFieldContaining("===>")
 		.tab()
 		.type("BANKTEST")
@@ -76,7 +81,7 @@ public class Zos3270IVT {
 		.pf3()
 		.waitForKeyboard()
 		.pf3()
-		.waitForTextInField("SIMFRAME LOGON SCREEN");
+		.waitForTextInField("SIMPLATFORM LOGON SCREEN");
 		
 		logger.info("SIMFRAME 3270 screen check is complete");
 	}
