@@ -3,6 +3,7 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import dev.galasa.zos3270.common.screens.TerminalImage;
 import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
 import dev.galasa.zos3270.internal.properties.LiveTerminalDirectory;
+import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
@@ -46,6 +48,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final String                   terminalId;
     private int                            updateId;
+    private final String runId;
 
     private final IConfidentialTextService cts;
     private final boolean                  applyCtf;
@@ -54,13 +57,15 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final Path                     terminalRasDirectory;
     private int                            rasTerminalSequence;
-    private final Path                     liveTerminalDirectory;
+    private Path                           liveTerminalDirectory;
     private int                            liveTerminalSequence;
+    private boolean                        logConsoleTerminals;
 
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework)
             throws Zos3270ManagerException, InterruptedException {
         super(host, port, tls);
         this.terminalId = id;
+        this.runId      = framework.getTestRunName();
 
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
@@ -75,7 +80,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             liveTerminalDirectory = null;
         } else {
             try {
-                Path termDir = Paths.get(propLiveTerminalDirectory, framework.getTestRunName(), this.terminalId);
+                Path termDir = Paths.get(propLiveTerminalDirectory, runId + "-" + this.terminalId);
                 while(Files.exists(termDir)) {
                     termDir = termDir.getParent().resolve(termDir.getFileName() + "A");
                 }
@@ -86,6 +91,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
+        
+        logConsoleTerminals = LogConsoleTerminals.get();
     }
 
     @Override
@@ -93,10 +100,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         updateId++;
         String update = terminalId + "-" + (updateId);
 
-        String screenData = getScreen().printScreenTextWithCursor();
-        if (applyCtf) {
-            screenData = cts.removeConfidentialText(screenData);
-        }
 
         String aidString;
         String aidText = null;
@@ -107,13 +110,21 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             aidString = " update";
         }
 
-        TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows()); // TODO
+        int cursorPosition = getScreen().getCursor();
+        int screenCols  = getScreen().getNoOfColumns();
+        int screenRows  = getScreen().getNoOfRows();
+
+        int cursorRow = cursorPosition / screenRows;
+        int cursorCol = cursorPosition % screenCols;
+
+
+        TerminalSize terminalSize = new TerminalSize(screenCols, screenRows); // TODO
         // sort
         // out
         // alt
         // sizes
         TerminalImage terminalImage = new TerminalImage(updateId, update, direction == Direction.RECEIVED, null,
-                aidText, terminalSize);
+                aidText, terminalSize, cursorCol, cursorRow);
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
         if (cachedImages.size() >= 10) {
@@ -121,33 +132,49 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
 
         if (liveTerminalDirectory != null) {
-            try {
-                liveTerminalSequence++;
-                String terminalFilename = String.format("%05d", liveTerminalSequence) + ".gz";
-                Path terminalPath = liveTerminalDirectory.resolve(terminalFilename);
+            if (!Files.exists(liveTerminalDirectory)) { // Check the directory is still there incase the live view is closed
+                this.liveTerminalDirectory = null;
+                logger.debug("live terminal updates discontinued");
+            } else {
+                try {
+                    liveTerminalSequence++;
+                    String terminalFilename = String.format("%05d", liveTerminalSequence) + ".gz";
+                    Path terminalPath = liveTerminalDirectory.resolve(terminalFilename);
 
-                dev.galasa.zos3270.common.screens.Terminal liveTerminal = new dev.galasa.zos3270.common.screens.Terminal(
-                        this.terminalId, liveTerminalSequence, terminalSize);
-                liveTerminal.getImages().add(terminalImage);
+                    dev.galasa.zos3270.common.screens.Terminal liveTerminal = new dev.galasa.zos3270.common.screens.Terminal(
+                            this.terminalId, this.runId, liveTerminalSequence, terminalSize);
+                    liveTerminal.getImages().add(terminalImage);
 
-                JsonObject intermediateJson = (JsonObject) gson.toJsonTree(liveTerminal);
-                stripFalseBooleans(intermediateJson);
-                String tempJson = gson.toJson(intermediateJson);
+                    JsonObject intermediateJson = (JsonObject) gson.toJsonTree(liveTerminal);
+                    stripFalseBooleans(intermediateJson);
+                    String tempJson = gson.toJson(intermediateJson);
 
-                if (applyCtf) {
-                    tempJson = cts.removeConfidentialText(tempJson);
+                    if (applyCtf) {
+                        tempJson = cts.removeConfidentialText(tempJson);
+                    }
+
+                    try (FileOutputStream fos = new FileOutputStream(terminalPath.toFile())) {
+                        fos.getChannel().lock();
+                        try (GZIPOutputStream gos = new GZIPOutputStream(fos)) {
+                            IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
+                        }
+                    }
+                } catch(Exception e) {
+                    logger.error("Failed to write live terminal image, image lost",e);
                 }
-
-                try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath, StandardOpenOption.CREATE))) {
-                    IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
-                }
-            } catch(Exception e) {
-                logger.error("Failed to write live terminal image, image lost",e);
             }
         }
 
-        logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update
-                + "\n" + screenData);
+        if (logConsoleTerminals) {
+            String screenData = getScreen().printScreenTextWithCursor();
+            if (applyCtf) {
+                screenData = cts.removeConfidentialText(screenData);
+            }
+            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update
+                    + "\n" + screenData);
+        } else {
+            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update);
+        }
     }
 
     public synchronized void flushTerminalCache() {
@@ -164,7 +191,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             // alt
             // sizes
             dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
-                    this.terminalId, rasTerminalSequence, terminalSize);
+                    this.terminalId, this.runId, rasTerminalSequence, terminalSize);
             rasTerminal.getImages().addAll(this.cachedImages);
 
             JsonObject intermediateJson = (JsonObject) gson.toJsonTree(rasTerminal);

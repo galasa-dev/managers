@@ -21,10 +21,13 @@ public class TerminalImage {
 
     private final int                 sequence;
     private final String              id;
-    private final boolean             inbound;                                // *** Inbound means from server -> client
+    private final boolean             inbound;                   // *** Inbound means from server -> client
     private final String              type;
 
     private final TerminalSize        imageSize;
+
+    private final int                 cursorColumn;
+    private final int                 cursorRow;
 
     private final String              aid;
     private final List<TerminalField> fields = new ArrayList<>();
@@ -32,20 +35,27 @@ public class TerminalImage {
     /**
      * Constructor
      * 
-     * @param sequence The sequence of the image, for the whole terminal interaction
-     * @param id Id of this image
-     * @param inbound inbound = true if received by the client
-     * @param type Type of interaction, interactions can be labels so can be filtered
-     * @param aid The AttentionID for outbound messages
-     * @param imageSize The size of the image if different to the default
+     * @param sequence     The sequence of the image, for the whole terminal
+     *                     interaction
+     * @param id           Id of this image
+     * @param inbound      inbound = true if received by the client
+     * @param type         Type of interaction, interactions can be labels so can be
+     *                     filtered
+     * @param aid          The AttentionID for outbound messages
+     * @param imageSize    The size of the image if different to the default
+     * @param cursorColumn The position of the cursor on the screen
+     * @param cursorRow    The position of the cursor on the screen
      */
-    public TerminalImage(int sequence, @NotNull String id, boolean inbound, String type, String aid, TerminalSize imageSize) {
+    public TerminalImage(int sequence, @NotNull String id, boolean inbound, String type, String aid,
+            TerminalSize imageSize, int cursorColumn, int cursorRow) {
         this.sequence = sequence;
         this.id = id;
         this.inbound = inbound;
         this.type = type;
-        this.aid  = aid;
+        this.aid = aid;
         this.imageSize = imageSize;
+        this.cursorColumn = cursorColumn;
+        this.cursorRow = cursorRow;
     }
 
     /**
@@ -67,7 +77,7 @@ public class TerminalImage {
     }
 
     /**
-     * Is inbound to the client.  false means being sent from the client
+     * Is inbound to the client. false means being sent from the client
      * 
      * @return inbound
      */
@@ -76,7 +86,7 @@ public class TerminalImage {
     }
 
     /**
-     * Return the image size,  if null, then it is the default size
+     * Return the image size, if null, then it is the default size
      * 
      * @return the terminal size if not default
      */
@@ -92,7 +102,7 @@ public class TerminalImage {
     public List<TerminalField> getFields() {
         return fields;
     }
-    
+
     /**
      * Fetch the AID if outbound
      * 
@@ -109,6 +119,20 @@ public class TerminalImage {
      */
     public String getType() {
         return type;
+    }
+    
+    /**
+     * @return the column where the cursor is positioned
+     */
+    public int getCursorColumn() {
+        return cursorColumn;
+    }
+    
+    /**
+     * @return the row where the cursor is positioned
+     */
+    public int getCursorRow() {
+        return cursorRow;
     }
 
 }

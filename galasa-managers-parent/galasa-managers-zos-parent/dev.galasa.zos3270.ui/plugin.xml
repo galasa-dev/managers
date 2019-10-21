@@ -2,6 +2,24 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
+         id="dev.galasa.zos3270.ui.launcher.LauncherOverrides"
+         name="zOS 3270 Launcher Overrides"
+         point="dev.galasa.eclipse.extension.launcher.overrides">
+      <client
+            class="dev.galasa.zos3270.ui.launcher.LauncherOverrides">
+      </client>
+   </extension>
+   
+   <extension
+         id="dev.galasa.zos3270.ui.launcher.LauncherConfiguration"
+         name="zOS 3270 Launcher Configuration"
+         point="dev.galasa.eclipse.extension.launcher.configuration">
+      <client
+            class="dev.galasa.zos3270.ui.launcher.LauncherConfiguration">
+      </client>
+   </extension>
+   
+   <extension
          id="dev.galasa.zos3270.storedartifacts"
          name="zOS 3270 Stored Artifacts UI elements"
          point="dev.galasa.eclipse.extension.storedartifacts.filter">
