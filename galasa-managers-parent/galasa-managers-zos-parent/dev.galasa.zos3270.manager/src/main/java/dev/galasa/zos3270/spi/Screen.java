@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2019 IBM Corporation.
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
  */
 package dev.galasa.zos3270.spi;
 
@@ -360,7 +362,7 @@ public class Screen {
         ArrayList<Field> fields = new ArrayList<>();
 
         Field currentField = null;
-        
+
         //*** Check to see if the the screen is wrapped or unformatted
         if (!(this.buffer[0] instanceof BufferStartOfField)) {
             BufferStartOfField wrapSoField = null;
@@ -371,25 +373,25 @@ public class Screen {
                     break;
                 }
             }
-            
+
             if (wrapSoField == null) {
                 currentField = new Field();
             } else {
                 currentField = new Field(0, wrapSoField);
             }
         }
-        
+
         for (int i = 0; i < this.buffer.length; i++) {
             IBufferHolder bh = this.buffer[i];
             if (bh == null) {
-                currentField.appendChar((char) 0x00);
+                currentField.appendChar((char) 0x00);  //NOSONAR, can't be null
             } else if (bh instanceof BufferStartOfField) {
                 if (currentField != null) {
                     fields.add(currentField);
                 }
                 currentField = new Field(i, (BufferStartOfField) bh);
             } else if (bh instanceof BufferChar) {
-                currentField.appendChar(((BufferChar) bh).getChar());
+                currentField.appendChar(((BufferChar) bh).getChar());//NOSONAR, can't be null
             } else {
                 throw new UnsupportedOperationException("Unrecognised buffer type " + bh.getClass().getName());
             }
