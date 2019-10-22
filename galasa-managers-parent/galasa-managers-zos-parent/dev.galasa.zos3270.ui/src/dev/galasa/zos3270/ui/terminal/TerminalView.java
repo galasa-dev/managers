@@ -481,51 +481,49 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
         setPartName(this.viewId);
     }
 
-    public synchronized void addTerminalImageFile(Path path) {
-        try (RandomAccessFile file = new RandomAccessFile(path.toFile(), "rw"); FileInputStream fis = new FileInputStream(path.toFile())) {
-            FileChannel channel = file.getChannel();
-            try (FileLock lock = channel.lock()) {
-                try (Reader reader = new InputStreamReader(new GZIPInputStream(fis))) {
-                    Terminal terminal = gson.fromJson(reader, Terminal.class);
-                    int terminalSequence = (int) terminal.getSequence();
-                    
-                    if (this.viewId == null) {
-                        setRunTerminalIds(terminal.getRunId(), terminal.getId());
-                    }
-
-                    if (terminalSequence == 0) { // Not a valid file, so ignore
-                        return;
-                    }
-                    terminalSequence--; // make zero based
-
-                    expandArray(this.imageFiles, terminalSequence); // Expand the array to ensure the image is placed in the
-                    // correct sequence
-
-                    if (this.imageFiles.get(terminalSequence) != null) { // Do we have this sequence already
-                        return;
-                    }
-
-                    Images images = new Images(path, terminal);
-                    this.imageFiles.set(terminalSequence, images);
-
-                    for (TerminalImage tImage : terminal.getImages()) {
-                        int imageSequence = (int) tImage.getSequence();
-                        if (imageSequence == 0) { // Is it valid
-                            continue;
-                        }
-                        imageSequence--; // make zero based
-                        expandArray(this.images, imageSequence);
-                        if (this.images.get(imageSequence) != null) { // Already have this sequence
-                            continue;
-                        }
-
-                        Image image = new Image(tImage, images);
-                        this.images.set(imageSequence, image);
-                    }
-                }
+    public synchronized void addTerminalImageFile(Path path, Terminal terminal) {
+        if (terminal == null) {
+            try (Reader reader = new InputStreamReader(new GZIPInputStream(Files.newInputStream(path)))) {
+                terminal = gson.fromJson(reader, Terminal.class);
+            } catch (Exception e) {
+                Zos3270Activator.log(e);
+                return;
             }
-        } catch (Exception e) {
-            Zos3270Activator.log(e);
+        }
+        int terminalSequence = (int) terminal.getSequence();
+
+        if (this.viewId == null) {
+            setRunTerminalIds(terminal.getRunId(), terminal.getId());
+        }
+
+        if (terminalSequence == 0) { // Not a valid file, so ignore
+            return;
+        }
+        terminalSequence--; // make zero based
+
+        expandArray(this.imageFiles, terminalSequence); // Expand the array to ensure the image is placed in the
+        // correct sequence
+
+        if (this.imageFiles.get(terminalSequence) != null) { // Do we have this sequence already
+            return;
+        }
+
+        Images images = new Images(path, terminal);
+        this.imageFiles.set(terminalSequence, images);
+
+        for (TerminalImage tImage : terminal.getImages()) {
+            int imageSequence = (int) tImage.getSequence();
+            if (imageSequence == 0) { // Is it valid
+                continue;
+            }
+            imageSequence--; // make zero based
+            expandArray(this.images, imageSequence);
+            if (this.images.get(imageSequence) != null) { // Already have this sequence
+                continue;
+            }
+
+            Image image = new Image(tImage, images);
+            this.images.set(imageSequence, image);
         }
     }
 
@@ -692,10 +690,18 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
                     return;
                 }
 
-                processedFiles.add(path.toString());
+                Path fullPath = monitorPath.resolve(path);
+                
+                Terminal terminal = null;
+                try (Reader reader = new InputStreamReader(new GZIPInputStream(Files.newInputStream(fullPath)))) {
+                    terminal = gson.fromJson(reader, Terminal.class);
+                } catch(Exception e) {
+                    return; // Ignore errors as it may be the files is partially written out
+                }
 
-                addTerminalImageFile(monitorPath.resolve(path));
+                addTerminalImageFile(monitorPath.resolve(fullPath), terminal);
                 loadComplete();
+                processedFiles.add(path.toString());
             } catch(Exception e) {
                 Zos3270Activator.log(e);
             }
