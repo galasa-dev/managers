@@ -47,7 +47,7 @@ public class LoadImagesJob extends Job {
             
             //*** Rebuild the Image Index
             for(Path path : cachedImages) {
-                view.addTerminalImageFile(path);
+                view.addTerminalImageFile(path, null);
             }
             
             view.loadComplete();

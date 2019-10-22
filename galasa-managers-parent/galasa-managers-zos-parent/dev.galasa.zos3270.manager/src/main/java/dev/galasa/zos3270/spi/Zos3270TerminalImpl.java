@@ -5,7 +5,6 @@
  */
 package dev.galasa.zos3270.spi;
 
-import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,7 +92,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
-        
+
         logConsoleTerminals = LogConsoleTerminals.get();
     }
 
@@ -155,11 +154,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                         tempJson = cts.removeConfidentialText(tempJson);
                     }
 
-                    try (FileOutputStream fos = new FileOutputStream(terminalPath.toFile())) {
-                        fos.getChannel().lock();
-                        try (GZIPOutputStream gos = new GZIPOutputStream(fos)) {
-                            IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
-                        }
+                    try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath))) {
+                        IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
                     }
                 } catch(Exception e) {
                     logger.error("Failed to write live terminal image, image lost",e);
