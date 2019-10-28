@@ -3,7 +3,9 @@ def galasaSignJarSkip = 'true'
 
 pipeline {
 // Initially run on any agent
-   agent any
+   agent {
+      label 'codesigning'
+   }
    options { timestamps () }
    environment {
 //Configure Maven from the maven tooling in Jenkins
@@ -23,7 +25,7 @@ pipeline {
          steps {
             script {
                mvnGoal           = 'deploy sonar:sonar'
-               galasaSignJarSkip = 'true'
+               galasaSignJarSkip = 'false'
             }
          }
       }
