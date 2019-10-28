@@ -60,7 +60,9 @@ public interface IZosmf {
 	 * <li>{@link #X_IBM_ATTRIBUTES}</li>
 	 * <li>{@link #X_IBM_DATA_TYPE}</li>
 	 * <li>{@link #X_IBM_JOB_MODIFY_VERSION}</li>
+	 * <li>{@link #X_IBM_LSTAT}</li>
 	 * <li>{@link #X_IBM_MAX_ITEMS}</li>
+	 * <li>{@link #X_IBM_OPTION}</li>
 	 * <li>{@link #X_IBM_REQUESTED_METHOD}</li>
 	 *
 	 */
@@ -78,9 +80,17 @@ public interface IZosmf {
 		 */
 		X_IBM_JOB_MODIFY_VERSION("X-IBM-Job-Modify-Version"),
 		/**
+		 * {@code X-IBM-Lstat}
+		 */
+		X_IBM_LSTAT("X-IBM-Lstat"),
+		/**
 		 * {@code X-IBM-Max-Items}
 		 */
 		X_IBM_MAX_ITEMS("X-IBM-Max-Items"),
+		/**
+		 * {@code X-IBM-Option}
+		 */
+		X_IBM_OPTION("X-IBM-Option"),
 		/**
 		 * {@code X-IBM-Requested-Method}
 		 */

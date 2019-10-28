@@ -10,28 +10,28 @@ import dev.galasa.zosfile.ZosFileManagerException;
  * Use only the zOSMF server running on the image associated with the zOS data set or file
  * </p><p>
  * The property is:<br>
- * {@code zosfile.file.[imageid].restrict.to.image=true}
+ * {@code zosfile.zosmf.[imageid].restrict.to.image=true}
  * </p>
  * <p>
  * The default value is {@value #RESTRICT_TO_IMAGE}
  * </p>
  *
  */
-public class RestrictToImage extends CpsProperties {
+public class RestrictZosmfToImage extends CpsProperties {
 
 	private static final boolean RESTRICT_TO_IMAGE = false;
 
 	public static boolean get(String imageId) throws ZosFileManagerException {
 		try {
-			String sysaffString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosfile", "restrict.to.image", imageId);
+			String restrictString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosmf", "restrict.zosmf.to.image", imageId);
 
-			if (sysaffString == null) {
+			if (restrictString == null) {
 				return RESTRICT_TO_IMAGE;
 			} else {
-				return Boolean.parseBoolean(sysaffString);
+				return Boolean.parseBoolean(restrictString);
 			}
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosFileManagerException("Problem asking the CPS for the file restrict to image property for zOS image "  + imageId, e);
+			throw new ZosFileManagerException("Problem asking the CPS for the restrict zOSMF to image property for zOS image "  + imageId, e);
 		}
 	}
 

@@ -46,8 +46,9 @@ public interface IZosFileHandler {
 	 * 
 	 * @param fullFilePath
 	 * @return
+	 * @throws ZosUNIXFileException 
 	 */
-	public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image);
+	public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image) throws ZosUNIXFileException;
 
 	/**
 	 * APF authorise the given {@link IZosDataset} on the given zOS image.
@@ -172,12 +173,12 @@ public interface IZosFileHandler {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosDatasetException
+	 * @throws ZosUNIXFileException 
 	 */
 	public IZosUNIXFile storeResourcesFile(String resourcePath, String unixPath,
 			int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosDatasetException;
+			throws ZosUNIXFileException;
 
 	/**
 	 * This method retrieves an artifact from the 'resources' folder in a jat
@@ -238,12 +239,12 @@ public interface IZosFileHandler {
 	 *            - any class in the bundle containing the resource to store.
 	 *            'this.getClass()' is generally the safest way to specify.
 	 * @return
-	 * @throws ZosDatasetException
+	 * @throws ZosUNIXFileException 
 	 */
 	public IZosUNIXFile storeResourcesDirectory(String resourcePath,
 			String unixPath, int fileType, IZosImage image,
 			Map<String, Object> substitutionParameters, Class<?> owningClass)
-			throws ZosDatasetException;
+			throws ZosUNIXFileException;
 
 	/**
 	 * This method retrieves all contents of a given directory from the
