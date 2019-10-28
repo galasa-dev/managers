@@ -142,10 +142,18 @@ public interface IZosDataset {
 	}
 	
 	/**
-	 * Allocate the data set
+	 * Allocate the data set. Will be deleted at test method end
+	 * @return
 	 * @throws ZosDatasetException 
 	 */
-	public void create() throws ZosDatasetException;
+	public IZosDataset create() throws ZosDatasetException;
+	
+	/**
+	 * Allocate the data set. Will be retained across test methods and deleted at test class end
+	 * @return
+	 * @throws ZosDatasetException 
+	 */
+	public IZosDataset createRetain() throws ZosDatasetException;
 
 	/**
 	 * Delete the data set on zOS image.
@@ -179,7 +187,7 @@ public interface IZosDataset {
 	 * Store the content of the data set with the test output
 	 * @throws ZosDatasetException
 	 */
-	public void saveToTestArchive() throws ZosDatasetException;
+	public void saveToResultsArchive() throws ZosDatasetException;
 	
 	/**
 	 * Returns true if the data set exists and is a partitioned data set
@@ -426,5 +434,5 @@ public interface IZosDataset {
 	 * Return the attributes of the data set as a {@link String} 
 	 * @return
 	 */
-	public String getDatasetAttibutesString() throws ZosDatasetException;
+	public String getAttibutesAsString() throws ZosDatasetException;
 }

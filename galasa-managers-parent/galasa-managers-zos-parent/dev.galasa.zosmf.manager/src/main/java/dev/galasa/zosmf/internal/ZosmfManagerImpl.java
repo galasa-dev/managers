@@ -163,7 +163,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 	public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException {
 		if (restrictToImage) {
 			HashMap<String, IZosmf> zosmfMap = new HashMap<>();
-			zosmfMap.put(image.getImageID(), this.zosmfs.get(image.getImageID()));
+			IZosmf zosmf = this.zosmfs.get(image.getImageID());
+			if (zosmf == null) {
+				throw new ZosmfManagerException("No zOSMF sever configured on " + image.getImageID());
+			}
+			zosmfMap.put(image.getImageID(), zosmf);
 			return new ZosmfRestApiProcessor(zosmfMap);
 		}
 		return new ZosmfRestApiProcessor(getZosmfs(image.getClusterID()));

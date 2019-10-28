@@ -48,14 +48,25 @@ public class ZosFileManagerImpl extends AbstractManager {
 	}
 
 	private final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
-	
-	protected static Path archivePath;
-	public static void setArchivePath(Path archivePath) {
-		ZosFileManagerImpl.archivePath = archivePath;
+
+	private static Path datasetArtifactRoot;
+	protected static void setDatasetArtifactRoot(Path path) {
+		datasetArtifactRoot = path;
+	}
+	protected static Path getDatasetArtifactRoot() {
+		return datasetArtifactRoot;
+	}
+
+	private static Path unixPathArtifactRoot;
+	protected static void setUnixPathArtifactRoot(Path path) {
+		unixPathArtifactRoot = path;
+	}
+	protected static Path getUnixPathArtifactRoot() {
+		return unixPathArtifactRoot;
 	}
 	
-	protected static Method currentTestMethod;
-	public static void setCurrentTestMethod(Method testMethod) {
+	protected static String currentTestMethod;
+	public static void setCurrentTestMethod(String testMethod) {
 		ZosFileManagerImpl.currentTestMethod = testMethod;
 	}
 	
@@ -79,8 +90,8 @@ public class ZosFileManagerImpl extends AbstractManager {
 			youAreRequired(allManagers, activeManagers);
 		}
 		
-		Path artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
-    	setArchivePath(artifactsRoot.resolve("zosDatasets"));
+		setDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zosDatasets"));		
+		setUnixPathArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zosUnixPaths"));
 	}
 	
 
@@ -133,22 +144,38 @@ public class ZosFileManagerImpl extends AbstractManager {
      */
     @Override
     public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
-    	setCurrentTestMethod(testMethod);
+    	setCurrentTestMethod(testMethod.getName());
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
+     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.reflect.Method,java.lang.String,java.lang.Throwable)
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
     	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = this.zosFileHandlers.iterator();
     	while (zosFileHandlerImplIterator.hasNext()) {
-    		zosFileHandlerImplIterator.next().cleanup();
+    		zosFileHandlerImplIterator.next().cleanupEndOfMethod();
 		}
 
     	setCurrentTestMethod(null);
+    	
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#endOfTestClass(java.lang.String,java.lang.Throwable)
+     */
+    @Override
+    public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+    	setCurrentTestMethod("endOfTestCleanup");
+    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = this.zosFileHandlers.iterator();
+    	while (zosFileHandlerImplIterator.hasNext()) {
+    		zosFileHandlerImplIterator.next().cleanupEndOfTest();
+		}
     	
         return null;
     }

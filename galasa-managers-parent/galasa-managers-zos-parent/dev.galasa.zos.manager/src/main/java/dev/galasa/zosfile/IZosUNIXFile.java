@@ -1,22 +1,52 @@
 package dev.galasa.zosfile;
 
+import java.util.Map;
+
 /**
  * Representation of a UNIX file or directory.
  *
  */
 public interface IZosUNIXFile {
+	
+	/**
+	 * Enumeration of data type for store and retrieve of data set content:
+	 * <li>{@link #TEXT}</li>
+	 * <li>{@link #BINARY}</li>
+	 */
+	public enum UNIXFileDataType {
+		/**
+		 * Content is between ISO8859-1 on the client and EBCDIC on the host
+		 */
+		TEXT("text"),
+		/**
+		 * No data conversion is performed
+		 */
+		BINARY("binary");
+		
+		private String dataType;
+		
+		UNIXFileDataType(String dataType) {
+			this.dataType = dataType;
+		}
+		
+		@Override
+		public String toString() {
+			return dataType;
+		}
+	}
+	
+	public IZosUNIXFile create() throws ZosUNIXFileException;
+
+	IZosUNIXFile createRetain() throws ZosUNIXFileException;
 
 	/**
-	 * Create a directory and all required parent directories on the given zOS image.
+	 * Delete the UNIX file or directory corresponding to an {@link IZosUNIXFile} from the given zOS image.
+	 * Recursively delete a directory and its contents from the given zOS image
 	 * @throws ZosUNIXFileException
 	 */
-	public void createDirectory(String directory) throws ZosUNIXFileException;
-
-	/**
-	 * Recursively delete a directory and its contents from the given zOS image.
-	 * @throws ZosUNIXFileException
-	 */
-	public void deleteDirectory(String directory) throws ZosUNIXFileException;
+	public void delete() throws ZosUNIXFileException;
+	
+	public void directoryDeleteNonEmpty() throws ZosUNIXFileException;
 
 	/**
 	 * Return true if the passed {@link IZosUNIXFile} exists on the given zOS image.
@@ -32,7 +62,7 @@ public interface IZosUNIXFile {
 	 * or {@link IZosUNIXFile#appendContent(String)} methods.
 	 * @throws ZosUNIXFileException
 	 */
-	public void store() throws ZosUNIXFileException;
+	public void store(String content) throws ZosUNIXFileException;
 
 	/**
 	 * Retrieve the content of UNIX file to an {@link IZosUNIXFile} from the given zOS
@@ -40,13 +70,21 @@ public interface IZosUNIXFile {
 	 * {@link IZosUNIXFile#getContent()} method.
 	 * @throws ZosUNIXFileException
 	 */
-	public void retrieve() throws ZosUNIXFileException;
+	public String retrieve() throws ZosUNIXFileException;
 
-	/**
-	 * Get the directory path for this file 
-	 * @return
-	 */
-	public String getDirectory();
+	public void saveToResultsArchive() throws ZosUNIXFileException;
+	
+	public boolean isDirectory() throws ZosUNIXFileException;
+	
+	public Map<String, String> directoryList() throws ZosUNIXFileException;
+	
+	public Map<String, String> directoryListRecursive() throws ZosUNIXFileException;
+	
+	public void setDataType(UNIXFileDataType dataType);
+	
+	public UNIXFileDataType getDataType();
+	
+	public String getUnixPath();
 	
 	/**
 	 * Get the file name, or null if this object
@@ -55,10 +93,11 @@ public interface IZosUNIXFile {
 	 */
 	public String getFileName();
 
-
 	/**
-	 * Delete the UNIX file corresponding to an {@link IZosUNIXFile} from the given zOS image.
-	 * @throws ZosUNIXFileException
+	 * Get the directory path for this file 
+	 * @return
 	 */
-	public void delete() throws ZosUNIXFileException;
+	public String getDirectoryPath();
+
+	public String getAttributesAsString() throws ZosUNIXFileException;
 }
