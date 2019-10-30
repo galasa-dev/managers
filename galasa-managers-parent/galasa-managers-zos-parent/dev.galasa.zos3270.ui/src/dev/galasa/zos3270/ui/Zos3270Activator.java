@@ -5,6 +5,7 @@
  */
 package dev.galasa.zos3270.ui;
 
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,7 +16,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import dev.galasa.eclipse.Activator;
-import dev.galasa.zos3270.ui.terminal.LiveTerminalsMonitor;
+import dev.galasa.eclipse.liveupdates.ILiveUpdateServer;
+import dev.galasa.zos3270.ui.terminal.LiveTerminalsServlet;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -28,8 +30,10 @@ public class Zos3270Activator extends AbstractUIPlugin {
     // The shared instance
     private static Zos3270Activator plugin;
 
-    private Path                 liveTerminalsPath;
-    private LiveTerminalsMonitor liveTerminalsMonitor;
+    private Path                    liveTerminalsPath;
+
+    private LiveTerminalsServlet    liveTerminalServlet;
+    private URL                     liveTerminalUrl;
 
     /**
      * The constructor
@@ -39,7 +43,9 @@ public class Zos3270Activator extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     * 
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.
+     * BundleContext)
      */
     public void start(BundleContext context) throws Exception {
         super.start(context);
@@ -48,12 +54,16 @@ public class Zos3270Activator extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     * 
+     * @see
+     * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext context) throws Exception {
-        if (this.liveTerminalsMonitor != null) {
-            this.liveTerminalsMonitor.shutdown();
+        if (this.liveTerminalServlet != null) {
+            Activator.getLiveUpdateServer().unregisterServlet(liveTerminalServlet);
+            this.liveTerminalServlet = null;
         }
+
         plugin = null;
         super.stop(context);
     }
@@ -97,22 +107,29 @@ public class Zos3270Activator extends AbstractUIPlugin {
     }
 
     public synchronized Path getLiveTerminalsPath() {
-        try {        
+        try {
             if (liveTerminalsPath == null) {
                 Path cachePath = Activator.getCachePath();
                 this.liveTerminalsPath = cachePath.resolve("liveterminals");
                 Files.createDirectories(this.liveTerminalsPath);
             }
-
-            if (this.liveTerminalsMonitor == null) {
-                this.liveTerminalsMonitor = new LiveTerminalsMonitor(this.liveTerminalsPath);
-                this.liveTerminalsMonitor.start();
-            }
-        } catch(Exception e) {
+        } catch (Exception e) {
             log(e);
         }
         return this.liveTerminalsPath;
     }
 
+    public synchronized URL getLiveTerminalURL() throws Exception {
+        if (this.liveTerminalServlet == null) {
+            this.liveTerminalServlet = new LiveTerminalsServlet();
+
+            ILiveUpdateServer liveServer = Activator.getLiveUpdateServer();
+            liveServer.registerServlet(this.liveTerminalServlet, "/zos3270/liveterminals");
+
+            this.liveTerminalUrl = new URL(liveServer.getLiveUpdateUrl() + "zos3270/liveterminals");
+        }
+
+        return this.liveTerminalUrl;
+    }
 
 }

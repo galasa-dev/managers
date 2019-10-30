@@ -5,27 +5,19 @@
  */
 package dev.galasa.zos3270.ui.terminal;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -67,43 +59,42 @@ import dev.galasa.zos3270.ui.preferences.PreferenceConstants;
 
 public class TerminalView extends ViewPart implements PaintListener, IPropertyChangeListener {
 
-    public static final String ID                   = "dev.galasa.zos3270.ui.terminal.TerminalView";
+    public static final String  ID                   = "dev.galasa.zos3270.ui.terminal.TerminalView";
 
-    private Shell              shell;
-    private Canvas             canvas;
-    private Action             firstFrameAction;
-    private Action             prevFrameAction;
-    private Action             nextFrameAction;
-    private Action             lastFrameAction;
-    private Action             suspendLast;
+    private Shell               shell;
+    private Canvas              canvas;
+    private Action              firstFrameAction;
+    private Action              prevFrameAction;
+    private Action              nextFrameAction;
+    private Action              lastFrameAction;
+    private Action              suspendLast;
 
-    private Color              colourBackground;
-    private Color              colourNormal;
-    private Color              colourIntense;
+    private Color               colourBackground;
+    private Color               colourNormal;
+    private Color               colourIntense;
 
-    private Font               fontText;
+    private Font                fontText;
 
-    private boolean            loading              = true;
+    private boolean             loading              = true;
 
-    private Path               cachePath;
+    private Path                cachePath;
 
-    private ArrayList<Images>  imageFiles           = new ArrayList<>();
-    private ArrayList<Image>   images               = new ArrayList<>();
+    private ArrayList<Images>   imageFiles           = new ArrayList<>();
+    private ArrayList<Image>    images               = new ArrayList<>();
 
-    private final Gson         gson                 = new Gson();
+    private final Gson          gson                 = new Gson();
 
-    private int                currentImageSequence = 0;
+    private int                 currentImageSequence = 0;
 
-    private boolean disposed = false;
-    private LiveMonitor liveMonitor;
-    private boolean suspend = false;
+    private boolean             disposed             = false;
+    private LiveTerminalServlet liveServlet;
+    private boolean             suspend              = false;
 
-    private String viewId;
-
+    private String              viewId;
 
     @Override
     public void createPartControl(Composite parent) {
-        this.cachePath = Activator.getCachePath().resolve("rasTerminalCache").resolve(UUID.randomUUID().toString());
+        this.cachePath = Zos3270Activator.getDefault().getLiveTerminalsPath().resolve(UUID.randomUUID().toString());
         try {
             Files.createDirectories(cachePath);
         } catch (IOException e) {
@@ -195,7 +186,7 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
 
     protected void validateActions() {
 
-        //        validateGotoIndex();
+        // validateGotoIndex();
         if (loading) {
             firstFrameAction.setEnabled(false);
             prevFrameAction.setEnabled(false);
@@ -353,9 +344,14 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
             new DeleteTerminalCache(this.viewId, this.cachePath).schedule();
         }
 
-        if (this.liveMonitor != null) {
-            this.liveMonitor.endMonitoring();
-            new DeleteTerminalCache(this.viewId, this.liveMonitor.getMonitorPath()).schedule();
+        if (this.liveServlet != null) {
+            try {
+                this.liveServlet.dispose();
+                Activator.getLiveUpdateServer().unregisterServlet(liveServlet);
+            } catch (Exception e) {
+                Zos3270Activator.log(e);
+            }
+            new DeleteTerminalCache(this.viewId, this.cachePath).schedule();
         }
 
         super.dispose();
@@ -452,7 +448,7 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
         });
     }
 
-    public static void openLiveTerminal(Path fullTerminalPath) {
+    public static void openLiveTerminal(String terminalId, String runId, LiveTerminalServlet servlet) {
         Display.getDefault().syncExec(new Runnable() {
 
             @Override
@@ -463,7 +459,7 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
                             .showView(TerminalView.ID, UUID.randomUUID().toString(), IWorkbenchPage.VIEW_ACTIVATE);
 
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
-                    view.setLiveTerminal(fullTerminalPath);
+                    view.setLiveTerminal(servlet);
                 } catch (PartInitException e) {
                     Zos3270Activator.log(e);
                 }
@@ -471,9 +467,9 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
         });
     }
 
-    protected void setLiveTerminal(Path fullTerminalPath) {
-        this.liveMonitor = new LiveMonitor(fullTerminalPath);
-        this.liveMonitor.start();
+    protected void setLiveTerminal(LiveTerminalServlet servlet) {
+        this.liveServlet = servlet;
+        this.liveServlet.register(this);
     }
 
     protected void setRunTerminalIds(String runId, String terminalId) {
@@ -578,7 +574,7 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
     public void loadComplete() {
         this.loading = false;
 
-        if (liveMonitor != null && !suspend) {
+        if (liveServlet != null && !suspend) {
             this.currentImageSequence = this.images.size() - 1;
         }
 
@@ -610,101 +606,23 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
 
     }
 
-
-
-    private class LiveMonitor extends Thread {
-
-        private final Path monitorPath;
-
-        private HashSet<String> processedFiles = new HashSet<>();
-
-        private WatchKey watchKey;
-
-        public LiveMonitor(Path monitorPath) {
-            this.monitorPath = monitorPath;
-
+    public void addLiveTerminal(Terminal terminal) {
+        if (disposed) {
+            return;
         }
 
-        public Path getMonitorPath() {
-            return this.monitorPath;
+        String terminalFilename = String.format("%05d", terminal.getSequence()) + ".gz";
+        Path terminalPath = cachePath.resolve(terminalFilename);
+
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new GZIPOutputStream(Files.newOutputStream(terminalPath, StandardOpenOption.CREATE)))) {
+            gson.toJson(terminal, writer);
+        } catch (Exception e) {
+            Zos3270Activator.log(e);
         }
 
-        @Override
-        public void run() {
-
-            try {
-                try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
-                    watchKey = this.monitorPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
-
-                    //*** First check for terminal screens that already exist
-                    Files.list(monitorPath).forEach(new Consumer<Path>() {
-
-                        @Override
-                        public void accept(Path path) {
-                            newImage(path.getFileName());
-                        }
-
-                    });    
-
-                    while(!disposed) {
-                        if (watchService.poll() != null) {
-                            for(WatchEvent<?> event : watchKey.pollEvents()) {
-                                Object context = event.context();
-                                if (context instanceof Path) {
-                                    Path p = (Path) context;
-                                    p = monitorPath.resolve(p);
-                                    if (Files.size(p) == 0) {
-                                        continue;
-                                    }
-                                    newImage((Path) context);
-                                }
-                            }
-                            watchKey.reset();
-                        }
-                        Thread.sleep(200);
-                    }
-                }
-
-            } catch(Exception e) {
-                Zos3270Activator.log(e);
-            } finally {
-                if (watchKey != null) {
-                    watchKey.cancel();
-                }
-            }
-        }
-
-        public void endMonitoring() {
-            if (this.watchKey != null) {
-                this.watchKey.cancel();
-            }
-        }
-
-        private synchronized void newImage(Path path) {
-            try {
-                if (disposed) {
-                    return;
-                }
-
-                if (processedFiles.contains(path.toString())) {
-                    return;
-                }
-
-                Path fullPath = monitorPath.resolve(path);
-                
-                Terminal terminal = null;
-                try (Reader reader = new InputStreamReader(new GZIPInputStream(Files.newInputStream(fullPath)))) {
-                    terminal = gson.fromJson(reader, Terminal.class);
-                } catch(Exception e) {
-                    return; // Ignore errors as it may be the files is partially written out
-                }
-
-                addTerminalImageFile(monitorPath.resolve(fullPath), terminal);
-                loadComplete();
-                processedFiles.add(path.toString());
-            } catch(Exception e) {
-                Zos3270Activator.log(e);
-            }
-        }
+        addTerminalImageFile(terminalPath, terminal);
+        loadComplete();
     }
+
 }

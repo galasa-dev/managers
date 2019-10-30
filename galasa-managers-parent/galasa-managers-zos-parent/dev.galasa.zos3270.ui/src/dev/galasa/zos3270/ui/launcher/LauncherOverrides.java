@@ -5,6 +5,7 @@
  */
 package dev.galasa.zos3270.ui.launcher;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -21,13 +22,13 @@ public class LauncherOverrides implements ILauncherOverridesExtension {
     public void appendOverrides(ILaunchConfiguration configuration, Properties generatedOverrides) {
         IPreferenceStore preferenceStore = Zos3270Activator.getDefault().getPreferenceStore();
         boolean liveTerminals = preferenceStore.getBoolean(PreferenceConstants.P_LIVE_TERMINALS);
-        boolean logConsole    = preferenceStore.getBoolean(PreferenceConstants.P_LOG_CONSOLE);
+        boolean logConsole = preferenceStore.getBoolean(PreferenceConstants.P_LOG_CONSOLE);
 
         try {
             int configLiveTerminals = configuration.getAttribute(LauncherConfiguration.LIVE_TERMINAL, 0);
             int configLogConsole = configuration.getAttribute(LauncherConfiguration.LOG_CONSOLE, 0);
-            
-            switch(configLiveTerminals) {
+
+            switch (configLiveTerminals) {
                 case 1:
                     liveTerminals = true;
                     break;
@@ -35,8 +36,8 @@ public class LauncherOverrides implements ILauncherOverridesExtension {
                     liveTerminals = false;
                     break;
             }
-            
-            switch(configLogConsole) {
+
+            switch (configLogConsole) {
                 case 1:
                     logConsole = true;
                     break;
@@ -44,15 +45,24 @@ public class LauncherOverrides implements ILauncherOverridesExtension {
                     logConsole = false;
                     break;
             }
-            
-        } catch(Exception e) {
+
+        } catch (Exception e) {
             Zos3270Activator.log(e);
         }
 
         if (liveTerminals) {
+            try {
+                URL liveTerminalUrl = Zos3270Activator.getDefault().getLiveTerminalURL();
+                if (liveTerminalUrl != null) {
+                    generatedOverrides.setProperty("zos3270.live.terminal.images", liveTerminalUrl.toString());
+                }
+            } catch (Exception e) {
+                Zos3270Activator.log(e);
+            }
+
             Path liveTerminalsPath = Zos3270Activator.getDefault().getLiveTerminalsPath();
             if (liveTerminalsPath != null) {
-                generatedOverrides.setProperty("zos3270.live.terminal.images", liveTerminalsPath.toAbsolutePath().toString());
+
             }
         }
 
