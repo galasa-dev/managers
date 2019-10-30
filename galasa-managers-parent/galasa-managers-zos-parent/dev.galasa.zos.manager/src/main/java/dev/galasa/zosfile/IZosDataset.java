@@ -433,6 +433,7 @@ public interface IZosDataset {
 	/**
 	 * Return the attributes of the data set as a {@link String} 
 	 * @return
+	 * @throws @ZosDatasetException
 	 */
 	public String getAttibutesAsString() throws ZosDatasetException;
 }
