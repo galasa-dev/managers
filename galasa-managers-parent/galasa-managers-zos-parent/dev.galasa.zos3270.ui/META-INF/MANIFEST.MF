@@ -15,6 +15,9 @@ Import-Package: com.google.gson,
  dev.galasa.eclipse,
  dev.galasa.eclipse.launcher,
  dev.galasa.eclipse.launcher.tabs,
+ dev.galasa.eclipse.liveupdates,
  dev.galasa.eclipse.ui.run,
  dev.galasa.eclipse.ui.run.storedartifacts,
- dev.galasa.zos3270.common.screens;version="0.3.0"
+ dev.galasa.zos3270.common.screens;version="0.3.0",
+ javax.servlet;version="3.1.0",
+ javax.servlet.http;version="3.1.0"

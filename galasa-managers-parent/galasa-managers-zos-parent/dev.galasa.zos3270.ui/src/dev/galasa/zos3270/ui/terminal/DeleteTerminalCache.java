@@ -8,7 +8,6 @@ package dev.galasa.zos3270.ui.terminal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -32,12 +31,7 @@ public class DeleteTerminalCache extends Job {
 
         try {
             if (Files.exists(liveTerminals)) {
-                //*** First we need to MOVE the cache library incase the test is still running
-                //*** trying to delete the directory as the test is writing wont work.
-                //*** Needs move to base cache path to avoid the live terminal monitor recreating the terminal view
-                Path deletePath = Activator.getCachePath().resolve(UUID.randomUUID().toString());
-                Files.move(liveTerminals, deletePath);
-                Activator.deleteCache(deletePath);
+                Activator.deleteCache(liveTerminals);
             }
         } catch (IOException e) {
             return new Status(Status.ERROR, Zos3270Activator.PLUGIN_ID, "Failed", e);

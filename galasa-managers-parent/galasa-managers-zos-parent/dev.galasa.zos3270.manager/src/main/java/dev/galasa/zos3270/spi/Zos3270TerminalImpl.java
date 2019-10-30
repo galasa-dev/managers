@@ -5,10 +5,12 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +40,7 @@ import dev.galasa.zos3270.common.screens.TerminalField;
 import dev.galasa.zos3270.common.screens.TerminalImage;
 import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
-import dev.galasa.zos3270.internal.properties.LiveTerminalDirectory;
+import dev.galasa.zos3270.internal.properties.LiveTerminalUrl;
 import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
@@ -49,7 +51,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final String                   terminalId;
     private int                            updateId;
-    private final String runId;
+    private final String                   runId;
 
     private final IConfidentialTextService cts;
     private final boolean                  applyCtf;
@@ -58,7 +60,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final Path                     terminalRasDirectory;
     private int                            rasTerminalSequence;
-    private Path                           liveTerminalDirectory;
+    private URL                            liveTerminalUrl;
     private int                            liveTerminalSequence;
     private boolean                        logConsoleTerminals;
 
@@ -66,7 +68,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             throws Zos3270ManagerException, InterruptedException {
         super(host, port, tls);
         this.terminalId = id;
-        this.runId      = framework.getTestRunName();
+        this.runId = framework.getTestRunName();
 
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
@@ -76,19 +78,27 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
         terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
 
-        String propLiveTerminalDirectory = LiveTerminalDirectory.get();
-        if (propLiveTerminalDirectory == null) {
-            liveTerminalDirectory = null;
+        URL propLiveTerminalUrl = LiveTerminalUrl.get();
+        if (propLiveTerminalUrl == null) {
+            liveTerminalUrl = null;
         } else {
             try {
-                Path termDir = Paths.get(propLiveTerminalDirectory, runId + "-" + this.terminalId);
-                while(Files.exists(termDir)) {
-                    termDir = termDir.getParent().resolve(termDir.getFileName() + "A");
+                // *** Register the terminal to the UI which will own the terminal view
+                HttpURLConnection connection = (HttpURLConnection) propLiveTerminalUrl.openConnection();
+                connection.setRequestMethod("HEAD");
+                connection.addRequestProperty("zos3270-runid", this.runId);
+                connection.addRequestProperty("zos3270-terminalid", this.terminalId);
+                connection.setDoInput(true);
+                connection.setDoOutput(false);
+                connection.connect();
+                if (connection.getResponseCode() != 200) {
+                    logger.warn("Unable to activate live terminal due to " + connection.getResponseCode() + " - "
+                            + connection.getResponseMessage());
+                } else {
+                    this.liveTerminalUrl = new URL(
+                            propLiveTerminalUrl.toString() + "/" + this.runId + "/" + this.terminalId);
                 }
-
-                Files.createDirectories(termDir);
-                liveTerminalDirectory = termDir;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
@@ -101,7 +111,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         updateId++;
         String update = terminalId + "-" + (updateId);
 
-
         String aidString;
         String aidText = null;
         if (aid != null) {
@@ -112,12 +121,11 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
 
         int cursorPosition = getScreen().getCursor();
-        int screenCols  = getScreen().getNoOfColumns();
-        int screenRows  = getScreen().getNoOfRows();
+        int screenCols = getScreen().getNoOfColumns();
+        int screenRows = getScreen().getNoOfRows();
 
         int cursorRow = cursorPosition / screenRows;
         int cursorCol = cursorPosition % screenCols;
-
 
         TerminalSize terminalSize = new TerminalSize(screenCols, screenRows); // TODO
         // sort
@@ -132,34 +140,38 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             flushTerminalCache();
         }
 
-        if (liveTerminalDirectory != null) {
-            if (!Files.exists(liveTerminalDirectory)) { // Check the directory is still there incase the live view is closed
-                this.liveTerminalDirectory = null;
-                logger.debug("live terminal updates discontinued");
-            } else {
-                try {
-                    liveTerminalSequence++;
-                    String terminalFilename = String.format("%05d", liveTerminalSequence) + ".gz";
-                    Path terminalPath = liveTerminalDirectory.resolve(terminalFilename);
+        if (liveTerminalUrl != null) {
+            try {
+                liveTerminalSequence++;
+                dev.galasa.zos3270.common.screens.Terminal liveTerminal = new dev.galasa.zos3270.common.screens.Terminal(
+                        this.terminalId, this.runId, liveTerminalSequence, terminalSize);
+                liveTerminal.getImages().add(terminalImage);
 
-                    dev.galasa.zos3270.common.screens.Terminal liveTerminal = new dev.galasa.zos3270.common.screens.Terminal(
-                            this.terminalId, this.runId, liveTerminalSequence, terminalSize);
-                    liveTerminal.getImages().add(terminalImage);
+                JsonObject intermediateJson = (JsonObject) gson.toJsonTree(liveTerminal);
+                stripFalseBooleans(intermediateJson);
+                String tempJson = gson.toJson(intermediateJson);
 
-                    JsonObject intermediateJson = (JsonObject) gson.toJsonTree(liveTerminal);
-                    stripFalseBooleans(intermediateJson);
-                    String tempJson = gson.toJson(intermediateJson);
-
-                    if (applyCtf) {
-                        tempJson = cts.removeConfidentialText(tempJson);
-                    }
-
-                    try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath))) {
-                        IOUtils.write(tempJson, gos, StandardCharsets.UTF_8);
-                    }
-                } catch(Exception e) {
-                    logger.error("Failed to write live terminal image, image lost",e);
+                if (applyCtf) {
+                    tempJson = cts.removeConfidentialText(tempJson);
                 }
+
+                HttpURLConnection connection = (HttpURLConnection) this.liveTerminalUrl.openConnection();
+                connection.setRequestMethod("PUT");
+                connection.addRequestProperty("Content-Type", "application/json");
+                connection.setDoInput(true);
+                connection.setDoOutput(true);
+                connection.connect();
+                try (OutputStream os = connection.getOutputStream()) {
+                    IOUtils.write(tempJson, os, StandardCharsets.UTF_8);
+                }
+                if (connection.getResponseCode() != 200) {
+                    logger.warn("Unable to write live terminal due to " + connection.getResponseCode() + " - "
+                            + connection.getResponseMessage());
+                    this.liveTerminalUrl = null;
+                }
+            } catch (Exception e) {
+                logger.error("Failed to write live terminal image, image lost", e);
+                this.liveTerminalUrl = null;
             }
         }
 
@@ -168,10 +180,11 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             if (applyCtf) {
                 screenData = cts.removeConfidentialText(screenData);
             }
-            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update
-                    + "\n" + screenData);
+            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId="
+                    + update + "\n" + screenData);
         } else {
-            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId=" + update);
+            logger.debug(direction.toString() + aidString + " to 3270 terminal " + this.terminalId + ",  updateId="
+                    + update);
         }
     }
 
@@ -203,12 +216,13 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".gz";
             Path terminalPath = terminalRasDirectory.resolve(terminalFilename);
 
-            try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath, new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")), 
+            try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath,
+                    new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")),
                     StandardOpenOption.CREATE))) {
                 IOUtils.write(tempJson, gos, "utf-8");
             }
-        } catch(Exception e) {
-            logger.error("Unable to write terminal cache to the RAS",e);
+        } catch (Exception e) {
+            logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
             return;
         }
