@@ -340,10 +340,6 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
             this.viewId = "unknown";
         }
 
-        if (this.cachePath != null) {
-            new DeleteTerminalCache(this.viewId, this.cachePath).schedule();
-        }
-
         if (this.liveServlet != null) {
             try {
                 this.liveServlet.dispose();
@@ -351,6 +347,9 @@ public class TerminalView extends ViewPart implements PaintListener, IPropertyCh
             } catch (Exception e) {
                 Zos3270Activator.log(e);
             }
+        }
+
+        if (this.cachePath != null) {
             new DeleteTerminalCache(this.viewId, this.cachePath).schedule();
         }
 
