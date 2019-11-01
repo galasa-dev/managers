@@ -17,12 +17,12 @@ import java.nio.file.attribute.FileTime;
  *
  */
 public class SSHBasicAttributesView implements BasicFileAttributeView {
-	
-	private final SSHFileSystem fileSystem;
-	
-	protected SSHBasicAttributesView(SSHFileSystem fileSystem) {
-		this.fileSystem = fileSystem;
-	}
+
+    private final SSHFileSystem fileSystem;
+
+    protected SSHBasicAttributesView(SSHFileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
 
     /*
      * (non-Javadoc)

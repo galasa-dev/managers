@@ -120,14 +120,14 @@ public class TerminalImage {
     public String getType() {
         return type;
     }
-    
+
     /**
      * @return the column where the cursor is positioned
      */
     public int getCursorColumn() {
         return cursorColumn;
     }
-    
+
     /**
      * @return the row where the cursor is positioned
      */

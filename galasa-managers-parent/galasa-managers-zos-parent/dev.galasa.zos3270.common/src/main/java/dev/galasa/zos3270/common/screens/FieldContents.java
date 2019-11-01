@@ -8,7 +8,7 @@ package dev.galasa.zos3270.common.screens;
 import javax.validation.constraints.NotNull;
 
 /**
- * Pojo to contain the onscreen contents.  May contain nulls.
+ * Pojo to contain the onscreen contents. May contain nulls.
  * 
  * @author Michael Baylis
  *
@@ -25,24 +25,24 @@ public class FieldContents {
      */
     public FieldContents(@NotNull Character[] chars) {
         boolean containsNulls = false;
-        for(Character c : chars) {
+        for (Character c : chars) {
             if (c == null) {
                 containsNulls = true;
                 break;
             }
         }
-        
+
         if (containsNulls) {
             this.chars = chars;
             this.text = null;
         } else {
             this.chars = null;
-            
+
             char[] convChars = new char[chars.length];
-            for(int i = 0; i < chars.length; i++) {
+            for (int i = 0; i < chars.length; i++) {
                 convChars[i] = chars[i];
             }
-            
+
             this.text = new String(convChars);
         }
     }
@@ -56,13 +56,13 @@ public class FieldContents {
         if (chars == null && text != null) {
             char[] tc = text.toCharArray();
             Character[] ca = new Character[tc.length];
-            for(int i = 0; i < tc.length; i++) {
+            for (int i = 0; i < tc.length; i++) {
                 ca[i] = tc[i];
             }
             return ca;
         }
-        
+
         return this.chars;
     }
-    
+
 }

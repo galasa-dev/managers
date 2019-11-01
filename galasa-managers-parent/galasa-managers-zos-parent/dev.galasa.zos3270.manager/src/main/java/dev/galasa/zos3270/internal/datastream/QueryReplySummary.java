@@ -10,7 +10,7 @@ import java.util.List;
 
 public class QueryReplySummary extends AbstractQueryReply {
 
-    private static final byte      SUMMARY = (byte) 0x80;
+    private static final byte              SUMMARY = (byte) 0x80;
 
     private final List<AbstractQueryReply> replies;
 

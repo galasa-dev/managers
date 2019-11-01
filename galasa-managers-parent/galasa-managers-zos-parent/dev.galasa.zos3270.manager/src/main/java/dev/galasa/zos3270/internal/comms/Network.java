@@ -105,8 +105,8 @@ public class Network {
                 try {
                     newSocket.close();
                 } catch (IOException e) {
-                    logger.error("Failed to close the socket",e);
-               }
+                    logger.error("Failed to close the socket", e);
+                }
             }
         }
     }
@@ -139,7 +139,7 @@ public class Network {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.error("Failed to close the socket",e);
+                logger.error("Failed to close the socket", e);
             }
             socket = null;
             inputStream = null;

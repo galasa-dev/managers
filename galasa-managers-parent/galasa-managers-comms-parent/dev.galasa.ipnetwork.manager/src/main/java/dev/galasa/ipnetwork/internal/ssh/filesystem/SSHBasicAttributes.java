@@ -15,10 +15,10 @@ import java.nio.file.attribute.FileTime;
  *
  */
 public class SSHBasicAttributes implements BasicFileAttributes {
-	
-	protected SSHBasicAttributes(SSHFileSystem filesystem) {
-		//TODO create the attributes
-	}
+
+    protected SSHBasicAttributes(SSHFileSystem filesystem) {
+        // TODO create the attributes
+    }
 
     /*
      * (non-Javadoc)

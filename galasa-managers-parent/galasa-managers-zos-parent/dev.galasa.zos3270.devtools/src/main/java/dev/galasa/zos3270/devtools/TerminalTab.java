@@ -29,7 +29,7 @@ public class TerminalTab implements Action {
         try {
             terminalHolder.terminal.tab();
             terminalHolder.terminal.reportScreenWithCursor();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }

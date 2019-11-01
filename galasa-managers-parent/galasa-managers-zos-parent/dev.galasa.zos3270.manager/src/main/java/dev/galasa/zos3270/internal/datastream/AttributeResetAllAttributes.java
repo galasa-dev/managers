@@ -16,7 +16,7 @@ public class AttributeResetAllAttributes implements IAttribute {
     public AttributeResetAllAttributes(ByteBuffer buffer) {
         this.reset = buffer.get();
     }
-    
+
     public byte getReset() {
         return reset;
     }

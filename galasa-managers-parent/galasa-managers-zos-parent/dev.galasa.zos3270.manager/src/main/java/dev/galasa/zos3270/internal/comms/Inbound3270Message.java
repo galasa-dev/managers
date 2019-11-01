@@ -14,9 +14,9 @@ import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 
 public class Inbound3270Message {
 
-    private final AbstractCommandCode           commandCode;
+    private final AbstractCommandCode   commandCode;
     private final WriteControlCharacter writeControlCharacter;
-    private final List<AbstractOrder>           orders;
+    private final List<AbstractOrder>   orders;
     private final List<StructuredField> structuredFields;
 
     public Inbound3270Message(AbstractCommandCode commandCode, WriteControlCharacter writeControlCharacter,

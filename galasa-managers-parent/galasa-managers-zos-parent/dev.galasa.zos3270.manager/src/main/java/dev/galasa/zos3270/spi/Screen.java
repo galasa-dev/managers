@@ -67,7 +67,7 @@ public class Screen {
 
     private final Network                           network;
 
-    private final IBufferHolder[]                    buffer;
+    private final IBufferHolder[]                   buffer;
     private final int                               columns;
     private final int                               rows;
     private final int                               screenSize;
@@ -363,7 +363,7 @@ public class Screen {
 
         Field currentField = null;
 
-        //*** Check to see if the the screen is wrapped or unformatted
+        // *** Check to see if the the screen is wrapped or unformatted
         if (!(this.buffer[0] instanceof BufferStartOfField)) {
             BufferStartOfField wrapSoField = null;
             for (int i = this.buffer.length - 1; i >= 0; i--) {
@@ -384,14 +384,14 @@ public class Screen {
         for (int i = 0; i < this.buffer.length; i++) {
             IBufferHolder bh = this.buffer[i];
             if (bh == null) {
-                currentField.appendChar((char) 0x00);  //NOSONAR, can't be null
+                currentField.appendChar((char) 0x00); // NOSONAR, can't be null
             } else if (bh instanceof BufferStartOfField) {
                 if (currentField != null) {
                     fields.add(currentField);
                 }
                 currentField = new Field(i, (BufferStartOfField) bh);
             } else if (bh instanceof BufferChar) {
-                currentField.appendChar(((BufferChar) bh).getChar());//NOSONAR, can't be null
+                currentField.appendChar(((BufferChar) bh).getChar());// NOSONAR, can't be null
             } else {
                 throw new UnsupportedOperationException("Unrecognised buffer type " + bh.getClass().getName());
             }
@@ -436,7 +436,7 @@ public class Screen {
      * 
      * @param maxWait - time in milliseconds
      * @throws KeyboardLockedException
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     public void waitForKeyboard(int maxWait) throws TimeoutException, InterruptedException {
         if (!keyboardLock.tryAcquire(maxWait, TimeUnit.MILLISECONDS)) {

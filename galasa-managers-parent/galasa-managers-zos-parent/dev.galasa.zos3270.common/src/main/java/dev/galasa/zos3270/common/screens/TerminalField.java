@@ -32,15 +32,15 @@ public class TerminalField {
     /**
      * Constructor
      * 
-     * @param row Start Row
-     * @param column Start Column
-     * @param unformatted Field is unformatted
-     * @param fieldProtected Field if protected
-     * @param fieldNumeric Field is Numeric
-     * @param fieldDisplay Field is displayable
+     * @param row                 Start Row
+     * @param column              Start Column
+     * @param unformatted         Field is unformatted
+     * @param fieldProtected      Field if protected
+     * @param fieldNumeric        Field is Numeric
+     * @param fieldDisplay        Field is displayable
      * @param fieldIntenseDisplay Field is Intense
-     * @param fieldSelectorPen Field can be selected
-     * @param fieldModifed Field has been modified
+     * @param fieldSelectorPen    Field can be selected
+     * @param fieldModifed        Field has been modified
      */
     public TerminalField(int row, int column, boolean unformatted, boolean fieldProtected, boolean fieldNumeric,
             boolean fieldDisplay, boolean fieldIntenseDisplay, boolean fieldSelectorPen, boolean fieldModifed) {
@@ -74,7 +74,7 @@ public class TerminalField {
     }
 
     /**
-     * Is field unformatted.  If so,  the first position will not be a StartField
+     * Is field unformatted. If so, the first position will not be a StartField
      * 
      * @return Unformatted
      */
@@ -92,7 +92,7 @@ public class TerminalField {
     }
 
     /**
-     * Is field unformatted.  If so,  the first position will not be a StartField
+     * Is field unformatted. If so, the first position will not be a StartField
      * 
      * @return Unformatted
      */
@@ -144,5 +144,5 @@ public class TerminalField {
     public List<FieldContents> getContents() {
         return contents;
     }
-    
+
 }

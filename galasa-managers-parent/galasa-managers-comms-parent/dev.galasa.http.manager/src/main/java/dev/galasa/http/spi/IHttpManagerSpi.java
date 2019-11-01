@@ -12,7 +12,7 @@ import dev.galasa.http.IHttpManager;
 
 public interface IHttpManagerSpi extends IHttpManager {
 
-	@NotNull
-	IHttpClient newHttpClient();
+    @NotNull
+    IHttpClient newHttpClient();
 
 }

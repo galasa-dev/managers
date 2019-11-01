@@ -16,10 +16,10 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
 
 public interface IIpNetworkManagerSpi {
 
-	@NotNull
-	ICommandShell getCommandShell(IIpHost host, ICredentials credentials) throws IpNetworkManagerException;
+    @NotNull
+    ICommandShell getCommandShell(IIpHost host, ICredentials credentials) throws IpNetworkManagerException;
 
-	@NotNull
-	FileSystem getFileSystem(IIpHost host) throws IpNetworkManagerException;
+    @NotNull
+    FileSystem getFileSystem(IIpHost host) throws IpNetworkManagerException;
 
 }

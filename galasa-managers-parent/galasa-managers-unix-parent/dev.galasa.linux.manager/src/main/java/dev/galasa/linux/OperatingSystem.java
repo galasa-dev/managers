@@ -6,8 +6,8 @@
 package dev.galasa.linux;
 
 public enum OperatingSystem {
-	
-	ubuntu,
-	any
+
+    ubuntu,
+    any
 
 }

@@ -11,12 +11,12 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileStoreAttributeView;
 
 public class SSHFileStore extends FileStore {
-	
-	public final String name;
-	
-	public SSHFileStore(String name) {
-		this.name = name;
-	}
+
+    public final String name;
+
+    public SSHFileStore(String name) {
+        this.name = name;
+    }
 
     /*
      * (non-Javadoc)

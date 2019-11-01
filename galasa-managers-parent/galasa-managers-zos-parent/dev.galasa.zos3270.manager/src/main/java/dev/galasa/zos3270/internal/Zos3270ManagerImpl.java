@@ -120,7 +120,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
         try {
             IZosImage image = this.zosManager.getImageForTag(tag);
             IIpHost host = image.getIpHost();
-            
+
             terminalCount++;
             String terminaId = "term" + (terminalCount);
 
@@ -161,7 +161,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
                 terminal.flushTerminalCache();
                 terminal.disconnect();
             } catch (InterruptedException e) {
-                logger.warn("Thread interrupted whilst disconnecting terminals",e);
+                logger.warn("Thread interrupted whilst disconnecting terminals", e);
                 Thread.currentThread().interrupt();
             }
         }

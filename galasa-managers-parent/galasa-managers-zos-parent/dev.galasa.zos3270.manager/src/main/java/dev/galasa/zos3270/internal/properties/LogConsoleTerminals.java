@@ -26,7 +26,8 @@ import dev.galasa.zos3270.Zos3270ManagerException;
 public class LogConsoleTerminals extends CpsProperties {
 
     public static boolean get() throws Zos3270ManagerException {
-        return Boolean.parseBoolean(getStringWithDefault(Zos3270PropertiesSingleton.cps(), "true", "console.terminal", "images"));
+        return Boolean.parseBoolean(
+                getStringWithDefault(Zos3270PropertiesSingleton.cps(), "true", "console.terminal", "images"));
     }
 
 }

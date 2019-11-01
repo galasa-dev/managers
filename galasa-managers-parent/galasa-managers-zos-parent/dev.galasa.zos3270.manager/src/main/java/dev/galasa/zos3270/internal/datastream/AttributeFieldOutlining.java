@@ -16,7 +16,7 @@ public class AttributeFieldOutlining implements IAttribute {
     public AttributeFieldOutlining(ByteBuffer buffer) {
         this.validation = buffer.get();
     }
-    
+
     public byte getValidation() {
         return validation;
     }

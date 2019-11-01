@@ -9,7 +9,7 @@ import org.apache.http.entity.mime.content.ContentBody;
 
 public interface RequestPart {
 
-	ContentBody getBody();
-	
-	String getType();
+    ContentBody getBody();
+
+    String getType();
 }

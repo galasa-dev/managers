@@ -45,7 +45,7 @@ public class Zos3270PropertiesSingleton {
 
         throw new Zos3270ManagerException("Attempt to set manager CPS before instance created");
     }
-    
+
     private static synchronized void setInstance(Zos3270PropertiesSingleton newInstance) {
         instance = newInstance;
     }

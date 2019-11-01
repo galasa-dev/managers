@@ -16,7 +16,7 @@ public class AttributeFieldValidation implements IAttribute {
     public AttributeFieldValidation(ByteBuffer buffer) {
         this.validation = buffer.get();
     }
-    
+
     public byte getValidation() {
         return validation;
     }

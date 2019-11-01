@@ -16,7 +16,7 @@ public class AttributeExtendedHighlighting implements IAttribute {
     public AttributeExtendedHighlighting(ByteBuffer buffer) {
         this.colour = buffer.get();
     }
-    
+
     public byte getColour() {
         return colour;
     }

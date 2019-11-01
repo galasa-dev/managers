@@ -7,6 +7,6 @@ package dev.galasa.zos3270.spi;
 
 public interface IBufferHolder {
 
-   String getStringWithoutNulls();
+    String getStringWithoutNulls();
 
 }

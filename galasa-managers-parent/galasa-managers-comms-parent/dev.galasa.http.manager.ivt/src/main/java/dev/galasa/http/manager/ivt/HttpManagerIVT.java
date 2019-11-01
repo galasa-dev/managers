@@ -21,16 +21,16 @@ import dev.galasa.http.IHttpClient;
 
 @Test
 public class HttpManagerIVT {
-	
+
     @Logger
-    public Log logger;
-    
+    public Log         logger;
+
     @HttpClient
     public IHttpClient client1;
-    
+
     @HttpClient
     public IHttpClient client2;
-    
+
     @Test
     public void checkClientNotNull() throws Exception {
         if (client1 == null) {
@@ -40,26 +40,26 @@ public class HttpManagerIVT {
             throw new Exception("client2 is null, should have been filled by the http Manager");
         }
     }
-    
+
     @Test
-    public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException{
-    	client1.setURI(new URI("http://google.com"));
+    public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException {
+        client1.setURI(new URI("http://google.com"));
         String response = client1.get("/images", false);
-        if(response == null){
+        if (response == null) {
             throw new Exception("Unable to speak to external endpoint");
         }
     }
-    
+
     @Test
-    public void makeJsonRequest() throws HttpClientException, URISyntaxException, Exception{
-    	client2.setURI(new URI("http://jsonplaceholder.typicode.com"));
-    	HttpClientResponse<JsonObject> resp = client2.getJson("/todos/1");
-    	JsonObject json = resp.getContent();
-    	String title = json.get("title").getAsString();
-    	if(!title.equals("delectus aut autem")) {
-    		logger.error("Did not get correct title");
-    		throw new Exception("Did not receive title as expected");
-    	}
+    public void makeJsonRequest() throws HttpClientException, URISyntaxException, Exception {
+        client2.setURI(new URI("http://jsonplaceholder.typicode.com"));
+        HttpClientResponse<JsonObject> resp = client2.getJson("/todos/1");
+        JsonObject json = resp.getContent();
+        String title = json.get("title").getAsString();
+        if (!title.equals("delectus aut autem")) {
+            logger.error("Did not get correct title");
+            throw new Exception("Did not receive title as expected");
+        }
     }
 
 }

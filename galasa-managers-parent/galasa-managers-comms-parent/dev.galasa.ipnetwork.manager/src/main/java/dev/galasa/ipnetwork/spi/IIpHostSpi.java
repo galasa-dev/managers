@@ -11,8 +11,8 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
 
 public interface IIpHostSpi extends IIpHost {
 
-	IIpPort provisionPort(String type) throws IpNetworkManagerException;
-	
-	String getPrefixHost();
+    IIpPort provisionPort(String type) throws IpNetworkManagerException;
+
+    String getPrefixHost();
 
 }

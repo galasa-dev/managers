@@ -21,7 +21,7 @@ public class StructuredFieldReadPartition extends StructuredField {
     public StructuredFieldReadPartition(byte[] structuredFieldData) throws NetworkException {
         this.pid = structuredFieldData[1];
 
-        switch (structuredFieldData[2]) { 
+        switch (structuredFieldData[2]) {
             case QUERY:
                 this.type = Type.QUERY;
                 break;

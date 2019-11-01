@@ -13,14 +13,12 @@ import dev.galasa.linux.spi.ILinuxProvisioner;
 
 public class LinuxDefaultProvisioner implements ILinuxProvisioner {
 
-	@Override
-	public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities) {
-		
-		
-		//*** Boo
-		
-		
-		return null;
-	}
+    @Override
+    public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities) {
+
+        // *** Boo
+
+        return null;
+    }
 
 }

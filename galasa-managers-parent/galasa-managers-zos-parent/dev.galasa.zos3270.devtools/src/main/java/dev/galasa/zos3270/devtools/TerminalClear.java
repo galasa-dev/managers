@@ -29,7 +29,7 @@ public class TerminalClear implements Action {
         try {
             terminalHolder.terminal.clear();
             terminalHolder.terminal.reportScreenWithCursor();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }

@@ -7,7 +7,6 @@ package dev.galasa.ipnetwork.internal.ssh;
 
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 
-
 /**
  * zOS Command exception indicating an error in SSH
  * 
@@ -15,21 +14,21 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
  *
  */
 public class SSHException extends IpNetworkManagerException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public SSHException() {
-	}
+    public SSHException() {
+    }
 
-	public SSHException(String message) {
-		super(message);
-	}
+    public SSHException(String message) {
+        super(message);
+    }
 
-	public SSHException(Throwable throwable) {
-		super(throwable);
-	}
+    public SSHException(Throwable throwable) {
+        super(throwable);
+    }
 
-	public SSHException(String message, Throwable throwable) {
-		super(message, throwable);
-	}
+    public SSHException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 
 }

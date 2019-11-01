@@ -11,6 +11,6 @@ package dev.galasa.http;
  * @author Will Yates
  */
 
- public interface IHttpManager {
-	 
- }
+public interface IHttpManager {
+
+}

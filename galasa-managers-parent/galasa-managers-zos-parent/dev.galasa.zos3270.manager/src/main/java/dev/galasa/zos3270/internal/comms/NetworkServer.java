@@ -23,8 +23,8 @@ import dev.galasa.zos3270.spi.NetworkException;
 public class NetworkServer /* extends Thread */ {
 
     public static final Charset ascii7 = Charset.forName("us-ascii");
-    
-    private final Log           logger          = LogFactory.getLog(getClass());
+
+    private final Log           logger = LogFactory.getLog(getClass());
 
     private final Socket        socket;
     private final OutputStream  outputStream;
@@ -52,7 +52,7 @@ public class NetworkServer /* extends Thread */ {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.warn("Problem closing socket",e);
+                logger.warn("Problem closing socket", e);
             }
         }
     }

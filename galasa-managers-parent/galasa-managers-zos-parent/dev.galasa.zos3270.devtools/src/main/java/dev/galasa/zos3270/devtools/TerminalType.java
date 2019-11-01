@@ -19,9 +19,9 @@ public class TerminalType implements Action {
 
     @Argument(index = 0, name = "data", description = "The data to type", required = true)
     private String    data;
-    
+
     @Option(name = "-e", description = "Press enter afterwords", required = false)
-    private boolean enter;
+    private boolean   enter;
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -40,7 +40,7 @@ public class TerminalType implements Action {
             if (enter) {
                 terminalHolder.terminal.enter();
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }

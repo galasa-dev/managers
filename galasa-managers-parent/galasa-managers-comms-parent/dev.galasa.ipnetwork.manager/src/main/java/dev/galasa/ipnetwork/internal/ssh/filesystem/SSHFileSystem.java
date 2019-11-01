@@ -32,174 +32,169 @@ import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.ipnetwork.internal.ssh.SSHException;
 
 public class SSHFileSystem extends FileSystem {
-	
-	private final Log logger = LogFactory.getLog(SSHFileSystemProvider.class);
 
-	private final String hostname;
-	private final int port;
-	private final String userid;
-	private final String password;
+    private final Log                   logger = LogFactory.getLog(SSHFileSystemProvider.class);
 
-	private JSch sshClient;
-	private Session session;
-	
-	private final SSHFileStore fileStore;
-	private final SSHFileSystemProvider fileSystemProvider;
-	
-	public SSHFileSystem(String hostname, int port, ICredentials credentials) throws SSHException {
+    private final String                hostname;
+    private final int                   port;
+    private final String                userid;
+    private final String                password;
 
-		this.hostname = hostname;
-		this.port = port;
-		
-		this.fileStore = new SSHFileStore("sshfilestore-" + hostname);
-		this.fileSystemProvider = new SSHFileSystemProvider(this);
+    private JSch                        sshClient;
+    private Session                     session;
 
-		this.sshClient = new JSch();
-		this.session   = null;
+    private final SSHFileStore          fileStore;
+    private final SSHFileSystemProvider fileSystemProvider;
 
-		try {
-			if (credentials instanceof ICredentialsUsernamePassword) {
-				ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword) credentials;
-				this.userid = creds.getUsername();
-				this.password = creds.getPassword();
-			} else if (credentials instanceof ICredentialsUsernameToken) {
-				ICredentialsUsernameToken creds = (ICredentialsUsernameToken) credentials;
-				this.userid = creds.getUsername();
-				this.password = null;
-				this.sshClient.addIdentity(this.userid, creds.getToken(), null, null);
-			} else {
-				throw new SSHException("Unsupported credentials type - " + credentials.getClass().getName());
-			}
-		} catch(SSHException e) {
-			throw e;
-		} catch (JSchException e) {
-			throw new SSHException("Problem adding credentials to SSH", e);
-		}
+    public SSHFileSystem(String hostname, int port, ICredentials credentials) throws SSHException {
 
-	}
+        this.hostname = hostname;
+        this.port = port;
 
-	public void connect() throws SSHException {
-		connect(5);
-	}
+        this.fileStore = new SSHFileStore("sshfilestore-" + hostname);
+        this.fileSystemProvider = new SSHFileSystemProvider(this);
 
-	/**
-	 * Connect to the target system
-	 * 
-	 * @throws SSHException
-	 */
-	private synchronized void connect(int retry) throws SSHException {
-		// Do nothing if already connected
-		if (session != null && session.isConnected()) {
-			return;
-		}
+        this.sshClient = new JSch();
+        this.session = null;
 
-		try {
+        try {
+            if (credentials instanceof ICredentialsUsernamePassword) {
+                ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword) credentials;
+                this.userid = creds.getUsername();
+                this.password = creds.getPassword();
+            } else if (credentials instanceof ICredentialsUsernameToken) {
+                ICredentialsUsernameToken creds = (ICredentialsUsernameToken) credentials;
+                this.userid = creds.getUsername();
+                this.password = null;
+                this.sshClient.addIdentity(this.userid, creds.getToken(), null, null);
+            } else {
+                throw new SSHException("Unsupported credentials type - " + credentials.getClass().getName());
+            }
+        } catch (SSHException e) {
+            throw e;
+        } catch (JSchException e) {
+            throw new SSHException("Problem adding credentials to SSH", e);
+        }
 
-			try {
-				session = sshClient.getSession(this.userid, hostname, port);
-				session.setIdentityRepository(sshClient.getIdentityRepository());
-				if (this.password != null) {
-					session.setPassword(this.password);
-				}
-				session.setConfig("StrictHostKeyChecking", "no");
+    }
 
-				session.connect();
+    public void connect() throws SSHException {
+        connect(5);
+    }
 
-				// Slight delay to allow the connection to stabilise
-				try {
-					Thread.sleep(200);  // NOSONAR  - Sleep is sufficent
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					throw new SSHException(
-							"Interrupted trying to authenticate using SSH", e);
-				}
+    /**
+     * Connect to the target system
+     * 
+     * @throws SSHException
+     */
+    private synchronized void connect(int retry) throws SSHException {
+        // Do nothing if already connected
+        if (session != null && session.isConnected()) {
+            return;
+        }
 
-				logger.trace("SSH Client connected to '" + hostname + ":"
-						+ port);
+        try {
 
-			} catch (Exception e) {
-				if (retry > 0) {
-					logger.trace("Exception caught during SSH connection, will retry.", e);
-					if (session != null && session.isConnected()) {
-						session.disconnect();
-						session = null;
-					}
-					Thread.sleep(5000);  // NOSONAR  - Sleep is sufficient
-					connect(retry - 1);
-				} else {
-					throw e;
-				}
-			}
-		} catch (SSHException e) {
-			throw e;
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new SSHException(
-					"Interrupted while trying to retrieve output", e);
-		} catch (Exception e) {
-			throw new SSHException(
-					"Unrecognised exception in connection", e);				
-		}
+            try {
+                session = sshClient.getSession(this.userid, hostname, port);
+                session.setIdentityRepository(sshClient.getIdentityRepository());
+                if (this.password != null) {
+                    session.setPassword(this.password);
+                }
+                session.setConfig("StrictHostKeyChecking", "no");
 
-		return;
-	}
-	
-	protected ChannelSftp getFileChannel() throws SSHException {
-		connect();
-		
-		try {
-			Channel channel = session.openChannel("sftp");
-			channel.connect();
-			
-			return (ChannelSftp) channel;			
-		} catch(Exception e) {
-			throw new SSHException("Unable to open a sftp channel to the server", e);
-		}
-	}
+                session.connect();
 
-	/**
-	 * Disconnect the client
-	 * 
-	 * @throws IOException
-	 */
-	public synchronized void disconnect() throws SSHException {
-		if (session == null) {
-			return;
-		}
-		synchronized (sshClient) {
+                // Slight delay to allow the connection to stabilise
+                try {
+                    Thread.sleep(200); // NOSONAR - Sleep is sufficent
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new SSHException("Interrupted trying to authenticate using SSH", e);
+                }
 
-			if (!session.isConnected()) {
-				session = null;
-				return;
-			}
+                logger.trace("SSH Client connected to '" + hostname + ":" + port);
 
-			session.disconnect();
-			logger.trace("SSH Client disconnected");
+            } catch (Exception e) {
+                if (retry > 0) {
+                    logger.trace("Exception caught during SSH connection, will retry.", e);
+                    if (session != null && session.isConnected()) {
+                        session.disconnect();
+                        session = null;
+                    }
+                    Thread.sleep(5000); // NOSONAR - Sleep is sufficient
+                    connect(retry - 1);
+                } else {
+                    throw e;
+                }
+            }
+        } catch (SSHException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SSHException("Interrupted while trying to retrieve output", e);
+        } catch (Exception e) {
+            throw new SSHException("Unrecognised exception in connection", e);
+        }
 
-			session = null;
-		}
-		return;
-	}
+        return;
+    }
 
+    protected ChannelSftp getFileChannel() throws SSHException {
+        connect();
 
-	@Override
-	public void close() throws IOException {
-		try {
-			this.disconnect();
-		} catch (SSHException e) {
-			throw new IOException("Problem disconnecting the SSH FileSystem");
-		}
-	}
+        try {
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
 
-	@Override
-	public Iterable<FileStore> getFileStores() {
+            return (ChannelSftp) channel;
+        } catch (Exception e) {
+            throw new SSHException("Unable to open a sftp channel to the server", e);
+        }
+    }
+
+    /**
+     * Disconnect the client
+     * 
+     * @throws IOException
+     */
+    public synchronized void disconnect() throws SSHException {
+        if (session == null) {
+            return;
+        }
+        synchronized (sshClient) {
+
+            if (!session.isConnected()) {
+                session = null;
+                return;
+            }
+
+            session.disconnect();
+            logger.trace("SSH Client disconnected");
+
+            session = null;
+        }
+        return;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            this.disconnect();
+        } catch (SSHException e) {
+            throw new IOException("Problem disconnecting the SSH FileSystem");
+        }
+    }
+
+    @Override
+    public Iterable<FileStore> getFileStores() {
         final ArrayList<FileStore> fileStores = new ArrayList<>();
         fileStores.add(this.fileStore);
         return fileStores;
-	}
+    }
 
-	@Override
-	public Path getPath(String first, String... more) {
+    @Override
+    public Path getPath(String first, String... more) {
         final StringBuilder sb = new StringBuilder();
         if (first != null) {
             sb.append(first);
@@ -214,10 +209,10 @@ public class SSHFileSystem extends FileSystem {
         }
 
         return new SSHPath(this, sb.toString());
-	}
+    }
 
-	@Override
-	public PathMatcher getPathMatcher(String syntaxAndInput) {
+    @Override
+    public PathMatcher getPathMatcher(String syntaxAndInput) {
         final int pos = syntaxAndInput.indexOf(':');
         if ((pos <= 0) || (pos >= (syntaxAndInput.length() - 1))) {
             throw new IllegalArgumentException();
@@ -247,52 +242,51 @@ public class SSHFileSystem extends FileSystem {
                 return pattern.toString();
             }
         };
-	}
+    }
 
-	@Override
-	public Iterable<Path> getRootDirectories() {
+    @Override
+    public Iterable<Path> getRootDirectories() {
         final ArrayList<Path> roots = new ArrayList<>();
         roots.add(new SSHPath(this, "/"));
         return roots;
-	}
+    }
 
-	@Override
-	public String getSeparator() {
+    @Override
+    public String getSeparator() {
         return "/";
-	}
+    }
 
-	@Override
-	public UserPrincipalLookupService getUserPrincipalLookupService() {
-		return null;
-	}
+    @Override
+    public UserPrincipalLookupService getUserPrincipalLookupService() {
+        return null;
+    }
 
-	@Override
-	public boolean isOpen() {
-		return true;
-	}
+    @Override
+    public boolean isOpen() {
+        return true;
+    }
 
-	@Override
-	public boolean isReadOnly() {
-		return false;
-	}
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 
-	@Override
-	public WatchService newWatchService() throws IOException {
-		throw new UnsupportedOperationException("Watch Service is not available with this FileSystem");
-	}
+    @Override
+    public WatchService newWatchService() throws IOException {
+        throw new UnsupportedOperationException("Watch Service is not available with this FileSystem");
+    }
 
-	@Override
-	public FileSystemProvider provider() {
-		return this.fileSystemProvider;
-	}
+    @Override
+    public FileSystemProvider provider() {
+        return this.fileSystemProvider;
+    }
 
-	@Override
-	public Set<String> supportedFileAttributeViews() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
-	
-	
+    @Override
+    public Set<String> supportedFileAttributeViews() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
+
     /**
      * Convert a glob into a regex
      *
@@ -325,6 +319,5 @@ public class SSHFileSystem extends FileSystem {
         sb.append('$');
         return sb.toString();
     }
-
 
 }
