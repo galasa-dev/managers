@@ -6,7 +6,7 @@
 package dev.galasa.openstack.manager.internal.json;
 
 public class ServerRequest {
-	
-	public Server server; // NOSONAR
+
+    public Server server; // NOSONAR
 
 }

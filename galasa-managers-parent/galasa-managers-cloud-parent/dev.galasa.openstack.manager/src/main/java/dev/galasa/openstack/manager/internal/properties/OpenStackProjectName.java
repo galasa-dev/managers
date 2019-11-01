@@ -14,11 +14,14 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
 /**
  * OpenStack project name
  * <p>
- * The Openstack Project name that the manager will authenticate against and create compute resources under.
- * This property is required as no default is available. 
- * </p><p>
- * The property is:-<br><br>
- * openstack.server.project.name=xxxxx 
+ * The Openstack Project name that the manager will authenticate against and
+ * create compute resources under. This property is required as no default is
+ * available.
+ * </p>
+ * <p>
+ * The property is:-<br>
+ * <br>
+ * openstack.server.project.name=xxxxx
  * </p>
  * <p>
  * There is no default
@@ -28,11 +31,10 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  *
  */
 public class OpenStackProjectName extends CpsProperties {
-	
-	public static String get() throws ConfigurationPropertyStoreException, OpenstackManagerException, LogConfigurationException {
-		return getStringNulled(OpenstackPropertiesSingleton.cps(), 
-				               "server", 
-				               "project.name");
-	}
+
+    public static String get()
+            throws ConfigurationPropertyStoreException, OpenstackManagerException, LogConfigurationException {
+        return getStringNulled(OpenstackPropertiesSingleton.cps(), "server", "project.name");
+    }
 
 }

@@ -9,5 +9,5 @@ import java.util.List;
 
 public class Flavors {
 
-	public List<Flavor> flavors;  // NOSONAR
+    public List<Flavor> flavors; // NOSONAR
 }

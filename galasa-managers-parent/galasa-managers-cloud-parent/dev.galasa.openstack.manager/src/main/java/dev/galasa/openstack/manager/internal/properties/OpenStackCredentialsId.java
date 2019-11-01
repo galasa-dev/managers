@@ -13,10 +13,12 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
 /**
  * OpenStack Credentials ID
  * <p>
- * The Credentials ID to be used to authenticate with the OpenStack Server. 
- * </p><p>
- * The property is:-<br><br>
- * openstack.server.credentials.id=openstack 
+ * The Credentials ID to be used to authenticate with the OpenStack Server.
+ * </p>
+ * <p>
+ * The property is:-<br>
+ * <br>
+ * openstack.server.credentials.id=openstack
  * </p>
  * <p>
  * default value is openstack
@@ -26,12 +28,9 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  *
  */
 public class OpenStackCredentialsId extends CpsProperties {
-	
-	public static String get() throws OpenstackManagerException, LogConfigurationException {
-		return getStringWithDefault(OpenstackPropertiesSingleton.cps(), 
-				               "openstack",
-				               "server", 
-				               "credentials.id");
-	}
+
+    public static String get() throws OpenstackManagerException, LogConfigurationException {
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "openstack", "server", "credentials.id");
+    }
 
 }
