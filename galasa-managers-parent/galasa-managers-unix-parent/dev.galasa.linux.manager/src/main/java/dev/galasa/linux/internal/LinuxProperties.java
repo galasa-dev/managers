@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.linux.internal;
 
 import java.util.List;
@@ -11,23 +16,22 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.linux.LinuxManagerException;
 
 public class LinuxProperties {
-	private final IConfigurationPropertyStoreService cps;
+    private final IConfigurationPropertyStoreService cps;
 
-	public LinuxProperties(@NotNull IFramework framework) throws LinuxManagerException {
-		try {
-			this.cps = framework.getConfigurationPropertyService(LinuxManagerImpl.NAMESPACE);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new LinuxManagerException("Unable to request CPS for the Linux Manager", e);
-		}
-	}
+    public LinuxProperties(@NotNull IFramework framework) throws LinuxManagerException {
+        try {
+            this.cps = framework.getConfigurationPropertyService(LinuxManagerImpl.NAMESPACE);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new LinuxManagerException("Unable to request CPS for the Linux Manager", e);
+        }
+    }
 
-	public List<String> getExtraBundles() throws LinuxManagerException {
-		try {
-			return AbstractManager.split(this.cps.getProperty("bundle.extra", "managers"));
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new LinuxManagerException("Problem asking CPS for the extra bundles", e); 
-		}
-	}
-
+    public List<String> getExtraBundles() throws LinuxManagerException {
+        try {
+            return AbstractManager.split(this.cps.getProperty("bundle.extra", "managers"));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new LinuxManagerException("Problem asking CPS for the extra bundles", e);
+        }
+    }
 
 }

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
 import java.nio.file.attribute.BasicFileAttributes;
@@ -10,10 +15,10 @@ import java.nio.file.attribute.FileTime;
  *
  */
 public class SSHBasicAttributes implements BasicFileAttributes {
-	
-	protected SSHBasicAttributes(SSHFileSystem filesystem) {
-		//TODO create the attributes
-	}
+
+    protected SSHBasicAttributes(SSHFileSystem filesystem) {
+        // TODO create the attributes
+    }
 
     /*
      * (non-Javadoc)

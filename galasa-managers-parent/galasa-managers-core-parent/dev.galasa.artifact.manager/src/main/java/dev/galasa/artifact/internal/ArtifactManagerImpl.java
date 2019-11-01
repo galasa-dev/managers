@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.artifact.internal;
 
 import java.lang.annotation.Annotation;
@@ -29,60 +34,60 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
 
     private static final Log logger = LogFactory.getLog(ArtifactManagerImpl.class);
 
-    @GenerateAnnotatedField(annotation=ArtifactManager.class)
-	public IArtifactManager fillField(Field field, List<Annotation> annotations) {
-		return this;
-	}
+    @GenerateAnnotatedField(annotation = ArtifactManager.class)
+    public IArtifactManager fillField(Field field, List<Annotation> annotations) {
+        return this;
+    }
 
-	@Override
-	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		generateAnnotatedFields(ArtifactManagerField.class);
-	}
+    @Override
+    public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        generateAnnotatedFields(ArtifactManagerField.class);
+    }
 
-	@Override
-	public void provisionStop() {
-		//Nothing is provisioned by this manager so we don't have anything to stop
-	}
+    @Override
+    public void provisionStop() {
+        // Nothing is provisioned by this manager so we don't have anything to stop
+    }
 
-	@Override
-	public IBundleResources getBundleResources(Class<?> owningClass) {
-		return new BundleResourcesImpl(owningClass, this.getFramework());
-	}
+    @Override
+    public IBundleResources getBundleResources(Class<?> owningClass) {
+        return new BundleResourcesImpl(owningClass, this.getFramework());
+    }
 
-	@Override
-	public ISkeletonProcessor getSkeletonProcessor() {
-		return new VelocitySkeletonProcessor(this.getFramework());
-	}
+    @Override
+    public ISkeletonProcessor getSkeletonProcessor() {
+        return new VelocitySkeletonProcessor(this.getFramework());
+    }
 
-	@Override
-	public ISkeletonProcessor getSkeletonProcessor(int skeletonType) throws SkeletonProcessorException {
-		switch (skeletonType) {
-			case SkeletonType.PLUSPLUS:
-				return new PlusPlusSkeletonProcessor(this.getFramework());
-			case SkeletonType.VELOCITY:
-				return new VelocitySkeletonProcessor(this.getFramework());
-			default:
-				throw new SkeletonProcessorException("SkeletonType '" + skeletonType + "' is not a valid type");
-		}
-	}
+    @Override
+    public ISkeletonProcessor getSkeletonProcessor(int skeletonType) throws SkeletonProcessorException {
+        switch (skeletonType) {
+            case SkeletonType.PLUSPLUS:
+                return new PlusPlusSkeletonProcessor(this.getFramework());
+            case SkeletonType.VELOCITY:
+                return new VelocitySkeletonProcessor(this.getFramework());
+            default:
+                throw new SkeletonProcessorException("SkeletonType '" + skeletonType + "' is not a valid type");
+        }
+    }
 
-	@Override
-	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-		super.initialise(framework, allManagers, activeManagers, testClass);
-		List<AnnotatedField> ourFields = findAnnotatedFields(ArtifactManagerField.class);
-		if (!ourFields.isEmpty()) {
-			youAreRequired(allManagers, activeManagers);
-		}
-	}
+    @Override
+    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
+            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, testClass);
+        List<AnnotatedField> ourFields = findAnnotatedFields(ArtifactManagerField.class);
+        if (!ourFields.isEmpty()) {
+            youAreRequired(allManagers, activeManagers);
+        }
+    }
 
-	@Override
-	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
-			throws ManagerException {
-		if (activeManagers.contains(this)) {
-			return;
-		}
+    @Override
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+            throws ManagerException {
+        if (activeManagers.contains(this)) {
+            return;
+        }
 
-		activeManagers.add(this);
-	}
+        activeManagers.add(this);
+    }
 }

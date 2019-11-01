@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.http.internal;
 
 import java.security.cert.CertificateException;
@@ -7,17 +12,17 @@ import javax.net.ssl.X509TrustManager;
 
 public class VeryTrustingTrustManager implements X509TrustManager {
 
-	@Override
-	public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { //NOSONAR
-	}
+    @Override
+    public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { // NOSONAR
+    }
 
-	@Override
-	public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { //NOSONAR
-	}
+    @Override
+    public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { // NOSONAR
+    }
 
-	@Override
-	public X509Certificate[] getAcceptedIssuers() {
-		return null;
-	}
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+        return null;
+    }
 
 }

@@ -21,18 +21,18 @@ import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.spi.NetworkException;
 
 public class VampScreenTest {
-	
-	@Test
-	public void testVampScreen() throws IOException, DecoderException, NetworkException {
-		URL vampFile = getClass().getClassLoader().getResource("vampstream.txt");
-		String vampHex = IOUtils.toString(vampFile.openStream(), "utf-8");
-		byte[] stream = Hex.decodeHex(vampHex);
-		ByteBuffer buffer = ByteBuffer.wrap(stream);
-		
-		NetworkThread networkThread = new NetworkThread(null, null, null);
-		
-		List<AbstractOrder> orders = networkThread.process3270Data(buffer).getOrders();
-		Assert.assertEquals("Count of orders is incorrect",  225, orders.size());
-	}
+
+    @Test
+    public void testVampScreen() throws IOException, DecoderException, NetworkException {
+        URL vampFile = getClass().getClassLoader().getResource("vampstream.txt");
+        String vampHex = IOUtils.toString(vampFile.openStream(), "utf-8");
+        byte[] stream = Hex.decodeHex(vampHex);
+        ByteBuffer buffer = ByteBuffer.wrap(stream);
+
+        NetworkThread networkThread = new NetworkThread(null, null, null);
+
+        List<AbstractOrder> orders = networkThread.process3270Data(buffer).getOrders();
+        Assert.assertEquals("Count of orders is incorrect", 225, orders.size());
+    }
 
 }

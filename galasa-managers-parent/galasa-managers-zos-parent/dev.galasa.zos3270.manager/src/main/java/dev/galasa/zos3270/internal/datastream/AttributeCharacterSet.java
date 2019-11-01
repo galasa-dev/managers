@@ -16,7 +16,7 @@ public class AttributeCharacterSet implements IAttribute {
     public AttributeCharacterSet(ByteBuffer buffer) {
         this.characterSet = buffer.get();
     }
-    
+
     public byte getCharacterSet() {
         return characterSet;
     }

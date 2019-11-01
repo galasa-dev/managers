@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.http.internal;
 
 import java.lang.annotation.Annotation;
@@ -26,55 +31,51 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 @Component(service = { IManager.class })
 public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi {
 
-    private static final Log logger = LogFactory.getLog(HttpManagerImpl.class);
+    private static final Log  logger              = LogFactory.getLog(HttpManagerImpl.class);
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
 
-    @GenerateAnnotatedField(annotation=HttpClient.class)
-	public IHttpClient generateHttpClient(Field field, List<Annotation> annotations) {
-		return newHttpClient();
-	}
-    
+    @GenerateAnnotatedField(annotation = HttpClient.class)
+    public IHttpClient generateHttpClient(Field field, List<Annotation> annotations) {
+        return newHttpClient();
+    }
 
-	@Override
-	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		generateAnnotatedFields(HttpManagerField.class);
-	}
+    @Override
+    public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        generateAnnotatedFields(HttpManagerField.class);
+    }
 
-	@Override
-	public void provisionStop() {
-		for(IHttpClient client : instantiatedClients) {
-			client.close();
-		}
-	}
+    @Override
+    public void provisionStop() {
+        for (IHttpClient client : instantiatedClients) {
+            client.close();
+        }
+    }
 
+    @Override
+    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
+            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, testClass);
 
-	@Override
-	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-		super.initialise(framework, allManagers, activeManagers, testClass);
-		
-		List<AnnotatedField> ourFields = findAnnotatedFields(HttpManagerField.class);
-		if (!ourFields.isEmpty()) {
-			youAreRequired(allManagers, activeManagers);
-		}
-	}
+        List<AnnotatedField> ourFields = findAnnotatedFields(HttpManagerField.class);
+        if (!ourFields.isEmpty()) {
+            youAreRequired(allManagers, activeManagers);
+        }
+    }
 
+    @Override
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+            throws ManagerException {
+        if (activeManagers.contains(this)) {
+            return;
+        }
 
-	@Override
-	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
-			throws ManagerException {
-		if (activeManagers.contains(this)) {
-			return;
-		}
+        activeManagers.add(this);
+    }
 
-		activeManagers.add(this);
-	}
-
-
-	@Override
-	public @NotNull IHttpClient newHttpClient() {
-		IHttpClient client = new HttpClientImpl(logger);
-    	instantiatedClients.add(client);
-		return client;
-	}
+    @Override
+    public @NotNull IHttpClient newHttpClient() {
+        IHttpClient client = new HttpClientImpl(logger);
+        instantiatedClients.add(client);
+        return client;
+    }
 }

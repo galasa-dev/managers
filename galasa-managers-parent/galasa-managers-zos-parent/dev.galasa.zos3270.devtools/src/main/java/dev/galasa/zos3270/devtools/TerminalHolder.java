@@ -29,8 +29,8 @@ public class TerminalHolder implements IScreenUpdateListener {
         }
     }
 
-	@Override
-	public void screenUpdated(@NotNull Direction direction, AttentionIdentification aid) {
+    @Override
+    public void screenUpdated(@NotNull Direction direction, AttentionIdentification aid) {
         terminal.reportScreenWithCursor();
-	}
+    }
 }

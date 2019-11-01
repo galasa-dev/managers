@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.linux.spi;
 
 import java.util.List;
@@ -9,6 +14,7 @@ import dev.galasa.linux.OperatingSystem;
 
 public interface ILinuxProvisioner {
 
-	ILinuxProvisionedImage provision(@NotNull String tag, @NotNull OperatingSystem operatingSystem, @NotNull List<String> capabilities) throws ManagerException;
+    ILinuxProvisionedImage provision(@NotNull String tag, @NotNull OperatingSystem operatingSystem,
+            @NotNull List<String> capabilities) throws ManagerException;
 
 }

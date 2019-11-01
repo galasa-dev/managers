@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.linux.manager.ivt;
 
 import org.apache.commons.logging.Log;
@@ -13,16 +18,16 @@ import dev.galasa.linux.OperatingSystem;
 
 @Test
 public class LinuxManagerIVT {
-	
+
     @Logger
-    public Log logger;
-    
-	@LinuxImage(operatingSystem=OperatingSystem.any)
-	public ILinuxImage linuxPrimary;
-	
+    public Log         logger;
+
+    @LinuxImage(operatingSystem = OperatingSystem.any)
+    public ILinuxImage linuxPrimary;
+
     @LinuxIpHost
-    public IIpHost linuxHost;
-	
+    public IIpHost     linuxHost;
+
     @Test
     public void checkPrimaryImage() throws Exception {
         if (linuxPrimary == null) {
@@ -33,19 +38,18 @@ public class LinuxManagerIVT {
         }
         logger.info("The Primary Image field has been correctly initialised");
     }
-    
+
     @Test
     public void checkCommandShell() throws Exception {
-    	
-    	ICommandShell commandShell = this.linuxPrimary.getCommandShell();
-    	
-    	String response = commandShell.issueCommand("uname -a");
-    	
-    	if (response.isEmpty()) {
-    		throw new Exception("Invalid response from the command shell :-\n" + response);
-    	}
-    	
-    }
 
+        ICommandShell commandShell = this.linuxPrimary.getCommandShell();
+
+        String response = commandShell.issueCommand("uname -a");
+
+        if (response.isEmpty()) {
+            throw new Exception("Invalid response from the command shell :-\n" + response);
+        }
+
+    }
 
 }

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.http;
 
 /**
@@ -6,6 +11,6 @@ package dev.galasa.http;
  * @author Will Yates
  */
 
- public interface IHttpManager {
-	 
- }
+public interface IHttpManager {
+
+}

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.artifact.manager.ivt;
 
 import java.io.IOException;
@@ -14,63 +19,64 @@ import dev.galasa.core.manager.Logger;
 
 @Test
 public class ArtifactManagerIVT {
-	
+
     @Logger
-    public Log logger;
-    
+    public Log              logger;
+
     @ArtifactManager
     public IArtifactManager artifacts;
-    
-    
+
     @Test
     public void checkManagerNotNull() throws Exception {
-    	if(artifacts == null) {
-    		throw new Exception("Artifact Manager instance was null");
-    	}
+        if (artifacts == null) {
+            throw new Exception("Artifact Manager instance was null");
+        }
     }
-    
+
     @Test
     public void readTextFile() throws Exception, TestBundleResourceException, IOException {
-    	InputStream file = artifacts.getBundleResources(this.getClass()).retrieveFile("/resources/textFiles/test1.txt");
-    	String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(file);
-    	logger.debug("Read the following from the file test1.txt: " + textContent);
-    	if(!textContent.trim().equals("Hello from Galasa")) {
-    		throw new Exception("Unable to read text file resources/textFiles/test1.txt");
-    	}
+        InputStream file = artifacts.getBundleResources(this.getClass()).retrieveFile("/resources/textFiles/test1.txt");
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(file);
+        logger.debug("Read the following from the file test1.txt: " + textContent);
+        if (!textContent.trim().equals("Hello from Galasa")) {
+            throw new Exception("Unable to read text file resources/textFiles/test1.txt");
+        }
     }
-    
+
     @Test
-    public void readSkeletonFile() throws TestBundleResourceException, Exception, IOException{
-    	HashMap<String,Object> props = new HashMap<>();
-    	props.put("ITEM1", "THIS IS ITEM1");
-    	props.put("ITEM2", "SECOND ITEM");
-    	props.put("ITEM3", "ITEM NUMBER THREE");
-    	
-    	InputStream is = artifacts.getBundleResources(this.getClass()).retrieveSkeletonFile("/resources/skeletons/test1.skel", props);
-    	String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
-    	
-    	logger.info("Receivied the following from the skeleton file: " + textContent);
-    	if(!textContent.trim().equals("The third parameter is ITEM NUMBER THREE")) {
-    		throw new Exception("received the wrong result from retrieving a skeleton file, received: " + textContent);
-    	}
+    public void readSkeletonFile() throws TestBundleResourceException, Exception, IOException {
+        HashMap<String, Object> props = new HashMap<>();
+        props.put("ITEM1", "THIS IS ITEM1");
+        props.put("ITEM2", "SECOND ITEM");
+        props.put("ITEM3", "ITEM NUMBER THREE");
+
+        InputStream is = artifacts.getBundleResources(this.getClass())
+                .retrieveSkeletonFile("/resources/skeletons/test1.skel", props);
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
+
+        logger.info("Receivied the following from the skeleton file: " + textContent);
+        if (!textContent.trim().equals("The third parameter is ITEM NUMBER THREE")) {
+            throw new Exception("received the wrong result from retrieving a skeleton file, received: " + textContent);
+        }
     }
-    
+
     @Test
-    public void readSkeletonFile2() throws TestBundleResourceException, Exception, IOException{
-    	HashMap<String,Object> props = new HashMap<>();
-    	props.put("ITEM1", "THIS IS ITEM1");
-    	props.put("ITEM2", "SECOND ITEM");
-    	props.put("ITEM3", "ITEM NUMBER THREE");
-    	
-    	InputStream is = artifacts.getBundleResources(this.getClass()).retrieveSkeletonFile("/resources/skeletons/test2.skel", props);
-    	String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
-    	logger.info("Receivied the following from the skeleton file: " + textContent);
-    	
-    	if(!textContent.trim().contains("The third parameter is ITEM NUMBER THREE")) {
-    		throw new IOException("received the wrong result from the first line of the skeleton");
-    	}
-    	if(!textContent.trim().contains("The first item was \"THIS IS ITEM1\" and this is the second line")) {
-    		throw new Exception("received the wrong result from retrieving a skeleton file, received: " + textContent);
-    	}
+    public void readSkeletonFile2() throws TestBundleResourceException, Exception, IOException {
+        HashMap<String, Object> props = new HashMap<>();
+        props.put("ITEM1", "THIS IS ITEM1");
+        props.put("ITEM2", "SECOND ITEM");
+        props.put("ITEM3", "ITEM NUMBER THREE");
+
+        InputStream is = artifacts.getBundleResources(this.getClass())
+                .retrieveSkeletonFile("/resources/skeletons/test2.skel", props);
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
+        logger.info("Receivied the following from the skeleton file: " + textContent);
+
+        if (!textContent.trim().contains("The third parameter is ITEM NUMBER THREE")) {
+            throw new IOException("received the wrong result from the first line of the skeleton");
+        }
+        if (!textContent.trim().contains("The first item was \"THIS IS ITEM1\" and this is the second line")) {
+            throw new Exception("received the wrong result from retrieving a skeleton file, received: " + textContent);
+        }
     }
 }

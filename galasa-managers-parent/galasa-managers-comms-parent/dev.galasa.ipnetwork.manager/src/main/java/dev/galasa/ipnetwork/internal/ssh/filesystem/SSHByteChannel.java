@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
 import java.io.IOException;
@@ -25,166 +30,165 @@ import dev.galasa.ipnetwork.internal.ssh.SSHException;
  */
 public class SSHByteChannel implements SeekableByteChannel {
 
-	private long                size        = 0;
-	private long                position    = 0;
+    private long                size     = 0;
+    private long                position = 0;
 
-	private final SSHFileSystem fileSystem;
-	private final Path          path;
+    private final SSHFileSystem fileSystem;
+    private final Path          path;
 
-	private final ChannelSftp   channel;
+    private final ChannelSftp   channel;
 
-	private final InputStream   inputStream;
-	private final OutputStream  outputStream;
+    private final InputStream   inputStream;
+    private final OutputStream  outputStream;
 
+    public SSHByteChannel(Path path, Set<? extends OpenOption> options, SSHFileSystem fileSystem) throws SSHException {
+        this.fileSystem = fileSystem;
+        this.path = path.toAbsolutePath();
 
-	public SSHByteChannel(Path path, Set<? extends OpenOption> options, SSHFileSystem fileSystem) throws SSHException {
-		this.fileSystem = fileSystem;
-		this.path       = path.toAbsolutePath();
+        this.channel = this.fileSystem.getFileChannel();
 
-		this.channel    = this.fileSystem.getFileChannel();
+        boolean write = options.contains(StandardOpenOption.WRITE);
 
-		boolean write = options.contains(StandardOpenOption.WRITE);
+        try {
+            if (write) {
+                inputStream = null;
 
-		try {
-			if (write) {
-				inputStream = null;
+                outputStream = this.channel.put(this.path.toString());
+            } else {
+                outputStream = null;
 
-				outputStream = this.channel.put(this.path.toString());
-			} else {
-				outputStream = null;
-				
-				//Check the file exists and get the size
-				SftpATTRS attrs = this.channel.lstat(this.path.toString());
-				this.size = attrs.getSize();
+                // Check the file exists and get the size
+                SftpATTRS attrs = this.channel.lstat(this.path.toString());
+                this.size = attrs.getSize();
 
-				inputStream = this.channel.get(this.path.toString());
-			}
-		} catch (SftpException e) {
-			throw new SSHException("Unable to open SSH file", e);
-		}
-	}
+                inputStream = this.channel.get(this.path.toString());
+            }
+        } catch (SftpException e) {
+            throw new SSHException("Unable to open SSH file", e);
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.Channel#isOpen()
-	 */
-	@Override
-	public boolean isOpen() {
-		return this.channel.isConnected();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.Channel#isOpen()
+     */
+    @Override
+    public boolean isOpen() {
+        return this.channel.isConnected();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.Channel#close()
-	 */
-	@Override
-	public void close() throws IOException {
-		if (inputStream != null) {
-			inputStream.close();
-		}
-		if (outputStream != null) {
-			outputStream.close();
-		}
-		this.channel.disconnect();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.Channel#close()
+     */
+    @Override
+    public void close() throws IOException {
+        if (inputStream != null) {
+            inputStream.close();
+        }
+        if (outputStream != null) {
+            outputStream.close();
+        }
+        this.channel.disconnect();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#read(java.nio.ByteBuffer)
-	 */
-	@Override
-	public int read(ByteBuffer dst) throws IOException {
-		if (!isOpen()) {
-			throw new ClosedChannelException();
-		}
-		
-		int count = 0;
-		byte[] buffer = new byte[1];
-		for(int i = 0; i < dst.remaining(); i++) {
-			int len = this.inputStream.read(buffer);
-			if (len < 1) {
-				break;
-			}
-			dst.put(buffer);
-			count++;
-			position++;
-		}
-		
-		return count;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#read(java.nio.ByteBuffer)
+     */
+    @Override
+    public int read(ByteBuffer dst) throws IOException {
+        if (!isOpen()) {
+            throw new ClosedChannelException();
+        }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#write(java.nio.ByteBuffer)
-	 */
-	@Override
-	public int write(ByteBuffer src) throws IOException {
-		if (!isOpen()) {
-			throw new ClosedChannelException();
-		}
-		
-		int count = 0;
-		while(src.remaining() > 0) { // TODO there has got be a more efficient way of doing this
-			outputStream.write(src.get());
-			count++;
-			size++;
-			position++;
-		}
-		
-		return count;
-	}
+        int count = 0;
+        byte[] buffer = new byte[1];
+        for (int i = 0; i < dst.remaining(); i++) {
+            int len = this.inputStream.read(buffer);
+            if (len < 1) {
+                break;
+            }
+            dst.put(buffer);
+            count++;
+            position++;
+        }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#position()
-	 */
-	@Override
-	public long position() throws IOException {
-		return position;
-	}
+        return count;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#position(long)
-	 */
-	@Override
-	public SeekableByteChannel position(long newPosition) throws IOException {
-		if (!isOpen()) {
-			throw new ClosedChannelException();
-		}
-		throw new UnsupportedOperationException("need to write");
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#write(java.nio.ByteBuffer)
+     */
+    @Override
+    public int write(ByteBuffer src) throws IOException {
+        if (!isOpen()) {
+            throw new ClosedChannelException();
+        }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#size()
-	 */
-	@Override
-	public long size() throws IOException {
-		if (!isOpen()) {
-			throw new ClosedChannelException();
-		}
-		return this.size;
-	}
+        int count = 0;
+        while (src.remaining() > 0) { // TODO there has got be a more efficient way of doing this
+            outputStream.write(src.get());
+            count++;
+            size++;
+            position++;
+        }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.nio.channels.SeekableByteChannel#truncate(long)
-	 */
-	@Override
-	public SeekableByteChannel truncate(long size) throws IOException {
-		if (!isOpen()) {
-			throw new ClosedChannelException();
-		}
-		throw new UnsupportedOperationException("need to write");
-	}
+        return count;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#position()
+     */
+    @Override
+    public long position() throws IOException {
+        return position;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#position(long)
+     */
+    @Override
+    public SeekableByteChannel position(long newPosition) throws IOException {
+        if (!isOpen()) {
+            throw new ClosedChannelException();
+        }
+        throw new UnsupportedOperationException("need to write");
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#size()
+     */
+    @Override
+    public long size() throws IOException {
+        if (!isOpen()) {
+            throw new ClosedChannelException();
+        }
+        return this.size;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.nio.channels.SeekableByteChannel#truncate(long)
+     */
+    @Override
+    public SeekableByteChannel truncate(long size) throws IOException {
+        if (!isOpen()) {
+            throw new ClosedChannelException();
+        }
+        throw new UnsupportedOperationException("need to write");
+    }
 
 }

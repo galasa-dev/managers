@@ -36,7 +36,7 @@ public class TerminalConnect implements Action {
             terminalHolder.terminal = new Terminal(host, 23);
             terminalHolder.terminal.getScreen().registerScreenUpdateListener(terminalHolder);
             terminalHolder.terminal.connect();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             terminalHolder.terminal = null;
             throw e;

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.ipnetwork.internal;
 
 import java.nio.file.FileSystem;
@@ -26,59 +31,60 @@ import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 
 @Component(service = { IManager.class })
 public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkManagerSpi {
-	protected final static String NAMESPACE = "ipnetwork";
+    protected final static String              NAMESPACE = "ipnetwork";
 
-	@SuppressWarnings("unused")
-	private final static Log logger = LogFactory.getLog(IpNetworkManagerImpl.class);
+    @SuppressWarnings("unused")
+    private final static Log                   logger    = LogFactory.getLog(IpNetworkManagerImpl.class);
 
-	private IFramework framework;
-	private IConfigurationPropertyStoreService cps;
-	private IDynamicStatusStoreService dss;
+    private IFramework                         framework;
+    private IConfigurationPropertyStoreService cps;
+    private IDynamicStatusStoreService         dss;
 
-	@Override
-	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-		super.initialise(framework, allManagers, activeManagers, testClass);
+    @Override
+    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
+            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, testClass);
 
-		try {
-			this.framework = framework;
-			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
-			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-		} catch(Exception e) {
-			throw new IpNetworkManagerException("Unable to initialise the IP Network Manager", e);
-		}
-	}
+        try {
+            this.framework = framework;
+            this.cps = framework.getConfigurationPropertyService(NAMESPACE);
+            this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
+        } catch (Exception e) {
+            throw new IpNetworkManagerException("Unable to initialise the IP Network Manager", e);
+        }
+    }
 
-	@Override
-	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
-			throws ManagerException {
-		if (activeManagers.contains(this)) {
-			return;
-		}
+    @Override
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+            throws ManagerException {
+        if (activeManagers.contains(this)) {
+            return;
+        }
 
-		activeManagers.add(this);
-	}
+        activeManagers.add(this);
+    }
 
-	public IConfigurationPropertyStoreService getCPS() {
-		return this.cps;
-	}
+    public IConfigurationPropertyStoreService getCPS() {
+        return this.cps;
+    }
 
-	public IDynamicStatusStoreService getDSS() {
-		return this.dss;
-	}
+    public IDynamicStatusStoreService getDSS() {
+        return this.dss;
+    }
 
-	public IResourcePoolingService getRPS() {
-		return this.framework.getResourcePoolingService();
-	}
+    public IResourcePoolingService getRPS() {
+        return this.framework.getResourcePoolingService();
+    }
 
-	@Override
-	public @NotNull ICommandShell getCommandShell(IIpHost ipHost, ICredentials credentials) throws IpNetworkManagerException {
-		return new SSHClient(ipHost.getHostname(), ipHost.getSshPort(), credentials, 60000);
-	}
+    @Override
+    public @NotNull ICommandShell getCommandShell(IIpHost ipHost, ICredentials credentials)
+            throws IpNetworkManagerException {
+        return new SSHClient(ipHost.getHostname(), ipHost.getSshPort(), credentials, 60000);
+    }
 
-	@Override
-	public @NotNull FileSystem getFileSystem(IIpHost ipHost) throws IpNetworkManagerException {
-		return new SSHFileSystem(ipHost.getHostname(), ipHost.getSshPort(), ipHost.getDefaultCredentials());
-	}
+    @Override
+    public @NotNull FileSystem getFileSystem(IIpHost ipHost) throws IpNetworkManagerException {
+        return new SSHFileSystem(ipHost.getHostname(), ipHost.getSshPort(), ipHost.getDefaultCredentials());
+    }
 
 }

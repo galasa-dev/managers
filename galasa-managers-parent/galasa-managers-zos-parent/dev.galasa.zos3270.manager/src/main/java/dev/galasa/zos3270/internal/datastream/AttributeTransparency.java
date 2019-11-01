@@ -16,7 +16,7 @@ public class AttributeTransparency implements IAttribute {
     public AttributeTransparency(ByteBuffer buffer) {
         this.transparency = buffer.get();
     }
-    
+
     public byte getTransparency() {
         return transparency;
     }

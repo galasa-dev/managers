@@ -28,7 +28,7 @@ public class TerminalEnter implements Action {
 
         try {
             terminalHolder.terminal.enter();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }

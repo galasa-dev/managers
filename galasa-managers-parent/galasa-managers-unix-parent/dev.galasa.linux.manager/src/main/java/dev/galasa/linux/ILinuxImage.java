@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.linux;
 
 import java.nio.file.Path;
@@ -9,51 +14,56 @@ import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 
 /**
- * <p>Represents a Linux Image .</p>
+ * <p>
+ * Represents a Linux Image .
+ * </p>
  * 
- * <p>Use a {@link LinuxImage} annotation to populate this field with</p>
+ * <p>
+ * Use a {@link LinuxImage} annotation to populate this field with
+ * </p>
  * 
  * @author Michael Baylis
  *
  */
 public interface ILinuxImage {
 
-	/**
-	 * Get the name of the Linux Image
-	 * 
-	 * @return The image ID, never null
-	 */
-	@NotNull
-	String getImageID();
-	
-	/**
-	 * Retrieve the IP Network Host details
-	 * 
-	 * @return
-	 */
-	@NotNull
-	IIpHost getIpHost();
-	
-	/**
-	 * Retrieve the default credentials for the Image. 
-	 * 
-	 * @return The default credentials - see {@link dev.galasa.framework.spi.creds.ICredentials}
-	 * @throws LinuxManagerException if the credentials are missing or there is a problem with the credentials store
-	 */
-	@NotNull
-	ICredentials getDefaultCredentials() throws LinuxManagerException;
-	
-	@NotNull
-	ICommandShell getCommandShell() throws LinuxManagerException;
-	
-	@NotNull
-	Path getRoot() throws LinuxManagerException;
-	
-	@NotNull
-	Path getHome() throws LinuxManagerException;
-	
-	@NotNull
-	Path getTmp() throws LinuxManagerException;
-	
-	
+    /**
+     * Get the name of the Linux Image
+     * 
+     * @return The image ID, never null
+     */
+    @NotNull
+    String getImageID();
+
+    /**
+     * Retrieve the IP Network Host details
+     * 
+     * @return
+     */
+    @NotNull
+    IIpHost getIpHost();
+
+    /**
+     * Retrieve the default credentials for the Image.
+     * 
+     * @return The default credentials - see
+     *         {@link dev.galasa.framework.spi.creds.ICredentials}
+     * @throws LinuxManagerException if the credentials are missing or there is a
+     *                               problem with the credentials store
+     */
+    @NotNull
+    ICredentials getDefaultCredentials() throws LinuxManagerException;
+
+    @NotNull
+    ICommandShell getCommandShell() throws LinuxManagerException;
+
+    @NotNull
+    Path getRoot() throws LinuxManagerException;
+
+    @NotNull
+    Path getHome() throws LinuxManagerException;
+
+    @NotNull
+    Path getTmp() throws LinuxManagerException;
+
 }

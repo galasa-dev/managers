@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.linux.internal;
 
 import java.util.List;
@@ -12,34 +17,35 @@ import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 public class LinuxDSEProvisioner implements ILinuxProvisioner {
-	
-	private final Log logger = LogFactory.getLog(getClass());
 
-	private final LinuxManagerImpl manager;
-	private final IConfigurationPropertyStoreService cps;
+    private final Log                                logger = LogFactory.getLog(getClass());
 
-	public LinuxDSEProvisioner(LinuxManagerImpl manager) {
+    private final LinuxManagerImpl                   manager;
+    private final IConfigurationPropertyStoreService cps;
 
-		this.manager = manager;
-		this.cps = this.manager.getCps();
-	}
+    public LinuxDSEProvisioner(LinuxManagerImpl manager) {
 
-	@Override
-	public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities) throws LinuxManagerException {
+        this.manager = manager;
+        this.cps = this.manager.getCps();
+    }
 
-		try {
-			String hostid = LinuxManagerImpl.nulled(this.cps.getProperty("linux.dse.tag", tag + ".hostid"));
+    @Override
+    public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities)
+            throws LinuxManagerException {
 
-			if (hostid == null) {
-				return null;
-			}
-			
-			logger.info("Loading DSE for Linux Image tagged " + tag);
-			
-			return new LinuxDSEImage(manager, this.cps, tag, hostid);
-		} catch(Exception e) {
-			throw new LinuxManagerException("Unable to provision the Linux DSE", e);
-		}
-	}
+        try {
+            String hostid = LinuxManagerImpl.nulled(this.cps.getProperty("linux.dse.tag", tag + ".hostid"));
+
+            if (hostid == null) {
+                return null;
+            }
+
+            logger.info("Loading DSE for Linux Image tagged " + tag);
+
+            return new LinuxDSEImage(manager, this.cps, tag, hostid);
+        } catch (Exception e) {
+            throw new LinuxManagerException("Unable to provision the Linux DSE", e);
+        }
+    }
 
 }

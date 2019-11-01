@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
 import java.io.File;
@@ -17,13 +22,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SSHPath implements Path {
-	
-	private final SSHFileSystem fileSystem;
+
+    private final SSHFileSystem  fileSystem;
     protected final List<String> nameElements = new ArrayList<>();
     protected final boolean      absolute;
 
-	public SSHPath(SSHFileSystem sshFileSystem, String path) {
-		this.fileSystem = sshFileSystem;
+    public SSHPath(SSHFileSystem sshFileSystem, String path) {
+        this.fileSystem = sshFileSystem;
         if (path == null) {
             throw new NullPointerException();
         }
@@ -37,7 +42,7 @@ public class SSHPath implements Path {
         while (path.contains("\\")) {
             path = path.replaceAll("\\Q\\\\E", "/"); // NOSONAR
         }
-        
+
         this.absolute = path.startsWith("/");
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
@@ -84,8 +89,8 @@ public class SSHPath implements Path {
         } catch (final AssertionError e) {
             throw new AssertionError("Invalid path, would have conversion to URI", e);
         }
-	}
-	
+    }
+
     /**
      * Clone part of a pre-exist Path
      *
@@ -95,8 +100,7 @@ public class SSHPath implements Path {
      * @param start        - The start element to clone
      * @param end          - The end element to clone, with is the last + 1
      */
-    protected SSHPath(SSHFileSystem fileSystem, boolean absolute, List<String> nameElements, int start,
-            int end) {
+    protected SSHPath(SSHFileSystem fileSystem, boolean absolute, List<String> nameElements, int start, int end) {
         this.fileSystem = fileSystem;
         this.absolute = absolute;
         for (int i = start; i < end; i++) {
@@ -104,98 +108,96 @@ public class SSHPath implements Path {
         }
     }
 
+    @Override
+    public int compareTo(Path other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public int compareTo(Path other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public boolean endsWith(Path other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public boolean endsWith(Path other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public boolean endsWith(String other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public boolean endsWith(String other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path getFileName() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path getFileName() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public FileSystem getFileSystem() {
+        return this.fileSystem;
+    }
 
-	@Override
-	public FileSystem getFileSystem() {
-		return this.fileSystem;
-	}
+    @Override
+    public Path getName(int index) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path getName(int index) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public int getNameCount() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public int getNameCount() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
-
-	@Override
-	public Path getParent() {
+    @Override
+    public Path getParent() {
         if (this.nameElements.isEmpty()) {
             return null;
         }
-        return new SSHPath(this.fileSystem, this.absolute, this.nameElements, 0,
-                this.nameElements.size() - 1);
-	}
+        return new SSHPath(this.fileSystem, this.absolute, this.nameElements, 0, this.nameElements.size() - 1);
+    }
 
-	@Override
-	public Path getRoot() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path getRoot() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public boolean isAbsolute() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public boolean isAbsolute() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Iterator<Path> iterator() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Iterator<Path> iterator() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path normalize() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path normalize() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path relativize(Path other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path relativize(Path other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
     /*
      * (non-Javadoc)
@@ -225,7 +227,7 @@ public class SSHPath implements Path {
     public Path resolve(String other) {
         return resolve(new SSHPath(this.fileSystem, other));
     }
-    
+
     /**
      * Check the path is valid
      *
@@ -242,66 +244,65 @@ public class SSHPath implements Path {
         return (SSHPath) path;
     }
 
+    @Override
+    public Path resolveSibling(Path other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path resolveSibling(Path other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path resolveSibling(String other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path resolveSibling(String other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public boolean startsWith(Path other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public boolean startsWith(Path other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public boolean startsWith(String other) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public boolean startsWith(String other) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path subpath(int beginIndex, int endIndex) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public Path subpath(int beginIndex, int endIndex) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
-
-	@Override
-	public Path toAbsolutePath() {
+    @Override
+    public Path toAbsolutePath() {
         if (this.absolute) {
             return this;
         }
 
         return new SSHPath(this.fileSystem, true, this.nameElements, 0, this.nameElements.size());
-	}
+    }
 
-	@Override
-	public File toFile() {
+    @Override
+    public File toFile() {
         throw new UnsupportedOperationException("Unable to translate to a java.ioFile");
-	}
+    }
 
-	@Override
-	public Path toRealPath(LinkOption... options) throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("need to write");
-	}
+    @Override
+    public Path toRealPath(LinkOption... options) throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("need to write");
+    }
 
-	@Override
-	public URI toUri() {
+    @Override
+    public URI toUri() {
         try {
             return new URI(this.fileSystem.provider().getScheme() + ":" + toAbsolutePath().toString());
         } catch (final Exception e) {
             throw new AssertionError(e);
         }
-	}
-	
+    }
+
     @Override
     public String toString() {
         if (this.absolute && this.nameElements.isEmpty()) {

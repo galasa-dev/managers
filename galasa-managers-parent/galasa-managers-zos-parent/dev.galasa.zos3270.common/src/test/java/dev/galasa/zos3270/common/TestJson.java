@@ -29,23 +29,23 @@ public class TestJson {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String terminalID = "bob";
-        int    terminalSequence = 3345;
+        int terminalSequence = 3345;
 
         String imageID = "bob-1";
-        int    imageSequence = 5588;
+        int imageSequence = 5588;
         String imageType = "system";
 
         int terminalColumns = 80;
-        int terminalRows    = 24;
+        int terminalRows = 24;
         int altColumns = 133;
-        int altRows    = 32;
+        int altRows = 32;
 
         int posRow = 6;
         int posColumn = 8;
-        
+
         int cursorRow = 3;
         int cursorCol = 4;
-        
+
         String aid = "aidy";
         String runid = "eeek";
 
@@ -53,14 +53,16 @@ public class TestJson {
         TerminalSize altSize = new TerminalSize(altColumns, altRows);
 
         Terminal terminal = new Terminal(terminalID, runid, terminalSequence, defaultSize);
-        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, aid, altSize, cursorCol, cursorRow);
+        TerminalImage image = new TerminalImage(imageSequence, imageID, true, imageType, aid, altSize, cursorCol,
+                cursorRow);
         terminal.addImage(image);
-        terminal.addImage(new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize, cursorCol, cursorRow));
+        terminal.addImage(
+                new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize, cursorCol, cursorRow));
 
         TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true);
         image.getFields().add(field);
 
-        Character[] data = new Character[] {'a','c','b'};
+        Character[] data = new Character[] { 'a', 'c', 'b' };
 
         FieldContents contents = new FieldContents(data);
         field.getContents().add(contents);
@@ -69,7 +71,6 @@ public class TestJson {
         String tempJson = gson.toJson(intermediateJson);
 
         Terminal testTerminal = gson.fromJson(tempJson, Terminal.class);
-
 
         assertThat(testTerminal.getId()).isEqualTo(terminalID);
         assertThat(testTerminal.getRunId()).isEqualTo(runid);

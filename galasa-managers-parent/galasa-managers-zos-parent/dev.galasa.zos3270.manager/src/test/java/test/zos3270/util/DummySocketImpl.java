@@ -17,88 +17,87 @@ import java.net.SocketImpl;
 
 public class DummySocketImpl extends SocketImpl {
 
-	private final ByteArrayInputStream  byteArrayInputStream;
-	private final ByteArrayOutputStream byteArrayOutputStream;
-	public int getInputStreamCount = 0;
-	public int closeCount = 0;
+    private final ByteArrayInputStream  byteArrayInputStream;
+    private final ByteArrayOutputStream byteArrayOutputStream;
+    public int                          getInputStreamCount = 0;
+    public int                          closeCount          = 0;
 
-	public DummySocketImpl(ByteArrayInputStream  byteArrayInputStream, 
-			ByteArrayOutputStream byteArrayOutputStream) {
-		this.byteArrayInputStream = byteArrayInputStream;
-		this.byteArrayOutputStream = byteArrayOutputStream;
-	}
+    public DummySocketImpl(ByteArrayInputStream byteArrayInputStream, ByteArrayOutputStream byteArrayOutputStream) {
+        this.byteArrayInputStream = byteArrayInputStream;
+        this.byteArrayOutputStream = byteArrayOutputStream;
+    }
 
-	@Override
-	public void setOption(int optID, Object value) throws SocketException {
-	}
+    @Override
+    public void setOption(int optID, Object value) throws SocketException {
+    }
 
-	@Override
-	public Object getOption(int optID) throws SocketException {
-		return null;
-	}
+    @Override
+    public Object getOption(int optID) throws SocketException {
+        return null;
+    }
 
-	@Override
-	protected void create(boolean stream) throws IOException {
-	}
+    @Override
+    protected void create(boolean stream) throws IOException {
+    }
 
-	@Override
-	protected void connect(String host, int port) throws IOException {
-	}
+    @Override
+    protected void connect(String host, int port) throws IOException {
+    }
 
-	@Override
-	protected void connect(InetAddress address, int port) throws IOException {
-	}
+    @Override
+    protected void connect(InetAddress address, int port) throws IOException {
+    }
 
-	@Override
-	protected void connect(SocketAddress address, int timeout) throws IOException {
-	}
+    @Override
+    protected void connect(SocketAddress address, int timeout) throws IOException {
+    }
 
-	@Override
-	protected void bind(InetAddress host, int port) throws IOException {
-	}
+    @Override
+    protected void bind(InetAddress host, int port) throws IOException {
+    }
 
-	@Override
-	protected void listen(int backlog) throws IOException {
-	}
+    @Override
+    protected void listen(int backlog) throws IOException {
+    }
 
-	@Override
-	protected void accept(SocketImpl s) throws IOException {
-	}
+    @Override
+    protected void accept(SocketImpl s) throws IOException {
+    }
 
-	@Override
-	protected InputStream getInputStream() throws IOException {
-		if (this.byteArrayInputStream == null) {
-			throw new IOException("Dummy socket not initialised");
-		}
-		
-		getInputStreamCount++;
+    @Override
+    protected InputStream getInputStream() throws IOException {
+        if (this.byteArrayInputStream == null) {
+            throw new IOException("Dummy socket not initialised");
+        }
 
-		return this.byteArrayInputStream;
-	}
+        getInputStreamCount++;
 
-	@Override
-	protected OutputStream getOutputStream() throws IOException {
-		return this.byteArrayOutputStream;
-	}
+        return this.byteArrayInputStream;
+    }
 
-	@Override
-	protected int available() throws IOException {
-		return this.byteArrayInputStream.available();
-	}
+    @Override
+    protected OutputStream getOutputStream() throws IOException {
+        return this.byteArrayOutputStream;
+    }
 
-	@Override
-	protected void close() throws IOException {
-		closeCount++;
-		if (this.byteArrayInputStream != null) {
-			this.byteArrayInputStream.close();
-		}
-		if (this.byteArrayOutputStream != null) {
-			this.byteArrayOutputStream.close();
-		}
-	}
+    @Override
+    protected int available() throws IOException {
+        return this.byteArrayInputStream.available();
+    }
 
-	@Override
-	protected void sendUrgentData(int data) throws IOException {
-	}
+    @Override
+    protected void close() throws IOException {
+        closeCount++;
+        if (this.byteArrayInputStream != null) {
+            this.byteArrayInputStream.close();
+        }
+        if (this.byteArrayOutputStream != null) {
+            this.byteArrayOutputStream.close();
+        }
+    }
+
+    @Override
+    protected void sendUrgentData(int data) throws IOException {
+    }
 
 }
