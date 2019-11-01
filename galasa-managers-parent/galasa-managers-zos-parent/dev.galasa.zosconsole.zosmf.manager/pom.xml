@@ -13,7 +13,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS Console Manager - zOS/MF Implementation</name>
+	<name>Galasa zOS Console Manager - zOS/MF Implementation</name>
 	
 		<dependencies>
 		<dependency>

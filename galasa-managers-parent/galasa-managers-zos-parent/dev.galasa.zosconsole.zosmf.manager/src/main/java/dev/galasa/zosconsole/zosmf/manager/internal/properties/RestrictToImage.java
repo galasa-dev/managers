@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.zosconsole.zosmf.manager.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
