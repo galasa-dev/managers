@@ -1,8 +1,13 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.openstack.manager.internal.json;
 
 public class Flavor {
 
-	public String id; // NOSONAR
-	public String name; // NOSONAR
-	
+    public String id;   // NOSONAR
+    public String name; // NOSONAR
+
 }

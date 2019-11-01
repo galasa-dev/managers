@@ -3,7 +3,8 @@
  * 
  * <p>
  * The following properties are used by the OpenStack Manager:-<br>
- * openstack.linux.image.[imagename].capabilities - {@link LinuxImageCapabilities}<br>
+ * openstack.linux.image.[imagename].capabilities -
+ * {@link LinuxImageCapabilities}<br>
  * openstack.linux.[os.[version]].images - {@link LinuxImages}<br>
  * openstack.server.maximum.compute.instances - {@link MaximumInstances}<br>
  * openstack.server.name.pool - {@link NamePool}<br>

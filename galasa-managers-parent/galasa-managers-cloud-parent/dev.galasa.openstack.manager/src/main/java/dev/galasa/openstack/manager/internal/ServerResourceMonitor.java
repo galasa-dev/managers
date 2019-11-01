@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.openstack.manager.internal;
 
 import java.util.Map;
@@ -14,80 +19,77 @@ import dev.galasa.framework.spi.IResourceManagement;
 
 public class ServerResourceMonitor implements Runnable {
 
-	private final IFramework                 framework;
-	private final IResourceManagement        resourceManagement;
-	private final OpenstackHttpClient        openstackHttpClient;
-	private final IDynamicStatusStoreService dss;
-	private final Log                        logger = LogFactory.getLog(this.getClass());
-	
-	private final Pattern                    serverPattern = Pattern.compile("^run\\.(\\w+)\\.compute\\.(\\w+)$");
+    private final IFramework                 framework;
+    private final IResourceManagement        resourceManagement;
+    private final OpenstackHttpClient        openstackHttpClient;
+    private final IDynamicStatusStoreService dss;
+    private final Log                        logger        = LogFactory.getLog(this.getClass());
 
-	public ServerResourceMonitor(IFramework framework, 
-			IResourceManagement resourceManagement,
-			IDynamicStatusStoreService dss, 
-			OpenstackHttpClient openstackHttpClient) {
-		this.framework          = framework;
-		this.resourceManagement = resourceManagement;
-		this.dss = dss;
-		this.openstackHttpClient = openstackHttpClient;
-		this.logger.info("OpenStack Server resource monitor initialised");
-	}
+    private final Pattern                    serverPattern = Pattern.compile("^run\\.(\\w+)\\.compute\\.(\\w+)$");
 
-	@Override
-	public void run() {
-		logger.info("Starting OpenStack Server search");
-		try {
-			//*** Find all the runs with slots
-			Map<String, String> computeServers = dss.getPrefix("run.");
-			
-			Set<String> activeRunNames = this.framework.getFrameworkRuns().getActiveRunNames();
+    public ServerResourceMonitor(IFramework framework, IResourceManagement resourceManagement,
+            IDynamicStatusStoreService dss, OpenstackHttpClient openstackHttpClient) {
+        this.framework = framework;
+        this.resourceManagement = resourceManagement;
+        this.dss = dss;
+        this.openstackHttpClient = openstackHttpClient;
+        this.logger.info("OpenStack Server resource monitor initialised");
+    }
 
-			for(String key : computeServers.keySet()) {
-				Matcher matcher = serverPattern.matcher(key);
-				if (matcher.find()) {
-					String serverName = matcher.group(2);
-					String runName    = matcher.group(1);
+    @Override
+    public void run() {
+        logger.info("Starting OpenStack Server search");
+        try {
+            // *** Find all the runs with slots
+            Map<String, String> computeServers = dss.getPrefix("run.");
 
-					if (!activeRunNames.contains(runName)) {
-						logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
+            Set<String> activeRunNames = this.framework.getFrameworkRuns().getActiveRunNames();
 
-						try {
-							OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
-						} catch(Exception e) {
-							logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
-						}
-					}
-				}
-			}
-		} catch(Exception e) {
-			logger.error("Failure during OpenStack server scan",e);
-		}
+            for (String key : computeServers.keySet()) {
+                Matcher matcher = serverPattern.matcher(key);
+                if (matcher.find()) {
+                    String serverName = matcher.group(2);
+                    String runName = matcher.group(1);
 
-		this.resourceManagement.resourceManagementRunSuccessful();
-		logger.info("Finished OpenStack Server search");
-	}
+                    if (!activeRunNames.contains(runName)) {
+                        logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
 
-	public void runFinishedOrDeleted(String runName) {
-		try {
-			Map<String, String> serverRuns = dss.getPrefix("run." + runName + ".");
-			for(String key : serverRuns.keySet()) {
-				Matcher matcher = serverPattern.matcher(key);
-				if (matcher.find()) {
-					String serverName = matcher.group(2);
+                        try {
+                            OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
+                        } catch (Exception e) {
+                            logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failure during OpenStack server scan", e);
+        }
 
-					logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
+        this.resourceManagement.resourceManagementRunSuccessful();
+        logger.info("Finished OpenStack Server search");
+    }
 
-					try {
-						OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
-					} catch(Exception e) {
-						logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
-					}
-				}
-			}
-		} catch(Exception e) {
-			logger.error("Failed to delete OpenStack Compute Server for run " + runName);
-		}
-	}
+    public void runFinishedOrDeleted(String runName) {
+        try {
+            Map<String, String> serverRuns = dss.getPrefix("run." + runName + ".");
+            for (String key : serverRuns.keySet()) {
+                Matcher matcher = serverPattern.matcher(key);
+                if (matcher.find()) {
+                    String serverName = matcher.group(2);
 
-	
+                    logger.info("Discarding OpenStack server " + serverName + " as run " + runName + " has gone");
+
+                    try {
+                        OpenstackServerImpl.deleteServerByName(serverName, runName, dss, this.openstackHttpClient);
+                    } catch (Exception e) {
+                        logger.error("Failed to discard OpenStack server " + serverName + " for run " + runName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to delete OpenStack Compute Server for run " + runName);
+        }
+    }
+
 }
