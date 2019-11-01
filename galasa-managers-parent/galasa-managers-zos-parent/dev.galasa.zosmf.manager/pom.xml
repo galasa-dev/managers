@@ -14,7 +14,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS/MF Manager</name>
+	<name>Galasa zOS/MF Manager</name>
 
 	<dependencies>
 		<dependency>

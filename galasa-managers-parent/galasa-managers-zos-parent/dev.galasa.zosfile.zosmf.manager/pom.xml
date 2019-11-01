@@ -13,7 +13,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>zOS File Manager - zOS/MF Implementation</name>
+	<name>Galasa zOS File Manager - zOS/MF Implementation</name>
 	
 		<dependencies>
 		<dependency>
