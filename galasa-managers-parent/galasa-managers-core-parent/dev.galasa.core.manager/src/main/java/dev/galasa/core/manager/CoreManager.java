@@ -18,7 +18,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * <p>
  * Fill this field with the Core Manager instance.
  * </p>
- *
+ * test pr
  * <p>
  * Will only populate public {@link ICoreManager} fields.
  * </p>
