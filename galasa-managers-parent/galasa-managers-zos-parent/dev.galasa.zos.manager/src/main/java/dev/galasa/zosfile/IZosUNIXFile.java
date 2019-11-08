@@ -7,8 +7,6 @@ package dev.galasa.zosfile;
 
 import java.util.Map;
 
-import dev.galasa.zosfile.IZosDataset.DatasetDataType;
-
 /**
  * Representation of a UNIX file or directory.
  *
