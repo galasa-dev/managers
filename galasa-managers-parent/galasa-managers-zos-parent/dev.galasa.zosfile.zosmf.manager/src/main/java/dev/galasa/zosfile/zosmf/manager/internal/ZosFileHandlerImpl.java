@@ -8,17 +8,16 @@ package dev.galasa.zosfile.zosmf.manager.internal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosDataset;
-import dev.galasa.zosfile.IZosDataset.DSType;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosVSAMDataset;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.ZosUNIXFileException;
+import dev.galasa.zosfile.ZosVSAMDatasetException;
 
 /**
  * Implementation of {@link IZosFileHandler} using zOS/MF
@@ -28,17 +27,23 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
 
 	private List<ZosDatasetImpl> zosDatasets = new ArrayList<>();
 	private List<ZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
+	private List<ZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();
+	private List<ZosVSAMDatasetImpl> zosVsamDatasetsForCleanup = new ArrayList<>();
 	private List<ZosUNIXFileImpl> zosUnixFiles = new ArrayList<>();
 	private List<ZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();
 	private String fieldName;
+
+	public ZosFileHandlerImpl() {
+		this.fieldName = "INTERNAL";
+	}
 
 	public ZosFileHandlerImpl(String fieldName) {
 		this.fieldName = fieldName;
 	}
 
 	@Override
-	public IZosDataset newDataset(String dsName, IZosImage image) throws ZosDatasetException {
-		ZosDatasetImpl zosDataset = new ZosDatasetImpl(image, dsName);
+	public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException {
+		ZosDatasetImpl zosDataset = new ZosDatasetImpl(image, dsname);
 		zosDatasets.add(zosDataset);
 		return zosDataset;
 	}
@@ -51,150 +56,100 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
 	}
 
 	@Override
-	public void deleteDatasetsByPrefix(String prefix, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void apfAuthorise(IZosDataset dataset, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean isAPFAuthorised(IZosDataset dataset, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IZosVSAMDataset newVSAMDataset(String dsName, IZosImage image) {
-		return new ZosVSAMDataset(image, dsName);
-	}
-
-	@Override
-	public IZosVSAMDataset newKSDS(String dsName, IZosImage image) {
-		return new ZosVSAMDataset(image, dsName);
-	}
-
-	@Override
-	public IZosVSAMDataset newESDS(String dsName, IZosImage image) {
-		return new ZosVSAMDataset(image, dsName);
-	}
-
-	@Override
-	public IZosVSAMDataset newRRDS(String dsName, IZosImage image) {
-		return new ZosVSAMDataset(image, dsName);
-	}
-
-	@Override
-	public void define(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void store(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void delete(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean exists(IZosVSAMDataset vsam, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IZosUNIXFile storeResourcesFile(String resourcePath, String unixPath, int fileType, IZosImage image,
-			Map<String, Object> substitutionParameters, Class<?> owningClass) throws ZosUNIXFileException {
-		return new ZosUNIXFileImpl(image, unixPath);
-	}
-
-	@Override
-	public IZosDataset storeResourcesDataset(String resourcePath, String dsName, int fileType, IZosImage image,
-			Map<String, Object> substitutionParameters, Class<?> owningClass) throws ZosDatasetException {
-		return new ZosDatasetImpl(image, dsName);
-	}
-
-	@Override
-	public IZosUNIXFile storeResourcesDirectory(String resourcePath, String unixPath, int fileType, IZosImage image,
-			Map<String, Object> substitutionParameters, Class<?> owningClass) throws ZosUNIXFileException {
-		return new ZosUNIXFileImpl(image, unixPath);
-	}
-
-	@Override
-	public IZosDataset storeResourcesPDS(String resourcePath, String dsName, DSType pdsType, int fileType, IZosImage image,
-			Map<String, Object> substitutionParameters, Class<?> owningClass) throws ZosDatasetException {
-		return new ZosDatasetImpl(image, dsName);
-	}
-
-	@Override
-	public void storeFileToTestOutput(IZosUNIXFile file, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void storeDatasetToTestOutput(IZosDataset dataset, IZosImage image) throws ZosDatasetException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void cleanupEndOfMethod() throws ZosFileManagerException {
-		cleanupDatasets(false);
-		cleanupFiles(false);
+	public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException {
+		ZosVSAMDatasetImpl zosVsamDataset = new ZosVSAMDatasetImpl(image, dsname);
+		this.zosVsamDatasets.add(zosVsamDataset);
+		return zosVsamDataset;
 	}
 	
-	public void cleanupEndOfTest() throws ZosFileManagerException {
-		cleanupDatasets(true);
-		cleanupFiles(true);
+	public void cleanupEndOfTestMethod() throws ZosFileManagerException {
+		cleanupDatasetsEndOfTestMethod();
+		cleanupVsamDatasetsEndOfTestMethod();
+		cleanupFilesEndOfTestMethod();
 	}
 	
-	/**
-	 * Clean up any existing data sets
-	 * @throws ZosFileManagerException
-	 */
-	public void cleanupDatasets(boolean endOfTest) throws ZosFileManagerException {
-		if (!endOfTest) {		
-			Iterator<ZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
-			while (datasetIterator.hasNext()) {
-				ZosDatasetImpl zosDataset = datasetIterator.next();
-				if (zosDataset.created() && zosDataset.exists()) {
+	public void cleanupEndOfClass() throws ZosFileManagerException {
+		cleanupDatasetsEndOfTestClass();
+		cleanupVsamDatasetsEndOfTestClass();
+		cleanupFilesEndOfTestClass();
+	}
+	
+	public void cleanupDatasetsEndOfTestMethod() throws ZosFileManagerException {
+		Iterator<ZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
+		while (datasetIterator.hasNext()) {
+			ZosDatasetImpl zosDataset = datasetIterator.next();
+			if (zosDataset.created() && zosDataset.exists()) {
+				if (zosDataset.isTemporary()) {
 					zosDataset.saveToResultsArchive();
-					if (zosDataset.retainToTestEnd()) {
-						this.zosDatasetsForCleanup.add(zosDataset);
-					} else {
-						zosDataset.delete();
-					}
 				}
-				datasetIterator.remove();
+				if (zosDataset.retainToTestEnd()) {
+					this.zosDatasetsForCleanup.add(zosDataset);
+				} else {
+					zosDataset.delete();
+				}
+			}
+			datasetIterator.remove();
+		}
+	}
+
+	public void cleanupDatasetsEndOfTestClass() throws ZosFileManagerException {
+		Iterator<ZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
+		while (datasetForCleanupIterator.hasNext()) {
+			ZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
+			if (zosDataset.created() && zosDataset.exists()) {
+				zosDataset.saveToResultsArchive();
+				zosDataset.delete();
+			}
+		}
+	}
+	
+	public void cleanupVsamDatasetsEndOfTestMethod() throws ZosFileManagerException {
+		Iterator<ZosVSAMDatasetImpl> vsamDatasetIterator = this.zosVsamDatasets.iterator();
+		while (vsamDatasetIterator.hasNext()) {
+			ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
+			if (zosVsamDataset.created() && zosVsamDataset.exists()) {
+				zosVsamDataset.saveToResultsArchive();
+				if (zosVsamDataset.retainToTestEnd()) {
+					this.zosVsamDatasetsForCleanup.add(zosVsamDataset);
+				} else {
+					zosVsamDataset.delete();
+				}
+			}
+			vsamDatasetIterator.remove();
+		}
+	}
+	
+	public void cleanupVsamDatasetsEndOfTestClass() throws ZosFileManagerException {
+		Iterator<ZosVSAMDatasetImpl> vsamDatasetForCleanupIterator = this.zosVsamDatasetsForCleanup.iterator();
+		while (vsamDatasetForCleanupIterator.hasNext()) {
+			ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
+			if (zosVsamDataset.created() && zosVsamDataset.exists()) {
+				zosVsamDataset.saveToResultsArchive();
+				zosVsamDataset.delete();
 			}
 		}
 	}
 		
-	/**
-	 * Clean up any existing UNIX files
-	 * @throws ZosFileManagerException
-	 */
-	public void cleanupFiles(boolean endOfTest) throws ZosFileManagerException {
-		if (!endOfTest) {
-			Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
-			while (unixFileIterator.hasNext()) {
-				ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
-				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
-					zosUnixFile.saveToResultsArchive();
-					if (!zosUnixFile.retainToTestEnd()) {
-						zosUnixFile.delete();
-					}
+	public void cleanupFilesEndOfTestMethod() throws ZosFileManagerException {
+		Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
+		while (unixFileIterator.hasNext()) {
+			ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
+			if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
+				zosUnixFile.saveToResultsArchive();
+				if (!zosUnixFile.retainToTestEnd()) {
+					zosUnixFile.delete();
 				}
-				this.zosUnixFilesForCleanup.add(zosUnixFile);
-				unixFileIterator.remove();
 			}
-		} else {
-			Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFilesForCleanup.iterator();
-			while (unixFileIterator.hasNext()) {
-				ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
-				zosUnixFile.cleanCreatedPath();
-			}
+			this.zosUnixFilesForCleanup.add(zosUnixFile);
+			unixFileIterator.remove();
+		}
+	}
+	
+	public void cleanupFilesEndOfTestClass() {
+		Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFilesForCleanup.iterator();
+		while (unixFileIterator.hasNext()) {
+			ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
+			zosUnixFile.cleanCreatedPath();
 		}
 	}
 

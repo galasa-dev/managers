@@ -41,7 +41,7 @@ import dev.galasa.zosmf.internal.properties.ServerPort;
  */
 public class ZosmfImpl implements IZosmf {
 	
-	private static final String LOG_BODY = "body: ";
+	private static final String LOG_BODY = "body: \n";
 	
 	private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
 
