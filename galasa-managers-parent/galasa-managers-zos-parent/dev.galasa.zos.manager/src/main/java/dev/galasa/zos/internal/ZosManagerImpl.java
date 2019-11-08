@@ -46,14 +46,20 @@ import dev.galasa.zos.internal.properties.ConsoleExtraBundle;
 import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
+import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 
 @Component(service = { IManager.class })
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
-	protected final static String NAMESPACE = "zos";
+	protected static final String NAMESPACE = "zos";
 
-	private final static Log logger = LogFactory.getLog(ZosManagerImpl.class);
+	private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
+
+	private static final String PRIMARY_TAG = "primary";
+
+	private static final String LOG_SELECTED_FOR_ZOS_TAG = " selected for zosTag '";
+	private static final String LOG_ZOS_IMAGE = "zOS Image ";
 
 	private IConfigurationPropertyStoreService cps;
 	private IDynamicStatusStoreService dss;
@@ -137,13 +143,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		while(annotatedFieldIterator.hasNext()) {
 			AnnotatedField annotatedField = annotatedFieldIterator.next();
 			final Field field = annotatedField.getField();
-			final List<Annotation> annotations = annotatedField.getAnnotations();
 
 			if (field.getType() == IZosImage.class) {
 				ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
 				String tag = annotationZosImage.imageTag();
-				if (tag == null || "primary".equals(tag.toLowerCase())) {
-					IZosImage zosImage = generateZosImage(field, annotations);
+				if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toLowerCase())) {
+					IZosImage zosImage = generateZosImage(field);
 					registerAnnotatedField(field, zosImage);
 					annotatedFieldIterator.remove(); //*** Dont need it for the second pass
 					break;
@@ -154,7 +159,6 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		//*** Second pass, generate all the remaining zosimages now the primary is allocated
 		for(AnnotatedField annotatedField : annotatedFields) {
 			final Field field = annotatedField.getField();
-			final List<Annotation> annotations = annotatedField.getAnnotations();
 
 			//*** Check this field has not been annotated already
 			if (getAnnotatedField(field) != null) {
@@ -162,7 +166,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 			}
 
 			if (field.getType() == IZosImage.class) {
-				IZosImage zosImage = generateZosImage(field, annotations);
+				IZosImage zosImage = generateZosImage(field);
 				registerAnnotatedField(field, zosImage);
 			}
 		}
@@ -178,7 +182,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	 */
 	@Override
 	public void provisionDiscard() {
-		//*** Free up any slots we have allocated for this run;
+		//*** Free up any slots we have allocated for this run
 
 		for(ZosBaseImageImpl image : images.values()) {
 			if (image instanceof ZosProvisionedImageImpl) {
@@ -190,11 +194,11 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 	//*** We do not allow auto generate of the zos image fields as they need
 	//*** to be done first AND the primary image needs to be the first one
-	private IZosImage generateZosImage(Field field, List<Annotation> annotations) throws ZosManagerException {
+	private IZosImage generateZosImage(Field field) throws ZosManagerException {
 		ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
 
 		//*** Default the tag to primary
-		String tag = defaultString(annotationZosImage.imageTag(), "primary");
+		String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG);
 
 		//*** Have we already generated this tag
 		if (taggedImages.containsKey(tag)) {
@@ -204,7 +208,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		//*** Check to see if we have a DSE for this tag
 		String imageID = DseImageIdForTag.get(tag);
 		if (imageID != null) {
-			logger.info("zOS DSE Image " + imageID + " selected for zosTag '" + tag + "'");
+			logger.info("zOS DSE Image " + imageID + LOG_SELECTED_FOR_ZOS_TAG + tag + "'");
 			
 			//*** Check to see if the image has already been allocated
 			if (images.containsKey(imageID)) {
@@ -232,7 +236,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 			ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, imageID, null);
 			if (image.allocateImage()) {
-				logger.info("zOS Image " + image.getImageID() + " selected for zosTag '" + tag + "'");
+				logger.info(LOG_ZOS_IMAGE + image.getImageID() + LOG_SELECTED_FOR_ZOS_TAG + tag + "'");
 				images.put(image.getImageID(), image);
 				taggedImages.put(tag, image);
 				return image;
@@ -250,7 +254,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		ZosIpHost annotationHost = field.getAnnotation(ZosIpHost.class);
 
 		//*** Default the tag to primary
-		String tag = defaultString(annotationHost.imageTag(), "primary");
+		String tag = defaultString(annotationHost.imageTag(), PRIMARY_TAG);
 
 		//*** Ensure we have this tagged host
 		ZosBaseImageImpl image = taggedImages.get(tag);
@@ -266,7 +270,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		ZosIpPort annotationPort = field.getAnnotation(ZosIpPort.class);
 
 		//*** Default the tag to primary
-		String tag = defaultString(annotationPort.imageTag(), "primary");
+		String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG);
 		String type = defaultString(annotationPort.type(), "standard");
 
 		//*** Ensure we have this tagged host
@@ -304,7 +308,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 			}
 
 			if (image.image.allocateImage()) {
-				logger.info("zOS Image " + image.image.getImageID() + " selected for zosTag '" + tag + "' with slot name " + image.image.getSlotName());
+				logger.info(LOG_ZOS_IMAGE + image.image.getImageID() + LOG_SELECTED_FOR_ZOS_TAG + tag + "' with slot name " + image.image.getSlotName());
 				taggedImages.put(tag, image.image);
 				images.put(image.image.getImageID(), image.image);
 
@@ -340,7 +344,25 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		public int compareTo(ImageUsage o) {
 			return usage.compareTo(o.usage);
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) {
+				return false;
+			}
+			
+			if (this.getClass() != obj.getClass()) {
+				return false;
+			}
+			
+			return this.compareTo((ImageUsage) obj) == 0;
+		}
 		
+		@Override
+		public int hashCode() {
+		    return super.hashCode();
+		 }
+
 		@Override
 		public String toString()  {
 			return image.getImageID();			
@@ -376,14 +398,14 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 				}
 	
 				if (imageUsage.image.allocateImage()) {
-					logger.info("zOS Image " + imageUsage.image.getImageID() + " selected with slot name " + imageUsage.image.getSlotName());
+					logger.info(LOG_ZOS_IMAGE + imageUsage.image.getImageID() + " selected with slot name " + imageUsage.image.getSlotName());
 					images.put(imageUsage.image.getImageID(), imageUsage.image);
 	
 					return imageUsage.image;
 				}
 			}
 		} else {
-			logger.info("zOS Image " + zosImage.getImageID() + " selected with slot name " + ((ZosProvisionedImageImpl) zosImage).getSlotName());			
+			logger.info(LOG_ZOS_IMAGE + zosImage.getImageID() + " selected with slot name " + ((ZosProvisionedImageImpl) zosImage).getSlotName());			
 		}
 		return zosImage;
 	}
@@ -399,5 +421,10 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, null);
 		this.images.put(image.getImageID(), image);
 		return image;
+	}
+
+	@Override
+	public String getRunDatasetHLQ(IZosImage image) throws ZosManagerException {
+		return RunDatasetHLQ.get(image);
 	}
 }
