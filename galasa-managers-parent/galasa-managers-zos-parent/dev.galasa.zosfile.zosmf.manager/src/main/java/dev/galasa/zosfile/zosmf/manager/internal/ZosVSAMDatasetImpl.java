@@ -172,8 +172,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
 	private static final String PARM_OWNER = "OWNER";
 	private static final String PARM_RECORDSIZE = "RECSZ";
 	private static final String PARM_SHAREOPTIONS = "SHR";
-	private static final String PARM_STORAGECLASS = "STORCLAS";
-	
+	private static final String PARM_STORAGECLASS = "STORCLAS";	
 	private static final String PROP_INPUT = "input";
 
 	// Default LLQs for index and data files
