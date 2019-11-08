@@ -43,19 +43,21 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 public class ZosDatasetImpl implements IZosDataset {
 	
-	IZosmfRestApiProcessor zosmfApiProcessor;
+	private IZosmfRestApiProcessor zosmfApiProcessor;
 
 	// zOS Image
 	private IZosImage image;
 
 	private static final String SLASH = "/";
 	private static final String COMMA = ",";
-	private static final String RESTFILES_DATASET_PATH = SLASH+ "zosmf" + SLASH + "restfiles" + SLASH + "ds";
-	
-	private boolean retainToTestEnd = false;
+	private static final String RESTFILES_DATASET_PATH = SLASH + "zosmf" + SLASH + "restfiles" + SLASH + "ds";
 	
 	// data set and member names
 	private String dsname;
+	private boolean datasetCreated = false;
+	private boolean retainToTestEnd = false;
+	private boolean temporary = false;
+	
 	private Collection<String> datasetMembers;
 	private String memberStart = null;
 
@@ -77,8 +79,6 @@ public class ZosDatasetImpl implements IZosDataset {
 	private String dstype = null;
 
 	private DatasetDataType dataType;
-
-	private boolean datasetCreated = false;
 
 	private static final String PROP_VOLSER = "volser";     
 	private static final String PROP_UNIT = "unit";       
@@ -119,10 +119,10 @@ public class ZosDatasetImpl implements IZosDataset {
 
 	private static final Log logger = LogFactory.getLog(ZosDatasetImpl.class);
 
-	public ZosDatasetImpl(IZosImage image, String dsName) throws ZosDatasetException {
+	public ZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {
 		
 		this.image = image;
-		splitDSN(dsName);
+		splitDSN(dsname);
 		
 		try {
 			this.zosmfApiProcessor = ZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, RestrictZosmfToImage.get(image.getImageID()));
@@ -197,6 +197,11 @@ public class ZosDatasetImpl implements IZosDataset {
 	@Override
 	public IZosDataset createRetain() throws ZosDatasetException {
 		this.retainToTestEnd = true;
+		return create();
+	}
+	
+	public IZosDataset createTemporary() throws ZosDatasetException {
+		this.temporary = true;
 		return create();
 	}
 
@@ -290,7 +295,7 @@ public class ZosDatasetImpl implements IZosDataset {
 	}
 
 	@Override
-	public void store(String content) throws ZosDatasetException {
+	public void store(@NotNull String content) throws ZosDatasetException {
 		if (isPDS()) {
 			throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set.  Use memberStore(String memberName, String content) method instead");
 		}
@@ -561,7 +566,7 @@ public class ZosDatasetImpl implements IZosDataset {
 	}
 
 	@Override
-	public String getDatasetName() {
+	public String getName() {
 		return this.dsname;
 	}
 
@@ -898,10 +903,18 @@ public class ZosDatasetImpl implements IZosDataset {
 		String errorMessage = responseBody.get("message").getAsString();
 		String errorDetails = null;
 		JsonElement element = responseBody.get("details");
-		if (element.isJsonArray()) {
-			errorDetails = element.getAsJsonArray().toString();
-		} else {
-			errorDetails = element.getAsString();
+		if (element != null) {
+			if (element.isJsonArray()) {
+				JsonArray elementArray = element.getAsJsonArray();
+				StringBuilder sb = new StringBuilder();
+				for (JsonElement item : elementArray) {
+					sb.append("\n");
+					sb.append(item.getAsString());
+				}
+				errorDetails = sb.toString();
+			} else {
+				errorDetails = element.getAsString();
+			}
 		}
 		String errorStack = responseBody.get("stack").getAsString();
 		StringBuilder sb = new StringBuilder(); 
@@ -909,17 +922,19 @@ public class ZosDatasetImpl implements IZosDataset {
 		sb.append(action); 
 		sb.append(" data set ");
 		sb.append(quoted(this.dsname));
-		sb.append(" category:");
+		sb.append(", category:");
 		sb.append(errorCategory);
-		sb.append(" rc:");
+		sb.append(", rc:");
 		sb.append(errorRc);
-		sb.append(" reason:");
+		sb.append(", reason:");
 		sb.append(errorReason);
-		sb.append(" message:");
+		sb.append(", message:");
 		sb.append(errorMessage);
-		sb.append(" details:");
-		sb.append(errorDetails);
-		sb.append(" stack:\n");
+		if (errorDetails != null) {
+			sb.append("\ndetails:");
+			sb.append(errorDetails);
+		}
+		sb.append("\nstack:\n");
 		sb.append(errorStack);
 		
 		return sb.toString();
@@ -996,5 +1011,13 @@ public class ZosDatasetImpl implements IZosDataset {
 	
 	public boolean retainToTestEnd() {
 		return this.retainToTestEnd;
+	}
+
+	public IZosmfRestApiProcessor getZosmfApiProcessor() {
+		return this.zosmfApiProcessor;
+	}
+
+	public boolean isTemporary() {
+		return this.temporary;
 	}
 }
