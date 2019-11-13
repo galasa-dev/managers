@@ -145,8 +145,18 @@
 				<version>${org.osgi.service.component.annotations}</version>
 			</dependency>
 
-
 		</dependencies>
 	</dependencyManagement>
 
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>dev.galasa</groupId>
+					<artifactId>galasa-maven-plugin</artifactId>
+					<version>0.3.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
