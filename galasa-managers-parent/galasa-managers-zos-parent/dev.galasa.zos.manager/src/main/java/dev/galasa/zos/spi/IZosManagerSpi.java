@@ -40,4 +40,13 @@ public interface IZosManagerSpi extends IZosManager {
 	@NotNull
 	IZosImage getUnmanagedImage(String imageId) throws ZosManagerException;
 
+	/**
+	 * Returns the data set HLQ(s) for temporary data sets for the specified image
+	 * @param the image
+	 * @return the image, never null
+	 * @throws ZosManagerException
+	 */
+	@NotNull
+	String getRunDatasetHLQ(IZosImage image) throws ZosManagerException;
+
 }

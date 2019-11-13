@@ -26,6 +26,8 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileHandler;
@@ -52,7 +54,15 @@ public class ZosFileManagerImpl extends AbstractManager {
 		ZosFileManagerImpl.zosmfManager = zosmfManager;
 	}
 
-	private final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
+	private static final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
+
+	private static String runId;
+	protected static void setRunId(String id) {
+		runId = id;
+	}
+	protected static String getRunId() {
+		return runId;
+	}
 
 	private static Path datasetArtifactRoot;
 	protected static void setDatasetArtifactRoot(Path path) {
@@ -60,6 +70,14 @@ public class ZosFileManagerImpl extends AbstractManager {
 	}
 	protected static Path getDatasetArtifactRoot() {
 		return datasetArtifactRoot;
+	}
+
+	private static Path vsamDatasetArtifactRoot;
+	protected static void setVsamDatasetArtifactRoot(Path path) {
+		vsamDatasetArtifactRoot = path;
+	}
+	protected static Path getVsamDatasetArtifactRoot() {
+		return vsamDatasetArtifactRoot;
 	}
 
 	private static Path unixPathArtifactRoot;
@@ -95,11 +113,14 @@ public class ZosFileManagerImpl extends AbstractManager {
 			youAreRequired(allManagers, activeManagers);
 		}
 		
-		setDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zosDatasets"));		
-		setUnixPathArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zosUnixPaths"));
+		setRunId(getFramework().getTestRunName());
+		
+		setDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_Datasets"));		
+		setVsamDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_VSAM_Datasets"));		
+		setUnixPathArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_Unix_Paths"));
 	}
+		
 	
-
 	/* (non-Javadoc)
 	 * @see dev.galasa.framework.spi.AbstractManager#provisionGenerate()
 	 */
@@ -159,9 +180,9 @@ public class ZosFileManagerImpl extends AbstractManager {
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = this.zosFileHandlers.iterator();
+    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = zosFileHandlers.iterator();
     	while (zosFileHandlerImplIterator.hasNext()) {
-    		zosFileHandlerImplIterator.next().cleanupEndOfMethod();
+    		zosFileHandlerImplIterator.next().cleanupEndOfTestMethod();
 		}
 
     	setCurrentTestMethod(null);
@@ -177,9 +198,9 @@ public class ZosFileManagerImpl extends AbstractManager {
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
     	setCurrentTestMethod("endOfTestCleanup");
-    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = this.zosFileHandlers.iterator();
+    	Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = zosFileHandlers.iterator();
     	while (zosFileHandlerImplIterator.hasNext()) {
-    		zosFileHandlerImplIterator.next().cleanupEndOfTest();
+    		zosFileHandlerImplIterator.next().cleanupEndOfClass();
 		}
     	
         return null;
@@ -188,7 +209,21 @@ public class ZosFileManagerImpl extends AbstractManager {
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
 	public IZosFileHandler generateZosFile(Field field, List<Annotation> annotations) {
     	ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl(field.getName());
-    	this.zosFileHandlers.add(zosFileHandlerImpl);    	
+    	zosFileHandlers.add(zosFileHandlerImpl);    	
 		return zosFileHandlerImpl;
+	}
+    
+    public static IZosFileHandler newZosFileHandler() {
+    	ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl();
+    	zosFileHandlers.add(zosFileHandlerImpl);    	
+		return zosFileHandlerImpl;
+	}
+    
+	public static String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
+		try {
+			return zosManager.getRunDatasetHLQ(image);
+		} catch (ZosManagerException e) {
+			throw new ZosFileManagerException(e);
+		}
 	}
 }

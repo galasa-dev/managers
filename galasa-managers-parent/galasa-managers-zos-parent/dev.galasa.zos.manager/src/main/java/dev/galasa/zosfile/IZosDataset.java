@@ -147,27 +147,27 @@ public interface IZosDataset {
 	}
 	
 	/**
-	 * Allocate the data set. Will be deleted at test method end
+	 * Allocate the physical data set on the zOS image. Will be deleted at test method end
 	 * @return
 	 * @throws ZosDatasetException 
 	 */
 	public IZosDataset create() throws ZosDatasetException;
 	
 	/**
-	 * Allocate the data set. Will be retained across test methods and deleted at test class end
+	 * Allocate the physical data set on the zOS image. Will be retained across test methods and deleted at test class end
 	 * @return
 	 * @throws ZosDatasetException 
 	 */
 	public IZosDataset createRetain() throws ZosDatasetException;
 
 	/**
-	 * Delete the data set on zOS image.
+	 * Delete the data set on the zOS image.
 	 * @throws ZosDatasetException
 	 */
 	public void delete() throws ZosDatasetException;
 
 	/**
-	 * Returns true if the data set exists 
+	 * Returns true if the data set exists on the zOS image
 	 * @return 
 	 * @throws ZosDatasetException
 	 */
@@ -175,14 +175,15 @@ public interface IZosDataset {
 
 	/**
 	 * Write to content to the data set 
+	 * <p>See {@link #setDataType(DatasetDataType)}
 	 * @param content
-	 * @param dataType
 	 * @throws ZosDatasetException
 	 */
 	public void store(@NotNull String content) throws ZosDatasetException;
 	
 	/**
 	 * Retrieve content of the data set
+	 * <p>See {@link #setDataType(DatasetDataType)}
 	 * @return data set content
 	 * @throws ZosDatasetException
 	 */
@@ -190,6 +191,7 @@ public interface IZosDataset {
 
 	/**
 	 * Store the content of the data set with the test output
+	 * <p>See {@link #setDataType(DatasetDataType)}
 	 * @throws ZosDatasetException
 	 */
 	public void saveToResultsArchive() throws ZosDatasetException;
@@ -342,7 +344,7 @@ public interface IZosDataset {
 	 * Return the name of the data set 
 	 * @return
 	 */
-	public String getDatasetName();
+	public String getName();
 	
 	/**
 	 * Return the data type ({@link DatasetDataType}) for store and retrieve of the data set content

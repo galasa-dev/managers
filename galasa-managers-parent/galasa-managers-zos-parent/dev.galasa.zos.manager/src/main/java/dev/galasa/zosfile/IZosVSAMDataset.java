@@ -5,13 +5,13 @@
  */
 package dev.galasa.zosfile;
 
-import java.io.InputStream;
+import javax.validation.constraints.NotNull;
+
+import dev.galasa.zosfile.IZosDataset.DatasetDataType;
 
 
 /**
  * Highly configurable representation of a VSAM dataset
- * 
- * @author James Bartlett
  *
  */
 public interface IZosVSAMDataset {
@@ -134,12 +134,70 @@ public interface IZosVSAMDataset {
 	}
 	
 	/**
-	 * Get the name of the VSAM file
-	 * 
+	 * Allocate the physical VSAM data set on the zOS image. Will be deleted at test method end
 	 * @return
+	 * @throws ZosVSAMDatasetException 
 	 */
-	public String getName();
+	public IZosVSAMDataset create() throws ZosVSAMDatasetException;
+
+	/**
+	 * Allocate the physical VSAM data set on the zOS image. Will be retained across test methods and deleted at test class end
+	 * @return
+	 * @throws ZosVSAMDatasetException 
+	 */
+	public IZosVSAMDataset createRetain() throws ZosVSAMDatasetException;
 	
+	/**
+	 * Delete the VSAM data set on the zOS image.
+	 * @throws ZosVSAMDatasetException
+	 */
+	public void delete() throws ZosVSAMDatasetException;
+
+	/**
+	 * Returns true if the VSAM data set exists on the zOS image
+	 * @return 
+	 * @throws ZosVSAMDatasetException
+	 */
+	public boolean exists() throws ZosVSAMDatasetException;
+	
+	/**
+	 * Write to content to the data set. The data must be a suitable format, 
+	 * e.g. must be in key sequenced order for a KSDS
+	 * <p>See {@link #setDataType(DatasetDataType)}
+	 * @param content
+	 * @throws ZosVSAMDatasetException
+	 */
+	public void store(@NotNull String content) throws ZosVSAMDatasetException;
+	
+	/**
+	 * Write to content to the data set. The content of the from data set must be a suitable format, 
+	 * e.g. must be in key sequenced order for a KSDS
+	 * @param fromDataset
+	 * @throws ZosVSAMDatasetException
+	 */
+	public void store(@NotNull IZosDataset fromDataset) throws ZosVSAMDatasetException;
+	
+	/**
+	 * Retrieve content of the VSAM data set
+	 * <p>See {@link #setDataType(DatasetDataType)}
+	 * @return VSAM data set content
+	 * @throws ZosVSAMDatasetException
+	 */
+	public String retrieve() throws ZosVSAMDatasetException;
+	
+	/**
+	 * Store the content of the data set with the test output
+	 * <p>See {@link #setDataType(DatasetDataType)}
+	 * @throws ZosVSAMDatasetException
+	 */
+	public void saveToResultsArchive() throws ZosVSAMDatasetException;
+
+	/**
+	 * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content
+	 * @param dataType
+	 */
+	public void setDataType(DatasetDataType dataType);
+
 	/**
 	 * Set the {@link VSAMSpaceUnit} for the VSAM file, and the number of
 	 * primary and secondary extents required.
@@ -560,8 +618,34 @@ public interface IZosVSAMDataset {
 	public void setCatalog(String catalog);
 	
 	/**
-	 * Get the IDCAMS define command for this VSAM cluster
+	 * Get the name of the VSAM file
 	 * 
+	 * @return
+	 */
+	public String getName();
+
+	/**
+	 * Return the data type ({@link DatasetDataType}) for store and retrieve of the data set content
+	 * @return
+	 */
+	public DatasetDataType getDataType();
+
+	/**
+	 * Return the last IDCAMS command for this VSAM data set 
+	 * @return
+	 * @throws ZosVSAMDatasetException 
+	 */
+	public String getCommandInput() throws ZosVSAMDatasetException;
+
+	/**
+	 * Return the last IDCAMS output for this VSAM data set 
+	 * @return
+	 * @throws ZosVSAMDatasetException 
+	 */
+	public String getCommandOutput() throws ZosVSAMDatasetException;
+
+	/**
+	 * Return the IDCAMS define command for this VSAM data set 
 	 * @return
 	 * @throws ZosVSAMDatasetException 
 	 */
@@ -576,39 +660,33 @@ public interface IZosVSAMDataset {
 	public String getDeleteCommand() throws ZosVSAMDatasetException;
 
 	/**
-	 * Get the IDCAMS repro command for inputting data from an infile
-	 * 
+	 * Get the IDCAMS REPRO command 
+	 * @param outDatasetName
+	 * @return
+	 * @throws ZosVSAMDatasetException
+	 */
+	public String getReproToCommand(String outDatasetName) throws ZosVSAMDatasetException;
+
+	/**
+	 * Get the IDCAMS REPRO command 
 	 * @param infile
 	 * @return
 	 * @throws ZosVSAMDatasetException
 	 */
-	public String getReproCommand(String infile) throws ZosVSAMDatasetException;
-
-	/**
-	 * Set the content to be stored in the VSAM file
-	 * 
-	 * @param content
-	 */
-	public void setContent(String content);
+	public String getReproFromCommand(String indatasetName) throws ZosVSAMDatasetException;
 	
 	/**
-	 * Set the content to be stored in the VSAM file
-	 * 
-	 * @param input
+	 * Returns the IDCAMS LISTCAT output for the VSAM file
+	 * @return
+	 * @throws ZosVSAMDatasetException
 	 */
-	public void setContent(InputStream input);
+	public String getListcatOutput() throws ZosVSAMDatasetException;
 
 	/**
-	 * Append content to be stored in the VSAM file
-	 * 
-	 * @param content
+	 * Return the attributes of the data set as a {@link String}. If the VSAM data set does not exist, 
+	 * IDCAMS DEFINE statements will be returned, otherwise IDCAMS LISTCAT output will be returned 
+	 * @return
+	 * @throws ZosVSAMDatasetException
 	 */
-	public void appendContent(String content);
-	
-	/**
-	 * Append content to be stored in the VSAM file
-	 * 
-	 * @param input
-	 */
-	public void appendContent(InputStream input);
+	public String getAttibutesAsString() throws ZosVSAMDatasetException;
 }
