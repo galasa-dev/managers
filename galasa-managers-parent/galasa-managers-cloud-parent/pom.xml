@@ -12,7 +12,9 @@
   <packaging>pom</packaging>
   
   <modules>
-  	<module>dev.galasa.openstack.manager</module>
+    <module>dev.galasa.openstack.manager</module>
+    <module>dev.galasa.docker.manager</module>
+    <module>dev.galasa.docker.manager.ivt</module>
   </modules>
   
 </project>
