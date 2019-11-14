@@ -6,11 +6,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-comms-parent</artifactId>
-		<version>0.3.0-SNAPSHOT</version>
+		<version>0.3.0</version>
 	</parent>
 
 	<artifactId>dev.galasa.http.manager.ivt</artifactId>
-	<version>0.3.0-SNAPSHOT</version>
+	<version>0.3.0</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa HTTP Manager IVTs</name>
@@ -19,22 +19,22 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
-			<version>${dev.galasa}</version>
+			<version>[0.3.0,1.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>[0.3.0,1.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.core.manager</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>[0.3.0,1.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>${assertj-core}</version>
+			<version>3.11.1</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

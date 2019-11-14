@@ -2,7 +2,7 @@
 <feature
       id="dev.galasa.zos.feature"
       label="Galasa zOS Feature"
-      version="0.3.0.qualifier">
+      version="0.3.0">
 
    <copyright>
       Licensed Materials - Property of IBM
@@ -296,13 +296,12 @@ version(s), and exceptions or additional permissions here}.&quot;
          install-size="0"
          version="0.3.0.qualifier"
          unpack="false"/>
-         
+
    <plugin
          id="dev.galasa.zos3270.common"
          download-size="0"
          install-size="0"
          version="0.3.0.qualifier"
          unpack="false"/>
-
 
 </feature>
