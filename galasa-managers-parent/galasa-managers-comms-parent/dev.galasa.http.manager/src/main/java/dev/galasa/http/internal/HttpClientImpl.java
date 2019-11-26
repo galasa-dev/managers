@@ -271,6 +271,7 @@ public class HttpClientImpl implements IHttpClient {
     public IHttpClient setAuthorisation(String username, String password) {
         credentialsProvider.clear();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+        enableAuthCache();
 
         return this;
     }
@@ -286,6 +287,7 @@ public class HttpClientImpl implements IHttpClient {
     public IHttpClient setAuthorisation(String username, String password, URI scope) {
         credentialsProvider.setCredentials(new AuthScope(scope.getHost(), scope.getPort()),
                 new UsernamePasswordCredentials(username, password));
+        enableAuthCache();
 
         return this;
     }
