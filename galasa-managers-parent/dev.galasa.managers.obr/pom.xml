@@ -104,11 +104,13 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
 			<version>0.3.0</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager.ivt</artifactId>
 			<version>0.3.0</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>

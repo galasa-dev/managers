@@ -503,4 +503,5 @@ public interface IHttpClient {
      */
     void setURI(URI host);
 
+    void downloadFile(String destination, String path);
 }
