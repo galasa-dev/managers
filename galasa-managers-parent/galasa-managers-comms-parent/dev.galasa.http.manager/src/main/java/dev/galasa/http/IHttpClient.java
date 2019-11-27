@@ -269,6 +269,13 @@ public interface IHttpClient {
     HttpClientResponse<String> getText(String url) throws HttpClientException;
 
     /**
+     * Download a file from a specified location to a specified destination on local host.
+     * 
+     * @param host
+     */
+    void getOctetStream(String destination, String path);
+
+    /**
      * Get the username set for this client
      * 
      * @return the username
