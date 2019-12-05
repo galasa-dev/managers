@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.uber.obr</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.1</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
