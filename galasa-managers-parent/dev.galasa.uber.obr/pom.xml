@@ -10,21 +10,23 @@
 	</parent>
 
 	<artifactId>dev.galasa.uber.obr</artifactId>
-	<version>0.3.0</version>
+	<!-- If updating version, reflect change in dev.galasa.uber.karaffeature -->
+	<!-- Also, dev.galasa.eclipse.launcher.Launcher class -->
+	<version>0.3.1</version>
 	<packaging>galasa-obr</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework.obr</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.1</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.extensions.obr</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.1</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
