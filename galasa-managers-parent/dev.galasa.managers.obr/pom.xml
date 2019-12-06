@@ -7,10 +7,12 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-parent</artifactId>
-		<version>0.3.0</version>
+		<version>0.4.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.managers.obr</artifactId>
+	<!-- If updating version, reflect change in build/docker/testcatalogs/pom.xml -->
+	<version>0.4.0-SNAPSHOT</version>	
 	<packaging>galasa-obr</packaging>
 
 	<name>Galasa Managers OBR</name>
@@ -19,108 +21,106 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.core.manager</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zos.manager</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager.ivt</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zos3270.common</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zos3270.manager</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos3270.manager.ivt</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosmf.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosbatch.zosmf.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosconsole.zosmf.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosfile.zosmf.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.ipnetwork.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.linux.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.linux.manager.ivt</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.openstack.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-			<version>0.3.0</version>
-			<scope>compile</scope>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager.ivt</artifactId>
-			<version>0.3.0</version>
-			<scope>compile</scope>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager.ivt</artifactId>
-			<version>0.3.0</version>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
