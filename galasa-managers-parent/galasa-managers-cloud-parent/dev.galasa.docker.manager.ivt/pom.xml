@@ -7,18 +7,24 @@
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-cloud-parent</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
 		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.docker.manager.ivt</artifactId>
 	<version>0.3.0-SNAPSHOT</version>
 =======
+=======
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 		<version>0.4.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.docker.manager.ivt</artifactId>
 	<version>0.4.0-SNAPSHOT</version>
+<<<<<<< HEAD
 >>>>>>> updated versions in poms
+=======
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 	<packaging>bundle</packaging>
 
 	<name>Galasa Docker Manager IVTs</name>
@@ -28,37 +34,53 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
 			<version>${dev.galasa}</version>
 =======
 			<version>[0.3.0,1.0.0)</version>
 >>>>>>> updated versions in poms
+=======
+			<version>[0.3.0,1.0.0)</version>
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.docker.manager</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
 			<version>0.3.0-SNAPSHOT</version>
 =======
 			<version>0.4.0-SNAPSHOT</version>
 >>>>>>> updated versions in poms
+=======
+			<version>0.4.0-SNAPSHOT</version>
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.core.manager</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
 			<version>0.3.0-SNAPSHOT</version>
 =======
 			<version>0.4.0-SNAPSHOT</version>
 >>>>>>> updated versions in poms
+=======
+			<version>0.4.0-SNAPSHOT</version>
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
 			<version>${assertj-core}</version>
 =======
 			<version>3.11.1</version>
 >>>>>>> updated versions in poms
+=======
+			<version>3.11.1</version>
+>>>>>>> 2a0e573e1694454aef3269aa4d783f98f2441be0
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
