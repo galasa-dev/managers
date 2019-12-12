@@ -105,22 +105,12 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-<<<<<<< HEAD
 			<version>0.4.0-SNAPSHOT</version>
-=======
-			<version>0.3.0</version>
-			<scope>compile</scope>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager.ivt</artifactId>
-<<<<<<< HEAD
 			<version>0.4.0-SNAPSHOT</version>
-=======
-			<version>0.3.0</version>
-			<scope>compile</scope>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
@@ -135,12 +125,12 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.docker.manager</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.docker.manager.ivt</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>0.4.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
