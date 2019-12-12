@@ -54,6 +54,11 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 	}
 
 	@Override
+	public Object getContent() throws ZosmfException {
+		return this.httpClientresponse.getContent();
+	}
+
+	@Override
 	public int getStatusCode() {
 		return this.httpClientresponse.getStatusCode();
 	}

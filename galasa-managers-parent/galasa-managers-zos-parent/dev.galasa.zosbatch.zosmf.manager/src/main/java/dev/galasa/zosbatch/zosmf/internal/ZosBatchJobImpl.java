@@ -69,6 +69,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	
 	private static final String SLASH = "/";
 	private static final String RESTJOBS_PATH = SLASH + "zosmf" + SLASH + "restjobs" + SLASH + "jobs" + SLASH;
+	private static final String LOG_JOB_NOT_SUBMITTED = "Job has not been submitted by manager";
 	
 	private static final Log logger = LogFactory.getLog(ZosBatchJobImpl.class);
 
@@ -102,27 +103,30 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
 		IZosmfResponse response;
 		try {
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED)));
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosBatchException(e);
 		}
-		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_CREATED) {
-			throw new ZosBatchException("Unable to submit batch job " + this.jobname.getName());
+
+		JsonObject responseBody;
+		try {
+			responseBody = response.getJsonContent();
+		} catch (ZosmfException e) {
+			throw new ZosBatchException(e);
 		}
 		
+		logger.trace(responseBody);
 		if (response.getStatusCode() == HttpStatus.SC_CREATED) {
-			JsonObject content;
-			try {
-				content = response.getJsonContent();
-			} catch (ZosmfException e) {
-				throw new ZosBatchException("Unable to submit batch job " + this.jobname.getName());
-			}
-			
-			this.jobid = content.get("jobid").getAsString();
-			this.retcode = jsonNull(content, "retcode");
+			this.jobid = responseBody.get("jobid").getAsString();
+			this.retcode = jsonNull(responseBody, "retcode");
 			this.jobPath = RESTJOBS_PATH + this.jobname.getName() + SLASH + this.jobid;
 			this.jobFilesPath = this.jobPath + "/files";
 			logger.info("JOB " + this + " Submitted");
+		} else {			
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			String displayMessage = buildErrorString("Submit job", responseBody); 
+			logger.error(displayMessage);
+			throw new ZosBatchException(displayMessage);
 		}
 		
 		return this;
@@ -130,14 +134,17 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
 	@Override
 	public int waitForJob() throws ZosBatchException {
+		if (!submitted()) {
+			throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
+		}
 		logger.info("Waiting " + jobWaitTimeout + " seconds for "+ this.jobid + " " + this.jobname.getName() + " to complete");
 		
 		long timeoutTime = Calendar.getInstance().getTimeInMillis()	+ (jobWaitTimeout * 1000);
 		while (Calendar.getInstance().getTimeInMillis() < timeoutTime) {
 			try {
 				updateJobStatus();
-			} catch (Exception e) {
-				throw new ZosBatchException("Unable to wait for job to complete", e);
+			} catch (ZosBatchException e) {
+				throw new ZosBatchException(e);
 			}
 			try {
 				if (this.jobComplete) {
@@ -159,6 +166,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	
 	@Override
 	public IZosBatchJobOutput retrieveOutput() throws ZosBatchException {
+		if (!submitted()) {
+			throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
+		}
 		updateJobStatus();
 		
 		// First, get a list of spool files
@@ -166,34 +176,41 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		this.jobFilesPath = RESTJOBS_PATH + this.jobname.getName() + SLASH + this.jobid + "/files";
 		IZosmfResponse response;
 		try {
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosBatchException(e);
 		}
-		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
-			throw new ZosBatchException("Unable to retreive job output");
+
+		Object responseBodyObject;
+		try {
+			responseBodyObject = response.getContent();
+		} catch (ZosmfException e) {
+			throw new ZosBatchException(e);
 		}
 		
-		try {
-			JsonArray jsonArray = response.getJsonArrayContent();
-			
-			// Get the JCLIN
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath + "/JCL/records", null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
-			this.jobOutput.addJcl(response.getTextContent());
-	
+		logger.trace(responseBodyObject);
+		if (response.getStatusCode() == HttpStatus.SC_OK) {
 			// Get the spool files
-			for (JsonElement jsonElement : jsonArray) {
-			    JsonObject spoolFile = jsonElement.getAsJsonObject();
-			    String id = spoolFile.get("id").getAsString();
-			    response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath + "/" + id + "/records", null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
-				if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
-					throw new ZosBatchException("Unable to retreive job output");
-				}
-				this.jobOutput.add(spoolFile, response.getTextContent());
+			JsonArray jsonArray;
+			try {
+				jsonArray = response.getJsonArrayContent();
+			} catch (ZosmfException e) {
+				throw new ZosBatchException(e);
 			}
-		} catch (ZosmfException e) {
-			throw new ZosBatchException("Unable to retreive job output via zOSMF" + this, e);
+			for (JsonElement jsonElement : jsonArray) {
+				JsonObject responseBody = jsonElement.getAsJsonObject();
+				String id = responseBody.get("id").getAsString();
+				addOutputFileContent(responseBody, this.jobFilesPath + "/" + id + "/records");
+			}
+		} else {			
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			String displayMessage = buildErrorString("Retrive job output", (JsonObject) responseBodyObject); 
+			logger.error(displayMessage);
+			throw new ZosBatchException(displayMessage);
 		}
+		
+		// Get the JCLIN
+		addOutputFileContent(null, this.jobFilesPath + "/JCL/records");
 
 		archiveJobOutput();
 		purgeJob();
@@ -208,21 +225,28 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
 			IZosmfResponse response;
 			try {
-				response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+				response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 			} catch (ZosmfException e) {
 				throw new ZosBatchException(e);
 			}
-			if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
-				throw new ZosBatchException("Unable to purge job output");
-			}
-			JsonObject content;
+
+			JsonObject responseBody;
 			try {
-				content = response.getJsonContent();
+				responseBody = response.getJsonContent();
 			} catch (ZosmfManagerException e) {
-				throw new ZosBatchException("Problem purging job via zOSMF", e);
+				throw new ZosBatchException(e);
 			}
-			this.status = content.get("status").getAsString();			
-			this.jobPurged = true;
+			
+			logger.trace(responseBody);
+			if (response.getStatusCode() == HttpStatus.SC_OK) {
+				this.status = responseBody.get("status").getAsString();			
+				this.jobPurged = true;
+			} else {			
+				// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+				String displayMessage = buildErrorString("Purge job", responseBody); 
+				logger.error(displayMessage);
+				throw new ZosBatchException(displayMessage);
+			}
 		}
 	}
 	
@@ -236,6 +260,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return jobStatus();		
 	}
 
+	public boolean submitted() {
+		return this.jobid != null;
+	}
+
 	public boolean isArchived() {
 		return this.jobArchived;
 	}
@@ -245,35 +273,80 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	private String jobStatus() {
-		return "JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " STATUS=" + this.status + " RETCODE=" + (this.retcode != null ? this.retcode : "");
+		return "JOBID=" + (this.jobid != null ? this.jobid : "????????") + " JOBNAME=" + this.jobname.getName() + " STATUS=" + (this.status != null ? this.status : "????????") + " RETCODE=" + (this.retcode != null ? this.retcode : "????");
 	}
 
 	private void updateJobStatus() throws ZosBatchException {
+		if (!submitted()) {
+			throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
+		}
 		IZosmfResponse response;
 		try {
-			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosBatchException(e);
 		}
-		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
-			return;
-		}		
-		JsonObject content;
+		
+		JsonObject responseBody;
 		try {
-			content = response.getJsonContent();
-			this.status = content.get("status").getAsString();
+			responseBody = response.getJsonContent();
+		} catch (ZosmfException e) {
+			throw new ZosBatchException(e);
+		}
+			
+		logger.trace(responseBody);
+		if (response.getStatusCode() == HttpStatus.SC_OK) {
+			this.status = responseBody.get("status").getAsString();
 			if (this.status == null || this.status.equals("OUTPUT")) {
 				this.jobComplete = true;
 			}
 			String memberName = "retcode";
-			if (content.get(memberName) != null && !content.get(memberName).isJsonNull()) {
-				this.retcode = content.get(memberName).getAsString();
+			if (responseBody.get(memberName) != null && !responseBody.get(memberName).isJsonNull()) {
+				this.retcode = responseBody.get(memberName).getAsString();
 			} else {
 				this.retcode = "????";
 			}
 			logger.debug(jobStatus());
+		} else {			
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			String displayMessage = buildErrorString("Purge job", responseBody); 
+			logger.error(displayMessage);
+			throw new ZosBatchException(displayMessage);
+		}			
+	}
+
+	private void addOutputFileContent(JsonObject responseBody, String path) throws ZosBatchException {
+	
+		IZosmfResponse response;
+		try {
+			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, path, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
-			throw new ZosBatchException("Unable to retrieve Status for job " + this);
+			throw new ZosBatchException(e);
+		}
+	
+		String fileOutput;
+		if (response.getStatusCode() == HttpStatus.SC_OK) {
+			try {
+				fileOutput = response.getTextContent();
+			} catch (ZosmfException e) {
+				throw new ZosBatchException(e);
+			}
+		} else {			
+			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+			JsonObject errorResponseBody;
+			try {
+				errorResponseBody = response.getJsonContent();
+			} catch (ZosmfException e) {
+				throw new ZosBatchException(e);
+			}
+			String displayMessage = buildErrorString("Retrive job output", errorResponseBody); 
+			logger.error(displayMessage);
+			throw new ZosBatchException(displayMessage);					
+		}
+		if (responseBody != null) {
+			this.jobOutput.add(responseBody, fileOutput);
+		} else {
+			this.jobOutput.addJcl(fileOutput);
 		}
 	}
 
@@ -294,11 +367,53 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return jobCard.toString();
 	}
 
-	private String jsonNull(JsonObject content, String memberName) {
-		if (content.get(memberName) != null && !content.get(memberName).isJsonNull()) {
-			return content.get(memberName).getAsString();
+	private String jsonNull(JsonObject responseBody, String memberName) {
+		if (responseBody.get(memberName) != null && !responseBody.get(memberName).isJsonNull()) {
+			return responseBody.get(memberName).getAsString();
 		}
 		return null;
+	}
+
+	private String buildErrorString(String action, JsonObject responseBody) {	
+		int errorCategory = responseBody.get("category").getAsInt();
+		int errorRc = responseBody.get("rc").getAsInt();
+		int errorReason = responseBody.get("rc").getAsInt();
+		String errorMessage = responseBody.get("message").getAsString();
+		String errorDetails = null;
+		JsonElement element = responseBody.get("details");
+		if (element != null) {
+			if (element.isJsonArray()) {
+				JsonArray elementArray = element.getAsJsonArray();
+				StringBuilder sb = new StringBuilder();
+				for (JsonElement item : elementArray) {
+					sb.append("\n");
+					sb.append(item.getAsString());
+				}
+				errorDetails = sb.toString();
+			} else {
+				errorDetails = element.getAsString();
+			}
+		}
+		String errorStack = responseBody.get("stack").getAsString();
+		StringBuilder sb = new StringBuilder(); 
+		sb.append("Error "); 
+		sb.append(action);
+		sb.append(", category:");
+		sb.append(errorCategory);
+		sb.append(", rc:");
+		sb.append(errorRc);
+		sb.append(", reason:");
+		sb.append(errorReason);
+		sb.append(", message:");
+		sb.append(errorMessage);
+		if (errorDetails != null) {
+			sb.append("\ndetails:");
+			sb.append(errorDetails);
+		}
+		sb.append("\nstack:\n");
+		sb.append(errorStack);
+		
+		return sb.toString();
 	}
 
 	protected void archiveJobOutput() throws ZosBatchException {
