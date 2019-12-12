@@ -162,9 +162,7 @@ public class ZosDatasetImpl implements IZosDataset {
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
 		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to create data set " + quoted(this.dsname) + logOnImage());
-		}
+
 		if (response.getStatusCode() != HttpStatus.SC_CREATED) {			
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR			
 			JsonObject responseBody;
@@ -222,9 +220,6 @@ public class ZosDatasetImpl implements IZosDataset {
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
 		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to delete data set " + quoted(this.dsname) + logOnImage());
-		}
 		
 		if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -259,9 +254,6 @@ public class ZosDatasetImpl implements IZosDataset {
 					new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
-		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to list data set " + quoted(this.dsname) + logOnImage());
 		}
 		
 		JsonObject responseBody;
@@ -362,9 +354,6 @@ public class ZosDatasetImpl implements IZosDataset {
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
 		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to delete member " + memberName + " from data set " + quoted(this.dsname) + logOnImage());
-		}
 		
 		if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -399,9 +388,6 @@ public class ZosDatasetImpl implements IZosDataset {
 					new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
-		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to list members of data set " + quoted(this.dsname) + logOnImage());
 		}
 		
 		JsonObject responseBody;
@@ -459,16 +445,12 @@ public class ZosDatasetImpl implements IZosDataset {
 			} catch (ZosmfException e) {
 				throw new ZosDatasetException(e);
 			}
-			String unableToRetrieveMemberListOfDataset = "Unable to retrieve member list of data set ";
-			if (response == null || response.getStatusCode() == 0) {
-				throw new ZosDatasetException(unableToRetrieveMemberListOfDataset + quoted(this.dsname) + logOnImage());
-			}
 			
 			JsonObject responseBody;
 			try {
 				responseBody = response.getJsonContent();
 			} catch (ZosmfException e) {
-				throw new ZosDatasetException(unableToRetrieveMemberListOfDataset + quoted(this.dsname) + logOnImage());
+				throw new ZosDatasetException("Unable to retrieve member list of data set " + quoted(this.dsname) + logOnImage());
 			}
 			
 			logger.trace(responseBody);
@@ -670,16 +652,12 @@ public class ZosDatasetImpl implements IZosDataset {
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
 		}
-		String unableToRetrieveAttibutesOfDataset = "Unable to attibutes of data set ";
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException(unableToRetrieveAttibutesOfDataset + quoted(this.dsname) + logOnImage());
-		}
 		
 		JsonObject responseBody;
 		try {
 			responseBody = response.getJsonContent();
 		} catch (ZosmfException e) {
-			throw new ZosDatasetException(unableToRetrieveAttibutesOfDataset + quoted(this.dsname) + logOnImage());
+			throw new ZosDatasetException("Unable to attibutes of data set " + quoted(this.dsname) + logOnImage());
 		}
 		
 		logger.trace(responseBody);
@@ -734,7 +712,7 @@ public class ZosDatasetImpl implements IZosDataset {
 				attributes.append("Expiration date=");
 				attributes.append(emptyStringWhenNull(item, PROP_EDATE));
 			} else {
-				throw new ZosDatasetException(unableToRetrieveAttibutesOfDataset + quoted(this.dsname) + logOnImage());				
+				throw new ZosDatasetException("Unable to retrieve attibutes of data set" + quoted(this.dsname) + logOnImage());				
 			}
 		} else {			
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -757,27 +735,21 @@ public class ZosDatasetImpl implements IZosDataset {
 					new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
-		}
-		String unableToRetrieveContentOfDataset = "Unable to retrieve content of data set ";
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
-		}
-		
+		}		
 	
 		String content;
 		if (response.getStatusCode() == HttpStatus.SC_OK) {
 			try {
 				content = response.getTextContent();
 			} catch (ZosmfException e) {
-				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+				throw new ZosDatasetException("Unable to retrieve content of data set " + quoted(joinDSN(memberName)) + logOnImage());
 			}
-		} else {
-			
+		} else {			
 			JsonObject responseBody;
 			try {
 				responseBody = response.getJsonContent();
 			} catch (ZosmfException e) {
-				throw new ZosDatasetException(unableToRetrieveContentOfDataset + quoted(joinDSN(memberName)) + logOnImage());
+				throw new ZosDatasetException("Unable to retrieve content of data set " + quoted(joinDSN(memberName)) + logOnImage());
 			}
 			logger.trace(responseBody);	
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -804,9 +776,6 @@ public class ZosDatasetImpl implements IZosDataset {
 					new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 		} catch (ZosmfException e) {
 			throw new ZosDatasetException(e);
-		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
 		}
 		
 		if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
