@@ -273,7 +273,7 @@ public interface IHttpClient {
      * 
      * @param host
      */
-    void getOctetStream(String destination, String path);
+    void getFile(String destination, String path);
 
     /**
      * Get the username set for this client

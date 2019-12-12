@@ -65,7 +65,7 @@ public class HttpManagerIVT {
         boolean fileExists = false;
         client3.setURI(new URI("https://p2.galasa.dev"));
         //client3.setAuthorisation("username", "password");
-        client3.getOctetStream("/tmp", "/plugins/dev.galasa_0.3.0.jar");
+        client3.getFile("/tmp", "/plugins/dev.galasa_0.3.0.jar");
         File f = new File("/tmp/dev.galasa_0.3.0.jar");
         if (f.exists() && !f.isDirectory()) {
             fileExists = true;

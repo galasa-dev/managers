@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,6 +40,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
@@ -347,42 +350,22 @@ public class HttpClientImpl implements IHttpClient {
 
     }
 
-    public void getOctetStream(String destination, String path) {
+    public void getFile(String destination, String path) {
         try{
             String fileName = findFileNameFromPath(path);
             String filePath = destination + fileName;
 
-            writeToFile(retrieveBufferedStream(path), filePath);
+            HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
+
+            CloseableHttpResponse repsonse = execute(request.buildRequest());
+            OutputStream output = new FileOutputStream(filePath);
+
+            IOUtils.copy(repsonse.getEntity().getContent(), output);
+
         } catch (Exception e) {
-            logger.error("Could not download file from speficifed path: "+ path,e);
+            logger.error("Could not download file from speficifed path: "+ path, e);
         }
-    }
-
-    private void writeToFile(BufferedInputStream in, String filePath) throws IOException {
-        logger.info("Starting download");
-        FileOutputStream file = new FileOutputStream(filePath);
-        
-        byte data[] = new byte[1024];
-        int byteContent;
-        while ((byteContent = in.read(data, 0, 1024)) != -1) {
-            file.write(data, 0, byteContent);
-        }
-        logger.info("Download complete");
-        file.close();
-    }
-
-    private BufferedInputStream retrieveBufferedStream(String path) throws IOException {
-        URL url = new URL(host + path);
-        URLConnection con =url.openConnection();
-        Credentials creds = credentialsProvider.getCredentials(AuthScope.ANY);
-        if (creds != null){
-            String authString = creds.getUserPrincipal().getName()+":"+creds.getPassword();
-            byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
-            String authStringEnc = new String(authEncBytes);
-            con.setRequestProperty("Authorization", "Basic "+ authStringEnc);
-        }
-
-        return new BufferedInputStream(con.getInputStream());
     }
 
     private String findFileNameFromPath(String path){
