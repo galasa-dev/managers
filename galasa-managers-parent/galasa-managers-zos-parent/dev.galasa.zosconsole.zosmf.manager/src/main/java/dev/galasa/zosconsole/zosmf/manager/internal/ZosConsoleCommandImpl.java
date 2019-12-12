@@ -72,9 +72,6 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 		} catch (ZosmfException e) {
 			throw new ZosConsoleException(e);
 		}
-		if (response == null || response.getStatusCode() == 0) {
-			throw new ZosConsoleException(logUnableToIsuueCommand());
-		}
 		
 		JsonObject content;
 		try {
@@ -113,9 +110,6 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
 			response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTCONSOLE_PATH + this.consoleName + "/solmsgs/" + this.commandResponseKey, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
 		} catch (ZosmfException e) {
 			throw new ZosConsoleException(e);
-		}
-		if (response == null || response.getStatusCode() == 0 || response.getStatusCode() != HttpStatus.SC_OK) {
-			throw new ZosConsoleException(logUnableToIsuueCommand());
 		}
 		
 		if (response.getStatusCode() == HttpStatus.SC_OK) {

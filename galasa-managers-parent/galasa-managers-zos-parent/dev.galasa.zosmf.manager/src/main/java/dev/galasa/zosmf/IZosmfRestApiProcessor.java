@@ -8,6 +8,8 @@ package dev.galasa.zosmf;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
@@ -24,5 +26,5 @@ public interface IZosmfRestApiProcessor {
 	 * @return the response {@link IZosmfResponse}
 	 * @throws ZosBatchException
 	 */
-	public IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException;
 }

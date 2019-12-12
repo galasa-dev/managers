@@ -58,11 +58,13 @@ public class ZosBatchImpl implements IZosBatch {
 		Iterator<ZosBatchJobImpl> iterator = zosBatchJobs.iterator();
 		while (iterator.hasNext()) {
 			ZosBatchJobImpl zosBatchJob = iterator.next();
-			if (!zosBatchJob.isArchived()) {
-				zosBatchJob.archiveJobOutput();
-			}
-			if (!zosBatchJob.isPurged()) {
-				zosBatchJob.purgeJob();
+			if (zosBatchJob.submitted()) {
+				if (!zosBatchJob.isArchived()) {
+					zosBatchJob.archiveJobOutput();
+				}
+				if (!zosBatchJob.isPurged()) {
+					zosBatchJob.purgeJob();
+				}
 			}
 		}
 	}
