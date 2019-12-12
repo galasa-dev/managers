@@ -5,12 +5,19 @@
  */
 package dev.galasa.http.internal;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -22,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +41,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
@@ -42,6 +51,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
@@ -83,20 +93,20 @@ public class HttpClientImpl implements IHttpClient {
     private static final String JAVA_VENDOR_PROPERTY = "java.vendor";
 
     private CloseableHttpClient httpClient;
-    protected URI               host                 = null;
+    protected URI host = null;
 
-    private final List<Header>  commonHeaders        = new ArrayList<>();
+    private final List<Header> commonHeaders = new ArrayList<>();
 
-    private final int           timeout              = -1;
+    private final int timeout = -1;
 
-    private BasicCookieStore    cookieStore;
-    private SSLContext          sslContext;
-    private HostnameVerifier    hostnameVerifier     = NoopHostnameVerifier.INSTANCE;
-    private CredentialsProvider credentialsProvider  = new BasicCredentialsProvider();
-    private HttpClientContext   httpContext          = null;
-    private Set<Integer>        okResponseCodes      = new HashSet<>();
+    private BasicCookieStore cookieStore;
+    private SSLContext sslContext;
+    private HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
+    private CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    private HttpClientContext httpContext = null;
+    private Set<Integer> okResponseCodes = new HashSet<>();
 
-    private Log                 logger;
+    private Log logger;
 
     public HttpClientImpl(Log log) {
         this.logger = log;
@@ -298,6 +308,7 @@ public class HttpClientImpl implements IHttpClient {
     public IHttpClient build() {
 
         HttpClientBuilder builder = HttpClients.custom().setDefaultCookieStore(cookieStore);
+
         builder.setDefaultCredentialsProvider(credentialsProvider);
         builder.setDefaultHeaders(commonHeaders);
 
@@ -341,6 +352,54 @@ public class HttpClientImpl implements IHttpClient {
 
     }
 
+    public void downloadFile(String destination, String path) {
+        try{
+            String fileName = findFileNameFromPath(path);
+            String filePath = destination + fileName;
+
+            writeToFile(retrieveBufferedStream(path), filePath);
+        } catch (Exception e) {
+            logger.error("Could not download file from speficifed path: "+ path,e);
+        }
+    }
+
+    private void writeToFile(BufferedInputStream in, String filePath) throws IOException {
+        logger.info("Starting download");
+        FileOutputStream file = new FileOutputStream(filePath);
+        
+        byte data[] = new byte[1024];
+        int byteContent;
+        while ((byteContent = in.read(data, 0, 1024)) != -1) {
+            file.write(data, 0, byteContent);
+        }
+        logger.info("Download complete");
+        file.close();
+    }
+
+    private BufferedInputStream retrieveBufferedStream(String path) throws IOException {
+        URL url = new URL(host + path);
+        URLConnection con =url.openConnection();
+        Credentials creds = credentialsProvider.getCredentials(AuthScope.ANY);
+
+        String authString = creds.getUserPrincipal().getName()+":"+creds.getPassword();
+        byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+        String authStringEnc = new String(authEncBytes);
+        con.setRequestProperty("Authorization", "Basic "+ authStringEnc);
+
+        return new BufferedInputStream(con.getInputStream());
+    }
+
+    private String findFileNameFromPath(String path){
+        String pattern = "\\/([^\\/]+)$";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(path);
+
+        if(m.find()){
+            return m.group(0);
+        }
+        return null;
+    }
+
     private byte[] execute(HttpUriRequest request, boolean retry) throws HttpClientException {
 
         while (true) {
@@ -350,6 +409,7 @@ public class HttpClientImpl implements IHttpClient {
                     this.build();
                 }
                 response = httpClient.execute(request, httpContext);
+
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK
                         && status.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY
