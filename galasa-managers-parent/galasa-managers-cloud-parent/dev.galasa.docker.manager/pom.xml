@@ -7,19 +7,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-cloud-parent</artifactId>
-<<<<<<< HEAD
 		<version>0.4.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.docker.manager</artifactId>
 	<version>0.4.0-SNAPSHOT</version>
-=======
-		<version>0.3.0-SNAPSHOT</version>
-	</parent>
-
-	<artifactId>dev.galasa.docker.manager</artifactId>
-	<version>0.3.0-SNAPSHOT</version>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 	<packaging>bundle</packaging>
 
 	<name>Docker Manager</name>
@@ -28,42 +20,26 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
-<<<<<<< HEAD
 			<version>[0.3.0,1.0.0)</version>
-=======
-			<version>${dev.galasa}</version>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
-<<<<<<< HEAD
 			<version>[0.3.0,1.0.0)</version>
-=======
-			<version>${dev.galasa.framework}</version>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-<<<<<<< HEAD
 			<version>0.4.0-SNAPSHOT</version>
-=======
-			<version>0.3.0-SNAPSHOT</version>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-<<<<<<< HEAD
 			<version>2.8.5</version>
-=======
-			<version>${gson}</version>
->>>>>>> dc5f4060626af5463e4016a8f7987b178b02e3a2
 		</dependency>
 
 		<dependency>
