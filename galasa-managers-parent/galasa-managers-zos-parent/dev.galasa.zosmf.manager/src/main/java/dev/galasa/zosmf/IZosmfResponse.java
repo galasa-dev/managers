@@ -41,6 +41,13 @@ public interface IZosmfResponse {
 	public JsonArray getJsonArrayContent() throws ZosmfException;
 
 	/**
+	 * Return the content from the zOSMF request as an object
+	 * @return the content
+	 * @throws ZosmfException
+	 */
+	public Object getContent() throws ZosmfException;
+
+	/**
 	 * Return the HTTP status code from the zOSMF request
 	 * @return the HTTP code
 	 */

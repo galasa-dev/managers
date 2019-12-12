@@ -7,6 +7,8 @@ package dev.galasa.zosmf;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.http.HttpStatus;
 
 import com.google.gson.JsonObject;
@@ -135,7 +137,7 @@ public interface IZosmf {
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException;
 
 	/**
 	 * Issue an HTTP POST request to the zOSMF server with a request body of content type of {@code application/json}
@@ -146,7 +148,7 @@ public interface IZosmf {
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException;
 
 	/**
 	 * Issue an HTTP PUT request to the zOSMF server with a request body of content type of {@code text/plain}
@@ -157,7 +159,7 @@ public interface IZosmf {
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws ZosmfException;
 
 	/**
 	 * Issue an HTTP PUT request to the zOSMF server with a request body of content type of {@code application/json}
@@ -168,7 +170,7 @@ public interface IZosmf {
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws ZosmfException;
 
 	/**
 	 * Issue an HTTP DELETE request to the zOSMF server with no request body
@@ -178,7 +180,7 @@ public interface IZosmf {
 	 * @return the zOSMF server response
 	 * @throws ZosmfException
 	 */
-	public IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException;
+	public @NotNull IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException;
 	
 	/**
 	 * Get the zOS image associated with the zOSMF server

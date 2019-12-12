@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -31,6 +33,7 @@ import dev.galasa.zosmf.IZosmf;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
+import dev.galasa.zosmf.internal.properties.Https;
 import dev.galasa.zosmf.internal.properties.ServerHostname;
 import dev.galasa.zosmf.internal.properties.ServerImages;
 import dev.galasa.zosmf.internal.properties.ServerPort;
@@ -83,7 +86,7 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = ZosmfRequestType.GET.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -108,7 +111,7 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = ZosmfRequestType.POST.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -134,7 +137,7 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = ZosmfRequestType.PUT.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -160,7 +163,7 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse putJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse putJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = ZosmfRequestType.PUT.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -186,7 +189,7 @@ public class ZosmfImpl implements IZosmf {
 	}
 
 	@Override
-	public IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException {
 		String method = ZosmfRequestType.DELETE.name();
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -249,17 +252,28 @@ public class ZosmfImpl implements IZosmf {
 		} catch (ZosmfManagerException e) {
 			throw new ZosmfException("Problem getting port for zOSMF server on " + image.getImageID(), e);
 		}
-		this.zosmfUrl = "https://" + zosmfHostname + ":" + zosmfPort;
+		String scheme = "http";
+		try {
+			if (Https.get(image.getImageID())) {
+				scheme = "https";
+			}
+		} catch (ZosmfManagerException e) {
+			throw new ZosmfException("Problem getting SSL for zOSMF server on " + image.getImageID(), e);
+		}
+		
+		this.zosmfUrl = scheme + "://" + zosmfHostname + ":" + zosmfPort;
 
 		this.httpClient = ZosmfManagerImpl.httpManager.newHttpClient();
 		
 		try {
 			ICredentials creds = image.getDefaultCredentials();
-			this.httpClient.setURI(new URI("https://" + zosmfHostname + ":" + zosmfPort));
+			this.httpClient.setURI(new URI(this.zosmfUrl));
 			if (creds instanceof ICredentialsUsernamePassword) {
 				this.httpClient.setAuthorisation(((ICredentialsUsernamePassword) creds).getUsername(), ((ICredentialsUsernamePassword) creds).getPassword());
 			}
-			this.httpClient.setTrustingSSLContext();
+			if (scheme.equals("https")) {
+				this.httpClient.setTrustingSSLContext();
+			}
 			this.httpClient.build();
 		} catch (HttpClientException | ZosManagerException | URISyntaxException e) {
 			throw new ZosmfException("Unable to create HTTP Client", e);

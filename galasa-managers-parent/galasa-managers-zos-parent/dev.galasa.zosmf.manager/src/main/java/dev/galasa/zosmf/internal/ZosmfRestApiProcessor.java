@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -55,7 +57,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
 	 * @return
 	 * @throws ZosBatchException
 	 */
-	public IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException {
+	public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException {
 		if (validStatusCodes == null) {
 			validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
 		}
@@ -88,7 +90,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
 					throw new ZosmfException("Invalid request type");
 				}
 	
-				if (response == null || validStatusCodes.contains(response.getStatusCode())) {
+				if (validStatusCodes.contains(response.getStatusCode())) {
 			    	return response;
 				} else {
 					logger.error("Expected HTTP status codes: " + validStatusCodes);
@@ -99,7 +101,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
 		    	getNextZosmf();
 			}
 		}
-		return response;
+		throw new ZosmfException("Unable to get valid response fron zOS/MF server");
 	}
 	
 	private IZosmf getCurrentZosmfServer() {

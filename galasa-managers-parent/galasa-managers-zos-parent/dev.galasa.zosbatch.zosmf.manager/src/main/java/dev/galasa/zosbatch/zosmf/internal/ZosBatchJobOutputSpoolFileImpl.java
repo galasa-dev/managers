@@ -47,7 +47,7 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
 
 		this.jobname = spoolFile.get("jobname").getAsString();
 		this.jobid = spoolFile.get("jobid").getAsString();
-		this.stepname = spoolFile.get("stepname").getAsString();
+		this.stepname = jsonNull(spoolFile, "stepname");
 		this.procstep = jsonNull(spoolFile, "procstep");
 		this.ddname = spoolFile.get("ddname").getAsString();
 		this.records = records;
