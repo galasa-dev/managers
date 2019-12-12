@@ -433,8 +433,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 				fileName.append(spoolFile.getJobname());
 				fileName.append("_");
 				fileName.append(spoolFile.getJobid());
-				fileName.append("_");
-				fileName.append(spoolFile.getProcstep().isEmpty() ? "-" : spoolFile.getProcstep());
+				if (!spoolFile.getStepname().isEmpty()){
+					fileName.append("_");
+					fileName.append(spoolFile.getStepname());
+				}
+				if (!spoolFile.getProcstep().isEmpty()){
+					fileName.append("_");
+					fileName.append(spoolFile.getProcstep());
+				}
 				fileName.append("_");
 				fileName.append(spoolFile.getDdname());
 				fileName.append(".txt");
