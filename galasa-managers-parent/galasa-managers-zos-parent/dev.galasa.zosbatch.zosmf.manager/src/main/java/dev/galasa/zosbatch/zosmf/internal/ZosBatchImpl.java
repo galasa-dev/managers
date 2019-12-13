@@ -37,7 +37,11 @@ public class ZosBatchImpl implements IZosBatch {
 		if (jobname == null) {
 			jobname = new ZosBatchJobnameImpl(this.image.getImageID());		
 		}
-			
+		
+		if (!jcl.endsWith("\n")) {
+			jcl = jcl + "\n";
+		}
+		
 		ZosBatchJobImpl zosBatchJob;
 		try {
 			zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
