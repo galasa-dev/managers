@@ -65,11 +65,6 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
 		for (int i = 0; i <= this.retryRequest; i++) {
 			try {
 				IZosmf zosmfServer = getCurrentZosmfServer();
-				if (headers != null) {
-					for (Entry<String, String> entry : headers.entrySet()) {
-						zosmfServer.setHeader(entry.getKey(), entry.getValue());
-					}
-				}
 				switch (requestType) {
 				case GET:
 					response = zosmfServer.get(path, validStatusCodes);
