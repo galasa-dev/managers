@@ -6,6 +6,7 @@
 package dev.galasa.http;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
@@ -250,6 +251,13 @@ public interface IHttpClient {
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException;
+
+    /**
+     * Download a file from a specified location to a specified destination on local host.
+     * 
+     * @param host
+     */
+    void getFile(Path destination, String path);
 
     /**
      * Get the SSL context used by this client

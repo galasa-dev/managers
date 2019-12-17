@@ -7,11 +7,14 @@ package dev.galasa.http.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -341,6 +344,21 @@ public class HttpClientImpl implements IHttpClient {
 
     }
 
+    public void getFile(Path destination, String path) {
+        try{
+            HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
+
+            CloseableHttpResponse repsonse = execute(request.buildRequest());
+            OutputStream output = new FileOutputStream(destination.toFile());
+            
+            IOUtils.copy(repsonse.getEntity().getContent(), output);
+
+        } catch (Exception e) {
+            logger.error("Could not download file from speficifed path: "+ path, e);
+        }
+    }
+    
     private byte[] execute(HttpUriRequest request, boolean retry) throws HttpClientException {
 
         while (true) {
