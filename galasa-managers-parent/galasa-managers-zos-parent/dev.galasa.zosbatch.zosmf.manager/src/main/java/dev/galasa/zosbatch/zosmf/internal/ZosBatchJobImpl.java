@@ -8,9 +8,11 @@ package dev.galasa.zosbatch.zosmf.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -66,6 +68,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	private String jobFilesPath;
 	private ZosBatchJobOutputImpl jobOutput;
 	private boolean useSysaff;
+
+	private String uniqueId;
 	
 	private static final String SLASH = "/";
 	private static final String RESTJOBS_PATH = SLASH + "zosmf" + SLASH + "restjobs" + SLASH + "jobs" + SLASH;
@@ -454,9 +458,24 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	private void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
 		try {
 			Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
+			String lastElement = artifactPathElements[artifactPathElements.length-1];
 			for (String artifactPathElement : artifactPathElements) {
-				artifactPath = artifactPath.resolve(artifactPathElement);
+				if (!lastElement.equals(artifactPathElement)) {
+					artifactPath = artifactPath.resolve(artifactPathElement);
+				}
 			}
+			int lastPeriod = StringUtils.lastIndexOf(lastElement, '.');
+			String uniqueName;
+			if (uniqueId == null) {
+				uniqueName = lastElement;
+			} else {
+				uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
+			}
+			if (Files.exists(artifactPath.resolve(uniqueName))) {				
+				uniqueId = "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
+				uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
+			}
+			artifactPath = artifactPath.resolve(uniqueName);
 			Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
 			Files.write(artifactPath, content.getBytes()); 
 		} catch (IOException e) {
