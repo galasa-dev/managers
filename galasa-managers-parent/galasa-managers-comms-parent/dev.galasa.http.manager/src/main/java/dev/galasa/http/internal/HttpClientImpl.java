@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -350,7 +351,7 @@ public class HttpClientImpl implements IHttpClient {
                 new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
 
             CloseableHttpResponse repsonse = execute(request.buildRequest());
-            OutputStream output = new FileOutputStream(destination.toFile());
+            OutputStream output = Files.newOutputStream(destination);
             
             IOUtils.copy(repsonse.getEntity().getContent(), output);
 
