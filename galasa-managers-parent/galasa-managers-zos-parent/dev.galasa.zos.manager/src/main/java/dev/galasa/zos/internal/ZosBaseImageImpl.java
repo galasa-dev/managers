@@ -86,6 +86,9 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 			ICredentialsService credsService = zosManager.getFramework().getCredentialsService();
 
 			this.defaultCedentials = credsService.getCredentials(this.defaultCredentialsId);
+			if (this.defaultCedentials == null) {
+				this.defaultCedentials = credsService.getCredentials(this.defaultCredentialsId.toUpperCase());
+			}
 		} catch (CredentialsException e) {
 			throw new ZosManagerException("Unable to acquire the credentials for id " + this.defaultCredentialsId, e);
 		}
