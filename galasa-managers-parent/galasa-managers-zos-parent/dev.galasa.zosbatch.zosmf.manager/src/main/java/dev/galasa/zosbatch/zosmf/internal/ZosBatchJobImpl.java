@@ -135,6 +135,26 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		
 		return this;
 	}
+	
+	@Override
+	public IZosBatchJobname getJobname() {
+		return this.jobname;
+	}
+	
+	@Override
+	public String getJobId() {
+		return (this.jobid != null ? this.jobid : "????????");
+	}
+	
+	@Override
+	public String getStatus() {
+		return (this.status != null ? this.status : "????????");
+	}
+	
+	@Override
+	public String getRetcode() {
+		return (this.retcode != null ? this.retcode : "????");
+	}
 
 	@Override
 	public int waitForJob() throws ZosBatchException {
@@ -153,10 +173,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			try {
 				if (this.jobComplete) {
 					String[] rc = this.retcode.split(" ");
-					if (rc.length > 1) {
-						return StringUtils.isNumeric(rc[1]) ? Integer.parseInt(rc[1]) : 9999;
+					if (rc.length > 0) {
+						return StringUtils.isNumeric(rc[0]) ? Integer.parseInt(rc[0]) : Integer.MIN_VALUE;
 					}
-					return 9999;
+					return Integer.MIN_VALUE;
 				}
 				
 				Thread.sleep(1000);
@@ -165,7 +185,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	        	Thread.currentThread().interrupt();
 	        }
 		}
-		return 9999;
+		return Integer.MIN_VALUE;
 	}	
 	
 	@Override
@@ -243,7 +263,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 			
 			logger.trace(responseBody);
 			if (response.getStatusCode() == HttpStatus.SC_OK) {
-				this.status = responseBody.get("status").getAsString();			
+				this.status = null;
 				this.jobPurged = true;
 			} else {			
 				// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -277,7 +297,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	private String jobStatus() {
-		return "JOBID=" + (this.jobid != null ? this.jobid : "????????") + " JOBNAME=" + this.jobname.getName() + " STATUS=" + (this.status != null ? this.status : "????????") + " RETCODE=" + (this.retcode != null ? this.retcode : "????");
+		return "JOBID=" + getJobId() + " JOBNAME=" + this.jobname.getName() + " STATUS=" + getStatus() + " RETCODE=" + getRetcode();
 	}
 
 	private void updateJobStatus() throws ZosBatchException {
@@ -311,7 +331,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 				this.retcode = "????";
 			}
 			logger.debug(jobStatus());
-		} else {			
+		} else {
 			// Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
 			String displayMessage = buildErrorString("Purge job", responseBody); 
 			logger.error(displayMessage);
