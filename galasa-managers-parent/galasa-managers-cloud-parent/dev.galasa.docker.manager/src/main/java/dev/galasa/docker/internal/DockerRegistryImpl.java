@@ -100,7 +100,7 @@ public class DockerRegistryImpl {
 			if (namespace != "") {
 				namespace += "/";
 			}
-			String path = "/v2/" + namespace + repository + "/tags/list";
+			String path = "/v2/repositories" + namespace + repository + "/tags/" + tag;
 
 			String sResponse = client.get(path);
 			HttpClientResponse<JsonObject> response = client.getJson(path);
@@ -131,6 +131,9 @@ public class DockerRegistryImpl {
 			return false;
 		} catch(IllegalStateException e) {
 			return false;
+		} catch(DockerManagerException e) {
+			logger.error("Credentials type not supported yet", e);
+			return false;
 		} catch(ClassCastException e) {
 			logger.warn("Invalid JSON returned from Docker Registry\n" + resp , e);
 			return false;
@@ -146,12 +149,13 @@ public class DockerRegistryImpl {
 	}
 
 	/**
-	 * Registry authentication 
+	 * Registry authentication
 	 * 
 	 * @param namespace
 	 * @param repository
+	 * @throws DockerManagerException
 	 */
-	private void registryAuthenticate(String namespace, String repository) {
+	private void registryAuthenticate(String namespace, String repository) throws DockerManagerException {
         JsonObject resp = null;
 		
 		try {
@@ -172,15 +176,15 @@ public class DockerRegistryImpl {
 			} 
 
 			if (creds instanceof ICredentialsUsernameToken) {
-				//TODO
+				throw new DockerManagerException("Username tokens are not yet supported");
 			}
 
 			if (creds instanceof ICredentialsUsername) {
-				//TODO
+				throw new DockerManagerException("Username credentials are not yet supported");
 			}
 
 			if (creds instanceof ICredentialsToken) {
-				//TODO
+				throw new DockerManagerException("Tokens are not yet supported");
 			}
 		} catch (CredentialsException e) {
 			logger.warn("Could not find credentials: " + e);
