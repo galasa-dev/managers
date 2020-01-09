@@ -4,19 +4,31 @@ import dev.galasa.docker.DockerManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
-
 /**
- * Docker Manager Slots
- * <p>
- * Throttling property, used to limit the number of parallel running containers
- * </p><p>
- * The property is:<br>
- * {@code docker.engine.server.<dockerServer>.max.slots=numberOfSlots} 
- * </p>
- * <p>
- * No Default, and is required to be set to use docker manager.
- * </p>
- *
+ * Docker Engine Server Maximum Slots CPS Property
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name docker.engine.server.max.slots
+ * 
+ * @galasa.description The maximum number of containers(slots) that run on 
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default 3
+ * 
+ * @galasa.valid_values A valid Java integer value
+ * 
+ * @galasa.examples 
+ * <code>docker.engine.server.max.value=47</code>
+ * 
+ * @galasa.extra
+ * This property indicates what the maximum number of containers Galasa can start on the Docker Engine Server.  
+ * In Galasa terms, a container is a "slot" a platform independent term to reserve space.
+ * <br>
+ * If the the value is less than one, it effectively stop new containers being started on the server, a way for draining 
+ * the Engine Server for maintenance without stopping the entire Galasa automation system. 
+ * 
  */
 public class DockerSlots extends CpsProperties {
     public static String get(String dockerServer) throws DockerManagerException {
