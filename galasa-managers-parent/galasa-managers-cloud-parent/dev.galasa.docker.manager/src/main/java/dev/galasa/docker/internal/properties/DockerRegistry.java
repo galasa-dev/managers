@@ -12,7 +12,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * The URI's to any docker registry that is required to pull images from. Comma seperated list.
  * </p><p>
  * The property is:<br>
- * {@code docker.default.registries=uri1,uri2,...} 
+ * {@code docker.default.registries=DOCKERHUB,ARTIFACTORY1,...} 
  * </p>
  * <p>
  * The docker hub registry is always added to the list of acceptable registries.

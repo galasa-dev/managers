@@ -8,6 +8,19 @@ import dev.galasa.docker.internal.DockerRegistryImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
+/**
+ * Docker Manager Server
+ * <p>
+ * Provides location of the Docker registry
+ * </p><p>
+ * The property is:<br>
+ * {@code docker.registry.<registryId>.URL=https://registry.hub.docker.com} 
+ * </p>
+ * <p>
+ * Default is https://registry.hub.docker.com
+ * </p>
+ *
+ */
 public class DockerRegistryURL extends CpsProperties {
 
     public static URL get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {

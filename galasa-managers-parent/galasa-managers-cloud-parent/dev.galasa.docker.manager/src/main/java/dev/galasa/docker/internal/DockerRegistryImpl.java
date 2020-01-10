@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.Map;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.logging.Log;
@@ -225,7 +224,7 @@ public class DockerRegistryImpl {
 	 * @throws CredentialsException
 	 */
 	private ICredentials getCreds() throws ConfigurationPropertyStoreException, CredentialsException {
-		String credKey = framework.getConfigurationPropertyService(DockerManagerImpl.NAMESPACE).getProperty(this.registryUrl.getHost(), "credentialsId");
+		String credKey = framework.getConfigurationPropertyService(DockerManagerImpl.NAMESPACE).getProperty("registry."+this.registryId, "credentialsId");
 		return credService.getCredentials(credKey);
 	}
 
