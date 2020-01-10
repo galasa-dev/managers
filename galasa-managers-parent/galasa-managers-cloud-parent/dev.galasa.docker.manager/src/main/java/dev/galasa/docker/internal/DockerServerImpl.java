@@ -27,6 +27,7 @@ public class DockerServerImpl implements IDockerServer {
     private final IHttpClient       dockerSeverClient;
     private final URI 				uri;
 
+	private String 					dockerServerId;
     private String                  dockerVersion;
     private String                  apiVersion;  
 
@@ -41,17 +42,18 @@ public class DockerServerImpl implements IDockerServer {
 	 * @param dockerManager
 	 * @throws DockerProvisionException
 	 */
-    public DockerServerImpl(IFramework framework, DockerManagerImpl dockerManager) throws DockerProvisionException {
+    public DockerServerImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerServerTag) throws DockerProvisionException {
         this.framework          = framework;
-        this.dockerManager      = dockerManager;
+		this.dockerManager      = dockerManager;
+		this.dockerServerId		= dockerServerTag;
         
         dockerSeverClient = dockerManager.httpManager.newHttpClient();
         try {
-			String server = DockerServer.get();
-			String port = DockerServerPort.get();
+			String server = DockerServer.get(this);
+			String port = DockerServerPort.get(this);
 
 			if (server != null && port != null) {
-				this.uri = new URI("http://" + server + ":" + port);
+				this.uri = new URI(server + ":" + port);
 				IHttpClient httpClient2 = dockerSeverClient;
                 httpClient2.setURI(this.uri);
 			} else {
@@ -63,7 +65,11 @@ public class DockerServerImpl implements IDockerServer {
 			throw new DockerProvisionException("Unable to instantiate Docker Server", e);
 		}
 
-    }
+	}
+	
+	public String getServerId(){
+		return this.dockerServerId;
+	}
 
 	/**
 	 * Checks the docker server is contactable.

@@ -1,6 +1,7 @@
 package dev.galasa.docker.internal.properties;
 
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.internal.DockerServerImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
@@ -19,9 +20,9 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  *
  */
 public class DockerSlots extends CpsProperties {
-    public static String get(String dockerServer) throws DockerManagerException {
+    public static String get(DockerServerImpl dockerServer) throws DockerManagerException {
 		try {
-			String maxSlots = getStringNulled(DockerPropertiesSingleton.cps(), "engine.server", "max.slots", dockerServer);
+			String maxSlots = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "server.max.slots", dockerServer.getServerId());
 
 			if (maxSlots == null) {
 				throw new DockerManagerException("Value for Docker Server max slots not configured for the docker server: "  + dockerServer);

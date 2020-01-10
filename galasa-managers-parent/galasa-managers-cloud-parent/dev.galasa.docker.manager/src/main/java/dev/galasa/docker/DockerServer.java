@@ -14,4 +14,6 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @DockerManagerField
 public @interface DockerServer {
 
+    public String dockerServerTag() default "default";
+
 }

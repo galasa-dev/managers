@@ -1,6 +1,7 @@
 package dev.galasa.docker.internal.properties;
 
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.internal.DockerServerImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
@@ -20,9 +21,9 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class DockerServer extends CpsProperties {
 
-    public static String get() throws DockerManagerException {
+    public static String get(DockerServerImpl dockerServerImpl) throws DockerManagerException {
 		try {
-			String dockerServer = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "server");
+			String dockerServer = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "server.hostname", dockerServerImpl.getServerId());
 
 			if (dockerServer == null) {
 				throw new DockerManagerException("Could not find a docker server in CPS.");

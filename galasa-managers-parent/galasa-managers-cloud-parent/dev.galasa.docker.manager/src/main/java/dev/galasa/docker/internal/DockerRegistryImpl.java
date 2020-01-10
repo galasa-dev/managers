@@ -1,19 +1,16 @@
 package dev.galasa.docker.internal;
 
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
-import java.util.ConcurrentModificationException;
+import java.util.Map;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 
 import dev.galasa.ICredentials;
@@ -22,6 +19,7 @@ import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.creds.CredentialsException;
@@ -31,26 +29,28 @@ import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 
 /**
- * Docker RegistryImpl. Controls the location of where docker images can be pulled from
+ * Docker RegistryImpl. Controls the location of where docker images can be
+ * pulled from
  * 
  * @author James Davies
  */
 public class DockerRegistryImpl {
-    private IFramework                      framework;
-    private DockerManagerImpl               dockerManager;
-    private URL                             registryUrl;
+	private IFramework 							framework;
+	private DockerManagerImpl 					dockerManager;
+	private URL 								registryUrl;
+	private String 								registryId;
 
-    private ICredentialsService				credService;
-	private ICredentialsUsernamePassword 	creds; 
+	private ICredentialsService 				credService;
 
-	private String							authToken;
+	private String 								registryRealmType;
+	private URL 								registryRealmURL;
 
-	private IHttpClient 				client;
-	private IHttpClient 				clientDockerAuth;
+	private String								 authToken;
 
-	private Gson                            gson = new Gson();
+	private IHttpClient 						client;
+	private IHttpClient 						realmClient;
 
-    private static final Log                logger = LogFactory.getLog(DockerRegistryImpl.class);
+	private static final Log logger 			= LogFactory.getLog(DockerRegistryImpl.class);
 
 	/**
 	 * Sets up the registry that the manager can use to pull images from.
@@ -60,28 +60,28 @@ public class DockerRegistryImpl {
 	 * @param registryUrl
 	 * @throws DockerManagerException
 	 */
-    public DockerRegistryImpl(IFramework framework,	DockerManagerImpl dockerManager, URL registryUrl) throws DockerManagerException {
-        this.framework          = framework;
-        this.dockerManager      = dockerManager;
-		this.registryUrl        = registryUrl;
-		
+	public DockerRegistryImpl(IFramework framework, DockerManagerImpl dockerManager, String registryId)
+			throws DockerManagerException {
+		this.framework = framework;
+		this.dockerManager = dockerManager;
+		this.registryId = registryId;
+		this.registryUrl = DockerRegistryURL.get(this);
 
-        this.client             = dockerManager.httpManager.newHttpClient();
-        this.clientDockerAuth   = dockerManager.httpManager.newHttpClient();
+		this.client = dockerManager.httpManager.newHttpClient();
+		this.realmClient = dockerManager.httpManager.newHttpClient();
 
-        try {
+		try {
 			this.client.setURI(this.registryUrl.toURI());
-			this.clientDockerAuth.setURI(new URI("https://auth.docker.io"));
 			this.credService = framework.getCredentialsService();
 		} catch (URISyntaxException e) {
 			logger.error("Registry URL is incompatible", e);
 			throw new DockerManagerException("Could not parse Docker registry URL.", e);
 		} catch (CredentialsException e) {
 			logger.error("Could not access credential store from framework.", e);
-			throw new DockerManagerException("Could not access credential store from framework.",e);
+			throw new DockerManagerException("Could not access credential store from framework.", e);
 		}
 
-    }
+	}
 
 	/**
 	 * Checks the registry for and image.
@@ -91,61 +91,29 @@ public class DockerRegistryImpl {
 	 * @param tag
 	 * @return true/false
 	 */
-	public boolean doYouHave(String namespace, String repository, String tag) {
+	public boolean doYouHave(DockerImageImpl image) {
 		String resp = null;
 		try {
-			registryAuthenticate(namespace, repository);
-			
-			//Artifactory repositories do not need a namespace
-			if (namespace != "") {
-				namespace += "/";
-			}
-			String path = "/v2/repositories" + namespace + repository + "/tags/" + tag;
+			registryAuthenticate(image);
 
-			String sResponse = client.get(path);
+			String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+
 			HttpClientResponse<JsonObject> response = client.getJson(path);
-			if(response.getStatusCode() == (HttpStatus.SC_OK)){
-				JsonObject json = response.getContent();
-				
-				resp = gson.toJson(json);
-				String name = json.get("name").getAsString();
-				
-				if (name == null || name.trim().isEmpty()) {
-					return false;
-				}
-				
-				JsonArray tags = json.getAsJsonArray("tags");
-				if (tags == null) {
-					return false;
-				}
-				for(int i = 0; i < tags.size(); i++) {
-					String repoTag = tags.get(i).getAsString();
-					if (repoTag.equals(tag)) {
-						return true;
-					}
-				}
+			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
+				return true;
 			}
-			
 			return false;
-		} catch(HttpClientException e) {
+		} catch (HttpClientException e) {
 			return false;
-		} catch(IllegalStateException e) {
+		} catch (IllegalStateException e) {
 			return false;
-		} catch(DockerManagerException e) {
+		} catch (DockerManagerException e) {
 			logger.error("Credentials type not supported yet", e);
 			return false;
-		} catch(ClassCastException e) {
-			logger.warn("Invalid JSON returned from Docker Registry\n" + resp , e);
+		} catch (ClassCastException e) {
+			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
 			return false;
 		}
-	}
-
-	private void generateDockerServerAuthStructure(String user, String password) {
-		JsonObject creds = new JsonObject();
-		creds.addProperty("username", user);
-		creds.addProperty("password", password);
-	
-		this.authToken = Base64.getEncoder().encodeToString(creds.toString().getBytes());
 	}
 
 	/**
@@ -155,25 +123,81 @@ public class DockerRegistryImpl {
 	 * @param repository
 	 * @throws DockerManagerException
 	 */
-	private void registryAuthenticate(String namespace, String repository) throws DockerManagerException {
-        JsonObject resp = null;
-		
+	private void registryAuthenticate(DockerImageImpl image) throws DockerManagerException {
+		if (!retrieveRealm(image)) {
+			logger.info("No authentication required");
+			return;
+		}
+
+		if ("Bearer realm".equals(this.registryRealmType)) {
+			this.authToken = retrieveBearerToken(this.client);
+			return;
+		}
+
+		if ("Basic realm".equals(this.registryRealmType)) {
+			this.authToken = retrieveBasicToken(this.client);
+			return;
+		}
+	}
+
+	/**
+	 * Attempts to gain a bearer token from realm, if unauthorized tries basic credentials login 
+	 * retreive token
+	 * 
+	 * @param client
+	 * @return String token
+	 * @throws DockerManagerException
+	 */
+	private String retrieveBearerToken(IHttpClient client) throws DockerManagerException {
 		try {
-			logger.info("Looking for any credentials for registry for " + this.registryUrl.getHost());
+			this.realmClient.setURI(this.registryRealmURL.toURI());
+			HttpClientResponse<JsonObject> response = this.realmClient.getJson("");
+			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
+				JsonObject json = response.getContent();
+				String token = json.get("token").getAsString();
+				this.client.addCommonHeader("Authorization", "Bearer "+token);
+				return token;
+			}
+			if (response.getStatusCode() == (HttpStatus.SC_UNAUTHORIZED)) {
+				Map<String, String> headers = response.getheaders();
+				for (String key : headers.keySet()) {
+					if (key.equalsIgnoreCase("WWW-Authenticate")) {
+						String authType = parseAuthRealmType(headers.get(key));
+						if ("Basic realm".equals(authType)) {
+							return retrieveBasicToken(client);
+						} else {
+							throw new DockerManagerException("Dont know how to authenticate to registry: " + this.registryUrl);
+						}
+					}
+				}
+			}
+			throw new DockerManagerException("Failed to retrieve token from:" + this.registryRealmURL);
+		} catch (HttpClientException | URISyntaxException e) {
+			throw new DockerManagerException("Failed to connect to: " + this.registryRealmURL);
+		}
+	}
 
-			String credKey = framework.getConfigurationPropertyService(DockerManagerImpl.NAMESPACE).getProperty(this.registryUrl.getHost(), "credentialsId");
-			ICredentials creds = credService.getCredentials(credKey);
-
+	/**
+	 * Uses basic crednetials to gain a basic auth token.
+	 * 
+	 * @param client
+	 * @return String token
+	 * @throws DockerManagerException
+	 */
+	private String retrieveBasicToken(IHttpClient client) throws DockerManagerException {
+		try {
+			
+			ICredentials creds = getCreds();
 			if (creds instanceof ICredentialsUsernamePassword) {
-				logger.info("Using username password authentication");
+
 				ICredentialsUsernamePassword userPass = (ICredentialsUsernamePassword) creds;
 				String user = userPass.getUsername();
 				String password = userPass.getPassword();
 
 				client.setAuthorisation(user, password).build();
-				generateDockerServerAuthStructure(user, password);
-				return;
-			} 
+
+				return generateDockerServerAuthStructure(user, password);
+			}
 
 			if (creds instanceof ICredentialsUsernameToken) {
 				throw new DockerManagerException("Username tokens are not yet supported");
@@ -186,24 +210,105 @@ public class DockerRegistryImpl {
 			if (creds instanceof ICredentialsToken) {
 				throw new DockerManagerException("Tokens are not yet supported");
 			}
-		} catch (CredentialsException e) {
-			logger.warn("Could not find credentials: " + e);
-		} catch (ConfigurationPropertyStoreException e) {
-			logger.warn("Could not access CPS: " + e);
+			throw new DockerManagerException("Couldnt generate token");
+		} catch (ConfigurationPropertyStoreException | CredentialsException e) {
+			throw new DockerManagerException("Couldnt locate credentials to generate token", e);
 		}
-		logger.info("No credentials found, trying un-authenticated");
-		
-		// Try unauthorized
+	}
+
+
+	/**
+	 * Retrieves credentials from the credential store with a given key
+	 * 
+	 * @return ICredentials creds
+	 * @throws ConfigurationPropertyStoreException
+	 * @throws CredentialsException
+	 */
+	private ICredentials getCreds() throws ConfigurationPropertyStoreException, CredentialsException {
+		String credKey = framework.getConfigurationPropertyService(DockerManagerImpl.NAMESPACE).getProperty(this.registryUrl.getHost(), "credentialsId");
+		return credService.getCredentials(credKey);
+	}
+
+	/**
+	 * Returns boolean for if a auth realm can be found and identified.
+	 * 
+	 * @param image
+	 * @return
+	 * @throws DockerManagerException
+	 */
+	private boolean retrieveRealm(DockerImageImpl image) throws DockerManagerException {
+		String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+
 		try {
-			resp = clientDockerAuth.getJson("/token?service=registry.docker.io&scope=repository:"+ namespace+"/"+repository+":pull").getContent();
-		} catch (HttpClientException e) {
-			logger.error("Could not post to registry", e);
-			return;
+			HttpClientResponse<JsonObject> response = this.client.getJson(path);
+			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
+				return false;
+			}
+			if (response.getStatusCode() == (HttpStatus.SC_UNAUTHORIZED)) {
+				Map<String, String> headers = response.getheaders();
+				for (String key : headers.keySet()) {
+					if (key.equalsIgnoreCase("WWW-Authenticate")) {
+						this.registryRealmType = parseAuthRealmType(headers.get(key));
+						this.registryRealmURL = parseAuthRealmURL(headers.get(key));
+						return true;
+					}
+				}
+			}
+			throw new DockerManagerException("Failed to authenticate, and authentication is required.");
+		} catch (HttpClientException | MalformedURLException e) {
+			throw new DockerManagerException("Failed to connect to registry", e);
+		}
+	}
+
+	/**
+	 * Parses the realm type from the WWW-Authenticate header
+	 * 
+	 * @param header
+	 * @return String realmType
+	 */
+	private String parseAuthRealmType(String header) {
+		return header.split("=")[0];
+	}
+
+	/**
+	 * Extracts the realm URL and builds the  full URL to authenticate with the correct scope
+	 * 
+	 * @param header
+	 * @return URL authURL
+	 * @throws MalformedURLException
+	 */
+	private URL parseAuthRealmURL(String header) throws MalformedURLException {
+		String manString = header.replaceAll("\"", "");
+		String[] components = (manString.substring(manString.indexOf("=")+1).split(","));
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(components[0]);
+		builder.append("?");
+
+		for(int i=1;i<components.length;i++) {
+			builder.append(components[i]);
+			if (i!=components.length-1) {
+				builder.append("&");
+			}
 		}
 
-		String token = "Bearer " + resp.get("token").getAsString();
-		client.addCommonHeader("Authorization", token);
-    }
+		return new URL(builder.toString());
+	}
+
+	/**
+	 * Encodes credentials into a Base64 auth structure.
+	 * 
+	 * @param user
+	 * @param password
+	 * @return
+	 */
+	private String generateDockerServerAuthStructure(String user, String password) {
+		JsonObject creds = new JsonObject();
+		creds.addProperty("username", user);
+		creds.addProperty("password", password);
+
+		return Base64.getEncoder().encodeToString(creds.toString().getBytes());
+	}
     
 	/**
 	 * Returns the host of the registry
@@ -217,7 +322,20 @@ public class DockerRegistryImpl {
         }
 	}   
 	
+	/**
+	 * Returns the auth token
+	 * 
+	 * @return String
+	 */
 	public String getAuthToken() {
 		return this.authToken;
+	}
+
+	/**
+	 * Returns id of the registry for properties
+	 * @return
+	 */
+	public String getId() {
+		return this.registryId;
 	}
 }

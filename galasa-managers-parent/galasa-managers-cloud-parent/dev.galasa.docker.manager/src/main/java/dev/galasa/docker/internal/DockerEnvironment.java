@@ -34,10 +34,11 @@ public class DockerEnvironment implements IDockerEnvironment {
     private IFramework                          framework;
     private DockerManagerImpl                   dockerManager;
     private IDynamicStatusStoreService          dss;
-    private DockerServerImpl                    dockerServer;
+    // private DockerServerImpl                    dockerServer;
     private IDynamicResource                    dynamicResource;
-    private Map<String, DockerContainerImpl>    containersByTag = new HashMap<String, DockerContainerImpl>();
-    private boolean                             dockerServerChecked;
+    private Map<String, DockerContainerImpl>    containersByTag = new HashMap<>();
+    private Map<String, DockerServerImpl>       serversByTag = new HashMap<>();
+    private boolean                             dockerServersChecked;
 
     private final static Log                    logger = LogFactory.getLog(DockerEnvironment.class);
 
@@ -100,22 +101,27 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @throws DockerProvisionException
      */
     @Override
-    public DockerContainerImpl provisionDockerContainer(String tag, String imageName, boolean start)
+    public DockerContainerImpl provisionDockerContainer(String tag, String imageName, boolean start, String dockerServerTag)
             throws DockerProvisionException {
         DockerContainerImpl container = containersByTag.get(tag);
-        DockerServerImpl server = buildDockerServer();
+        DockerServerImpl server = serversByTag.get(dockerServerTag);
         if (container != null) {
             logger.info("Container already provisioned: " + tag);
             return container;
         }
 
-        if (dockerServerChecked != true) {
+        if (server == null) {
+            server = buildDockerServer(dockerServerTag);
+            serversByTag.put(dockerServerTag, server);
+        }
+
+        if (dockerServersChecked != true) {
             server.checkServer();
-            dockerServerChecked = true;
+            dockerServersChecked = true;
         }
 
         try{
-            DockerSlotImpl slot = provisionDockerSlot();
+            DockerSlotImpl slot = provisionDockerSlot(server);
 
             DockerImageImpl image = new DockerImageImpl(framework, dockerManager, server, imageName);
 
@@ -138,14 +144,24 @@ public class DockerEnvironment implements IDockerEnvironment {
      */
     @Override
     public void build(List<Class<?>> testClasses) throws DockerProvisionException {
-        if (this.dockerServer != null) {
-			this.dockerServer.checkServer();
-			dockerServerChecked = true;
-		}
+        if (!serversByTag.isEmpty()) {
+            checkDockerServers();
+            dockerServersChecked = true;
+        }
+        // if (this.dockerServer != null) {
+		// 	this.dockerServer.checkServer();
+		// 	dockerServersChecked = true;
+		// }
 
 		for(DockerContainerImpl container : getContainers()) {
             container.checkContainer();
 		}
+    }
+
+    private void checkDockerServers() throws DockerProvisionException {
+        for (String id :serversByTag.keySet()) {
+            serversByTag.get(id).checkServer();
+        }
     }
 
     /**
@@ -164,8 +180,11 @@ public class DockerEnvironment implements IDockerEnvironment {
      * Returns the docker server.
      */
     @Override
-    public DockerServerImpl getDockerServerImpl() throws DockerManagerException {
-        return dockerServer;
+    public DockerServerImpl getDockerServerImpl(String dockerServerTag) throws DockerManagerException {
+        if (serversByTag.containsKey(dockerServerTag)) {
+            return serversByTag.get(dockerServerTag);
+        }
+        throw new DockerManagerException("Unable to find docker server with the tag: " + dockerServerTag);
     }
 
     /**
@@ -201,10 +220,11 @@ public class DockerEnvironment implements IDockerEnvironment {
      */
     @Override
     public void freeDockerSlot(DockerSlotImpl dockerSlot) throws DockerProvisionException {
-       String dockerHost = dockerServer.getHost();
+        DockerServerImpl dockerServer = dockerSlot.getDockerServer();
+        String dockerServerId = dockerServer.getServerId();
 
-       try {
-           String currentSlot = dss.get("server." + dockerHost + ".current.slots");
+        try {
+            String currentSlot = dss.get("server." + dockerServerId + ".current.slots");
             if (currentSlot == null){
                 return;
             }
@@ -216,11 +236,10 @@ public class DockerEnvironment implements IDockerEnvironment {
             }
             dynamicResource.delete(dockerSlot.getResourcePropertyKeys());
 
-            String prefix = "server." + dockerHost + ".slot." + dockerSlot.getSlotName();
-           HashMap<String,String> otherProps = new HashMap<>();
-            otherProps.put("slot.run." + framework.getTestRunName() + "." + dockerSlot.getSlotName(), "free");
-            otherProps.put("slot.run." + framework.getTestRunName() + "." + "server." + dockerHost + ".slot." + dockerSlot.getSlotName(), "finished");
-            if(!dss.putSwap("server." + dockerHost + ".current.slots", currentSlot, Integer.toString(usedSlots), otherProps)) {
+            String prefix = "server." + dockerServerId + ".slot." + dockerSlot.getSlotName();
+            HashMap<String,String> otherProps = new HashMap<>();
+            otherProps.put("slot." + dockerServerId + ".run." + framework.getTestRunName() + "." + dockerSlot.getSlotName(), "free");
+            if(!dss.putSwap("server." + dockerServerId + ".current.slots", currentSlot, Integer.toString(usedSlots), otherProps)) {
                 Thread.sleep(200);
                 freeDockerSlot(dockerSlot);
                 return;
@@ -230,9 +249,9 @@ public class DockerEnvironment implements IDockerEnvironment {
             delProps.add(prefix);
             delProps.add(prefix + ".allocated");
             dss.delete(delProps);
-            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker server: " + dockerHost);
+            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker server: " + dockerServerId);
         }catch (Exception e) {
-            logger.warn("Failed to free slot on server " + dockerHost + ", slot " + dockerSlot.getSlotName() + ", leaving for manager clean up routines", e);
+            logger.warn("Failed to free slot on server " + dockerServerId + ", slot " + dockerSlot.getSlotName() + ", leaving for manager clean up routines", e);
         }
     }
 
@@ -244,7 +263,7 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @throws DockerProvisionException
      */
     private DockerServerImpl provisionDockerServer(DockerServer annotation) throws DockerProvisionException {
-        return buildDockerServer();
+        return buildDockerServer(annotation.dockerServerTag());
     }
 
     /**
@@ -253,10 +272,15 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @return DockerServerImpl
      * @throws DockerProvisionException
      */
-    private DockerServerImpl buildDockerServer() throws DockerProvisionException {
-        if (dockerServer == null ) {
-            dockerServer = new DockerServerImpl(framework, dockerManager);
+    private DockerServerImpl buildDockerServer(String dockerServerTag) throws DockerProvisionException {
+        if (serversByTag.containsKey(dockerServerTag)) {
+            logger.info("dockerServer already built, returning that.");
+            return serversByTag.get(dockerServerTag);
         }
+        DockerServerImpl dockerServer = new DockerServerImpl(framework, dockerManager, dockerServerTag);
+
+        serversByTag.put(dockerServerTag, dockerServer);
+
         return dockerServer;
     }
 
@@ -271,7 +295,8 @@ public class DockerEnvironment implements IDockerEnvironment {
         return provisionDockerContainer(
             "GALASA_"+ annotation.dockerContainerTag().trim().toUpperCase(), 
             annotation.image(), 
-            annotation.start());
+            annotation.start(),
+            annotation.DockerServerTag());
     }
 
     /**
@@ -280,14 +305,14 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @throws DockerProvisionException
      * @throws DockerManagerException
      */
-    private DockerSlotImpl provisionDockerSlot() throws DockerProvisionException, DockerManagerException {
+    private DockerSlotImpl provisionDockerSlot(DockerServerImpl server) throws DockerProvisionException, DockerManagerException {
         String              runName = framework.getTestRunName();
-        String              dockerHost = dockerServer.getHost();
+        String              dockerServerId = server.getServerId();
 
-        this.dynamicResource = this.dss.getDynamicResource("server." + dockerHost);
+        this.dynamicResource = this.dss.getDynamicResource("server." + dockerServerId);
 
-        if (allocateDssSlot(dockerHost)) {
-            return createDssDockerSlot(dockerHost, runName);
+        if (allocateDssSlot(dockerServerId, server)) {
+            return createDssDockerSlot(dockerServerId, runName, server);
         } else {
             discard();
             logger.info("No available slots currently");
@@ -301,10 +326,10 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @param dockerHost
      * @return boolean (failed/passed)
      */
-    private boolean allocateDssSlot(String dockerHost) {
-        String slotKey = "server." + dockerHost + ".current.slots";
+    private boolean allocateDssSlot(String dockerServerId, DockerServerImpl server) {
+        String slotKey = "server." + dockerServerId + ".current.slots";
         try {
-            int maxSlots = Integer.parseInt(DockerSlots.get(dockerHost));
+            int maxSlots = Integer.parseInt(DockerSlots.get(server));
             int usedSlots = 0;
             String currentSlots = dss.get(slotKey);
 
@@ -333,7 +358,7 @@ public class DockerEnvironment implements IDockerEnvironment {
      * @return
      * @throws DockerProvisionException
      */
-    private DockerSlotImpl createDssDockerSlot(String dockerHost, String runName)
+    private DockerSlotImpl createDssDockerSlot(String dockerServerId, String runName, DockerServerImpl dockerServer)
             throws DockerProvisionException {
         String slotNamePrefix = "SLOT_" + runName + "_";
         String allocatedSlotName;
@@ -343,10 +368,10 @@ public class DockerEnvironment implements IDockerEnvironment {
             for (int i=0;;i++) {
                 allocatedSlotName = slotNamePrefix + i;
 
-                String slotPropertyKey = "server." + dockerHost + ".slot." + allocatedSlotName;
+                String slotPropertyKey = "server." + dockerServerId + ".slot." + allocatedSlotName;
 
                 HashMap<String,String> otherProps = new HashMap<>();
-                otherProps.put("slot.run." + runName + "." + allocatedSlotName, "active");
+                otherProps.put("slot."+ dockerServerId + ".run." + runName + "." + allocatedSlotName, "active");
 
                 if (dss.putSwap(slotPropertyKey, null, runName, otherProps)) { 
                     String resourcePropertyPrefix = "slot." + allocatedSlotName;
@@ -357,7 +382,7 @@ public class DockerEnvironment implements IDockerEnvironment {
                     
                     dynamicResource.put(resProps);
                     
-                    return new DockerSlotImpl(dockerManager, allocatedSlotName, resProps);
+                    return new DockerSlotImpl(dockerManager, dockerServer, allocatedSlotName, resProps);
                 }
             }
         } catch (DynamicStatusStoreException e) {
@@ -365,9 +390,9 @@ public class DockerEnvironment implements IDockerEnvironment {
         }
     } 
 
-    public static void deleteDss(String runName, String dockerServerHost, String slotName, IDynamicStatusStoreService dss) {
+    public static void deleteDss(String runName, String dockerServerId, String slotName, IDynamicStatusStoreService dss) {
         try {
-            IDynamicResource dynamicResource = dss.getDynamicResource("server." + dockerServerHost);
+            IDynamicResource dynamicResource = dss.getDynamicResource("server." + dockerServerId);
             String resPrefix = "slot." + slotName;
 
             HashSet<String> resProps = new HashSet<>();
@@ -375,19 +400,19 @@ public class DockerEnvironment implements IDockerEnvironment {
             resProps.add(resPrefix + ".allocated");
             dynamicResource.delete(resProps);
 
-            String prefix = "server." + dockerServerHost + ".slot." + slotName;
-            String runSlot = dss.get("slot.run." + runName + "." + prefix);
+            String prefix = "server." + dockerServerId + ".slot." + slotName;
+            String runSlot = dss.get("slot." + dockerServerId + ".run." + runName + "." + prefix);
             if("active".equals(runSlot)) {
-                if (dss.putSwap("slot.run." + runName + "." + prefix, "active", "free")) {
+                if (dss.putSwap("slot." + dockerServerId + ".run." + runName + "." + prefix, "active", "free")) {
                     while(true) {
-                        String slots = dss.get("server." + dockerServerHost + ".current.slots");
+                        String slots = dss.get("server." + dockerServerId + ".current.slots");
                         int currentSlots = Integer.parseInt(slots);
                         currentSlots--;
                         if (currentSlots < 0) {
                             currentSlots = 0;
                         }
                         
-                        if (dss.putSwap("image." + dockerServerHost + ".current.slots", slots, Integer.toString(currentSlots))) {
+                        if (dss.putSwap("image." + dockerServerId + ".current.slots", slots, Integer.toString(currentSlots))) {
                             break;
                         }
 
@@ -398,10 +423,10 @@ public class DockerEnvironment implements IDockerEnvironment {
 
             HashSet<String> props = new HashSet<>();
 			props.add(prefix);
-			props.add("slot.run." + runName + "." + prefix);
+			props.add("slot." + dockerServerId + ".run." + runName + "." + prefix);
 			dss.delete(props);
         } catch (Exception e) {
-            logger.error("Failed to discard slot " + slotName +" on docker server " + dockerServerHost, e);
+            logger.error("Failed to discard slot " + slotName +" on docker server " + dockerServerId, e);
         }
     }
 

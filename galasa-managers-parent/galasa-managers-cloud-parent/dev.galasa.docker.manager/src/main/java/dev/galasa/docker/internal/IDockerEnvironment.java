@@ -36,7 +36,7 @@ public interface IDockerEnvironment {
 	 * @return
 	 * @throws DockerManagerException
 	 */
-	public DockerServerImpl getDockerServerImpl() throws DockerManagerException;
+	public DockerServerImpl getDockerServerImpl(String dockerServerTag) throws DockerManagerException;
 	
 	/**
 	 * Return a specified docker containers implementation
@@ -63,7 +63,7 @@ public interface IDockerEnvironment {
 	 * @return
 	 * @throws DockerProvisionException
 	 */
-	public DockerContainerImpl provisionDockerContainer(String tag, String image, boolean start) throws DockerProvisionException;
+	public DockerContainerImpl provisionDockerContainer(String tag, String image, boolean start, String DockerServerTag) throws DockerProvisionException;
 	//public void preAllocate(Resource rm) throws ResourceManagementException;
 
 	/**

@@ -1,7 +1,5 @@
 package dev.galasa.docker.internal.properties;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 import dev.galasa.docker.DockerManagerException;
@@ -23,30 +21,26 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class DockerRegistry extends CpsProperties {
 
-    public static URL[] get() throws DockerManagerException {
-        ArrayList<URL> urls = new ArrayList<URL>();
-		try {
-			String registries = getStringNulled(DockerPropertiesSingleton.cps(), "default", "registries");
-            if (registries != null) {
-				String[] regs = registries.split(",");
-				for(String reg : regs) {
-					URL url = new URL(reg);
-					if (!urls.contains(url)) {
-						urls.add(url);
-					}
+    public static String[] get() throws DockerManagerException {
+        ArrayList<String> ids = new ArrayList<String>();
+        try {
+            String registryIds = getStringNulled(DockerPropertiesSingleton.cps(), "default", "registries");
+            if (registryIds != null) {
+				String[] list = registryIds.split(",");
+
+				for (String i: list) {
+					ids.add(i);
 				}
 			}
-            // UNSURE IF TO INCLUDE THIS AS NOT ALL CUSTOMERS WILL WANT/CAN USE THIS
-			URL central = new URL("https://registry.hub.docker.com");
-			if (urls.isEmpty()) {
-				urls.add(central);
+			String central = "DOCKERHUB";
+			
+			if (ids.isEmpty()) {
+				ids.add(central);
 			}
 
-			return urls.toArray(new URL[urls.size()]);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new DockerManagerException("Problem asking the CPS for the max slots for the docker server: " , e);
-		} catch (MalformedURLException e) {
-            throw new DockerManagerException("Could not parse the returned registries from CPS into a URL", e);
+            return ids.toArray(new String[ids.size()]);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new DockerManagerException("Problem asking the CPS for the max slots for the docker server: " , e);
         }
-	}
+    }
 }
