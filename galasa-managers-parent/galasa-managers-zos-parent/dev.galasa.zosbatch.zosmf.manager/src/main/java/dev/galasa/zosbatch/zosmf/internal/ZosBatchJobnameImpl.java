@@ -24,7 +24,7 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
 
 	private String jobNamePrefix;
 	
-	public ZosBatchJobnameImpl(@NotNull @NotNull String imageId) throws ZosBatchException {
+	public ZosBatchJobnameImpl(@NotNull String imageId) throws ZosBatchException {
 
 		try {
 			jobNamePrefix = JobnamePrefix.get(imageId);

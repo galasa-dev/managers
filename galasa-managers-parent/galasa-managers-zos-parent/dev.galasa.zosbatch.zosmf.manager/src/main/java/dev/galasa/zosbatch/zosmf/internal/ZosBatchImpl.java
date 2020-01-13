@@ -37,15 +37,10 @@ public class ZosBatchImpl implements IZosBatch {
 		if (jobname == null) {
 			jobname = new ZosBatchJobnameImpl(this.image.getImageID());		
 		}
-			
-		ZosBatchJobImpl zosBatchJob;
-		try {
-			zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
-			this.zosBatchJobs.add(zosBatchJob);
-		} catch (ZosBatchManagerException e) {
-			throw new ZosBatchException("Unable to submit batch job", e);
-		}
-				
+		
+		ZosBatchJobImpl zosBatchJob = newZosBatchJob(jcl, jobname);
+		this.zosBatchJobs.add(zosBatchJob);
+		
 		return zosBatchJob.submitJob();
 	}
 
@@ -66,6 +61,17 @@ public class ZosBatchImpl implements IZosBatch {
 					zosBatchJob.purgeJob();
 				}
 			}
+			iterator.remove();
 		}
+	}
+
+	public ZosBatchJobImpl newZosBatchJob(String jcl, IZosBatchJobname jobname) throws ZosBatchException {
+		ZosBatchJobImpl zosBatchJob;
+		try {
+			zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
+		} catch (ZosBatchManagerException e) {
+			throw new ZosBatchException("Unable to submit batch job", e);
+		}
+		return zosBatchJob;
 	}
 }

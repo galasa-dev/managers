@@ -95,7 +95,7 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
 	}
 
 
-	private String jsonNull(JsonObject content, String memberName) {
+	protected String jsonNull(JsonObject content, String memberName) {
 		if (content.get(memberName) != null && !content.get(memberName).isJsonNull()) {
 			return content.get(memberName).getAsString();
 		}
