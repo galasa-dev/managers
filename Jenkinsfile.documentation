@@ -1,4 +1,4 @@
-def mvnProfile        = 'managerdocs'
+def mvnProfile        = 'dev,managerdocs'
 
 pipeline {
 // Initially run on any agent
@@ -23,10 +23,14 @@ pipeline {
             echo "Commit Hash        : ${env.GIT_COMMIT}"
             echo "Workspace directory: ${workspace}"
             echo "Maven profile      : ${mvnProfile}"
+            echo "Doc Branch         : ${env.DOC_BRANCH}"
+            echo "Doc Reviewers      : ${env.DOC_REVIEWERS}"
+            echo "Doc User           : ${env.DOC_USER}"
+            echo "Doc Email          : ${env.DOC_EMAIL}"
          }
       }
    
-// Set up the workspace, clear the git directories and setup the manve settings.xml files
+// Set up the workspace, clear the git directories and setup the maven settings.xml files
       stage('prep-workspace') { 
          steps {
             configFileProvider([configFile(fileId: '86dde059-684b-4300-b595-64e83c2dd217', targetLocation: 'settings.xml')]) {
@@ -45,7 +49,35 @@ pipeline {
             dir('galasa.dev') {
               deleteDir()
             }
-            git(url: 'git@github.com:galasa-dev/galasa.dev.git', credentialsId: 'c4c96c90-6635-4813-ae7f-abfa889a96b6', branch: "next")
+            sh 'mkdir galasa.dev'
+            dir('galasa.dev') {
+               git(url: 'git@github.com:galasa-dev/galasa.dev.git', branch: "next")
+               
+               sh "git checkout -b ${env.DOC_BRANCH}"
+            }
+         }
+      }
+      stage('Extract Javadoc') {
+         steps {
+            dir('galasa-managers-parent') {
+               sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae clean process-sources"
+            }
+         }
+      }
+      stage('Generate Markdown') {
+         steps {
+            dir('galasa-managers-parent') {
+               sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgalasa.manager.doc.directory=${workspace}/galasa.dev/src/markdown-pages/docs/managers -P ${mvnProfile} -B -e -fae dev.galasa:galasautils-maven-plugin:0.4.0-SNAPSHOT:buildmanagerdoc"
+            }
+         }
+      }
+      stage('Create Pull Request') {
+         steps {
+            withCredentials([string(credentialsId: 'c4c96c90-6635-4813-ae7f-abfa889a96b6', variable: 'GITHUB_TOKEN')]) {
+               dir('galasa.dev') {
+                  sh "${workspace}/githubdocs.sh"
+               }
+            }
          }
       }
    }

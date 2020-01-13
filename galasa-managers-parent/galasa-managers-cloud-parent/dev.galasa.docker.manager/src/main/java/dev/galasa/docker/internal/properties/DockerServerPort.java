@@ -5,13 +5,13 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * Docker Engine Server Port CPS Property
+ * Docker Engine Port CPS Property
  * 
  * @galasa.cps.property
  * 
  * @galasa.name docker.engine.server.port
  * 
- * @galasa.description Provides TCP Port of the Docker server
+ * @galasa.description Provides TCP Port of the Docker Engine
  * 
  * @galasa.required No
  * 
@@ -23,7 +23,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * <code>docker.engine.server.port=2375</code>
  * 
  * @galasa.extra
- * The Docker Manager will communicate with the Docker Engine Server via TCP.   The Docker Engine Server will need to be 
+ * The Docker Manager will communicate with the Docker Engine via TCP.   The Docker Engine will need to be 
  * configured to open the TCP port, which will normally be 2375.  If the port is not the default one, then this property will need to be provided in the CPS.
  * 
  */
