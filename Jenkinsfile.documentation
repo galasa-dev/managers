@@ -1,0 +1,58 @@
+def mvnProfile        = 'managerdocs'
+
+pipeline {
+// Initially run on any agent
+   agent {
+      label 'github'
+   }
+   options { timestamps () }
+   environment {
+//Configure Maven from the maven tooling in Jenkins
+      def mvnHome = tool 'Default'
+      PATH = "${mvnHome}/bin:${env.PATH}"
+      
+//Set some defaults
+      def workspace = pwd()
+      def mvnGoal    = 'install'
+   }
+   stages {
+// for debugging purposes
+      stage('report') {
+         steps {
+            echo "Branch/Tag         : ${env.GIT_BRANCH}"
+            echo "Commit Hash        : ${env.GIT_COMMIT}"
+            echo "Workspace directory: ${workspace}"
+            echo "Maven profile      : ${mvnProfile}"
+         }
+      }
+   
+// Set up the workspace, clear the git directories and setup the manve settings.xml files
+      stage('prep-workspace') { 
+         steps {
+            configFileProvider([configFile(fileId: '86dde059-684b-4300-b595-64e83c2dd217', targetLocation: 'settings.xml')]) {
+            }
+            dir('repository/dev.galasa') {
+               deleteDir()
+            }
+            dir('repository/dev/galasa') {
+               deleteDir()
+            }
+         }
+      }
+      
+      stage('Clone Docs') {
+         steps {
+            dir('galasa.dev') {
+              deleteDir()
+            }
+            git(url: 'git@github.com:galasa-dev/galasa.dev.git', credentialsId: 'c4c96c90-6635-4813-ae7f-abfa889a96b6', branch: "next")
+         }
+      }
+   }
+   post {
+       // triggered when red sign
+       failure {
+           slackSend (channel: '#project-galasa-devs', color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+       }
+    }
+}
