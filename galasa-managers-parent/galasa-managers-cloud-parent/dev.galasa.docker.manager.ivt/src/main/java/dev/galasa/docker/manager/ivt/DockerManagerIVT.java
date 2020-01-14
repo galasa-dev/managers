@@ -16,11 +16,15 @@ public class DockerManagerIVT {
     @Logger
     public Log logger;
 
+<<<<<<< HEAD
     @DockerContainer(image = "library/httpd", dockerContainerTag = "a")
+=======
+    @DockerContainer(image = "httpd:latest", dockerContainerTag = "a", start=false)
+>>>>>>> 211cdeb2428aded31b5149dd3587727b590c8495
     public IDockerContainer container;
-    @DockerContainer(image = "tutum/hello-world", dockerContainerTag = "b")
+    @DockerContainer(image = "httpd:latest", dockerContainerTag = "b")
     public IDockerContainer container2;
-    @DockerContainer(image = "jatpoll:latest", dockerContainerTag = "c")
+    @DockerContainer(image = "httpd:latest", dockerContainerTag = "c")
     public IDockerContainer container3;
 
     @Test
@@ -74,8 +78,6 @@ public class DockerManagerIVT {
     public void startMultipleContainers() throws DockerManagerException {
         logger.info("Starting 3 hello world containers");
         container.start();
-        container2.start();
-        container3.start();
         logger.info("Allowing framework to clean up. Please run `docker ps` to confirm that containers have been shutdown");
     }
 }
