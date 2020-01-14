@@ -2,7 +2,6 @@ package dev.galasa.docker.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,7 +107,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         DockerContainer annotationContainer = field.getAnnotation(DockerContainer.class);
         return this.provisionContainer(annotationContainer.dockerContainerTag(),
                                         annotationContainer.image(),
-                                        annotationContainer.start()); 
+                                        annotationContainer.start(),
+                                        annotationContainer.DockerServerTag()); 
     }
 
     /**
@@ -120,9 +120,9 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @return
      * @throws DockerManagerException
      */
-    private IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start) throws DockerManagerException {
+    private IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerServerTag) throws DockerManagerException {
         try {
-            return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start);
+            return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start, dockerServerTag);
         } catch (DockerProvisionException e) {
             throw new DockerManagerException("Failed to provision docker container tag: "+ dockerContainerTag, e);
         }
@@ -138,7 +138,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      */
     @GenerateAnnotatedField(annotation = DockerServer.class)
     public IDockerServer generateDockerServer(Field field, List<Annotation> annotations) throws DockerManagerException {
-        return this.getDockerServer();
+        DockerServer annotationServer = field.getAnnotation(DockerServer.class);
+        return this.getDockerServer(annotationServer.dockerServerTag());
     }
 
     /**
@@ -147,8 +148,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @return
      * @throws DockerManagerException
      */
-    private IDockerServer getDockerServer() throws DockerManagerException {
-        return dockerEnvironment.getDockerServerImpl();
+    private IDockerServer getDockerServer(String dockerServerTag) throws DockerManagerException {
+        return dockerEnvironment.getDockerServerImpl(dockerServerTag);
     }
 
     /**
@@ -202,10 +203,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      */
     private void registerDockerRegistires() throws DockerProvisionException {
         try {
-            URL[] registryURLs = DockerRegistry.get();
+            String[] registryIds = DockerRegistry.get();
 
-            for (URL url: registryURLs) {
-                registries.add(new DockerRegistryImpl(framework, this, url));
+            for (String id: registryIds) {
+                registries.add(new DockerRegistryImpl(framework, this, id));
             }
         } catch (Exception e) {
             throw new DockerProvisionException("Unable to resolve docker registries: ", e);

@@ -43,4 +43,6 @@ public @interface DockerContainer {
 
     public boolean start() default true;
 
+    public String DockerServerTag() default "default";
+
 }

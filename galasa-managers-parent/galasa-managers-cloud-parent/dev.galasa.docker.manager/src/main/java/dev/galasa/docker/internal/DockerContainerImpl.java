@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Random;
 
 import com.google.gson.JsonArray;
@@ -407,7 +405,7 @@ public class DockerContainerImpl implements IDockerContainer {
      */
     private String getContainerName(DockerSlotImpl dockerSlot2) throws DynamicStatusStoreException {
         String slotName = dockerSlot.getSlotName();
-        String runName = dss.get("server." + dockerServer.getHost() + ".slot." + slotName);
+        String runName = dss.get("server." + dockerServer.getServerId() + ".slot." + slotName);
         //  E.g 'GALASA_U12_ExampleContainerName'
         return CONTAINER_NAME_PREFIX + runName + "_" + this.tag;
     }
