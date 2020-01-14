@@ -16,11 +16,7 @@ public class DockerManagerIVT {
     @Logger
     public Log logger;
 
-<<<<<<< HEAD
     @DockerContainer(image = "library/httpd", dockerContainerTag = "a")
-=======
-    @DockerContainer(image = "httpd:latest", dockerContainerTag = "a", start=false)
->>>>>>> 211cdeb2428aded31b5149dd3587727b590c8495
     public IDockerContainer container;
     @DockerContainer(image = "httpd:latest", dockerContainerTag = "b")
     public IDockerContainer container2;
