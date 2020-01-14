@@ -1,22 +1,20 @@
 package dev.galasa.docker.internal.properties;
 
-import java.net.URL;
-
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 
 /**
- * Docker Engine Server CPS Property
+ * Docker Engine CPS Property
  * 
  * @galasa.cps.property
  * 
  * @galasa.name docker.engine.server
  * 
- * @galasa.description Provides location of the Docker server
+ * @galasa.description Provides location of the Docker Engine
  * 
- * @galasa.required Yes - the hostname of the Docker Server must be provided
+ * @galasa.required Yes - the hostname of the Docker Engine must be provided
  * 
  * @galasa.default None
  * 
@@ -28,8 +26,8 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * </code>
  * 
  * @galasa.extra
- * Currently, the Docker Manager supports only a single Docker Server although it is planned to allow multiple Servers to be configured.<br>
- * To allow local runs to access the local Docker Engine Server, you must add this property to the CPS and enable the TCP port of your local Docker Engine.<br>
+ * Currently, the Docker Manager supports only a single Docker Engine although it is planned to allow multiple Engines to be configured.<br>
+ * To allow local runs to access the local Docker Engine, you must add this property to the CPS and enable the TCP port of your local Docker Engine.<br>
  * If the Docker Engine is not using the default TCP port, you must provide the *docker.engine.port* configuration property in the CPS.
  * 
  */

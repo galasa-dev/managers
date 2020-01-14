@@ -84,13 +84,11 @@ public class DockerImageImpl implements IDockerImage {
 			tag = "latest";
 		}
 		
-		repository = workingName;
-    
-        if (namespace != "") {
-            workingName = namespace + "/" + repository + ":" + tag;
-        } else {
-            workingName = repository + ":" + tag;
+		repository = workingName; 
+        if (namespace.isEmpty()) {
+            namespace = "library";
         }
+        workingName = namespace + "/" + repository + ":" + tag;
 		
 		List<DockerRegistryImpl> registries = dockerManager.getRegistries();
 		for(DockerRegistryImpl registry : registries) {

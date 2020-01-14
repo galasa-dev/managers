@@ -100,30 +100,12 @@ public class DockerRegistryImpl {
 			if (namespace != "") {
 				namespace += "/";
 			}
-			String path = "/v2/" + namespace + repository + "/tags/list";
+			String path = "/v2/repositories/" + namespace + repository + "/tags/" + tag;
 
-			String sResponse = client.get(path);
+//			String sResponse = client.get(path);
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if(response.getStatusCode() == (HttpStatus.SC_OK)){
-				JsonObject json = response.getContent();
-				
-				resp = gson.toJson(json);
-				String name = json.get("name").getAsString();
-				
-				if (name == null || name.trim().isEmpty()) {
-					return false;
-				}
-				
-				JsonArray tags = json.getAsJsonArray("tags");
-				if (tags == null) {
-					return false;
-				}
-				for(int i = 0; i < tags.size(); i++) {
-					String repoTag = tags.get(i).getAsString();
-					if (repoTag.equals(tag)) {
-						return true;
-					}
-				}
+				return true;
 			}
 			
 			return false;
@@ -190,15 +172,15 @@ public class DockerRegistryImpl {
 		logger.info("No credentials found, trying un-authenticated");
 		
 		// Try unauthorized
-		try {
-			resp = clientDockerAuth.getJson("/token?service=registry.docker.io&scope=repository:"+ namespace+"/"+repository+":pull").getContent();
-		} catch (HttpClientException e) {
-			logger.error("Could not post to registry", e);
-			return;
-		}
-
-		String token = "Bearer " + resp.get("token").getAsString();
-		client.addCommonHeader("Authorization", token);
+//		try {
+//			resp = clientDockerAuth.getJson("/token?service=registry.docker.io&scope=repository:"+ namespace+"/"+repository+":pull").getContent();
+//		} catch (HttpClientException e) {
+//			logger.error("Could not post to registry", e);
+//			return;
+//		}
+//
+//		String token = "Bearer " + resp.get("token").getAsString();
+//		client.addCommonHeader("Authorization", token);
     }
     
 	/**

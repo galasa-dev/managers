@@ -5,9 +5,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * Docker Engine Server Maximum Slots CPS Property
- * 
- * @galasa.cps.property
+ * Docker Engine Maximum Slots CPS Property
  * 
  * @galasa.name docker.engine.server.max.slots
  * 
@@ -23,11 +21,11 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * <code>docker.engine.server.max.value=47</code>
  * 
  * @galasa.extra
- * This property indicates what the maximum number of containers Galasa can start on the Docker Engine Server.  
- * In Galasa terms, a container is a "slot" a platform independent term to reserve space.
+ * This property indicates what the maximum number of containers Galasa can start on the Docker Engine.  
+ * In Galasa terms, a container is a "slot" a platform independent term to reserve resources.
  * <br>
- * If the the value is less than one, it effectively stop new containers being started on the server, a way for draining 
- * the Engine Server for maintenance without stopping the entire Galasa automation system. 
+ * If the the value is less than one, it effectively stop new containers being started on the Docker Engine, a way for draining 
+ * the Docker Engine for maintenance without stopping the entire Galasa automation system. 
  * 
  */
 public class DockerSlots extends CpsProperties {
