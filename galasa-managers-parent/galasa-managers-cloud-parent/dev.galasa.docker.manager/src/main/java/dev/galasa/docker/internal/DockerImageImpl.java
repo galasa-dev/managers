@@ -20,9 +20,12 @@ public class DockerImageImpl implements IDockerImage {
     private final IFramework            framework;
     private final DockerManagerImpl     dockerManager;
     private final DockerServerImpl      dockerServer;
-    private final String                imageName;
+    private final String                fullImageName;
     private String                      fullName;
     private String                      authToken;
+
+    private String                      imageName;
+    private String                      tag;
     
     private boolean                     authRequired = false;
 
@@ -37,11 +40,11 @@ public class DockerImageImpl implements IDockerImage {
      * @param imageName
      */
     public DockerImageImpl(IFramework framework, DockerManagerImpl dockerManager, 
-            DockerServerImpl dockerServer, String imageName) {
-        this.framework      = framework;
-        this.dockerManager  = dockerManager;
-        this.dockerServer   = dockerServer;
-        this.imageName      = imageName;
+            DockerServerImpl dockerServer, String fullImageName) {
+        this.framework          = framework;
+        this.dockerManager      = dockerManager;
+        this.dockerServer       = dockerServer;
+        this.fullImageName      = fullImageName;
     }
 
     /**
@@ -51,6 +54,14 @@ public class DockerImageImpl implements IDockerImage {
      */
     public String getFullName() {
         return this.fullName;
+    }
+
+    public String getImageName() {
+        return this.imageName;
+    }
+
+    public String getTag() {
+        return this.tag;
     }
 
     /**
@@ -64,35 +75,11 @@ public class DockerImageImpl implements IDockerImage {
             return;
         }
 
-        String namespace  = "";
-		String repository = "";
-        String tag        = "";
-        
-        String workingName = this.imageName;
-		int pos = workingName.indexOf("/");
-		if (pos >= 0) {
-			namespace = workingName.substring(0, pos);
-			workingName = workingName.substring(pos + 1);
-		}
-		
-		pos = workingName.indexOf(":");
-		if (pos >= 0) {
-			tag = workingName.substring(pos + 1);
-			workingName = workingName.substring(0, pos);
-		}
-		if (tag.isEmpty()) {
-			tag = "latest";
-		}
-		
-		repository = workingName; 
-        if (namespace.isEmpty()) {
-            namespace = "library";
-        }
-        workingName = namespace + "/" + repository + ":" + tag;
-		
+        String workingName = getWorkingName(this.fullImageName);
+
 		List<DockerRegistryImpl> registries = dockerManager.getRegistries();
 		for(DockerRegistryImpl registry : registries) {
-			if (registry.doYouHave(namespace, repository, tag)) {
+			if (registry.doYouHave(this)) {
                 this.fullName = registry.getHost() + "/" + workingName;
                 this.authToken = registry.getAuthToken();
                 if (this.authToken != null) {
@@ -110,8 +97,21 @@ public class DockerImageImpl implements IDockerImage {
 			logger.info("Docker Image located only on the server as name '" + this.fullName + "'");
 			return;
 		}
-		
-		throw new DockerManagerException("Unable to locate Docker Image '" + workingName + "'");
+
+		throw new DockerManagerException("Unable to locate Docker Image '" + this.fullImageName + "'");
+    }
+
+    private String getWorkingName(String fullImageName) {
+        if(!fullImageName.contains(":")){
+            fullImageName = fullImageName+":latest";
+        }
+        splitName(fullImageName);
+        return fullImageName;
+    }
+
+    private void splitName(String fullImageName) {
+        this.imageName = fullImageName.substring(0, fullImageName.indexOf(":"));
+        this.tag = fullImageName.substring(fullImageName.indexOf(":")+1);
     }
 
     /**

@@ -16,13 +16,13 @@ public class DockerManagerIVT {
     @Logger
     public Log logger;
 
-    @DockerContainer(image = "httpd:latest", dockerContainerTag = "a", start=false)
+    @DockerContainer(image = "library/httpd", dockerContainerTag = "a")
     public IDockerContainer container;
     @DockerContainer(image = "httpd:latest", dockerContainerTag = "b")
     public IDockerContainer container2;
     @DockerContainer(image = "httpd:latest", dockerContainerTag = "c")
     public IDockerContainer container3;
-    
+
     @Test
     public void checkDockerContainerNotNull() throws DockerManagerException, IvtException {
         assertThat(container).as("Docker Container").isNotNull();
