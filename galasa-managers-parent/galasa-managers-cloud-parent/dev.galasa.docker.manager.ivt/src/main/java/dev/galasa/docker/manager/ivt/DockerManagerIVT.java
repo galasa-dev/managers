@@ -10,8 +10,11 @@ import dev.galasa.docker.DockerContainer;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerExec;
+import dev.galasa.elastic.Elastic;
 
 public class DockerManagerIVT {
+
+    @Elastic
 
     @Logger
     public Log logger;
