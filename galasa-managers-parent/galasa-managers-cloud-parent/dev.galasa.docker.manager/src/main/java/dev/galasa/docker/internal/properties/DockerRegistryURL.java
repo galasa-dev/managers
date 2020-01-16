@@ -9,17 +9,28 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * Docker Manager Server
- * <p>
- * Provides location of the Docker registry
- * </p><p>
- * The property is:<br>
- * {@code docker.registry.<registryId>.URL=https://registry.hub.docker.com} 
- * </p>
- * <p>
- * Default is https://registry.hub.docker.com
- * </p>
- *
+ * Docker Registry URL CPS Property
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name docker.registry.ID.url
+ * 
+ * @galasa.description Provides the URL of a Docker Registry that is used by the Docker Manager
+ * 
+ * @galasa.required Yes if the Registry ID is used in the CPS Property <code>docker.default.registries</code>.  However, 
+ * the Docker Manager will default DOCKERHUB to <code>https://registry.hub.docker.com</code> if not provided.
+ * 
+ * @galasa.default None, except for DOCKERHUB where the default is <code>https://registry.hub.docker.com</code>.
+ * 
+ * @galasa.valid_values A valid URL.
+ * 
+ * @galasa.examples 
+ * <code>docker.registry.LOCAL.url=https://registry.local.com</code>
+ * 
+ * @galasa.extra
+ * If the Registry requires credentials for Authentication, then the ID for the credentials must be provided using the CPS property 
+ * <code>docker.registry.ID.credentials</code> or <code>docker.registry.credentials</code>
+ * 
  */
 public class DockerRegistryURL extends CpsProperties {
 
@@ -27,7 +38,7 @@ public class DockerRegistryURL extends CpsProperties {
         String id = dockerRegistry.getId();
         String dockerRegistryURL = "";
         try {
-            dockerRegistryURL = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "URL", id);
+            dockerRegistryURL = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "url", id);
             // Default value
             if (dockerRegistryURL == null) {
                 if("DOCKERHUB".equals(id)) {
