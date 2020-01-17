@@ -139,6 +139,11 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>org.apache.httpcomponents</artifactId>
+			<version>4.1.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
 			<version>1.7</version>
@@ -158,6 +163,7 @@
 			<artifactId>derbyclient</artifactId>
 			<version>10.14.2.0</version>
 		</dependency>
+
 	</dependencies>
 
 	<build>
