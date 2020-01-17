@@ -5,18 +5,17 @@
  */
 package dev.galasa.zosbatch.zosmf.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Iterator;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import com.google.gson.JsonObject;
 
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.ZosBatchException;
@@ -27,9 +26,17 @@ public class TestZosBatchJobOutputImpl {
 	
 	private ZosBatchJobOutputImpl zosBatchJobOutput; 
 
-	private static final String JOBID = "jobid";
-
 	private static final String JOBNAME = "jobname";
+
+	private static final String JOBID = "jobid";
+	
+	private static final String STEPNAME = "stepname";
+	
+	private static final String PROCSTEP = "procstep";
+	
+	private static final String DDNAME = "ddname";
+
+	private static final String RECORDS = "records";
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
@@ -41,22 +48,35 @@ public class TestZosBatchJobOutputImpl {
 	
 	@Test
 	public void testAddJcl() throws ZosBatchException {
-		zosBatchJobOutput.addJcl("JCL");
-		assertEquals(JOBNAME, zosBatchJobOutput.getJobname());
-		assertEquals(JOBID, zosBatchJobOutput.getJobid());
-		assertEquals(JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
+		zosBatchJobOutput.addJcl(RECORDS);
+		Assert.assertEquals("getJobname() should return the supplied value", JOBNAME, zosBatchJobOutput.getJobname());
+		Assert.assertEquals("getJobid() should return the supplied value", JOBID, zosBatchJobOutput.getJobid());
+		Assert.assertEquals("toString() should return the supplied values of JOBNAME_JOBID", JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
 	}
-	
+
+	@Test
+	public void testAdd() throws ZosBatchException {
+		JsonObject spoolFile = new JsonObject();
+		spoolFile.addProperty(JOBNAME, JOBNAME);
+		spoolFile.addProperty(JOBID, JOBID);
+		spoolFile.addProperty(STEPNAME, STEPNAME);
+		spoolFile.addProperty(PROCSTEP, PROCSTEP);
+		spoolFile.addProperty(DDNAME, DDNAME);
+		zosBatchJobOutput.add(spoolFile, RECORDS);
+		Assert.assertEquals("getJobname() should return the supplied value", JOBNAME, zosBatchJobOutput.getJobname());
+		Assert.assertEquals("getJobid() should return the supplied value", JOBID, zosBatchJobOutput.getJobid());
+		Assert.assertEquals("toString() should return the the suplied values of JOBNAME_JOBID", JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
+	}
 	@Test
 	public void testGetSpoolFiles() throws ZosBatchException {
 		zosBatchJobOutput.addJcl("JCL");
-		assertNotNull(zosBatchJobOutput.getSpoolFiles());
+		Assert.assertNotNull(zosBatchJobOutput.getSpoolFiles());
 	}
 	
 	@Test
 	public void testToList() throws ZosBatchException {
 		zosBatchJobOutput.addJcl("JCL");
-		assertNotNull(zosBatchJobOutput.toList());
+		Assert.assertNotNull(zosBatchJobOutput.toList());
 	}
 	
 	@Test
@@ -64,12 +84,13 @@ public class TestZosBatchJobOutputImpl {
 		zosBatchJobOutput.addJcl("JCL");
 		Iterator<IZosBatchJobOutputSpoolFile> iterator = zosBatchJobOutput.iterator();
 		
-		assertTrue(iterator.hasNext());
+		Assert.assertTrue(iterator.hasNext());
 		
-		assertNotNull(iterator.next());
+		Assert.assertNotNull(iterator.next());
 		
 		exceptionRule.expect(UnsupportedOperationException.class);
 	    exceptionRule.expectMessage("Object can not be updated");
+	    
 	    iterator.remove();
 	}
 }

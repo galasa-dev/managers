@@ -81,7 +81,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		this.jobImage = jobImage;
 		this.jobname = jobname;
 		this.jcl = jcl;
-		storeArtifact(this.jcl, this.jobname + "_supplied_JCL.txt");
+		storeArtifact(this.jcl, this.jobname.getName() + "_supplied_JCL.txt");
 		
 		try {
 			this.jobWaitTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
@@ -165,16 +165,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		
 		long timeoutTime = Calendar.getInstance().getTimeInMillis()	+ (jobWaitTimeout * 1000);
 		while (Calendar.getInstance().getTimeInMillis() < timeoutTime) {
+			updateJobStatus();
 			try {
-				updateJobStatus();
-			} catch (ZosBatchException e) {
-				throw new ZosBatchException(e);
-			}
-			try {
-				if (this.jobComplete) {
+				if (jobComplete()) {
 					String[] rc = this.retcode.split(" ");
-					if (rc.length > 0) {
-						return StringUtils.isNumeric(rc[0]) ? Integer.parseInt(rc[0]) : Integer.MIN_VALUE;
+					if (rc.length == 2) {
+						return StringUtils.isNumeric(rc[1]) ? Integer.parseInt(rc[1]) : Integer.MIN_VALUE;
 					}
 					return Integer.MIN_VALUE;
 				}
@@ -244,7 +240,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	
 	@Override
 	public void purgeJob() throws ZosBatchException {
-		if (!this.jobPurged) {
+		if (!isPurged()) {
 			HashMap<String, String> headers = new HashMap<>();
 			headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
 			IZosmfResponse response;
@@ -287,6 +283,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	public boolean submitted() {
 		return this.jobid != null;
 	}
+	
+	public boolean jobComplete() {
+		return this.jobComplete;
+	}
 
 	public boolean isArchived() {
 		return this.jobArchived;
@@ -300,7 +300,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return "JOBID=" + getJobId() + " JOBNAME=" + this.jobname.getName() + " STATUS=" + getStatus() + " RETCODE=" + getRetcode();
 	}
 
-	private void updateJobStatus() throws ZosBatchException {
+	protected void updateJobStatus() throws ZosBatchException {
 		if (!submitted()) {
 			throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
 		}
@@ -339,7 +339,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		}			
 	}
 
-	private void addOutputFileContent(JsonObject responseBody, String path) throws ZosBatchException {
+	protected void addOutputFileContent(JsonObject responseBody, String path) throws ZosBatchException {
 	
 		IZosmfResponse response;
 		try {
@@ -374,7 +374,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		}
 	}
 
-	private String jclWithJobcard() {
+	protected String jclWithJobcard() {
 		StringBuilder jobCard = new StringBuilder();
 		jobCard.append("//");
 		jobCard.append(jobname.getName());
@@ -387,6 +387,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		}
 		
 		logger.debug("JOBCARD:\n" + jobCard.toString());
+		logger.error("JOBCARD:\n" + jobCard.toString());
 		jobCard.append(jcl);
 		return jobCard.toString();
 	}
@@ -398,10 +399,13 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		return null;
 	}
 
-	private String buildErrorString(String action, JsonObject responseBody) {	
+	protected String buildErrorString(String action, JsonObject responseBody) {
+		if (responseBody.toString().equals("{}")) {
+			return "Error " + action;
+		}
 		int errorCategory = responseBody.get("category").getAsInt();
 		int errorRc = responseBody.get("rc").getAsInt();
-		int errorReason = responseBody.get("rc").getAsInt();
+		int errorReason = responseBody.get("reason").getAsInt();
 		String errorMessage = responseBody.get("message").getAsString();
 		String errorDetails = null;
 		JsonElement element = responseBody.get("details");
@@ -441,14 +445,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	protected void archiveJobOutput() throws ZosBatchException {
-		if (!this.jobArchived) {
+		if (!isArchived()) {
 			if (this.jobOutput == null) {
 				retrieveOutput();
 				return;
 			}
 			String testMethodName = ZosBatchManagerImpl.currentTestMethod.getName();
 			logger.info(testMethodName);
-			String dirName = this.jobname + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace("?", "X");
+			String dirName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace("?", "X");
 			logger.info("    " + dirName);
 			Iterator<IZosBatchJobOutputSpoolFile> iterator = this.jobOutput.iterator();
 			while (iterator.hasNext()) {
@@ -475,7 +479,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		}
 	}
 
-	private void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
+	protected void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
 		try {
 			Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
 			String lastElement = artifactPathElements[artifactPathElements.length-1];
