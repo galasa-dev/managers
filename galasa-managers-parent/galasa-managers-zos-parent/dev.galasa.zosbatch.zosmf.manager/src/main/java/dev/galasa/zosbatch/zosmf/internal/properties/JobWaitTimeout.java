@@ -24,20 +24,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class JobWaitTimeout extends CpsProperties {
 
-	private static final int DEFAULT_JOB_WAIT_TIMEOUT = 5 * 60;
+    private static final int DEFAULT_JOB_WAIT_TIMEOUT = 5 * 60;
 
-	public static int get(String imageId) throws ZosBatchManagerException {
-		try {
-			String timeoutString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "timeout", imageId);
+    public static int get(String imageId) throws ZosBatchManagerException {
+        try {
+            String timeoutString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "timeout", imageId);
 
-			if (timeoutString == null) {
-				return DEFAULT_JOB_WAIT_TIMEOUT;
-			} else {
-				return Integer.parseInt(timeoutString);
-			}
-		} catch (ConfigurationPropertyStoreException | NumberFormatException e) {
-			throw new ZosBatchManagerException("Problem asking the CPS for the batch job timeout property for zOS image "  + imageId, e);
-		}
-	}
+            if (timeoutString == null) {
+                return DEFAULT_JOB_WAIT_TIMEOUT;
+            } else {
+                return Integer.parseInt(timeoutString);
+            }
+        } catch (ConfigurationPropertyStoreException | NumberFormatException e) {
+            throw new ZosBatchManagerException("Problem asking the CPS for the batch job timeout property for zOS image "  + imageId, e);
+        }
+    }
 
 }

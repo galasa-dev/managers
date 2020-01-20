@@ -25,13 +25,13 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class UseSysaff extends CpsProperties {
 
-	public static boolean get(String imageId) throws ZosBatchManagerException {
-		try {
-			String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
-			return Boolean.parseBoolean(sysaffString);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosBatchManagerException("Problem asking the CPS for the batch job use SYSAFF property for zOS image "  + imageId, e);
-		}
-	}
+    public static boolean get(String imageId) throws ZosBatchManagerException {
+        try {
+            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
+            return Boolean.parseBoolean(sysaffString);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosBatchManagerException("Problem asking the CPS for the batch job use SYSAFF property for zOS image "  + imageId, e);
+        }
+    }
 
 }
