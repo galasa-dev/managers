@@ -1,5 +1,5 @@
 package dev.galasa.docker;
 
-public interface IDockerServer {
+public interface IDockerEngine {
     
 }

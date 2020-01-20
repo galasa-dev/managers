@@ -1,14 +1,14 @@
 package dev.galasa.docker.internal.properties;
 
 import dev.galasa.docker.DockerManagerException;
-import dev.galasa.docker.internal.DockerServerImpl;
+import dev.galasa.docker.internal.DockerEngineImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
  * Docker Engine Maximum Slots CPS Property
  * 
- * @galasa.name docker.engine.server.max.slots
+ * @galasa.name docker.engine.max.slots
  * 
  * @galasa.description The maximum number of containers(slots) that run on 
  * 
@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A valid Java integer value
  * 
  * @galasa.examples 
- * <code>docker.engine.server.max.value=47</code>
+ * <code>docker.engine.max.value=47</code>
  * 
  * @galasa.extra
  * This property indicates what the maximum number of containers Galasa can start on the Docker Engine.  
@@ -30,16 +30,16 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  */
 public class DockerSlots extends CpsProperties {
-    public static String get(DockerServerImpl dockerServer) throws DockerManagerException {
+    public static String get(DockerEngineImpl dockerEngine) throws DockerManagerException {
 		try {
-			String maxSlots = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "server.max.slots", dockerServer.getServerId());
+			String maxSlots = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "max.slots", dockerEngine.getEngineId());
 
 			if (maxSlots == null) {
-				throw new DockerManagerException("Value for Docker Server max slots not configured for the docker server: "  + dockerServer);
+				throw new DockerManagerException("Value for Docker Engine max slots not configured for the docker engine: "  + dockerEngine);
 			}
 			return maxSlots;
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new DockerManagerException("Problem asking the CPS for the max slots for the docker server: "  + dockerServer, e);
+			throw new DockerManagerException("Problem asking the CPS for the max slots for the docker engine: "  + dockerEngine, e);
 		}
 	}
 

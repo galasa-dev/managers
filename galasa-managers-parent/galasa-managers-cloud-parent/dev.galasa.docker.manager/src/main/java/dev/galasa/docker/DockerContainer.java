@@ -62,6 +62,6 @@ public @interface DockerContainer {
     /**
      * Dont think we need this attribute
      */
-    public String DockerServerTag() default "default";
+    public String DockerEngineTag() default "default";
 
 }

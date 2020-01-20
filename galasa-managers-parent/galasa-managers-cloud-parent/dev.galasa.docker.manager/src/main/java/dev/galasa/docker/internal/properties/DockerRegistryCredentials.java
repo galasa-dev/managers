@@ -4,6 +4,7 @@ import java.net.URL;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.DockerRegistryImpl;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
@@ -32,7 +33,16 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class DockerRegistryCredentials extends CpsProperties {
 
-    public static URL get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {
-        throw new UnsupportedOperationException("Not developed yet");
+    public static String get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {
+        try {
+            String credentialsKey = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "credentials", dockerRegistry.getId());
+            if (credentialsKey == null) {
+                throw new DockerManagerException("Could not find credentials for this registry: " + dockerRegistry.getId());
+            }
+
+            return credentialsKey;
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new DockerManagerException("Failed to access the CPS to find the credential");
+        } 
     }
 }
