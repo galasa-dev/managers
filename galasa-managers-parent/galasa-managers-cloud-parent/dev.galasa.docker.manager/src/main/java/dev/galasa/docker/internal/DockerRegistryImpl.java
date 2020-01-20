@@ -18,6 +18,7 @@ import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -195,7 +196,7 @@ public class DockerRegistryImpl {
 
 				client.setAuthorisation(user, password).build();
 
-				return generateDockerServerAuthStructure(user, password);
+				return generateDockerRegistryAuthStructure(user, password);
 			}
 
 			if (creds instanceof ICredentialsUsernameToken) {
@@ -210,7 +211,7 @@ public class DockerRegistryImpl {
 				throw new DockerManagerException("Tokens are not yet supported");
 			}
 			throw new DockerManagerException("Couldnt generate token");
-		} catch (ConfigurationPropertyStoreException | CredentialsException e) {
+		} catch (DockerManagerException | CredentialsException e) {
 			throw new DockerManagerException("Couldnt locate credentials to generate token", e);
 		}
 	}
@@ -223,8 +224,8 @@ public class DockerRegistryImpl {
 	 * @throws ConfigurationPropertyStoreException
 	 * @throws CredentialsException
 	 */
-	private ICredentials getCreds() throws ConfigurationPropertyStoreException, CredentialsException {
-		String credKey = framework.getConfigurationPropertyService(DockerManagerImpl.NAMESPACE).getProperty("registry."+this.registryId, "credentialsId");
+	private ICredentials getCreds() throws DockerManagerException, CredentialsException {
+		String credKey = DockerRegistryCredentials.get(this);
 		return credService.getCredentials(credKey);
 	}
 
@@ -301,7 +302,7 @@ public class DockerRegistryImpl {
 	 * @param password
 	 * @return
 	 */
-	private String generateDockerServerAuthStructure(String user, String password) {
+	private String generateDockerRegistryAuthStructure(String user, String password) {
 		JsonObject creds = new JsonObject();
 		creds.addProperty("username", user);
 		creds.addProperty("password", password);

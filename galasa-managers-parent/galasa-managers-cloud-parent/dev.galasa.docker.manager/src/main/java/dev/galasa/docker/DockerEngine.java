@@ -10,10 +10,10 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
-@ValidAnnotatedFields({ IDockerServer.class })
+@ValidAnnotatedFields({ IDockerEngine.class })
 @DockerManagerField
-public @interface DockerServer {
+public @interface DockerEngine {
 
-    public String dockerServerTag() default "default";
+    public String dockerEngineTag() default "default";
 
 }
