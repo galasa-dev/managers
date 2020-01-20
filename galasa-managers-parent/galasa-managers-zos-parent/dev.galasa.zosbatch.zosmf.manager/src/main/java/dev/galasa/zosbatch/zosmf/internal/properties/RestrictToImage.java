@@ -24,13 +24,13 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  */
 public class RestrictToImage extends CpsProperties {
 
-	public static boolean get(String imageId) throws ZosBatchManagerException {
-		try {
-			String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "restrict.to.image", imageId);
-			return Boolean.parseBoolean(sysaffString);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosBatchManagerException("Problem asking the CPS for the batch job restrict to immage property for zOS image "  + imageId, e);
-		}
-	}
+    public static boolean get(String imageId) throws ZosBatchManagerException {
+        try {
+            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "restrict.to.image", imageId);
+            return Boolean.parseBoolean(sysaffString);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosBatchManagerException("Problem asking the CPS for the batch job restrict to immage property for zOS image "  + imageId, e);
+        }
+    }
 
 }
