@@ -29,11 +29,11 @@
 			<version>[0.3.0,1.0.0)</version>
 		</dependency>
 
-		<!-- <dependency>
+		<dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>7.5.1</version>
-        </dependency> -->
+        </dependency>
 
 		<!-- <dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -59,11 +59,11 @@
 			<version>4.1.4</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>org.elasticsearch.client</artifactId>
 			<version>7.5.1</version>
-		</dependency>
+		</dependency> -->
 
 	</dependencies>
 
@@ -77,10 +77,14 @@
 					<supportedProjectTypes>bundle</supportedProjectTypes>
 					<instructions>
 						<Bundle-SymbolicName>dev.galasa.elastic.manager</Bundle-SymbolicName>
-						<Embed-Dependency>org.elasticsearch.client</Embed-Dependency>
+						<Embed-Dependency>elasticsearch-rest-high-level-client, dev.galasa.elastic.manager;scope=compile</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
-						<Export-Package>dev.galasa.elastic,
-										dev.galasa.elastic.internal</Export-Package>
+						<Export-Package>!dev.galasa, !dev.galasa.framework,
+										<!-- javax.servlet, com.sun.jna, com.fasterxml.jackson.databind, com.google.common.geometry,
+										org.apache.avalon.framework.logger, org.apache.log, org.apache.logging.log4j.core, org.apache.logging.log4j.core.appender,
+										org.apache.logging.log4j.core.config, org.apache.logging.log4j.core.config.builder.api, org.apache.logging.log4j.core.config.composite,
+										 -->
+										*</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
