@@ -41,17 +41,6 @@ import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-// If coverage does not work in Eclipse with @RunWith(PowerMockRunner.class), then use the following:
-//   @RunWith(org.mockito.junit.MockitoJUnitRunner.class)
-// and add the following @Rule 
-//   @Rule
-//   public org.powermock.modules.junit4.rule.PowerMockRule rule = new org.powermock.modules.junit4.rule.PowerMockRule();
-//   static {
-//       org.powermock.modules.agent.PowerMockAgent.initializeIfNeeded();
-//   }
-// You may also need to add the following to Launch configuration VM args:
-//    -noverify
-// See http://www.notonlyanecmplace.com/make-eclemma-test-coverage-work-with-powermock/
 @PrepareForTest({ZosBatchJobImpl.class, ZosBatchManagerImpl.class, JobWaitTimeout.class, UseSysaff.class, RestrictToImage.class})
 public class TestZosBatchJobImpl {
 	
@@ -110,7 +99,7 @@ public class TestZosBatchJobImpl {
 		Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
 		
 		PowerMockito.mockStatic(JobWaitTimeout.class);
-		Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(1);
+		Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(2);
 		
 		PowerMockito.mockStatic(UseSysaff.class);
 		Mockito.when(UseSysaff.get(Mockito.any())).thenReturn(false);

@@ -41,6 +41,7 @@ public class JobnamePrefix extends CpsProperties {
 				String jobNamePrefix = jobNamePrefixValue.toUpperCase();
 				if (jobNamePrefix.length() > 7 || !jobNamePrefix.matches("^[A-Z$#@][A-Z0-9$#@]*$")) {
 					logger.warn("Invalid Batch Job prefix \"" + jobNamePrefixValue + "\". Using default value of \"" + DEFAULT_JOBNAME_PREFIX + "\"");
+					return DEFAULT_JOBNAME_PREFIX;
 				}
 				return jobNamePrefix;
 			}

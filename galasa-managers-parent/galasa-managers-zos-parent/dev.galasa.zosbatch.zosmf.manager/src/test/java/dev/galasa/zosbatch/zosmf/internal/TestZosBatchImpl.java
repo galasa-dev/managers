@@ -75,8 +75,6 @@ public class TestZosBatchImpl {
 		
 		Assert.assertEquals("submitJob should return mocked batch job", zosBatchSpy.submitJob("JCL", zosJobnameMock), zosBatchJobMock);
 
-//		Mockito.doNothing().when(zosBatchJobMock).archiveJobOutput();
-//		Mockito.doNothing().when(zosBatchJobMock).purgeJob();
 		Mockito.when(zosBatchJobMock.isArchived()).thenReturn(true);
 		Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
 		zosBatch.cleanup();
@@ -85,7 +83,6 @@ public class TestZosBatchImpl {
 	@Test
 	public void testNewZosBatchJob() throws Exception {
 		PowerMockito.whenNew(ZosBatchJobImpl.class).withArguments(Mockito.any(IZosImage.class), Mockito.any(IZosBatchJobname.class), Mockito.anyString()).thenReturn(zosBatchJobMock);
-//		PowerMockito.whenNew(ZosBatchJobImpl.class).withArguments(Mockito.any(IZosImage.class), Mockito.any(IZosBatchJobname.class), Mockito.anyString()).thenReturn(null);
 		Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
 		Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
 	}
