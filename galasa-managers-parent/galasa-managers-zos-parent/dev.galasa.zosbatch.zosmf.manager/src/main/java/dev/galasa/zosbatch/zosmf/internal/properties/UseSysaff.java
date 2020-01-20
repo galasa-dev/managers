@@ -19,23 +19,16 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * {@code zosbatch.batchjob.[imageid].use.sysaff=true}
  * </p>
  * <p>
- * The default value is {@value #DEFAULT_USE_SYSAFF}
+ * The default value is true
  * </p>
  *
  */
 public class UseSysaff extends CpsProperties {
 
-	private static final boolean DEFAULT_USE_SYSAFF = true;
-
 	public static boolean get(String imageId) throws ZosBatchManagerException {
 		try {
 			String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
-
-			if (sysaffString == null) {
-				return DEFAULT_USE_SYSAFF;
-			} else {
-				return Boolean.parseBoolean(sysaffString);
-			}
+			return Boolean.parseBoolean(sysaffString);
 		} catch (ConfigurationPropertyStoreException e) {
 			throw new ZosBatchManagerException("Problem asking the CPS for the batch job use SYSAFF property for zOS image "  + imageId, e);
 		}

@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -161,10 +161,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		if (!submitted()) {
 			throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
 		}
-		logger.info("Waiting " + jobWaitTimeout + " seconds for "+ this.jobid + " " + this.jobname.getName() + " to complete");
+		logger.info("Waiting up to " + jobWaitTimeout + " second(s) for "+ this.jobid + " " + this.jobname.getName() + " to complete");
 		
-		long timeoutTime = Calendar.getInstance().getTimeInMillis()	+ (jobWaitTimeout * 1000);
-		while (Calendar.getInstance().getTimeInMillis() < timeoutTime) {
+		long timeoutTime = LocalTime.now().toSecondOfDay() + Long.valueOf(jobWaitTimeout);
+		while (LocalTime.now().toSecondOfDay() < timeoutTime) {
 			updateJobStatus();
 			try {
 				if (jobComplete()) {
@@ -321,7 +321,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 		logger.trace(responseBody);
 		if (response.getStatusCode() == HttpStatus.SC_OK) {
 			this.status = responseBody.get("status").getAsString();
-			if (this.status == null || this.status.equals("OUTPUT")) {
+			if (this.status == null || "OUTPUT".equals(this.status)) {
 				this.jobComplete = true;
 			}
 			String memberName = "retcode";
@@ -400,7 +400,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	protected String buildErrorString(String action, JsonObject responseBody) {
-		if (responseBody.toString().equals("{}")) {
+		if ("{}".equals(responseBody.toString())) {
 			return "Error " + action;
 		}
 		int errorCategory = responseBody.get("category").getAsInt();
