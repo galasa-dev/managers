@@ -43,6 +43,7 @@ import dev.galasa.zos.internal.properties.BatchExtraBundle;
 import dev.galasa.zos.internal.properties.ClusterIdForTag;
 import dev.galasa.zos.internal.properties.ClusterImages;
 import dev.galasa.zos.internal.properties.ConsoleExtraBundle;
+import dev.galasa.zos.internal.properties.DseClusterIdForTag;
 import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
@@ -216,8 +217,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 				taggedImages.put(tag, selectedImage);
 				return selectedImage;
 			}
-
-			ZosDseImageImpl image = new ZosDseImageImpl(this, imageID, null);
+			
+			String clusterId = DseClusterIdForTag.get(tag);
+			ZosDseImageImpl image = new ZosDseImageImpl(this, imageID, clusterId);
 			images.put(image.getImageID(), image);
 			taggedImages.put(tag, image);
 			return image;
@@ -405,7 +407,11 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 				}
 			}
 		} else {
-			logger.info(LOG_ZOS_IMAGE + zosImage.getImageID() + " selected with slot name " + ((ZosProvisionedImageImpl) zosImage).getSlotName());			
+			if (zosImage instanceof ZosProvisionedImageImpl) {
+				logger.info(LOG_ZOS_IMAGE + zosImage.getImageID() + " selected with slot name " + ((ZosProvisionedImageImpl) zosImage).getSlotName());			
+			} else {
+				logger.info(LOG_ZOS_IMAGE + zosImage.getImageID() + " selected");				
+			}
 		}
 		return zosImage;
 	}

@@ -271,8 +271,10 @@ public class HttpClientResponse<T> {
 
             if (httpResponse.getEntity() != null) {
                 if (response.getStatusCode() == HttpStatus.SC_OK || contentOnBadResponse) {
-                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-                    JsonElement jsonElement = new Gson().fromJson(reader, JsonElement.class);
+                    String sResponse = EntityUtils.toString(httpResponse.getEntity());
+                    
+//                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+                    JsonElement jsonElement = new Gson().fromJson(sResponse, JsonElement.class);
                     if (jsonElement != null) {
                         if (jsonElement != null) {
                             JsonObject json = jsonElement.getAsJsonObject();

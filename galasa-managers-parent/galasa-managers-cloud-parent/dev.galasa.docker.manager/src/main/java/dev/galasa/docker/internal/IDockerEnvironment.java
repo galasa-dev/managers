@@ -8,7 +8,7 @@ import dev.galasa.docker.DockerProvisionException;
 
 public interface IDockerEnvironment {
 	/**
-	 * Generate the docker containers on specified docker servers.
+	 * Generate the docker containers on specified docker engines.
 	 * 
 	 * @param testClasses
 	 * @throws DockerProvisionException
@@ -31,12 +31,12 @@ public interface IDockerEnvironment {
 	public void discard() throws DockerManagerException;
 
 	/**
-	 * Return the docker server implementation used in this docker environment instance.
+	 * Return the docker engine implementation used in this docker environment instance.
 	 * 
 	 * @return
 	 * @throws DockerManagerException
 	 */
-	public DockerServerImpl getDockerServerImpl() throws DockerManagerException;
+	public DockerEngineImpl getDockerEngineImpl(String dockerEngineTag) throws DockerManagerException;
 	
 	/**
 	 * Return a specified docker containers implementation
@@ -63,7 +63,7 @@ public interface IDockerEnvironment {
 	 * @return
 	 * @throws DockerProvisionException
 	 */
-	public DockerContainerImpl provisionDockerContainer(String tag, String image, boolean start) throws DockerProvisionException;
+	public DockerContainerImpl provisionDockerContainer(String tag, String image, boolean start, String DockerEngineTag) throws DockerProvisionException;
 	//public void preAllocate(Resource rm) throws ResourceManagementException;
 
 	/**

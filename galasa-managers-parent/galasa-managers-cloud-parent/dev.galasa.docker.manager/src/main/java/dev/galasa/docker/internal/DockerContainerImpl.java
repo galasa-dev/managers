@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Random;
 
 import com.google.gson.JsonArray;
@@ -39,7 +37,7 @@ public class DockerContainerImpl implements IDockerContainer {
     private IFramework                      framework;
     private DockerManagerImpl               dockerManager;
     private String                          tag;
-    private DockerServerImpl                dockerServer;
+    private DockerEngineImpl                dockerEngine;
     private DockerImageImpl                 image;
     private Boolean                         autoStartup;
     private DockerSlotImpl                  dockerSlot;
@@ -62,18 +60,18 @@ public class DockerContainerImpl implements IDockerContainer {
      * @param framework
      * @param dockerManager
      * @param tag
-     * @param dockerServer
+     * @param dockerEngine
      * @param image
      * @param start
      * @param slot
      * @throws DockerProvisionException
      */
     public DockerContainerImpl(IFramework framework, DockerManagerImpl dockerManager, String tag,
-            DockerServerImpl dockerServer, DockerImageImpl image, Boolean start, DockerSlotImpl slot) throws DockerProvisionException {
+            DockerEngineImpl dockerEngine, DockerImageImpl image, Boolean start, DockerSlotImpl slot) throws DockerProvisionException {
         this.framework              = framework;
         this.dockerManager          = dockerManager;
         this.tag                    = tag;
-        this.dockerServer           = dockerServer;
+        this.dockerEngine           = dockerEngine;
         this.image                  = image;
         this.autoStartup            = start;
         this.dockerSlot             = slot;
@@ -111,7 +109,7 @@ public class DockerContainerImpl implements IDockerContainer {
 
 
 					logger.debug("Creating Docker Container '" + tag + "'");
-					JsonObject newContainer = dockerServer.createContainer(containerName, create);
+					JsonObject newContainer = dockerEngine.createContainer(containerName, create);
 					logger.debug("Created Docker Container '" + tag + "'");
 					containerID = newContainer.get("Id").getAsString();
 					if (containerID == null || containerID.trim().isEmpty()) {
@@ -140,7 +138,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Passed the docker start commands to the docker server if the container is not already running.
+     * Passed the docker start commands to the docker engine if the container is not already running.
      * 
      * @throws DockerManagerException
      */
@@ -153,14 +151,14 @@ public class DockerContainerImpl implements IDockerContainer {
             logger.info("Checking container before attempting start.");
             checkContainer();
             logger.debug("Starting docker container: " + tag);
-            dockerServer.startContainer(containerID);
+            dockerEngine.startContainer(containerID);
             logger.info("Started Docker container: " + tag);
             Thread.sleep(2000);
         } catch(Exception e) {
             throw new DockerManagerException("Failed to start docker container: " + tag, e);
         }
 
-        extractContainerExposedPortsFromDockerServer();
+        extractContainerExposedPortsFromDockerEngine();
 
     }
 
@@ -174,7 +172,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Passes the docker stop command to the docker server if the container is nor already stopped
+     * Passes the docker stop command to the docker engine if the container is nor already stopped
      * @throws DockerManagerException
      */
     private void stopDockerContainer() throws DockerManagerException {
@@ -205,9 +203,9 @@ public class DockerContainerImpl implements IDockerContainer {
      * 
      * @throws DockerManagerException
      */
-    private void extractContainerExposedPortsFromDockerServer() throws DockerManagerException {
+    private void extractContainerExposedPortsFromDockerEngine() throws DockerManagerException {
         try {
-            JsonObject containerInfo = dockerServer.getContainer(containerID);
+            JsonObject containerInfo = dockerEngine.getContainer(containerID);
 
             JsonObject ports = retrievePorts(containerInfo);
             if (ports != null){
@@ -224,7 +222,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Used by the extractContainerExposedPortsFromDockerServer() to retrieve ports from the container information.
+     * Used by the extractContainerExposedPortsFromDockerEngine() to retrieve ports from the container information.
      * 
      * @param containerInfo
      * @return Ports
@@ -238,7 +236,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Returns a list of sockets from the JsonObect containing ports, used by the extractContainerExposedPortsFromDockerServer()
+     * Returns a list of sockets from the JsonObect containing ports, used by the extractContainerExposedPortsFromDockerEngine()
      * 
      * @param portEntry
      * @return Sockets
@@ -256,7 +254,7 @@ public class DockerContainerImpl implements IDockerContainer {
                     JsonElement hPort = ((JsonObject)hostPort).get("HostPort");
 
                     if (hostIP == null || hostIP.getAsString().equals("0.0.0.0")) {
-                        sHostIp = dockerServer.getHost();
+                        sHostIp = dockerEngine.getHost();
                         iHostPort = hPort.getAsInt();
                     } else {
                         sHostIp = hostIP.getAsString();
@@ -340,7 +338,7 @@ public class DockerContainerImpl implements IDockerContainer {
      */
     @Override
     public String retrieveStdOut() throws DockerManagerException {
-        return dockerServer.getLog("/containers/" + containerID + "/logs?stdout=true&timestamps=true");
+        return dockerEngine.getLog("/containers/" + containerID + "/logs?stdout=true&timestamps=true");
     }
 
     /**
@@ -350,18 +348,18 @@ public class DockerContainerImpl implements IDockerContainer {
      */
     @Override
     public String retrieveStdErr() throws DockerManagerException {
-        return dockerServer.getLog("/containers/" + containerID + "/logs?stderr=true&timestamps=true");
+        return dockerEngine.getLog("/containers/" + containerID + "/logs?stderr=true&timestamps=true");
     }
 
     /**
-     * Polls the docker server for information about a container to see if running.
+     * Polls the docker engine for information about a container to see if running.
      * 
      * @return boolean isRunning?
      * @throws DockerManagerException
      */
     @Override
     public boolean isRunning() throws DockerManagerException {
-        JsonObject response = dockerServer.getContainer(containerName);
+        JsonObject response = dockerEngine.getContainer(containerName);
 		JsonObject state = response.get("State").getAsJsonObject();
 		if (state == null) {
 			return false;
@@ -379,7 +377,7 @@ public class DockerContainerImpl implements IDockerContainer {
      */
     @Override
     public long getExitCode() throws DockerManagerException {
-        JsonObject response = dockerServer.getContainer(containerName);
+        JsonObject response = dockerEngine.getContainer(containerName);
 		JsonObject state = response.get("State").getAsJsonObject();
 		if (state == null) {
 			return -1;
@@ -407,7 +405,7 @@ public class DockerContainerImpl implements IDockerContainer {
      */
     private String getContainerName(DockerSlotImpl dockerSlot2) throws DynamicStatusStoreException {
         String slotName = dockerSlot.getSlotName();
-        String runName = dss.get("server." + dockerServer.getHost() + ".slot." + slotName);
+        String runName = dss.get("engine." + dockerEngine.getEngineId() + ".slot." + slotName);
         //  E.g 'GALASA_U12_ExampleContainerName'
         return CONTAINER_NAME_PREFIX + runName + "_" + this.tag;
     }
@@ -429,14 +427,14 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Used by the checkContainer() to collect the state from the docker server. 
+     * Used by the checkContainer() to collect the state from the docker engine. 
      * 
      * If the container is not as expected then it is attempted to be resolved.
      * 
      * @throws DockerManagerException
      */
     private void checkContainerState() throws DockerManagerException {
-        JsonObject response = dockerServer.getContainer(containerName);
+        JsonObject response = dockerEngine.getContainer(containerName);
 
 			if (response != null) {
 				logger.debug("Docker Container '" + this.tag + "' is already defined");
@@ -474,34 +472,34 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Deletes the container from the docker server
+     * Deletes the container from the docker engine
      * 
      * @throws DockerManagerException
      */
     private void deleteContainer() throws DockerManagerException {
         logger.debug("Deleting Docker Container '" + tag + "'");
-		dockerServer.deleteContainer(containerID);
+		dockerEngine.deleteContainer(containerID);
 		logger.info("Deleted Docker Container '" + tag + "'");
     }
 
     /**
-     * Kills the running container on the docker server
+     * Kills the running container on the docker engine
      * 
      * @throws DockerManagerException
      */
     private void killContainer() throws DockerManagerException {
         logger.debug("Killing Docker Container '" + tag + "'");
-	    dockerServer.killContainer(containerID);
+	    dockerEngine.killContainer(containerID);
 	    logger.info("Killed Docker Container '" + tag + "'");
     }
 
     /**
-     * Retrieves the dockerServer the container is hosted on.
+     * Retrieves the dockerEngine the container is hosted on.
      * 
-     * @return dockerServer
+     * @return dockerEngine
      */
-    public DockerServerImpl getDockerServerImpl() {
-        return dockerServer;
+    public DockerEngineImpl getDockerEngineImpl() {
+        return dockerEngine;
 	}
 
     /**
