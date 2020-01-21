@@ -38,5 +38,5 @@ public @interface KubernetesNamespace {
      * Kubernetes Namespace, each separate Kubernetes Namesapce must have a unique tag.  If two Kubernetes Namespace use the same tag, they will refer to the 
      * same actual Kubernetes Namespace.
      */
-    public String kubernetesNamespaceTag() default "a";
+    public String kubernetesNamespaceTag() default "primary";
 }

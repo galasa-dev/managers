@@ -15,6 +15,8 @@ import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.internal.properties.KubernetesMaxSlots;
 import dev.galasa.kubernetes.internal.properties.KubernetesNamespaces;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 
 public class KubernetesClusterImpl {
 
@@ -23,6 +25,8 @@ public class KubernetesClusterImpl {
     private final String                     clusterId;
     private final IDynamicStatusStoreService dss;
     private final IFramework                 framework;
+    
+    private ApiClient                        apiClient;
 
     public KubernetesClusterImpl(String clusterId, IDynamicStatusStoreService dss, IFramework framework) {
         this.clusterId = clusterId;     
@@ -122,6 +126,7 @@ public class KubernetesClusterImpl {
             }
             
             KubernetesNamespaceImpl newNamespace = new KubernetesNamespaceImpl(this, selectedNamespace, this.framework, this.dss);
+            newNamespace.initialiseNamespace();
             return newNamespace;
         } catch(InsufficientResourcesAvailableException e) {
             return null;
@@ -129,6 +134,20 @@ public class KubernetesClusterImpl {
             logger.warn("Problem allocating namespace",e);
             return null;
         }
+    }
+    
+    protected synchronized ApiClient getApi() throws KubernetesManagerException {
+        if (this.apiClient != null) {
+            return this.apiClient;
+        }
+        
+        try {
+            this.apiClient = Config.fromToken("https://cicsk8sm.hursley.ibm.com:6443", "93d0c6181179aab9ff59b4f52200f94b", false);
+            return this.apiClient;
+        } catch(Exception e) {
+            throw new KubernetesManagerException("Unable the initialise the Kubernetes API Client", e);
+        }
+        
     }
 
 }
