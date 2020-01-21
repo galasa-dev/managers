@@ -26,6 +26,13 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.KubernetesNamespace;
 import dev.galasa.kubernetes.internal.properties.KubernetesClusters;
 import dev.galasa.kubernetes.internal.properties.KubernetesPropertiesSingleton;
+import io.kubernetes.client.openapi.models.V1ConfigMap;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1Secret;
+import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.util.Yaml;
 
 @Component(service = { IManager.class })
 public class KubernetesManagerImpl extends AbstractManager {
@@ -89,6 +96,14 @@ public class KubernetesManagerImpl extends AbstractManager {
         } catch(DynamicStatusStoreException e) {
             throw new KubernetesManagerException("Unable to provide the DSS for the Kubernetes Manager", e);
         }
+        
+        //*** Load the YAML supported types
+        Yaml.addModelMap("v1", "ConfigMap", V1ConfigMap.class);
+        Yaml.addModelMap("v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
+        Yaml.addModelMap("v1", "Service", V1Service.class);
+        Yaml.addModelMap("v1", "Secret", V1Secret.class);
+        Yaml.addModelMap("v1", "Deployment", V1Deployment.class);
+        Yaml.addModelMap("v1", "StatefulSet", V1StatefulSet.class);
 
         this.logger.info("Kubernetes Manager initialised");
     }
@@ -174,7 +189,7 @@ public class KubernetesManagerImpl extends AbstractManager {
             try {
             namespace.discard(this.getFramework().getTestRunName());
             } catch(KubernetesManagerException e) {
-                logger.error("Problem discarding namespace " + namespace.getId() + " on cluster " + namespace.getCluster().getId());;
+                logger.error("Problem discarding namespace " + namespace.getId() + " on cluster " + namespace.getCluster().getId(), e);
             }
         }
         

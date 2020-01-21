@@ -1,5 +1,7 @@
 package dev.galasa.kubernetes;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Kubernetes Namespace 
  *  
@@ -7,6 +9,9 @@ package dev.galasa.kubernetes;
  *
  */
 public interface IKubernetesNamespace {
+    
+    @NotNull
+    public IResource createResource(@NotNull String yaml) throws KubernetesManagerException;
 
 
 }
