@@ -256,14 +256,16 @@ public interface IHttpClient {
     /**
      * Download a file from a specified location to a specified destination on local host.
      * 
-     * @param host
+     * @param Path destination - local location
+     * @param String path = URL path
      */
     void getFile(Path destination, String path);
 
     /**
-     * Download a file from a specified location to a specified destination on local host.
+     * Send a compressed (tar) file from a local location to a specified destination on a host.
      * 
-     * @param host
+     * @param Sting path - URL path
+     * @param File file - tar archive file
      */
     void putFile(String path, File file);
 
