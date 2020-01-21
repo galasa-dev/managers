@@ -3,6 +3,8 @@
  * 
  * @galasa.manager Docker
  * 
+ * @galasa.release.state ALPHA - This manager is being actively developed. It is subject to change and has not been extensively tested.
+ * 
  * @galasa.description
  * 
  * This Manager enables tests to run Docker containers on a Docker Engine provided by the Galasa infrastructure, making it easy to write tests that consume container-based services.
