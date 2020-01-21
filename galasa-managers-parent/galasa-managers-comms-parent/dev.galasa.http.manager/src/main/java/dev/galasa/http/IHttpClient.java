@@ -5,6 +5,7 @@
  */
 package dev.galasa.http;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -258,6 +259,13 @@ public interface IHttpClient {
      * @param host
      */
     void getFile(Path destination, String path);
+
+    /**
+     * Download a file from a specified location to a specified destination on local host.
+     * 
+     * @param host
+     */
+    void putFile(String path, File file);
 
     /**
      * Get the SSL context used by this client

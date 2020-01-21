@@ -7,6 +7,7 @@ package dev.galasa.http.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -343,21 +344,6 @@ public class HttpClientImpl implements IHttpClient {
             message.addHeader(header);
         }
 
-    }
-
-    public void getFile(Path destination, String path) {
-        try{
-            HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
-
-            CloseableHttpResponse repsonse = execute(request.buildRequest());
-            OutputStream output = Files.newOutputStream(destination);
-            
-            IOUtils.copy(repsonse.getEntity().getContent(), output);
-
-        } catch (Exception e) {
-            logger.error("Could not download file from speficifed path: "+ path, e);
-        }
     }
     
     private byte[] execute(HttpUriRequest request, boolean retry) throws HttpClientException {
@@ -764,6 +750,36 @@ public class HttpClientImpl implements IHttpClient {
         return delete(path, queryParams,
                 new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
                 jaxbClasses, retry);
+    }
+
+    public void getFile(Path destination, String path) {
+        try{
+            HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
+
+            CloseableHttpResponse repsonse = execute(request.buildRequest());
+            OutputStream output = Files.newOutputStream(destination);
+            
+            IOUtils.copy(repsonse.getEntity().getContent(), output);
+            repsonse.close();
+        } catch (Exception e) {
+            logger.error("Could not download file from speficifed path: "+ path, e);
+        }
+    }
+
+    public void putFile(String path, File file) {
+        try {
+            HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(path, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN } ,
+                ContentType.APPLICATION_X_TAR);
+
+            request.setBody(file);
+
+            CloseableHttpResponse response = execute(request.buildRequest());
+            response.close();
+        } catch (HttpClientException | IOException e) {
+
+        }
     }
 
     @Override
