@@ -114,7 +114,10 @@ public class KubernetesManagerImpl extends AbstractManager {
     public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws KubernetesManagerException {
         KubernetesNamespace annotation = field.getAnnotation(KubernetesNamespace.class);
         
-        String tag = annotation.kubernetesNamespaceTag().toUpperCase();
+        String tag = annotation.kubernetesNamespaceTag().trim().toUpperCase();
+        if (tag.isEmpty()) {
+            tag = "PRIMARY";
+        }
 
         //*** First check if we already have the tag
         IKubernetesNamespace namespace = taggedNamespaces.get(tag);
@@ -168,7 +171,11 @@ public class KubernetesManagerImpl extends AbstractManager {
     public void provisionDiscard() {
         
         for(KubernetesNamespaceImpl namespace : taggedNamespaces.values()) {
+            try {
             namespace.discard(this.getFramework().getTestRunName());
+            } catch(KubernetesManagerException e) {
+                logger.error("Problem discarding namespace " + namespace.getId() + " on cluster " + namespace.getCluster().getId());;
+            }
         }
         
         super.provisionDiscard();
