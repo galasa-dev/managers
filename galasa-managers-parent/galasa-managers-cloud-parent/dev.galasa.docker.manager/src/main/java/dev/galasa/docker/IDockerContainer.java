@@ -2,6 +2,7 @@ package dev.galasa.docker;
 
 import java.util.List;
 import java.util.Map;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 
 /**
@@ -124,5 +125,7 @@ public interface IDockerContainer {
 	public boolean isRunning() throws DockerManagerException;
 	
 	public long     getExitCode() throws DockerManagerException;
+
+	public boolean storeFile(String path, InputStream file) throws DockerManagerException;
 
 }

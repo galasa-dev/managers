@@ -363,5 +363,8 @@ public class DockerEngineImpl implements IDockerEngine {
 		}
 	}
 	
-	//TODO: Need to work out how to authenticate the docker engine to the registry
+	public void sendArchiveFile(DockerContainerImpl container) {
+		dockerEngineClient.put()
+		 container.getContainerId();
+	}
 }
