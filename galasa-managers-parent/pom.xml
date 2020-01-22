@@ -27,6 +27,7 @@
 		<module>galasa-managers-cloud-parent</module>
 		<module>galasa-managers-zos-parent</module>
 		<module>galasa-managers-unix-parent</module>
+		<module>galasa-managers-other-parent</module>
 		<module>dev.galasa.managers.obr</module>
 		<module>dev.galasa.uber.obr</module>
 		<module>dev.galasa.uber.karaffeature</module>

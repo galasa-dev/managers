@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>dev.galasa</groupId>
+		<artifactId>galasa-managers-other-parent</artifactId>
+		<version>0.4.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>dev.galasa.galasaecosystem.manager.ivt</artifactId>
+	<version>0.4.0-SNAPSHOT</version>
+	<packaging>bundle</packaging>
+
+	<name>Galasa Ecosystem Manager IVTs</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.kubernetes.manager</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.core.manager</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.artifact.manager</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.http.manager</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.11.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>
