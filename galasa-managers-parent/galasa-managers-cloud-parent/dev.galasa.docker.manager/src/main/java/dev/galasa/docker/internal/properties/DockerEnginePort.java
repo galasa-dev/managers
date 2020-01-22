@@ -1,7 +1,7 @@
 package dev.galasa.docker.internal.properties;
 
 import dev.galasa.docker.DockerManagerException;
-import dev.galasa.docker.internal.DockerServerImpl;
+import dev.galasa.docker.internal.DockerEngineImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
@@ -10,7 +10,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name docker.engine.server.port
+ * @galasa.name docker.engine.port
  * 
  * @galasa.description Provides TCP Port of the Docker Engine
  * 
@@ -21,7 +21,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values Any valid TCP Port number
  * 
  * @galasa.examples 
- * <code>docker.engine.server.port=2375</code>
+ * <code>docker.engine.port=2375</code>
  * 
  * @galasa.extra
  * The Docker Manager will communicate with the Docker Engine via TCP.   The Docker Engine will need to be 
@@ -29,18 +29,18 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  */
 
-public class DockerServerPort extends CpsProperties {
+public class DockerEnginePort extends CpsProperties {
 
-    public static String get(DockerServerImpl dockerServerImpl) throws DockerManagerException {
+    public static String get(DockerEngineImpl dockerEngineImpl) throws DockerManagerException {
 		try {
-			String dockerServerUri = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "server.port", dockerServerImpl.getServerId());
+			String dockerEngineUri = getStringNulled(DockerPropertiesSingleton.cps(), "engine", "port", dockerEngineImpl.getEngineId());
 
-			if (dockerServerUri == null) {
-				throw new DockerManagerException("Could not find a docker server port in CPS.");
+			if (dockerEngineUri == null) {
+				throw new DockerManagerException("Could not find a docker engine port in CPS.");
 			}
-			return dockerServerUri;
+			return dockerEngineUri;
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new DockerManagerException("Problem asking the CPS for the docker server port", e);
+			throw new DockerManagerException("Problem asking the CPS for the docker engine port", e);
 	    }
     }
 }

@@ -14,68 +14,68 @@ import org.apache.http.HttpStatus;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
-import dev.galasa.docker.IDockerServer;
-import dev.galasa.docker.internal.properties.DockerServer;
-import dev.galasa.docker.internal.properties.DockerServerPort;
+import dev.galasa.docker.IDockerEngine;
+import dev.galasa.docker.internal.properties.DockerEngine;
+import dev.galasa.docker.internal.properties.DockerEnginePort;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 
-public class DockerServerImpl implements IDockerServer {
+public class DockerEngineImpl implements IDockerEngine {
     private IFramework              framework;
     private DockerManagerImpl       dockerManager;
-    private final IHttpClient       dockerSeverClient;
+    private final IHttpClient       dockerEngineClient;
     private final URI 				uri;
 
-	private String 					dockerServerId;
+	private String 					dockerEngineId;
     private String                  dockerVersion;
     private String                  apiVersion;  
 
-    private static final Log        logger = LogFactory.getLog(DockerServer.class);
+    private static final Log        logger = LogFactory.getLog(DockerEngine.class);
     
 
 	/**
-	 * Docker Server Implementation. This provides all the docker engine API calls to perform
-	 * docker commands on a specified server running docker.
+	 * Docker Engine Implementation. This provides all the docker engine API calls to perform
+	 * docker commands on a specified engine running docker.
 	 * 
 	 * @param framework
 	 * @param dockerManager
 	 * @throws DockerProvisionException
 	 */
-    public DockerServerImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerServerTag) throws DockerProvisionException {
+    public DockerEngineImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerEngineTag) throws DockerProvisionException {
         this.framework          = framework;
 		this.dockerManager      = dockerManager;
-		this.dockerServerId		= dockerServerTag;
+		this.dockerEngineId		= dockerEngineTag;
         
-        dockerSeverClient = dockerManager.httpManager.newHttpClient();
+        dockerEngineClient = dockerManager.httpManager.newHttpClient();
         try {
-			String server = DockerServer.get(this);
-			String port = DockerServerPort.get(this);
+			String engine = DockerEngine.get(this);
+			String port = DockerEnginePort.get(this);
 
-			if (server != null && port != null) {
-				this.uri = new URI(server + ":" + port);
-				IHttpClient httpClient2 = dockerSeverClient;
+			if (engine != null && port != null) {
+				this.uri = new URI(engine + ":" + port);
+				IHttpClient httpClient2 = dockerEngineClient;
                 httpClient2.setURI(this.uri);
 			} else {
-				throw new DockerProvisionException("Could not retrieve proper endpoint for docker server: Server - " + server + ", Port - " + port);
+				throw new DockerProvisionException("Could not retrieve proper endpoint for docker engine: Engine - " + engine + ", Port - " + port);
 			}
 
-			logger.info("Docker Server is set to " + server.toString());
+			logger.info("Docker Engine is set to " + engine.toString());
 		} catch (Exception e) {
-			throw new DockerProvisionException("Unable to instantiate Docker Server", e);
+			throw new DockerProvisionException("Unable to instantiate Docker Engine", e);
 		}
 
 	}
 	
-	public String getServerId(){
-		return this.dockerServerId;
+	public String getEngineId(){
+		return this.dockerEngineId;
 	}
 
 	/**
-	 * Checks the docker server is contactable.
+	 * Checks the docker engine is contactable.
 	 * @throws DockerProvisionException
 	 */
-	public void checkServer() throws DockerProvisionException {
+	public void checkEngine() throws DockerProvisionException {
         try {
             JsonObject jsonVersion = getJson("/version");
 
@@ -84,9 +84,9 @@ public class DockerServerImpl implements IDockerServer {
 				apiVersion = jsonVersion.get("ApiVersion").getAsString();
 			}
 
-            logger.info("Docker server is running, version: "+ dockerVersion + ", apiVersion: " + apiVersion);
+            logger.info("Docker engine is running, version: "+ dockerVersion + ", apiVersion: " + apiVersion);
         } catch (DockerManagerException e) {
-            throw new DockerProvisionException("Unable to validate docker server connectivity.", e);
+            throw new DockerProvisionException("Unable to validate docker engine connectivity.", e);
         }
     }
 
@@ -99,7 +99,7 @@ public class DockerServerImpl implements IDockerServer {
 	 */
     public String getLog(String path) throws DockerManagerException {
 		try {
-			HttpClientResponse<String> response = dockerSeverClient.getText(path);
+			HttpClientResponse<String> response = dockerEngineClient.getText(path);
 			
 			String repsString = response.getContent();
 
@@ -110,10 +110,10 @@ public class DockerServerImpl implements IDockerServer {
 					return null;
 			}
 
-			logger.error("Get Log failed to docker server - " + response.getStatusLine().toString() + "\n" + repsString);
-			throw new DockerManagerException("Log Get failed to docker server - " + response.getStatusLine().toString());
+			logger.error("Get Log failed to docker engine - " + response.getStatusLine().toString() + "\n" + repsString);
+			throw new DockerManagerException("Log Get failed to docker engine - " + response.getStatusLine().toString());
 		} catch (Exception e) {
-			throw new DockerManagerException("Get Log failed to docker server", e);
+			throw new DockerManagerException("Get Log failed to docker engine", e);
 		}
     }
     /**
@@ -129,7 +129,7 @@ public class DockerServerImpl implements IDockerServer {
 	
 	public String pullImage(@NotNull String fullName, String registryToken) throws DockerManagerException {
 
-		dockerSeverClient.addCommonHeader("X-Registry-Auth", registryToken);
+		dockerEngineClient.addCommonHeader("X-Registry-Auth", registryToken);
 		return pullImage(fullName);
 	}
 
@@ -178,7 +178,7 @@ public class DockerServerImpl implements IDockerServer {
     }
 
 	/**
-	 * Deletes a container from the docker server using container id.
+	 * Deletes a container from the docker engine using container id.
 	 * 
 	 * @param containerId
 	 * @return String response
@@ -189,7 +189,7 @@ public class DockerServerImpl implements IDockerServer {
     }
 
 	/**
-	 * Starts a docker container on the docker server from the container id.
+	 * Starts a docker container on the docker engine from the container id.
 	 * 
 	 * @param containerId
 	 * @return
@@ -200,7 +200,7 @@ public class DockerServerImpl implements IDockerServer {
     }
 
 	/**
-	 * Sends commands through to a docker container running on the docker server using the container id.
+	 * Sends commands through to a docker container running on the docker engine using the container id.
 	 * 
 	 * @param containerId
 	 * @param commandData
@@ -224,7 +224,7 @@ public class DockerServerImpl implements IDockerServer {
     }
 	
 	/**
-	 * Returns docker server host
+	 * Returns docker engine host
 	 * @return String
 	 */
     public String getHost() {
@@ -232,7 +232,7 @@ public class DockerServerImpl implements IDockerServer {
     }
 
 	/**
-	 * returns the docker server URI
+	 * returns the docker engine URI
 	 * @return URI
 	 * @throws URISyntaxException
 	 */
@@ -249,7 +249,7 @@ public class DockerServerImpl implements IDockerServer {
 	 */
 	private String deleteString(String path) throws DockerManagerException{
 		try{
-		HttpClientResponse<String> response = dockerSeverClient.deleteText(path);
+		HttpClientResponse<String> response = dockerEngineClient.deleteText(path);
 		String resp = response.getContent();
 			
 			switch(response.getStatusCode()) {
@@ -264,16 +264,16 @@ public class DockerServerImpl implements IDockerServer {
 				return null;
 			}
 
-			logger.error("Delete failed to docker server - " + resp);
-			throw new DockerManagerException("Delete failed to docker server - " +resp);
+			logger.error("Delete failed to docker engine - " + resp);
+			throw new DockerManagerException("Delete failed to docker engine - " +resp);
 		} catch (Exception e) {
-			dockerSeverClient.close();
-			throw new DockerManagerException("Delete failed to docker server", e);
+			dockerEngineClient.close();
+			throw new DockerManagerException("Delete failed to docker engine", e);
 		}
 	}
 
 	/**
-	 * Performs a HTTP GET to the docker server to a specified path
+	 * Performs a HTTP GET to the docker engine to a specified path
 	 * 
 	 * @param path
 	 * @return JsonObject
@@ -281,7 +281,7 @@ public class DockerServerImpl implements IDockerServer {
 	 */
     private JsonObject getJson(String path) throws DockerManagerException {
         try {
-            HttpClientResponse<JsonObject> response = dockerSeverClient.getJson(path);
+            HttpClientResponse<JsonObject> response = dockerEngineClient.getJson(path);
 
             JsonObject jsonResponse = response.getContent();
 
@@ -291,15 +291,15 @@ public class DockerServerImpl implements IDockerServer {
                 case HttpStatus.SC_NOT_FOUND:
                     return null;
                 }
-                logger.error("Get failed to docker server - " + response.getStatusLine().toString() + "\n" + jsonResponse.getAsString());
-                throw new DockerManagerException("Get failed to docker server - " + response.getStatusLine().toString());
+                logger.error("Get failed to docker engine - " + response.getStatusLine().toString() + "\n" + jsonResponse.getAsString());
+                throw new DockerManagerException("Get failed to docker engine - " + response.getStatusLine().toString());
             } catch(Exception e) {
-                throw new DockerManagerException("Failed to get from Docker server: ", e);
+                throw new DockerManagerException("Failed to get from Docker engine: ", e);
             }
     }
 
 	/**
-	 * Performs a HTTP POST to the docker server to a specified path with a json body.
+	 * Performs a HTTP POST to the docker engine to a specified path with a json body.
 	 * 
 	 * @param path
 	 * @param data
@@ -308,7 +308,7 @@ public class DockerServerImpl implements IDockerServer {
 	 */
     private JsonObject postJson(String path, JsonObject data) throws DockerManagerException {
 		try {
-			HttpClientResponse<JsonObject> json = dockerSeverClient.postJson(path, data);
+			HttpClientResponse<JsonObject> json = dockerEngineClient.postJson(path, data);
 			JsonObject response = json.getContent();
 
 			switch(json.getStatusCode()) {
@@ -323,15 +323,15 @@ public class DockerServerImpl implements IDockerServer {
 					return null;
 				}
 	
-				logger.error("Post failed to docker server - " + response.getAsString());
-				throw new DockerManagerException("Post failed to docker server - " + response.getAsString());
+				logger.error("Post failed to docker engine - " + response.getAsString());
+				throw new DockerManagerException("Post failed to docker engine - " + response.getAsString());
 			} catch (Exception e) {
-				throw new DockerManagerException("Post failed to docker server", e);
+				throw new DockerManagerException("Post failed to docker engine", e);
 			}
 	}
 
 	/**
-	 * Performs a HTTP POST to the docker server to a specified path with a text body.
+	 * Performs a HTTP POST to the docker engine to a specified path with a text body.
 	 * @param path
 	 * @param data
 	 * @return
@@ -340,7 +340,7 @@ public class DockerServerImpl implements IDockerServer {
 	private String postString(String path, String data) throws DockerManagerException {
 		try {
 			logger.debug("Posting: " + data + "to the endpoint: " + path);
-			HttpClientResponse<String> response = dockerSeverClient.postText(path, data);
+			HttpClientResponse<String> response = dockerEngineClient.postText(path, data);
 			String resp = response.getContent();
 			
 			switch(response.getStatusCode()) {
@@ -355,13 +355,13 @@ public class DockerServerImpl implements IDockerServer {
 				return null;
 			}
 
-			logger.error("Post failed to docker server - " + resp);
-			throw new DockerManagerException("Post failed to docker server - " +resp);
+			logger.error("Post failed to docker engine - " + resp);
+			throw new DockerManagerException("Post failed to docker engine - " +resp);
 		} catch (Exception e) {
-			dockerSeverClient.close();
-			throw new DockerManagerException("Post failed to docker server", e);
+			dockerEngineClient.close();
+			throw new DockerManagerException("Post failed to docker engine", e);
 		}
 	}
 	
-	//TODO: Need to work out how to authenticate the docker server to the registry
+	//TODO: Need to work out how to authenticate the docker engine to the registry
 }

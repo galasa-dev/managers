@@ -226,6 +226,14 @@ pipeline {
                      dir('dev.galasa.docker.manager.ivt') {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
                      }
+                     
+                     dir('dev.galasa.kubernetes.manager') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
+
+                     dir('dev.galasa.kubernetes.manager.ivt') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
                   }
                }
             }

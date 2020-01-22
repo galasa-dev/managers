@@ -37,12 +37,31 @@ import dev.galasa.docker.internal.DockerManagerField;
 @DockerManagerField
 public @interface DockerContainer {
 
+    /**
+     * The <code>tag</code> is used to identify the Docker Container to other Managers or Shared Environments.  If a test is using multiple 
+     * Docker Containers, each separate Docker Container must have a unique tag.  If two DockerContainers use the same tag, they will refer to the 
+     * same actual Docker Container.
+     */
     public String dockerContainerTag() default "a";
 
+    /**
+     * The <code>image</code> attribute provides the Docker Image that is used to create the Docker Container.  It image name must not 
+     * include the Docker Registry as this is provided in the CPS.   If using a public official image from DockerHub,  then the 
+     * image name must be prefixed with <code>library/</code>, for example <code>library/httpd:latest</code>, the Docker Manager will
+     * not default to the library namespace like the Docker commands do.
+     */
     public String image();
 
+    /**
+     * The <code>start</code> attribute indicates whether the Docker Container should be started automatically.   If the 
+     * Test needs to perform some work before the Container is started, then <code>start=false</code> should be used, after which 
+     * <code>IDockerContainer.start()</code> can be called to start the Container.
+     */
     public boolean start() default true;
 
-    public String DockerServerTag() default "default";
+    /**
+     * Dont think we need this attribute
+     */
+    public String DockerEngineTag() default "default";
 
 }

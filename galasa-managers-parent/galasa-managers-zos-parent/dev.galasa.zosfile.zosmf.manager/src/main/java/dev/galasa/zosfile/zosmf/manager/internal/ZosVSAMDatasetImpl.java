@@ -1023,7 +1023,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
 	private String buildErrorString(String action, JsonObject responseBody) {	
 		int errorCategory = responseBody.get("category").getAsInt();
 		int errorRc = responseBody.get("rc").getAsInt();
-		int errorReason = responseBody.get("rc").getAsInt();
+		int errorReason = responseBody.get("reason").getAsInt();
 		String errorMessage = responseBody.get("message").getAsString();
 		String errorDetails = null;
 		JsonElement element = responseBody.get("details");

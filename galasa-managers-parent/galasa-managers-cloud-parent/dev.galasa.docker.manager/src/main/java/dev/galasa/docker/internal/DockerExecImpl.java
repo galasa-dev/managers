@@ -29,7 +29,7 @@ public class DockerExecImpl implements IDockerExec {
     private final IFramework                                framework;
     private final DockerManagerImpl                         dockerManager;
     private final DockerContainerImpl                       dockerContainer;
-    private final DockerServerImpl                          dockerServer;
+    private final DockerEngineImpl                          dockerEngine;
     private final List<String>                              commands;
     private final int                                       timeout;
     private final ExecThread                                execThread;
@@ -44,7 +44,7 @@ public class DockerExecImpl implements IDockerExec {
 
     /**
      * 
-     * Creates the exec Json to be sent to docker server.
+     * Creates the exec Json to be sent to docker engine.
      * 
      * @param framework
      * @param dockerManager
@@ -60,7 +60,7 @@ public class DockerExecImpl implements IDockerExec {
         this.dockerContainer            = dockerContainer;
         this.timeout                    = timeout;
         this.commands                   = Arrays.asList(commands);
-        this.dockerServer               = dockerContainer.getDockerServerImpl();
+        this.dockerEngine               = dockerContainer.getDockerEngineImpl();
 
         try{
             ExecJson eJson = new ExecJson(false, true, true, true, this.commands);
@@ -69,7 +69,7 @@ public class DockerExecImpl implements IDockerExec {
 
             JsonObject cmd = (JsonObject)parser.parse(json);
 
-            JsonObject response = dockerServer.sendExecCommands(dockerContainer.getContainerId(), cmd);
+            JsonObject response = dockerEngine.sendExecCommands(dockerContainer.getContainerId(), cmd);
             if(response == null){
                 throw new DockerManagerException("Did not receive a response from exec start for command");
             }
@@ -166,7 +166,7 @@ public class DockerExecImpl implements IDockerExec {
 			InputStream is = null;
 			OutputStream os = null;
 			try {
-				URL url = new URL(dockerServer.getURI() + "/exec/" + id + "/start");
+				URL url = new URL(dockerEngine.getURI() + "/exec/" + id + "/start");
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
 				conn.setConnectTimeout(timeout);
@@ -195,7 +195,7 @@ public class DockerExecImpl implements IDockerExec {
 				is.close();
 				is = null;
 				
-				JsonObject status = dockerServer.getExecInfo(id);
+				JsonObject status = dockerEngine.getExecInfo(id);
 				String exitCodeObj = status.get("ExitCode").getAsString();
 				if (exitCodeObj != null) {
 					exitCode = Long.parseLong(exitCodeObj);

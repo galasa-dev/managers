@@ -23,7 +23,7 @@ public class DockerResourceMonitor implements Runnable {
     private final IResourceManagement           resourceManagement;
     private final IDynamicStatusStoreService    dss;
     private final Log                           logger = LogFactory.getLog(DockerResourceMonitor.class);
-    private final Pattern                       slotRunPattern = Pattern.compile("^slot\\.run\\.(\\w+)\\.server\\.(\\w+)\\.slot\\.(\\w+)$");
+    private final Pattern                       slotRunPattern = Pattern.compile("^slot\\.run\\.(\\w+)\\.engine\\.(\\w+)\\.slot\\.(\\w+)$");
 
    /**
     * Docker resource monitor
@@ -61,15 +61,15 @@ public class DockerResourceMonitor implements Runnable {
 					String runName = matcher.group(1);
 
 					if (!activeRunNames.contains(runName)) {
-						String dockerServer = matcher.group(2);
+						String dockerEngine = matcher.group(2);
 						String slot    = matcher.group(3);
 
-						logger.info("Discarding slot " + slot + " on docker server " + dockerServer + " as run " + runName + " has gone");
+						logger.info("Discarding slot " + slot + " on docker engine " + dockerEngine + " as run " + runName + " has gone");
 
 						try {
-							DockerEnvironment.deleteDss(runName, dockerServer, slot, dss);
+							DockerEnvironment.deleteDss(runName, dockerEngine, slot, dss);
 						} catch(Exception e) {
-							logger.error("Failed to discard slot " + slot + " on image " + dockerServer + " as run " + runName);
+							logger.error("Failed to discard slot " + slot + " on image " + dockerEngine + " as run " + runName);
 						}
 					}
 				}
@@ -89,15 +89,15 @@ public class DockerResourceMonitor implements Runnable {
             for(String key : slotRuns.keySet()) {
 				Matcher matcher = slotRunPattern.matcher(key);
 				if (matcher.find()) {
-					String dockerServer = matcher.group(2);
+					String dockerEngine = matcher.group(2);
 					String slot    = matcher.group(3);
 
-					logger.info("Discarding slot " + slot + " on image " + dockerServer + " as run " + runName + " has gone");
+					logger.info("Discarding slot " + slot + " on image " + dockerEngine + " as run " + runName + " has gone");
 
 					try {
-						DockerEnvironment.deleteDss(runName, dockerServer, slot, dss);
+						DockerEnvironment.deleteDss(runName, dockerEngine, slot, dss);
 					} catch(Exception e) {
-						logger.error("Failed to discard slot " + slot + " on image " + dockerServer + " as run " + runName);
+						logger.error("Failed to discard slot " + slot + " on image " + dockerEngine + " as run " + runName);
 					}
 				}
 			}
