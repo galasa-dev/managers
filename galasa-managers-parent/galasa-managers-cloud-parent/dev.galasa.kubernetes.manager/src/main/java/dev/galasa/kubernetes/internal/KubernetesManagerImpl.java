@@ -26,6 +26,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.KubernetesNamespace;
 import dev.galasa.kubernetes.internal.properties.KubernetesClusters;
 import dev.galasa.kubernetes.internal.properties.KubernetesPropertiesSingleton;
+import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
@@ -35,7 +36,7 @@ import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.util.Yaml;
 
 @Component(service = { IManager.class })
-public class KubernetesManagerImpl extends AbstractManager {
+public class KubernetesManagerImpl extends AbstractManager implements IKubernetesManagerSpi {
 
     protected final static String               NAMESPACE = "kubernetes";
     private final Log                           logger = LogFactory.getLog(KubernetesManagerImpl.class);
@@ -208,5 +209,12 @@ public class KubernetesManagerImpl extends AbstractManager {
             this.clusters.add(new KubernetesClusterImpl(clusterId, dss, getFramework()));
         }
         return;
+    }
+
+    @Override
+    public IKubernetesNamespace getNamespaceByTag(@NotNull String namespaceTag) {
+        String tag = namespaceTag.trim().toUpperCase();
+        
+        return taggedNamespaces.get(tag);
     }
 }

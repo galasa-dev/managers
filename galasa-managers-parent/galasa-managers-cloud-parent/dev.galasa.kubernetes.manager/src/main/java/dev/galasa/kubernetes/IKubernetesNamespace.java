@@ -13,5 +13,10 @@ public interface IKubernetesNamespace {
     @NotNull
     public IResource createResource(@NotNull String yaml) throws KubernetesManagerException;
 
+    /**
+     * @return the Full ID of the namespace in the form cluserid/namespaceid
+     */
+    public String getFullId();
+
 
 }
