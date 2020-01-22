@@ -73,6 +73,7 @@
 							dev.galasa.framework,
 							dev.galasa.framework.spi,
 							dev.galasa.framework.spi.cps,
+							dev.galasa.framework.spi.creds,
 							dev.galasa.kubernetes,
 							org.apache.commons.logging,
 							org.xml.sax,
