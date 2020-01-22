@@ -12,7 +12,8 @@
   <packaging>pom</packaging>
   
   <modules>
-    <module>dev.galasa.elastic.manager</module>
+    <module>dev.galasa.elasticlog.manager</module>
+    <module>dev.galasa.elasticlog.manager.ivt</module>
   </modules>
   
 </project>
