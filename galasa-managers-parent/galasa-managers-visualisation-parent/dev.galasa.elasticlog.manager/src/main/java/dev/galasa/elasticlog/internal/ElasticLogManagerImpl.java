@@ -32,6 +32,11 @@ import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
+/**
+ * ElasticLog Manager implementation
+ * 
+ * @author Richard Somers
+ */
 @Component(service = { IManager.class })
 public class ElasticLogManagerImpl extends AbstractManager {
 
@@ -49,6 +54,15 @@ public class ElasticLogManagerImpl extends AbstractManager {
 
     private HashMap<String, Object>				runProperties   = new HashMap<String, Object>(); 
 
+    /**
+     * Initialies the ElasticLogManager, adding the requirement of the HttpManager
+     *  
+     * @param IFramework - the galasa framework
+     * @param List<IManager> - list of all the managers
+     * @param List<Imanager> - list of all the active managers
+     * @param Class<?> - the test class
+     * @throws ManagerException
+     */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
@@ -65,7 +79,14 @@ public class ElasticLogManagerImpl extends AbstractManager {
             throw new ElasticLogManagerException("Unable to request framework services", e);
         }
     }
-
+    
+	/**
+	 * Makes sure that the elastic log manager is added to the list of active managers, and adds the dependency on http manager.
+	 * 
+	 * @param List<IManager> - list of all the managers
+	 * @param List<IManager> - list of the active managers
+	 * @throws ManagerException
+	 */
     @Override
     public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
             throws ManagerException {
@@ -76,6 +97,12 @@ public class ElasticLogManagerImpl extends AbstractManager {
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
     }
 
+    /**
+     * Provision build step, build the http client and gson object used by the manager 
+     * 
+     * @throws ManagerException
+     * @throws ResourceUnavailableException
+     */
     @Override
     public void provisionBuild() throws ManagerException, ResourceUnavailableException {
         this.client = this.httpManager.newHttpClient();
@@ -83,18 +110,25 @@ public class ElasticLogManagerImpl extends AbstractManager {
         logger.info("ElasticLog Clients Initialised");
     }
 
+    /**
+     * End of test class step, build and send the document request
+     * 
+     * @throws ManagerException
+     */
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
         //Record test information
-    	this.runProperties.put("testCase", framework.getTestRun().getTestClassName());
-    	this.runProperties.put("runId", framework.getTestRunName());
-        this.runProperties.put("startTimestamp", Date.from(framework.getTestRun().getQueued()));
-        //this.runProperties.put("endTimestamp", Date.from(framework.getTestRun().getFinished()));
+    	this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
+    	this.runProperties.put("runId", this.framework.getTestRunName());
+        this.runProperties.put("startTimestamp", Date.from(this.framework.getTestRun().getQueued()));
+        //this.runProperties.put("endTimestamp", Date.from(this.framework.getTestRun().getFinished()));
         this.runProperties.put("endTimestamp", Date.from(Instant.now()));
-        this.runProperties.put("requestor", framework.getTestRun().getRequestor());
-        //this.runProperties.put("result", framework.getTestRun().getResult());
+        this.runProperties.put("requestor", this.framework.getTestRun().getRequestor());
+        //this.runProperties.put("result", this.framework.getTestRun().getResult());
         this.runProperties.put("result", currentResult);
         
         String request = this.gson.toJson(this.runProperties);
+        logger.info("Sending Run Request to ElasticLog Endpoint");
+        logger.trace("Document Request -\n" + request);
         sendRunData(request);
         
         return null;
@@ -106,6 +140,12 @@ public class ElasticLogManagerImpl extends AbstractManager {
 //    
 //  }
     
+    /**
+     * Create the required indexes and send document requests
+     * 
+     * @param request - document request json
+     * @throws ElasticLogManagerException
+     */
     private void sendRunData(String request) throws ElasticLogManagerException {
         //Register endpoint data as confidential
     	String index = ElasticLogIndex.get();
@@ -115,6 +155,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
     	try {
             //Create mapping Json
     		String mapping = createIndexMapping();
+    		logger.trace("Index Mapping Request -\n" + mapping);
             
             //Set up http client for requests
             client.setTrustingSSLContext();
@@ -142,9 +183,9 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			if (searchResponse.contains(testCase)) {
 				JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
 				id = json.get("hits").getAsJsonObject()
-								.get("hits").getAsJsonArray()
-								.get(0).getAsJsonObject()
-								.get("_id").getAsString();
+                         .get("hits").getAsJsonArray()
+                         .get(0).getAsJsonObject()
+                         .get("_id").getAsString();
 			}
             
             //Delete document if already present then send new document
@@ -159,6 +200,11 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		}
     }
 
+    /**
+     * Create a mapping properties request from run properties
+     * 
+     * @return - Mapping properties request
+     */
     private String createIndexMapping() {
         JsonObject mapProp = new JsonObject();
     	for(String mappingKey : this.runProperties.keySet()) {
