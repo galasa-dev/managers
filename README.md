@@ -12,9 +12,9 @@ More information can be found on the [Galasa Homepage](https://galasa.dev). Ques
 
 # Where can I get the latest release?
 
-Find out how to install the Galasa Eclipse plug-in from our [Installing the Galasa plug-in](https://galasa.dev/docs/getting-started/installing)] documentation.
+Find out how to install the Galasa Eclipse plug-in from our [Installing the Galasa plug-in](https://galasa.dev/docs/getting-started/installing) documentation.
 
-Other repositories are available via [GitHub](https://github.com/galasa-dev). 
+Other Galasa repositories are available on [GitHub](https://github.com/galasa-dev). 
 
 # Contributing
 
