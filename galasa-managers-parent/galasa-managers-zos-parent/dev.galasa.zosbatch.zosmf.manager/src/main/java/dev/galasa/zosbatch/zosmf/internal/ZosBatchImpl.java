@@ -26,6 +26,7 @@ public class ZosBatchImpl implements IZosBatch {
     
     private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
     private IZosImage image;
+	private ZosBatchJobImpl zosBatchJob;
     
     public ZosBatchImpl(IZosImage image) {
         this.image = image;
@@ -38,10 +39,10 @@ public class ZosBatchImpl implements IZosBatch {
             jobname = new ZosBatchJobnameImpl(this.image.getImageID());        
         }
         
-        ZosBatchJobImpl zosBatchJob = newZosBatchJob(jcl, jobname);
-        this.zosBatchJobs.add(zosBatchJob);
+        ZosBatchJobImpl newZosBatchJob = newZosBatchJob(jcl, jobname);
+        this.zosBatchJobs.add(newZosBatchJob);
         
-        return zosBatchJob.submitJob();
+        return newZosBatchJob.submitJob();
     }
 
     /**
@@ -52,13 +53,13 @@ public class ZosBatchImpl implements IZosBatch {
         
         Iterator<ZosBatchJobImpl> iterator = zosBatchJobs.iterator();
         while (iterator.hasNext()) {
-            ZosBatchJobImpl zosBatchJob = iterator.next();
-            if (zosBatchJob.submitted()) {
-                if (!zosBatchJob.isArchived()) {
-                    zosBatchJob.archiveJobOutput();
+            ZosBatchJobImpl zosBatchJobImpl = iterator.next();
+            if (zosBatchJobImpl.submitted()) {
+                if (!zosBatchJobImpl.isArchived()) {
+                    zosBatchJobImpl.archiveJobOutput();
                 }
-                if (!zosBatchJob.isPurged()) {
-                    zosBatchJob.purgeJob();
+                if (!zosBatchJobImpl.isPurged()) {
+                    zosBatchJobImpl.purgeJob();
                 }
             }
             iterator.remove();
@@ -66,12 +67,14 @@ public class ZosBatchImpl implements IZosBatch {
     }
 
     public ZosBatchJobImpl newZosBatchJob(String jcl, IZosBatchJobname jobname) throws ZosBatchException {
-        ZosBatchJobImpl zosBatchJob;
+    	if (this.zosBatchJob != null) {
+    		return this.zosBatchJob;
+    	}
         try {
-            zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
+            this.zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to submit batch job", e);
         }
-        return zosBatchJob;
+        return this.zosBatchJob;
     }
 }

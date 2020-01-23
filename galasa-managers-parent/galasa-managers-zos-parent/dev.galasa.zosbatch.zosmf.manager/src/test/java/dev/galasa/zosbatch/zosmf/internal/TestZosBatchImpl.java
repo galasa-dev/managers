@@ -1,13 +1,15 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.internal;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -17,13 +19,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zosbatch.IZosBatchJobname;
+import dev.galasa.zos.ZosImage;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.zosmf.internal.properties.JobnamePrefix;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchImpl.class, JobnamePrefix.class})
+@PrepareForTest({JobnamePrefix.class})
 public class TestZosBatchImpl {
     
     private ZosBatchImpl zosBatch;
@@ -40,6 +42,9 @@ public class TestZosBatchImpl {
     
     @Mock
     private ZosBatchJobImpl zosBatchJobMock;
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
     
     @Before
     public void setup() throws ZosBatchManagerException {
@@ -82,7 +87,17 @@ public class TestZosBatchImpl {
     
     @Test
     public void testNewZosBatchJob() throws Exception {
-        PowerMockito.whenNew(ZosBatchJobImpl.class).withArguments(Mockito.any(IZosImage.class), Mockito.any(IZosBatchJobname.class), Mockito.anyString()).thenReturn(zosBatchJobMock);
+    	Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJob", zosBatchJobMock);
+        Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
+    }
+    
+    @Test
+    public void testNewZosBatchJobException() throws Exception {
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("Unable to submit batch job");
+        ZosBatchJobImpl zosBatchJobNull = null;
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJob", zosBatchJobNull);
         Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
         Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
     }

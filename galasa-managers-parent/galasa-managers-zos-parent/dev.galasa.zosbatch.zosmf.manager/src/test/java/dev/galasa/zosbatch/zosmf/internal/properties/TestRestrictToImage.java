@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.internal.properties;
 
@@ -32,6 +32,12 @@ public class TestRestrictToImage {
     public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
+    
+    @Test
+    public void testConstructor() {
+    	RestrictToImage restrictToImage = new RestrictToImage();
+    	Assert.assertNotNull("Object was not created", restrictToImage);
+    }
     
     @Test
     public void testNull() throws Exception {

@@ -18,13 +18,13 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatch;
+import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchField;
 import dev.galasa.zosbatch.ZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchManagerException;
@@ -131,8 +131,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi ||
-               otherManager instanceof IZosmfManagerSpi ||
-               otherManager instanceof IHttpManagerSpi;
+               otherManager instanceof IZosmfManagerSpi;
     }
 
     /*
@@ -193,6 +192,10 @@ public class ZosBatchManagerImpl extends AbstractManager {
         } catch (ZosManagerException e) {
             throw new ZosBatchManagerException("Unable to get image for tag \"" + tag + "\"", e);
         }
-        return new ZosBatchJobnameImpl(imageid);
+        return newZosBatchJobnameImpl(imageid);
     }
+
+	protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
+		return new ZosBatchJobnameImpl(imageid);
+	}
 }
