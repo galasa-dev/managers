@@ -8,14 +8,14 @@ public class ElasticLogEndpoint extends CpsProperties {
 
     public static String get() throws ElasticLogManagerException {
 		try {
-			String elasticEndpoint = getStringNulled(ElasticLogPropertiesSingleton.cps(), "endpoint", "server.address");
+			String elasticLogEndpoint = getStringNulled(ElasticLogPropertiesSingleton.cps(), "endpoint", "address");
 
-			if (elasticEndpoint == null) {
+			if (elasticLogEndpoint == null) {
 				throw new ElasticLogManagerException("Could not find a ElasticLog endpoint in CPS.");
 			}
-			return elasticEndpoint;
+			return elasticLogEndpoint;
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ElasticLogManagerException("Problem asking the CPS for the elastic endpoint address", e);
+			throw new ElasticLogManagerException("Problem asking the CPS for the ElasticLog Endpoint", e);
         }
 	}
 }

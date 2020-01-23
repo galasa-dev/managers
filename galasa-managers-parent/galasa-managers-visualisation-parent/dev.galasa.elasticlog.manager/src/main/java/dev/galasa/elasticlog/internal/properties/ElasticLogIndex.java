@@ -8,14 +8,14 @@ public class ElasticLogIndex extends CpsProperties {
 
     public static String get() throws ElasticLogManagerException {
 		try {
-			String elasticEndpoint = getStringNulled(ElasticLogPropertiesSingleton.cps(), "endpoint", "server.index");
+			String elasticLogIndex = getStringNulled(ElasticLogPropertiesSingleton.cps(), "endpoint", "index");
 
-			if (elasticEndpoint == null) {
+			if (elasticLogIndex == null) {
 				throw new ElasticLogManagerException("Could not find a ElasticLog index in CPS.");
 			}
-			return elasticEndpoint;
+			return elasticLogIndex;
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ElasticLogManagerException("Problem asking the CPS for the elastic index address", e);
+			throw new ElasticLogManagerException("Problem asking the CPS for the ElasticLog Index", e);
         }
 	}
 }
