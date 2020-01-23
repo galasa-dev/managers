@@ -8,9 +8,8 @@ package dev.galasa.zosbatch.zosmf.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -163,8 +162,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         }
         logger.info("Waiting up to " + jobWaitTimeout + " second(s) for "+ this.jobid + " " + this.jobname.getName() + " to complete");
         
-        long timeoutTime = LocalTime.now().toSecondOfDay() + Long.valueOf(jobWaitTimeout);
-        while (LocalTime.now().toSecondOfDay() < timeoutTime) {
+        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(jobWaitTimeout);
+        while (LocalDateTime.now().isBefore(timeoutTime)) {
             updateJobStatus();
             try {
                 if (jobComplete()) {
@@ -224,7 +223,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             }
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString("Retrive job output", (JsonObject) responseBodyObject); 
+            String displayMessage = buildErrorString("Retrieve job output", (JsonObject) responseBodyObject); 
             logger.error(displayMessage);
             throw new ZosBatchException(displayMessage);
         }
@@ -320,20 +319,20 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             
         logger.trace(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
-            this.status = responseBody.get("status").getAsString();
-            if (this.status == null || "OUTPUT".equals(this.status)) {
+            this.status = jsonNull(responseBody, "status");
+            if (this.status != null && "OUTPUT".equals(this.status)) {
                 this.jobComplete = true;
             }
-            String memberName = "retcode";
-            if (responseBody.get(memberName) != null && !responseBody.get(memberName).isJsonNull()) {
-                this.retcode = responseBody.get(memberName).getAsString();
+            String retcodeProperty = jsonNull(responseBody, "retcode");
+            if (retcodeProperty != null) {
+                this.retcode = retcodeProperty;
             } else {
                 this.retcode = "????";
             }
             logger.debug(jobStatus());
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString("Purge job", responseBody); 
+            String displayMessage = buildErrorString("Update job status", responseBody); 
             logger.error(displayMessage);
             throw new ZosBatchException(displayMessage);
         }            
@@ -363,7 +362,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             } catch (ZosmfException e) {
                 throw new ZosBatchException(e);
             }
-            String displayMessage = buildErrorString("Retrive job output", errorResponseBody); 
+            String displayMessage = buildErrorString("Retrieve job output", errorResponseBody); 
             logger.error(displayMessage);
             throw new ZosBatchException(displayMessage);                    
         }
@@ -391,7 +390,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         return jobCard.toString();
     }
 
-    private String jsonNull(JsonObject responseBody, String memberName) {
+    protected String jsonNull(JsonObject responseBody, String memberName) {
         if (responseBody.get(memberName) != null && !responseBody.get(memberName).isJsonNull()) {
             return responseBody.get(memberName).getAsString();
         }
@@ -480,6 +479,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
     protected void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
         try {
+        	if (ZosBatchManagerImpl.archivePath == null) {
+        		throw new ZosBatchException("Unabe to get archive path");
+        	}
             Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
@@ -494,8 +496,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             } else {
                 uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
             }
-            if (Files.exists(artifactPath.resolve(uniqueName))) {                
-                uniqueId = "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(LocalDate.now());
+            if (Files.exists(artifactPath.resolve(uniqueName))) {
+                uniqueId = "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH.mm.ss.SSS"));
                 uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
             }
             artifactPath = artifactPath.resolve(uniqueName);

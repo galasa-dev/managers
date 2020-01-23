@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.internal;
 
@@ -42,7 +42,7 @@ public class TestZosBatchJobnameImpl {
         Assert.assertEquals("toString() should return the the job name", FIXED_JOBNAME, zosJobname.toString());
     }
     
-    @Test(expected = ZosBatchManagerException.class)
+    @Test
     public void testException() throws ZosBatchManagerException {
         Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
