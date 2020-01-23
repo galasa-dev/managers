@@ -14,5 +14,7 @@ public interface IResource {
     public String getName();
     public TYPE getType();
     public String getYaml();
+    
+    public void refresh() throws KubernetesManagerException;
 
 }

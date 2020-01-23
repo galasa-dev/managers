@@ -1,7 +1,9 @@
 package dev.galasa.kubernetes.internal;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,12 +39,15 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimList;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.openapi.models.V1ReplicaSetList;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.openapi.models.V1StatefulSetList;
+import io.kubernetes.client.openapi.models.V1StatefulSetSpec;
 import io.kubernetes.client.proto.V1.Namespace;
 import io.kubernetes.client.util.Yaml;
 
@@ -65,7 +70,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
     public String getId() {
         return this.namespaceId;
     }
-    
+
     @Override
     public String getFullId() {
         return this.cluster.getId() + "/" + this.namespaceId;
@@ -111,8 +116,9 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
 
     public void discard(String runName) throws KubernetesManagerException {
-        cleanNamespace();
-        clearSlot(runName);
+        if (cleanNamespace()) {
+            clearSlot(runName);
+        }
     }
 
     private void clearSlot(String runName) {
@@ -147,12 +153,14 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             //*** Slot count has been decremented, we can now delete the actual DSS properties
             dss.deletePrefix(namespacePrefix);
             dss.deletePrefix(slotKey);
+            
+            logger.debug("Kubernetes namespace " + getFullId() + " has been freed");
         } catch(Exception e) {
             logger.error("Problem discarding the namespace",e);
         }
     }
 
-    private void cleanNamespace() throws KubernetesManagerException {
+    private boolean cleanNamespace() throws KubernetesManagerException {
         CoreV1Api coreApi = new CoreV1Api(this.cluster.getApi());
         AppsV1Api appsApi = new AppsV1Api(this.cluster.getApi());
         ProtoClient pc = new ProtoClient(this.cluster.getApi());
@@ -223,18 +231,55 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             for(V1PersistentVolumeClaim pvc : pvcList.getItems()) {
                 logger.debug("Deleting PVC " + this.cluster.getId() + "/" + this.namespaceId + "/" + pvc.getMetadata().getName());
                 //TODO raise issue because the delete pvc api call fails
-                
-//                V1DeleteOptions options = new V1DeleteOptions();
-//                options.setGracePeriodSeconds(0L);
-//                coreApi.deleteNamespacedPersistentVolumeClaim(pvc.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, null);
+
+                //                V1DeleteOptions options = new V1DeleteOptions();
+                //                options.setGracePeriodSeconds(0L);
+                //                coreApi.deleteNamespacedPersistentVolumeClaim(pvc.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, null);
                 ObjectOrStatus<Message> response = pc.delete(Namespace.newBuilder(), "/api/v1/namespaces/" + this.namespaceId + "/persistentvolumeclaims/" + pvc.getMetadata().getName());
                 if (response.status != null) {
                     throw new KubernetesManagerException("Failed to delete PVC:-\n" + response.status.toString());
                 }
             }
+            
+            //*** Waiting for all pods and replicasets to be deleted
+            
+            logger.info("Waiting for all ReplicaSets, Pods and PersistentVolumeClaims to be deleted");
+            
+            long timeoutSeconds = 40;
+            long checkSeconds = 10;
+            
+            if (this.framework.getTestRun() != null && this.framework.getTestRun().isLocal()) {
+                timeoutSeconds = 10;
+                checkSeconds = 5;
+            }
+            
+            Instant timeout = Instant.now().plusSeconds(timeoutSeconds); //  Allow a maximum of 30 seconds then leave the Resource Management to clean up
+            Instant check = Instant.now().plusSeconds(checkSeconds);
 
+            while(timeout.isAfter(Instant.now())) {
+                V1PodList podList = coreApi.listNamespacedPod(namespaceId, null, null, null, null, null, null, null, null, null);
+                V1ReplicaSetList replicaSetList = appsApi.listNamespacedReplicaSet(this.namespaceId, null, null, null, null, null, null, null, null, null);
+                pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null);
+                
+                if (podList.getItems().isEmpty() 
+                        && replicaSetList.getItems().isEmpty()
+                        && pvcList.getItems().isEmpty()) {
+                    logger.info("All resources discarded in namespace " + getFullId());
+                    return true;
+                }
+                
+                if (check.isBefore(Instant.now())) {
+                    logger.debug("Still waiting");
+                    check = Instant.now().plusSeconds(checkSeconds);
+                }
+                
+                Thread.sleep(1000);
+            }
+            
+            logger.warn("Failed to discard namespace, leaving to the next Resource Management cycle");
+            return false;
         } catch(Exception e) {
-            throw new KubernetesManagerException("Problem trying to delete all the resources in the namespace", e);
+            throw new KubernetesManagerException("Problem trying to delete all the resources in the namespace " + getFullId(), e);
         }
     }
 
@@ -283,7 +328,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private @NotNull IResource createPersistentVolumeClaim(@NotNull V1PersistentVolumeClaim persistentVolumeClaim) throws KubernetesManagerException, ApiException {
         CoreV1Api api = new CoreV1Api(cluster.getApi());
-        
+
         String storageClass = KubernetesStorageClass.get(this.cluster);
         if (storageClass != null) {
             V1PersistentVolumeClaimSpec spec = persistentVolumeClaim.getSpec();
@@ -291,14 +336,12 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                 spec = new V1PersistentVolumeClaimSpec();
                 persistentVolumeClaim.setSpec(spec);
             }
-            
+
             spec.setStorageClassName(storageClass);
         }
-                       
-        System.out.println(Yaml.dump(persistentVolumeClaim));
-        
+
         V1PersistentVolumeClaim actualPvc = api.createNamespacedPersistentVolumeClaim(this.namespaceId, persistentVolumeClaim, null, null, null);
-        
+
         logger.debug("PersistentVolumeClaim " + actualPvc.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
         return new PersistentVolumeClaimImpl(this, actualPvc);
@@ -342,6 +385,30 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private @NotNull IResource createStatefulSet(@NotNull V1StatefulSet statefulSet) throws KubernetesManagerException, ApiException {
         AppsV1Api api = new AppsV1Api(cluster.getApi());
+
+        //*** Add the storage class to any persistent volume claim templates
+        String storageClass = KubernetesStorageClass.get(this.cluster);
+        if (storageClass != null) {
+            V1StatefulSetSpec spec = statefulSet.getSpec();
+            if (spec != null) {
+                List<V1PersistentVolumeClaim> vcTemplates = spec.getVolumeClaimTemplates();
+                if (vcTemplates != null) {
+                    for(V1PersistentVolumeClaim claim : vcTemplates) {
+                        V1PersistentVolumeClaimSpec vcspec = claim.getSpec();
+                        if (vcspec == null) {
+                            vcspec = new V1PersistentVolumeClaimSpec();
+                            claim.setSpec(vcspec);
+                        }
+
+                        vcspec.setStorageClassName(storageClass);
+                    }
+                }
+            }
+        }
+
+
+
+
         V1StatefulSet actualStatefulSet = api.createNamespacedStatefulSet(namespaceId, statefulSet, null, null, null);
 
         logger.debug("StatefulSet " + actualStatefulSet.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
