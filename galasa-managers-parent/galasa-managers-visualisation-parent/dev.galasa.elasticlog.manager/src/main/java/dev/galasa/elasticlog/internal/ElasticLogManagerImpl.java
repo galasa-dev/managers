@@ -170,8 +170,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
             //Send document to index
 			client.postJson(index + "/_doc", request, false);
         
-            //Create single index if not present
-    		index = index + "single";
+            //Create latest index if not present
+    		index = index + "latest";
     		HttpClientResponse<String> indexResponse = client.head(ElasticLogEndpoint.get() + "/" + index);
 			if (indexResponse.getStatusCode() == 404)
                 client.putJson(index, mapping, false);
