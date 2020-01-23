@@ -2,13 +2,15 @@ package dev.galasa.docker;
 
 import java.util.List;
 import java.util.Map;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 
 /**
  * Docker Container Resource Object
  * <p>
  * Provides a resource object representing a Docker Container on a Docker
- * Server. The normal method of obtaining a Docker Container resource object is
+ * Engine. The normal method of obtaining a Docker Container resource object is
  * by using a field:-<br>
  * <code>@DockerContainer(dockerContainerTag="a", image="jatdocker/ivp:1.0.0")<br>
  * private IDockerContainer containerA;</code><br>
@@ -21,7 +23,7 @@ import java.net.InetSocketAddress;
  * <code>docker.container.TAG.leave.running=true</code> to inform the DSE that
  * the container is not to be killed at startup or stopped once the test is
  * complete.<br>
- * <code>docker.server=http://localhost:2375</code> the Docker Server/Swarm the
+ * <code>docker.engine=http://localhost:2375</code> the Docker Server/Swarm the
  * container is to run on.<br>
  * <code>docker.registries=http://localhost:5000</code> a list of Docker
  * registries to search for an image<br>
@@ -124,5 +126,9 @@ public interface IDockerContainer {
 	public boolean isRunning() throws DockerManagerException;
 	
 	public long     getExitCode() throws DockerManagerException;
+
+	public void storeFile(String path, InputStream file) throws DockerManagerException;
+
+	public String retrieveFile(String path) throws DockerManagerException;
 
 }

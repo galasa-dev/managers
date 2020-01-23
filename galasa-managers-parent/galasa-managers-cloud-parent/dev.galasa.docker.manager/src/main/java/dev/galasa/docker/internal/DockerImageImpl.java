@@ -12,14 +12,14 @@ import dev.galasa.docker.IDockerImage;
 import dev.galasa.framework.spi.IFramework;
 
 /**
- * DockerImageImpl. Allows for the checking of images on registries and pulling of images to the docker server.
+ * DockerImageImpl. Allows for the checking of images on registries and pulling of images to the docker engine.
  * 
  * @author James Davies
  */
 public class DockerImageImpl implements IDockerImage {
     private final IFramework            framework;
     private final DockerManagerImpl     dockerManager;
-    private final DockerServerImpl      dockerServer;
+    private final DockerEngineImpl      dockerEngine;
     private final String                fullImageName;
     private String                      fullName;
     private String                      authToken;
@@ -36,14 +36,14 @@ public class DockerImageImpl implements IDockerImage {
      * 
      * @param framework
      * @param dockerManager
-     * @param dockerServer
+     * @param dockerEngine
      * @param imageName
      */
     public DockerImageImpl(IFramework framework, DockerManagerImpl dockerManager, 
-            DockerServerImpl dockerServer, String fullImageName) {
+            DockerEngineImpl dockerEngine, String fullImageName) {
         this.framework          = framework;
         this.dockerManager      = dockerManager;
-        this.dockerServer       = dockerServer;
+        this.dockerEngine       = dockerEngine;
         this.fullImageName      = fullImageName;
     }
 
@@ -65,7 +65,7 @@ public class DockerImageImpl implements IDockerImage {
     }
 
     /**
-     * Using the full name to try and locate the image in question in the registries or locally on the docker server. 
+     * Using the full name to try and locate the image in question in the registries or locally on the docker engine. 
      * 
      * @throws DockerManagerException
      */
@@ -91,7 +91,7 @@ public class DockerImageImpl implements IDockerImage {
             }
         }
 
-        JsonObject image = dockerServer.getImage(workingName);
+        JsonObject image = dockerEngine.getImage(workingName);
 		if (image != null) {
 			this.fullName = workingName;
 			logger.info("Docker Image located only on the server as name '" + this.fullName + "'");
@@ -122,7 +122,7 @@ public class DockerImageImpl implements IDockerImage {
     }
 
     /**
-     * Pulls the image onto the docker server.
+     * Pulls the image onto the docker engine.
      * 
      * @throws DockerManagerException
      */
@@ -133,9 +133,9 @@ public class DockerImageImpl implements IDockerImage {
         }
 
         if(authRequired) {
-            pull = dockerServer.pullImage(this.fullName, this.authToken);
+            pull = dockerEngine.pullImage(this.fullName, this.authToken);
         } else {
-            pull = dockerServer.pullImage(this.fullName);
+            pull = dockerEngine.pullImage(this.fullName);
         }
         if (pull == null) {
             throw new DockerManagerException("Docker daemon did not respond to pull request");

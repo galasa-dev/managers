@@ -26,27 +26,28 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  *
  */
 public class JobnamePrefix extends CpsProperties {
-	
-	private static final Log logger = LogFactory.getLog(JobnamePrefix.class);
+    
+    private static final Log logger = LogFactory.getLog(JobnamePrefix.class);
 
-	private static final String DEFAULT_JOBNAME_PREFIX = "GAL";
+    private static final String DEFAULT_JOBNAME_PREFIX = "GAL";
 
-	public static String get(String imageId) throws ZosBatchManagerException {
-		try {
-			String jobNamePrefixValue = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "jobname", "prefix", imageId);
+    public static String get(String imageId) throws ZosBatchManagerException {
+        try {
+            String jobNamePrefixValue = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "jobname", "prefix", imageId);
 
-			if (jobNamePrefixValue == null) {
-				return DEFAULT_JOBNAME_PREFIX;
-			} else {
-				String jobNamePrefix = jobNamePrefixValue.toUpperCase();
-				if (jobNamePrefix.length() > 7 || !jobNamePrefix.matches("^[A-Z$#@][A-Z0-9$#@]*$")) {
-					logger.warn("Invalid Batch Job prefix \"" + jobNamePrefixValue + "\". Using default value of \"" + DEFAULT_JOBNAME_PREFIX + "\"");
-				}
-				return jobNamePrefix;
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosBatchManagerException("Problem asking the CPS for the zOSMF jobname prefix for zOS image "  + imageId, e);
-		}
-	}
+            if (jobNamePrefixValue == null) {
+                return DEFAULT_JOBNAME_PREFIX;
+            } else {
+                String jobNamePrefix = jobNamePrefixValue.toUpperCase();
+                if (jobNamePrefix.length() > 7 || !jobNamePrefix.matches("^[A-Z$#@][A-Z0-9$#@]*$")) {
+                    logger.warn("Invalid Batch Job prefix \"" + jobNamePrefixValue + "\". Using default value of \"" + DEFAULT_JOBNAME_PREFIX + "\"");
+                    return DEFAULT_JOBNAME_PREFIX;
+                }
+                return jobNamePrefix;
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosBatchManagerException("Problem asking the CPS for the zOSMF jobname prefix for zOS image "  + imageId, e);
+        }
+    }
 
 }

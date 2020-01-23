@@ -57,7 +57,7 @@ public class DockerRegistry extends CpsProperties {
 
             return ids.toArray(new String[ids.size()]);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new DockerManagerException("Problem asking the CPS for the max slots for the docker server: " , e);
+            throw new DockerManagerException("Problem asking the CPS for available registries: " , e);
         }
     }
 }

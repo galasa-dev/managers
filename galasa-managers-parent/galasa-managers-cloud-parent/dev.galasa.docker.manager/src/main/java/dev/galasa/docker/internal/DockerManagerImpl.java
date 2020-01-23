@@ -15,10 +15,10 @@ import dev.galasa.ManagerException;
 import dev.galasa.docker.DockerContainer;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
-import dev.galasa.docker.DockerServer;
+import dev.galasa.docker.DockerEngine;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerManager;
-import dev.galasa.docker.IDockerServer;
+import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerPropertiesSingleton;
 import dev.galasa.docker.internal.properties.DockerRegistry;
 import dev.galasa.framework.spi.AbstractManager;
@@ -32,9 +32,9 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 /**
  * Docker manager implementation.
  * 
- * Extracting from the test class the two current annotations of @DockerServer and @DockerContainer
+ * Extracting from the test class the two current annotations of @DockerEngine and @DockerContainer
  * 
- * @DockerServer - where the containers will be running, set value in CPS (see properties)
+ * @DockerEngine - where the containers will be running, set value in CPS (see properties)
  * @DockerContainer - define what container is to be run, image names mus be defined, tag can be set
  * 
  * @author James Davies
@@ -108,7 +108,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         return this.provisionContainer(annotationContainer.dockerContainerTag(),
                                         annotationContainer.image(),
                                         annotationContainer.start(),
-                                        annotationContainer.DockerServerTag()); 
+                                        annotationContainer.DockerEngineTag()); 
     }
 
     /**
@@ -120,26 +120,26 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @return
      * @throws DockerManagerException
      */
-    private IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerServerTag) throws DockerManagerException {
+    private IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerEngineTag) throws DockerManagerException {
         try {
-            return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start, dockerServerTag);
+            return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start, dockerEngineTag);
         } catch (DockerProvisionException e) {
             throw new DockerManagerException("Failed to provision docker container tag: "+ dockerContainerTag, e);
         }
     }
 
     /**
-     * Directs to the docker server where the containers will be provisioned.
+     * Directs to the docker engine where the containers will be provisioned.
      * 
      * @param field
      * @param annotations
-     * @return IDockerServer
+     * @return IDockerEngine
      * @throws DockerManagerException
      */
-    @GenerateAnnotatedField(annotation = DockerServer.class)
-    public IDockerServer generateDockerServer(Field field, List<Annotation> annotations) throws DockerManagerException {
-        DockerServer annotationServer = field.getAnnotation(DockerServer.class);
-        return this.getDockerServer(annotationServer.dockerServerTag());
+    @GenerateAnnotatedField(annotation = DockerEngine.class)
+    public IDockerEngine generateDockerEngine(Field field, List<Annotation> annotations) throws DockerManagerException {
+        DockerEngine annotationServer = field.getAnnotation(DockerEngine.class);
+        return this.getDockerEngine(annotationServer.dockerEngineTag());
     }
 
     /**
@@ -148,8 +148,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @return
      * @throws DockerManagerException
      */
-    private IDockerServer getDockerServer(String dockerServerTag) throws DockerManagerException {
-        return dockerEnvironment.getDockerServerImpl(dockerServerTag);
+    private IDockerEngine getDockerEngine(String dockerEngineTag) throws DockerManagerException {
+        return dockerEnvironment.getDockerEngineImpl(dockerEngineTag);
     }
 
     /**
@@ -179,11 +179,11 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 
             if (field.getType() == IDockerManager.class) {
                 registerAnnotatedField(field, this);
-            } else if (field.getType() == IDockerServer.class) {
-                DockerServer annotation = field.getAnnotation(DockerServer.class);
+            } else if (field.getType() == IDockerEngine.class) {
+                DockerEngine annotation = field.getAnnotation(DockerEngine.class);
                 if (annotation != null) {
-                    IDockerServer dockerServer = generateDockerServer(field, annotations);
-                    registerAnnotatedField(field, dockerServer);
+                    IDockerEngine dockerEngine = generateDockerEngine(field, annotations);
+                    registerAnnotatedField(field, dockerEngine);
                 }
             } else if (field.getType() == IDockerContainer.class) {
                 DockerContainer annotation = field.getAnnotation(DockerContainer.class);

@@ -13,7 +13,7 @@ public class DockerSlotImpl {
 	private final DockerManagerImpl dockerManager;
 	private final HashMap<String,String> resourceProperties;
 	private final String slotName;
-	private final DockerServerImpl dockerServer;
+	private final DockerEngineImpl dockerEngine;
 
 	/**
 	 * Slot stores all the resource properties to aid for clean up.
@@ -22,11 +22,11 @@ public class DockerSlotImpl {
 	 * @param slotName
 	 * @param resourceProperties
 	 */
-	public DockerSlotImpl(DockerManagerImpl dockerManager, DockerServerImpl dockerServer, String slotName, HashMap<String,String> resourceProperties) {
+	public DockerSlotImpl(DockerManagerImpl dockerManager, DockerEngineImpl dockerEngine, String slotName, HashMap<String,String> resourceProperties) {
 		this.dockerManager 			= dockerManager;
 		this.slotName 				= slotName;
 		this.resourceProperties 	= resourceProperties;
-		this.dockerServer			= dockerServer;
+		this.dockerEngine			= dockerEngine;
     }
 
 	/**
@@ -56,7 +56,7 @@ public class DockerSlotImpl {
 		return this.resourceProperties.keySet();
 	}
 
-	public DockerServerImpl getDockerServer() {
-		return this.dockerServer;
+	public DockerEngineImpl getDockerEngine() {
+		return this.dockerEngine;
 	}
 }
