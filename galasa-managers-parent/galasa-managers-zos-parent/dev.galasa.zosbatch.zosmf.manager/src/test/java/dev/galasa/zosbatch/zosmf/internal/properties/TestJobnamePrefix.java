@@ -37,8 +37,8 @@ public class TestJobnamePrefix {
     
     @Test
     public void testConstructor() {
-    	JobnamePrefix jobnamePrefix = new JobnamePrefix();
-    	Assert.assertNotNull("Object was not created", jobnamePrefix);
+        JobnamePrefix jobnamePrefix = new JobnamePrefix();
+        Assert.assertNotNull("Object was not created", jobnamePrefix);
     }
     
     @Test

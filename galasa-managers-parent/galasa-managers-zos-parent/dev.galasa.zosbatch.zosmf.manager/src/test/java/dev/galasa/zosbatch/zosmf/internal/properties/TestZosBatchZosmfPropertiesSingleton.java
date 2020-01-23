@@ -22,7 +22,7 @@ public class TestZosBatchZosmfPropertiesSingleton {
     private ZosBatchZosmfPropertiesSingleton zosBatchZosmfPropertiesSingleton;
 
     @Mock
-	private IConfigurationPropertyStoreService cpsMock;
+    private IConfigurationPropertyStoreService cpsMock;
     
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -44,10 +44,10 @@ public class TestZosBatchZosmfPropertiesSingleton {
     
     @Test
     public void testZosBatchZosmfPropertiesSingleton() throws ZosBatchManagerException {
-    	zosBatchZosmfPropertiesSingleton = new ZosBatchZosmfPropertiesSingleton();
-    	zosBatchZosmfPropertiesSingleton.activate();
-    	ZosBatchZosmfPropertiesSingleton.setCps(null);
-    	ZosBatchZosmfPropertiesSingleton.setCps(cpsMock);    	
+        zosBatchZosmfPropertiesSingleton = new ZosBatchZosmfPropertiesSingleton();
+        zosBatchZosmfPropertiesSingleton.activate();
+        ZosBatchZosmfPropertiesSingleton.setCps(null);
+        ZosBatchZosmfPropertiesSingleton.setCps(cpsMock);        
         Assert.assertEquals("ZosBatchZosmfPropertiesSingleton.cps() should return the mocked cps", cpsMock, ZosBatchZosmfPropertiesSingleton.cps());
         zosBatchZosmfPropertiesSingleton.deacivate();
     }

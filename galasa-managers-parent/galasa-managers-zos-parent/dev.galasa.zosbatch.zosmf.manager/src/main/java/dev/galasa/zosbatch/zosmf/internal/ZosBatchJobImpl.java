@@ -479,9 +479,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
     protected void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
         try {
-        	if (ZosBatchManagerImpl.archivePath == null) {
-        		throw new ZosBatchException("Unabe to get archive path");
-        	}
+            if (ZosBatchManagerImpl.archivePath == null) {
+                throw new ZosBatchException("Unabe to get archive path");
+            }
             Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {

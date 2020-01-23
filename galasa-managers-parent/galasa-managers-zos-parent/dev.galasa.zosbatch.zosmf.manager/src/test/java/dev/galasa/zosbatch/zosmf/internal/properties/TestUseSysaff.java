@@ -35,8 +35,8 @@ public class TestUseSysaff {
     
     @Test
     public void testConstructor() {
-    	UseSysaff useSysaff = new UseSysaff();
-    	Assert.assertNotNull("Object was not created", useSysaff);
+        UseSysaff useSysaff = new UseSysaff();
+        Assert.assertNotNull("Object was not created", useSysaff);
     }
     
     @Test

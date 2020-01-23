@@ -26,7 +26,7 @@ public class ZosBatchImpl implements IZosBatch {
     
     private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
     private IZosImage image;
-	private ZosBatchJobImpl zosBatchJob;
+    private ZosBatchJobImpl zosBatchJob;
     
     public ZosBatchImpl(IZosImage image) {
         this.image = image;
@@ -67,9 +67,9 @@ public class ZosBatchImpl implements IZosBatch {
     }
 
     public ZosBatchJobImpl newZosBatchJob(String jcl, IZosBatchJobname jobname) throws ZosBatchException {
-    	if (this.zosBatchJob != null) {
-    		return this.zosBatchJob;
-    	}
+        if (this.zosBatchJob != null) {
+            return this.zosBatchJob;
+        }
         try {
             this.zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
         } catch (ZosBatchManagerException e) {
