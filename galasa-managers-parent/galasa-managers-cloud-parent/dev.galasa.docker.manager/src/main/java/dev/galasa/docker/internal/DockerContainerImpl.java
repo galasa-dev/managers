@@ -1,10 +1,17 @@
 package dev.galasa.docker.internal;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
@@ -12,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.Random;
@@ -20,6 +28,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorOutputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -565,36 +583,52 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     @Override
-    public boolean storeFile(String path, InputStream file) throws DockerManagerException {
-        File zip = createZip();
-
-        streamIntoZip(zip,file);
-
-        dockerEngine.
-        
-        return false;
-    }
-
-    private File createZip() {
-        return Paths.get(System.getProperty("user.dir") + "output.zip").toFile();
-    }
-
-    private void streamIntoZip(File zip, InputStream in) throws DockerManagerException{
+    public void storeFile(String path, InputStream file) throws DockerManagerException {
+        Path locPath = Paths.get(path);
+        File tar = compressToTar(file, locPath.getFileName().toString());
         try{
-            ZipOutputStream zipStream = new ZipOutputStream(new FileOutputStream(zip));
-
-            ZipEntry entry = new ZipEntry(zip.getName());
-            entry.setCreationTime(FileTime.fromMillis(zip.lastModified()));
-            zipStream.putNextEntry(entry);
-
-            byte[] readBuffer = new byte[2048];
-            int amountRead;
-            while ((amountRead = in.read(readBuffer)) > 0) {
-                zipStream.write(readBuffer, 0, amountRead);
-            }
-            zipStream.close();
-        } catch(IOException e) {
-            throw new DockerManagerException("Failed to stream file into a zip");
+        InputStream is = new FileInputStream(tar);
+       
+        dockerEngine.sendArchiveFile(this, is,locPath.getParent().toString()+"/");
+        tar.delete();
+        } catch (FileNotFoundException e) {
+            logger.error("Failed to find compressed file", e);
+        }finally {
+            tar.delete();
         }
+    }
+
+    @Override
+    public String retrieveFile(String path) throws DockerManagerException {
+        return dockerEngine.getArchiveFile(this, path);
+    }
+
+    private File compressToTar(InputStream file, String fileName) throws DockerManagerException {
+        File targetFile = new File("output.tar.gz");
+        BufferedInputStream bIn = new BufferedInputStream(file);
+        try {
+            FileOutputStream out = new FileOutputStream(targetFile);
+
+            TarArchiveOutputStream taos = new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(out)));
+            TarArchiveEntry aEntry = new TarArchiveEntry(fileName);
+            aEntry.setSize(file.available());
+            taos.putArchiveEntry(aEntry);
+            
+            int count;
+            byte data[] = new byte[2048];
+            while((count = bIn.read(data)) != -1) {
+                taos.write(data, 0, count);
+            }
+            taos.closeArchiveEntry();
+            
+            taos.flush();
+            taos.close();
+            bIn.close();
+            out.close();
+        } catch (IOException e) {
+            logger.error("IO error, failed to create tar", e);
+            throw new DockerManagerException(e);
+        }
+        return targetFile;
     }
 }

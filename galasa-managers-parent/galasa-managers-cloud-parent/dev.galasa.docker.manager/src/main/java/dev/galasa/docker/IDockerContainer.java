@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 
 /**
  * Docker Container Resource Object
@@ -126,6 +127,8 @@ public interface IDockerContainer {
 	
 	public long     getExitCode() throws DockerManagerException;
 
-	public boolean storeFile(String path, InputStream file) throws DockerManagerException;
+	public void storeFile(String path, InputStream file) throws DockerManagerException;
+
+	public String retrieveFile(String path) throws DockerManagerException;
 
 }

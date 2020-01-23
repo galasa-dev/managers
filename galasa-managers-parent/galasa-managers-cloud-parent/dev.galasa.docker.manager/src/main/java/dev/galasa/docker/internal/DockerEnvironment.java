@@ -213,49 +213,6 @@ public class DockerEnvironment implements IDockerEnvironment {
     }
 
     /**
-     * Free a specifed docker slot in terms of the container and environment
-     * 
-     * @param dockerSlot
-     * @throws DockerProvisionException
-     */
-    @Override
-    public void freeDockerSlot(DockerSlotImpl dockerSlot) throws DockerProvisionException {
-        DockerEngineImpl dockerEngine = dockerSlot.getDockerEngine();
-        String dockerEngineId = dockerEngine.getEngineId();
-
-        try {
-            String currentSlot = dss.get("engine." + dockerEngineId + ".current.slots");
-            if (currentSlot == null){
-                return;
-            }
-            
-            int usedSlots = Integer.parseInt(currentSlot);
-            usedSlots--;
-            if (usedSlots < 0) {
-                usedSlots = 0;
-            }
-            dynamicResource.delete(dockerSlot.getResourcePropertyKeys());
-
-            String prefix = "engine." + dockerEngineId + ".slot." + dockerSlot.getSlotName();
-            HashMap<String,String> otherProps = new HashMap<>();
-            otherProps.put("slot." + dockerEngineId + ".run." + framework.getTestRunName() + "." + dockerSlot.getSlotName(), "free");
-            if(!dss.putSwap("engine." + dockerEngineId + ".current.slots", currentSlot, Integer.toString(usedSlots), otherProps)) {
-                Thread.sleep(200);
-                freeDockerSlot(dockerSlot);
-                return;
-            }
-
-            HashSet<String> delProps = new HashSet<>();
-            delProps.add(prefix);
-            delProps.add(prefix + ".allocated");
-            dss.delete(delProps);
-            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker engine: " + dockerEngineId);
-        }catch (Exception e) {
-            logger.warn("Failed to free slot on engine " + dockerEngineId + ", slot " + dockerSlot.getSlotName() + ", leaving for manager clean up routines", e);
-        }
-    }
-
-    /**
      * Builds the docker engine from the given annotation.
      * 
      * @param annotation
@@ -390,7 +347,50 @@ public class DockerEnvironment implements IDockerEnvironment {
         }
     } 
 
-    public static void deleteDss(String runName, String dockerEngineId, String slotName, IDynamicStatusStoreService dss) {
+    /**
+     * Free a specifed docker slot in terms of the container and environment
+     * 
+     * @param dockerSlot
+     * @throws DockerProvisionException
+     */
+    @Override
+    public void freeDockerSlot(DockerSlotImpl dockerSlot) throws DockerProvisionException {
+        DockerEngineImpl dockerEngine = dockerSlot.getDockerEngine();
+        String dockerEngineId = dockerEngine.getEngineId();
+
+        try {
+            String currentSlot = dss.get("engine." + dockerEngineId + ".current.slots");
+            if (currentSlot == null){
+                return;
+            }
+            
+            int usedSlots = Integer.parseInt(currentSlot);
+            usedSlots--;
+            if (usedSlots < 0) {
+                usedSlots = 0;
+            }
+            dynamicResource.delete(dockerSlot.getResourcePropertyKeys());
+
+            String prefix = "engine." + dockerEngineId + ".slot." + dockerSlot.getSlotName();
+            HashMap<String,String> otherProps = new HashMap<>();
+            otherProps.put("slot." + dockerEngineId + ".run." + framework.getTestRunName() + "." + dockerSlot.getSlotName(), "free");
+            if(!dss.putSwap("engine." + dockerEngineId + ".current.slots", currentSlot, Integer.toString(usedSlots), otherProps)) {
+                Thread.sleep(200);
+                freeDockerSlot(dockerSlot);
+                return;
+            }
+
+            HashSet<String> delProps = new HashSet<>();
+            delProps.add(prefix);
+            delProps.add(prefix + ".allocated");
+            dss.delete(delProps);
+            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker engine: " + dockerEngineId);
+        }catch (Exception e) {
+            logger.warn("Failed to free slot on engine " + dockerEngineId + ", slot " + dockerSlot.getSlotName() + ", leaving for manager clean up routines", e);
+        }
+    }
+
+    public static void deleteStaleDssSlot(String runName, String dockerEngineId, String slotName, IDynamicStatusStoreService dss) {
         try {
             IDynamicResource dynamicResource = dss.getDynamicResource("engine." + dockerEngineId);
             String resPrefix = "slot." + slotName;
