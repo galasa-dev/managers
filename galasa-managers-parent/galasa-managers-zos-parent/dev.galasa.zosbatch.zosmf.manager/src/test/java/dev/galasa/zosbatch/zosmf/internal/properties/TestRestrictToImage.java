@@ -35,8 +35,8 @@ public class TestRestrictToImage {
     
     @Test
     public void testConstructor() {
-    	RestrictToImage restrictToImage = new RestrictToImage();
-    	Assert.assertNotNull("Object was not created", restrictToImage);
+        RestrictToImage restrictToImage = new RestrictToImage();
+        Assert.assertNotNull("Object was not created", restrictToImage);
     }
     
     @Test

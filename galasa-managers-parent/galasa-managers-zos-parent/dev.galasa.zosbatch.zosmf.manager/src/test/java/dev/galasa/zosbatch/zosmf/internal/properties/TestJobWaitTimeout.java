@@ -37,8 +37,8 @@ public class TestJobWaitTimeout {
     
     @Test
     public void testConstructor() {
-    	JobWaitTimeout jobWaitTimeout = new JobWaitTimeout();
-    	Assert.assertNotNull("Object was not created", jobWaitTimeout);
+        JobWaitTimeout jobWaitTimeout = new JobWaitTimeout();
+        Assert.assertNotNull("Object was not created", jobWaitTimeout);
     }
     
     @Test

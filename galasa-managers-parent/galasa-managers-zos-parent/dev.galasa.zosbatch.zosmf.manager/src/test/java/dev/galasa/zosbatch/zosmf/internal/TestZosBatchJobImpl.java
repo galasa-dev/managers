@@ -71,9 +71,9 @@ public class TestZosBatchJobImpl {
     private IZosmfResponse zosmfResponseMockStatus;
     
     @Mock
-	private ResultArchiveStorePath resultArchiveStorePathMock;
+    private ResultArchiveStorePath resultArchiveStorePathMock;
 
-	private static final String FIXED_JOBNAME = "GAL45678";
+    private static final String FIXED_JOBNAME = "GAL45678";
     
     private static final String FIXED_JOBID = "JOB12345";
 
@@ -97,7 +97,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(archivePath.getFileSystem()).thenReturn(mockFileSystem);
         Mockito.when(mockFileSystem.provider()).thenReturn(mockFileSystemProvider);
         SeekableByteChannel mockSeekableByteChannel = Mockito.mock(SeekableByteChannel.class);
-		Mockito.when(mockFileSystemProvider.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockSeekableByteChannel);
+        Mockito.when(mockFileSystemProvider.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockSeekableByteChannel);
         Mockito.when(mockFileSystemProvider.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(mockOutputStream);
         Mockito.when(mockFileSystem.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePath);        
         
@@ -274,11 +274,11 @@ public class TestZosBatchJobImpl {
     }
     
     @Test
-	public void testRetrieveOutputNotSubmittedException() throws ZosBatchException {
-	    exceptionRule.expect(ZosBatchException.class);
-	    exceptionRule.expectMessage("Job has not been submitted by manager");
-	    zosBatchJob.retrieveOutput();
-	}
+    public void testRetrieveOutputNotSubmittedException() throws ZosBatchException {
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("Job has not been submitted by manager");
+        zosBatchJob.retrieveOutput();
+    }
 
     
     @Test
@@ -300,7 +300,7 @@ public class TestZosBatchJobImpl {
         zosBatchJobSpy.retrieveOutput();
     }
 
-	@Test
+    @Test
     public void testPurgeJob() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
 
@@ -313,7 +313,7 @@ public class TestZosBatchJobImpl {
         zosBatchJobSpy.purgeJob();
     }
 
-	@Test
+    @Test
     public void testPurgeJobErrorResponse() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
 
@@ -326,56 +326,56 @@ public class TestZosBatchJobImpl {
         zosBatchJobSpy.purgeJob();
     }
 
-	@Test
+    @Test
     public void testUpdateJobStatus() throws ZosBatchException, ZosmfException  {
-		String nullString = null;
-		Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
-		Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
-		Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+        String nullString = null;
+        Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
-		JsonObject jsonObject = getJsonObject();
-		jsonObject.remove("status");
-		Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
+        JsonObject jsonObject = getJsonObject();
+        jsonObject.remove("status");
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
         zosBatchJobSpy.updateJobStatus();
         Assert.assertFalse("jobComplete should be false", zosBatchJobSpy.jobComplete());
         
 
-		Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
-		jsonObject.addProperty("status", "STATUS");
-		Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
+        Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
+        jsonObject.addProperty("status", "STATUS");
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         
         zosBatchJobSpy.updateJobStatus();
         Assert.assertFalse("jobComplete should be false", zosBatchJobSpy.jobComplete());
 
-		
+        
         Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
-		jsonObject.addProperty("status", "OUTPUT");
-		Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
+        jsonObject.addProperty("status", "OUTPUT");
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         
         zosBatchJobSpy.updateJobStatus();
         Assert.assertTrue("jobComplete should be true", zosBatchJobSpy.jobComplete());
         
 
-		Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
         jsonObject.remove("retcode");
-		Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         
         zosBatchJobSpy.updateJobStatus();
         Assert.assertEquals("retcode should be ????", "????", zosBatchJobSpy.getRetcode());
     }
 
-	@Test
+    @Test
     public void testUpdateJobStatusJobNotSubmitted() throws ZosBatchException, ZosmfException {
-		exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Job has not been submitted by manager");
 
         zosBatchJobSpy.updateJobStatus();
     }
      
-	@Test
+    @Test
     public void testUpdateJobStatusErrorResponse() throws ZosBatchException, ZosmfException {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
@@ -456,53 +456,53 @@ public class TestZosBatchJobImpl {
     public void testStoreArtifactException() throws ZosBatchException {       
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Unabe to get archive path");
-    	ZosBatchManagerImpl.setArchivePath(null);
-    	
-    	zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
+        ZosBatchManagerImpl.setArchivePath(null);
+        
+        zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
     }
     
     @Test
     public void testBuildErrorString() {
-    	String expectedString = "Error action";
-    	String returnString = zosBatchJobSpy.buildErrorString("action", new JsonObject());
-    	Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-    	
-    	JsonObject jsonObject = getJsonObject();
-    	jsonObject.addProperty("details", "details");
-    	expectedString = "Error action, category:0, rc:0, reason:0, message:message\n" + 
-    			"details:details\n" + 
-    			"stack:\n" + 
-    			"stack";
-    	returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
-    	Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-    	
-    	jsonObject.remove("details");
-    	JsonArray jsonArray = new JsonArray();
-    	JsonPrimitive item = new JsonPrimitive("details line 1");
-    	jsonArray.add(item);
-    	item = new JsonPrimitive("details line 2");
-    	jsonArray.add(item);
-    	jsonObject.add("details", jsonArray);
-    	expectedString = "Error action, category:0, rc:0, reason:0, message:message\n" + 
-    			"details:\n" +
-    			"details line 1\n" +
-    			"details line 2\n" + 
-    			"stack:\n" + 
-    			"stack";
-    	returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
-    	Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+        String expectedString = "Error action";
+        String returnString = zosBatchJobSpy.buildErrorString("action", new JsonObject());
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+        
+        JsonObject jsonObject = getJsonObject();
+        jsonObject.addProperty("details", "details");
+        expectedString = "Error action, category:0, rc:0, reason:0, message:message\n" + 
+                "details:details\n" + 
+                "stack:\n" + 
+                "stack";
+        returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+        
+        jsonObject.remove("details");
+        JsonArray jsonArray = new JsonArray();
+        JsonPrimitive item = new JsonPrimitive("details line 1");
+        jsonArray.add(item);
+        item = new JsonPrimitive("details line 2");
+        jsonArray.add(item);
+        jsonObject.add("details", jsonArray);
+        expectedString = "Error action, category:0, rc:0, reason:0, message:message\n" + 
+                "details:\n" +
+                "details line 1\n" +
+                "details line 2\n" + 
+                "stack:\n" + 
+                "stack";
+        returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
     }
     
     @Test
     public void testJosnNull() {
-    	JsonObject JsonObject = new JsonObject();
-    	Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "none"));
+        JsonObject JsonObject = new JsonObject();
+        Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "none"));
 
-    	JsonObject.add("empty", JsonNull.INSTANCE);
-    	Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "empty"));
+        JsonObject.add("empty", JsonNull.INSTANCE);
+        Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "empty"));
 
-    	JsonObject.addProperty("property", "value");
-    	Assert.assertEquals("jsonNull() should return value", "value", zosBatchJob.jsonNull(JsonObject, "property"));
+        JsonObject.addProperty("property", "value");
+        Assert.assertEquals("jsonNull() should return value", "value", zosBatchJob.jsonNull(JsonObject, "property"));
     }
     
     @Test

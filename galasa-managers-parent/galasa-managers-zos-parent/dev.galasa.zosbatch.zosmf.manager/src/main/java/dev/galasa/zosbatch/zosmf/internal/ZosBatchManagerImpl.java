@@ -195,7 +195,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
         return newZosBatchJobnameImpl(imageid);
     }
 
-	protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
-		return new ZosBatchJobnameImpl(imageid);
-	}
+    protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
+        return new ZosBatchJobnameImpl(imageid);
+    }
 }

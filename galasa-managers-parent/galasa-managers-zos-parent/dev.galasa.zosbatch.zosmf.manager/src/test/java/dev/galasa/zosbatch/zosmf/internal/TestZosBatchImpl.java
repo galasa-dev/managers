@@ -87,7 +87,7 @@ public class TestZosBatchImpl {
     
     @Test
     public void testNewZosBatchJob() throws Exception {
-    	Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
+        Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJob", zosBatchJobMock);
         Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
     }
