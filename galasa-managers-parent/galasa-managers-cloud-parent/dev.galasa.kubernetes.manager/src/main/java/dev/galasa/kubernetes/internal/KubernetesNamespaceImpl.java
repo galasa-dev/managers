@@ -65,6 +65,12 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
     public String getId() {
         return this.namespaceId;
     }
+    
+    @Override
+    public String getFullId() {
+        return this.cluster.getId() + "/" + this.namespaceId;
+    }
+
 
     public KubernetesClusterImpl getCluster() {
         return this.cluster;
