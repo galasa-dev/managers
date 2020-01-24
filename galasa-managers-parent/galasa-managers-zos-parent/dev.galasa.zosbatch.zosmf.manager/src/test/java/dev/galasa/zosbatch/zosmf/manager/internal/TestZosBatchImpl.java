@@ -19,12 +19,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.ZosImage;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobnameImpl;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
 
 @RunWith(PowerMockRunner.class)

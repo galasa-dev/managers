@@ -27,17 +27,17 @@ import dev.galasa.zosmf.ZosmfManagerException;
  */
 public class ServerImages extends CpsProperties {
 
-	public static List<String> get(String clusterId) throws ZosmfManagerException {
-		try {
-			String serverImages = getStringNulled(ZosmfPropertiesSingleton.cps(), "server", "images", clusterId);
+    public static List<String> get(String clusterId) throws ZosmfManagerException {
+        try {
+            String serverImages = getStringNulled(ZosmfPropertiesSingleton.cps(), "server", "images", clusterId);
 
-			if (serverImages == null) {
-				throw new ZosmfManagerException("Value for zOSMF server port not configured for zOS cluster "  + clusterId);
-			}
-			return Arrays.asList(serverImages.split(","));
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server port for zOS cluster "  + clusterId, e);
-		}
-	}
+            if (serverImages == null) {
+                throw new ZosmfManagerException("Value for zOSMF server port not configured for zOS cluster "  + clusterId);
+            }
+            return Arrays.asList(serverImages.split(","));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server port for zOS cluster "  + clusterId, e);
+        }
+    }
 
 }

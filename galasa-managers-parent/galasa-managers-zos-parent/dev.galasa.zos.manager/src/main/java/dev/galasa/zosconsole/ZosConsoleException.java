@@ -6,26 +6,26 @@
 package dev.galasa.zosconsole;
 
 public class ZosConsoleException extends ZosConsoleManagerException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public ZosConsoleException() {
-	}
+    public ZosConsoleException() {
+    }
 
-	public ZosConsoleException(String message) {
-		super(message);
-	}
+    public ZosConsoleException(String message) {
+        super(message);
+    }
 
-	public ZosConsoleException(Throwable cause) {
-		super(cause);
-	}
+    public ZosConsoleException(Throwable cause) {
+        super(cause);
+    }
 
-	public ZosConsoleException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ZosConsoleException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public ZosConsoleException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+    public ZosConsoleException(String message, Throwable cause, boolean enableSuppression,
+            boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
 }

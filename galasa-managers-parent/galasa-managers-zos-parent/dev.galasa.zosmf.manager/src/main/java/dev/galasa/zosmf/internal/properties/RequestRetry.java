@@ -24,20 +24,20 @@ import dev.galasa.zosmf.ZosmfManagerException;
  */
 public class RequestRetry extends CpsProperties {
 
-	private static final int DEFAULT_REQUEST_RETRY = 3;
+    private static final int DEFAULT_REQUEST_RETRY = 3;
 
-	public static int get(String imageId) throws ZosmfManagerException {
-		try {
-			String retryString = getStringNulled(ZosmfPropertiesSingleton.cps(), "command", "request.retry", imageId);
+    public static int get(String imageId) throws ZosmfManagerException {
+        try {
+            String retryString = getStringNulled(ZosmfPropertiesSingleton.cps(), "command", "request.retry", imageId);
 
-			if (retryString == null) {
-				return DEFAULT_REQUEST_RETRY;
-			} else {
-				return Integer.parseInt(retryString);
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosmfManagerException("Problem asking the CPS for the console command request retry property for zOS image "  + imageId, e);
-		}
-	}
+            if (retryString == null) {
+                return DEFAULT_REQUEST_RETRY;
+            } else {
+                return Integer.parseInt(retryString);
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosmfManagerException("Problem asking the CPS for the console command request retry property for zOS image "  + imageId, e);
+        }
+    }
 
 }

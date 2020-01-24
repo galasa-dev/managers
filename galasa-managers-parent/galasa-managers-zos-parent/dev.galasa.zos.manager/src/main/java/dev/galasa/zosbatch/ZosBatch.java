@@ -25,9 +25,9 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @ZosBatchField
 @ValidAnnotatedFields({ IZosBatch.class })
 public @interface ZosBatch {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
 }

@@ -28,40 +28,40 @@ import dev.galasa.zos.IZosImage;
  */
 public interface IZosFileHandler {
 
-	/**
-	 * Instantiate a new {@link IZosDataset}, which can represent either an
-	 * existing dataset, or one to be created.  Member name will be ignored
-	 * 
-	 * @param dsname
-	 * @param image
-	 * @return
-	 * @throws ZosDatasetException 
-	 */
-	public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException;
+    /**
+     * Instantiate a new {@link IZosDataset}, which can represent either an
+     * existing dataset, or one to be created.  Member name will be ignored
+     * 
+     * @param dsname
+     * @param image
+     * @return
+     * @throws ZosDatasetException 
+     */
+    public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException;
 
-	/**
-	 * Instantiate a new {@link IZosUNIXFile}, which can represent either an
-	 * existing UNIX file, or directory, or one to be created. <br />
-	 * <br />
-	 * N.B. If a directory is to be represented, fullFilePath must end with a
-	 * "/"
-	 * 
-	 * @param fullFilePath
-	 * @return
-	 * @throws ZosUNIXFileException 
-	 */
-	public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image) throws ZosUNIXFileException;
+    /**
+     * Instantiate a new {@link IZosUNIXFile}, which can represent either an
+     * existing UNIX file, or directory, or one to be created. <br />
+     * <br />
+     * N.B. If a directory is to be represented, fullFilePath must end with a
+     * "/"
+     * 
+     * @param fullFilePath
+     * @return
+     * @throws ZosUNIXFileException 
+     */
+    public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image) throws ZosUNIXFileException;
 
-	/**
-	 * Instantiate a new {@link IZosVSAMDataset} object with the given name. The
-	 * object returned is a 'blank-slate' and will require configuring before it
-	 * can be defined or stored. See {@link #newESDS(String)},
-	 * {@link #newKSDS(String)} or {@link #newRRDS(String)} for pre-configured
-	 * VSAM objects.
-	 * 
-	 * @param dsname
-	 * @return
-	 * @throws ZosVSAMDatasetException 
-	 */
-	public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException;
+    /**
+     * Instantiate a new {@link IZosVSAMDataset} object with the given name. The
+     * object returned is a 'blank-slate' and will require configuring before it
+     * can be defined or stored. See {@link #newESDS(String)},
+     * {@link #newKSDS(String)} or {@link #newRRDS(String)} for pre-configured
+     * VSAM objects.
+     * 
+     * @param dsname
+     * @return
+     * @throws ZosVSAMDatasetException 
+     */
+    public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException;
 }
