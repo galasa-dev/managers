@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: prometheus
+  replicas: 1
+  template:
+    metadata:
+      name: prometheus
+      labels:
+        app: prometheus
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+        platform: hdc
+      initContainers:
+        - name: init-chown-data
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ["chown", "-R", "65534:65534", "/data"]
+          volumeMounts:
+          - name: datadir
+            mountPath: /data
+            subPath: ""
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.10.0
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus/
+            - name: datadir
+              mountPath: /prometheus
+      volumes:
+      - name: prometheus-config
+        configMap:
+          defaultMode: 420
+          name: prometheus-config
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: pvc-prometheus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  ports:
+  - port: 9090
+    name: metrics
+    targetPort: 9090
+  selector:
+    app: prometheus

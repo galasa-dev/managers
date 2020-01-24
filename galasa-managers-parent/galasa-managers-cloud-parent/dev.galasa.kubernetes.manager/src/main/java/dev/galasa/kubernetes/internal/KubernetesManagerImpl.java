@@ -46,6 +46,8 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
     private ArrayList<KubernetesClusterImpl> clusters = new ArrayList<>();
 
+    private boolean                             required = false;
+
     /**
      * Initialise the Kubernetes Manager if the Kubernetes TPI is included in the test class
      */
@@ -57,11 +59,12 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         super.initialise(framework, allManagers, activeManagers, testClass);
 
         //*** Check to see if we are needed
-        boolean required = false;
-        for(Field field : testClass.getFields()) {
-            if (field.getType() == IKubernetesNamespace.class) {
-                required = true;
-                break;
+        if (!required) {
+            for(Field field : testClass.getFields()) {
+                if (field.getType() == IKubernetesNamespace.class) {
+                    required = true;
+                    break;
+                }
             }
         }
 
@@ -70,6 +73,29 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         }
 
         youAreRequired(allManagers, activeManagers);
+        
+        try {
+            KubernetesPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new KubernetesManagerException("Failed to set the CPS with the kubernetes namespace", e);
+        }
+
+        try {
+            this.dss = this.getFramework().getDynamicStatusStoreService(NAMESPACE);
+        } catch(DynamicStatusStoreException e) {
+            throw new KubernetesManagerException("Unable to provide the DSS for the Kubernetes Manager", e);
+        }
+
+        //*** Load the YAML supported types
+        Yaml.addModelMap("v1", "ConfigMap", V1ConfigMap.class);
+        Yaml.addModelMap("v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
+        Yaml.addModelMap("v1", "Service", V1Service.class);
+        Yaml.addModelMap("v1", "Secret", V1Secret.class);
+        Yaml.addModelMap("v1", "Deployment", V1Deployment.class);
+        Yaml.addModelMap("v1", "StatefulSet", V1StatefulSet.class);
+
+        this.logger.info("Kubernetes Manager initialised");
+
     }
 
     /**
@@ -85,28 +111,8 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         }
 
         activeManagers.add(this);
-
-        try {
-            KubernetesPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new KubernetesManagerException("Failed to set the CPS with the kubernetes namespace", e);
-        }
         
-        try {
-            this.dss = this.getFramework().getDynamicStatusStoreService(NAMESPACE);
-        } catch(DynamicStatusStoreException e) {
-            throw new KubernetesManagerException("Unable to provide the DSS for the Kubernetes Manager", e);
-        }
-        
-        //*** Load the YAML supported types
-        Yaml.addModelMap("v1", "ConfigMap", V1ConfigMap.class);
-        Yaml.addModelMap("v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
-        Yaml.addModelMap("v1", "Service", V1Service.class);
-        Yaml.addModelMap("v1", "Secret", V1Secret.class);
-        Yaml.addModelMap("v1", "Deployment", V1Deployment.class);
-        Yaml.addModelMap("v1", "StatefulSet", V1StatefulSet.class);
-
-        this.logger.info("Kubernetes Manager initialised");
+        this.required = true;
     }
 
     /**
@@ -129,7 +135,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     @GenerateAnnotatedField(annotation = KubernetesNamespace.class)
     public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws KubernetesManagerException {
         KubernetesNamespace annotation = field.getAnnotation(KubernetesNamespace.class);
-        
+
         String tag = annotation.kubernetesNamespaceTag().trim().toUpperCase();
         if (tag.isEmpty()) {
             tag = "PRIMARY";
@@ -166,7 +172,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
             if (selectedCluster == null) {
                 throw new KubernetesManagerException("Unable to allocate a slot on any Kubernetes Cluster");
             }
-            
+
             //*** ask cluster to allocate a namespace,  if it returns null, means we have run out of available namespaces
             //*** so try a different cluster
             allocatedNamespace = selectedCluster.allocateNamespace();
@@ -174,26 +180,26 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
                 availableClusters.remove(selectedCluster);
             }
         }
-        
+
         logger.info("Allocated Kubernetes Namespace " + allocatedNamespace.getId() + " on Cluster " + allocatedNamespace.getCluster().getId() + " for tag " + tag);
 
         taggedNamespaces.put(tag, allocatedNamespace);
-        
+
         return allocatedNamespace;
-   }
-    
-    
+    }
+
+
     @Override
     public void provisionDiscard() {
-        
+
         for(KubernetesNamespaceImpl namespace : taggedNamespaces.values()) {
             try {
-            namespace.discard(this.getFramework().getTestRunName());
+                namespace.discard(this.getFramework().getTestRunName());
             } catch(KubernetesManagerException e) {
                 logger.error("Problem discarding namespace " + namespace.getId() + " on cluster " + namespace.getCluster().getId(), e);
             }
         }
-        
+
         super.provisionDiscard();
     }
 
@@ -214,7 +220,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     @Override
     public IKubernetesNamespace getNamespaceByTag(@NotNull String namespaceTag) {
         String tag = namespaceTag.trim().toUpperCase();
-        
+
         return taggedNamespaces.get(tag);
     }
 }

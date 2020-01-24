@@ -61,7 +61,7 @@ public class KubernetesNamespaceResourceMonitor implements Runnable {
 						try {
 							KubernetesNamespaceImpl.deleteDss(runName, cluster, namespace, dss, this.framework);
 						} catch(Exception e) {
-							logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName);
+							logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName,e);
 						}
 					}
 				}
@@ -88,7 +88,7 @@ public class KubernetesNamespaceResourceMonitor implements Runnable {
 					try {
                         KubernetesNamespaceImpl.deleteDss(runName, cluster, namespace, dss, this.framework);
 					} catch(Exception e) {
-						logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName);
+						logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName,e);
 					}
 				}
 			}

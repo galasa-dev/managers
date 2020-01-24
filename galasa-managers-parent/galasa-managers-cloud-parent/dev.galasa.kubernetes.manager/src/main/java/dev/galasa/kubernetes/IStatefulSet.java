@@ -1,5 +1,5 @@
 package dev.galasa.kubernetes;
 
-public interface IStatefulSet extends IResource {
+public interface IStatefulSet extends IReplicaSet {
 
 }

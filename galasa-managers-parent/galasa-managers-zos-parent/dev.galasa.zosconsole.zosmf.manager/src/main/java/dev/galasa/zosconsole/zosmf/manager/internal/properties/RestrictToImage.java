@@ -18,26 +18,19 @@ import dev.galasa.zosconsole.ZosConsoleManagerException;
  * {@code zosconsole.console.[imageid].restrict.to.image=true}
  * </p>
  * <p>
- * The default value is {@value #RESTRICT_TO_IMAGE}
+ * The default value is false
  * </p>
  *
  */
 public class RestrictToImage extends CpsProperties {
 
-	private static final boolean RESTRICT_TO_IMAGE = false;
-
-	public static boolean get(String imageId) throws ZosConsoleManagerException {
-		try {
-			String sysaffString = getStringNulled(ZosConsoleZosmfPropertiesSingleton.cps(), "zosconsole", "restrict.to.image", imageId);
-
-			if (sysaffString == null) {
-				return RESTRICT_TO_IMAGE;
-			} else {
-				return Boolean.parseBoolean(sysaffString);
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosConsoleManagerException("Problem asking the CPS for the console restrict to image property for zOS image "  + imageId, e);
-		}
-	}
+    public static boolean get(String imageId) throws ZosConsoleManagerException {
+        try {
+            String restritToImageString = getStringNulled(ZosConsoleZosmfPropertiesSingleton.cps(), "zosconsole", "restrict.to.image", imageId);
+            return Boolean.parseBoolean(restritToImageString);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosConsoleManagerException("Problem asking the CPS for the console restrict to image property for zOS image "  + imageId, e);
+        }
+    }
 
 }

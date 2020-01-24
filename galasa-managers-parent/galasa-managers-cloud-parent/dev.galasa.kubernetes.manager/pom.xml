@@ -34,7 +34,7 @@
 			<version>1.2</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
@@ -56,6 +56,12 @@
 			<artifactId>client-java</artifactId>
 			<version>7.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -76,6 +82,7 @@
 							dev.galasa.framework.spi.creds,
 							dev.galasa.kubernetes,
 							org.apache.commons.logging,
+							org.apache.commons.io,
 							org.xml.sax,
 							org.xml.sax.helpers,
 							javax.xml.parsers,
