@@ -1,7 +1,5 @@
 package dev.galasa.docker.internal.properties;
 
-import java.net.URL;
-
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.DockerRegistryImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
