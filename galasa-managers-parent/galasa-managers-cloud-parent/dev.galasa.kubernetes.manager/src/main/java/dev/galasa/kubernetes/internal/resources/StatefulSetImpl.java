@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal.resources;
 
 import java.util.List;
@@ -10,6 +15,12 @@ import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * StatefulSet implementation
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class StatefulSetImpl extends ReplicaSetHolder implements IStatefulSet {
     
     private final KubernetesNamespaceImpl namespace;
