@@ -61,18 +61,18 @@ public class HttpManagerIVT {
         assertThat("delectus aut autem".equals(title)).isTrue();
     }
 
-    @Test
-    public void downLoadFileTest() throws URISyntaxException {
-        boolean fileExists = false;
-        client3.setURI(new URI("https://p2.galasa.dev"));
-        //client3.setAuthorisation("username", "password");
-        client3.getFile(Paths.get("/tmp/dev.galasa_0.3.0.jar"), "/plugins/dev.galasa_0.3.0.jar");
-        File f = new File("/tmp/dev.galasa_0.3.0.jar");
-        if (f.exists() && !f.isDirectory()) {
-            fileExists = true;
-        }
-        assertThat(fileExists).isTrue();
+    // @Test
+    // public void downLoadFileTest() throws URISyntaxException {
+    //     boolean fileExists = false;
+    //     client3.setURI(new URI("https://p2.galasa.dev"));
+    //     //client3.setAuthorisation("username", "password");
+    //     client3.getFile(Paths.get("/tmp/dev.galasa_0.3.0.jar"), "/plugins/dev.galasa_0.3.0.jar");
+    //     File f = new File("/tmp/dev.galasa_0.3.0.jar");
+    //     if (f.exists() && !f.isDirectory()) {
+    //         fileExists = true;
+    //     }
+    //     assertThat(fileExists).isTrue();
 
-        f.delete();
-    }
+    //     f.delete();
+    // }
 }
