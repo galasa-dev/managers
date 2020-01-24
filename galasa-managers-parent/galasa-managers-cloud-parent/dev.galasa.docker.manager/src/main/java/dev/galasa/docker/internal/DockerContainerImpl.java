@@ -569,6 +569,12 @@ public class DockerContainerImpl implements IDockerContainer {
         }
     }
 
+    /**
+     * Allows a file to be stored on a running docker container
+     * 
+     * @param path
+     * @param InputStream
+     */
     @Override
     public void storeFile(String path, InputStream file) throws DockerManagerException {
         Path locPath = Paths.get(path);
@@ -585,11 +591,24 @@ public class DockerContainerImpl implements IDockerContainer {
         }
     }
 
+     /**
+     * Retrieves a file from a running docker container.
+     * 
+     * @param path
+     */
     @Override
     public String retrieveFile(String path) throws DockerManagerException {
         return dockerEngine.getArchiveFile(this, path);
     }
 
+    /**
+     * Takes a input stream from a file and compresses to a tar.gz, used for the docker engine API 
+     *  to send archive files.
+     * @param file
+     * @param fileName
+     * @return
+     * @throws DockerManagerException
+     */
     private File compressToTar(InputStream file, String fileName) throws DockerManagerException {
         File targetFile = new File("output.tar.gz");
         BufferedInputStream bIn = new BufferedInputStream(file);

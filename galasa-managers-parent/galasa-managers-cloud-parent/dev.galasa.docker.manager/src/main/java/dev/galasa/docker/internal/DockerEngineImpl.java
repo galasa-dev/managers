@@ -384,12 +384,25 @@ public class DockerEngineImpl implements IDockerEngine {
 		}
 	}
 
+	/**
+	 * Can send a file onto a container running on the docker engine
+	 * @param container
+	 * @param file
+	 * @param location
+	 */
 	public void sendArchiveFile(DockerContainerImpl container, InputStream file, String location) {
 		String path = "/containers/" + container.getContainerId() + "/archive?path=" + location;
 
 		dockerEngineClient.putFile(path, file);
 	}
 
+	/**
+	 * Returns the contents of a file on a container running in the docker engine
+	 * 
+	 * @param container
+	 * @param filePath
+	 * @return String
+	 */
 	public String getArchiveFile(DockerContainerImpl container, String filePath) {
 		String path = "/containers/" + container.getContainerId() + "/archive?path=" + filePath;
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();

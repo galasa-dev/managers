@@ -266,11 +266,6 @@ public class DockerEnvironment implements IDockerEnvironment {
         this.dynamicResource = this.dss.getDynamicResource("engine." + dockerEngineId);
 
        return allocateAndCreateDssSlot(dockerEngineId, runName, engine);
-        // } else {
-        //     discard();
-        //     logger.info("No available slots currently");
-        //     throw new DockerProvisionException("No Docker slots available.");
-        // }
     }
 
     /**
@@ -384,6 +379,14 @@ public class DockerEnvironment implements IDockerEnvironment {
         }
     }
 
+    /**
+     * Used by resource management to clean up stale properties
+     * 
+     * @param runName
+     * @param dockerEngineId
+     * @param slotName
+     * @param dss
+     */
     public static void deleteStaleDssSlot(String runName, String dockerEngineId, String slotName, IDynamicStatusStoreService dss) {
         try {
             IDynamicResource dynamicResource = dss.getDynamicResource("engine." + dockerEngineId);
