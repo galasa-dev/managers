@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.nio.file.Path;
 
 /**
  * Docker Container Resource Object

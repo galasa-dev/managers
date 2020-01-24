@@ -1,7 +1,5 @@
 package dev.galasa.docker.internal;
 
-import static dev.galasa.docker.internal.DockerManagerImpl.NAMESPACE;
-
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Collection;
@@ -34,7 +32,6 @@ public class DockerEnvironment implements IDockerEnvironment {
     private IFramework                          framework;
     private DockerManagerImpl                   dockerManager;
     private IDynamicStatusStoreService          dss;
-    // private DockerEngineImpl                    dockerEngine;
     private IDynamicResource                    dynamicResource;
     private Map<String, DockerContainerImpl>    containersByTag = new HashMap<>();
     private Map<String, DockerEngineImpl>       enginesByTag = new HashMap<>();
@@ -54,7 +51,7 @@ public class DockerEnvironment implements IDockerEnvironment {
         this.dockerManager = dockerManager;
 
         try {
-            this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
+            this.dss = framework.getDynamicStatusStoreService(dockerManager.NAMESPACE);
         } catch(DynamicStatusStoreException e) {
             throw new DockerManagerException("Failed to create docker environment", e);
         }
@@ -268,23 +265,32 @@ public class DockerEnvironment implements IDockerEnvironment {
 
         this.dynamicResource = this.dss.getDynamicResource("engine." + dockerEngineId);
 
-        if (allocateDssSlot(dockerEngineId, engine)) {
-            return createDssDockerSlot(dockerEngineId, runName, engine);
-        } else {
-            discard();
-            logger.info("No available slots currently");
-            throw new DockerProvisionException("No Docker slots available.");
-        }
+       return allocateAndCreateDssSlot(dockerEngineId, runName, engine);
+        // } else {
+        //     discard();
+        //     logger.info("No available slots currently");
+        //     throw new DockerProvisionException("No Docker slots available.");
+        // }
     }
 
     /**
-     * Used during the provisioning of a docker slot to allocate a slot within the DSS to lock the resource.
+     * Used during the provisioning of a docker slot to allocate a slot within the
+     * DSS to lock the resource.
      * 
      * @param dockerHost
      * @return boolean (failed/passed)
+     * @throws DockerProvisionException
      */
-    private boolean allocateDssSlot(String dockerEngineId, DockerEngineImpl engine) {
+    private DockerSlotImpl allocateAndCreateDssSlot(String dockerEngineId, String runName, DockerEngineImpl engine)
+            throws DockerProvisionException {
         String slotKey = "engine." + dockerEngineId + ".current.slots";
+        String slotNamePrefix = "SLOT_" + runName + "_";
+        String allocatedSlotName;
+        String slotPropertyKey;
+        String allocatedTime = Instant.now().toString();
+        
+        HashMap<String,String> slotProps = new HashMap<>();
+
         try {
             int maxSlots = Integer.parseInt(DockerSlots.get(engine));
             int usedSlots = 0;
@@ -294,58 +300,44 @@ public class DockerEnvironment implements IDockerEnvironment {
                 usedSlots = Integer.parseInt(currentSlots);
             }
             if (usedSlots >= maxSlots) {
-                return false;
+                throw new DockerProvisionException("Not enough available slots");
             }
             usedSlots++;
             String slotIncrease = Integer.toString(usedSlots);
-            return dss.putSwap(slotKey, currentSlots, slotIncrease);
+
+            for (int i=0;;i++) {
+                slotProps.clear();
+                allocatedSlotName = slotNamePrefix + i;
+                slotPropertyKey = "engine." + dockerEngineId + ".slot." + allocatedSlotName;                
+                slotProps.put("slot."+ dockerEngineId + ".run." + runName + "." + allocatedSlotName, "active");
+                if (dss.putSwap(slotPropertyKey, null, runName)) {
+                    break;
+                }
+            }
+
+            if (dss.putSwap(slotKey, currentSlots, slotIncrease, slotProps)) {
+                String resourcePropertyPrefix = "slot." + allocatedSlotName;
+
+                HashMap<String, String> resProps = new HashMap<>();
+                resProps.put(resourcePropertyPrefix, runName);
+                resProps.put(resourcePropertyPrefix + ".allocated", allocatedTime);
+                
+                dynamicResource.put(resProps);
+                
+                return new DockerSlotImpl(dockerManager, engine, allocatedSlotName, resProps);
+            }
+            else {
+                //Retry as another slot was allocated during the allocation of this slot
+                dss.delete(slotPropertyKey);
+                return allocateAndCreateDssSlot(dockerEngineId, runName, engine);
+            }
         } catch (DockerManagerException e) {
             logger.error("Could not find number of docker slots in CPS");
         } catch (DynamicStatusStoreException e) {
             logger.warn("Could not perform putswap on dss");
         }
-        return false;
+        throw new DockerProvisionException("Failed to provision docker slot");
     }
-
-    /**
-     * Used during the provisioning of a docker slot to claim a slot name and set the resource in the dss.
-     * 
-     * @param dockerHost
-     * @param runName
-     * @return
-     * @throws DockerProvisionException
-     */
-    private DockerSlotImpl createDssDockerSlot(String dockerEngineId, String runName, DockerEngineImpl dockerEngine)
-            throws DockerProvisionException {
-        String slotNamePrefix = "SLOT_" + runName + "_";
-        String allocatedSlotName;
-        String allocatedTime = Instant.now().toString();
-        
-        try {
-            for (int i=0;;i++) {
-                allocatedSlotName = slotNamePrefix + i;
-
-                String slotPropertyKey = "engine." + dockerEngineId + ".slot." + allocatedSlotName;
-
-                HashMap<String,String> otherProps = new HashMap<>();
-                otherProps.put("slot."+ dockerEngineId + ".run." + runName + "." + allocatedSlotName, "active");
-
-                if (dss.putSwap(slotPropertyKey, null, runName, otherProps)) { 
-                    String resourcePropertyPrefix = "slot." + allocatedSlotName;
-
-                    HashMap<String, String> resProps = new HashMap<>();
-                    resProps.put(resourcePropertyPrefix, runName);
-                    resProps.put(resourcePropertyPrefix + ".allocated", allocatedTime);
-                    
-                    dynamicResource.put(resProps);
-                    
-                    return new DockerSlotImpl(dockerManager, dockerEngine, allocatedSlotName, resProps);
-                }
-            }
-        } catch (DynamicStatusStoreException e) {
-            throw new DockerProvisionException("Unable to set slot in DSS", e);
-        }
-    } 
 
     /**
      * Free a specifed docker slot in terms of the container and environment
@@ -372,8 +364,9 @@ public class DockerEnvironment implements IDockerEnvironment {
             dynamicResource.delete(dockerSlot.getResourcePropertyKeys());
 
             String prefix = "engine." + dockerEngineId + ".slot." + dockerSlot.getSlotName();
+            String slotKey = "slot." + dockerEngineId + ".run." + framework.getTestRunName() + "." + dockerSlot.getSlotName();
             HashMap<String,String> otherProps = new HashMap<>();
-            otherProps.put("slot." + dockerEngineId + ".run." + framework.getTestRunName() + "." + dockerSlot.getSlotName(), "free");
+            otherProps.put(slotKey, "free");
             if(!dss.putSwap("engine." + dockerEngineId + ".current.slots", currentSlot, Integer.toString(usedSlots), otherProps)) {
                 Thread.sleep(200);
                 freeDockerSlot(dockerSlot);
@@ -383,6 +376,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             HashSet<String> delProps = new HashSet<>();
             delProps.add(prefix);
             delProps.add(prefix + ".allocated");
+            delProps.add(slotKey);
             dss.delete(delProps);
             logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker engine: " + dockerEngineId);
         }catch (Exception e) {

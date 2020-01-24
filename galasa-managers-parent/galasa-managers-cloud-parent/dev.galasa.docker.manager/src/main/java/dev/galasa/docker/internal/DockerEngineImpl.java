@@ -1,25 +1,20 @@
 package dev.galasa.docker.internal;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.zip.GZIPInputStream;
 
 import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
@@ -407,7 +402,9 @@ public class DockerEngineImpl implements IDockerEngine {
 			TarArchiveInputStream tais = new TarArchiveInputStream(in);
 			ArchiveEntry ae = tais.getNextEntry();
 			if (ae == null) {
+				bos.close();
 				tais.close();
+				in.close();
 				throw new HttpClientException("Could not find entry in returned archive file");
 			}
 			
@@ -415,10 +412,8 @@ public class DockerEngineImpl implements IDockerEngine {
 			output = bos.toString();
 			
 			bos.close();
-			in.close();
 			tais.close();
-			response.close();
-			
+			in.close();		
 		} catch (HttpClientException |IOException e) {
 			logger.error("Failed to read returned output", e);
 		}

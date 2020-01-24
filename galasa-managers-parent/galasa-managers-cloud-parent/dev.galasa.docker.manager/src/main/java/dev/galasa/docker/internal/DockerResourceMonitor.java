@@ -104,7 +104,7 @@ public class DockerResourceMonitor implements Runnable {
 				}
 			}
         } catch (Exception e) {
-            logger.error("message", e);
+            logger.error("Failed to delete stale dss properties for runtName: " + runName, e);
         }
     }
     

@@ -41,7 +41,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
  */
 @Component(service = { IManager.class })
 public class DockerManagerImpl extends AbstractManager implements IDockerManager {
-    protected final static String               NAMESPACE = "docker";
+    protected final String               NAMESPACE = "docker";
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
     protected IHttpManagerSpi                   httpManager;
@@ -64,7 +64,11 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
             @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
 
         super.initialise(framework, allManagers, activeManagers, testClass);
-        this.youAreRequired(allManagers, activeManagers);
+
+        List<AnnotatedField> ourFields = findAnnotatedFields(DockerManagerField.class);
+        if (!ourFields.isEmpty()) {
+            youAreRequired(allManagers, activeManagers);
+        }
 
         try {
             DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
@@ -159,10 +163,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      */
     @Override
     public void provisionGenerate() throws ManagerException {
-        logger.info("Finding all docker related annotations");
-        generateDockerFields();
         logger.info("Registering docker registries");
         registerDockerRegistires();
+        logger.info("Finding all docker related annotations");
+        generateDockerFields();
     }
 
     /**
