@@ -1,0 +1,40 @@
+#Create a number of namespaces to be used by Galasa
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa1
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa2
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa4
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa4
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa5
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galasa6

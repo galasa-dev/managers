@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -36,6 +38,12 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.util.Config;
 
+/**
+ * Represents a Kubernetes Cluster
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class KubernetesClusterImpl {
 
     private final Log                        logger = LogFactory.getLog(getClass());
@@ -82,6 +90,11 @@ public class KubernetesClusterImpl {
         }
     }
 
+    /**
+     * Allocate a Namespace Object and set the fields in the DSS
+     * 
+     * @return A Namespace object or null if there is no room
+     */
     public KubernetesNamespaceImpl allocateNamespace() {
         try {
             IResourcePoolingService pooling = this.framework.getResourcePoolingService();
@@ -154,6 +167,14 @@ public class KubernetesClusterImpl {
         }
     }
     
+    /**
+     * Create an APIClient for the Cluster.  Can't use the default way of doing this as we 
+     * could be talking to two or clusters at the same time.
+     * 
+     * @return An APIClient.  never null
+     * @throws KubernetesManagerException - If there is a problem with authentication or communication
+     */
+    @NotNull
     public synchronized ApiClient getApi() throws KubernetesManagerException {
         if (this.apiClient != null) {
             return this.apiClient;
@@ -182,9 +203,9 @@ public class KubernetesClusterImpl {
         
         try {
             this.apiClient = Config.fromToken(url.toString(), new String(((ICredentialsToken)credentials).getToken()), validateCertificate);
+            //TODO do, raise issue because Quantity is not being serialized properly
             applyNewGson(this.apiClient);
             this.apiClient.setDebugging(false);
-            //TODO do, raise issue because Quantity is not being serialized properly
             
             return this.apiClient;
         } catch(Exception e) {
@@ -193,6 +214,12 @@ public class KubernetesClusterImpl {
         
     }
 
+    /**
+     * For some reason, v7 of the client does not serialize Quantity or IntOrString.  Should raise an issue
+     * but in the meantime...
+     * 
+     * @param apiClient The APClient to rework
+     */
     private static void applyNewGson(ApiClient apiClient) {
         
         JSON json = apiClient.getJSON();
@@ -211,6 +238,13 @@ public class KubernetesClusterImpl {
         json.setGson(newGson);   
     }
 
+    /**
+     * Retrieve the hostname that should be used to access nodeports.
+     * 
+     * @return The hostname, will default to the API hostname
+     * @throws KubernetesManagerException If there is a problem with the CPS
+     */
+    @NotNull
     public String getNodePortProxyHostname() throws KubernetesManagerException {
         return KubernetesNodePortProxy.get(this);
     }

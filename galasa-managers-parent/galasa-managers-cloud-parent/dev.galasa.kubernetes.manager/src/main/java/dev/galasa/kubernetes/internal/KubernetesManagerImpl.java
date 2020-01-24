@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +40,12 @@ import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * The Kubernetes Manager implementation
+ * 
+ * @author Michael Baylis
+ *
+ */
 @Component(service = { IManager.class })
 public class KubernetesManagerImpl extends AbstractManager implements IKubernetesManagerSpi {
 
@@ -74,6 +85,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
         youAreRequired(allManagers, activeManagers);
         
+        //*** Initialise the CPS and DSS fields
         try {
             KubernetesPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
@@ -86,7 +98,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
             throw new KubernetesManagerException("Unable to provide the DSS for the Kubernetes Manager", e);
         }
 
-        //*** Load the YAML supported types
+        //*** Load the YAML supported types so that the YAML can serialize
         Yaml.addModelMap("v1", "ConfigMap", V1ConfigMap.class);
         Yaml.addModelMap("v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
         Yaml.addModelMap("v1", "Service", V1Service.class);
@@ -189,6 +201,9 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     }
 
 
+    /**
+     * Delete all the supported resources in the namespaces
+     */
     @Override
     public void provisionDiscard() {
 

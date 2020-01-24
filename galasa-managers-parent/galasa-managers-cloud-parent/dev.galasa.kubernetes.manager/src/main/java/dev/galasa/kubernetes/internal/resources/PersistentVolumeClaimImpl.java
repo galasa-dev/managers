@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal.resources;
 
 import dev.galasa.kubernetes.IPersistentVolumeClaim;
@@ -6,6 +11,12 @@ import dev.galasa.kubernetes.internal.KubernetesNamespaceImpl;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * PersistentVolumeClaim implementation
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class PersistentVolumeClaimImpl implements IPersistentVolumeClaim {
     
     private final V1PersistentVolumeClaim pvc;

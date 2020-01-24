@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
@@ -7,6 +12,12 @@ import org.osgi.service.component.annotations.Deactivate;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.kubernetes.KubernetesManagerException;
 
+/**
+ * Kubernetes Manager CPS singleton
+ * 
+ * @author Michael Baylis
+ *
+ */
 @Component(service = KubernetesPropertiesSingleton.class, immediate = true)
 public class KubernetesPropertiesSingleton {
 

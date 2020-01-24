@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal.resources;
 
 import java.net.InetSocketAddress;
@@ -11,6 +16,12 @@ import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServicePort;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * Service implementations
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class ServiceImpl implements IService {
     
     private final KubernetesNamespaceImpl namespace;
