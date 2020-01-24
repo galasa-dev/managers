@@ -1,10 +1,7 @@
-bin/
-target/
-.settings/
+.vscode
+.DS_Store
 .project
 .classpath
-.factorypath
-.apt_generated/
-.apt_generated_tests/
-.DS_Store
-
+**/.settings/
+**/target/
+**/bin/

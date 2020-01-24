@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ras
+  labels:
+    name: ras
+spec:
+  serviceName: ras
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ras
+  template:
+    metadata:
+      name: ras
+      labels:
+        app: ras
+    spec:
+      containers:
+      - name: couchdb
+        image: couchdb:2.3.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5984
+          name: couchdbport
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5984
+          initialDelaySeconds: 60
+          periodSeconds: 60
+        volumeMounts:
+        - mountPath: /opt/couchdb/data
+          name: data-disk
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+        platform: hdc
+      volumes:
+      - name: data-disk
+        persistentVolumeClaim:
+          claimName: claim-couchdb
+  volumeClaimTemplates:
+  - metadata:
+      name: data-disk
+    spec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 100M
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ras
+  labels:
+    app: ras
+spec:
+  ports:
+  - port: 5984
+    targetPort: 5984
+    name: couchdbport
+  selector:
+    app: ras

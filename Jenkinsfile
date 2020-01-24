@@ -226,6 +226,33 @@ pipeline {
                      dir('dev.galasa.docker.manager.ivt') {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
                      }
+                     
+                     dir('dev.galasa.kubernetes.manager') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
+
+                     dir('dev.galasa.kubernetes.manager.ivt') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
+                  }
+               }
+            }
+         }
+      }
+      stage('Managers Other Maven') {
+         steps {
+            withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
+               withSonarQubeEnv('GalasaSonarQube') {
+                  dir('galasa-managers-parent/galasa-managers-other-parent') {
+                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+
+                     dir('dev.galasa.galasaecosystem.manager') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
+
+                     dir('dev.galasa.galasaecosystem.manager.ivt') {
+                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
+                     }
                   }
                }
             }
