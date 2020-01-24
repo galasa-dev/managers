@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      name: api
+      labels:
+        app: api
+    spec:
+      terminationGracePeriodSeconds: 5
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+        platform: hdc
+      containers:
+      - name: api
+        image: docker.galasa.dev/galasa-master-api-amd64:${dockerVersion}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8181
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8181
+          initialDelaySeconds: 20
+          periodSeconds: 30
+        volumeMounts:
+        - name: bootstrap
+          mountPath: /galasa/etc/dev.galasa.bootstrap.cfg
+          subPath: dev.galasa.bootstrap.cfg
+        - name: datadir
+          mountPath: /galasa/data/galasa
+      volumes:
+      - name: bootstrap
+        configMap:
+          name: bootstrap-file
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: pvc-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  ports:
+  - port: 8181
+    name: http
+    targetPort: 8181
+  selector:
+    app: api

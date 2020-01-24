@@ -1,5 +1,6 @@
 package dev.galasa.kubernetes.internal;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.internal.properties.KubernetesCredentials;
 import dev.galasa.kubernetes.internal.properties.KubernetesMaxSlots;
 import dev.galasa.kubernetes.internal.properties.KubernetesNamespaces;
+import dev.galasa.kubernetes.internal.properties.KubernetesNodePortProxy;
 import dev.galasa.kubernetes.internal.properties.KubernetesUrl;
 import dev.galasa.kubernetes.internal.properties.KubernetesValidateCertificate;
 import io.kubernetes.client.custom.IntOrString;
@@ -152,15 +154,12 @@ public class KubernetesClusterImpl {
         }
     }
     
-    protected synchronized ApiClient getApi() throws KubernetesManagerException {
+    public synchronized ApiClient getApi() throws KubernetesManagerException {
         if (this.apiClient != null) {
             return this.apiClient;
         }
         
-        String url = KubernetesUrl.get(this);
-        if (url == null) {
-            throw new KubernetesManagerException("The URL for the Kubernetes API cluster is missing, set the CPS property kubernetes.cluster." + this.clusterId + ".url");
-        }
+        URL url = KubernetesUrl.get(this);
         boolean validateCertificate = KubernetesValidateCertificate.get(this);
         String credentialsId = KubernetesCredentials.get(this);
         
@@ -182,7 +181,7 @@ public class KubernetesClusterImpl {
         
         
         try {
-            this.apiClient = Config.fromToken(url, new String(((ICredentialsToken)credentials).getToken()), validateCertificate);
+            this.apiClient = Config.fromToken(url.toString(), new String(((ICredentialsToken)credentials).getToken()), validateCertificate);
             applyNewGson(this.apiClient);
             this.apiClient.setDebugging(false);
             //TODO do, raise issue because Quantity is not being serialized properly
@@ -210,6 +209,10 @@ public class KubernetesClusterImpl {
         Gson newGson = newGsonBuilder.create();
         
         json.setGson(newGson);   
+    }
+
+    public String getNodePortProxyHostname() throws KubernetesManagerException {
+        return KubernetesNodePortProxy.get(this);
     }
     
     

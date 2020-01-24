@@ -15,6 +15,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IResourceManagement;
 import dev.galasa.framework.spi.IResourceManagementProvider;
 import dev.galasa.framework.spi.ResourceManagerException;
+import dev.galasa.kubernetes.internal.properties.KubernetesPropertiesSingleton;
 
 @Component(service= {IResourceManagementProvider.class})
 public class KubernetesResourceManagement implements IResourceManagementProvider {
@@ -33,6 +34,7 @@ public class KubernetesResourceManagement implements IResourceManagementProvider
 		try {
 			this.dss = this.framework.getDynamicStatusStoreService(KubernetesManagerImpl.NAMESPACE);
 			this.cps = this.framework.getConfigurationPropertyService(KubernetesManagerImpl.NAMESPACE);
+			KubernetesPropertiesSingleton.setCps(cps);
 		} catch (Exception e) {
 			throw new ResourceManagerException("Unable to initialise Kubernetes resource monitor", e);
 		}
