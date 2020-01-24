@@ -20,29 +20,29 @@ import dev.galasa.zosmf.ZosmfManagerException;
  *
  */
 public interface IZosmfManagerSpi extends IZosmfManager {
-	
-	/**
-	 * Returns a zOSMF server for a single image
-	 * @param image requested image
-	 * @return the zOSMF server
-	 * @throws ZosmfManagerException
-	 */
-	public IZosmf newZosmf(IZosImage image) throws ZosmfManagerException;
-	
-	/**
-	 * Returns a map of zOSMF servers for a cluster
-	 * @param clusterId the cluster id
-	 * @return the zOSMF servers
-	 * @throws ZosmfManagerException
-	 */
-	public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException;
+    
+    /**
+     * Returns a zOSMF server for a single image
+     * @param image requested image
+     * @return the zOSMF server
+     * @throws ZosmfManagerException
+     */
+    public IZosmf newZosmf(IZosImage image) throws ZosmfManagerException;
+    
+    /**
+     * Returns a map of zOSMF servers for a cluster
+     * @param clusterId the cluster id
+     * @return the zOSMF servers
+     * @throws ZosmfManagerException
+     */
+    public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException;
 
-	/**
-	 * Returns a {@link IZosmfRestApiProcessor} for a single image
-	 * @param image
-	 * @param restrictToImage
-	 * @return {@link IZosmfRestApiProcessor}
-	 * @throws ZosmfManagerException
-	 */
-	public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException;
+    /**
+     * Returns a {@link IZosmfRestApiProcessor} for a single image
+     * @param image
+     * @param restrictToImage
+     * @return {@link IZosmfRestApiProcessor}
+     * @throws ZosmfManagerException
+     */
+    public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException;
 }

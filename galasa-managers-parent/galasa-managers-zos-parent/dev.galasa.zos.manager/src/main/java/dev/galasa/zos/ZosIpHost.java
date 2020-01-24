@@ -27,10 +27,10 @@ import dev.galasa.ipnetwork.IIpHost;
 @ZosManagerField
 @ValidAnnotatedFields({ IIpHost.class })
 public @interface ZosIpHost {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
-	
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
+    
 }

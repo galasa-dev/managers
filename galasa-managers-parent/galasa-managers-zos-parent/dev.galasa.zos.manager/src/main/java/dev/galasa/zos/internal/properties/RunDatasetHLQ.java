@@ -29,22 +29,22 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class RunDatasetHLQ extends CpsProperties {
-	
-	public static String get(@NotNull IZosImage image) throws ZosManagerException {
-		String imageId = image.getImageID();
-		try {
-			String runDatasetHLQ = getStringNulled(ZosPropertiesSingleton.cps(), "run." + imageId, "dataset.hlq");
-			if (runDatasetHLQ == null) {
-				ICredentials creds = image.getDefaultCredentials();				
-				if (!(creds instanceof ICredentialsUsernamePassword)) {
-					throw new ZosManagerException("Unable to get the run username for image "  + imageId);
-				}
-				return ((ICredentialsUsernamePassword) creds).getUsername() + ".GALASA".toUpperCase();
-			}
-			return runDatasetHLQ.toUpperCase();
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the zOS run data set HLQ for image "  + imageId, e);
-		}
-	}
+    
+    public static String get(@NotNull IZosImage image) throws ZosManagerException {
+        String imageId = image.getImageID();
+        try {
+            String runDatasetHLQ = getStringNulled(ZosPropertiesSingleton.cps(), "run." + imageId, "dataset.hlq");
+            if (runDatasetHLQ == null) {
+                ICredentials creds = image.getDefaultCredentials();                
+                if (!(creds instanceof ICredentialsUsernamePassword)) {
+                    throw new ZosManagerException("Unable to get the run username for image "  + imageId);
+                }
+                return ((ICredentialsUsernamePassword) creds).getUsername() + ".GALASA".toUpperCase();
+            }
+            return runDatasetHLQ.toUpperCase();
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the zOS run data set HLQ for image "  + imageId, e);
+        }
+    }
 
 }

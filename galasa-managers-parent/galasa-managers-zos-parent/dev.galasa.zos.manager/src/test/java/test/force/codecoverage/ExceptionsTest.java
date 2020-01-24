@@ -11,16 +11,16 @@ import org.junit.Test;
 import dev.galasa.zosbatch.ZosBatchException;
 
 public class ExceptionsTest {
-	
-	@Test
-	public void testZosManagerException() {
-		Throwable throwable = new ZosBatchException();
-		new ZosBatchException("Message");		
-		new ZosBatchException("Message", throwable);		
-		new ZosBatchException(throwable);		
-		new ZosBatchException("Message", throwable, false, false);		
-		Assert.assertTrue("dummy",true);
-	}
-	
-	
+    
+    @Test
+    public void testZosManagerException() {
+        Throwable throwable = new ZosBatchException();
+        new ZosBatchException("Message");        
+        new ZosBatchException("Message", throwable);        
+        new ZosBatchException(throwable);        
+        new ZosBatchException("Message", throwable, false, false);        
+        Assert.assertTrue("dummy",true);
+    }
+    
+    
 }

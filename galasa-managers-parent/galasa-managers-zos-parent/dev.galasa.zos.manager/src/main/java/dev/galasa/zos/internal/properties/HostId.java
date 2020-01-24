@@ -27,18 +27,18 @@ import dev.galasa.zos.internal.ZosProvisionedImageImpl;
  *
  */
 public class HostId extends CpsProperties {
-	
-	public static String get(@NotNull ZosProvisionedImageImpl image) throws ZosManagerException {
-		String imageId = image.getImageID();
-		try {
-			String hostid = getStringNulled(ZosPropertiesSingleton.cps(), "image." + imageId, "iphostid");
-			if (hostid == null) {
-				return imageId.toLowerCase();
-			}
-			return hostid.toLowerCase();
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the zOS image "  + imageId + " ip host id", e);
-		}
-	}
+    
+    public static String get(@NotNull ZosProvisionedImageImpl image) throws ZosManagerException {
+        String imageId = image.getImageID();
+        try {
+            String hostid = getStringNulled(ZosPropertiesSingleton.cps(), "image." + imageId, "iphostid");
+            if (hostid == null) {
+                return imageId.toLowerCase();
+            }
+            return hostid.toLowerCase();
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the zOS image "  + imageId + " ip host id", e);
+        }
+    }
 
 }

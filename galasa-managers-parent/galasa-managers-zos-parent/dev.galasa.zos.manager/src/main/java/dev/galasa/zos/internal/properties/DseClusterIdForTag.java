@@ -25,12 +25,12 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class DseClusterIdForTag extends CpsProperties {
-	
-	public static String get(@NotNull String tag) throws ZosManagerException {
-		try {
-			return getStringNulled(ZosPropertiesSingleton.cps(), "dse.tag", "clusterid", tag);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the DSE cluster id for tag '"  + tag + "'", e);
-		}
-	}
+    
+    public static String get(@NotNull String tag) throws ZosManagerException {
+        try {
+            return getStringNulled(ZosPropertiesSingleton.cps(), "dse.tag", "clusterid", tag);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the DSE cluster id for tag '"  + tag + "'", e);
+        }
+    }
 }

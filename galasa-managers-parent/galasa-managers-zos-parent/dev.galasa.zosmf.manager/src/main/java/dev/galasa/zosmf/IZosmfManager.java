@@ -10,5 +10,5 @@ package dev.galasa.zosmf;
  *
  */
 public interface IZosmfManager {
-	
+    
 }
