@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.kubernetes;
 
 import java.lang.annotation.ElementType;
@@ -34,9 +39,9 @@ import dev.galasa.kubernetes.internal.KubernetesManagerField;
 public @interface KubernetesNamespace {
 
     /**
-     * The <code>tag</code> is used to identify the Kubernetes names to other Managers or Shared Environments.  If a test is using multiple 
+     * The <code>kubernetesNamespaceTag</code> is used to identify the Kubernetes names to other Managers or Shared Environments.  If a test is using multiple 
      * Kubernetes Namespace, each separate Kubernetes Namesapce must have a unique tag.  If two Kubernetes Namespace use the same tag, they will refer to the 
      * same actual Kubernetes Namespace.
      */
-    public String kubernetesNamespaceTag() default "primary";
+    public String kubernetesNamespaceTag() default "PRIMARY";
 }
