@@ -4,14 +4,14 @@ Note: Isolated namespaces must be provided for the Kubernetes Manager to use.  T
 exists on the namespace once a Test has finished.
 
 The following are example scripts and YAML files necessary to create namspaces:-
-1. [Namespace creation script](https://www.google.com)
-1. [Create Service Account for the Manager to use (including api token)](https://www.google.com)
-1. [The RBAC rules to be applied to each namespace](https://www.google.com)
+1. [Namespace creation script](https://github.com/galasa-dev/managers/blob/master/galasa-managers-parent/galasa-managers-cloud-parent/dev.galasa.kubernetes.manager/examples/namespaces.yaml)
+1. [Create Service Account for the Manager to use (including api token)](https://github.com/galasa-dev/managers/blob/master/galasa-managers-parent/galasa-managers-cloud-parent/dev.galasa.kubernetes.manager/examples/account.sh)
+1. [The RBAC rules to be applied to each namespace](https://github.com/galasa-dev/managers/blob/master/galasa-managers-parent/galasa-managers-cloud-parent/dev.galasa.kubernetes.manager/examples/rbac.yaml)
 The following snippet shows the minimum code that is required to request a Docker container in a Galasa test:
 
 ### Obtain a Kubernetes namespace
 
-```
+```java
 @KubernetesNamespace()
 public IKubernetesNamespace namespace;
 ```
@@ -22,7 +22,7 @@ There is no limit in Galasa on how many Kuberentes namespaces can be used within
 
 ### Create a resource on the namespace
 
-```
+```java
 @ArtifactManager
 public IArtifactManager artifactManager
 
@@ -46,7 +46,7 @@ The resource is created but is not checked to see if the resource has been start
 
 ### Retrieve a pod log
 
-```
+```java
 IStatefulSet statefulSet = (IStatefulSet)namespace.createResource(yaml);
 
 List<IPodLog> podLogs = statefulSet.getPodLogs("containername");
