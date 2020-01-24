@@ -10,9 +10,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,16 +24,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
+import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.kubernetes.IConfigMap;
+import dev.galasa.kubernetes.IDeployment;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.IPersistentVolumeClaim;
 import dev.galasa.kubernetes.IPodLog;
@@ -41,7 +44,6 @@ import dev.galasa.kubernetes.IReplicaSet;
 import dev.galasa.kubernetes.IResource;
 import dev.galasa.kubernetes.IService;
 import dev.galasa.kubernetes.IStatefulSet;
-import dev.galasa.kubernetes.IDeployment;
 import dev.galasa.kubernetes.KubernetesManagerException;
 
 public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
@@ -173,108 +175,120 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
 
     public void build() throws GalasaEcosystemManagerException {
+        logger.info("Starting the build of Galasa Ecosystem " + this.tag + " Kubernetes namespace " + this.namespace.getFullId());
+        Instant buildStart = Instant.now();
+        try {
+            //*** Build all the external services, need these for some configmaps
+            logger.info("Building external services Kubernetes resources");
+            build(ResourceType.CPS_EXTERNAL_SERVICE);
+            build(ResourceType.RAS_EXTERNAL_SERVICE);
+            build(ResourceType.API_EXTERNAL_SERVICE);
+            build(ResourceType.METRICS_EXTERNAL_SERVICE);
+            build(ResourceType.METRICS_HEALTH_SERVICE);
+            build(ResourceType.RESMON_EXTERNAL_SERVICE);
+            build(ResourceType.ENGINE_EXTERNAL_SERVICE);
+            build(ResourceType.PROMETHEUS_EXTERNAL_SERVICE);
+            build(ResourceType.GRAFANA_EXTERNAL_SERVICE);
 
-        //*** Build all the external services, need these for some configmaps
-        logger.info("Building external services Kubernetes resources");
-        build(ResourceType.CPS_EXTERNAL_SERVICE);
-        build(ResourceType.RAS_EXTERNAL_SERVICE);
-        build(ResourceType.API_EXTERNAL_SERVICE);
-        build(ResourceType.METRICS_EXTERNAL_SERVICE);
-        build(ResourceType.METRICS_HEALTH_SERVICE);
-        build(ResourceType.RESMON_EXTERNAL_SERVICE);
-        build(ResourceType.ENGINE_EXTERNAL_SERVICE);
-        build(ResourceType.PROMETHEUS_EXTERNAL_SERVICE);
-        build(ResourceType.GRAFANA_EXTERNAL_SERVICE);
+            //*** Generate the known URLs
+            generateKnownUrls();
+            modifyBootstrapConfigMap();
 
-        //*** Generate the known URLs
-        generateKnownUrls();
-        modifyBootstrapConfigMap();
+            //*** Build all the internal services
+            logger.info("Building external services Kubernetes resources");
+            build(ResourceType.CPS_INTERNAL_SERVICE);
+            build(ResourceType.RAS_INTERNAL_SERVICE);
+            build(ResourceType.API_INTERNAL_SERVICE);
+            build(ResourceType.METRICS_INTERNAL_SERVICE);
+            build(ResourceType.RESMON_INTERNAL_SERVICE);
+            build(ResourceType.ENGINE_INTERNAL_SERVICE);
+            build(ResourceType.PROMETHEUS_INTERNAL_SERVICE);
+            build(ResourceType.GRAFANA_INTERNAL_SERVICE);
 
-        //*** Build all the internal services
-        logger.info("Building external services Kubernetes resources");
-        build(ResourceType.CPS_INTERNAL_SERVICE);
-        build(ResourceType.RAS_INTERNAL_SERVICE);
-        build(ResourceType.API_INTERNAL_SERVICE);
-        build(ResourceType.METRICS_INTERNAL_SERVICE);
-        build(ResourceType.RESMON_INTERNAL_SERVICE);
-        build(ResourceType.ENGINE_INTERNAL_SERVICE);
-        build(ResourceType.PROMETHEUS_INTERNAL_SERVICE);
-        build(ResourceType.GRAFANA_INTERNAL_SERVICE);
+            //*** Create all the Persistent Volume Claims
+            logger.info("Building Persistent Volume Claim Kubernetes resources");
+            build(ResourceType.API_PVC);
+            build(ResourceType.PROMETHEUS_PVC);
+            build(ResourceType.GRAFANA_PVC);
 
-        //*** Create all the Persistent Volume Claims
-        logger.info("Building Persistent Volume Claim Kubernetes resources");
-        build(ResourceType.API_PVC);
-        build(ResourceType.PROMETHEUS_PVC);
-        build(ResourceType.GRAFANA_PVC);
+            //*** Build the config maps.   
+            logger.info("Building Config Maps Kubernetes resources");
+            build(ResourceType.CONFIG_CONFIGMAP);     
+            build(ResourceType.BOOTSTRAP_CONFIGMAP);     
+            build(ResourceType.PROMETHEUS_CONFIGMAP);     
+            build(ResourceType.GRAFANA_CONFIGMAP);     
+            build(ResourceType.GRAFANA_DASHBOARD_CONFIGMAP);     
+            build(ResourceType.GRAFANA_AUTODASHBOARD_CONFIGMAP);     
+            build(ResourceType.GRAFANA_PROVISIONING_CONFIGMAP);    
 
-        //*** Build the config maps.   
-        logger.info("Building Config Maps Kubernetes resources");
-        build(ResourceType.CONFIG_CONFIGMAP);     
-        build(ResourceType.BOOTSTRAP_CONFIGMAP);     
-        build(ResourceType.PROMETHEUS_CONFIGMAP);     
-        build(ResourceType.GRAFANA_CONFIGMAP);     
-        build(ResourceType.GRAFANA_DASHBOARD_CONFIGMAP);     
-        build(ResourceType.GRAFANA_AUTODASHBOARD_CONFIGMAP);     
-        build(ResourceType.GRAFANA_PROVISIONING_CONFIGMAP);    
-        
-        //*** Starting Prometheus and Grafana early as they take a while and doesn't need the CPS
-        logger.info("Building Prometheus and Grafana early, as doesn't need the CPS");
-        build(ResourceType.PROMETHEUS_DEPLOYMENT);
-        build(ResourceType.GRAFANA_DEPLOYMENT);
+            //*** Starting Prometheus and Grafana early as they take a while and doesn't need the CPS
+            logger.info("Building Prometheus and Grafana early, as doesn't need the CPS");
+            build(ResourceType.PROMETHEUS_DEPLOYMENT);
+            build(ResourceType.GRAFANA_DEPLOYMENT);
 
-        //*** Create all the StatefulSets
-        logger.info("Building Stateful Set Kubernetes resources");
-        build(ResourceType.CPS_STATEFULSET);
-        build(ResourceType.RAS_STATEFULSET);
+            //*** Create all the StatefulSets
+            logger.info("Building Stateful Set Kubernetes resources");
+            build(ResourceType.CPS_STATEFULSET);
+            build(ResourceType.RAS_STATEFULSET);
 
-        //*** Wait for the CPS to have completed startup
-        logger.info("Waiting for the CPS and RAS to have completed startup");
-        waitForMessageInAllPodLogs(ResourceType.CPS_STATEFULSET, "etcd", "serving insecure client requests on [::]:2379", 180);
-        waitForMessageInAllPodLogs(ResourceType.RAS_STATEFULSET, "couchdb", "Apache CouchDB has started on http://any:5986/", 180);
+            //*** Wait for the CPS to have completed startup
+            logger.info("Waiting for the CPS and RAS to have completed startup");
+            waitForMessageInAllPodLogs(ResourceType.CPS_STATEFULSET, "etcd", "serving insecure client requests on [::]:2379", 180);
+            waitForMessageInAllPodLogs(ResourceType.RAS_STATEFULSET, "couchdb", "Apache CouchDB has started on http://any:5986/", 180);
 
-        //*** Set the RAS, CREDS properties in the CPS
-        logger.info("Setting up initial properties in the CPS");
-        storeCpsProperty("framework.dynamicstatus.store", this.dssUri.toString());
-        storeCpsProperty("framework.resultarchive.store", this.rasUri.toString());
-        storeCpsProperty("framework.credentials.store", this.credsUri.toString());
+            //*** Set the RAS, CREDS properties in the CPS
+            logger.info("Setting up initial properties in the CPS");
+            storeCpsProperty("framework.dynamicstatus.store", this.dssUri.toString());
+            storeCpsProperty("framework.resultarchive.store", this.rasUri.toString());
+            storeCpsProperty("framework.credentials.store", this.credsUri.toString());
 
-        //*** Create the API and bootstrap servers
-        logger.info("Starting the API server for the bootstrap service");
-        build(ResourceType.API_DEPLOYMENT);
-        waitForBootstrapPort();
-        
-        //*** Start the remaining Deployments
-        logger.info("Starting the remaining Deployments");
-        build(ResourceType.METRICS_DEPLOYMENT);
-        build(ResourceType.RESMON_DEPLOYMENT);
-        build(ResourceType.ENGINE_DEPLOYMENT);
-        
-        logger.info("Waiting for all the remaining services to start");
-        waitForMessageInAllPodLogs(ResourceType.RESMON_DEPLOYMENT, "resource-monitor", "ResourceManagement.run - Resource Manager has started", 180);
-        waitForMessageInAllPodLogs(ResourceType.ENGINE_DEPLOYMENT, "engine-controller", "K8sController.run - Kubernetes controller has started", 180);
-        waitForMessageInAllPodLogs(ResourceType.METRICS_DEPLOYMENT, "metrics", "MetricsServer.run - Metrics Server has started", 180);
-        waitForMessageInAllPodLogs(ResourceType.PROMETHEUS_DEPLOYMENT, "prometheus", "Server is ready to receive web requests", 180);
-        waitForMessageInAllPodLogs(ResourceType.GRAFANA_DEPLOYMENT, "grafana", "msg=\"HTTP Server Listen\" logger=http.server address=[::]:3000", 180);
-        
-        logger.info("Kubernetes Ecosystem successfully built on " + this.namespace.getFullId());
+            //*** Create the API and bootstrap servers
+            logger.info("Starting the API server for the bootstrap service");
+            build(ResourceType.API_DEPLOYMENT);
+            waitForBootstrapPort();
 
-        logger.info("--------------------------------------------------------------------------------------------");
-        logger.info("Bootstrap URL = " + this.apiUrl.toString() + "/bootstrap");
-        logger.info("CPS URI       = " + this.cpsUri.toString());
-        logger.info("DSS URI       = " + this.dssUri.toString());
-        logger.info("RAS URI       = " + this.rasUri.toString());
-        logger.info("CREDS URI     = " + this.credsUri.toString());
-        logger.info("API URL       = " + this.apiUrl.toString());
-        logger.info("");
-        logger.info("Resource Monitor Metrics URL  = " + this.resmonMetricsUrl);
-        logger.info("Resource Monitor Health URL   = " + this.resmonHealthUrl);
-        logger.info("Metrics Metrics URL           = " + this.metricsMetricsUrl);
-        logger.info("Metrics Health Health URL     = " + this.metricsHealthUrl);
-        logger.info("Engine Controller Metrics URL = " + this.engineMetricsUrl);
-        logger.info("Engine Controller Health URL  = " + this.engineHealthUrl);
-        logger.info("Prometheus URL                = " + this.prometheusUrl);
-        logger.info("Grafana URL                   = " + this.grafanaUrl);
-        logger.info("--------------------------------------------------------------------------------------------");
+            //*** Start the remaining Deployments
+            logger.info("Starting the remaining Deployments");
+            build(ResourceType.METRICS_DEPLOYMENT);
+            build(ResourceType.RESMON_DEPLOYMENT);
+            build(ResourceType.ENGINE_DEPLOYMENT);
+
+            logger.info("Waiting for all the remaining services to start");
+            waitForMessageInAllPodLogs(ResourceType.RESMON_DEPLOYMENT, "resource-monitor", "ResourceManagement.run - Resource Manager has started", 180);
+            waitForMessageInAllPodLogs(ResourceType.ENGINE_DEPLOYMENT, "engine-controller", "K8sController.run - Kubernetes controller has started", 180);
+            waitForMessageInAllPodLogs(ResourceType.METRICS_DEPLOYMENT, "metrics", "MetricsServer.run - Metrics Server has started", 180);
+            waitForMessageInAllPodLogs(ResourceType.PROMETHEUS_DEPLOYMENT, "prometheus", "Server is ready to receive web requests", 180);
+            waitForMessageInAllPodLogs(ResourceType.GRAFANA_DEPLOYMENT, "grafana", "msg=\"HTTP Server Listen\" logger=http.server address=[::]:3000", 180);
+            
+            Instant buildEnd = Instant.now();
+            long seconds = buildEnd.getEpochSecond() - buildStart.getEpochSecond();
+
+            logger.info("Kubernetes Ecosystem successfully built on " + this.namespace.getFullId() + " in " + seconds + " seconds");
+
+            logger.info("--------------------------------------------------------------------------------------------");
+            logger.info("Bootstrap URL = " + this.apiUrl.toString() + "/bootstrap");
+            logger.info("CPS URI       = " + this.cpsUri.toString());
+            logger.info("DSS URI       = " + this.dssUri.toString());
+            logger.info("RAS URI       = " + this.rasUri.toString());
+            logger.info("CREDS URI     = " + this.credsUri.toString());
+            logger.info("API URL       = " + this.apiUrl.toString());
+            logger.info("");
+            logger.info("Resource Monitor Metrics URL  = " + this.resmonMetricsUrl);
+            logger.info("Resource Monitor Health URL   = " + this.resmonHealthUrl);
+            logger.info("Metrics Metrics URL           = " + this.metricsMetricsUrl);
+            logger.info("Metrics Health Health URL     = " + this.metricsHealthUrl);
+            logger.info("Engine Controller Metrics URL = " + this.engineMetricsUrl);
+            logger.info("Engine Controller Health URL  = " + this.engineHealthUrl);
+            logger.info("Prometheus URL                = " + this.prometheusUrl);
+            logger.info("Grafana URL                   = " + this.grafanaUrl);
+            logger.info("--------------------------------------------------------------------------------------------");
+        } catch(GalasaEcosystemManagerException e) {
+            try {
+                this.namespace.saveNamespaceConfiguration();
+            } catch (KubernetesManagerException e1) {
+                logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + this.tag);
+            }
+        }
     }
 
     private void waitForBootstrapPort() throws GalasaEcosystemManagerException {
@@ -342,13 +356,13 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             this.rasUri = new URI("couchdb:" + this.rasUrl.toString());
 
             this.apiUrl = getHttpUrl(ResourceType.API_EXTERNAL_SERVICE, 8181);
-            
+
             this.metricsMetricsUrl = getHttpUrl(ResourceType.METRICS_EXTERNAL_SERVICE, 9010);
             this.metricsHealthUrl = getHttpUrl(ResourceType.METRICS_HEALTH_SERVICE, 9011);
-            
+
             this.resmonMetricsUrl = getHttpUrl(ResourceType.RESMON_EXTERNAL_SERVICE, 9010);
             this.resmonHealthUrl = getHttpUrl(ResourceType.RESMON_EXTERNAL_SERVICE, 9011);
-            
+
             this.engineMetricsUrl = getHttpUrl(ResourceType.ENGINE_EXTERNAL_SERVICE, 9010);
             this.engineHealthUrl = getHttpUrl(ResourceType.ENGINE_EXTERNAL_SERVICE, 9011);
 
@@ -358,14 +372,14 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             throw new GalasaEcosystemManagerException("Problem generating the default URLs", e);
         }
     }
-    
+
     private URL getHttpUrl(ResourceType type, int port) throws KubernetesManagerException, MalformedURLException {
         IService service = (IService) this.resources.get(type).getK8sResource();
         InetSocketAddress socketAddress = service.getSocketAddressForPort(port);
         return new URL("http://" + socketAddress.getHostString() + ":" + Integer.toString(socketAddress.getPort()));
     }
-    
-    private void storeCpsProperty(String key, String value) throws GalasaEcosystemManagerException {
+
+    private void storeCpsProperty(@NotNull String key, @NotNull String value) throws GalasaEcosystemManagerException {
         try {
             Encoder encoder = Base64.getEncoder();
             IHttpClient httpClient = getEtcdHttpClient();
@@ -378,6 +392,42 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
         } catch (KubernetesManagerException | HttpClientException e) {
             throw new GalasaEcosystemManagerException("Problem setting CPS property " + key + "=" + value, e);
+        }
+    }
+
+    private String retrieveCpsProperty(@NotNull String key) throws GalasaEcosystemManagerException {
+        try {
+            Encoder encoder = Base64.getEncoder();
+            Decoder decoder = Base64.getDecoder();
+            IHttpClient httpClient = getEtcdHttpClient();
+
+            JsonObject dssJson = new JsonObject();
+            dssJson.addProperty("key", new String(encoder.encode(key.getBytes())));
+
+            HttpClientResponse<JsonObject> response = httpClient.postJson("/v3/kv/range", dssJson);
+            JsonArray kvs = response.getContent().getAsJsonArray("kvs");
+            if (kvs != null && kvs.size() == 1) {
+                String encoded = kvs.get(0).getAsJsonObject().get("value").getAsString();
+                return new String(decoder.decode(encoded));
+            }
+            
+            return null;
+        } catch (KubernetesManagerException | HttpClientException e) {
+            throw new GalasaEcosystemManagerException("Problem retrieving CPS property " + key, e);
+        }
+    }
+
+    private void deleteCpsProperty(@NotNull String key) throws GalasaEcosystemManagerException {
+        try {
+            Encoder encoder = Base64.getEncoder();
+            IHttpClient httpClient = getEtcdHttpClient();
+
+            JsonObject dssJson = new JsonObject();
+            dssJson.addProperty("key", new String(encoder.encode(key.getBytes())));
+
+            httpClient.postJson("/v3/kv/deleterange", dssJson);
+        } catch (KubernetesManagerException | HttpClientException e) {
+            throw new GalasaEcosystemManagerException("Problem deleting CPS property " + key, e);
         }
     }
 
@@ -481,13 +531,16 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     }
 
     public void stop() {
-        // TODO Auto-generated method stub
-
+        try {
+            this.namespace.saveNamespaceConfiguration();
+        } catch (KubernetesManagerException e1) {
+            logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + this.tag);
+        }
     }
 
     public void discard() {
-        // TODO Auto-generated method stub
-
+       // Do not discard, we will leave this for the Kubernetes Manager to clean up
+        logger.debug("Not discarding Galasa Ecosystem " + this.tag + ", leaving for the Kubernetes Manager to do it");
     }
 
     private static String getProperty(Map<String, Object> yaml, String name) {
@@ -521,35 +574,8 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     }
 
 
-    @SuppressWarnings("unchecked")
-    private static void putProperty(Map<String, Object> yaml, String name, Object value) {
-        String[] nameParts = name.split("\\.");
-
-        Map<String, Object> lastMap = yaml;
-        for(int i = 0; i < nameParts.length - 1; i++) {
-            Object currentLevel = lastMap.get(nameParts[i]);
-
-            if (currentLevel == null || !(currentLevel instanceof Map)) {
-                LinkedHashMap<String, Object> newLevel = new LinkedHashMap<String, Object>();
-                lastMap.put(nameParts[i], newLevel);
-                lastMap = newLevel;
-            } else {
-                lastMap = (Map<String, Object>) currentLevel;
-            }
-        }
-
-        lastMap.put(nameParts[nameParts.length - 1], value);
-    }
-
-
-
-
-
-
-
-
     private enum ResourceType {
-         
+
         CONFIG_CONFIGMAP("ConfigMap", "config", IConfigMap.class),
 
         CPS_EXTERNAL_SERVICE("Service", "cps-external", IService.class),
@@ -565,13 +591,13 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         API_EXTERNAL_SERVICE("Service", "api-external", IService.class),
         API_INTERNAL_SERVICE("Service", "api", IService.class),
         API_DEPLOYMENT("Deployment","api", IDeployment.class),
-        
+
         PROMETHEUS_EXTERNAL_SERVICE("Service", "prometheus-external", IService.class),
         PROMETHEUS_INTERNAL_SERVICE("Service", "prometheus", IService.class),
         PROMETHEUS_CONFIGMAP("ConfigMap", "prometheus-config", IConfigMap.class),
         PROMETHEUS_PVC("PersistentVolumeClaim", "pvc-prometheus", IPersistentVolumeClaim.class),
         PROMETHEUS_DEPLOYMENT("Deployment","prometheus", IDeployment.class),
-        
+
         GRAFANA_EXTERNAL_SERVICE("Service", "grafana-external", IService.class),
         GRAFANA_INTERNAL_SERVICE("Service", "grafana", IService.class),
         GRAFANA_CONFIGMAP("ConfigMap", "grafana-config", IConfigMap.class),
@@ -580,28 +606,26 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         GRAFANA_AUTODASHBOARD_CONFIGMAP("ConfigMap", "grafana-auto-dashboard", IConfigMap.class),
         GRAFANA_PVC("PersistentVolumeClaim", "pvc-grafana", IPersistentVolumeClaim.class),
         GRAFANA_DEPLOYMENT("Deployment","grafana", IDeployment.class),
-        
+
         METRICS_EXTERNAL_SERVICE("Service", "metrics-external", IService.class),
         METRICS_HEALTH_SERVICE("Service", "metrics-health-external", IService.class),
         METRICS_INTERNAL_SERVICE("Service", "metrics", IService.class),
         METRICS_DEPLOYMENT("Deployment", "metrics", IDeployment.class),
-        
+
         RESMON_EXTERNAL_SERVICE("Service", "resource-monitor-external", IService.class),
         RESMON_INTERNAL_SERVICE("Service", "resource-monitor", IService.class),
         RESMON_DEPLOYMENT("Deployment", "resource-monitor", IDeployment.class),
-        
+
         ENGINE_EXTERNAL_SERVICE("Service", "engine-controller-external", IService.class),
         ENGINE_INTERNAL_SERVICE("Service", "engine-controller", IService.class),
         ENGINE_DEPLOYMENT("Deployment", "engine-controller", IDeployment.class);
 
         private final String type;
         private final String name;
-        private final Class<? extends IResource> k8sResourceType;
 
         private ResourceType(String type, String name, Class<? extends IResource> k8sResourceType) {
             this.type = type;
             this.name = name;
-            this.k8sResourceType = k8sResourceType;
         }
 
         public String getType() {
@@ -615,10 +639,6 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         @Override
         public String toString() {
             return type + "/" + name;
-        }
-
-        public Class<? extends IResource> getK8sResourceType() {
-            return k8sResourceType;
         }
     }
 
@@ -650,6 +670,87 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             return type.toString();
         }
 
+    }
+
+
+    @Override
+    public @NotNull URI getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        try {
+        switch(endpoint) {
+            case API:
+                return this.apiUrl.toURI();
+            case CPS:
+                return this.cpsUri;
+            case CREDS:
+                return this.credsUri;
+            case DSS:
+                return this.dssUri;
+            case ENGINE_CONTROLLER_HEALTH:
+                return this.engineHealthUrl.toURI();
+            case ENGINE_CONTROLLER_METRICS:
+                return this.engineMetricsUrl.toURI();
+            case GRAFANA:
+                return this.grafanaUrl.toURI();
+            case METRICS_HEALTH:
+                return this.metricsHealthUrl.toURI();
+            case METRICS_METRICS:
+                return this.metricsMetricsUrl.toURI();
+            case PROMETHEUS:
+                return this.prometheusUrl.toURI();
+            case RAS:
+                return this.rasUri;
+            case RESOURCE_MANAGEMENT_HEALTH:
+                return this.resmonHealthUrl.toURI();
+            case RESOURCE_MANAGEMENT_METRICS:
+                return this.resmonMetricsUrl.toURI();
+            default:
+                throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
+        }
+        } catch (URISyntaxException e) {
+            throw new GalasaEcosystemManagerException("Problem with endpoint URI", e);
+        }
+    }
+
+    @Override
+    public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        if (property == null || property.trim().isEmpty()) {
+            throw new GalasaEcosystemManagerException("Property name is missing");
+        }
+ 
+        return retrieveCpsProperty(property);
+    }
+
+    @Override
+    public void setCpsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+        if (property == null || property.trim().isEmpty()) {
+            throw new GalasaEcosystemManagerException("Property name is missing");
+        }
+
+        if (value == null || value.trim().isEmpty()) {
+            deleteCpsProperty(property);
+        } else {
+            storeCpsProperty(property, value.trim());
+        }
+    }
+
+    @Override
+    public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        return getCpsProperty(property);
+    }
+
+    @Override
+    public void setDssProperty(@NotNull String property, @NotNull String value) throws GalasaEcosystemManagerException {
+        setCpsProperty(property, value);
+    }
+
+    @Override
+    public String getCredsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        return getCpsProperty(property);
+    }
+
+    @Override
+    public void setCredsProperty(@NotNull String property, @NotNull String value) throws GalasaEcosystemManagerException {
+        setCpsProperty(property, value);
     }
 
 

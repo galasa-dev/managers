@@ -17,6 +17,9 @@ public interface IKubernetesNamespace {
      * @return the Full ID of the namespace in the form cluserid/namespaceid
      */
     public String getFullId();
+    
+    public void saveNamespaceConfiguration() throws KubernetesManagerException;
+    public void saveNamespaceConfiguration(String storedArtifactPath) throws KubernetesManagerException;
 
 
 
