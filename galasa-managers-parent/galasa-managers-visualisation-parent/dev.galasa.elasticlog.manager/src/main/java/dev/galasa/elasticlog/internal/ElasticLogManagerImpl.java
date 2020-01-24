@@ -111,34 +111,25 @@ public class ElasticLogManagerImpl extends AbstractManager {
     }
 
     /**
-     * End of test class step, build and send the document request
+     * Test class result step, build and send the document request
      * 
      * @throws ManagerException
      */
-    public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        //Record test information
-    	this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
-    	this.runProperties.put("runId", this.framework.getTestRunName());
-        this.runProperties.put("startTimestamp", Date.from(this.framework.getTestRun().getQueued()));
-        //this.runProperties.put("endTimestamp", Date.from(this.framework.getTestRun().getFinished()));
-        this.runProperties.put("endTimestamp", Date.from(Instant.now()));
-        this.runProperties.put("requestor", this.framework.getTestRun().getRequestor());
-        //this.runProperties.put("result", this.framework.getTestRun().getResult());
-        this.runProperties.put("result", currentResult);
-        
-        String request = this.gson.toJson(this.runProperties);
-        logger.info("Sending Run Request to ElasticLog Endpoint");
-        logger.trace("Document Request -\n" + request);
-        sendRunData(request);
-        
-        return null;
+    @Override
+	  	public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
+	    //Record test information
+		this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
+		this.runProperties.put("runId", this.framework.getTestRunName());
+	    this.runProperties.put("startTimestamp", Date.from(this.framework.getTestRun().getQueued()));
+	    this.runProperties.put("endTimestamp", Date.from(Instant.now()));
+	    this.runProperties.put("requestor", this.framework.getTestRun().getRequestor());
+	    this.runProperties.put("result", finalResult);
+	    
+	    String request = this.gson.toJson(this.runProperties);
+	    logger.info("Sending Run Request to ElasticLog Endpoint");
+	    logger.trace("Document Request -\n" + request);
+	    sendRunData(request);
     }
-    
-//  Re enable when supported
-//  @Override
-//  public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
-//    
-//  }
     
     /**
      * Create the required indexes and send document requests
@@ -171,7 +162,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			client.postJson(index + "/_doc", request, false);
         
             //Create latest index if not present
-    		index = index + "latest";
+    		index = index + "_latest";
     		HttpClientResponse<String> indexResponse = client.head(ElasticLogEndpoint.get() + "/" + index);
 			if (indexResponse.getStatusCode() == 404)
                 client.putJson(index, mapping, false);
