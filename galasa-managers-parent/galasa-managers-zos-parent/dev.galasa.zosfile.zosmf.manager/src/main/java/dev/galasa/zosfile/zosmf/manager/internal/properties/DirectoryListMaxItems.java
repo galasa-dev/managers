@@ -24,20 +24,20 @@ import dev.galasa.zosfile.ZosFileManagerException;
  */
 public class DirectoryListMaxItems extends CpsProperties {
 
-	private static final int MAX_ITEMS = 1000;
+    private static final int MAX_ITEMS = 1000;
 
-	public static int get(String imageId) throws ZosFileManagerException {
-		try {
-			String maxItemsString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "unix", "directory.list.max.items", imageId);
+    public static int get(String imageId) throws ZosFileManagerException {
+        try {
+            String maxItemsString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "unix", "directory.list.max.items", imageId);
 
-			if (maxItemsString == null) {
-				return MAX_ITEMS;
-			} else {
-				return Integer.parseInt(maxItemsString);
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosFileManagerException("Problem asking the CPS for the directory list max items property for zOS image "  + imageId, e);
-		}
-	}
+            if (maxItemsString == null) {
+                return MAX_ITEMS;
+            } else {
+                return Integer.parseInt(maxItemsString);
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosFileManagerException("Problem asking the CPS for the directory list max items property for zOS image "  + imageId, e);
+        }
+    }
 
 }

@@ -16,15 +16,15 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ManagerTest {
-	
-	@Mock
-	private IZosmf zosmf; 
-	
-	@Test
-	public void testZosManagerException() throws ZosmfManagerException {
-		
-		Assert.assertEquals("dummy", null, zosmf.putText(null, null, null));
-	}
-	
-	
+    
+    @Mock
+    private IZosmf zosmf; 
+    
+    @Test
+    public void testZosManagerException() throws ZosmfManagerException {
+        
+        Assert.assertEquals("dummy", null, zosmf.putText(null, null, null));
+    }
+    
+    
 }

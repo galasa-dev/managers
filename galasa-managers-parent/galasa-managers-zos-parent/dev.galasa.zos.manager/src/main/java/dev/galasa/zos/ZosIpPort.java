@@ -27,17 +27,17 @@ import dev.galasa.ipnetwork.IIpPort;
 @ZosManagerField
 @ValidAnnotatedFields({ IIpPort.class })
 public @interface ZosIpPort {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
-	
-	
-	/**
-	 * The type of IP Port you require, this can be used to obtain ATTLS ports
-	 * The default is a standard non-special IP port
-	 */
-	String type() default "standard";
-	
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
+    
+    
+    /**
+     * The type of IP Port you require, this can be used to obtain ATTLS ports
+     * The default is a standard non-special IP port
+     */
+    String type() default "standard";
+    
 }

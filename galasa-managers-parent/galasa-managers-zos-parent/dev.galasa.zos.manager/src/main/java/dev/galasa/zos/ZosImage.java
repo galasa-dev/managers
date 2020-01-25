@@ -26,20 +26,20 @@ import dev.galasa.zos.internal.ZosManagerField;
 @ZosManagerField
 @ValidAnnotatedFields({ IZosImage.class })
 public @interface ZosImage {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
-	
-	/**
-	 * Capabilities required of this zOS Image, if any.
-	 */
-	String[] capabilities() default {};
-	
-	/**
-	 * Set a variable prefix to be filled in for this zOS Image
-	 * TODO: ****** TO BE SPECED OUT FURTHER  *****
-	 */
-	String variablePrefix() default "";
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
+    
+    /**
+     * Capabilities required of this zOS Image, if any.
+     */
+    String[] capabilities() default {};
+    
+    /**
+     * Set a variable prefix to be filled in for this zOS Image
+     * TODO: ****** TO BE SPECED OUT FURTHER  *****
+     */
+    String variablePrefix() default "";
 }

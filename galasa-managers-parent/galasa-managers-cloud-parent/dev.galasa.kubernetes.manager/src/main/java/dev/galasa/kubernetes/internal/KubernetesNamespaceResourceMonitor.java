@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.kubernetes.internal;
 
@@ -18,6 +18,12 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IResourceManagement;
 
+/**
+ * Clean up namespaces when a run is finished with it.
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class KubernetesNamespaceResourceMonitor implements Runnable {
 
 	private final IFramework                 framework;
@@ -61,7 +67,7 @@ public class KubernetesNamespaceResourceMonitor implements Runnable {
 						try {
 							KubernetesNamespaceImpl.deleteDss(runName, cluster, namespace, dss, this.framework);
 						} catch(Exception e) {
-							logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName);
+							logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName,e);
 						}
 					}
 				}
@@ -88,7 +94,7 @@ public class KubernetesNamespaceResourceMonitor implements Runnable {
 					try {
                         KubernetesNamespaceImpl.deleteDss(runName, cluster, namespace, dss, this.framework);
 					} catch(Exception e) {
-						logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName);
+						logger.error("Failed to discard namespace " + namespace + " on cluster " + cluster + " as run " + runName,e);
 					}
 				}
 			}

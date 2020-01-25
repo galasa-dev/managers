@@ -23,19 +23,19 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class ImageMaxSlots extends CpsProperties {
-	
-	private static final int DEFAULT_MAX_SLOTS = 2;
-	
-	public static int get(String imageId) throws ZosManagerException {
-		try {
-			String slots = getStringNulled(ZosPropertiesSingleton.cps(), "image", "max.slots", imageId);
-			if (slots == null)  {
-				return DEFAULT_MAX_SLOTS;
-			}
-			return Integer.parseInt(slots);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the zOS image "  + imageId+ " max slots", e);
-		}
-	}
+    
+    private static final int DEFAULT_MAX_SLOTS = 2;
+    
+    public static int get(String imageId) throws ZosManagerException {
+        try {
+            String slots = getStringNulled(ZosPropertiesSingleton.cps(), "image", "max.slots", imageId);
+            if (slots == null)  {
+                return DEFAULT_MAX_SLOTS;
+            }
+            return Integer.parseInt(slots);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the zOS image "  + imageId+ " max slots", e);
+        }
+    }
 
 }

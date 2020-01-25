@@ -23,18 +23,18 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class ConsoleExtraBundle extends CpsProperties {
-	
-	private static final String DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER = "dev.galasa.zosconsole.zosmf.manager";
-	
-	public static String get() throws ZosManagerException {
-		try {
-			String bundleName = getStringNulled(ZosPropertiesSingleton.cps(), "bundle.extra", "console.manager");
-			if (bundleName == null)  {
-				return DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER;
-			}
-			return bundleName;
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking CPS for the console manager extra bundle name", e); 
-		}
-	}
+    
+    private static final String DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER = "dev.galasa.zosconsole.zosmf.manager";
+    
+    public static String get() throws ZosManagerException {
+        try {
+            String bundleName = getStringNulled(ZosPropertiesSingleton.cps(), "bundle.extra", "console.manager");
+            if (bundleName == null)  {
+                return DEFAULT_BUNDLE_EXTRA_CONSOLE_MANAGER;
+            }
+            return bundleName;
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking CPS for the console manager extra bundle name", e); 
+        }
+    }
 }

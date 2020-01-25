@@ -25,13 +25,13 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class ImageIdForTag extends CpsProperties {
-	
-	public static String get(@NotNull String tag) throws ZosManagerException {
-		try {
-			return getStringNulled(ZosPropertiesSingleton.cps(), "tag", "imageid", tag);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the image id for tag '"  + tag + "'", e);
-		}
-	}
+    
+    public static String get(@NotNull String tag) throws ZosManagerException {
+        try {
+            return getStringNulled(ZosPropertiesSingleton.cps(), "tag", "imageid", tag);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the image id for tag '"  + tag + "'", e);
+        }
+    }
 
 }

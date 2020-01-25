@@ -23,10 +23,10 @@ import dev.galasa.zosmf.internal.ZosmfManagerField;
 @ZosmfManagerField
 @ValidAnnotatedFields({ IZosmf.class })
 public @interface Zosmf {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
 
 }

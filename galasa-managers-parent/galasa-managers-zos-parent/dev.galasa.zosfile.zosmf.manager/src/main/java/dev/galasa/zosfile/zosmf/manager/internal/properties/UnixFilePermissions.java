@@ -24,20 +24,20 @@ import dev.galasa.zosfile.ZosFileManagerException;
  */
 public class UnixFilePermissions extends CpsProperties {
 
-	private static final String UNIX_FILE_PERMISSIONS = "rwxrwxr-x";
+    private static final String UNIX_FILE_PERMISSIONS = "rwxrwxr-x";
 
-	public static String get(String imageId) throws ZosFileManagerException {
-		try {
-			String modeString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosfile","unix.file.permissions", imageId);
+    public static String get(String imageId) throws ZosFileManagerException {
+        try {
+            String modeString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosfile","unix.file.permissions", imageId);
 
-			if (modeString == null) {
-				return UNIX_FILE_PERMISSIONS;
-			} else {
-				return modeString;
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosFileManagerException("Problem asking the CPS for the default file permissions property for zOS image "  + imageId, e);
-		}
-	}
+            if (modeString == null) {
+                return UNIX_FILE_PERMISSIONS;
+            } else {
+                return modeString;
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosFileManagerException("Problem asking the CPS for the default file permissions property for zOS image "  + imageId, e);
+        }
+    }
 
 }

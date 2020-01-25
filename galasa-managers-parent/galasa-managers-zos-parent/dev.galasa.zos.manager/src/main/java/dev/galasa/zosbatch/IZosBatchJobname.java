@@ -15,9 +15,9 @@ package dev.galasa.zosbatch;
  */
 public interface IZosBatchJobname {
 
-	/**
-	 * Get the name of the zOS batch Jobname
-	 */
-	public String getName();
-	
+    /**
+     * Get the name of the zOS batch Jobname
+     */
+    public String getName();
+    
 }

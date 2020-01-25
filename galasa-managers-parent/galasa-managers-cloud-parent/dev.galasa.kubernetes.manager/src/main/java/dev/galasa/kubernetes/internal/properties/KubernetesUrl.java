@@ -1,4 +1,14 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal.properties;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.validation.constraints.NotNull;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
@@ -27,10 +37,14 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  */
 public class KubernetesUrl extends CpsProperties {
 
-    public static String get(KubernetesClusterImpl cluster) throws KubernetesManagerException {
+    public static @NotNull URL get(KubernetesClusterImpl cluster) throws KubernetesManagerException {
         try {
-            return getStringNulled(KubernetesPropertiesSingleton.cps(), "cluster." + cluster.getId(), "url") ;
-        } catch (ConfigurationPropertyStoreException e) {
+            String url = getStringNulled(KubernetesPropertiesSingleton.cps(), "cluster." + cluster.getId(), "url");
+            if (url == null) {
+                throw new KubernetesManagerException("Missing the API URL for Kubernetes Cluster " + cluster.getId() + ", set property kubernetes.cluster." + cluster.getId() + ".url");
+            }
+            return new URL(url) ;
+        } catch (ConfigurationPropertyStoreException | MalformedURLException e) {
             throw new KubernetesManagerException("Problem retrieving the url for the cluster " + cluster.getId(), e);
         }
     }
