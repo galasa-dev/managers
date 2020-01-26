@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.lang.annotation.Annotation;
@@ -32,6 +37,12 @@ import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
 
+/**
+ * The Galasa Ecosystem Manager
+ * 
+ * @author Michael Baylis
+ *
+ */
 @Component(service = { IManager.class })
 public class GalasaEcosystemManagerImpl extends AbstractManager {
 
