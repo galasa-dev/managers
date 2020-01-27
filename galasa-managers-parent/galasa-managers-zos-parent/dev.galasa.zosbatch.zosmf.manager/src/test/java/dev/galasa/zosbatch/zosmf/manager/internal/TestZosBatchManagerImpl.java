@@ -21,14 +21,17 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.ZosBatchException;
@@ -40,6 +43,7 @@ import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfProper
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
+@PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBatchManagerImpl {
     
     private ZosBatchManagerImpl zosBatchManager;
@@ -218,6 +222,20 @@ public class TestZosBatchManagerImpl {
         exceptionRule.expectMessage(StringStartsWith.startsWith("Unable to get image for tag"));
         
         zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations);
+    }
+    
+    @Test
+    public void testNewZosBatchJobnameImpl() throws Exception {
+    	IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
+        PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
+        PowerMockito.spy(CpsProperties.class);
+        PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage(StringStartsWith.startsWith("Problem getting batch jobname prefix"));
+    	
+        zosBatchManagerSpy.newZosBatchJobnameImpl("image");
     }
     
     class DummyTestClass {
