@@ -23,11 +23,13 @@ import com.google.gson.JsonObject;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosconsole.IZosConsoleCommand;
 import dev.galasa.zosconsole.ZosConsoleException;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.zosconsole.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
+import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -90,11 +92,11 @@ public class TestZosConsoleImpl {
 	}
 
 	@Test
-    public void testIssueCommandConsoleNameException() throws ZosConsoleException, ZosmfException {
+    public void testIssueCommandConsoleNameException() throws ZosmfManagerException, ZosConsoleManagerException {
         exceptionRule.expect(ZosConsoleException.class);
         exceptionRule.expectMessage("Unable to issue console command");
-	    Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
-        
+        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenThrow(new ZosmfManagerException("exception"));
+                
         zosConsole.issueCommand("command", "name");
     }
 }

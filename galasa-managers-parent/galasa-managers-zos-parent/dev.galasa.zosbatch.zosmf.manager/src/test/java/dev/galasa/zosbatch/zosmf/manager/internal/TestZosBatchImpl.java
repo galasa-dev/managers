@@ -85,19 +85,20 @@ public class TestZosBatchImpl {
     }
     
     @Test
-    public void testNewZosBatchJob() throws Exception {
+    public void testNewZosBatchJob() throws ZosBatchException {
         Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJob", zosBatchJobMock);
         Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
     }
     
     @Test
-    public void testNewZosBatchJobException() throws Exception {
+    public void testNewZosBatchJobException() throws ZosBatchException {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Unable to submit batch job");
         ZosBatchJobImpl zosBatchJobNull = null;
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJob", zosBatchJobNull);
         Whitebox.setInternalState(zosBatchSpy, "image", zosImageMock);
-        Assert.assertEquals("Should return the mocked batch job", zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock), zosBatchJobMock);
+
+        zosBatchSpy.newZosBatchJob("JCL", zosJobnameMock);
     }
 }
