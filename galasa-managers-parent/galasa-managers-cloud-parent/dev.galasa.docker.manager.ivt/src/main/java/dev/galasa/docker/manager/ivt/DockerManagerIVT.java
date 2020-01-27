@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.docker.manager.ivt;
 
 import org.apache.commons.logging.Log;
@@ -8,6 +13,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
@@ -92,7 +98,7 @@ public class DockerManagerIVT {
         InputStream isHtml =  bundleResources.retrieveFile("/test1.html");
 
         // Store it in the container 
-//        container.storeFile("/usr/local/apache2/htdocs/test1.html", isHtml);     
+        container.storeFile("/usr/local/apache2/htdocs/test1.html", isHtml);     
         
         // Check it is there via ls command
         IDockerExec exec = container.exec("/bin/ls","-l","/usr/local/apache2/htdocs/test1.html");
@@ -145,11 +151,8 @@ public class DockerManagerIVT {
      */
     @Test
     public void retrieveFile() throws DockerManagerException {
-//        String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
+       String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
         
-//        assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>JAT Docker Test</h1>");
-
-    }
-    
-    
+       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
+    }   
 }

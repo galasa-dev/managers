@@ -12,6 +12,7 @@ public enum ContentType {
     APPLICATION_XML(org.apache.http.entity.ContentType.APPLICATION_XML),
     APPLICATION_JSON(org.apache.http.entity.ContentType.APPLICATION_JSON),
     APPLICATION_OCTET_STREAM(org.apache.http.entity.ContentType.APPLICATION_OCTET_STREAM),
+    DEFAULT_BINARY(org.apache.http.entity.ContentType.DEFAULT_BINARY),
     APPLICATION_X_TAR("application/x-tar"),
     MULTIPART_FORM_DATA(org.apache.http.entity.ContentType.MULTIPART_FORM_DATA),
     APPLICATION_FORM_URLENCODED(org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED),

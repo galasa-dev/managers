@@ -1,6 +1,9 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.docker.internal.properties;
-
-import java.net.URL;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.DockerRegistryImpl;

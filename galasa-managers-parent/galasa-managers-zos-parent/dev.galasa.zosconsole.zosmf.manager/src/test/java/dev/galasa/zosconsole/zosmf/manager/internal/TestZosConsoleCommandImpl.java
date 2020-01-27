@@ -23,11 +23,13 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosconsole.ZosConsoleException;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.zosconsole.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
+import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -70,17 +72,19 @@ public class TestZosConsoleCommandImpl {
         ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
     	
 	    Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
-	    JsonObject jsonObject = new JsonObject();
-	    jsonObject.addProperty("cmd-response", "cmd-response");
-	    jsonObject.addProperty("cmd-response-key", "cmd-response-key");
-	    jsonObject.addProperty("reason", "reason");
-	    jsonObject.addProperty("return-code", 99);
-	    jsonObject.addProperty("reason-code", 99);
-		Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject );
+		Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
 	    Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
         zosConsoleCommand = new ZosConsoleCommandImpl(CONSOLE_COMMAND, CONSOLE_NAME, zosImageMock);
         zosConsoleCommandSpy = Mockito.spy(zosConsoleCommand);
+    }
+    
+    @Test
+    public void testConstructorException() throws ZosmfManagerException, ZosConsoleManagerException {
+    	exceptionRule.expect(ZosConsoleException.class);
+    	exceptionRule.expectMessage("exception");
+        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenThrow(new ZosmfManagerException("exception"));
+    	new ZosConsoleCommandImpl(CONSOLE_COMMAND, CONSOLE_NAME, zosImageMock);
     }
     
     @Test
@@ -90,7 +94,24 @@ public class TestZosConsoleCommandImpl {
     }
     
     @Test
-    public void testIssueCommandException() throws ZosConsoleException {
+    public void testIssueCommandException() throws ZosmfManagerException, ZosConsoleManagerException {
+    	exceptionRule.expect(ZosConsoleException.class);
+    	exceptionRule.expectMessage("exception");
+    	Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+    	zosConsoleCommand.issueCommand();
+    }
+    
+    @Test
+    public void testIssueCommandException1() throws ZosConsoleException, ZosmfException {
+    	exceptionRule.expect(ZosConsoleException.class);
+    	exceptionRule.expectMessage( "Unable to issue console command \"" + CONSOLE_COMMAND + "\"");
+	    Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
+    	
+    	zosConsoleCommand.issueCommand();
+    }
+    
+    @Test
+    public void testIssueCommandException2() throws ZosConsoleException {
     	exceptionRule.expect(ZosConsoleException.class);
     	exceptionRule.expectMessage("Console command \"" + CONSOLE_COMMAND + "\" failed. Reason \"reason\"");
 	    Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -106,9 +127,38 @@ public class TestZosConsoleCommandImpl {
 	}
 
 	@Test
-	public void testRequestResponse() {
-//    	zosConsoleCommand.requestResponse();
-    	Assert.assertTrue(true);	    
+	public void testRequestResponse() throws ZosConsoleException, ZosmfException {
+		Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+		
+    	Assert.assertEquals("requestResponse() should return the expected response", CONSOLE_RESOPNSE, zosConsoleCommand.requestResponse());
+	}
+
+	@Test
+	public void testRequestResponseNotFound() throws ZosConsoleException, ZosmfException {
+	    Whitebox.setInternalState(zosConsoleCommandSpy, "commandDelayedResponse", "NONE");
+		Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+	    Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+		
+	    Assert.assertEquals("requestResponse() should return the expected response", "NONE", zosConsoleCommandSpy.requestResponse());
+	}
+
+	@Test
+	public void testRequestResponseException() throws ZosConsoleException, ZosmfException {
+		exceptionRule.expect(ZosConsoleException.class);
+    	exceptionRule.expectMessage("exception");
+		Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+		
+		zosConsoleCommand.requestResponse();
+	}
+
+	@Test
+	public void testRequestResponseException1() throws ZosConsoleException, ZosmfException {
+    	exceptionRule.expect(ZosConsoleException.class);
+		exceptionRule.expectMessage( "Unable to issue console command \"" + CONSOLE_COMMAND + "\"");
+		Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+	    Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
+		
+    	zosConsoleCommand.requestResponse();
 	}
 
 	@Test
@@ -162,5 +212,15 @@ public class TestZosConsoleCommandImpl {
 		Assert.assertEquals("toString() should return the correct String", response, zosConsoleCommandSpy.toString());
 		
 		
+	}
+
+	private JsonObject getJsonObject() {
+	    JsonObject jsonObject = new JsonObject();
+	    jsonObject.addProperty("cmd-response", CONSOLE_RESOPNSE);
+	    jsonObject.addProperty("cmd-response-key", "cmd-response-key");
+	    jsonObject.addProperty("reason", "reason");
+	    jsonObject.addProperty("return-code", 99);
+	    jsonObject.addProperty("reason-code", 99);
+		return jsonObject;
 	}
 }
