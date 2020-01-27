@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.galasaecosystem;
 
 import java.lang.annotation.ElementType;
@@ -28,6 +33,9 @@ import dev.galasa.galasaecosystem.internal.GalasaEcosystemManagerField;
  * The <code>IKubernetesEcosystem</code> interface gives the test access to the URLs to all the services and API endpoints within the Ecosystem.
  * When the test starts to run, all the services will be up and verified.<br>
  * <br>
+ * The Test must provide a {@literal @}KubernetesNamespace IKubernetesNamespace annotation, as this will be where the Ecosystem will
+ * be provisioned in.  In the future, Docker and Linux will be options.
+ * <br>
  * The Galasa Ecosystem has it's own stable versions of the Kubernetes YAML files necessary to create the entire Ecosystem.  If you wish to override those and
  * use your own yaml files,  then use the yamlDirectory attribute.  If a resource is missing in the test's set,  then the stable version will be used. 
  * 
@@ -43,12 +51,12 @@ public @interface KubernetesEcosystem {
      * Ecosystems, each separate Ecosystem must have a unique tag.  If two Ecosystems use the same tag, they will refer to the 
      * same actual Ecosystem.
      */
-    public String ecosystemNamespaceTag() default "primary";
+    public String ecosystemNamespaceTag() default "PRIMARY";
     
     /**
      * The <code>kubernetesNamespaceTag</code> to identify which tagged Kubernetes Namespace is to be used to deploy the Galasa Ecosystem into.
      */
-    public String kubernetesNamespaceTag() default "primary";
+    public String kubernetesNamespaceTag() default "PRIMARY";
     
     /**
      * The <code>yamlDirectory</code> points to a resource directory within the test bundle that contains a set of override yaml files to use when creating the 

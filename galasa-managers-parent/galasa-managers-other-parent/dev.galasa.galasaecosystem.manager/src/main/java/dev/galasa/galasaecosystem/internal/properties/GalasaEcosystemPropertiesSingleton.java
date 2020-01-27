@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.galasaecosystem.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;

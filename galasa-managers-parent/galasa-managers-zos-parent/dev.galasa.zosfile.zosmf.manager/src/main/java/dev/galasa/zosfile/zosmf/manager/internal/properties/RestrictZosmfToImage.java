@@ -24,20 +24,20 @@ import dev.galasa.zosfile.ZosFileManagerException;
  */
 public class RestrictZosmfToImage extends CpsProperties {
 
-	private static final boolean RESTRICT_TO_IMAGE = false;
+    private static final boolean RESTRICT_TO_IMAGE = false;
 
-	public static boolean get(String imageId) throws ZosFileManagerException {
-		try {
-			String restrictString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosmf", "restrict.zosmf.to.image", imageId);
+    public static boolean get(String imageId) throws ZosFileManagerException {
+        try {
+            String restrictString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosmf", "restrict.zosmf.to.image", imageId);
 
-			if (restrictString == null) {
-				return RESTRICT_TO_IMAGE;
-			} else {
-				return Boolean.parseBoolean(restrictString);
-			}
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosFileManagerException("Problem asking the CPS for the restrict zOSMF to image property for zOS image "  + imageId, e);
-		}
-	}
+            if (restrictString == null) {
+                return RESTRICT_TO_IMAGE;
+            } else {
+                return Boolean.parseBoolean(restrictString);
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosFileManagerException("Problem asking the CPS for the restrict zOSMF to image property for zOS image "  + imageId, e);
+        }
+    }
 
 }

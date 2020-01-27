@@ -25,17 +25,17 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class ClusterImages extends CpsProperties {
-	
-	public static List<String> get(String clusterId) throws ZosManagerException {
-		try {
-			List<String> images = getStringList(ZosPropertiesSingleton.cps(), "cluster", clusterId + ".images");
-			if (images.isEmpty()) {
-				throw new ZosManagerException("Unable to locate zOS images for cluster " + clusterId + ", see property zos.cluster.*.images");
-			}
-			return images;
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the cluster images for cluster '"  + clusterId + "'", e);
-		}
-	}
+    
+    public static List<String> get(String clusterId) throws ZosManagerException {
+        try {
+            List<String> images = getStringList(ZosPropertiesSingleton.cps(), "cluster", clusterId + ".images");
+            if (images.isEmpty()) {
+                throw new ZosManagerException("Unable to locate zOS images for cluster " + clusterId + ", see property zos.cluster.*.images");
+            }
+            return images;
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the cluster images for cluster '"  + clusterId + "'", e);
+        }
+    }
 
 }
