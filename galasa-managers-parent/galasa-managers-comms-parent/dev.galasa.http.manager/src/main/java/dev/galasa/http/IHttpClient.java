@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.w3c.dom.Document;
 
