@@ -5,18 +5,15 @@
  */
 package dev.galasa.http.internal;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -63,6 +60,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.auth.BasicScheme;
@@ -325,7 +323,12 @@ public class HttpClientImpl implements IHttpClient {
     private void addHeaders(AbstractHttpMessage message, ContentType contentType, ContentType[] acceptTypes) {
 
         if (contentType != null) {
-            message.addHeader(HttpHeaders.CONTENT_TYPE, contentType.getC().getMimeType());
+            if(contentType.getC() != null) {
+                message.addHeader(HttpHeaders.CONTENT_TYPE, contentType.getC().getMimeType());
+            } else {
+                message.addHeader(HttpHeaders.CONTENT_TYPE, contentType.getMimeType());
+            }
+            
         }
 
         if (acceptTypes.length > 0) {
@@ -752,33 +755,53 @@ public class HttpClientImpl implements IHttpClient {
                 jaxbClasses, retry);
     }
 
-    public void getFile(Path destination, String path) {
+    public CloseableHttpResponse getFile(String path) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM });
+                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM, ContentType.APPLICATION_X_TAR });
 
-            CloseableHttpResponse repsonse = execute(request.buildRequest());
-            OutputStream output = Files.newOutputStream(destination);
-            
-            IOUtils.copy(repsonse.getEntity().getContent(), output);
-            repsonse.close();
-        } catch (Exception e) {
+            return execute(request.buildRequest());
+        } catch (HttpClientException e) {
             logger.error("Could not download file from speficifed path: "+ path, e);
+            throw new HttpClientException("Failed to get file",e);
         }
     }
 
-    public void putFile(String path, File file) {
+    public void putFile(String path, InputStream file) {    
         try {
-            HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(path, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN } ,
-                ContentType.APPLICATION_X_TAR);
-
-            request.setBody(file);
-
-            CloseableHttpResponse response = execute(request.buildRequest());
+            BufferedInputStream in = new BufferedInputStream(file);
+            CloseableHttpResponse response = putStream(path, null, ContentType.APPLICATION_X_TAR, in, new ContentType[] {
+                ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN }, null, false);
+            in.close();
             response.close();
+            file.close();
         } catch (HttpClientException | IOException e) {
+            logger.error("Failed to stream file.", e);
+        }
+    }
 
+    public CloseableHttpResponse putStream(String path, Map<String, String> queryParams, ContentType contentType, Object data,
+            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
+
+        HttpPut put = new HttpPut(buildUri(path, queryParams));
+
+        HttpClientContext context = HttpClientContext.create();
+        RequestConfig config = RequestConfig.custom().setExpectContinueEnabled(true).build();
+        context.setRequestConfig(config);
+
+        if(data instanceof InputStream) {
+            InputStreamEntity entity;
+            try {
+                entity = new InputStreamEntity((InputStream) data);
+                put.setEntity(entity);
+                addHeaders(put, contentType, acceptTypes);
+                return httpClient.execute(put, context);
+            } catch (IOException e) {
+               logger.error("IO error with input stream", e);
+               throw new HttpClientException(e);
+            }
+        } else {
+            throw new HttpClientException("Data was not an expected object type");
         }
     }
 

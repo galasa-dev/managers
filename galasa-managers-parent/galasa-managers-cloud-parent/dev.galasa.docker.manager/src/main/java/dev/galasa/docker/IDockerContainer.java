@@ -1,7 +1,13 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.docker;
 
 import java.util.List;
 import java.util.Map;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 
 /**
@@ -124,5 +130,9 @@ public interface IDockerContainer {
 	public boolean isRunning() throws DockerManagerException;
 	
 	public long     getExitCode() throws DockerManagerException;
+
+	public void storeFile(String path, InputStream file) throws DockerManagerException;
+
+	public String retrieveFile(String path) throws DockerManagerException;
 
 }
