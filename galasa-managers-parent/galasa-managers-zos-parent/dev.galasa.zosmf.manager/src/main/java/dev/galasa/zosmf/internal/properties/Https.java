@@ -23,20 +23,20 @@ import dev.galasa.zosmf.ZosmfManagerException;
  *
  */
 public class Https extends CpsProperties {
-	
-	private static final boolean USE_HTTPS = true;
-	
-	public static boolean get(String imageId) throws ZosmfManagerException {
-		try {
-			String https = getStringNulled(ZosmfPropertiesSingleton.cps(), "server", "https", imageId);
+    
+    private static final boolean USE_HTTPS = true;
+    
+    public static boolean get(String imageId) throws ZosmfManagerException {
+        try {
+            String https = getStringNulled(ZosmfPropertiesSingleton.cps(), "server", "https", imageId);
 
-			if (https == null) {
-				return USE_HTTPS;
-			}
-			return Boolean.valueOf(https);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server use https for zOS image "  + imageId, e);
-		}
-	}
+            if (https == null) {
+                return USE_HTTPS;
+            }
+            return Boolean.valueOf(https);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server use https for zOS image "  + imageId, e);
+        }
+    }
 
 }

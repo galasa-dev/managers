@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.InputStream;
@@ -46,6 +51,12 @@ import dev.galasa.kubernetes.IService;
 import dev.galasa.kubernetes.IStatefulSet;
 import dev.galasa.kubernetes.KubernetesManagerException;
 
+/**
+ * Deploy the Ecsosystem into a Kubernetes Namespace
+ * 
+ * @author Michael Baylis
+ *
+ */
 public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
     private final Log                        logger = LogFactory.getLog(getClass());
@@ -89,6 +100,11 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         this.namespace = namespace;
     }
 
+    /**
+     * Load the YAML resources from this bundle and the test bundle
+     * 
+     * @throws GalasaEcosystemManagerException
+     */
     protected void loadYamlResources() throws GalasaEcosystemManagerException {
 
         ArrayList<Map<String, Object>>   managerYaml = new ArrayList<>();
@@ -116,6 +132,8 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem loading the YAML for the Kubernetes resources from the manager bundle", e);
         }
+        
+        //*** TODO Load yaml from the test class
 
         //*** Search for all the resources we need to create the ecosystem
         for(ResourceType type : ResourceType.values()) {
@@ -126,6 +144,14 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     }
 
 
+    /**
+     * Retrieve the YAML for a resource type
+     * 
+     * @param managerYamls the yamls from this bundle
+     * @param testYamls the yamls from the test bundle
+     * @param type the resource type
+     * @throws GalasaEcosystemManagerException if a resource type cannot be found in either bundle
+     */
     private void locateYaml(ArrayList<Map<String, Object>> managerYamls,
             ArrayList<Map<String, Object>> testYamls, 
             ResourceType type) throws GalasaEcosystemManagerException {
@@ -143,6 +169,13 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         this.resources.put(type, resource);
     }
 
+    /**
+     * Locate a yaml in a bundle
+     * 
+     * @param yamls The bundle yamls to search
+     * @param type the resource type
+     * @return the yaml or null if not found
+     */
     private Resource locateYaml(ArrayList<Map<String, Object>> yamls, ResourceType type) {
         for(Map<String, Object> yaml : yamls) {
             String kind = getProperty(yaml, "kind");
@@ -155,14 +188,25 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         return null;
     }
 
+    /**
+     * Load all YAMLs from an inputstream and perform basic string replacement
+     * 
+     * @param yaml
+     * @param is
+     * @param list
+     * @throws GalasaEcosystemManagerException
+     */
     @SuppressWarnings("unchecked")
     private void loadYaml(Yaml yaml, InputStream is, List<Map<String, Object>> list) throws GalasaEcosystemManagerException {
         try {
+            //*** Load the yaml
             String yamlFile = IOUtils.toString(is, StandardCharsets.UTF_8);
+            //*** Perform string replacements, eg docker version
             for(Entry<String, String> entry : yamlReplacements.entrySet()) {
                 yamlFile = yamlFile.replace(entry.getKey(), entry.getValue());
             }
 
+            //*** convert to YAML objects and then load the contents
             for(Object o : yaml.loadAll(yamlFile) ) {
                 if (o instanceof Map) {
                     list.add((Map<String, Object>) o);

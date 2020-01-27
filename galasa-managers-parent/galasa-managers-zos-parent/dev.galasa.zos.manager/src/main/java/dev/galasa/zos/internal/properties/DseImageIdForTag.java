@@ -25,13 +25,13 @@ import dev.galasa.zos.ZosManagerException;
  *
  */
 public class DseImageIdForTag extends CpsProperties {
-	
-	public static String get(@NotNull String tag) throws ZosManagerException {
-		try {
-			return getStringNulled(ZosPropertiesSingleton.cps(), "dse.tag", "imageid", tag);
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ZosManagerException("Problem asking the CPS for the DSE image id for tag '"  + tag + "'", e);
-		}
-	}
+    
+    public static String get(@NotNull String tag) throws ZosManagerException {
+        try {
+            return getStringNulled(ZosPropertiesSingleton.cps(), "dse.tag", "imageid", tag);
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosManagerException("Problem asking the CPS for the DSE image id for tag '"  + tag + "'", e);
+        }
+    }
 
 }

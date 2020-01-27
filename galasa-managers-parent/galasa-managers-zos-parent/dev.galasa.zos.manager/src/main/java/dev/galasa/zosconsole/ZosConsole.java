@@ -23,9 +23,9 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @ZosConsoleField
 @ValidAnnotatedFields({ IZosConsole.class })
 public @interface ZosConsole {
-	
-	/**
-	 * The tag of the zOS Image this variable is to be populated with
-	 */
-	String imageTag() default "primary";
+    
+    /**
+     * The tag of the zOS Image this variable is to be populated with
+     */
+    String imageTag() default "primary";
 }

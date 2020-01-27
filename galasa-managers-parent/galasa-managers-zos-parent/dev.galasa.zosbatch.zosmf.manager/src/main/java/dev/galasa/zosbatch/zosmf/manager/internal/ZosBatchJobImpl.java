@@ -50,7 +50,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
  */
 public class ZosBatchJobImpl implements IZosBatchJob {
     
-    IZosmfRestApiProcessor zosmfApiProcessor;
+    private IZosmfRestApiProcessor zosmfApiProcessor;
     
     private IZosImage jobImage;
     private IZosBatchJobname jobname;
