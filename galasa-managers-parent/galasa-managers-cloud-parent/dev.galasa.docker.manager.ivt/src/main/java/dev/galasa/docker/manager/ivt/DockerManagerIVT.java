@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.docker.manager.ivt;
 
 import org.apache.commons.logging.Log;
@@ -148,6 +153,6 @@ public class DockerManagerIVT {
     public void retrieveFile() throws DockerManagerException {
        String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
         
-       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>JAT Docker Test</h1>");
+       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
     }   
 }

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.docker.internal;
 
 import java.io.BufferedInputStream;
@@ -157,7 +162,6 @@ public class DockerContainerImpl implements IDockerContainer {
     @Override
     public void start() throws DockerManagerException {
         startDockerContainer();
-
     }
 
     /**
@@ -178,6 +182,7 @@ public class DockerContainerImpl implements IDockerContainer {
             dockerEngine.startContainer(containerID);
             logger.info("Started Docker container: " + tag);
             Thread.sleep(2000);
+            alreadyUp = true;
         } catch (Exception e) {
             throw new DockerManagerException("Failed to start docker container: " + tag, e);
         }
@@ -281,7 +286,7 @@ public class DockerContainerImpl implements IDockerContainer {
                 if (hostPort instanceof JsonObject) {
                     String sHostIp;
                     int iHostPort;
-                    JsonElement hostIP = ((JsonObject) hostPort).get("HostIP");
+                    JsonElement hostIP = ((JsonObject) hostPort).get("HostIp");
                     JsonElement hPort = ((JsonObject) hostPort).get("HostPort");
 
                     if (hostIP == null || hostIP.getAsString().equals("0.0.0.0")) {
@@ -434,11 +439,11 @@ public class DockerContainerImpl implements IDockerContainer {
      * 
      * E.g 'GALASA_U12_database'
      * 
-     * @param dockerSlot2
+     * @param dockerSlot
      * @return String - name of container
      * @throws DynamicStatusStoreException
      */
-    private String getContainerName(DockerSlotImpl dockerSlot2) throws DynamicStatusStoreException {
+    private String getContainerName(DockerSlotImpl dockerSlot) throws DynamicStatusStoreException {
         String slotName = dockerSlot.getSlotName();
         String runName = dss.get("engine." + dockerEngine.getEngineId() + ".slot." + slotName);
         // E.g 'GALASA_U12_ExampleContainerName'
@@ -566,6 +571,7 @@ public class DockerContainerImpl implements IDockerContainer {
             dockerSlot.free();
         } catch (Exception e) {
             logger.warn("Unable to free slot");
+            throw new DockerManagerException("Unable to free docker slot: " + tag, e);
         }
     }
 
@@ -583,7 +589,6 @@ public class DockerContainerImpl implements IDockerContainer {
         InputStream is = new FileInputStream(tar);
        
         dockerEngine.sendArchiveFile(this, is,locPath.getParent().toString()+"/");
-        tar.delete();
         } catch (FileNotFoundException e) {
             logger.error("Failed to find compressed file", e);
         }finally {
@@ -612,10 +617,12 @@ public class DockerContainerImpl implements IDockerContainer {
     private File compressToTar(InputStream file, String fileName) throws DockerManagerException {
         File targetFile = new File("output.tar.gz");
         BufferedInputStream bIn = new BufferedInputStream(file);
+        FileOutputStream out = null;
+        TarArchiveOutputStream taos = null;
         try {
-            FileOutputStream out = new FileOutputStream(targetFile);
+            out = new FileOutputStream(targetFile);
 
-            TarArchiveOutputStream taos = new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(out)));
+            taos = new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(out)));
             TarArchiveEntry aEntry = new TarArchiveEntry(fileName);
             aEntry.setSize(file.available());
             taos.putArchiveEntry(aEntry);
@@ -634,6 +641,14 @@ public class DockerContainerImpl implements IDockerContainer {
         } catch (IOException e) {
             logger.error("IO error, failed to create tar", e);
             throw new DockerManagerException(e);
+        } finally {
+            try {
+                out.close();
+                taos.close();
+            } catch (IOException e) {
+                throw new DockerManagerException(e);
+            }
+            
         }
         return targetFile;
     }
