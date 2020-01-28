@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
@@ -51,7 +50,7 @@ public class DockerManagerIVT {
     @Logger
     public Log logger;
 
-    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start=true)
+    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start=false)
     public IDockerContainer container;
     
     @ArtifactManager
@@ -127,7 +126,7 @@ public class DockerManagerIVT {
        
        String html = httpClient.get("/test1.html");
        
-       assertThat(html).as("Checking the HTML container the JAT constant text").contains("JAT Docker Test");
+       assertThat(html).as("Checking the HTML container the Galasa constant text").contains("Galasa Docker Test");
     }
     
     /**

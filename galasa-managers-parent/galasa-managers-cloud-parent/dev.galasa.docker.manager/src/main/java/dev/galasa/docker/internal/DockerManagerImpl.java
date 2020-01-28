@@ -52,6 +52,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     protected IHttpManagerSpi                   httpManager;
     private IDockerEnvironment                  dockerEnvironment;
     private List<DockerRegistryImpl>            registries = new ArrayList<DockerRegistryImpl>();
+    private boolean                             required = false;
 
     /**
      * Initialies the DockerManager, adding the requirement of the HttpManager
@@ -74,16 +75,17 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         if (!ourFields.isEmpty()) {
             youAreRequired(allManagers, activeManagers);
         }
+        if(this.required){
+            try {
+                DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            } catch (ConfigurationPropertyStoreException e) {
+                throw new DockerManagerException("Failed to set the CPS with the docker namespace", e);
+            }
 
-        try {
-            DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new DockerManagerException("Failed to set the CPS with the docker namespace", e);
+            this.framework = framework;
+            dockerEnvironment = new DockerEnvironment(framework, this);
+            logger.info("Docker manager intialised");
         }
-
-        this.framework = framework;
-        dockerEnvironment = new DockerEnvironment(framework, this);
-        logger.info("Docker manager intialised");
     }
     
     /**
@@ -96,6 +98,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     @Override
     public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
             throws ManagerException {
+        this.required = true;
+
         if (activeManagers.contains(this)) {
 			return;
 		}
