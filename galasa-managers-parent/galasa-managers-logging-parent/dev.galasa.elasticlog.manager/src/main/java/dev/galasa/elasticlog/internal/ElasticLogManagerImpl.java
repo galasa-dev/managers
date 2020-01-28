@@ -7,14 +7,12 @@ package dev.galasa.elasticlog.internal;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.time.Instant;
 
-import javax.net.ssl.SSLContext;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -27,8 +25,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import dev.galasa.ICredentials;
-import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
 import dev.galasa.elasticlog.internal.properties.ElasticLogIndex;
@@ -38,15 +34,13 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
-import dev.galasa.framework.spi.creds.CredentialsException;
-import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
-import dev.galasa.framework.spi.ILoggingManager;
 
 /**
  * ElasticLog Manager implementation
@@ -62,7 +56,6 @@ public class ElasticLogManagerImpl extends AbstractManager {
     private IFramework							framework;
     private IConfigurationPropertyStoreService  cps;
     private IConfidentialTextService			ctf;
-    private ICredentialsService					cred;
 
     private List<IManager>                      otherManagers	= new ArrayList<IManager>();
 
@@ -91,14 +84,15 @@ public class ElasticLogManagerImpl extends AbstractManager {
             this.framework = framework;
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
             this.ctf = framework.getConfidentialTextService();
-            this.cred = framework.getCredentialsService();
             ElasticLogPropertiesSingleton.setCps(this.cps);
         } catch (Exception e) {
             throw new ElasticLogManagerException("Unable to request framework services", e);
         }
         
         if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
-        	youAreRequired(allManagers, activeManagers);
+			youAreRequired(allManagers, activeManagers);
+		
+		this.otherManagers = activeManagers;
     }
     
 	/**
@@ -116,11 +110,6 @@ public class ElasticLogManagerImpl extends AbstractManager {
         activeManagers.add(this);
 
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
-    }
-
-    public void registerAllManagers(List<IManager> activeManagers) {
-    	this.otherManagers.addAll(activeManagers);
-    	this.otherManagers.remove(this);
     }
 
     /**
