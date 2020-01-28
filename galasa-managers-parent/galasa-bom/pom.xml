@@ -94,7 +94,17 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.kubernetes.manager</artifactId>
+				<version>0.4.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.elasticlog.manager.ivt</artifactId>
+				<version>0.4.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
 				<version>0.4.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
