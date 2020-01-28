@@ -19,6 +19,6 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @DockerManagerField
 public @interface DockerEngine {
 
-    public String dockerEngineTag() default "default";
+    public String dockerEngineTag() default "PRIMARY";
 
 }

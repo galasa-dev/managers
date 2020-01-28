@@ -5,15 +5,14 @@
  */
 package dev.galasa.docker.manager.ivt;
 
-import org.apache.commons.logging.Log;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+
+import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
@@ -46,12 +45,13 @@ import dev.galasa.http.IHttpClient;
  * @author Michael Baylis
  *
  */
+@Test
 public class DockerManagerIVT {
 
     @Logger
     public Log logger;
 
-    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start=true)
+    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start=false)
     public IDockerContainer container;
     
     @ArtifactManager
@@ -127,7 +127,7 @@ public class DockerManagerIVT {
        
        String html = httpClient.get("/test1.html");
        
-       assertThat(html).as("Checking the HTML container the JAT constant text").contains("JAT Docker Test");
+       assertThat(html).as("Checking the HTML container the Galasa constant text").contains("Galasa Docker Test");
     }
     
     /**
