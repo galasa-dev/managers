@@ -10,6 +10,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -25,7 +29,9 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.KubernetesNamespace;
@@ -55,9 +61,11 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
     private HashMap<String, KubernetesNamespaceImpl> taggedNamespaces = new HashMap<>();
 
-    private ArrayList<KubernetesClusterImpl> clusters = new ArrayList<>();
+    private HashMap<String, KubernetesClusterImpl> clusters = new HashMap<>();
 
-    private boolean                             required = false;
+    private boolean                             required         = false;
+    private boolean                             sharedEnvBuild   = false;
+    private boolean                             sharedEnvDiscard = false;
 
     /**
      * Initialise the Kubernetes Manager if the Kubernetes TPI is included in the test class
@@ -84,7 +92,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         }
 
         youAreRequired(allManagers, activeManagers);
-        
+
         //*** Initialise the CPS and DSS fields
         try {
             KubernetesPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
@@ -123,7 +131,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         }
 
         activeManagers.add(this);
-        
+
         this.required = true;
     }
 
@@ -132,6 +140,23 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        if (getFramework().getTestRun().isSharedEnvironment()) {
+            logger.info("Manager running in Shared Environment setup");
+        }
+        
+        if (this.clusters.isEmpty()) {
+            buildClusterMap();
+        }
+
+        //*** Shared Environment Discard processing
+        try {
+            if (getFramework().getSharedEnvironmentRunType() == SharedEnvironmentRunType.DISCARD) {
+                KubernetesNamespaceImpl.loadNamespacesFromRun(getFramework(), dss, clusters, taggedNamespaces, getFramework().getTestRun());
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new KubernetesManagerException("Unable to determine Shared Environment phase", e);
+        }
+
         generateAnnotatedFields(KubernetesManagerField.class);
     }
 
@@ -158,14 +183,18 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         if (namespace != null) {
             return namespace;
         }
-
-        if (this.clusters.isEmpty()) {
-            buildClusterMap();
+        
+        try {
+            if (getFramework().getSharedEnvironmentRunType() == SharedEnvironmentRunType.DISCARD) {
+                throw new KubernetesManagerException("Attempt to generate a new Namespace during Shared Environment discard");
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new KubernetesManagerException("Unable to determine Shared Environment phase", e);
         }
 
         //*** Allocate a namespace,  may take a few passes through as other tests may be trying to get namespaces at the same time
 
-        ArrayList<KubernetesClusterImpl> availableClusters = new ArrayList<>(this.clusters);
+        ArrayList<KubernetesClusterImpl> availableClusters = new ArrayList<>(this.clusters.values());
         KubernetesNamespaceImpl allocatedNamespace = null;
         while(allocatedNamespace == null) {
 
@@ -187,7 +216,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
             //*** ask cluster to allocate a namespace,  if it returns null, means we have run out of available namespaces
             //*** so try a different cluster
-            allocatedNamespace = selectedCluster.allocateNamespace();
+            allocatedNamespace = selectedCluster.allocateNamespace(tag);
             if (allocatedNamespace == null) { // Failed to allocate namespace, remove from available clusters
                 availableClusters.remove(selectedCluster);
             }
@@ -199,6 +228,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
         return allocatedNamespace;
     }
+
 
 
     /**
@@ -214,7 +244,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
                 logger.error("Problem discarding namespace " + namespace.getId() + " on cluster " + namespace.getCluster().getId(), e);
             }
         }
-
+        
         super.provisionDiscard();
     }
 
@@ -227,7 +257,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         List<String> clusterIds = KubernetesClusters.get();
 
         for(String clusterId : clusterIds) {
-            this.clusters.add(new KubernetesClusterImpl(clusterId, dss, getFramework()));
+            this.clusters.put(clusterId, new KubernetesClusterImpl(clusterId, dss, getFramework()));
         }
         return;
     }

@@ -43,11 +43,11 @@ import dev.galasa.docker.internal.DockerManagerField;
 public @interface DockerContainer {
 
     /**
-     * The <code>tag</code> is used to identify the Docker Container to other Managers or Shared Environments.  If a test is using multiple 
+     * The <code>dockerContainerTag</code> is used to identify the Docker Container to other Managers or Shared Environments.  If a test is using multiple 
      * Docker Containers, each separate Docker Container must have a unique tag.  If two DockerContainers use the same tag, they will refer to the 
      * same actual Docker Container.
      */
-    public String dockerContainerTag() default "a";
+    public String dockerContainerTag() default "PRIMARY";
 
     /**
      * The <code>image</code> attribute provides the Docker Image that is used to create the Docker Container.  It image name must not 
@@ -65,8 +65,9 @@ public @interface DockerContainer {
     public boolean start() default true;
 
     /**
-     * Dont think we need this attribute
+     * The <code>dockerEngineTag</code> will be used in the future so that a container can be run on a specific Docker Engine type.
+     * You would not normally need to provide a Docker Engine tag.
      */
-    public String DockerEngineTag() default "default";
+    public String dockerEngineTag() default "PRIMARY";
 
 }
