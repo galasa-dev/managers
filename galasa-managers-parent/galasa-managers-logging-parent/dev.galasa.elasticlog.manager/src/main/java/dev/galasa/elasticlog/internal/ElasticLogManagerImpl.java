@@ -1,12 +1,20 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.elasticlog.internal;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.time.Instant;
 
+import javax.net.ssl.SSLContext;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -17,9 +25,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
 import dev.galasa.elasticlog.internal.properties.ElasticLogIndex;
+import dev.galasa.elasticlog.internal.properties.ElasticLogLocalRun;
 import dev.galasa.elasticlog.internal.properties.ElasticLogPropertiesSingleton;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IConfidentialTextService;
@@ -27,10 +38,13 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.framework.spi.ILoggingManager;
 
 /**
  * ElasticLog Manager implementation
@@ -41,11 +55,14 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 public class ElasticLogManagerImpl extends AbstractManager {
 
     private static final Log                    logger          = LogFactory.getLog(ElasticLogManagerImpl.class);
-    public final static String                  NAMESPACE       = "elastic";
+    public final static String                  NAMESPACE       = "elasticlog";
     
     private IFramework							framework;
     private IConfigurationPropertyStoreService  cps;
     private IConfidentialTextService			ctf;
+    private ICredentialsService					cred;
+
+    private List<IManager>                      otherManagers	= new ArrayList<IManager>();
 
     private IHttpManagerSpi        		        httpManager;
     private IHttpClient							client;
@@ -68,16 +85,18 @@ public class ElasticLogManagerImpl extends AbstractManager {
             @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, testClass);
 
-        youAreRequired(allManagers, activeManagers);
-
         try {
             this.framework = framework;
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
             this.ctf = framework.getConfidentialTextService();
+            this.cred = framework.getCredentialsService();
             ElasticLogPropertiesSingleton.setCps(this.cps);
         } catch (Exception e) {
             throw new ElasticLogManagerException("Unable to request framework services", e);
         }
+        
+        if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
+        	youAreRequired(allManagers, activeManagers);
     }
     
 	/**
@@ -95,6 +114,11 @@ public class ElasticLogManagerImpl extends AbstractManager {
         activeManagers.add(this);
 
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+    }
+
+    public void registerAllManagers(List<IManager> activeManagers) {
+    	this.otherManagers.addAll(activeManagers);
+    	this.otherManagers.remove(this);
     }
 
     /**
@@ -117,14 +141,80 @@ public class ElasticLogManagerImpl extends AbstractManager {
      */
     @Override
 	  	public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
-	    //Record test information
-		this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
+    	//Record test information
+    	this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
 		this.runProperties.put("runId", this.framework.getTestRunName());
 	    this.runProperties.put("startTimestamp", Date.from(this.framework.getTestRun().getQueued()));
 	    this.runProperties.put("endTimestamp", Date.from(Instant.now()));
 	    this.runProperties.put("requestor", this.framework.getTestRun().getRequestor());
 	    this.runProperties.put("result", finalResult);
 	    
+	    String testTooling        = "Galasa";
+		String testType           = "Galasa";
+		String testingEnvironment = "NOT_ASSIGNED";
+		String productRelease     = null;
+		String buildLevel         = null;
+		String customBuild        = null;
+		List<String> testingAreas = new ArrayList<String>();
+		List<String> tags		  = new ArrayList<String>();
+
+	    //Ask other managers for additional logging information
+	    for(IManager manager : this.otherManagers) {
+	    	if(manager instanceof ILoggingManager) {
+	    		ILoggingManager loggingManager = (ILoggingManager) manager;
+	    		
+	    		String tooling = loggingManager.getTestTooling();
+	    		if(tooling != null)
+	    			testTooling = tooling;
+	    		
+	    		String type = loggingManager.getTestType();
+	    		if(type != null)
+	    			testType = type;
+	    		
+	    		String environment = loggingManager.getTestingEnvironment();
+	    		if(environment != null)
+	    			testingEnvironment = environment;
+	    		
+	    		String release = loggingManager.getProductRelease();
+	    		if(release != null)
+	    			productRelease = release;
+	    		
+	    		String level = loggingManager.getBuildLevel();
+	    		if(level != null)
+	    			buildLevel = level;
+	    		
+	    		String custom = loggingManager.getCustomBuild();
+	    		if(custom != null)
+	    			customBuild = custom;
+	    		
+	    		List<String> areas = loggingManager.getTestingAreas();
+	    		if(areas != null)
+	    			testingAreas.addAll(areas);
+	    		
+	    		List<String> tagList = loggingManager.getTags();
+	    		if(tagList != null)
+	    			tags.addAll(tagList);
+	    	}
+	    }
+	    if (testingAreas.isEmpty())
+	    	testingAreas = null;
+	    
+	    if (tags.isEmpty())
+	    	tags = null;
+	    
+	    this.runProperties.put("testTooling", testTooling);
+	    this.runProperties.put("testType", testType);
+	    this.runProperties.put("testingEnvironment", testingEnvironment);
+	    this.runProperties.put("productRelease", productRelease);
+	    this.runProperties.put("buildLevel", buildLevel);
+	    this.runProperties.put("customBuild", customBuild);
+
+	    if(testingAreas != null)
+	    	this.runProperties.put("testingAreas", testingAreas.toArray(new String[0]));
+
+	    if(tags != null)
+	    	this.runProperties.put("tags", tags.toArray(new String[0]));	    	
+
 	    String request = this.gson.toJson(this.runProperties);
 	    logger.info("Sending Run Request to ElasticLog Endpoint");
 	    logger.trace("Document Request -\n" + request);
@@ -144,40 +234,31 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		ctf.registerText(index, "ElasticLog Index");
 		ctf.registerText(endpoint, "ElasticLog Endpoint");
     	try {
-            //Create mapping Json
-    		String mapping = createIndexMapping();
-    		logger.trace("Index Mapping Request -\n" + mapping);
-            
             //Set up http client for requests
-            client.setTrustingSSLContext();
+			client.setTrustingSSLContext();
             client.addOkResponseCode(201);
             client.setURI(new URI(endpoint));
-            
-            //Create index if not present
-    		HttpClientResponse<String> response = client.head(endpoint + "/" + index);
-    		if (response.getStatusCode() == 404) 
-                client.putJson(index, mapping, false);
-            
+
             //Send document to index
 			client.postJson(index + "/_doc", request, false);
         
-            //Create latest index if not present
     		index = index + "_latest";
-    		HttpClientResponse<String> indexResponse = client.head(ElasticLogEndpoint.get() + "/" + index);
-			if (indexResponse.getStatusCode() == 404)
-                client.putJson(index, mapping, false);
-        
-            //Obtain id of document if test case is already recorded
-        	String id = null;
-        	String testCase = (String) this.runProperties.get("testCase");
-			String searchResponse = client.get(index + "/_search?q=testCase:" + testCase);
-			if (searchResponse.contains(testCase)) {
-				JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
-				id = json.get("hits").getAsJsonObject()
-                         .get("hits").getAsJsonArray()
-                         .get(0).getAsJsonObject()
-                         .get("_id").getAsString();
-			}
+
+            String id = null;
+            HttpClientResponse<String> response = client.head(endpoint + "/" + index);
+   		    if (response.getStatusCode() != 404) {
+                //Obtain id of document if test case is already recorded
+				String testCase = (String) this.runProperties.get("testCase");
+				String testingEnvironment = (String) this.runProperties.get("testingEnvironment");
+				String searchResponse = client.get(index + "/_search?q=testCase:" + testCase + "&q=testingEnvironment:" + testingEnvironment);
+                if (searchResponse.contains(testCase)) {
+                    JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
+                    id = json.get("hits").getAsJsonObject()
+                            .get("hits").getAsJsonArray()
+                            .get(0).getAsJsonObject()
+                            .get("_id").getAsString();
+                }
+            }
             
             //Delete document if already present then send new document
     		if (id != null)
@@ -185,43 +266,10 @@ public class ElasticLogManagerImpl extends AbstractManager {
     		client.postJson(index + "/_doc", request, false);
 
 		} catch (HttpClientException e) {
-			throw new ElasticLogManagerException("Error in sending request to ElasticLog Endpoint", e);
+			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
 		} catch (URISyntaxException e) {
-			throw new ElasticLogManagerException("Error in parsing ElasticLog Endpoint to URI", e);
+			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
 		}
     }
 
-    /**
-     * Create a mapping properties request from run properties
-     * 
-     * @return - Mapping properties request
-     */
-    private String createIndexMapping() {
-        JsonObject mapProp = new JsonObject();
-    	for(String mappingKey : this.runProperties.keySet()) {
-    		String typeString;
-    		if(this.runProperties.get(mappingKey) instanceof Date)
-    			typeString = "date";
-    		else
-    			typeString = "text";
-    		
-    		JsonObject type = new JsonObject();
-    		type.addProperty("type", typeString);
-    		
-    		//Add keyword field to make term aggregatable if text
-    		if (typeString.equals("text")) {
-				JsonObject fields = new JsonObject();
-				JsonObject keyword = new JsonObject();
-				keyword.addProperty("type", "keyword");
-				fields.add("keyword", keyword);
-				type.add("fields", fields);
-			}
-			mapProp.add(mappingKey, type);
-    	}
-		JsonObject map = new JsonObject();
-		map.add("properties", mapProp);
-		JsonObject mapRequest = new JsonObject();
-		mapRequest.add("mappings", map);
-		return gson.toJson(mapRequest);
-    }
 }

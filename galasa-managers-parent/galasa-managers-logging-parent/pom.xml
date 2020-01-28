@@ -7,7 +7,7 @@
     <version>0.4.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>galasa-managers-visualisation-parent</artifactId>
+  <artifactId>galasa-managers-logging-parent</artifactId>
   <version>0.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   

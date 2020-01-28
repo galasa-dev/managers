@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.elasticlog.internal.properties;
 
 import dev.galasa.elasticlog.internal.ElasticLogManagerException;
@@ -27,18 +32,15 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * If the index already exists, it must have the mapping of the given galasa run.
  * 
  */
-public class ElasticLogIndex extends CpsProperties {
+public class ElasticLogLocalRun extends CpsProperties {
 
     public static String get() throws ElasticLogManagerException {
 		try {
-			String elasticLogIndex = getStringNulled(ElasticLogPropertiesSingleton.cps(), "endpoint", "index");
+			String elasticLogLocalRun = getStringNulled(ElasticLogPropertiesSingleton.cps(), "local", "run.log");
 
-			if (elasticLogIndex == null) {
-				throw new ElasticLogManagerException("Could not find a ElasticLog index in CPS.");
-			}
-			return elasticLogIndex;
+			return elasticLogLocalRun;
 		} catch (ConfigurationPropertyStoreException e) {
-			throw new ElasticLogManagerException("Problem asking the CPS for the ElasticLog Index", e);
+			throw new ElasticLogManagerException("Problem asking the CPS for the ElasticLog Local Run", e);
         }
 	}
 }

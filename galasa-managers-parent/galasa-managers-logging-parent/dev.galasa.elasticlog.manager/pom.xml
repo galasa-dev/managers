@@ -6,15 +6,15 @@
 
 	<parent>
 		<groupId>dev.galasa</groupId>
-		<artifactId>galasa-managers-visualisation-parent</artifactId>
+		<artifactId>galasa-managers-logging-parent</artifactId>
 		<version>0.4.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>dev.galasa.elasticlog.manager.ivt</artifactId>
+	<artifactId>dev.galasa.elasticlog.manager</artifactId>
 	<version>0.4.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>Galasa ElasticLog Manager IVT</name>
+	<name>Galasa ElasticLog Manager</name>
 
 	<dependencies>
 		<dependency>
@@ -33,13 +33,8 @@
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
-			<artifactId>dev.galasa.elasticlog.manager</artifactId>
-			<version>0.4.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>dev.galasa</groupId>
-			<artifactId>dev.galasa.core.manager</artifactId>
-			<version>0.4.0-SNAPSHOT</version>
+			<artifactId>dev.galasa.http.manager</artifactId>
+			<version>[0.3.0,1.0.0)</version>
 		</dependency>
 
 	</dependencies>

@@ -1,4 +1,8 @@
-
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.elasticlog.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
