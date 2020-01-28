@@ -23,6 +23,8 @@ import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
@@ -244,25 +246,31 @@ public class ElasticLogManagerImpl extends AbstractManager {
         
     		index = index + "_latest";
 
-            String id = null;
+            ArrayList<String> ids = new ArrayList<String>();
             HttpClientResponse<String> response = client.head(endpoint + "/" + index);
    		    if (response.getStatusCode() != 404) {
                 //Obtain id of document if test case is already recorded
 				String testCase = (String) this.runProperties.get("testCase");
 				String testingEnvironment = (String) this.runProperties.get("testingEnvironment");
-				String searchResponse = client.get(index + "/_search?q=testCase:" + testCase + "&q=testingEnvironment:" + testingEnvironment);
+				String searchResponse = client.get(index + "/_search?q=testCase:" + testCase + 
+													" testingEnvironment:" + testingEnvironment + 
+													"&default_operator=AND");
                 if (searchResponse.contains(testCase)) {
                     JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
-                    id = json.get("hits").getAsJsonObject()
-                            .get("hits").getAsJsonArray()
-                            .get(0).getAsJsonObject()
-                            .get("_id").getAsString();
+                    JsonArray hits = json.get("hits").getAsJsonObject().get("hits").getAsJsonArray();
+
+                    for (JsonElement j : hits) {
+                    	ids.add(j.getAsJsonObject().get("_id").getAsString());
+                    }
                 }
             }
             
             //Delete document if already present then send new document
-    		if (id != null)
-    			client.delete(index + "/_doc/" + id, false);
+    		if (ids.size() > 0) {
+    			for (String id : ids) {
+    				client.delete(index + "/_doc/" + id, false);
+    			}
+    		}
     		client.postJson(index + "/_doc", request, false);
 
 		} catch (HttpClientException e) {
