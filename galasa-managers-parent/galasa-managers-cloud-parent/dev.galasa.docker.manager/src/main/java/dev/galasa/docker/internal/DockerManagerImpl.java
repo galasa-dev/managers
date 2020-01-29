@@ -32,6 +32,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.http.IHttpManager;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
 /**
@@ -105,6 +106,14 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 		}
         activeManagers.add(this);
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+    }
+
+    @Override
+    public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
+        if(otherManager instanceof IHttpManager) {
+            return true;
+        }
+        return false;
     }
 
     /**

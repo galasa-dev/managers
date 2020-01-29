@@ -410,12 +410,12 @@ public class DockerEnvironment implements IDockerEnvironment {
             String resPrefix = "slot." + slotName;
 
             HashSet<String> resProps = new HashSet<>();
-            resProps.add(resPrefix + ".run");
+            resProps.add(resPrefix);
             resProps.add(resPrefix + ".allocated");
             dynamicResource.delete(resProps);
 
             String slotStatusKey = "slot." + dockerEngineId + ".run." + runName + "." + slotName;
-            String runIdKey = "engine" + dockerEngineId + ".slot." + slotName;
+            String runIdKey = "engine." + dockerEngineId + ".slot." + slotName;
 
             HashMap<String,String> dockerDssProps = new HashMap<>();
             dockerDssProps.put(slotStatusKey, "free");
