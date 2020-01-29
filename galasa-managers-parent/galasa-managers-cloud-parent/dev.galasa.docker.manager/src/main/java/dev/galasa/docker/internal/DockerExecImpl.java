@@ -128,7 +128,8 @@ public class DockerExecImpl implements IDockerExec {
             try {
                 Thread.sleep(100);
             } catch(InterruptedException e) {
-                throw new DockerManagerException("Wait for exec was interrupted", e);
+                Thread.currentThread().interrupt();
+                throw new DockerManagerException("Wait for exec was interrupted", e);    
             }
         }
         return finished;

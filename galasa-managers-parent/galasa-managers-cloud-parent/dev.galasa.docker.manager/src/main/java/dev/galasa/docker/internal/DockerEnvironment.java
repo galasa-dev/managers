@@ -394,42 +394,51 @@ public class DockerEnvironment implements IDockerEnvironment {
      */
     public static void deleteStaleDssSlot(String runName, String dockerEngineId, String slotName, IDynamicStatusStoreService dss) {
         try {
+            String numberOfSlotKey = "engine." + dockerEngineId + ".current.slots";
+            String currentSlot = dss.get(numberOfSlotKey);
+            if (currentSlot == null){
+                return;
+            }
+            
+            int usedSlots = Integer.parseInt(currentSlot);
+            usedSlots--;
+            if (usedSlots < 0) {
+                usedSlots = 0;
+            }
+
             IDynamicResource dynamicResource = dss.getDynamicResource("engine." + dockerEngineId);
             String resPrefix = "slot." + slotName;
 
             HashSet<String> resProps = new HashSet<>();
-            resProps.add(resPrefix + ".run");
+            resProps.add(resPrefix);
             resProps.add(resPrefix + ".allocated");
             dynamicResource.delete(resProps);
 
-            String prefix = "engine." + dockerEngineId + ".slot." + slotName;
-            String runSlot = dss.get("slot." + dockerEngineId + ".run." + runName + "." + prefix);
-            if("active".equals(runSlot)) {
-                if (dss.putSwap("slot." + dockerEngineId + ".run." + runName + "." + prefix, "active", "free")) {
-                    while(true) {
-                        String slots = dss.get("engine." + dockerEngineId + ".current.slots");
-                        int currentSlots = Integer.parseInt(slots);
-                        currentSlots--;
-                        if (currentSlots < 0) {
-                            currentSlots = 0;
-                        }
-                        
-                        if (dss.putSwap("image." + dockerEngineId + ".current.slots", slots, Integer.toString(currentSlots))) {
-                            break;
-                        }
+            String slotStatusKey = "slot." + dockerEngineId + ".run." + runName + "." + slotName;
+            String runIdKey = "engine." + dockerEngineId + ".slot." + slotName;
 
-                        Thread.sleep(100);
-                    }
+            HashMap<String,String> dockerDssProps = new HashMap<>();
+            dockerDssProps.put(slotStatusKey, "free");
+
+            if("active".equals(dss.get(slotStatusKey))) {
+                if (!dss.putSwap(numberOfSlotKey, currentSlot, Integer.toString(usedSlots), dockerDssProps)) {
+                    Thread.sleep(200);
+                    deleteStaleDssSlot(runName, dockerEngineId, slotName, dss);
+                    return;
                 }
+                HashSet<String> props = new HashSet<>();
+                props.add(slotStatusKey);
+                props.add(runIdKey);
+                dss.delete(props);
             }
-
-            HashSet<String> props = new HashSet<>();
-			props.add(prefix);
-			props.add("slot." + dockerEngineId + ".run." + runName + "." + prefix);
-			dss.delete(props);
+            
         } catch (Exception e) {
             logger.error("Failed to discard slot " + slotName +" on docker engine " + dockerEngineId, e);
         }
+    }
+
+    public static void deleteOrphanedContainers(String engine, IDynamicStatusStoreService dss) {
+        
     }
 
 }
