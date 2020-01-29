@@ -255,7 +255,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             "GALASA_"+ annotation.dockerContainerTag().trim().toUpperCase(), 
             annotation.image(), 
             annotation.start(),
-            annotation.DockerEngineTag());
+            annotation.dockerEngineTag());
     }
 
     /**

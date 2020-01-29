@@ -5,14 +5,14 @@
  */
 package dev.galasa.docker.manager.ivt;
 
-import org.apache.commons.logging.Log;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;

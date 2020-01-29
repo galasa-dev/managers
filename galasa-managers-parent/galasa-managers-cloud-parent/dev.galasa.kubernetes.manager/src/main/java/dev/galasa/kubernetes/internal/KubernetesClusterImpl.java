@@ -95,7 +95,7 @@ public class KubernetesClusterImpl {
      * 
      * @return A Namespace object or null if there is no room
      */
-    public KubernetesNamespaceImpl allocateNamespace() {
+    public KubernetesNamespaceImpl allocateNamespace(String namespaceTag) {
         try {
             IResourcePoolingService pooling = this.framework.getResourcePoolingService();
             String runName = this.framework.getTestRunName();
@@ -144,6 +144,7 @@ public class KubernetesClusterImpl {
                         HashMap<String, String> slotOtherValues = new HashMap<>();
                         slotOtherValues.put(namespacePrefix, "active");
                         slotOtherValues.put("slot.run." + runName + ".cluster." + this.clusterId + ".namespace." + possibleNamespace, "active");
+                        slotOtherValues.put("slot.run." + runName + ".cluster." + this.clusterId + ".namespace." + possibleNamespace + ".tag", namespaceTag);
                         if (dss.putSwap("cluster." + this.clusterId + ".current.slots", sCurrentSlots, Integer.toString(currentSlots), slotOtherValues)) {
                             selectedNamespace = possibleNamespace;
                             break;
