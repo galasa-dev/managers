@@ -17,6 +17,7 @@ import dev.galasa.Test;
 /**
  * Basic test to execute the eJAT annotated methods
  */
+@Test
 public class BasicTestExtended extends BasicTest {
 	
 	private static Log logger = LogFactory.getLog(BasicTestExtended.class);

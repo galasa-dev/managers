@@ -13,6 +13,7 @@ import dev.galasa.Test;
 /**
  * Basic test with Test failing method
  */
+@Test
 public class BasicTestFail {
 	
 	private static Log logger = LogFactory.getLog(BasicTestFail.class);
