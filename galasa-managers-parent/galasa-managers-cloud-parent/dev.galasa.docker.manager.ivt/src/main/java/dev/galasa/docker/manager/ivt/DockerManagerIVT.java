@@ -155,26 +155,4 @@ public class DockerManagerIVT {
         
        assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
     }   
-
-    @Test
-    public void retrieveFile1() throws DockerManagerException {
-       String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
-        
-       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
-    }
-
-
-    @Test
-    public void retrieveFile2() throws DockerManagerException {
-       String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
-        
-       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
-    }
-
-    @Test
-    public void retrieveFile3() throws DockerManagerException {
-       String htmlTest1 = container.retrieveFile("/usr/local/apache2/htdocs/test1.html");
-        
-       assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
-    }
 }
