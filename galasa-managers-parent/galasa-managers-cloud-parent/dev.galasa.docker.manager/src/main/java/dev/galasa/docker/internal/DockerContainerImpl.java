@@ -61,6 +61,7 @@ public class DockerContainerImpl implements IDockerContainer {
     private IDynamicStatusStoreService dss;
     private String containerID;
     private String containerName;
+    private JsonObject metadata;
 
     private boolean leaveRunning;
     private boolean alreadyUp;
@@ -113,6 +114,29 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
+     * Generates the metadata the container will be created with in the dockerEngine
+     * 
+     * @return JsonObject
+     */
+    private JsonObject generateMetadata() {
+        JsonObject metadata = new JsonObject();
+        metadata.addProperty("Image", this.image.getFullName());
+
+        JsonObject hostConfig = new JsonObject();
+        hostConfig.addProperty("PublishAllPorts", Boolean.TRUE);
+        metadata.add("HostConfig", hostConfig);
+        
+        JsonObject labels = new JsonObject();
+        labels.addProperty("GALASA", "GALASA");
+        labels.addProperty("EngineId", dockerEngine.getEngineId());
+        labels.addProperty("RunId", framework.getTestRunName());
+        labels.addProperty("SlotId", dockerSlot.getSlotName());
+        metadata.add("Labels", labels);
+
+        return metadata;
+    }
+
+    /**
      * Check container observers the state of the container, and returns it to any
      * expected state.
      * 
@@ -129,15 +153,9 @@ public class DockerContainerImpl implements IDockerContainer {
             if (!alreadyDefined) {
                 this.image.pullImage();
                 try {
-                    JsonObject create = new JsonObject();
-                    create.addProperty("Image", this.image.getFullName());
-
-                    JsonObject hostConfig = new JsonObject();
-                    hostConfig.addProperty("PublishAllPorts", Boolean.TRUE);
-                    create.add("HostConfig", hostConfig);
-
+                    this.metadata = generateMetadata();
                     logger.debug("Creating Docker Container '" + tag + "'");
-                    JsonObject newContainer = dockerEngine.createContainer(containerName, create);
+                    JsonObject newContainer = dockerEngine.createContainer(containerName, this.metadata);
                     logger.debug("Created Docker Container '" + tag + "'");
                     containerID = newContainer.get("Id").getAsString();
                     if (containerID == null || containerID.trim().isEmpty()) {
@@ -397,10 +415,10 @@ public class DockerContainerImpl implements IDockerContainer {
     @Override
     public boolean isRunning() throws DockerManagerException {
         JsonObject response = dockerEngine.getContainer(containerName);
-        JsonObject state = response.get("State").getAsJsonObject();
-        if (state == null) {
+        if (response == null) {
             return false;
         }
+        JsonObject state = response.get("State").getAsJsonObject();
         Boolean running = state.get("Running").getAsBoolean();
 
         return running;

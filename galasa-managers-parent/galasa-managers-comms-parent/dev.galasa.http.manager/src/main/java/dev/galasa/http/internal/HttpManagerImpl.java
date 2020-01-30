@@ -45,7 +45,7 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     }
 
     @Override
-    public void provisionStop() {
+    public void shutdown() {
         for (IHttpClient client : instantiatedClients) {
             client.close();
         }

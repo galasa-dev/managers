@@ -39,8 +39,9 @@ public class DockerRegistryCredentials extends CpsProperties {
     public static String get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {
         try {
             String credentialsKey = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "credentials", dockerRegistry.getId());
+            //Default value
             if (credentialsKey == null) {
-                throw new DockerManagerException("Could not find credentials for this registry: " + dockerRegistry.getId());
+                return "DOCKER";
             }
 
             return credentialsKey;
