@@ -25,7 +25,6 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
-import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
@@ -159,8 +158,7 @@ public class ZosFileManagerImpl extends AbstractManager {
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi ||
-               otherManager instanceof IZosmfManagerSpi ||
-               otherManager instanceof IHttpManagerSpi;
+               otherManager instanceof IZosmfManagerSpi;
     }
 
     /*
@@ -207,7 +205,7 @@ public class ZosFileManagerImpl extends AbstractManager {
     }
     
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
-    public IZosFileHandler generateZosFile(Field field, List<Annotation> annotations) {
+    public IZosFileHandler generateZosFileHandler(Field field, List<Annotation> annotations) {
         ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl(field.getName());
         zosFileHandlers.add(zosFileHandlerImpl);        
         return zosFileHandlerImpl;
@@ -215,7 +213,7 @@ public class ZosFileManagerImpl extends AbstractManager {
     
     public static IZosFileHandler newZosFileHandler() {
         ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl();
-        zosFileHandlers.add(zosFileHandlerImpl);        
+        zosFileHandlers.add(zosFileHandlerImpl);
         return zosFileHandlerImpl;
     }
     

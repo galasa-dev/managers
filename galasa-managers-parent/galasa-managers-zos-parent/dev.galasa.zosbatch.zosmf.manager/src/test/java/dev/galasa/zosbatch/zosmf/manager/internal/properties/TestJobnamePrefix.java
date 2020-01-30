@@ -91,7 +91,8 @@ public class TestJobnamePrefix {
     public void testException() throws Exception {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Problem asking the CPS for the zOSMF jobname prefix for zOS image " + IMAGE_ID);
-        Assert.assertEquals("Unexpected value returned from JobnamePrefix.get()", DEFAULT_JOBNAME_PREFIX, getProperty("ANY", true));
+        
+        getProperty("ANY", true);
     }
 
     private String getProperty(String value) throws Exception {

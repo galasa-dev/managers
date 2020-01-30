@@ -5,6 +5,7 @@
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
@@ -56,7 +57,7 @@ public class TestZosBatchJobImpl {
     
     private ZosBatchJobImpl zosBatchJobSpy;
 
-    @Mock
+	@Mock
     private IZosImage zosImageMock;
 
     @Mock
@@ -89,21 +90,20 @@ public class TestZosBatchJobImpl {
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
-    
-    @Before
-    public void setup() throws Exception {
 
-        Path archivePath = Mockito.mock(Path.class);
-        FileSystem mockFileSystem = Mockito.mock(FileSystem.class);
-        FileSystemProvider mockFileSystemProvider = Mockito.mock(FileSystemProvider.class);
-        OutputStream mockOutputStream = Mockito.mock(OutputStream.class);
-        Mockito.when(archivePath.resolve(Mockito.anyString())).thenReturn(archivePath);
-        Mockito.when(archivePath.getFileSystem()).thenReturn(mockFileSystem);
-        Mockito.when(mockFileSystem.provider()).thenReturn(mockFileSystemProvider);
-        SeekableByteChannel mockSeekableByteChannel = Mockito.mock(SeekableByteChannel.class);
-        Mockito.when(mockFileSystemProvider.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockSeekableByteChannel);
-        Mockito.when(mockFileSystemProvider.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(mockOutputStream);
-        Mockito.when(mockFileSystem.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePath);        
+	@Before
+    public void setup() throws Exception {
+        Path archivePathMock = Mockito.mock(Path.class);
+        FileSystem fileSystemMock = Mockito.mock(FileSystem.class);
+        FileSystemProvider fileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(archivePathMock.resolve(Mockito.anyString())).thenReturn(archivePathMock);
+        Mockito.when(archivePathMock.getFileSystem()).thenReturn(fileSystemMock);
+        Mockito.when(fileSystemMock.provider()).thenReturn(fileSystemProviderMock);
+        SeekableByteChannel seekableByteChannelMock = Mockito.mock(SeekableByteChannel.class);
+        Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(seekableByteChannelMock);
+        Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
+        Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);        
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -119,7 +119,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
         
         
-        ZosBatchManagerImpl.setArchivePath(archivePath);
+        ZosBatchManagerImpl.setArchivePath(archivePathMock);
         ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchJobImpl.class.getDeclaredMethod("setup"));
 
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
@@ -457,10 +457,26 @@ public class TestZosBatchJobImpl {
     }
     
     @Test 
-    public void testStoreArtifactException() throws ZosBatchException {       
+    public void testStoreArtifactNullPointerException() throws ZosBatchException {       
         exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Unabe to get archive path");
+        exceptionRule.expectMessage("Unable to get archive path");
         ZosBatchManagerImpl.setArchivePath(null);
+        
+        zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
+    }
+    
+    @Test 
+    public void testStoreArtifactIOException() throws ZosBatchException, IOException {       
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("Unable to store artifact");
+        Path localArchivePathMock = Mockito.mock(Path.class);
+        FileSystem localFileSystemMock = Mockito.mock(FileSystem.class);        
+        FileSystemProvider localFileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
+        Mockito.when(localArchivePathMock.resolve(Mockito.anyString())).thenReturn(localArchivePathMock);
+        Mockito.when(localArchivePathMock.getFileSystem()).thenReturn(localFileSystemMock);
+        Mockito.when(localFileSystemMock.provider()).thenReturn(localFileSystemProviderMock);
+        Mockito.when(localFileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new IOException());
+        ZosBatchManagerImpl.setArchivePath(localArchivePathMock);
         
         zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
     }

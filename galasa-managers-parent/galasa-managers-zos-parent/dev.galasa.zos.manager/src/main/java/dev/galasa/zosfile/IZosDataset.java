@@ -162,9 +162,10 @@ public interface IZosDataset {
 
     /**
      * Delete the data set on the zOS image.
+     * @return deleted
      * @throws ZosDatasetException
      */
-    public void delete() throws ZosDatasetException;
+    public boolean delete() throws ZosDatasetException;
 
     /**
      * Returns true if the data set exists on the zOS image

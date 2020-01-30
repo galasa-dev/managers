@@ -187,7 +187,7 @@ public class ZosDatasetImpl implements IZosDataset {
             logger.info(LOG_DATA_SET + quoted(this.dsname) + " created" + logOnImage() + retained);
             this.datasetCreated = true;
         } else {
-            logger.info(LOG_DATA_SET + quoted(this.dsname) + " not created" + logOnImage());
+            logger.warn(LOG_DATA_SET + quoted(this.dsname) + " not created" + logOnImage());
         }
         return this;
     }
@@ -204,9 +204,9 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void delete() throws ZosDatasetException {
+    public boolean delete() throws ZosDatasetException {
         if (!created()) {
-            throw new ZosDatasetException(quoted(this.dsname) + " not created by this test run " + logOnImage());
+            throw new ZosDatasetException(quoted(this.dsname) + " not created by this test run" + logOnImage());
         }
         if (!exists()) {
             throw new ZosDatasetException(quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
@@ -238,8 +238,10 @@ public class ZosDatasetImpl implements IZosDataset {
         
         if (exists()) {
             logger.info(LOG_DATA_SET + quoted(this.dsname) + " not deleted" + logOnImage());
+            return false;
         } else {
             logger.info(LOG_DATA_SET + quoted(this.dsname) + " deleted" + logOnImage());
+            return true;
         }
     }
 
@@ -289,7 +291,7 @@ public class ZosDatasetImpl implements IZosDataset {
     @Override
     public void store(@NotNull String content) throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set.  Use memberStore(String memberName, String content) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
         store(content, null);
     }
@@ -297,7 +299,7 @@ public class ZosDatasetImpl implements IZosDataset {
     @Override
     public String retrieve() throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set.  Use retrieve(String memberName) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
         return retrieve(null);
     }
@@ -456,7 +458,7 @@ public class ZosDatasetImpl implements IZosDataset {
             logger.trace(responseBody);
             if (response.getStatusCode() == HttpStatus.SC_OK) {
                 moreRows = getMembers(responseBody);
-            } else {            
+            } else {
                 // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
                 String displayMessage = buildErrorString(LOG_LISTING, responseBody); 
                 logger.error(displayMessage);
@@ -657,7 +659,7 @@ public class ZosDatasetImpl implements IZosDataset {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosDatasetException("Unable to attibutes of data set " + quoted(this.dsname) + logOnImage());
+            throw new ZosDatasetException("Unable list to attibutes of data set " + quoted(this.dsname) + logOnImage());
         }
         
         logger.trace(responseBody);
@@ -712,7 +714,7 @@ public class ZosDatasetImpl implements IZosDataset {
                 attributes.append("Expiration date=");
                 attributes.append(emptyStringWhenNull(item, PROP_EDATE));
             } else {
-                throw new ZosDatasetException("Unable to retrieve attibutes of data set" + quoted(this.dsname) + logOnImage());                
+                throw new ZosDatasetException("Unable to retrieve attibutes of data set " + quoted(this.dsname) + logOnImage());                
             }
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -725,7 +727,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return attributes.toString();
     }
     
-    private String retrieve(String memberName) throws ZosDatasetException {
+    protected String retrieve(String memberName) throws ZosDatasetException {
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
         String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
@@ -762,7 +764,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return content;
     }
 
-    private void store(String content, String memberName) throws ZosDatasetException {
+    protected void store(String content, String memberName) throws ZosDatasetException {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -795,7 +797,7 @@ public class ZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
-    private String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
+    protected String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -826,7 +828,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return element.getAsString();
     }
 
-    private JsonObject addPropertyWhenSet(JsonObject requestBody, String property, Object value) throws ZosDatasetException {
+    protected JsonObject addPropertyWhenSet(JsonObject requestBody, String property, Object value) throws ZosDatasetException {
         if (value != null) {
             if (value instanceof String) {
                 requestBody.addProperty(property, (String) value);
@@ -841,7 +843,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return requestBody;
     }
 
-    private boolean getMembers(JsonObject responseBody) {
+    protected boolean getMembers(JsonObject responseBody) {
         boolean moreRows = false;
     
         int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
@@ -857,15 +859,14 @@ public class ZosDatasetImpl implements IZosDataset {
                 JsonObject item = items.get(i).getAsJsonObject();
                 if (moreRows && i == returnedRowsValue-1) {
                     this.memberStart = item.get(PROP_MEMBER).getAsString();
-                } else {
-                    this.datasetMembers.add(item.get(PROP_MEMBER).getAsString());
                 }
+                this.datasetMembers.add(item.get(PROP_MEMBER).getAsString());
             }
         }
         return moreRows;
     }
 
-    private String buildErrorString(String action, JsonObject responseBody) {    
+    protected String buildErrorString(String action, JsonObject responseBody) {    
         int errorCategory = responseBody.get("category").getAsInt();
         int errorRc = responseBody.get("rc").getAsInt();
         int errorReason = responseBody.get("reason").getAsInt();
@@ -913,7 +914,7 @@ public class ZosDatasetImpl implements IZosDataset {
      * Infer the data set and member names from the full DSN
      * @param fullName 
      */
-    private void splitDSN(String fullName) {
+    protected void splitDSN(String fullName) {
         if (fullName.matches(".*\\(.*\\)")) {
             this.dsname = fullName.substring(0, fullName.indexOf('(')).trim();
         } else {
@@ -939,36 +940,6 @@ public class ZosDatasetImpl implements IZosDataset {
         return " on image " + this.image.getImageID();
     }
     
-    public class MemberList {
-        private List<String> members = new ArrayList<>();
-        private String start;
-        private boolean moreRows = false;
-
-        public Collection<String> getMemberList() {
-            return members;
-        }
-
-        public void setMoreRows(boolean moreRows) {
-            this.moreRows  = moreRows;
-        }
-
-        public void setStart(String start) {
-            this.start = start;            
-        }
-
-        public void add(String member) {
-            this.members.add(member);
-        }
-
-        public String start() {
-            return this.start;
-        }
-
-        public boolean hasMoreRows() {            
-            return this.moreRows;
-        }
-    }
-
     @Override
     public String toString() {
         return this.dsname;
@@ -982,11 +953,11 @@ public class ZosDatasetImpl implements IZosDataset {
         return this.retainToTestEnd;
     }
 
-    public IZosmfRestApiProcessor getZosmfApiProcessor() {
-        return this.zosmfApiProcessor;
-    }
-
     public boolean isTemporary() {
         return this.temporary;
     }
+
+	public IZosmfRestApiProcessor getZosmfApiProcessor() {
+	    return this.zosmfApiProcessor;
+	}
 }
