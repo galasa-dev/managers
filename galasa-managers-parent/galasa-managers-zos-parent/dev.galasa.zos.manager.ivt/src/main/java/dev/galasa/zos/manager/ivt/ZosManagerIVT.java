@@ -16,6 +16,7 @@ import dev.galasa.zos.ZosImage;
 import dev.galasa.zos.ZosIpHost;
 import dev.galasa.zos.ZosManagerException;
 
+@Test
 public class ZosManagerIVT {
 	
     @Logger
