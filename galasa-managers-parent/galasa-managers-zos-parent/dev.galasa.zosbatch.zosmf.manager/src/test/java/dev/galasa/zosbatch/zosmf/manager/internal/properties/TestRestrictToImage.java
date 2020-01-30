@@ -66,7 +66,8 @@ public class TestRestrictToImage {
     public void testException() throws Exception {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Problem asking the CPS for the batch job restrict to image property for zOS image " + IMAGE_ID);
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("ANY", true));
+        
+        getProperty("ANY", true);
     }
 
     private boolean getProperty(String value) throws Exception {
