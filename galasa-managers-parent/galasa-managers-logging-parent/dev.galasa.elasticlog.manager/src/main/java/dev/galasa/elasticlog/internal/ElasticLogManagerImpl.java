@@ -235,7 +235,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
         
 			index = index + "_latest";
 
-			ArrayList<String> ids = new ArrayList<String>();
+			String id = null;
 			HttpClientResponse<String> response = client.head(endpoint + "/" + index);
 			if (response.getStatusCode() != 404) {
 				//Obtain id of document if test case is already recorded
@@ -246,21 +246,18 @@ public class ElasticLogManagerImpl extends AbstractManager {
 													"&default_operator=AND");
 				if (searchResponse.contains(testCase)) {
 					JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
-					JsonArray hits = json.get("hits").getAsJsonObject().get("hits").getAsJsonArray();
-
-					for (JsonElement j : hits) {
-						ids.add(j.getAsJsonObject().get("_id").getAsString());
-					}
+					id = json.get("hits").getAsJsonObject().get("hits").getAsJsonArray()
+										.get(0).getAsJsonObject().get("_id").getAsString();
 				}
 			}
             
-			//Delete document if already present then send new document
-			if (ids.size() > 0) {
-				for (String id : ids) {
-					client.delete(index + "/_doc/" + id, false);
-				}
-			}
-			client.postJson(index + "/_doc", request, false);
+			//Update document if already present or send new document
+			if (id != null) {
+				JsonObject update = new JsonObject();
+				update.add("doc", gson.fromJson(request, JsonObject.class));
+				client.postJson(index + "/_update/" + id, gson.toJson(update), false);
+			} else
+				client.postJson(index + "/_doc", request, false);
 
 		} catch (HttpClientException e) {
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
