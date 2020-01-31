@@ -10,10 +10,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -29,7 +25,6 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
-import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.kubernetes.IKubernetesNamespace;
@@ -133,6 +128,11 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         activeManagers.add(this);
 
         this.required = true;
+    }
+    
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;
     }
 
     /**

@@ -28,6 +28,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.galasaecosystem.KubernetesEcosystem;
@@ -139,12 +140,31 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
 
         return super.areYouProvisionalDependentOn(otherManager);
     }
+    
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;
+    }
 
     /**
      * Generate all the annotated fields, uses the standard generate by method mechanism
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        if (getFramework().getTestRun().isSharedEnvironment()) {
+            logger.info("Manager running in Shared Environment setup");
+        }
+
+        //*** Shared Environment Discard processing
+        try {
+            if (getFramework().getSharedEnvironmentRunType() == SharedEnvironmentRunType.DISCARD) {
+                KubernetesEcosystemImpl.loadEcosystemsFromRun(this, dss, taggedEcosystems, getFramework().getTestRun());
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new KubernetesManagerException("Unable to determine Shared Environment phase", e);
+        }
+
+        
         generateAnnotatedFields(GalasaEcosystemManagerField.class);
     }
 
@@ -169,6 +189,21 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         if (namespaceTag.isEmpty()) {
             namespaceTag = "PRIMARY";
         }
+        
+        //*** Check to see if we already have it
+        KubernetesEcosystemImpl ecosystem = this.taggedEcosystems.get(tag);
+        if (ecosystem != null) {
+            return ecosystem;
+        }
+        
+        try {
+            if (getFramework().getSharedEnvironmentRunType() == SharedEnvironmentRunType.DISCARD) {
+                throw new GalasaEcosystemManagerException("Attempt to generate a new Ecosystem during Shared Environment discard");
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new GalasaEcosystemManagerException("Unable to determine Shared Environment phase", e);
+        }
+
 
         //*** Locate the Kubernetes Namespace object
 
@@ -177,7 +212,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
             throw new GalasaEcosystemManagerException("Unable to locate the Kubernetes Namespace tagged " + namespaceTag);
         }
 
-        KubernetesEcosystemImpl ecosystem = new KubernetesEcosystemImpl(this, tag, namespace);
+        ecosystem = new KubernetesEcosystemImpl(this, tag, namespace);
         taggedEcosystems.put(tag, ecosystem);
 
         try {
@@ -244,6 +279,10 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
 
     public Gson getGson() {
         return this.gson;
+    }
+
+    public IDynamicStatusStoreService getDss() {
+        return this.dss;
     }
 
 

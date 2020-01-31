@@ -47,5 +47,12 @@ public interface IKubernetesNamespace {
     public void saveNamespaceConfiguration(String storedArtifactPath) throws KubernetesManagerException;
 
 
+    /**
+     * Retrieve the tag of this namespace
+     * 
+     * @return The tag of this namespace
+     */
+    @NotNull
+    public String getTag();
 
 }

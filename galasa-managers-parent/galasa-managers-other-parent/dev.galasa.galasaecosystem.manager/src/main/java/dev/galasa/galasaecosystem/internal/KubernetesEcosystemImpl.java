@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -34,6 +36,9 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
+import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.IDynamicStatusStoreService;
+import dev.galasa.framework.spi.IRun;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
@@ -132,7 +137,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem loading the YAML for the Kubernetes resources from the manager bundle", e);
         }
-        
+
         //*** TODO Load yaml from the test class
 
         //*** Search for all the resources we need to create the ecosystem
@@ -303,9 +308,12 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             waitForMessageInAllPodLogs(ResourceType.METRICS_DEPLOYMENT, "metrics", "MetricsServer.run - Metrics Server has started", 180);
             waitForMessageInAllPodLogs(ResourceType.PROMETHEUS_DEPLOYMENT, "prometheus", "Server is ready to receive web requests", 180);
             waitForMessageInAllPodLogs(ResourceType.GRAFANA_DEPLOYMENT, "grafana", "msg=\"HTTP Server Listen\" logger=http.server address=[::]:3000", 180);
-            
+
             Instant buildEnd = Instant.now();
             long seconds = buildEnd.getEpochSecond() - buildStart.getEpochSecond();
+
+
+            saveEcosystemInDss();
 
             logger.info("Kubernetes Ecosystem successfully built on " + this.namespace.getFullId() + " in " + seconds + " seconds");
 
@@ -454,7 +462,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                 String encoded = kvs.get(0).getAsJsonObject().get("value").getAsString();
                 return new String(decoder.decode(encoded));
             }
-            
+
             return null;
         } catch (KubernetesManagerException | HttpClientException e) {
             throw new GalasaEcosystemManagerException("Problem retrieving CPS property " + key, e);
@@ -583,8 +591,22 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     }
 
     public void discard() {
-       // Do not discard, we will leave this for the Kubernetes Manager to clean up
+        // Do not discard, we will leave this for the Kubernetes Manager to clean up
         logger.debug("Not discarding Galasa Ecosystem " + this.tag + ", leaving for the Kubernetes Manager to do it");
+
+
+        //*** But clean up the DSS
+        String runName = this.manager.getFramework().getTestRunName();
+        String prefix = "run." + runName + ".kubernetes.ecosystem." + this.tag + ".";
+
+        try {
+            this.manager.getDss().deletePrefix(prefix);
+        } catch(Exception e) {
+            logger.error("Unable to discard the ecosystem",e);
+        }       
+
+
+
     }
 
     private static String getProperty(Map<String, Object> yaml, String name) {
@@ -720,37 +742,91 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     @Override
     public @NotNull URI getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
         try {
-        switch(endpoint) {
-            case API:
-                return this.apiUrl.toURI();
-            case CPS:
-                return this.cpsUri;
-            case CREDS:
-                return this.credsUri;
-            case DSS:
-                return this.dssUri;
-            case ENGINE_CONTROLLER_HEALTH:
-                return this.engineHealthUrl.toURI();
-            case ENGINE_CONTROLLER_METRICS:
-                return this.engineMetricsUrl.toURI();
-            case GRAFANA:
-                return this.grafanaUrl.toURI();
-            case METRICS_HEALTH:
-                return this.metricsHealthUrl.toURI();
-            case METRICS_METRICS:
-                return this.metricsMetricsUrl.toURI();
-            case PROMETHEUS:
-                return this.prometheusUrl.toURI();
-            case RAS:
-                return this.rasUri;
-            case RESOURCE_MANAGEMENT_HEALTH:
-                return this.resmonHealthUrl.toURI();
-            case RESOURCE_MANAGEMENT_METRICS:
-                return this.resmonMetricsUrl.toURI();
-            default:
-                throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
-        }
+            switch(endpoint) {
+                case API:
+                    return this.apiUrl.toURI();
+                case CPS:
+                    return this.cpsUri;
+                case CREDS:
+                    return this.credsUri;
+                case DSS:
+                    return this.dssUri;
+                case ENGINE_CONTROLLER_HEALTH:
+                    return this.engineHealthUrl.toURI();
+                case ENGINE_CONTROLLER_METRICS:
+                    return this.engineMetricsUrl.toURI();
+                case GRAFANA:
+                    return this.grafanaUrl.toURI();
+                case METRICS_HEALTH:
+                    return this.metricsHealthUrl.toURI();
+                case METRICS_METRICS:
+                    return this.metricsMetricsUrl.toURI();
+                case PROMETHEUS:
+                    return this.prometheusUrl.toURI();
+                case RAS:
+                    return this.rasUri;
+                case RESOURCE_MANAGEMENT_HEALTH:
+                    return this.resmonHealthUrl.toURI();
+                case RESOURCE_MANAGEMENT_METRICS:
+                    return this.resmonMetricsUrl.toURI();
+                default:
+                    throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
+            }
         } catch (URISyntaxException e) {
+            throw new GalasaEcosystemManagerException("Problem with endpoint URI", e);
+        }
+    }
+
+    private void setEndpoint(@NotNull EcosystemEndpoint endpoint, URI uri) throws GalasaEcosystemManagerException {
+        if (uri == null) {
+            throw new GalasaEcosystemManagerException("Endpoint URI missing for " + endpoint.toString());
+        }
+
+        try {
+            switch(endpoint) {
+                case API:
+                    this.apiUrl = uri.toURL();
+                    break;
+                case CPS:
+                    this.cpsUri = uri;
+                    break;
+                case CREDS:
+                    this.credsUri = uri;
+                    break;
+                case DSS:
+                    this.dssUri = uri;
+                    break;
+                case ENGINE_CONTROLLER_HEALTH:
+                    this.engineHealthUrl = uri.toURL();
+                    break;
+                case ENGINE_CONTROLLER_METRICS:
+                    this.engineMetricsUrl = uri.toURL();
+                    break;
+                case GRAFANA:
+                    this.grafanaUrl = uri.toURL();
+                    break;
+                case METRICS_HEALTH:
+                    this.metricsHealthUrl = uri.toURL();
+                    break;
+                case METRICS_METRICS:
+                    this.metricsMetricsUrl = uri.toURL();
+                    break;
+                case PROMETHEUS:
+                    this.prometheusUrl = uri.toURL();
+                    break;
+                case RAS:
+                    this.rasUri = uri;
+                    break;
+                case RESOURCE_MANAGEMENT_HEALTH:
+                    this.resmonHealthUrl = uri.toURL();
+                    break;
+                case RESOURCE_MANAGEMENT_METRICS:
+                    this.resmonMetricsUrl = uri.toURL();
+                    break;
+                default:
+                    throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
+            }
+        } catch (MalformedURLException e) {
             throw new GalasaEcosystemManagerException("Problem with endpoint URI", e);
         }
     }
@@ -760,7 +836,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         if (property == null || property.trim().isEmpty()) {
             throw new GalasaEcosystemManagerException("Property name is missing");
         }
- 
+
         return retrieveCpsProperty(property);
     }
 
@@ -795,6 +871,78 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     @Override
     public void setCredsProperty(@NotNull String property, @NotNull String value) throws GalasaEcosystemManagerException {
         setCpsProperty(property, value);
+    }
+
+
+    private void saveEcosystemInDss() throws GalasaEcosystemManagerException {
+
+        String runName = this.manager.getFramework().getTestRunName();
+        String prefix = "run." + runName + ".kubernetes.ecosystem." + this.tag;
+
+        HashMap<String, String> ecosystemProperties = new HashMap<String, String>();
+        ecosystemProperties.put(prefix + ".namespace.tag", this.namespace.getTag());
+
+        for(EcosystemEndpoint endpoint : EcosystemEndpoint.values()) {
+            String key = prefix + "." + endpoint.toString();
+            URI uri = getEndpoint(endpoint);
+            ecosystemProperties.put(key, uri.toString());
+        }
+
+        try {
+            this.manager.getDss().put(ecosystemProperties);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Unable to save the ecosystem in the DSS",e);
+        }
+
+    }
+
+
+
+
+
+
+    public static void loadEcosystemsFromRun(GalasaEcosystemManagerImpl manager,
+            IDynamicStatusStoreService dss,     
+            HashMap<String, KubernetesEcosystemImpl> taggedEcosystems, 
+            IRun testRun) throws GalasaEcosystemManagerException {
+
+        String tagPrefix = "run." + testRun.getName() + ".kubernetes.ecosystem.";
+        Pattern dssTagPattern = Pattern.compile("^" + tagPrefix + "(\\w+).namespace.tag$");
+
+        try {
+            Map<String, String> dssTags = dss.getPrefix(tagPrefix);
+            for(Entry<String, String> entry : dssTags.entrySet()) {
+                Matcher matcher = dssTagPattern.matcher(entry.getKey());
+                if (!matcher.find()) {
+                    continue;
+                }
+                
+                String tag = matcher.group(1);
+                String kubernetesNamespaceTag = entry.getValue();
+                
+                
+                IKubernetesNamespace namespace = manager.getKubernetesManager().getNamespaceByTag(kubernetesNamespaceTag);
+                
+                KubernetesEcosystemImpl ecosystem = new KubernetesEcosystemImpl(manager, tag, namespace);
+                
+                for(EcosystemEndpoint endpoint : EcosystemEndpoint.values()) {
+                    String key = tagPrefix + tag + "." + endpoint.toString();
+                    String value = AbstractManager.nulled(dss.get(key));
+                    if (value == null) {
+                        throw new GalasaEcosystemManagerException("Missing URI for tag " + tag + " endpoint " + endpoint.toString());
+                    }
+                    ecosystem.setEndpoint(endpoint, new URI(value));
+                }
+                
+                taggedEcosystems.put(tag, ecosystem);            
+            }
+            
+        } catch(GalasaEcosystemManagerException e) {
+            throw e;
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Unable to load Ecosystem from the run", e);
+        }
+
     }
 
 

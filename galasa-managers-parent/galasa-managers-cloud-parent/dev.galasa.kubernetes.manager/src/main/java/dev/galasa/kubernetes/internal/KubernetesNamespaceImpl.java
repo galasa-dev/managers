@@ -21,6 +21,8 @@ import com.google.protobuf.Message;
 
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
+import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IRun;
@@ -85,10 +87,12 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
     private final IFramework                 framework;
     private final IDynamicStatusStoreService dss;
     private final String                     runName;
+    private final String                     tag;
 
-    public KubernetesNamespaceImpl(KubernetesClusterImpl cluster, String namespaceId, IFramework framework, IDynamicStatusStoreService dss) {
+    public KubernetesNamespaceImpl(KubernetesClusterImpl cluster, String namespaceId, String tag, IFramework framework, IDynamicStatusStoreService dss) {
         this.cluster     = cluster;
         this.namespaceId = namespaceId;
+        this.tag         = tag;
         this.framework   = framework;
         this.dss         = dss;
         this.runName     = this.framework.getTestRunName();
@@ -130,15 +134,16 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         V1ObjectMeta metadata = new V1ObjectMeta();
         configMap.setMetadata(metadata);
         metadata.setName("galasa");
+        addRunLabel(metadata);
 
-//        try {
-//            api.createNamespacedConfigMap(this.namespaceId, configMap, null, null, null);
-//        } catch(ApiException e) {         
-//            if (e.getCode() == 409) {
-//                throw new KubernetesManagerException("The allocated namespace " + this.namespaceId + " on cluster " + this.cluster.getId() + " is dirty, the configmap galasa still exists", e);
-//            }
-//            throw new KubernetesManagerException("Unable to initialise the namespace with a configmap", e);
-//        }
+        try {
+            api.createNamespacedConfigMap(this.namespaceId, configMap, null, null, null);
+        } catch(ApiException e) {         
+            if (e.getCode() == 409) {
+                throw new KubernetesManagerException("The allocated namespace " + this.namespaceId + " on cluster " + this.cluster.getId() + " is dirty, the configmap galasa still exists", e);
+            }
+            throw new KubernetesManagerException("Unable to initialise the namespace with a configmap", e);
+        }
     }
 
 
@@ -333,7 +338,19 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
      */
     public static void deleteDss(String runName, String clusterId, String namespaceId, IDynamicStatusStoreService dss, IFramework framework) throws KubernetesManagerException {
         KubernetesClusterImpl cluster = new KubernetesClusterImpl(clusterId, dss, framework);
-        KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, framework, dss);
+        
+        //*** get the tag
+        String tag;
+        try {
+            tag = AbstractManager.nulled(dss.get("slot.run." + runName + ".cluster." + clusterId + ".namespace." + namespaceId + ".tag"));
+        } catch (DynamicStatusStoreException e) {
+            throw new KubernetesManagerException("Problem retrieving tag from DSS", e);
+        }
+        if (tag == null) {
+            throw new KubernetesManagerException("Missing tag for Kubernetes namespace " + clusterId + "/" + namespaceId);
+        }
+        
+        KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, tag, framework, dss);
 
         namespace.discard(runName);
     }
@@ -733,7 +750,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                     throw new KubernetesManagerException("Missing configuration for cluster ID " + clusterId);
                 }
                 
-                KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, framework, dss);
+                KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, seTag, framework, dss);
                 taggedNamespaces.put(seTag, namespace);
             }
 
@@ -741,6 +758,11 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         } catch(Exception e) {
             throw new KubernetesManagerException("Problem loading Shared Environment", e);
         }
+    }
+
+    @Override
+    public @NotNull String getTag() {
+        return this.tag;
     }
 
 
