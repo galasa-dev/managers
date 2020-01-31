@@ -50,7 +50,7 @@ public @interface DockerContainer {
     public String dockerContainerTag() default "PRIMARY";
 
     /**
-     * The <code>image</code> attribute provides the Docker Image that is used to create the Docker Container.  It image name must not 
+     * The <code>image</code> attribute provides the Docker Image that is used to create the Docker Container.  The image name must not 
      * include the Docker Registry as this is provided in the CPS.   If using a public official image from DockerHub,  then the 
      * image name must be prefixed with <code>library/</code>, for example <code>library/httpd:latest</code>, the Docker Manager will
      * not default to the library namespace like the Docker commands do.
