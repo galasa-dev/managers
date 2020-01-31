@@ -78,4 +78,10 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
         instantiatedClients.add(client);
         return client;
     }
+    
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;   // this manager does not provision resources, therefore support environments 
+    }
+
 }

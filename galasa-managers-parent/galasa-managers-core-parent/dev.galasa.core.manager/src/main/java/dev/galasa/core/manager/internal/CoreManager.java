@@ -169,4 +169,9 @@ public class CoreManager extends AbstractManager implements ICoreManager {
 		ctf.registerText(confidentialString, comment);
 	}
 
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;   // this manager does not provision resources, therefore support environments 
+    }
+
 }

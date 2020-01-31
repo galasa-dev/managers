@@ -90,4 +90,9 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
 
         activeManagers.add(this);
     }
+    
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;   // this manager does not provision resources, therefore support environments 
+    }
 }

@@ -157,7 +157,7 @@ public class KubernetesClusterImpl {
                 }
             }
             
-            KubernetesNamespaceImpl newNamespace = new KubernetesNamespaceImpl(this, selectedNamespace, this.framework, this.dss);
+            KubernetesNamespaceImpl newNamespace = new KubernetesNamespaceImpl(this, selectedNamespace, namespaceTag, this.framework, this.dss);
             newNamespace.initialiseNamespace();
             return newNamespace;
         } catch(InsufficientResourcesAvailableException e) {
