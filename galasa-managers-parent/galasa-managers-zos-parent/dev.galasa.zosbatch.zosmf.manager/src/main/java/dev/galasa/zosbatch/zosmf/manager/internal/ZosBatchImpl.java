@@ -16,7 +16,6 @@ import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
-import dev.galasa.zosbatch.ZosBatchManagerException;
 
 /**
  * Implementation of {@link IZosBatch} using zOS/MF
@@ -26,7 +25,6 @@ public class ZosBatchImpl implements IZosBatch {
     
     private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
     private IZosImage image;
-    private ZosBatchJobImpl zosBatchJob;
     
     public ZosBatchImpl(IZosImage image) {
         this.image = image;
@@ -39,10 +37,10 @@ public class ZosBatchImpl implements IZosBatch {
             jobname = new ZosBatchJobnameImpl(this.image.getImageID());        
         }
         
-        ZosBatchJobImpl newZosBatchJob = newZosBatchJob(jcl, jobname);
-        this.zosBatchJobs.add(newZosBatchJob);
+        ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
+        this.zosBatchJobs.add(zosBatchJob);
         
-        return newZosBatchJob.submitJob();
+        return zosBatchJob.submitJob();
     }
 
     /**
@@ -64,17 +62,5 @@ public class ZosBatchImpl implements IZosBatch {
             }
             iterator.remove();
         }
-    }
-
-    public ZosBatchJobImpl newZosBatchJob(String jcl, IZosBatchJobname jobname) throws ZosBatchException {
-        if (this.zosBatchJob != null) {
-            return this.zosBatchJob;
-        }
-        try {
-            this.zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
-        } catch (ZosBatchManagerException e) {
-            throw new ZosBatchException("Unable to submit batch job", e);
-        }
-        return this.zosBatchJob;
     }
 }

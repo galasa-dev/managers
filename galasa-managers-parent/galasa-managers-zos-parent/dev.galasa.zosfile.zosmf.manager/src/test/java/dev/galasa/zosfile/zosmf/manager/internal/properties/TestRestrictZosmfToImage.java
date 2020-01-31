@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.zosmf.manager.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -19,13 +19,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.cps.CpsProperties;
-import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
+import dev.galasa.zosfile.ZosFileManagerException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
-public class TestUseSysaff {
+@PrepareForTest({ZosFileZosmfPropertiesSingleton.class, CpsProperties.class})
+public class TestRestrictZosmfToImage {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
@@ -37,36 +35,36 @@ public class TestUseSysaff {
     
     @Test
     public void testConstructor() {
-        UseSysaff useSysaff = new UseSysaff();
-        Assert.assertNotNull("Object was not created", useSysaff);
+    	RestrictZosmfToImage restrictZosmfToImage = new RestrictZosmfToImage();
+        Assert.assertNotNull("Object was not created", restrictZosmfToImage);
     }
     
     @Test
     public void testNull() throws Exception {
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty(null));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty(null));
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", true, getProperty("true"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", true, getProperty("TRUE"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", true, getProperty("TrUe"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty("fasle"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty("FALSE"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty("FaLsE"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("true"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("TRUE"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("TrUe"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("fasle"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("FALSE"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("FaLsE"));
     }
     
     @Test
     public void testInvalid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty("XXX"));
-        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", false, getProperty("999"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("XXX"));
+        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("999"));
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the batch job use SYSAFF property for zOS image " + IMAGE_ID);
-        
+        exceptionRule.expect(ZosFileManagerException.class);
+        exceptionRule.expectMessage("Problem asking the CPS for the restrict zOSMF to image property for zOS image " + IMAGE_ID);
+
         getProperty("ANY", true);
     }
 
@@ -75,8 +73,8 @@ public class TestUseSysaff {
     }
     
     private boolean getProperty(String value, boolean exception) throws Exception {
-        PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
-        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
+        PowerMockito.spy(ZosFileZosmfPropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosFileZosmfPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
@@ -85,6 +83,6 @@ public class TestUseSysaff {
             PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return UseSysaff.get(IMAGE_ID);
+        return RestrictZosmfToImage.get(IMAGE_ID);
     }
 }

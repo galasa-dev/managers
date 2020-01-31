@@ -33,10 +33,14 @@ public class JobWaitTimeout extends CpsProperties {
             if (timeoutString == null) {
                 return DEFAULT_JOB_WAIT_TIMEOUT;
             } else {
-                return Integer.parseInt(timeoutString);
+            	int timeout = Integer.parseInt(timeoutString);
+            	if (timeout < 0) {
+            		throw new ZosBatchManagerException("Batch job wait timeout property must be a positive integer");
+            	}
+            	return timeout;
             }
         } catch (ConfigurationPropertyStoreException | NumberFormatException e) {
-            throw new ZosBatchManagerException("Problem asking the CPS for the batch job timeout property for zOS image "  + imageId, e);
+            throw new ZosBatchManagerException("Problem asking the CPS for the batch job wait timeout property for zOS image "  + imageId, e);
         }
     }
 

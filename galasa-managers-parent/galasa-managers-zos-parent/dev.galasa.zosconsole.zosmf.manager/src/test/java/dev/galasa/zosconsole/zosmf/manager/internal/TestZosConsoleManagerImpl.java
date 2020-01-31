@@ -114,18 +114,19 @@ public class TestZosConsoleManagerImpl {
     public void testProvisionGenerate() throws Exception {
         PowerMockito.doNothing().when(zosConsoleManagerSpy, "generateAnnotatedFields", Mockito.any());
         zosConsoleManagerSpy.provisionGenerate();
-        Assert.assertTrue("Error in provisionGenerate() method", true);
+        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(1)).invoke("generateAnnotatedFields", Mockito.any());
     }
     
     @Test
-    public void testYouAreRequired() throws ManagerException {
+    public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
         zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
         
+        Mockito.clearInvocations(zosConsoleManagerSpy);
         zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
-        
-        Assert.assertTrue("Error in youAreRequired() method", true);
+        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
@@ -151,28 +152,21 @@ public class TestZosConsoleManagerImpl {
     }
     
     @Test
-    public void testStartOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        zosConsoleManager.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-        
-        Assert.assertTrue("Error in startOfTestMethod() method", true);
-    }
-    
-    @Test
     public void testGenerateZosConsole() throws NoSuchMethodException, SecurityException, ManagerException, NoSuchFieldException {
         List<Annotation> annotations = new ArrayList<>();
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosconsole.ZosConsole.class);
         annotations.add(annotation);
         
-        zosConsoleManager.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
+        Object zosConsoleImplObject = zosConsoleManager.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
+        Assert.assertTrue("Error in generateZosConsole() method", zosConsoleImplObject instanceof ZosConsoleImpl);
         
         HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
         ZosConsoleImpl zosConsoleImpl = Mockito.mock(ZosConsoleImpl.class);
         taggedZosConsoles.put("tag", zosConsoleImpl);
         Whitebox.setInternalState(zosConsoleManagerSpy, "taggedZosConsoles", taggedZosConsoles);
         
-        zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
-        
-        Assert.assertTrue("Error in generateZosConsole() method", true);
+        zosConsoleImplObject = zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
+        Assert.assertEquals("generateZosConsole() should retrn the supplied instance of ZosBatchImpl", zosConsoleImpl, zosConsoleImplObject);
     }
     
     class DummyTestClass {

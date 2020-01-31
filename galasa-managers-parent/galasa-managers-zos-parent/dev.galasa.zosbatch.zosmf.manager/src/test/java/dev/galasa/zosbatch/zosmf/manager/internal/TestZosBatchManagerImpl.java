@@ -34,11 +34,9 @@ import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobnameImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchManagerImpl;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
@@ -123,18 +121,19 @@ public class TestZosBatchManagerImpl {
     public void testProvisionGenerate() throws Exception {
         PowerMockito.doNothing().when(zosBatchManagerSpy, "generateAnnotatedFields", Mockito.any());
         zosBatchManagerSpy.provisionGenerate();
-        Assert.assertTrue("Error in provisionGenerate() method", true);
+        PowerMockito.verifyPrivate(zosBatchManagerSpy, Mockito.times(1)).invoke("generateAnnotatedFields", Mockito.any());
     }
     
     @Test
-    public void testYouAreRequired() throws ManagerException {
+    public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
         zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
+        PowerMockito.verifyPrivate(zosBatchManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
         
+        Mockito.clearInvocations(zosBatchManagerSpy);
         zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
-        
-        Assert.assertTrue("Error in youAreRequired() method", true);
+        PowerMockito.verifyPrivate(zosBatchManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
@@ -160,25 +159,26 @@ public class TestZosBatchManagerImpl {
     }
     
     @Test
-    public void testStartOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        zosBatchManager.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-        
-        Assert.assertTrue("Error in startOfTestMethod() method", true);
+    public void testStartOfTestMethod() throws Exception {
+        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        Assert.assertEquals("currentTestMethod should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), ZosBatchManagerImpl.currentTestMethod);
     }
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
+    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
         zosBatchManager.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
+        Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
         
         HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
         ZosBatchImpl zosBatchImpl = Mockito.mock(ZosBatchImpl.class);
         Mockito.doNothing().when(zosBatchImpl).cleanup();
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
+    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
 
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
-        
-        Assert.assertTrue("Error in endOfTestMethod() method", true);
+        Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
     }
     
     @Test
@@ -187,16 +187,16 @@ public class TestZosBatchManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosbatch.ZosBatch.class);
         annotations.add(annotation);
         
-        zosBatchManager.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
+        Object zosBatchImplObject = zosBatchManager.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
+        Assert.assertTrue("Error in generateZosBatch() method", zosBatchImplObject instanceof ZosBatchImpl);
         
         HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
         ZosBatchImpl zosBatchImpl = Mockito.mock(ZosBatchImpl.class);
         taggedZosBatches.put("tag", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
         
-        zosBatchManagerSpy.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
-        
-        Assert.assertTrue("Error in generateZosBatch() method", true);
+        zosBatchImplObject = zosBatchManagerSpy.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
+        Assert.assertEquals("generateZosBatch() should retrn the supplied instance of ZosBatchImpl", zosBatchImpl, zosBatchImplObject);
     }
     
     @Test
@@ -230,12 +230,10 @@ public class TestZosBatchManagerImpl {
         PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
         PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
-        PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Problem getting batch jobname prefix"));
+        PowerMockito.doReturn("PFX").when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     	
-        zosBatchManagerSpy.newZosBatchJobnameImpl("image");
+        IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobnameImpl("image");
+        Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith("PFX"));
     }
     
     class DummyTestClass {
