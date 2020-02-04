@@ -789,12 +789,15 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                     break;
                 case CPS:
                     this.cpsUri = uri;
+                    this.cpsUrl = new URL(this.cpsUri.getSchemeSpecificPart());
                     break;
                 case CREDS:
                     this.credsUri = uri;
+                    this.credsUrl = new URL(this.credsUri.getSchemeSpecificPart());
                     break;
                 case DSS:
                     this.dssUri = uri;
+                    this.dssUrl = new URL(this.dssUri.getSchemeSpecificPart());
                     break;
                 case ENGINE_CONTROLLER_HEALTH:
                     this.engineHealthUrl = uri.toURL();
@@ -816,6 +819,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                     break;
                 case RAS:
                     this.rasUri = uri;
+                    this.rasUrl = new URL(this.rasUri.getSchemeSpecificPart());
                     break;
                 case RESOURCE_MANAGEMENT_HEALTH:
                     this.resmonHealthUrl = uri.toURL();

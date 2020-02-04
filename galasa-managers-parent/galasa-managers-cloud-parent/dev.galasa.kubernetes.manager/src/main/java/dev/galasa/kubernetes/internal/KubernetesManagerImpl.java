@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -21,16 +22,19 @@ import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
+import dev.galasa.framework.spi.FrameworkException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.KubernetesNamespace;
 import dev.galasa.kubernetes.internal.properties.KubernetesClusters;
+import dev.galasa.kubernetes.internal.properties.KubernetesNamespaceTagSharedEnvironment;
 import dev.galasa.kubernetes.internal.properties.KubernetesPropertiesSingleton;
 import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
@@ -55,12 +59,11 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     private IDynamicStatusStoreService          dss;
 
     private HashMap<String, KubernetesNamespaceImpl> taggedNamespaces = new HashMap<>();
+    private HashSet<String> sharedEnvironmentNamespacesTags = new HashSet<>();
 
     private HashMap<String, KubernetesClusterImpl> clusters = new HashMap<>();
 
     private boolean                             required         = false;
-    private boolean                             sharedEnvBuild   = false;
-    private boolean                             sharedEnvDiscard = false;
 
     /**
      * Initialise the Kubernetes Manager if the Kubernetes TPI is included in the test class
@@ -179,7 +182,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         }
 
         //*** First check if we already have the tag
-        IKubernetesNamespace namespace = taggedNamespaces.get(tag);
+        KubernetesNamespaceImpl namespace = taggedNamespaces.get(tag);
         if (namespace != null) {
             return namespace;
         }
@@ -191,7 +194,36 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         } catch (ConfigurationPropertyStoreException e) {
             throw new KubernetesManagerException("Unable to determine Shared Environment phase", e);
         }
-
+        
+        //*** check to see if the tag is a shared environment
+        String sharedEnvironmentRunName = KubernetesNamespaceTagSharedEnvironment.get(tag);
+        if (sharedEnvironmentRunName != null) {
+            try {
+                IRun sharedEnvironmentRun = getFramework().getFrameworkRuns().getRun(sharedEnvironmentRunName);
+                
+                if (sharedEnvironmentRun == null || !sharedEnvironmentRun.isSharedEnvironment()) {
+                    throw new KubernetesManagerException("Unable to locate Shared Environment " + sharedEnvironmentRunName + " for Namespace Tag " + tag);
+                }
+                
+                HashMap<String, KubernetesNamespaceImpl> tempSharedEnvironmentNamespaces = new HashMap<>();
+                KubernetesNamespaceImpl.loadNamespacesFromRun(getFramework(), dss, clusters, tempSharedEnvironmentNamespaces, sharedEnvironmentRun);
+                
+                namespace = tempSharedEnvironmentNamespaces.get(tag);
+                if (namespace == null) {
+                    throw new KubernetesManagerException("Unable to locate Shared Environment " + sharedEnvironmentRunName + " for Namespace Tag " + tag);
+                }
+                
+                this.taggedNamespaces.put(tag, namespace);
+                this.sharedEnvironmentNamespacesTags.add(tag);
+                
+                logger.info("Namespace tag " + tag + " is using Shared Environment " + sharedEnvironmentRunName);
+                
+                return namespace;
+            } catch(FrameworkException e) {
+                throw new KubernetesManagerException("Problem loading Shared Environment " + sharedEnvironmentRunName + " for Namespace Tag " + tag, e);
+            }
+        } 
+        
         //*** Allocate a namespace,  may take a few passes through as other tests may be trying to get namespaces at the same time
 
         ArrayList<KubernetesClusterImpl> availableClusters = new ArrayList<>(this.clusters.values());
@@ -238,6 +270,11 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     public void provisionDiscard() {
 
         for(KubernetesNamespaceImpl namespace : taggedNamespaces.values()) {
+            if (this.sharedEnvironmentNamespacesTags.contains(namespace.getTag())) {
+                logger.debug("Not discarding Shared Environment namespace tag " + namespace.getTag());
+                continue;  //*** Do not discard shared environment namespaces (during test runs)
+            }
+            
             try {
                 namespace.discard(this.getFramework().getTestRunName());
             } catch(KubernetesManagerException e) {
