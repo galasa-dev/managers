@@ -22,20 +22,20 @@
  * @galasa.limitations
  * 
  * The Manager logs the following test information:-<br>
- * testCase<br>
- * runId<br>
- * startTimestamp<br>
- * endTimestamp<br>
- * requestor<br>
- * result<br>
- * testTooling<br>
- * testType<br>
- * testingEnvironment<br>
- * productRelease<br>
- * buildLevel<br>
- * customBuild<br>
- * testingAreas<br>
- * tags<br>
+ * - testCase<br>
+ * - runId<br>
+ * - startTimestamp<br>
+ * - endTimestamp<br>
+ * - requestor<br>
+ * - result<br>
+ * - testTooling<br>
+ * - testType<br>
+ * - testingEnvironment<br>
+ * - productRelease<br>
+ * - buildLevel<br>
+ * - customBuild<br>
+ * - testingAreas<br>
+ * - tags<br>
  * <br>
  * If additional testing information is required, please raise an Issue.
  */
