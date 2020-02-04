@@ -31,6 +31,7 @@ import org.powermock.reflect.Whitebox;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosDataset.DSType;
@@ -1036,13 +1037,50 @@ public class TestZosDatasetImpl {
 		Assert.assertEquals("datasetMembers should return a list with 2 members", listOfMembers(2), Whitebox.getInternalState(zosDatasetSpy,"datasetMembers"));
 	}
     
-//	@Test
-//	public void testBuildErrorString() {
-//		JsonObject jsonObject = getJsonObject();
-//		jsonObject.addProperty("", "");
-//		zosDatasetSpy.buildErrorString("action", jsonObject);
-//	}
-    
+	@Test
+	public void testBuildErrorString() {
+        String expectedString = "Error action";
+        String returnString = zosDatasetSpy.buildErrorString("action", new JsonObject());
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+        
+		JsonObject jsonObject = getJsonObject();
+        jsonObject.addProperty("category", 0);
+        jsonObject.addProperty("rc", 0);
+        jsonObject.addProperty("reason", 0);
+        jsonObject.addProperty("message", "message");
+        jsonObject.addProperty("stack", "stack");
+        jsonObject.addProperty("id", 1);
+		zosDatasetSpy.buildErrorString("action", jsonObject);
+		
+        jsonObject.addProperty("details", "details");
+        expectedString = "Error action data set \"" + DATASET_NAME + "\", category:0, rc:0, reason:0, message:message\n" + 
+                "details:details\n" + 
+                "stack:\n" + 
+                "stack";
+        returnString = zosDatasetSpy.buildErrorString("action", jsonObject);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+		
+        jsonObject.addProperty("details", 1);
+		zosDatasetSpy.buildErrorString("action", jsonObject);
+        
+        jsonObject.remove("details");
+        JsonArray jsonArray = new JsonArray();
+        JsonPrimitive item = new JsonPrimitive("details line 1");
+        jsonArray.add(item);
+        item = new JsonPrimitive("details line 2");
+        jsonArray.add(item);
+        jsonObject.add("details", jsonArray);
+        expectedString = "Error action data set \"" + DATASET_NAME + "\", category:0, rc:0, reason:0, message:message\n" + 
+                "details:\n" +
+                "details line 1\n" +
+                "details line 2\n" + 
+                "stack:\n" + 
+                "stack";
+        returnString = zosDatasetSpy.buildErrorString("action", jsonObject);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+		
+	}
+	    
 	@Test
 	public void testSplitDSN() {
 		zosDatasetSpy.splitDSN(DATASET_NAME);

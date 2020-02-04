@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,6 +38,7 @@ import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
@@ -54,7 +57,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     
     private IZosImage jobImage;
     private IZosBatchJobname jobname;
-    private String jcl;    
+    private String jcl;  
+    private int intdrLrecl = 80;  
+    private String intdrRecfm = "F";    
     private int jobWaitTimeout;
     
     private String jobid;            
@@ -79,8 +84,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     public ZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl) throws ZosBatchException {
         this.jobImage = jobImage;
         this.jobname = jobname;
-        this.jcl = jcl;
-        storeArtifact(this.jcl, this.jobname.getName() + "_supplied_JCL.txt");
+        storeArtifact(jcl, this.jobname.getName() + "_supplied_JCL.txt");
+        this.jcl = parseJcl(jcl);
         
         try {
             this.jobWaitTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
@@ -104,6 +109,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     public @NotNull IZosBatchJob submitJob() throws ZosBatchException {
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
+        headers.put(ZosmfCustomHeaders.X_IBM_INTRDR_LRECL.toString(), String.valueOf(this.intdrLrecl));
+        headers.put(ZosmfCustomHeaders.X_IBM_INTRDR_RECFM.toString(), this.intdrRecfm);
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
@@ -178,6 +185,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             } catch (InterruptedException e) {
                 logger.error("waitForJob Interrupted", e);
                 Thread.currentThread().interrupt();
+                throw new ZosBatchException(e);
             }
         }
         return Integer.MIN_VALUE;
@@ -373,7 +381,66 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         }
     }
 
-    protected String jclWithJobcard() {
+    protected String parseJcl(String jcl) throws ZosBatchException {
+		boolean truncateJCLRecords;
+		try {
+			truncateJCLRecords = TruncateJCLRecords.get(this.jobImage.getImageID());
+		} catch (ZosBatchManagerException e) {
+	        throw new ZosBatchException("Unable to get trucate JCL records property value", e);
+	    }
+
+		List<String> jclRecords = new LinkedList<>(Arrays.asList(jcl.split("\n")));
+	    
+		if (truncateJCLRecords) {
+			return truncateJcl(jclRecords);
+		} else {
+			parseJclForVaryingRecordLength(jclRecords);
+			return jcl;
+		}
+	}
+
+	private String truncateJcl(List<String> jclRecords) {
+		List<String> recordsOut = new LinkedList<>();
+		List<Integer> truncatedRecords = new ArrayList<>();
+		for (int i=0; i < jclRecords.size(); i++) {
+			String record = jclRecords.get(i);
+			int recordLength = record.length();
+			if (recordLength > 80) {
+				// Truncate records to 80 bytes
+				truncatedRecords.add(i+1);
+				recordsOut.add(record.substring(0, 80));
+			} else {
+				recordsOut.add(record);
+			}
+		}
+		if (!truncatedRecords.isEmpty()) {
+			logger.warn("The following record(s) have been truncated to 80 characters: " + truncatedRecords.toString());
+		}
+		return String.join("\n", recordsOut);
+	}
+
+	private void parseJclForVaryingRecordLength(List<String> jclRecords) {
+		int minRecordLength = 0;
+		for (int i=0; i < jclRecords.size(); i++) {
+			int recordLength = jclRecords.get(i).length();
+			if (recordLength > 80) {
+				if (recordLength > this.intdrLrecl) {
+					this.intdrLrecl = recordLength;
+					if (minRecordLength == 0) {
+						minRecordLength = recordLength;
+					}
+				}
+				if (recordLength <= minRecordLength) {
+					minRecordLength = recordLength;
+				}
+			}
+		}
+		if (minRecordLength != 0 && minRecordLength != this.intdrLrecl) {
+			this.intdrRecfm = "V";
+		}
+	}
+
+	protected String jclWithJobcard() {
         StringBuilder jobCard = new StringBuilder();
         jobCard.append("//");
         jobCard.append(jobname.getName());
@@ -493,14 +560,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     		if (lastPeriod == -1) {
     			lastPeriod = lastElement.length();
     		}
-            String uniqueName;
-            if (uniqueId == null) {
-                uniqueName = lastElement;
-            } else {
-                uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
-            }
+    		
+            String uniqueName = lastElement;
             if (Files.exists(artifactPath.resolve(uniqueName))) {
-                uniqueId = "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH.mm.ss.SSS"));
+            	if (uniqueId == null) {
+                    uniqueId = "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH.mm.ss.SSS"));
+            	}
                 uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
             }
             artifactPath = artifactPath.resolve(uniqueName);
@@ -510,5 +575,4 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             throw new ZosBatchException("Unable to store artifact", e);
         }        
     }
-
 }

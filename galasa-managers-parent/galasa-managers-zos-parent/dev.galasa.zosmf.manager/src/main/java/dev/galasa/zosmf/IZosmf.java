@@ -101,7 +101,15 @@ public interface IZosmf {
         /**
          * {@code X-IBM-Requested-Method}
          */
-        X_IBM_REQUESTED_METHOD("X-IBM-Requested-Method");
+        X_IBM_REQUESTED_METHOD("X-IBM-Requested-Method"),
+        /**
+         * {@code X-IBM-Intrdr-Recfm}
+         */
+        X_IBM_INTRDR_RECFM("X-IBM-Intrdr-Recfm"),
+        /**
+         * {@code X-IBM-Intrdr-Lrecl}
+         */
+        X_IBM_INTRDR_LRECL("X-IBM-Intrdr-Lrecl");
         
         private String header;
         

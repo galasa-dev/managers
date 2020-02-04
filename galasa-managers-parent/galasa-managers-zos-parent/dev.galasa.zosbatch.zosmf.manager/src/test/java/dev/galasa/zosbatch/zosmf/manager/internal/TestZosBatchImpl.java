@@ -37,6 +37,7 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
@@ -45,7 +46,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchManagerImpl.class, JobWaitTimeout.class, UseSysaff.class, RestrictToImage.class, JobnamePrefix.class})
+@PrepareForTest({ZosBatchManagerImpl.class, JobWaitTimeout.class, UseSysaff.class, RestrictToImage.class, TruncateJCLRecords.class, JobnamePrefix.class})
 public class TestZosBatchImpl {
     
     private ZosBatchImpl zosBatch;
@@ -115,6 +116,9 @@ public class TestZosBatchImpl {
         
         PowerMockito.mockStatic(RestrictToImage.class);
         Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
+        
+        PowerMockito.mockStatic(TruncateJCLRecords.class);
+        Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);
 
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
