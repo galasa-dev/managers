@@ -10,7 +10,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
-import dev.galasa.kubernetes.KubernetesManagerException;
+import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 
 @Component(service = GalasaEcosystemPropertiesSingleton.class, immediate = true)
 public class GalasaEcosystemPropertiesSingleton {
@@ -32,20 +32,20 @@ public class GalasaEcosystemPropertiesSingleton {
 		setInstance(null);
     }
     
-    public static IConfigurationPropertyStoreService cps() throws KubernetesManagerException {
+    public static IConfigurationPropertyStoreService cps() throws GalasaEcosystemManagerException {
 		if (singletonInstance != null) {
 			return singletonInstance.cps;
 		}
 		
-		throw new KubernetesManagerException("Attempt to access manager CPS before it has been initialised");
+		throw new GalasaEcosystemManagerException("Attempt to access manager CPS before it has been initialised");
 	}
 	
-	public static void setCps(IConfigurationPropertyStoreService cps) throws KubernetesManagerException {
+	public static void setCps(IConfigurationPropertyStoreService cps) throws GalasaEcosystemManagerException {
 		if (singletonInstance != null) {
 			singletonInstance.cps = cps;
 			return;
 		}
 		
-		throw new KubernetesManagerException("Attempt to set manager CPS before instance created");
+		throw new GalasaEcosystemManagerException("Attempt to set manager CPS before instance created");
 	}
 }
