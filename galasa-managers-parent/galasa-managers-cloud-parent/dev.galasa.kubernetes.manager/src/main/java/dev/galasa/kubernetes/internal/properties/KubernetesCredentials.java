@@ -19,11 +19,11 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.description Provides the Credentials ID for the token required to access the Kubernetes Cluster
  * 
- * @galasa.required no
+ * @galasa.required No
  * 
  * @galasa.default K8S
  * 
- * @galasa.valid_values a valid credentials ID, Galasa convention states IDs should be uppercase
+ * @galasa.valid_values A valid credentials ID, Galasa convention states IDs should be uppercase
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.K8S.credentials=K8S<br>

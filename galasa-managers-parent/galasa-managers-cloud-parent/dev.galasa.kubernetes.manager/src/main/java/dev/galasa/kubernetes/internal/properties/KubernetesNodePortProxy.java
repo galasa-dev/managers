@@ -23,7 +23,7 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.required No
  * 
- * @galasa.default The hostname as specified in the API Url
+ * @galasa.default The hostname as specified in the API URL
  * 
  * @galasa.valid_values A valid URL hostname
  * 
