@@ -8,6 +8,7 @@ package dev.galasa.galasaecosystem.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -23,16 +24,19 @@ import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
+import dev.galasa.framework.spi.FrameworkException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.galasaecosystem.KubernetesEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesSingleton;
+import dev.galasa.galasaecosystem.internal.properties.KubernetesEcosystemTagSharedEnvironment;
 import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
@@ -59,6 +63,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
     private boolean                             required = false;
 
     private HashMap<String, KubernetesEcosystemImpl> taggedEcosystems = new HashMap<>();
+    private HashSet<String> sharedEnvironmentEcosystemTags = new HashSet<>();
 
     /**
      * Initialise the Manager if the Ecosystem TPI is included in the test class
@@ -205,6 +210,35 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         }
 
 
+        //*** check to see if the tag is a shared environment
+        String sharedEnvironmentRunName = KubernetesEcosystemTagSharedEnvironment.get(tag);
+        if (sharedEnvironmentRunName != null) {
+            try {
+                IRun sharedEnvironmentRun = getFramework().getFrameworkRuns().getRun(sharedEnvironmentRunName);
+                
+                if (sharedEnvironmentRun == null || !sharedEnvironmentRun.isSharedEnvironment()) {
+                    throw new GalasaEcosystemManagerException("Unable to locate Shared Environment " + sharedEnvironmentRunName + " for Ecosystem Tag " + tag);
+                }
+                
+                HashMap<String, KubernetesEcosystemImpl> tempSharedEnvironmentNamespaces = new HashMap<>();
+                KubernetesEcosystemImpl.loadEcosystemsFromRun(this, dss, tempSharedEnvironmentNamespaces, sharedEnvironmentRun);
+                
+                ecosystem = tempSharedEnvironmentNamespaces.get(tag);
+                if (ecosystem == null) {
+                    throw new GalasaEcosystemManagerException("Unable to locate Shared Environment " + sharedEnvironmentRunName + " for Ecosystem Tag " + tag);
+                }
+                
+                this.taggedEcosystems.put(tag, ecosystem);
+                this.sharedEnvironmentEcosystemTags.add(tag);
+                
+                logger.info("Kubernetes Ecosystem tag " + tag + " is using Shared Environment " + sharedEnvironmentRunName);
+                
+                return ecosystem;
+            } catch(FrameworkException e) {
+                throw new GalasaEcosystemManagerException("Problem loading Shared Environment " + sharedEnvironmentRunName + " for Ecosystem Tag " + tag, e);
+            }
+        } 
+
         //*** Locate the Kubernetes Namespace object
 
         IKubernetesNamespace namespace = k8sManager.getNamespaceByTag(namespaceTag);
@@ -232,6 +266,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         
         for(KubernetesEcosystemImpl ecosystem : taggedEcosystems.values()) {
             try {
+                if (this.sharedEnvironmentEcosystemTags.contains(ecosystem.getTag())) {
+                    continue; //*** Do not build shared environments
+                }
                 ecosystem.build();
             } catch(Exception e) {
                 logger.error("Problem building provisioned Ecosystem " + ecosystem.getTag(),e);
@@ -242,6 +279,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
     @Override
     public void provisionStop() {
         for(KubernetesEcosystemImpl ecosystem : taggedEcosystems.values()) {
+            if (this.sharedEnvironmentEcosystemTags.contains(ecosystem.getTag())) {
+                continue;   //dont stop shared environments
+            }
             try {
                 ecosystem.stop();
             } catch(Exception e) {
@@ -255,6 +295,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
     @Override
     public void provisionDiscard() {
         for(KubernetesEcosystemImpl ecosystem : taggedEcosystems.values()) {
+            if (this.sharedEnvironmentEcosystemTags.contains(ecosystem.getTag())) {
+                continue;   //dont discard shared environments
+            }
             try {
                 ecosystem.discard();
             } catch(Exception e) {
