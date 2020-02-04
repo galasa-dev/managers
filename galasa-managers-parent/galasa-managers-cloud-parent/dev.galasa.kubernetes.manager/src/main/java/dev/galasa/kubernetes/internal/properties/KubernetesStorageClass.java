@@ -19,13 +19,13 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * @galasa.name kubernetes.cluster.[XXXX.]override.storageclass
  * 
  * @galasa.description Provides a Kubernetes StorageClass that will be set on all PersistentVolumeClaims
- * that are created in the Kubernetes Namespace.   The value of this property will be set in the property spec.storageClassName
+ * that are created in the Kubernetes namespace.   The value of this property is set in the property spec.storageClassName
  * 
  * @galasa.required No
  * 
- * @galasa.default none
+ * @galasa.default None
  * 
- * @galasa.valid_values a valid StorageClass that is defined in the Kubernetes Cluster
+ * @galasa.valid_values A valid StorageClass that is defined in the Kubernetes Cluster
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.K8S.override.storageclass=fast<br>

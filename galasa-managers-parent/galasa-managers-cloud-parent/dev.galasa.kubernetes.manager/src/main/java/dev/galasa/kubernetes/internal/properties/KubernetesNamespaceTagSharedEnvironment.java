@@ -21,7 +21,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * 
  * @galasa.required No
  * 
- * @galasa.default none
+ * @galasa.default None
  * 
  * @galasa.valid_values A valid Shared Environment
  * 

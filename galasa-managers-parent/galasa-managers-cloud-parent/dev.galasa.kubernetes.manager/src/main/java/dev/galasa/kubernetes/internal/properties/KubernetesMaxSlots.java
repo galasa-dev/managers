@@ -21,9 +21,9 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.required No
  * 
- * @galasa.default Will 2 if not provided
+ * @galasa.default Defaults to "2" if not provided
  * 
- * @galasa.valid_values Integer value.  If the value is < 0, it will effectively disable the cluster.
+ * @galasa.valid_values Integer value.  A value < 0, disables the cluster.
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.K8S.max.slots=5</code>

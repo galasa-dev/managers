@@ -22,9 +22,9 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * 
  * @galasa.required No
  * 
- * @galasa.default Will default to a single cluster ID of K8S the property is missing
+ * @galasa.default Defaults to a single cluster ID of K8S if the property is missing
  * 
- * @galasa.valid_values a comma separated list of alphanumeric IDs.  Normally uppercased. 
+ * @galasa.valid_values A comma separated list of alphanumeric IDs.  Normally uppercased. 
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.ids=K8S,ALTERNATE</code>

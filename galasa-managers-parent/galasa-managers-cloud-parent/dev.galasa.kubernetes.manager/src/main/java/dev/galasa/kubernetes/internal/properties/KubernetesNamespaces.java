@@ -25,9 +25,9 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.required No
  * 
- * @galasa.default Will default to galasa{1-2} is not provided
+ * @galasa.default Defaults to galasa{1-2} if not provided
  * 
- * @galasa.valid_values a comma separated list of valid Kubernetes namespaces,  with resource pooling expanders
+ * @galasa.valid_values A comma separated list of valid Kubernetes namespaces with resource pooling expanders
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.K8S.namespaces=galasa1,galasa{2-9}<br>
