@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.manager.internal.properties;
 
@@ -10,30 +10,30 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * zOS Batch job use SYSAFF
+ * zOS Batch job truncate JCL
  * <p>
- * Use the run the zOS Batch job on the specified image by specifying<br>
- * {@code /*JOBPARM SYSAFF=[imageid]}
+ * The z/OSMF submit job will fail if supplied with JCL records greater than 80 characters. Setting this property to true will truncate any records to 80
+ * characters and issue a warning message.
  * </p><p>
  * The property is:<br>
- * {@code zosbatch.batchjob.[imageid].use.sysaff=true}
+ * {@code zosbatch.batchjob.[imageid].truncate.jcl.records=true}
  * </p>
  * <p>
  * The default value is true
  * </p>
  *
  */
-public class UseSysaff extends CpsProperties {
+public class TruncateJCLRecords extends CpsProperties {
 
     public static boolean get(String imageId) throws ZosBatchManagerException {
         try {
-            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
+            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "truncate.jcl.records", imageId);
             if (sysaffString == null || sysaffString.isEmpty()) {
             	return true;
             }
             return Boolean.parseBoolean(sysaffString);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosBatchManagerException("Problem asking the CPS for the batch job use SYSAFF property for zOS image "  + imageId, e);
+            throw new ZosBatchManagerException("Problem asking the CPS for the truncate JCL records property for zOS image "  + imageId, e);
         }
     }
 
