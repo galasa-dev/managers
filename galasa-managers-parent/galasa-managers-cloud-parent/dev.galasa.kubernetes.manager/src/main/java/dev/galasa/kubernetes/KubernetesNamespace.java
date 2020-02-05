@@ -18,8 +18,8 @@ import dev.galasa.kubernetes.internal.KubernetesManagerField;
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}KubernetesNamespace</code> annotation will request the Kubernetes Manager allocate a namespace
- * on the infrastructure Kubernetes Clusters.  The test can request as many Namesapces as required that 
+ * @galasa.description The <code>{@literal @}KubernetesNamespace</code> annotation requests the Kubernetes Manager to allocate a namespace
+ * on the infrastructure Kubernetes clusters.  The test can request as many namespaces as required so long as they 
  * can be supported simultaneously by the Kubernetes Manager configuration.
  * 
  * @galasa.examples 
@@ -39,9 +39,9 @@ import dev.galasa.kubernetes.internal.KubernetesManagerField;
 public @interface KubernetesNamespace {
 
     /**
-     * The <code>kubernetesNamespaceTag</code> is used to identify the Kubernetes names to other Managers or Shared Environments.  If a test is using multiple 
-     * Kubernetes Namespace, each separate Kubernetes Namesapce must have a unique tag.  If two Kubernetes Namespace use the same tag, they will refer to the 
-     * same actual Kubernetes Namespace.
+     * The <code>kubernetesNamespaceTag</code> identifies the Kubernetes names to other Managers or Shared Environments.  If a test is using multiple 
+     * Kubernetes namespace, each separate Kubernetes namespace must have a unique tag.  If more than one Kubernetes namespace use the same tag, they will refer to the 
+     * same Kubernetes namespace.
      */
     public String kubernetesNamespaceTag() default "PRIMARY";
 }

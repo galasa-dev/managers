@@ -17,13 +17,13 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.name kubernetes.cluster.[XXXX.]validate.certificate
  * 
- * @galasa.description Should the Kubernetes Cluster API Certificate be validated
+ * @galasa.description Validates the Kubernetes Cluster API Certificate 
  * 
  * @galasa.required No
  * 
  * @galasa.default true
  * 
- * @galasa.valid_values Either true or false
+ * @galasa.valid_values true or false
  * 
  * @galasa.examples 
  * <code>kubernetes.cluster.K8S.validate.certificate=false<br>

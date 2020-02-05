@@ -17,7 +17,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * 
  * @galasa.name kubernetes.namespace.tag.XXXXXX.shared.environment
  * 
- * @galasa.description Informs the Kubernetes Manager which Shared Environment will be assigned to a Namespace Tag 
+ * @galasa.description Tells the Kubernetes Manager which Shared Environment is assigned to a namespace tag 
  * 
  * @galasa.required No
  * 

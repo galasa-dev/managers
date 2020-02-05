@@ -3,16 +3,16 @@
  * 
  * @galasa.manager Kubernetes
  * 
- * @galasa.release.state ALPHA - This Manager has been written to provide a Kubernetes Namespace for the Galasa integrated test pipeline.  It has the bare 
- * minimum code necessary to do that.  It has not been extensively tested (other than on the pipeline).  The TPI is subject to change.  However, saying all that, 
+ * @galasa.release.state ALPHA - This Manager provides a Kubernetes namespace for the Galasa integrated test pipeline.  It has the bare 
+ * minimum code necessary to do that.  It has not been extensively tested (other than on the pipeline) and is subject to change.  However, saying all that, 
  * it can be used within tests.
  * 
  * @galasa.description
  * 
- * This Manager provides a test with a Kubernetes Namespace to utilize.  The test will provide YAML representations
+ * This Manager provides a test with a Kubernetes namespace to utilize.  The test provides YAML representations
  * of the resources that the test requires.
  * <br><br>
- * As an absolute minimum, the CPS property <code>kubernetes.cluster.K8S.url</code> must be provided and a credential
+ * As an absolute minimum, the CPS property <code>kubernetes.cluster.K8S.url</code> must be provided as well as a credential
  * <code>secure.credentials.K8S.token</code> for the API token.
  * <br><br>
  * The Kubernetes Manager supports Galasa Shared Environments.  Shared Environments provide 
@@ -22,13 +22,14 @@
  * @galasa.limitations
  * 
  * The Manager only supports the following Kubernetes resources:-<br>
- * - Deployment
- * - StatefulSet
- * - Service
- * - Secret
- * - ConfigMap
- * - PersistentVolumeClaim
- * 
- * If additional resources are required, please raise an Issue.
+ * <br>
+ * - Deployment<br>
+ * - StatefulSet<br>
+ * - Service<br>
+ * - Secret<br>
+ * - ConfigMap<br>
+ * - PersistentVolumeClaim<br>
+ * <br>
+ * If additional resources are required, please raise a GitHub issue.
  */
 package dev.galasa.kubernetes;
