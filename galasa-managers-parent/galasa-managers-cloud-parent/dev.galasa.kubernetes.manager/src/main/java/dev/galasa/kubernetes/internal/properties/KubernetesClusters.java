@@ -18,7 +18,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * 
  * @galasa.name kubernetes.cluster.ids
  * 
- * @galasa.description Provides a comma separated list of the active Kubernetes Clusters defined in the CPS
+ * @galasa.description Provides a comma separated list of the active Kubernetes Clusters that are defined in the CPS
  * 
  * @galasa.required No
  * 
