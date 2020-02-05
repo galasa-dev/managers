@@ -8,8 +8,7 @@ public IKubernetesEcosystem ecosystem;
 public IKubernetesNamespace namespace;
 ```
 
-This code will request the a Galasa Ecosystem be provisision in a Kubernetes Namespace.  The default Tag for both of them is 
-PRIMARY.
+This code requests that the Galasa Ecosystem is provisioned in a Kubernetes Namespace.  The default tag for the Ecosystem and the Namespace is PRIMARY.
 
 ### Retrieve the RAS Endpoint
 
@@ -21,7 +20,7 @@ URI ras = ecosystem.getEndpoint(EcosystemEndpoint.RAS);
 
 ```
 
-This snippet demonstrates how to retrieve the Result Archive Store endpoint.   Be aware, that the URI is 
+This snippet demonstrates how to retrieve the Result Archive Store endpoint.  Note that the URI is 
 prefixed with the store type, eg couchdb:http://couchdb.server:5984.  This is the same for the CPS, DSS and CREDS.
 
 ### Set and retrieve a CPS property
@@ -32,4 +31,4 @@ ecosystem.setCpsProperty("bob", "hello");
 String value = ecosystem.getCpsProperty("bob")
 ```
 
-Will set the CPS property `bob` with the value `hello`and retrieve it again.
+Sets the CPS property `bob` with the value `hello` and retrieves it again.

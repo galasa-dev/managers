@@ -17,11 +17,11 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * 
  * @galasa.name galasaecosystem.ecosystem.tag.XXXXXX.shared.environment
  * 
- * @galasa.description Informs the Galasa Ecosystem Manager which Shared Environment will be assigned to a Ecosystem Tag 
+ * @galasa.description Tells the Galasa Ecosystem Manager which Shared Environment is assigned to an Ecosystem Tag 
  * 
  * @galasa.required No
  * 
- * @galasa.default none
+ * @galasa.default None
  * 
  * @galasa.valid_values A valid Shared Environment
  * 
