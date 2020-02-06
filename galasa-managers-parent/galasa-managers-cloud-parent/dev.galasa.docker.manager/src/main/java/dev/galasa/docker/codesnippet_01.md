@@ -3,7 +3,7 @@
 The following snippet shows the minimum code that is required to request a Docker container in a Galasa test:
 
 ```
-@Dockercontainer(image="httpd:latest", tag="http", start=true)
+@Dockercontainer(image="library/httpd:latest", tag="http", start=true)
 public IDockercontainer container1;
 ```
 
@@ -19,7 +19,7 @@ There's no limit in Galasa on how many Docker containers can be used within a si
 Find the IP address and port by using the following code which provisions and starts an Apache HTTP server on port 80:
 
 ```
-@Dockercontainer(image="httpd:latest")
+@Dockercontainer(image="library/httpd:latest")
 public IDockercontainer httpcontainer;
 ...
 InetSocketAddress port80 = httpcontainer.getFirstSocketForExposedPort(80);
@@ -31,7 +31,7 @@ InetSocketAddress port80 = httpcontainer.getFirstSocketForExposedPort(80);
 Stop and start your Apache HTTP Server to test how your application responds by using the following code:
 
 ```
-@Dockercontainer(image="httpd:latest")
+@Dockercontainer(image="library/httpd:latest")
 public IDockercontainer httpcontainer;
 ...
 httpcontainer.stop();
@@ -43,7 +43,7 @@ httpcontainer.start();
 
 Use the following code to execute a command within the Docker Container and return the resulting output.
 ```
-@Dockercontainer(image="httpd:latest")
+@Dockercontainer(image="library/httpd:latest")
 public IDockercontainer httpcontainer;
 ...
 IDockerExec exec = httpcontainer.exec("ls","-l","/var/log");
@@ -56,7 +56,7 @@ String output = exec.getCurrentOutput();
 Use the following code to retrieve the container log.
 
 ```
-@Dockercontainer(image="httpd:latest")
+@Dockercontainer(image="library/httpd:latest")
 public IDockercontainer httpcontainer;
 ...
 String log = httpcontainer.getStdOut();
