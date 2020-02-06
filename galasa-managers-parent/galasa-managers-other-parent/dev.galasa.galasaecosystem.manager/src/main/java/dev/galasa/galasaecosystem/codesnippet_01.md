@@ -8,7 +8,7 @@ public IKubernetesEcosystem ecosystem;
 public IKubernetesNamespace namespace;
 ```
 
-This code requests that the Galasa Ecosystem be provision in a Kubernetes Namespace. The default tag for both of them is 
+This code requests that the Galasa Ecosystem be provisioned in a Kubernetes Namespace. The default tag for both of them is 
 PRIMARY.
 
 ### Retrieve the RAS Endpoint
