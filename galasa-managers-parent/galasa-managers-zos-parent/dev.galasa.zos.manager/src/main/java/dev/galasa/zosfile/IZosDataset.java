@@ -329,7 +329,7 @@ public interface IZosDataset {
     public void setStorageClass(String storageClass);
     
     /**
-     * Set the data class of the the data set
+     * Set the data class of the data set
      * @param managementClass
      */
     public void setDataClass(String dataClass);

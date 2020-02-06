@@ -60,7 +60,7 @@ public @interface KubernetesEcosystem {
     
     /**
      * The <code>yamlDirectory</code> points to a resource directory within the test bundle that contains a set of override yaml files to use when creating the 
-     * Ecosystem.  Each file must end with .yaml in order to be found.  If a directory or resource is not provided, the stable yaml files within the Ecosystem Manager are used.
+     * ecosystem.  Each file must end with .yaml to be found.  If a directory or resource is not provided, the stable yaml files within the Galasa Ecosystem Manager will be used.
      */
     public String yamlDirectory() default "";
 }

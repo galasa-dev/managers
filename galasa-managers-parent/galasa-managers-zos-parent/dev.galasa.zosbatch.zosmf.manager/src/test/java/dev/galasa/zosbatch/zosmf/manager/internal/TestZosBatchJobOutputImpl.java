@@ -66,7 +66,7 @@ public class TestZosBatchJobOutputImpl {
         zosBatchJobOutput.add(spoolFile, RECORDS);
         Assert.assertEquals("getJobname() should return the supplied value", JOBNAME, zosBatchJobOutput.getJobname());
         Assert.assertEquals("getJobid() should return the supplied value", JOBID, zosBatchJobOutput.getJobid());
-        Assert.assertEquals("toString() should return the the suplied values of JOBNAME_JOBID", JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
+        Assert.assertEquals("toString() should return the supplied values of JOBNAME_JOBID", JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
     }
     @Test
     public void testGetSpoolFiles() throws ZosBatchException {
