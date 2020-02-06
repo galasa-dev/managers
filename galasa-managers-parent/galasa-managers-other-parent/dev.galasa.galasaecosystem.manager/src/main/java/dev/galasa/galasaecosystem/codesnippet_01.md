@@ -32,4 +32,4 @@ ecosystem.setCpsProperty("bob", "hello");
 String value = ecosystem.getCpsProperty("bob")
 ```
 
-Sets the CPS property `bob` with the value `hello`and retrieves it again.
+Sets the CPS property `bob` with the value `hello` and retrieves it again.

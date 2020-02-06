@@ -10,7 +10,7 @@
  * This Manager provides a test with a Kubernetes Namespace to utilize. The test will provide YAML representations
  * of the resources that the test requires.
  * <br><br>
- * As an absolute minimum, the CPS property <code>kubernetes.cluster.K8S.url</code> must be provided and a credential
+ * As an absolute minimum, the CPS property <code>kubernetes.cluster.K8S.url</code> must be provided as well as a credential
  * <code>secure.credentials.K8S.token</code> for the API token.
  * <br><br>
  * The Kubernetes Manager supports Galasa Shared Environments. Shared environments provide 
@@ -28,7 +28,6 @@
  * - ConfigMap<br>
  * - PersistentVolumeClaim<br>
  * <br>
- * 
  * If additional resources are required, please raise a GitHub issue.
  */
 package dev.galasa.kubernetes;

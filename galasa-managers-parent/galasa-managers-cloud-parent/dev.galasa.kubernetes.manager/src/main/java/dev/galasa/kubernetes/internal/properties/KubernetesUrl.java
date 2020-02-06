@@ -27,7 +27,7 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.required Yes
  * 
- * @galasa.default none
+ * @galasa.default None
  * 
  * @galasa.valid_values A valid URL
  * 

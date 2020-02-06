@@ -8,7 +8,7 @@ package dev.galasa.kubernetes;
 import javax.validation.constraints.NotNull;
 
 /**
- * This is the main interface to a provisioned Kubernetes Namespace on an infrastructure cluster.
+ * This is the main interface to a provisioned Kubernetes namespace on an infrastructure cluster.
  * Access to the Object is via the {@link KubernetesNamespace} annotation or the SPI. 
  *  
  * @author Michael Baylis
@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 public interface IKubernetesNamespace {
 
     /**
-     * Create a Resoource in Kubernetes.  The Manager will append certain information to the YAML before
+     * Create a Resource in Kubernetes.  The Manager appends certain information to the YAML before
      * creating the resource, like the run name and possibly storage classes.
      * 
      * @param yaml

@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -866,7 +865,10 @@ public class ZosDatasetImpl implements IZosDataset {
         return moreRows;
     }
 
-    protected String buildErrorString(String action, JsonObject responseBody) {    
+    protected String buildErrorString(String action, JsonObject responseBody) { 
+        if ("{}".equals(responseBody.toString())) {
+            return "Error " + action;
+        }   
         int errorCategory = responseBody.get("category").getAsInt();
         int errorRc = responseBody.get("rc").getAsInt();
         int errorReason = responseBody.get("reason").getAsInt();
