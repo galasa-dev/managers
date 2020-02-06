@@ -30,12 +30,12 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * <code>docker.default.registries=LOCAL,DOCKERHUB</code>
  * 
  * @galasa.extra
- * In order to decouple Docker Registries from the Galasa Test, this property allows for the Docker Manager
- * to search for images.  The main reason being if the customer docker registry moves, only this property needs 
+ * To decouple Docker Registries from the Galasa test, this property allows the Docker Manager
+ * to search for images. The main reason being if the customer Docker Registry moves, only this property needs 
  * to change, instead of having to change the source code of lots of tests.
  * <br>
  * <br>
- * The registries are searched in order when looking for an image.  When the image is located, the search stops. 
+ * The registries are searched in order when looking for an image. When the image is located, the search stops. 
  * <br>
  * <br>
  * If this property is provided in the CPS, the Docker Hub registry is not automatically appended. If it is required, then the DOCKERHUB id must be included.
