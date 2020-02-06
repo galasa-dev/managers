@@ -4,7 +4,7 @@
  * @galasa.manager ElasticLog
  * 
  * @galasa.release.state ALPHA - This Manager has been written to provide a way of exporting test data to ElasticSearch.  It has the bare 
- * minimum code necessary to do that.  It has not been extensively tested and is subject to change. It is available for Galasa administrators to utilise to experiment with Elastic/Kabana dashboards
+ * minimum code necessary to do that.  It has not been extensively tested and is subject to change. It is available for Galasa administrators to utilise to experiment with Elastic/Kibana dashboards
  * 
  * @galasa.description
  * 
