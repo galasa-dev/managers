@@ -16,7 +16,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name docker.engine
+ * @galasa.name docker.engine.[engineId].hostname
  * 
  * @galasa.description Provides location of the Docker Engine
  * 
@@ -27,8 +27,8 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A valid DNS name or IPv4/6 address
  * 
  * @galasa.examples 
- * <code>docker.engine=docker.example.company.org<br>
- * docker.engine=192.168.2.3
+ * <code>docker.engine.[engineId].hostname=docker.example.company.org<br>
+ * docker.engine.[engineId].hostname=192.168.2.3
  * </code>
  * 
  * @galasa.extra
