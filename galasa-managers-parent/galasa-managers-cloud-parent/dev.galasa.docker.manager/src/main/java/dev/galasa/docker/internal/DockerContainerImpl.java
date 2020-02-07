@@ -7,6 +7,7 @@ package dev.galasa.docker.internal;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.GZIPOutputStream;
 import java.util.Random;
+import java.util.zip.GZIPOutputStream;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -30,6 +31,7 @@ import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -600,17 +602,22 @@ public class DockerContainerImpl implements IDockerContainer {
      * @param InputStream
      */
     @Override
-    public void storeFile(String path, InputStream file) throws DockerManagerException {
-        Path locPath = Paths.get(path);
+    public void storeFile(String absolutePath, InputStream file) throws DockerManagerException {
+        if(!absolutePath.startsWith("/")) {
+            throw new DockerManagerException("Please specify the absolute path of the location on the container, including file name");
+        }
+        Path locPath = Paths.get(absolutePath);
         File tar = compressToTar(file, locPath.getFileName().toString());
+
         try{
+        
         InputStream is = new FileInputStream(tar);
-       
         dockerEngine.sendArchiveFile(this, is,locPath.getParent().toString()+"/");
+        tar.delete();
         } catch (FileNotFoundException e) {
             logger.error("Failed to find compressed file", e);
-        }finally {
             tar.delete();
+            throw new DockerManagerException("Failed to create tar file.");
         }
     }
 
@@ -620,8 +627,31 @@ public class DockerContainerImpl implements IDockerContainer {
      * @param path
      */
     @Override
-    public String retrieveFile(String path) throws DockerManagerException {
+    public InputStream retrieveFile(String path) throws DockerManagerException {
         return dockerEngine.getArchiveFile(this, path);
+    }
+
+    /**
+     * Returns the contents of a file on the container as a string.
+     * 
+     * @param path
+     * @return String
+     */
+    @Override
+    public String retrieveFileAsString(String path) throws DockerManagerException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		String output = "";
+        InputStream in = dockerEngine.getArchiveFile(this, path);
+
+        try {
+            IOUtils.copy(in, bos);
+            output = bos.toString();
+            bos.close();
+        } catch (IOException e) {
+            throw new DockerManagerException();
+        }
+        
+        return output;
     }
 
     /**
