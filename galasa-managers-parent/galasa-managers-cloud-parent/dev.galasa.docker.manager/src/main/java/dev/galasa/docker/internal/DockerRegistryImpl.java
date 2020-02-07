@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -260,7 +261,7 @@ public class DockerRegistryImpl {
 				}
 			}
 			throw new DockerManagerException("Failed to authenticate, and authentication is required.");
-		} catch (HttpClientException | MalformedURLException e) {
+		} catch (HttpClientException | MalformedURLException | JsonSyntaxException e) {
 			throw new DockerManagerException("Failed to connect to registry", e);
 		}
 	}
