@@ -19,7 +19,7 @@ import dev.galasa.kubernetes.internal.KubernetesClusterImpl;
  * 
  * @galasa.name kubernetes.cluster.XXXX.nodeport.proxy.hostname
  * 
- * @galasa.description Gives the hostname that NodePorts can be accessed on.
+ * @galasa.description Provides the hostname that NodePorts can be accessed on.
  * 
  * @galasa.required No
  * 

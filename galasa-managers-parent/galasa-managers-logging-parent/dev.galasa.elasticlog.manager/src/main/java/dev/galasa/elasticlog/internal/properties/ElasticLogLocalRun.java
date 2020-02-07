@@ -10,26 +10,26 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * ElasticLog Endpoint Index CPS Property
+ * ElasticLog Endpoint Local Run CPS Property
  * 
  * @galasa.cps.property
  * 
- * @galasa.name elastic.endpoint.index
+ * @galasa.name elastic.local.run.log
  * 
- * @galasa.description Provides the index in elasticsearch requests are directed to
+ * @galasa.description Activates the ElasticLog Manager for local runs
  * 
  * @galasa.required Yes
  * 
- * @galasa.default galasa
+ * @galasa.default false
  * 
- * @galasa.valid_values Any lowercase, single word string
+ * @galasa.valid_values true, false
  * 
  * @galasa.examples 
- * <code>elastic.endpoint.index=galasa</code>
+ * <code>elastic.local.run.log=true</code>
  * 
  * @galasa.extra
- * The given index will be created and mapped to the galasa run if it does not exist.</br>
- * If the index already exists, it must have the mapping of the given galasa run.
+ * ElasticLog Manager will not run automatically for a local run. <br>
+ * By setting this property to true, the manager will activate locally.
  * 
  */
 public class ElasticLogLocalRun extends CpsProperties {

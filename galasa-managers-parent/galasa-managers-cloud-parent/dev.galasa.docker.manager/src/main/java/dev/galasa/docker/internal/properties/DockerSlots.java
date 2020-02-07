@@ -30,7 +30,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * This property indicates what the maximum number of containers Galasa can start on the Docker Engine.  
  * In Galasa terms, a container is a "slot" a platform independent term to reserve resources.
  * <br>
- * If the the value is less than one, it effectively stop new containers being started on the Docker Engine, a way for draining 
+ * If the value is less than one, it effectively stop new containers being started on the Docker Engine, a way for draining 
  * the Docker Engine for maintenance without stopping the entire Galasa automation system. 
  * 
  */
