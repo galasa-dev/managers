@@ -5,7 +5,6 @@
  */
 package dev.galasa.docker.internal;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -17,7 +16,6 @@ import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -407,11 +405,10 @@ public class DockerEngineImpl implements IDockerEngine {
 	 * @param container
 	 * @param filePath
 	 * @return String
+	 * @throws HttpClientException
 	 */
-	public String getArchiveFile(DockerContainerImpl container, String filePath) {
+	public InputStream getArchiveFile(DockerContainerImpl container, String filePath) throws DockerManagerException {
 		String path = "/containers/" + container.getContainerId() + "/archive?path=" + filePath;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		String output = "";
 
 		try {
 			CloseableHttpResponse response = dockerEngineClient.getFile(path);
@@ -420,21 +417,15 @@ public class DockerEngineImpl implements IDockerEngine {
 			TarArchiveInputStream tais = new TarArchiveInputStream(in);
 			ArchiveEntry ae = tais.getNextEntry();
 			if (ae == null) {
-				bos.close();
 				tais.close();
 				in.close();
-				throw new HttpClientException("Could not find entry in returned archive file");
+				throw new DockerManagerException("Could not find entry in returned archive file");
 			}
-			
-			IOUtils.copy(tais, bos);
-			output = bos.toString();
-			
-			bos.close();
-			tais.close();
-			in.close();		
+
+			return tais;		
 		} catch (HttpClientException |IOException e) {
 			logger.error("Failed to read returned output", e);
+			throw new DockerManagerException("Could not find entry in returned archive file");
 		}
-		return output;
 	}
 }
