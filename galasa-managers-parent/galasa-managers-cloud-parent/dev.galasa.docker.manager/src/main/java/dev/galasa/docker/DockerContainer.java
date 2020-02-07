@@ -18,9 +18,9 @@ import dev.galasa.docker.internal.DockerManagerField;
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}DockerContainer</code> annotation will request the Docker Manager allocate a slot and start a container 
- * on the infrastructure Docker Engines.  The test can request as many Containers as required that 
- * can be supported simultaneously by the Docker Manager configuration.
+ * @galasa.description The <code>{@literal @}DockerContainer</code> annotation requests the Docker Manager to allocate a slot and start a container 
+ * on the infrastructure Docker Engines. The test can request as many containers as required within 
+ * the limits set by the Docker Manager configuration.
  * 
  * @galasa.examples 
  * <code>{@literal @}DockerContainer(image="library/httpd:latest")<br>
@@ -32,7 +32,7 @@ import dev.galasa.docker.internal.DockerManagerField;
  * @galasa.extra
  * The <code>IDockerContainer</code> interface gives the test access to the IPv4/6 address and the exposed port numbers of the Docker Container. 
  * The interface also enables the test to execute commands and retrieve the log and transfer files that are sent to 
- * and from the Container.<br><br>
+ * and from the container.<br><br>
  * See {@link DockerContainer} and {@link IDockerContainer} to find out more.
  * 
  */
@@ -44,8 +44,8 @@ public @interface DockerContainer {
 
     /**
      * The <code>dockerContainerTag</code> is used to identify the Docker Container to other Managers or Shared Environments.  If a test is using multiple 
-     * Docker Containers, each separate Docker Container must have a unique tag.  If two DockerContainers use the same tag, they will refer to the 
-     * same actual Docker Container.
+     * Docker Containers, each separate Docker Container must have a unique tag. If two Docker Containers use the same tag, they will refer to the 
+     * same Docker Container.
      */
     public String dockerContainerTag() default "PRIMARY";
 
@@ -58,9 +58,9 @@ public @interface DockerContainer {
     public String image();
 
     /**
-     * The <code>start</code> attribute indicates whether the Docker Container should be started automatically.   If the 
-     * Test needs to perform some work before the Container is started, then <code>start=false</code> should be used, after which 
-     * <code>IDockerContainer.start()</code> can be called to start the Container.
+     * The <code>start</code> attribute indicates whether the Docker Container should be started automatically. If the 
+     * test needs to perform some work before the container is started, then <code>start=false</code> should be used, after which 
+     * <code>IDockerContainer.start()</code> can be called to start the container.
      */
     public boolean start() default true;
 

@@ -1,17 +1,17 @@
-### Create a Docker container
+### Create a Docker Container
 
-The following snippet shows the minimum code that is required to request a Docker container in a Galasa test:
+The following snippet shows the minimum code that is required to request a Docker Container in a Galasa test:
 
 ```
-@Dockercontainer(image="httpd:latest", tag="http", start=true)
-public IDockercontainer container1;
+@DockerContainer(image="httpd:latest", tag="http", start=true)
+public IDockerContainer container1;
 ```
 
-The code creates a Docker Container with an Apache HTTP Server running on it in port 80. Although this does not provide much, it does give a known target HTTP Server that you can start and stop in order to test how your application responds in those circumstances.  By accessing the *container1* field, you can find the IP address and port that was used for the Container. 
+The code creates a Docker Container with an Apache HTTP Server running on port 80. Although this does not provide much, it does give a known target HTTP Server that you can start and stop in order to test how your application responds in those circumstances.  By accessing the *container1* field, you can find the IP address and port that was used for the container. 
 
-At the end of the test, the Docker Manager automatically stops and discards the Docker container. If for some reason the test was not able to do this, the Docker Manager Resource Management routines perform the same clean up after the Galasa Ecosystem discovers the test has disappeared.
+At the end of the test, the Docker Manager automatically stops and discards the Docker Container. If for some reason the test was not able to do this, the Docker Manager resource management routines perform the same clean up after the Galasa Ecosystem discovers the test has disappeared.
 
-There's no limit in Galasa on how many Docker containers can be used within a single test. The only limit is the number of Docker containers that can be started in the Galasa Ecosystem. This limit is set by the Galasa Administrator and is typically set to the maximum number of containers that can be supported by the Docker Server or Swarm.  If there are not enough "slots" available for an automated run, the run is put back on the queue in "waiting" state to retry.  Local test runs fail if there are not enough container "slots" available.
+There is no limit in Galasa on how many Docker Containers can be used within a single test. The only limit is the number of Docker Containers that can be started in the Galasa Ecosystem. This limit is set by the Galasa Administrator and is typically set to the maximum number of containers that can be supported by the Docker Server or Swarm.  If there are not enough slots available for an automated run, the run is put back on the queue in *waiting* state to retry. Local test runs fail if there are not enough container slots available.
 
 
 ### Obtain the IP address and port of an exposed container port
@@ -19,10 +19,10 @@ There's no limit in Galasa on how many Docker containers can be used within a si
 Find the IP address and port by using the following code which provisions and starts an Apache HTTP server on port 80:
 
 ```
-@Dockercontainer(image="httpd:latest")
-public IDockercontainer httpcontainer;
+@DockerContainer(image="httpd:latest")
+public IDockerContainer httpContainer;
 ...
-InetSocketAddress port80 = httpcontainer.getFirstSocketForExposedPort(80);
+InetSocketAddress port80 = httpContainer.getFirstSocketForExposedPort(80);
 ```
 
 
@@ -31,33 +31,33 @@ InetSocketAddress port80 = httpcontainer.getFirstSocketForExposedPort(80);
 Stop and start your Apache HTTP Server to test how your application responds by using the following code:
 
 ```
-@Dockercontainer(image="httpd:latest")
-public IDockercontainer httpcontainer;
+@DockerContainer(image="httpd:latest")
+public IDockerContainer httpContainer;
 ...
-httpcontainer.stop();
+httpContainer.stop();
 
-httpcontainer.start();
+httpContainer.start();
 ```
 
 ### Run a command in the container
 
-Use the following code to execute a command within the Docker Container and return the resulting output.
+Use the following code to execute a command within the Docker Container and return the resulting output:
 ```
-@Dockercontainer(image="httpd:latest")
-public IDockercontainer httpcontainer;
+@DockerContainer(image="httpd:latest")
+public IDockerContainer httpcontainer;
 ...
-IDockerExec exec = httpcontainer.exec("ls","-l","/var/log");
+IDockerExec exec = httpContainer.exec("ls","-l","/var/log");
 exec.waitForExec();
 String output = exec.getCurrentOutput();
 ```
 
 ### Retrieve the log of the container
 
-Use the following code to retrieve the container log.
+Use the following code to retrieve the container log:
 
 ```
-@Dockercontainer(image="httpd:latest")
-public IDockercontainer httpcontainer;
+@DockerContainer(image="httpd:latest")
+public IDockerContainer httpContainer;
 ...
-String log = httpcontainer.getStdOut();
+String log = httpContainer.getStdOut();
 ```

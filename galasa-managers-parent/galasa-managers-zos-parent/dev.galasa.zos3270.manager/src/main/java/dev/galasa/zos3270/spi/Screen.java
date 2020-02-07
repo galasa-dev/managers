@@ -363,7 +363,7 @@ public class Screen {
 
         Field currentField = null;
 
-        // *** Check to see if the the screen is wrapped or unformatted
+        // *** Check to see if the screen is wrapped or unformatted
         if (!(this.buffer[0] instanceof BufferStartOfField)) {
             BufferStartOfField wrapSoField = null;
             for (int i = this.buffer.length - 1; i >= 0; i--) {

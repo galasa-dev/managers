@@ -1,4 +1,4 @@
-### Obtain a Kubernetes namespace
+### Obtain a Kubernetes Namespace
 
 ```java
 @KubernetesEcosystem
@@ -8,7 +8,8 @@ public IKubernetesEcosystem ecosystem;
 public IKubernetesNamespace namespace;
 ```
 
-This code requests that the Galasa Ecosystem is provisioned in a Kubernetes Namespace.  The default tag for the Ecosystem and the Namespace is PRIMARY.
+This code requests that the Galasa Ecosystem be provisioned in a Kubernetes Namespace. The default tag for both of them is 
+PRIMARY.
 
 ### Retrieve the RAS Endpoint
 
@@ -20,8 +21,8 @@ URI ras = ecosystem.getEndpoint(EcosystemEndpoint.RAS);
 
 ```
 
-This snippet demonstrates how to retrieve the Result Archive Store endpoint.  Note that the URI is 
-prefixed with the store type, eg couchdb:http://couchdb.server:5984.  This is the same for the CPS, DSS and CREDS.
+This snippet demonstrates how to retrieve the Result Archive Store (RAS) endpoint. Be aware, that the URI is 
+prefixed with the store type, e.g. couchdb:http://couchdb.server:5984. This is the same for the CPS, DSS and CREDS.
 
 ### Set and retrieve a CPS property
 
