@@ -282,7 +282,7 @@ public class ZosmfImpl implements IZosmf {
 
     private void addCommonHeaders() {
         for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
-            logger.debug("Adding HTTP header: " + entry.getKey() + "=" + entry.getValue());
+            logger.debug("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
             this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
         }
         

@@ -60,7 +60,14 @@ public interface IZosBatchJob {
     public IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
 
     /**
-     * Purge the batch job from the queue
+     * Cancel the batch job
+     * 
+     * @throws ZosBatchException
+     */
+    void cancelJob() throws ZosBatchException;
+
+    /**
+     * Cancel the batch job and purge output from the queue
      * 
      * @throws ZosBatchException
      */
