@@ -33,10 +33,10 @@ public class DirectoryListMaxItems extends CpsProperties {
             if (maxItemsString == null) {
                 return MAX_ITEMS;
             } else {
-            	int maxItems = Integer.parseInt(maxItemsString);
-            	if (maxItems <=0 ) {
-            		throw new ZosFileManagerException("Directory list max items property must be greater than 0");
-            	}
+                int maxItems = Integer.parseInt(maxItemsString);
+                if (maxItems <=0 ) {
+                    throw new ZosFileManagerException("Directory list max items property must be greater than 0");
+                }
                 return maxItems;
             }
         } catch (ConfigurationPropertyStoreException | NumberFormatException e) {

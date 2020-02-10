@@ -37,7 +37,7 @@ public class TestUnixFilePermissions {
     
     @Test
     public void testConstructor() {
-    	UnixFilePermissions unixFilePermissions = new UnixFilePermissions();
+        UnixFilePermissions unixFilePermissions = new UnixFilePermissions();
         Assert.assertNotNull("Object was not created", unixFilePermissions);
     }
     
@@ -48,15 +48,15 @@ public class TestUnixFilePermissions {
     
     @Test
     public void testValid() throws Exception {
-		String[] parts = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
-		for (String part1 : parts) {
-			for (String part2 : parts) {
-				for (String part3 : parts) {
-					String permission = part1 + part2 + part3;
-					Assert.assertEquals("Unexpected value returned from UnixFilePermissions.get()", permission, getProperty(permission));
-				}
-			}			
-		}
+        String[] parts = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
+        for (String part1 : parts) {
+            for (String part2 : parts) {
+                for (String part3 : parts) {
+                    String permission = part1 + part2 + part3;
+                    Assert.assertEquals("Unexpected value returned from UnixFilePermissions.get()", permission, getProperty(permission));
+                }
+            }            
+        }
     }
     
     @Test

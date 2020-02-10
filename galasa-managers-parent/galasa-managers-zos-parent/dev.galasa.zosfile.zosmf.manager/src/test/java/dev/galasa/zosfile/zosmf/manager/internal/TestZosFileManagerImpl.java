@@ -9,7 +9,6 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -205,56 +204,56 @@ public class TestZosFileManagerImpl {
     
     @Test
     public void testRunid() {
-    	ZosFileManagerImpl.setRunId("RUNID");
-    	Assert.assertEquals("getRunid() should return the supplied value", "RUNID", ZosFileManagerImpl.getRunId());
+        ZosFileManagerImpl.setRunId("RUNID");
+        Assert.assertEquals("getRunid() should return the supplied value", "RUNID", ZosFileManagerImpl.getRunId());
     }
     
     @Test
     public void testDatasetArtifactRoot() {
-    	Path path = new File("datasetArtifactRoot").toPath();
-    	ZosFileManagerImpl.setDatasetArtifactRoot(path);
-    	Assert.assertEquals("getDatasetArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getDatasetArtifactRoot());
+        Path path = new File("datasetArtifactRoot").toPath();
+        ZosFileManagerImpl.setDatasetArtifactRoot(path);
+        Assert.assertEquals("getDatasetArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getDatasetArtifactRoot());
     }
     
     @Test
     public void testVsamDatasetArtifactRoot() {
-    	Path path = new File("vsamDatasetArtifactRoot").toPath();
-    	ZosFileManagerImpl.setVsamDatasetArtifactRoot(path);
-    	Assert.assertEquals("getVsamDatasetArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getVsamDatasetArtifactRoot());
+        Path path = new File("vsamDatasetArtifactRoot").toPath();
+        ZosFileManagerImpl.setVsamDatasetArtifactRoot(path);
+        Assert.assertEquals("getVsamDatasetArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getVsamDatasetArtifactRoot());
     }
     
     @Test
     public void testUnixPathArtifactRoot() {
-    	Path path = new File("unixPathArtifactRoot").toPath();
-    	ZosFileManagerImpl.setUnixPathArtifactRoot(path);
-    	Assert.assertEquals("getUnixPathArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getUnixPathArtifactRoot());
+        Path path = new File("unixPathArtifactRoot").toPath();
+        ZosFileManagerImpl.setUnixPathArtifactRoot(path);
+        Assert.assertEquals("getUnixPathArtifactRoot() should return the supplied value", path, ZosFileManagerImpl.getUnixPathArtifactRoot());
     }
     
     @Test
     public void testNewZosFileHandler() {
-    	Assert.assertNotNull("newZosFileHandler() should return a new ZosFileHandlerImpl", ZosFileManagerImpl.newZosFileHandler());
+        Assert.assertNotNull("newZosFileHandler() should return a new ZosFileHandlerImpl", ZosFileManagerImpl.newZosFileHandler());
     }
     
     @Test
     public void testGetRunDatasetHLQ() throws ZosManagerException {
-    	Mockito.when(ZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
-    	
-    	Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", ZosFileManagerImpl.getRunDatasetHLQ(zosImageMock));
+        Mockito.when(ZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
+        
+        Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", ZosFileManagerImpl.getRunDatasetHLQ(zosImageMock));
     }
     
     @Test
     public void testGetRunDatasetHLQException() throws ZosManagerException {
-    	Mockito.when(ZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException("exception"));
-    	
+        Mockito.when(ZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException("exception"));
+        
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("exception");
-    	
-    	ZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
+        
+        ZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
     }
     
     class DummyTestClass {
-    	@dev.galasa.zos.ZosImage
-    	public dev.galasa.zos.IZosImage zosImage;
+        @dev.galasa.zos.ZosImage
+        public dev.galasa.zos.IZosImage zosImage;
         @dev.galasa.zosfile.ZosFileHandler
         public dev.galasa.zosfile.IZosFileHandler zosFileHandler;
         @dev.galasa.Test

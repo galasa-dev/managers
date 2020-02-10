@@ -60,7 +60,7 @@ public class TestZosBatchJobImpl {
     
     private ZosBatchJobImpl zosBatchJobSpy;
 
-	@Mock
+    @Mock
     private IZosImage zosImageMock;
 
     @Mock
@@ -94,7 +94,7 @@ public class TestZosBatchJobImpl {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-	@Before
+    @Before
     public void setup() throws Exception {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -297,53 +297,53 @@ public class TestZosBatchJobImpl {
     }
 
     @Test
-	public void testRetrieveOutputZosmfResponseException() throws ZosBatchException, ZosmfException {
-	    Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-	    Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-	    Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-	    Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
-	
-	    Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonArray());
+    public void testRetrieveOutputZosmfResponseException() throws ZosBatchException, ZosmfException {
+        Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
+        Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+    
+        Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonArray());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-	    Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenThrow(new ZosmfException("exception"));
-	    
-	    exceptionRule.expect(ZosBatchException.class);
-	    exceptionRule.expectMessage("exception");
-	    
-	    zosBatchJobSpy.retrieveOutput();
-	}
+        Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenThrow(new ZosmfException("exception"));
+        
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("exception");
+        
+        zosBatchJobSpy.retrieveOutput();
+    }
 
     @Test
-	public void testRetrieveOutputZosmfResponseException1() throws ZosBatchException, ZosmfException {
-	    Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-	    Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-	    Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-	    Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
-	
-	    Mockito.when(zosmfResponseMockStatus.getContent()).thenThrow(new ZosmfException("exception"));
-	    
-	    exceptionRule.expect(ZosBatchException.class);
-	    exceptionRule.expectMessage("exception");
-	    
-	    zosBatchJobSpy.retrieveOutput();
-	}
+    public void testRetrieveOutputZosmfResponseException1() throws ZosBatchException, ZosmfException {
+        Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
+        Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+    
+        Mockito.when(zosmfResponseMockStatus.getContent()).thenThrow(new ZosmfException("exception"));
+        
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("exception");
+        
+        zosBatchJobSpy.retrieveOutput();
+    }
 
-	@Test
-	public void testRetrieveOutputBadHttpResponseException() throws Exception {
-	    Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-	    Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-	    Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-	    Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
-	    Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
-	
-	    Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonObject());
-	    Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-	    
-	    exceptionRule.expect(ZosBatchException.class);
-	    exceptionRule.expectMessage(StringStartsWith.startsWith("Error Retrieve job output, category:0, rc:0, reason:0, message:message"));
-	    
-	    zosBatchJobSpy.retrieveOutput();
-	}
+    @Test
+    public void testRetrieveOutputBadHttpResponseException() throws Exception {
+        Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
+        Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
+        Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+    
+        Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonObject());
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage(StringStartsWith.startsWith("Error Retrieve job output, category:0, rc:0, reason:0, message:message"));
+        
+        zosBatchJobSpy.retrieveOutput();
+    }
 
     @Test
     public void testCancelJob() throws ZosBatchException, ZosmfException {
@@ -505,11 +505,11 @@ public class TestZosBatchJobImpl {
   public void testUpdateJobStatusZosmfResponseException() throws ZosBatchException, ZosmfException {
       Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
       Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
-  	
+      
       Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException("exception"));
       
       exceptionRule.expect(ZosBatchException.class);
-	  exceptionRule.expectMessage("exception");
+      exceptionRule.expectMessage("exception");
 
       zosBatchJobSpy.updateJobStatus();
   }
@@ -643,6 +643,8 @@ public class TestZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", true);
         jobWithJobcard = jobWithJobcard + " \n/*JOBPARM SYSAFF="; 
         Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
+        Whitebox.setInternalState(zosBatchJobSpy, "jcl", "JCL\n"); 
+        Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
         
     }
     
@@ -768,67 +770,67 @@ public class TestZosBatchJobImpl {
         PowerMockito.mockStatic(TruncateJCLRecords.class);
         Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(false);
         
-    	String suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
+        String suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                              "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--";
-    	String returnedJcl = suppliedJcl;
-    	Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
-    	
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
-    	suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
+        String returnedJcl = suppliedJcl;
+        Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
+        Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+        
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
+        suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9";
-    	returnedJcl = suppliedJcl;
-    	Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 90", 90, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
-    	
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
-    	suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+\n" +
+        returnedJcl = suppliedJcl;
+        Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
+        Assert.assertEquals("The value of intdrLrecl should be 90", 90, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+        
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
+        suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8";
-    	returnedJcl = suppliedJcl;
-    	Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 90", 90, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be V", "V", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
-    	
+        returnedJcl = suppliedJcl;
+        Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
+        Assert.assertEquals("The value of intdrLrecl should be 90", 90, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be V", "V", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+        
         PowerMockito.mockStatic(TruncateJCLRecords.class);
         Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);
         Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
-    	suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
+        suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--";
-    	returnedJcl = suppliedJcl;
+        returnedJcl = suppliedJcl;
         Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
-	
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
-    	suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
-        	          "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9";
-    	returnedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\n" +
-  	                  "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8";
-	    Assert.assertEquals("JCL should be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
-    	
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
-    	Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
-    	suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+\n" +
+        Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+    
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
+        suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
+                      "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9";
+        returnedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\n" +
+                        "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8";
+        Assert.assertEquals("JCL should be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
+        Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+        
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
+        Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
+        suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8";
-    	returnedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\n" +
-                	  "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
+        returnedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\n" +
+                      "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\n" +
                       "----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8";
-    	Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
-    	Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
-    	Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
+        Assert.assertEquals("JCL should not be truncated", returnedJcl, zosBatchJobSpy.parseJcl(suppliedJcl));
+        Assert.assertEquals("The value of intdrLrecl should be 80", 80, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
+        Assert.assertEquals("the value of intdrRecfm should be F", "F", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
 
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Unable to get trucate JCL records property value");

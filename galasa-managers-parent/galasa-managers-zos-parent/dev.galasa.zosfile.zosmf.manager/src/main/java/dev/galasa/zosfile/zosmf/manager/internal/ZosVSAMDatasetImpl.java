@@ -817,7 +817,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     private String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
-        if (!this.idcamsCommand.equals("LISTCAT")) {
+        if (!"LISTCAT".equals(this.idcamsCommand)) {
             getListcatOutput();
         }
         int start = this.idcamsOutput.indexOf(findString);
@@ -890,7 +890,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         } catch (ZosmfException e) {
             throw new ZosVSAMDatasetException(e);
         }
-        if (response == null || response.getStatusCode() == 0) {
+        if (response.getStatusCode() == 0) {
             throw new ZosVSAMDatasetException("IDCAMS " + this.idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage());
         }            
         JsonObject responseBody;

@@ -138,11 +138,11 @@ public class TestZosBatchImpl {
     
     @Test
     public void testSubmitJob() throws Exception {
-    	IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
-    	Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
-    	
-    	zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock);
-	    Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
+        IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
+        Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
+        
+        zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock);
+        Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
     }
     
     @Test
