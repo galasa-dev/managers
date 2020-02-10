@@ -114,7 +114,8 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.error("Credentials type not supported yet", e);
+			logger.debug(e);
+			logger.error("Failed to access registry");
 			return false;
 		} catch (ClassCastException e) {
 			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
