@@ -3,8 +3,8 @@
 The following snippet shows the minimum code that is required to request a Docker Container in a Galasa test:
 
 ```
-@DockerContainer(image="httpd:latest", tag="http", start=true)
-public IDockerContainer container1;
+@Dockercontainer(image="library/httpd:latest", tag="http", start=true)
+public IDockercontainer container1;
 ```
 
 The code creates a Docker Container with an Apache HTTP Server running on port 80. Although this does not provide much, it does give a known target HTTP Server that you can start and stop in order to test how your application responds in those circumstances.  By accessing the *container1* field, you can find the IP address and port that was used for the container. 
@@ -19,8 +19,8 @@ There is no limit in Galasa on how many Docker Containers can be used within a s
 Find the IP address and port by using the following code which provisions and starts an Apache HTTP server on port 80:
 
 ```
-@DockerContainer(image="httpd:latest")
-public IDockerContainer httpContainer;
+@Dockercontainer(image="library/httpd:latest")
+public IDockercontainer httpcontainer;
 ...
 InetSocketAddress port80 = httpContainer.getFirstSocketForExposedPort(80);
 ```
@@ -31,8 +31,8 @@ InetSocketAddress port80 = httpContainer.getFirstSocketForExposedPort(80);
 Stop and start your Apache HTTP Server to test how your application responds by using the following code:
 
 ```
-@DockerContainer(image="httpd:latest")
-public IDockerContainer httpContainer;
+@Dockercontainer(image="library/httpd:latest")
+public IDockercontainer httpcontainer;
 ...
 httpContainer.stop();
 
@@ -43,8 +43,8 @@ httpContainer.start();
 
 Use the following code to execute a command within the Docker Container and return the resulting output:
 ```
-@DockerContainer(image="httpd:latest")
-public IDockerContainer httpcontainer;
+@Dockercontainer(image="library/httpd:latest")
+public IDockercontainer httpcontainer;
 ...
 IDockerExec exec = httpContainer.exec("ls","-l","/var/log");
 exec.waitForExec();
@@ -56,8 +56,8 @@ String output = exec.getCurrentOutput();
 Use the following code to retrieve the container log:
 
 ```
-@DockerContainer(image="httpd:latest")
-public IDockerContainer httpContainer;
+@Dockercontainer(image="library/httpd:latest")
+public IDockercontainer httpcontainer;
 ...
 String log = httpContainer.getStdOut();
 ```
