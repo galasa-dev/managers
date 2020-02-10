@@ -42,8 +42,9 @@ public class TestUseSysaff {
     }
     
     @Test
-    public void testNull() throws Exception {
+    public void testNullandEmpty() throws Exception {
         Assert.assertEquals("Unexpected value returned from UseSysaff.get()", true, getProperty(null));
+        Assert.assertEquals("Unexpected value returned from UseSysaff.get()", true, getProperty(""));
     }
     
     @Test
