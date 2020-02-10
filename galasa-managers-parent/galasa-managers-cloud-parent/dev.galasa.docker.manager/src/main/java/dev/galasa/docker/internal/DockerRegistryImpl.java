@@ -256,7 +256,9 @@ public class DockerRegistryImpl {
 				for (String key : headers.keySet()) {
 					if (key.equalsIgnoreCase("WWW-Authenticate")) {
 						this.registryRealmType = parseAuthRealmType(headers.get(key));
-						this.registryRealmURL = parseAuthRealmURL(headers.get(key));
+						if (!"BASIC realm".equalsIgnoreCase(this.registryRealmType)){
+							this.registryRealmURL = parseAuthRealmURL(headers.get(key));
+						}
 						return true;
 					}
 				}
