@@ -114,7 +114,7 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.debug(e);
+			logger.trace(e);
 			logger.error("Failed to access registry");
 			return false;
 		} catch (ClassCastException e) {
