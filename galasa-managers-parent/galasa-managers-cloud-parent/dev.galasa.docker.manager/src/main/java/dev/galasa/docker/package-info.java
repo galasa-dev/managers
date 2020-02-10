@@ -8,7 +8,7 @@
  * 
  * @galasa.manager Docker
  * 
- * @galasa.release.state ALPHA - This manager is being actively developed. It is subject to change and has not been extensively tested.
+ * @galasa.release.state BETA
  * 
  * @galasa.description
  * 
@@ -17,7 +17,7 @@
  * <br><br>
  * The Docker Manager can be used by other Managers as a base for their own services. 
  * For example, the JMeter Manager can run a JMeter service inside a Docker container. 
- * Using the Docker Manager in this way means that the test or administration team 
+ * Using the Docker Manager in this way means that the test or administration tseam 
  * do not need to create dedicated JMeter resources.
  * <br><br> 
  * Containers that are provided by the Docker Manager can be used to either drive 
