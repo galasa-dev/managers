@@ -136,12 +136,12 @@ public class DockerRegistryImpl {
 			return;
 		}
 
-		if ("Bearer realm".equals(this.registryRealmType)) {
+		if ("Bearer realm".equalsIgnoreCase(this.registryRealmType)) {
 			this.authToken = retrieveBearerToken(this.client);
 			return;
 		}
 
-		if ("Basic realm".equals(this.registryRealmType)) {
+		if ("Basic realm".equalsIgnoreCase(this.registryRealmType)) {
 			this.authToken = retrieveBasicToken(this.client);
 			return;
 		}
