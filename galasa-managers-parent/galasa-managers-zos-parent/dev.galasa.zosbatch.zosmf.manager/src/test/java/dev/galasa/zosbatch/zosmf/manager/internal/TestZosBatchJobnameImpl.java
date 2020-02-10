@@ -40,7 +40,7 @@ public class TestZosBatchJobnameImpl {
     public void testGetJobname() throws ZosBatchManagerException {        
         ZosBatchJobnameImpl zosJobname = new ZosBatchJobnameImpl("image");
         Assert.assertEquals("getName() should return the supplied value", FIXED_JOBNAME, zosJobname.getName());
-        Assert.assertEquals("toString() should return the the job name", FIXED_JOBNAME, zosJobname.toString());
+        Assert.assertEquals("toString() should return the job name", FIXED_JOBNAME, zosJobname.toString());
     }
     
     @Test

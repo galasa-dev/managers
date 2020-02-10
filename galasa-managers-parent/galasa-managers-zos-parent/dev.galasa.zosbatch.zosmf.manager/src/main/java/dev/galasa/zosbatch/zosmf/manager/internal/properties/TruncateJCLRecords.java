@@ -29,7 +29,7 @@ public class TruncateJCLRecords extends CpsProperties {
         try {
             String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "truncate.jcl.records", imageId);
             if (sysaffString == null || sysaffString.isEmpty()) {
-            	return true;
+                return true;
             }
             return Boolean.parseBoolean(sysaffString);
         } catch (ConfigurationPropertyStoreException e) {
