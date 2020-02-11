@@ -32,7 +32,6 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
     
-    private int retryRequest;
     private IZosmf currentZosmf;
     private String currentZosmfImageId;
     
@@ -62,7 +61,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }
         IZosmfResponse response = null;
-        for (int i = 0; i <= this.retryRequest; i++) {
+        for (int i = 0; i <= ((ZosmfImpl) currentZosmf).getRequestRetry(); i++) {
             try {
                 IZosmf zosmfServer = getCurrentZosmfServer();
                 if (headers != null) {
@@ -97,11 +96,11 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                     getNextZosmf();
                 }
             } catch (ZosmfManagerException e) {
-                logger.error(e);
+                logger.error("Problem with zOSMF request", e);
                 getNextZosmf();
             }
         }
-        throw new ZosmfException("Unable to get valid response fron zOS/MF server");
+        throw new ZosmfException("Unable to get valid response from zOS/MF server");
     }
     
     private IZosmf getCurrentZosmfServer() {

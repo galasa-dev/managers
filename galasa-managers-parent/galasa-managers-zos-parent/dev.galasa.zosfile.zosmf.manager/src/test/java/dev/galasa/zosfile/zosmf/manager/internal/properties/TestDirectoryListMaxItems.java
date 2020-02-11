@@ -37,7 +37,7 @@ public class TestDirectoryListMaxItems {
     
     @Test
     public void testConstructor() {
-    	DirectoryListMaxItems directoryListMaxItems = new DirectoryListMaxItems();
+        DirectoryListMaxItems directoryListMaxItems = new DirectoryListMaxItems();
         Assert.assertNotNull("Object was not created", directoryListMaxItems);
     }
     
@@ -53,30 +53,30 @@ public class TestDirectoryListMaxItems {
     }
     
     @Test
-	public void testNegative() throws Exception {
-	    exceptionRule.expect(ZosFileManagerException.class);
-	    exceptionRule.expectMessage("Directory list max items property must be greater than 0");
-	    
-	    getProperty("-99");
-	}
+    public void testNegative() throws Exception {
+        exceptionRule.expect(ZosFileManagerException.class);
+        exceptionRule.expectMessage("Directory list max items property must be greater than 0");
+        
+        getProperty("-99");
+    }
     
     @Test
-	public void testZero() throws Exception {
-	    exceptionRule.expect(ZosFileManagerException.class);
-	    exceptionRule.expectMessage("Directory list max items property must be greater than 0");
-	    
-	    getProperty("0");
-	}
+    public void testZero() throws Exception {
+        exceptionRule.expect(ZosFileManagerException.class);
+        exceptionRule.expectMessage("Directory list max items property must be greater than 0");
+        
+        getProperty("0");
+    }
 
-	@Test
-	public void testNonInteger() throws Exception {
-	    exceptionRule.expect(ZosFileManagerException.class);
-	    exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
-	    
-	    getProperty("99.99");
-	}
+    @Test
+    public void testNonInteger() throws Exception {
+        exceptionRule.expect(ZosFileManagerException.class);
+        exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
+        
+        getProperty("99.99");
+    }
 
-	@Test
+    @Test
     public void testNonNumeric() throws Exception {
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
