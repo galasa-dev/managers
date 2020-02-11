@@ -246,67 +246,54 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     @Override
     public void cancelJob() throws ZosBatchException {
         if (!isComplete()) {
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
-            JsonObject requestBody = new JsonObject();
-            requestBody.addProperty("request", "cancel");
-            requestBody.addProperty("version", "2.0");
-            IZosmfResponse response;
-            try {
-                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, this.jobPath, headers, requestBody, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-            } catch (ZosmfException e) {
-                throw new ZosBatchException(e);
-            }
-    
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfManagerException e) {
-                throw new ZosBatchException(e);
-            }
-            
-            logger.trace(responseBody);
-            if (response.getStatusCode() == HttpStatus.SC_OK) {
-                this.status = null;
-                this.jobComplete = true;
-            } else {            
-                // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-                String displayMessage = buildErrorString("Cancel job", responseBody); 
-                logger.error(displayMessage);
-                throw new ZosBatchException(displayMessage);
-            }
+            cancel(false);
         }
     }
 
     @Override
     public void purgeJob() throws ZosBatchException {
         if (!isPurged()) {
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
-            IZosmfResponse response;
-            try {
+            cancel(true);
+        }
+    }
+    
+    protected void cancel(boolean purge) throws ZosBatchException {
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
+        IZosmfResponse response;
+        try {
+            if (purge) {
                 response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-            } catch (ZosmfException e) {
-                throw new ZosBatchException(e);
+            } else {
+                JsonObject requestBody = new JsonObject();
+                requestBody.addProperty("request", "cancel");
+                requestBody.addProperty("version", "2.0");
+                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, this.jobPath, headers, requestBody, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
             }
+        } catch (ZosmfException e) {
+            throw new ZosBatchException(e);
+        }
 
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfManagerException e) {
-                throw new ZosBatchException(e);
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (ZosmfManagerException e) {
+            throw new ZosBatchException(e);
+        }
+        
+        logger.trace(responseBody);
+        if (response.getStatusCode() == HttpStatus.SC_OK) {
+            this.status = null;
+            if (purge) {
+                this.jobPurged = true; 
+            } else {
+                this.jobComplete = true;
             }
-            
-            logger.trace(responseBody);
-            if (response.getStatusCode() == HttpStatus.SC_OK) {
-                this.status = null;
-                this.jobPurged = true;
-            } else {            
-                // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-                String displayMessage = buildErrorString("Purge job", responseBody); 
-                logger.error(displayMessage);
-                throw new ZosBatchException(displayMessage);
-            }
+        } else {            
+            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+            String displayMessage = buildErrorString(purge ? "Purge job" : "Cancel job", responseBody); 
+            logger.error(displayMessage);
+            throw new ZosBatchException(displayMessage);
         }
     }
         

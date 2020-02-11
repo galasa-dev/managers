@@ -37,7 +37,7 @@ public class TestTruncateJCLRecords {
     
     @Test
     public void testConstructor() {
-    	TruncateJCLRecords truncateJCLRecords = new TruncateJCLRecords();
+        TruncateJCLRecords truncateJCLRecords = new TruncateJCLRecords();
         Assert.assertNotNull("Object was not created", truncateJCLRecords);
     }
     

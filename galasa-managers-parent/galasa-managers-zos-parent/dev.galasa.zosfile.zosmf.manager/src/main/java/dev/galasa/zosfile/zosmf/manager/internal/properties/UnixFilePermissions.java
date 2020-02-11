@@ -33,9 +33,9 @@ public class UnixFilePermissions extends CpsProperties {
             if (modeString == null) {
                 return UNIX_FILE_PERMISSIONS;
             } else {
-            	if (!modeString.matches("([-r][-w][-x]){3}")) {
-            		throw new ZosFileManagerException("The default UNIX file permissions property must be in the range \"---------\" to \"rwxrwxrwx\" and match the regex expression \"([-r][-w][-x]){3}\"");
-            	}
+                if (!modeString.matches("([-r][-w][-x]){3}")) {
+                    throw new ZosFileManagerException("The default UNIX file permissions property must be in the range \"---------\" to \"rwxrwxrwx\" and match the regex expression \"([-r][-w][-x]){3}\"");
+                }
                 return modeString;
             }
         } catch (ConfigurationPropertyStoreException e) {

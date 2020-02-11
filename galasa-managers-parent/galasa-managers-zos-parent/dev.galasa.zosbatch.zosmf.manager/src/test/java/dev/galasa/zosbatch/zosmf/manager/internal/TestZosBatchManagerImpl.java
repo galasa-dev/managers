@@ -166,7 +166,7 @@ public class TestZosBatchManagerImpl {
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
         zosBatchManager.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
         Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
         
@@ -175,7 +175,7 @@ public class TestZosBatchManagerImpl {
         Mockito.doNothing().when(zosBatchImpl).cleanup();
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
-    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
 
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
         Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
@@ -226,12 +226,12 @@ public class TestZosBatchManagerImpl {
     
     @Test
     public void testNewZosBatchJobnameImpl() throws Exception {
-    	IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
+        IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
         PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
         PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         PowerMockito.doReturn("PFX").when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-    	
+        
         IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobnameImpl("image");
         Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith("PFX"));
     }
