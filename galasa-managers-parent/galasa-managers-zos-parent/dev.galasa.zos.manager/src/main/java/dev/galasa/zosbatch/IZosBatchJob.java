@@ -28,14 +28,18 @@ public interface IZosBatchJob {
     public String getJobId();
     
     /**
-     * The batch job status. Returns "????????" if the job has not been submitted
+     * The batch job status, e.g.<br>
+     * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
+     * Returns "????????" if the job has not been submitted
      * 
      * @return batch job status
      */
     public String getStatus();
     
     /**
-     * The batch job completion return code. Returns "????" if the job has not been submitted
+     * The batch job completion return code, e.g.<br>
+     * <code>CC 0000</code>, <code>CC 0020</code>, <code>JCL ERROR</code>, <code>ABEND S0C4/code> etc.<br>
+     * Returns "????" if the job has not been submitted
      * 
      * @return
      */
@@ -64,13 +68,13 @@ public interface IZosBatchJob {
      * 
      * @throws ZosBatchException
      */
-    void cancelJob() throws ZosBatchException;
+    public void cancel() throws ZosBatchException;
 
     /**
      * Cancel the batch job and purge output from the queue
      * 
      * @throws ZosBatchException
      */
-    public void purgeJob() throws ZosBatchException;
+    public void purge() throws ZosBatchException;
 
 }
