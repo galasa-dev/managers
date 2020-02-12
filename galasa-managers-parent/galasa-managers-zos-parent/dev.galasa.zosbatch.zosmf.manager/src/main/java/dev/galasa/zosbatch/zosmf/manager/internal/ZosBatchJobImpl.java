@@ -244,14 +244,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     }
     
     @Override
-    public void cancelJob() throws ZosBatchException {
+    public void cancel() throws ZosBatchException {
         if (!isComplete()) {
             cancel(false);
         }
     }
 
     @Override
-    public void purgeJob() throws ZosBatchException {
+    public void purge() throws ZosBatchException {
         if (!isPurged()) {
             cancel(true);
         }
