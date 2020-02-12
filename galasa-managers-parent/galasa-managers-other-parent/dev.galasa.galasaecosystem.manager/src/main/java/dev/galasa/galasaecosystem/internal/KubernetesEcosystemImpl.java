@@ -74,7 +74,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
     private final Yaml                       yaml = new Yaml();
 
-    private final String                     targetVersion = "0.4.0";
+    private final String                     targetVersion = "0.5.0-SNAPSHOT";
     private final HashMap<String, String>    yamlReplacements = new HashMap<>();
 
     private IHttpClient                      etcdHttpClient;
