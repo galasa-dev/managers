@@ -18,7 +18,7 @@ import java.net.InetSocketAddress;
  * by using a field:-<br>
  * <code>@DockerContainer(dockerContainerTag="a", image="jatdocker/ivp:1.0.0")<br>
  * private IDockerContainer containerA;</code><br>
- * You can also retrieve a docker container using the
+ * You can also retrieve a Docker Container using the
  * {@link IDockerManager#getDockerContainer(String)} method.
  * <p>
  * The following are DSE Environment properties:-<br>
