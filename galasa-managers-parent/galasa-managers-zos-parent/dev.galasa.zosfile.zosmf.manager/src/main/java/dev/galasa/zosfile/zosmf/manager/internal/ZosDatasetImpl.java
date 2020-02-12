@@ -959,7 +959,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return this.temporary;
     }
 
-	public IZosmfRestApiProcessor getZosmfApiProcessor() {
-	    return this.zosmfApiProcessor;
-	}
+    public IZosmfRestApiProcessor getZosmfApiProcessor() {
+        return this.zosmfApiProcessor;
+    }
 }

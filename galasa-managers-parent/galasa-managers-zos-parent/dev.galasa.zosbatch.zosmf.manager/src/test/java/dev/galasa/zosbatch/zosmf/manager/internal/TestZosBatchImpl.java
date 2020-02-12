@@ -98,6 +98,7 @@ public class TestZosBatchImpl {
         Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(seekableByteChannelMock);
         Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
+        Mockito.doThrow(new IOException()).when(fileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
         ZosBatchManagerImpl.setArchivePath(archivePathMock);
         ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchImpl.class.getDeclaredMethod("setup"));        
         
@@ -137,50 +138,67 @@ public class TestZosBatchImpl {
     
     @Test
     public void testSubmitJob() throws Exception {
-    	IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
-    	Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
-    	
-    	zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock);
-	    Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
+        IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
+        Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
+        
+        zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock);
+        Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
     }
     
     @Test
     public void testCleanup() throws Exception {
-    	List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
-    	Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-    	zosBatchSpy.cleanup();
-    	Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+        List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
-    	zosBatchJobs = new ArrayList<>();
-    	Mockito.when(zosBatchJobMock.submitted()).thenReturn(false);
-    	zosBatchJobs.add(zosBatchJobMock);
-    	Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-    	zosBatchSpy.cleanup();
-    	Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
-    	
-    	zosBatchJobs = new ArrayList<>();
-    	Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
-    	Mockito.when(zosBatchJobMock.isArchived()).thenReturn(true);
-    	Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
-    	zosBatchJobs.add(zosBatchJobMock);
-    	Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-    	zosBatchSpy.cleanup();
-    	Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(false);
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+        
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isComplete()).thenReturn(false);
+        Mockito.when(zosBatchJobMock.isArchived()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
-    	
-    	zosBatchJobs = new ArrayList<>();
-    	Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
-    	Mockito.when(zosBatchJobMock.isArchived()).thenReturn(false);
-    	Mockito.when(zosBatchJobMock.isPurged()).thenReturn(false);
-    	zosBatchJobs.add(zosBatchJobMock);
-    	Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-    	zosBatchSpy.cleanup();
-    	Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
-    	
-    	Mockito.doNothing().when(zosBatchJobMock).archiveJobOutput();
-    	Mockito.doNothing().when(zosBatchJobMock).purgeJob();
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isComplete()).thenReturn(false);
+        Mockito.when(zosBatchJobMock.isArchived()).thenReturn(false);
+        Mockito.when(zosBatchJobMock.isPurged()).thenReturn(false);
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isComplete()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isArchived()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isComplete()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isArchived()).thenReturn(false);
+        Mockito.when(zosBatchJobMock.isPurged()).thenReturn(false);
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
     }
-
    
     private JsonObject getJsonObject() {
         JsonObject responseBody = new JsonObject();

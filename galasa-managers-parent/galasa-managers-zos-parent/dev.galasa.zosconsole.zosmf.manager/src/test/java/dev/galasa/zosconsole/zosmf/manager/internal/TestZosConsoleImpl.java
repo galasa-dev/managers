@@ -53,9 +53,9 @@ public class TestZosConsoleImpl {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-	private static final String CONSOLE_COMMAND = "ZOS CONSOLE_COMMAND";
+    private static final String CONSOLE_COMMAND = "ZOS CONSOLE_COMMAND";
 
-	private static final String CONSOLE_NAME = "CNAME";
+    private static final String CONSOLE_NAME = "CNAME";
     
     @Before
     public void setup() throws Exception {
@@ -66,32 +66,32 @@ public class TestZosConsoleImpl {
 
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
-    	
-	    Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
-	    JsonObject jsonObject = new JsonObject();
-	    jsonObject.addProperty("cmd-response", "cmd-response");
-	    jsonObject.addProperty("cmd-response-key", "cmd-response-key");
-		Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject );
-	    Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("cmd-response", "cmd-response");
+        jsonObject.addProperty("cmd-response-key", "cmd-response-key");
+        Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject );
+        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
         zosConsole = new ZosConsoleImpl(zosImageMock);
     }
     
     @Test
     public void testIssueCommand() throws ZosConsoleException {    
-		IZosConsoleCommand zosConsoleCommand = zosConsole.issueCommand(CONSOLE_COMMAND );
+        IZosConsoleCommand zosConsoleCommand = zosConsole.issueCommand(CONSOLE_COMMAND );
 
         Assert.assertEquals("IZosConsoleCommand.getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommand.getCommand());
     }
     
     @Test
-	public void testIssueCommandConsoleName() throws ZosConsoleException, ZosmfException {	    
-		IZosConsoleCommand zosConsoleCommand = zosConsole.issueCommand(CONSOLE_COMMAND, CONSOLE_NAME);
+    public void testIssueCommandConsoleName() throws ZosConsoleException, ZosmfException {        
+        IZosConsoleCommand zosConsoleCommand = zosConsole.issueCommand(CONSOLE_COMMAND, CONSOLE_NAME);
 
-        Assert.assertEquals("IZosConsoleCommand.getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommand.getCommand());	    
-	}
+        Assert.assertEquals("IZosConsoleCommand.getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommand.getCommand());        
+    }
 
-	@Test
+    @Test
     public void testIssueCommandConsoleNameException() throws ZosmfManagerException, ZosConsoleManagerException {
         exceptionRule.expect(ZosConsoleException.class);
         exceptionRule.expectMessage("Unable to issue console command");

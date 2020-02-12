@@ -35,7 +35,7 @@ public class TestRestrictZosmfToImage {
     
     @Test
     public void testConstructor() {
-    	RestrictZosmfToImage restrictZosmfToImage = new RestrictZosmfToImage();
+        RestrictZosmfToImage restrictZosmfToImage = new RestrictZosmfToImage();
         Assert.assertNotNull("Object was not created", restrictZosmfToImage);
     }
     

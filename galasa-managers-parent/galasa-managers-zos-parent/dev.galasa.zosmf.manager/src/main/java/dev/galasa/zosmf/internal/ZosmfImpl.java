@@ -34,6 +34,7 @@ import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.properties.Https;
+import dev.galasa.zosmf.internal.properties.RequestRetry;
 import dev.galasa.zosmf.internal.properties.ServerHostname;
 import dev.galasa.zosmf.internal.properties.ServerImages;
 import dev.galasa.zosmf.internal.properties.ServerPort;
@@ -52,6 +53,7 @@ public class ZosmfImpl implements IZosmf {
     private IZosImage image;
     private IHttpClient httpClient;
     private String zosmfUrl;
+    protected int requestRetry;
 
     private HashMap<String, String> commonHeaders = new HashMap<>();
 
@@ -244,13 +246,13 @@ public class ZosmfImpl implements IZosmf {
         try {
             zosmfHostname = ServerHostname.get(image.getImageID());
         } catch (ZosManagerException e) {
-            throw new ZosmfException("Problem getting hostname for image " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         String zosmfPort;
         try {
             zosmfPort = ServerPort.get(image.getImageID());
         } catch (ZosmfManagerException e) {
-            throw new ZosmfException("Problem getting port for zOSMF server on " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         String scheme = "http";
         try {
@@ -258,7 +260,7 @@ public class ZosmfImpl implements IZosmf {
                 scheme = "https";
             }
         } catch (ZosmfManagerException e) {
-            throw new ZosmfException("Problem getting SSL for zOSMF server on " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         
         this.zosmfUrl = scheme + "://" + zosmfHostname + ":" + zosmfPort;
@@ -277,12 +279,18 @@ public class ZosmfImpl implements IZosmf {
             this.httpClient.build();
         } catch (HttpClientException | ZosManagerException | URISyntaxException e) {
             throw new ZosmfException("Unable to create HTTP Client", e);
+        }        
+        
+        try {
+            this.requestRetry = RequestRetry.get(image.getImageID());
+        } catch (ZosManagerException e) {
+            throw new ZosmfException(e);
         }
     }
 
     private void addCommonHeaders() {
         for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
-            logger.debug("Adding HTTP header: " + entry.getKey() + "=" + entry.getValue());
+            logger.debug("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
             this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
         }
         
@@ -302,6 +310,10 @@ public class ZosmfImpl implements IZosmf {
 
     private String logBadRequest(String method) {
         return "Problem wth " + method + " to zOSMF server";
+    }
+
+    public int getRequestRetry() {
+        return this.requestRetry;
     }
     
     

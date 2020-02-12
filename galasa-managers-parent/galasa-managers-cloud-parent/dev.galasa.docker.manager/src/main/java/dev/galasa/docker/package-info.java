@@ -8,7 +8,7 @@
  * 
  * @galasa.manager Docker
  * 
- * @galasa.release.state ALPHA - This manager is being actively developed. It is subject to change and has not been extensively tested.
+ * @galasa.release.state BETA
  * 
  * @galasa.description
  * 

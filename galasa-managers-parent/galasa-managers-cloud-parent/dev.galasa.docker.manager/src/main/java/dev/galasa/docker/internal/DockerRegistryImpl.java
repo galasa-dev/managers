@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -113,7 +114,8 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.error("Credentials type not supported yet", e);
+			logger.trace(e);
+			logger.error("Failed to access registry");
 			return false;
 		} catch (ClassCastException e) {
 			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
@@ -134,12 +136,12 @@ public class DockerRegistryImpl {
 			return;
 		}
 
-		if ("Bearer realm".equals(this.registryRealmType)) {
+		if ("Bearer realm".equalsIgnoreCase(this.registryRealmType)) {
 			this.authToken = retrieveBearerToken(this.client);
 			return;
 		}
 
-		if ("Basic realm".equals(this.registryRealmType)) {
+		if ("Basic realm".equalsIgnoreCase(this.registryRealmType)) {
 			this.authToken = retrieveBasicToken(this.client);
 			return;
 		}
@@ -254,13 +256,15 @@ public class DockerRegistryImpl {
 				for (String key : headers.keySet()) {
 					if (key.equalsIgnoreCase("WWW-Authenticate")) {
 						this.registryRealmType = parseAuthRealmType(headers.get(key));
-						this.registryRealmURL = parseAuthRealmURL(headers.get(key));
+						if (!"BASIC realm".equalsIgnoreCase(this.registryRealmType)){
+							this.registryRealmURL = parseAuthRealmURL(headers.get(key));
+						}
 						return true;
 					}
 				}
 			}
 			throw new DockerManagerException("Failed to authenticate, and authentication is required.");
-		} catch (HttpClientException | MalformedURLException e) {
+		} catch (HttpClientException | MalformedURLException | JsonSyntaxException e) {
 			throw new DockerManagerException("Failed to connect to registry", e);
 		}
 	}

@@ -37,13 +37,14 @@ public class TestTruncateJCLRecords {
     
     @Test
     public void testConstructor() {
-    	TruncateJCLRecords truncateJCLRecords = new TruncateJCLRecords();
+        TruncateJCLRecords truncateJCLRecords = new TruncateJCLRecords();
         Assert.assertNotNull("Object was not created", truncateJCLRecords);
     }
     
     @Test
-    public void testNull() throws Exception {
+    public void testNullandEmpty() throws Exception {
         Assert.assertEquals("Unexpected value returned from TruncateJCLRecords.get()", true, getProperty(null));
+        Assert.assertEquals("Unexpected value returned from TruncateJCLRecords.get()", true, getProperty(""));
     }
     
     @Test

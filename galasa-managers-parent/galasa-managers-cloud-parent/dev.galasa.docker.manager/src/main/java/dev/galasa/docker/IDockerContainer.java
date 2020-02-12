@@ -16,7 +16,7 @@ import java.net.InetSocketAddress;
  * Provides a resource object representing a Docker Container on a Docker
  * Engine. The normal method of obtaining a Docker Container resource object is
  * by using a field:-<br>
- * <code>@DockerContainer(dockerContainerTag="a", image="jatdocker/ivp:1.0.0")<br>
+ * <code>@DockerContainer(dockerContainerTag="a", image="galasadocker/ivp:1.0.0")<br>
  * private IDockerContainer containerA;</code><br>
  * You can also retrieve a Docker Container using the
  * {@link IDockerManager#getDockerContainer(String)} method.
@@ -127,12 +127,48 @@ public interface IDockerContainer {
 	 */
 	public String retrieveStdErr() throws DockerManagerException;
 	
+	/**
+	 * Checks with the docker engine to find the running state of this container.
+	 * 
+	 * @return boolean
+	 * @throws DockerManagerException
+	 */
 	public boolean isRunning() throws DockerManagerException;
 	
-	public long     getExitCode() throws DockerManagerException;
+	/**
+	 * Retireves the exit code from the container
+	 * 
+	 * @return long
+	 * @throws DockerManagerException
+	 */
+	public long getExitCode() throws DockerManagerException;
 
-	public void storeFile(String path, InputStream file) throws DockerManagerException;
+	/**
+	 * Stores a file onto the container. Path must be fully qualified including the name of the file
+	 * on the container.
+	 * 
+	 * @param absolutePath
+	 * @param file
+	 * @throws DockerManagerException
+	 */
+	public void storeFile(String absolutePath, InputStream file) throws DockerManagerException;
 
-	public String retrieveFile(String path) throws DockerManagerException;
+	/**
+	 * Retreievs a InputStream of a file on the container.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws DockerManagerException
+	 */
+	public InputStream retrieveFile(String path) throws DockerManagerException;
+	
+	/**
+	 * Retrieves a file from the container and passes the contents back as a string.
+	 * 
+	 * @param path
+	 * @return String
+	 * @throws DockerManagerException
+	 */
+	public String retrieveFileAsString(String path) throws DockerManagerException;
 
 }

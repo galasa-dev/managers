@@ -9,13 +9,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -73,7 +74,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     private ZosBatchJobOutputImpl jobOutput;
     private boolean useSysaff;
 
-    private String uniqueId;
+    private int uniqueId;
     
     private static final String SLASH = "/";
     private static final String RESTJOBS_PATH = SLASH + "zosmf" + SLASH + "restjobs" + SLASH + "jobs" + SLASH;
@@ -84,7 +85,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     public ZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl) throws ZosBatchException {
         this.jobImage = jobImage;
         this.jobname = jobname;
-        storeArtifact(jcl, this.jobname.getName() + "_supplied_JCL.txt");
+        storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
         this.jcl = parseJcl(jcl);
         
         try {
@@ -173,7 +174,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         while (LocalDateTime.now().isBefore(timeoutTime)) {
             updateJobStatus();
             try {
-                if (jobComplete()) {
+                if (isComplete()) {
                     String[] rc = this.retcode.split(" ");
                     if (rc.length == 2) {
                         return StringUtils.isNumeric(rc[1]) ? Integer.parseInt(rc[1]) : Integer.MIN_VALUE;
@@ -238,45 +239,64 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         
         // Get the JCLIN
         addOutputFileContent(null, this.jobFilesPath + "/JCL/records");
-
-        archiveJobOutput();
-        purgeJob();
         
-        return this.jobOutput;
+        return jobOutput();
     }
     
     @Override
+    public void cancelJob() throws ZosBatchException {
+        if (!isComplete()) {
+            cancel(false);
+        }
+    }
+
+    @Override
     public void purgeJob() throws ZosBatchException {
         if (!isPurged()) {
-            HashMap<String, String> headers = new HashMap<>();
-            headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
-            IZosmfResponse response;
-            try {
-                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-            } catch (ZosmfException e) {
-                throw new ZosBatchException(e);
-            }
-
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfManagerException e) {
-                throw new ZosBatchException(e);
-            }
-            
-            logger.trace(responseBody);
-            if (response.getStatusCode() == HttpStatus.SC_OK) {
-                this.status = null;
-                this.jobPurged = true;
-            } else {            
-                // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-                String displayMessage = buildErrorString("Purge job", responseBody); 
-                logger.error(displayMessage);
-                throw new ZosBatchException(displayMessage);
-            }
+            cancel(true);
         }
     }
     
+    protected void cancel(boolean purge) throws ZosBatchException {
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
+        IZosmfResponse response;
+        try {
+            if (purge) {
+                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            } else {
+                JsonObject requestBody = new JsonObject();
+                requestBody.addProperty("request", "cancel");
+                requestBody.addProperty("version", "2.0");
+                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, this.jobPath, headers, requestBody, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            }
+        } catch (ZosmfException e) {
+            throw new ZosBatchException(e);
+        }
+
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (ZosmfManagerException e) {
+            throw new ZosBatchException(e);
+        }
+        
+        logger.trace(responseBody);
+        if (response.getStatusCode() == HttpStatus.SC_OK) {
+            this.status = null;
+            if (purge) {
+                this.jobPurged = true; 
+            } else {
+                this.jobComplete = true;
+            }
+        } else {            
+            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+            String displayMessage = buildErrorString(purge ? "Purge job" : "Cancel job", responseBody); 
+            logger.error(displayMessage);
+            throw new ZosBatchException(displayMessage);
+        }
+    }
+        
     @Override
     public String toString() {
         try {
@@ -291,7 +311,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         return this.jobid != null;
     }
     
-    public boolean jobComplete() {
+    public boolean isComplete() {
         return this.jobComplete;
     }
 
@@ -301,6 +321,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
     public boolean isPurged() {
         return this.jobPurged;
+    }
+
+    public ZosBatchJobOutputImpl jobOutput() {
+        return this.jobOutput;
     }
 
     private String jobStatus() {
@@ -382,65 +406,65 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected String parseJcl(String jcl) throws ZosBatchException {
-		boolean truncateJCLRecords;
-		try {
-			truncateJCLRecords = TruncateJCLRecords.get(this.jobImage.getImageID());
-		} catch (ZosBatchManagerException e) {
-	        throw new ZosBatchException("Unable to get trucate JCL records property value", e);
-	    }
+        boolean truncateJCLRecords;
+        try {
+            truncateJCLRecords = TruncateJCLRecords.get(this.jobImage.getImageID());
+        } catch (ZosBatchManagerException e) {
+            throw new ZosBatchException("Unable to get trucate JCL records property value", e);
+        }
 
-		List<String> jclRecords = new LinkedList<>(Arrays.asList(jcl.split("\n")));
-	    
-		if (truncateJCLRecords) {
-			return truncateJcl(jclRecords);
-		} else {
-			parseJclForVaryingRecordLength(jclRecords);
-			return jcl;
-		}
-	}
+        List<String> jclRecords = new LinkedList<>(Arrays.asList(jcl.split("\n")));
+        
+        if (truncateJCLRecords) {
+            return truncateJcl(jclRecords);
+        } else {
+            parseJclForVaryingRecordLength(jclRecords);
+            return jcl;
+        }
+    }
 
-	private String truncateJcl(List<String> jclRecords) {
-		List<String> recordsOut = new LinkedList<>();
-		List<Integer> truncatedRecords = new ArrayList<>();
-		for (int i=0; i < jclRecords.size(); i++) {
-			String record = jclRecords.get(i);
-			int recordLength = record.length();
-			if (recordLength > 80) {
-				// Truncate records to 80 bytes
-				truncatedRecords.add(i+1);
-				recordsOut.add(record.substring(0, 80));
-			} else {
-				recordsOut.add(record);
-			}
-		}
-		if (!truncatedRecords.isEmpty()) {
-			logger.warn("The following record(s) have been truncated to 80 characters: " + truncatedRecords.toString());
-		}
-		return String.join("\n", recordsOut);
-	}
+    private String truncateJcl(List<String> jclRecords) {
+        List<String> recordsOut = new LinkedList<>();
+        List<Integer> truncatedRecords = new ArrayList<>();
+        for (int i=0; i < jclRecords.size(); i++) {
+            String record = jclRecords.get(i);
+            int recordLength = record.length();
+            if (recordLength > 80) {
+                // Truncate records to 80 bytes
+                truncatedRecords.add(i+1);
+                recordsOut.add(record.substring(0, 80));
+            } else {
+                recordsOut.add(record);
+            }
+        }
+        if (!truncatedRecords.isEmpty()) {
+            logger.warn("The following record(s) have been truncated to 80 characters: " + truncatedRecords.toString());
+        }
+        return String.join("\n", recordsOut);
+    }
 
-	private void parseJclForVaryingRecordLength(List<String> jclRecords) {
-		int minRecordLength = 0;
-		for (int i=0; i < jclRecords.size(); i++) {
-			int recordLength = jclRecords.get(i).length();
-			if (recordLength > 80) {
-				if (recordLength > this.intdrLrecl) {
-					this.intdrLrecl = recordLength;
-					if (minRecordLength == 0) {
-						minRecordLength = recordLength;
-					}
-				}
-				if (recordLength <= minRecordLength) {
-					minRecordLength = recordLength;
-				}
-			}
-		}
-		if (minRecordLength != 0 && minRecordLength != this.intdrLrecl) {
-			this.intdrRecfm = "V";
-		}
-	}
+    private void parseJclForVaryingRecordLength(List<String> jclRecords) {
+        int minRecordLength = 0;
+        for (int i=0; i < jclRecords.size(); i++) {
+            int recordLength = jclRecords.get(i).length();
+            if (recordLength > 80) {
+                if (recordLength > this.intdrLrecl) {
+                    this.intdrLrecl = recordLength;
+                    if (minRecordLength == 0) {
+                        minRecordLength = recordLength;
+                    }
+                }
+                if (recordLength <= minRecordLength) {
+                    minRecordLength = recordLength;
+                }
+            }
+        }
+        if (minRecordLength != 0 && minRecordLength != this.intdrLrecl) {
+            this.intdrRecfm = "V";
+        }
+    }
 
-	protected String jclWithJobcard() {
+    protected String jclWithJobcard() {
         StringBuilder jobCard = new StringBuilder();
         jobCard.append("//");
         jobCard.append(jobname.getName());
@@ -452,8 +476,11 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             jobCard.append("\n");
         }
         
-        logger.error("JOBCARD:\n" + jobCard.toString());
+        logger.info("JOBCARD:\n" + jobCard.toString());
         jobCard.append(jcl);
+        if (!jobCard.toString().endsWith("\n")) {
+            jobCard.append("\n");
+        }
         return jobCard.toString();
     }
 
@@ -510,16 +537,15 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void archiveJobOutput() throws ZosBatchException {
-        if (!isArchived()) {
-            if (this.jobOutput == null) {
+        if (!isArchived() || !this.jobComplete) {
+            if (jobOutput() == null) {
                 retrieveOutput();
-                return;
             }
             String testMethodName = ZosBatchManagerImpl.currentTestMethod.getName();
             logger.info(testMethodName);
-            String dirName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace("?", "X");
+            String dirName = this.jobname.getName() + "_" + uniqueId + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace("????", "UNKNOWN");
             logger.info("    " + dirName);
-            Iterator<IZosBatchJobOutputSpoolFile> iterator = this.jobOutput.iterator();
+            Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
             while (iterator.hasNext()) {
                 IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
                 StringBuilder fileName = new StringBuilder();
@@ -553,22 +579,25 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {
-                    artifactPath = artifactPath.resolve(artifactPathElement);
+                    artifactPath = artifactPath.resolve(artifactPathElement.replace("_0_", "_" + Integer.toString(uniqueId) + "_"));
                 }
             }
-            int lastPeriod = StringUtils.lastIndexOf(lastElement, '.');
-    		if (lastPeriod == -1) {
-    			lastPeriod = lastElement.length();
-    		}
-    		
-            String uniqueName = lastElement;
-            if (Files.exists(artifactPath.resolve(uniqueName))) {
-            	if (uniqueId == null) {
-                    uniqueId = "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd_HH.mm.ss.SSS"));
-            	}
-                uniqueName = lastElement.substring(0, lastPeriod) + uniqueId + lastElement.substring(lastPeriod);
+            while (Files.exists(artifactPath.resolve(lastElement))) {
+                uniqueId++;
+                Pattern pattern = Pattern.compile("_" + Integer.toString(uniqueId-1) + "_");
+                Matcher matcher = pattern.matcher(lastElement);
+                if (matcher.find()) {
+                    lastElement = matcher.replaceFirst("_" + Integer.toString(uniqueId) + "_");
+                } else {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(lastElement);
+                    stringBuilder.append("_");
+                    stringBuilder.append(uniqueId);
+                    stringBuilder.append("_");
+                    lastElement = stringBuilder.toString();
+                }
             }
-            artifactPath = artifactPath.resolve(uniqueName);
+            artifactPath = artifactPath.resolve(lastElement);
             Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
             Files.write(artifactPath, content.getBytes()); 
         } catch (IOException e) {

@@ -6,3 +6,7 @@
 **/.settings/
 **/target/
 **/bin/
+core*.dmp
+heapdump*.phd
+javacore*.txt
+Snap*.trc

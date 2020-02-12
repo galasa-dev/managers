@@ -3,8 +3,8 @@
  * 
  * @galasa.manager ElasticLog
  * 
- * @galasa.release.state ALPHA - This Manager has been written to provide a way of exporting test data to ElasticSearch.  It has the bare 
- * minimum code necessary to do that.  It has not been extensively tested and is subject to change. It is available for Galasa administrators to utilise to experiment with Elastic/Kabana dashboards
+ * @galasa.release.state ALPHA - This Manager is being actively developed. It is subject to change and has not been extensively tested.
+ * It is available for Galasa administrators to utilise to experiment with Elastic/Kibana dashboards
  * 
  * @galasa.description
  * 
@@ -12,8 +12,9 @@
  * Other Managers can contribute to the information that is exported to Elastic.
  * <br><br>
  * As an absolute minimum, the CPS properties <code>elasticlog.endpoint.address</code> and <code>elasticlog.endpoint.index</code> 
- * must be provided. By default, this Manager logs only automated tests. To enable logging from locally run tests, set the
- * <code>elasticlog.local.run.log</code> to true.
+ * must be provided. By default, this manager will only log automated tests, to enable logging from locally run tests, 
+ * <code>elasticlog.local.run.log</code> must be set to true. The bundle must also be loaded by the framework but using 
+ * <code>framework.extra.bundles=dev.galasa.elasticlog.manager</code> in bootstrap.properties.
  * <br><br>
  * This Manager provides two ElasticSearch indexes; one of all test data, and one of the latest run for each test case and each 
  * test environment.

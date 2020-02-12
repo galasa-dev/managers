@@ -29,7 +29,7 @@ public class UseSysaff extends CpsProperties {
         try {
             String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
             if (sysaffString == null || sysaffString.isEmpty()) {
-            	return true;
+                return true;
             }
             return Boolean.parseBoolean(sysaffString);
         } catch (ConfigurationPropertyStoreException e) {

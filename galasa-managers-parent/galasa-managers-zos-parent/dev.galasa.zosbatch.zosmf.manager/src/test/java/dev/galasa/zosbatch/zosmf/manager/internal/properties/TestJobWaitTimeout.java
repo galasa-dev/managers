@@ -54,22 +54,22 @@ public class TestJobWaitTimeout {
     }
     
     @Test
-	public void testNegative() throws Exception {
-	    exceptionRule.expect(ZosBatchManagerException.class);
-	    exceptionRule.expectMessage("Batch job wait timeout property must be a positive integer");
-	    
-	    getProperty("-99");
-	}
+    public void testNegative() throws Exception {
+        exceptionRule.expect(ZosBatchManagerException.class);
+        exceptionRule.expectMessage("Batch job wait timeout property must be a positive integer");
+        
+        getProperty("-99");
+    }
 
-	@Test
-	public void testNonInteger() throws Exception {
-	    exceptionRule.expect(ZosBatchManagerException.class);
-	    exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
-	    
-	    getProperty("99.99");
-	}
+    @Test
+    public void testNonInteger() throws Exception {
+        exceptionRule.expect(ZosBatchManagerException.class);
+        exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
+        
+        getProperty("99.99");
+    }
 
-	@Test
+    @Test
     public void testNonNumeric() throws Exception {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
