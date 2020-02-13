@@ -8,17 +8,13 @@
  * 
  * @galasa.manager zOS Batch
  * 
- * @galasa.release.state RELEASE - This Manager is feature complete, has passed all tests and is deemed release grade.
+ * @galasa.release.state BETA - This Manager is feature complete but may contain known or unknown bugs.
  * 
  * @galasa.description
  * 
  * This Manager enables Galasa tests to submit Batch Jobs to run on a zOS image.
  * <br><br>
  * The manager is implemented using the zOS/MF Manager by default.
- * <br><br>  
- * 
- * @galasa.limitations
- * 
- * None known
+ * <br><br>
  */
 package dev.galasa.zosbatch;

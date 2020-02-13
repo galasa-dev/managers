@@ -266,7 +266,7 @@ public class TestZosBatchJobImpl {
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
         Mockito.doNothing().when(zosBatchJobSpy).archiveJobOutput();
-        Mockito.doNothing().when(zosBatchJobSpy).purgeJob();
+        Mockito.doNothing().when(zosBatchJobSpy).purge();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
 
@@ -352,10 +352,10 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         Assert.assertEquals("isComplete() should return the false", false, zosBatchJobSpy.isComplete());
-        zosBatchJobSpy.cancelJob();
+        zosBatchJobSpy.cancel();
         Assert.assertEquals("isComplete() should return the true", true, zosBatchJobSpy.isComplete());
         
-        zosBatchJobSpy.cancelJob();
+        zosBatchJobSpy.cancel();
     }
 
     @Test
@@ -365,7 +365,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
 
-        zosBatchJobSpy.cancelJob();
+        zosBatchJobSpy.cancel();
     }
 
     @Test
@@ -377,7 +377,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
 
-        zosBatchJobSpy.cancelJob();
+        zosBatchJobSpy.cancel();
     }
 
     @Test
@@ -390,7 +390,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Cancel job, category:0, rc:0, reason:0, message:message"));
 
-        zosBatchJobSpy.cancelJob();
+        zosBatchJobSpy.cancel();
     }
 
     @Test
@@ -400,10 +400,10 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         Assert.assertEquals("isPurged() should return the false", false, zosBatchJobSpy.isPurged());
-        zosBatchJobSpy.purgeJob();
+        zosBatchJobSpy.purge();
         Assert.assertEquals("isPurged() should return the true", true, zosBatchJobSpy.isPurged());
         
-        zosBatchJobSpy.purgeJob();
+        zosBatchJobSpy.purge();
     }
 
     @Test
@@ -413,7 +413,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
 
-        zosBatchJobSpy.purgeJob();
+        zosBatchJobSpy.purge();
     }
 
     @Test
@@ -425,7 +425,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
 
-        zosBatchJobSpy.purgeJob();
+        zosBatchJobSpy.purge();
     }
 
     @Test
@@ -438,7 +438,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Purge job, category:0, rc:0, reason:0, message:message"));
 
-        zosBatchJobSpy.purgeJob();
+        zosBatchJobSpy.purge();
     }
 
     @Test
