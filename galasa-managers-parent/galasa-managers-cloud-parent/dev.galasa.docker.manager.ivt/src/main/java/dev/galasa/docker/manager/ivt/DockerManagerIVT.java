@@ -80,9 +80,9 @@ public class DockerManagerIVT {
      */
     @Test
     public void startAndStopContainer() throws DockerManagerException {
-        logger.info("Stopping the docker container");
+        logger.info("Stopping the Docker Container");
         container.stop();
-        logger.info("Starting the docker container");
+        logger.info("Starting the Docker Container");
         container.start();
     }
 

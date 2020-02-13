@@ -21,7 +21,7 @@
  * 
  * @galasa.limitations
  * 
- * The Manager logs the following test information:-<br>
+ * The Manager logs the following test information:<br>
  * <br>
  * - testCase<br>
  * - runId<br>
