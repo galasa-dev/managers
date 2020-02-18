@@ -338,6 +338,10 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             saveEcosystemInDss();
 
+            //*** Set up fast cleanup
+            storeCpsProperty("framework.resource.management.dead.heartbeat.timeout", "30");
+            storeCpsProperty("framework.resource.management.finished.timeout", "40");
+
             //*** Set up streams
             storeCpsProperty("framework.stream.int.obr", "mvn:dev.galasa/dev.galasa.inttests.obr/" + this.mavenVersion + "/obr");
             storeCpsProperty("framework.stream.int.repo", this.mavenRepository.toString());
@@ -346,7 +350,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             //*** Set up SimBank
             storeCpsProperty("secure.credentials.SIMBANK.username", "IBMUSER");
-            storeCpsProperty("secure.credentials.SIMBANK.PASSWORD", "SYS1");
+            storeCpsProperty("secure.credentials.SIMBANK.password", "SYS1");
 
             storeCpsProperty("zos.dse.tag.simbank.imageid", "SIMBANK");
             storeCpsProperty("zos.dse.tag.simbank.clusterid", "SIMBANK");
