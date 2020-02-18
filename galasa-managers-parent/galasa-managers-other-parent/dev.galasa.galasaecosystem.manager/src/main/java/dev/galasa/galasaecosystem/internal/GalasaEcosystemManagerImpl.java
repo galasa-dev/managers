@@ -272,6 +272,8 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
                 ecosystem.build();
             } catch(Exception e) {
                 logger.error("Problem building provisioned Ecosystem " + ecosystem.getTag(),e);
+
+                throw new GalasaEcosystemManagerException("Problem building the Ecosystem", e);
             }
         }
     }

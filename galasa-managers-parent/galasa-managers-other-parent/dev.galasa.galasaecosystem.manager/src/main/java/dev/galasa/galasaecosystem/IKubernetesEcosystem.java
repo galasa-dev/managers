@@ -5,9 +5,11 @@
  */
 package dev.galasa.galasaecosystem;
 
-import java.net.URI;
+import java.util.Properties;
 
 import javax.validation.constraints.NotNull;
+
+import com.google.gson.JsonObject;
 
 /**
  * Kubernetes Ecosystem TPI
@@ -21,11 +23,11 @@ public interface IKubernetesEcosystem {
     
     /**
      * @param endpoint {@link EcosystemEndpoint} Which endpoint is required
-     * @return {@link URI} of the endpoint, never null
+     * @return Object of the endpoint, never null, URL, URI or InetSocketAddress
      * @throws GalasaEcosystemManagerException If the endpoint is unsupported
      */
-    public @NotNull URI getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException;
-    
+    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException;
+        
     /**
      * Retrieve a CPS property
      * 
@@ -79,5 +81,19 @@ public interface IKubernetesEcosystem {
      * @throws GalasaEcosystemManagerException if there is a problem accessing the CREDS
      */
     public void setCredsProperty(@NotNull String property, String value)  throws GalasaEcosystemManagerException;
+    
+    public void submitRun(String runType,
+                          String requestor,
+                          String groupName,
+                          @NotNull String bundleName,
+                          @NotNull String testName,
+                          String mavenRepository,
+                          String obr,
+                          String stream,
+                          Properties overrides) throws GalasaEcosystemManagerException;
+
+    public JsonObject getSubmittedRuns(String groupName) throws GalasaEcosystemManagerException;
+
+    public JsonObject waitForGroupNames(String groupName, long timeout) throws GalasaEcosystemManagerException; 
     
 }
