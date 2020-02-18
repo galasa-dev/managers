@@ -11,6 +11,8 @@ import dev.galasa.zos3270.spi.NetworkException;
 
 public interface ITerminal {
 
+    boolean isConnected();
+
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, InterruptedException;
 
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)

@@ -25,6 +25,7 @@ public class Terminal implements ITerminal {
     private final Screen  screen;
     private final Network network;
     private NetworkThread networkThread;
+    private boolean connected = false;
 
     private int           defaultWaitTime = 1_200_000;
 
@@ -40,12 +41,13 @@ public class Terminal implements ITerminal {
     }
 
     public synchronized void connect() throws NetworkException {
-        network.connectClient();
+        connected = network.connectClient();
         networkThread = new NetworkThread(screen, network, network.getInputStream());
         networkThread.start();
     }
 
     public void disconnect() throws InterruptedException {
+        connected = false;
         if (network != null) {
             network.close();
         }
@@ -53,6 +55,11 @@ public class Terminal implements ITerminal {
             networkThread.join();
             networkThread = null;
         }
+    }
+    
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
 
     @Override
