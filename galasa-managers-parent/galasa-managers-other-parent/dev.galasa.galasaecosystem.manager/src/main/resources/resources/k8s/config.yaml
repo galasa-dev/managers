@@ -18,7 +18,7 @@ data:
 # The label for the engine pods and the prefix of the engine names
   engine_label: "k8s-standard-engine"
 #
-  engine_image: "nexus.galasa.dev/galasa-boot-embedded-amd64:${dockerVersion}"
+  engine_image: "docker.galasa.dev/galasa-boot-embedded-amd64:${dockerVersion}"
   node_arch: "amd64"
 #  node_arch: ""
 #  node_preferred_affinity: "beta.kubernetes.io/arch=s390x"
