@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: bootstrap-file
 data:
-  dev.galasa.bootstrap.cfg: |
+  bootstrap.properties: |
     framework.config.store=${cpsURI}
     framework.extra.bundles=dev.galasa.cps.etcd,dev.galasa.ras.couchdb

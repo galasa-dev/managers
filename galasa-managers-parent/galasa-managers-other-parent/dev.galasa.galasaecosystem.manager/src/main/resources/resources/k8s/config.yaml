@@ -9,7 +9,7 @@ data:
 #
 #
 # The URI to the Bootstrap properties
-  bootstrap: "http://api:8181/bootstrap"
+  bootstrap: "http://api:8080/bootstrap"
 #
 #
 # The maximum running number of automation engines the Engine Controller will start
