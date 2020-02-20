@@ -827,6 +827,15 @@ public class HttpClientImpl implements IHttpClient {
 
         return HttpClientResponse.byteResponse(execute(request.buildRequest()));
     }
+    
+    @Override
+    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+
+        return executeByteRequest(request);
+    }
 
     @Override
     public HttpClientResponse<String> getText(String url) throws HttpClientException {

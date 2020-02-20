@@ -56,7 +56,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
      * @return
      * @throws ZosBatchException
      */
-    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException {
+    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes, boolean convert) throws ZosmfException {
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }
@@ -71,7 +71,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                 }
                 switch (requestType) {
                 case GET:
-                    response = zosmfServer.get(path, validStatusCodes);
+                    response = zosmfServer.get(path, validStatusCodes, convert);
                     break;
                 case POST_JSON:
                     response = zosmfServer.postJson(path, (JsonObject) body, validStatusCodes);
@@ -81,6 +81,9 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                     break;
                 case PUT_JSON:
                     response = zosmfServer.putJson(path, (JsonObject) body, validStatusCodes);
+                    break;
+                case PUT_BINARY:
+                    response = zosmfServer.putBinary(path, (byte[]) body, validStatusCodes);
                     break;
                 case DELETE:
                     response = zosmfServer.delete(path, validStatusCodes);

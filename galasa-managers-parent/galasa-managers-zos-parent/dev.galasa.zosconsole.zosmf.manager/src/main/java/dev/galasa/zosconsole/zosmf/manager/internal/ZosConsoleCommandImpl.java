@@ -68,7 +68,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, RESTCONSOLE_PATH + this.consoleName, null, requestBody, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosConsoleException(e);
         }
@@ -107,7 +107,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     public String requestResponse() throws ZosConsoleException {
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTCONSOLE_PATH + this.consoleName + "/solmsgs/" + this.commandResponseKey, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTCONSOLE_PATH + this.consoleName + "/solmsgs/" + this.commandResponseKey, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)), true);
         } catch (ZosmfException e) {
             throw new ZosConsoleException(e);
         }

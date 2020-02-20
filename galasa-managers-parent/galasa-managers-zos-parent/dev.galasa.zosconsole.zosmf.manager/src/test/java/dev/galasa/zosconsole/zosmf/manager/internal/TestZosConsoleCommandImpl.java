@@ -71,7 +71,7 @@ public class TestZosConsoleCommandImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
@@ -97,7 +97,7 @@ public class TestZosConsoleCommandImpl {
     public void testIssueCommandException() throws ZosmfManagerException, ZosConsoleManagerException {
         exceptionRule.expect(ZosConsoleException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         zosConsoleCommand.issueCommand();
     }
     
@@ -128,7 +128,7 @@ public class TestZosConsoleCommandImpl {
 
     @Test
     public void testRequestResponse() throws ZosConsoleException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         
         Assert.assertEquals("requestResponse() should return the expected response", CONSOLE_RESOPNSE, zosConsoleCommand.requestResponse());
     }
@@ -136,7 +136,7 @@ public class TestZosConsoleCommandImpl {
     @Test
     public void testRequestResponseNotFound() throws ZosConsoleException, ZosmfException {
         Whitebox.setInternalState(zosConsoleCommandSpy, "commandDelayedResponse", "NONE");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         
         Assert.assertEquals("requestResponse() should return the expected response", "NONE", zosConsoleCommandSpy.requestResponse());
@@ -146,7 +146,7 @@ public class TestZosConsoleCommandImpl {
     public void testRequestResponseException() throws ZosConsoleException, ZosmfException {
         exceptionRule.expect(ZosConsoleException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         zosConsoleCommand.requestResponse();
     }
@@ -155,7 +155,7 @@ public class TestZosConsoleCommandImpl {
     public void testRequestResponseException1() throws ZosConsoleException, ZosmfException {
         exceptionRule.expect(ZosConsoleException.class);
         exceptionRule.expectMessage( "Unable to issue console command \"" + CONSOLE_COMMAND + "\"");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         zosConsoleCommand.requestResponse();

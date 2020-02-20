@@ -57,6 +57,10 @@ public interface IZosmf {
          */
         PUT_JSON,
         /**
+         * PUT method with byte[] request body
+         */
+        PUT_BINARY,
+        /**
          * DELETE method with no request body
          */
         DELETE;
@@ -142,10 +146,11 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the zOSMF server response
      * @throws ZosmfException
      */
-    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException;
+    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes, boolean convert) throws ZosmfException;
 
     /**
      * Issue an HTTP POST request to the zOSMF server with a request body of content type of {@code application/json}
@@ -179,6 +184,17 @@ public interface IZosmf {
      * @throws ZosmfException
      */
     public @NotNull IZosmfResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws ZosmfException;
+
+     /**
+     * Issue an HTTP PUT request to the zOSMF server with a request body of content type of {@code text/plain}
+     * 
+     * @param path identifies the zOSMF REST API
+     * @param body the request body
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @return the zOSMF server response
+     * @throws ZosmfException
+     */
+    public @NotNull IZosmfResponse putBinary(String path, byte[] body, List<Integer> validStatusCodes) throws ZosmfException;
 
     /**
      * Issue an HTTP DELETE request to the zOSMF server with no request body

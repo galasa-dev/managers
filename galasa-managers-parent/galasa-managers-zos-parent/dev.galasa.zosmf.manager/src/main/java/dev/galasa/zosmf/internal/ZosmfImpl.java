@@ -27,6 +27,7 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.http.internal.ContentType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosmf.IZosmf;
@@ -88,7 +89,7 @@ public class ZosmfImpl implements IZosmf {
     }
 
     @Override
-    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
+    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes, boolean convert) throws ZosmfException {
         String method = ZosmfRequestType.GET.name();
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -99,7 +100,12 @@ public class ZosmfImpl implements IZosmf {
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
             logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
+            if (convert) {
+                zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
+            } else {
+                zosmfResponse.setHttpClientresponse(this.httpClient.getFile(validPath(path)));
+            }
+            
             logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
@@ -187,6 +193,33 @@ public class ZosmfImpl implements IZosmf {
             throw new ZosmfException(logBadRequest(method), e);
         }
         
+        return zosmfResponse;
+    }
+
+    @Override
+    public @NotNull IZosmfResponse putBinary(String path, byte[] requestBody, List<Integer> validStatusCodes) throws ZosmfException  {
+        String method = ZosmfRequestType.PUT.name();
+        if (validStatusCodes == null) {
+            validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+        }
+        ZosmfResponseImpl zosmfResponse;
+
+        try {
+            setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+            addCommonHeaders();
+            zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.debug(LOG_BODY + requestBody);
+            zosmfResponse.setHttpClientresponse(this.httpClient.putBinary(path, requestBody));
+            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
+                throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
+            }
+        } catch (MalformedURLException | HttpClientException  e) {
+            logger.error(e);
+            throw new ZosmfException(logBadRequest(method), e);
+        }
+
         return zosmfResponse;
     }
 

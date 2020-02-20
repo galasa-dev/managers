@@ -67,7 +67,7 @@ public class TestZosConsoleImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("cmd-response", "cmd-response");
         jsonObject.addProperty("cmd-response-key", "cmd-response-key");
