@@ -88,7 +88,7 @@ public class TestZosDatasetImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictZosmfToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
@@ -108,7 +108,7 @@ public class TestZosDatasetImpl {
     public void testCreate() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
 
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);
        
@@ -146,7 +146,7 @@ public class TestZosDatasetImpl {
     public void testCreateZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -157,7 +157,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testCreateBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
@@ -171,7 +171,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testCreateZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
@@ -187,7 +187,7 @@ public class TestZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(true).doReturn(false).when(zosDatasetSpy).exists();
 
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NO_CONTENT);
         
@@ -220,7 +220,7 @@ public class TestZosDatasetImpl {
     public void testDeleteZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -232,7 +232,7 @@ public class TestZosDatasetImpl {
     public void testDeleteBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
@@ -246,7 +246,7 @@ public class TestZosDatasetImpl {
     public void testDeleteZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
@@ -257,7 +257,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testExists() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         JsonObject jsonObject = getJsonObject();
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
@@ -277,7 +277,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testExistsZosmfException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -287,7 +287,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testExistsBadHttpResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
@@ -299,7 +299,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testExistsZosmfResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
@@ -311,7 +311,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testStore() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        PowerMockito.doNothing().when(zosDatasetSpy).store(Mockito.any(), Mockito.any());
+        PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
         zosDatasetSpy.store("content");
         
@@ -325,15 +325,15 @@ public class TestZosDatasetImpl {
     @Test
     public void testRetrieve() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        PowerMockito.doReturn("content").when(zosDatasetSpy).retrieve(Mockito.any());
+        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsString(Mockito.any());
         
-        Assert.assertEquals("retrieve() should return the supplied value", "content", zosDatasetSpy.retrieve());
+        Assert.assertEquals("retrieve() should return the supplied value", "content", zosDatasetSpy.retrieveAsString());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
         
-        zosDatasetSpy.retrieve();
+        zosDatasetSpy.retrieveAsString();
     }
     
     @Test
@@ -341,7 +341,7 @@ public class TestZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
         PowerMockito.doReturn("archiveLocation").when(zosDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
-        PowerMockito.doReturn("content").when(zosDatasetSpy).retrieve();      
+        PowerMockito.doReturn("content").when(zosDatasetSpy).retrieveAsString();      
         zosDatasetSpy.saveToResultsArchive();
         Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeArtifact(Mockito.any(), Mockito.any());
         
@@ -381,10 +381,10 @@ public class TestZosDatasetImpl {
     
     @Test
     public void testMemberCreate() throws ZosDatasetException {
-        PowerMockito.doNothing().when(zosDatasetSpy).store(Mockito.any(), Mockito.any());
+        PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
         zosDatasetSpy.memberCreate(MEMBER_NAME);
-        Mockito.verify(zosDatasetSpy, Mockito.times(1)).store(Mockito.any(), Mockito.any());
+        Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
     }
     
     @Test
@@ -402,7 +402,7 @@ public class TestZosDatasetImpl {
         Mockito.clearInvocations(zosDatasetSpy);
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NO_CONTENT);        
         zosDatasetSpy.memberDelete(MEMBER_NAME);
@@ -418,7 +418,7 @@ public class TestZosDatasetImpl {
     public void testMemberDeleteZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
 
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -430,7 +430,7 @@ public class TestZosDatasetImpl {
     public void testMemberDeleteBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);  
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
@@ -445,7 +445,7 @@ public class TestZosDatasetImpl {
     public void testMemberDeleteZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
@@ -458,7 +458,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testMemberExists() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         JsonObject jsonObject =  getJsonObject();
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);        
@@ -476,7 +476,7 @@ public class TestZosDatasetImpl {
     
     @Test
     public void testMemberExistsZosmfException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
 
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -486,7 +486,7 @@ public class TestZosDatasetImpl {
     
     @Test
     public void testMemberExistsBadHttpResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         JsonObject jsonObject =  getJsonObject();
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -500,7 +500,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testMemberExistsZosmfResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
@@ -513,35 +513,35 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testMemberStore() throws ZosDatasetException {
-        PowerMockito.doNothing().when(zosDatasetSpy).store(Mockito.any(), Mockito.any());
+        PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
-        zosDatasetSpy.memberStore(MEMBER_NAME, "content");
+        zosDatasetSpy.memberStoreString(MEMBER_NAME, "content");
         
-        PowerMockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetSpy).store(Mockito.any(), Mockito.any());
+        PowerMockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
         
-        zosDatasetSpy.memberStore(MEMBER_NAME, "content");
+        zosDatasetSpy.memberStoreString(MEMBER_NAME, "content");
     }
 
     @Test
     public void testMemberRetrieve() throws ZosDatasetException {
         PowerMockito.doReturn("content").when(zosDatasetSpy).retrieve(Mockito.any());
         
-        Assert.assertEquals("memberRetrieve() should return the supplied value", "content", zosDatasetSpy.memberRetrieve(MEMBER_NAME));
+        Assert.assertEquals("memberRetrieve() should return the supplied value", "content", zosDatasetSpy.memberRetrieveAsString(MEMBER_NAME));
         
         PowerMockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetSpy).retrieve(Mockito.any());
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
         
-        zosDatasetSpy.memberRetrieve(MEMBER_NAME);
+        zosDatasetSpy.memberRetrieveAsString(MEMBER_NAME);
     }
     
     @Test
     public void testMemberList() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         JsonObject jsonObject = getJsonObject();
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -566,7 +566,7 @@ public class TestZosDatasetImpl {
     
     @Test
     public void testMemberListZosmfException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
 
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -576,7 +576,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testMemberListBadHttpResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);  
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
@@ -588,7 +588,7 @@ public class TestZosDatasetImpl {
 
     @Test
     public void testMemberListZosmfResponseException() throws ZosDatasetException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
@@ -599,7 +599,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testMemberSaveToTestArchive() throws ZosFileManagerException {
         PowerMockito.doReturn("archiveLocation").when(zosDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
-        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieve(Mockito.any());
+        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsString(Mockito.any());
         zosDatasetSpy.memberSaveToTestArchive(MEMBER_NAME);
         Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeArtifact(Mockito.any(), Mockito.any());
 
@@ -728,7 +728,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testGetAttibutesAsString() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         JsonObject jsonObject = getJsonObject();
         jsonObject.addProperty("dsorg", "PO");
@@ -792,7 +792,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringNoRows() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("returnedRows", 0);
@@ -808,7 +808,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
     
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -819,7 +819,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
     
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
@@ -834,7 +834,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
@@ -846,9 +846,9 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalRetrieve() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(zosmfResponseMock.getTextContent()).thenReturn("content");
+        Mockito.when(zosmfResponseMock.getContent()).thenReturn("content");
         
         Assert.assertEquals("retrieve() should return the supplied value", "content", zosDatasetSpy.retrieve(null));
     }
@@ -856,7 +856,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalRetrieveZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
     
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
@@ -867,7 +867,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalRetrieveBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
@@ -881,7 +881,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalRetrieveBadHttpResponseException1() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
@@ -894,8 +894,8 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalRetrieveZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
-        Mockito.when(zosmfResponseMock.getTextContent()).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfResponseMock.getContent()).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
@@ -906,15 +906,15 @@ public class TestZosDatasetImpl {
     @Test
     public void testInternalStore() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NO_CONTENT);
         
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
         Mockito.verify(zosmfResponseMock, Mockito.times(1)).getStatusCode();
         
         Mockito.clearInvocations(zosmfResponseMock);        
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);        
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
         Mockito.verify(zosmfResponseMock, Mockito.times(2)).getStatusCode();        
         Mockito.clearInvocations(zosDatasetSpy);
     }
@@ -926,24 +926,24 @@ public class TestZosDatasetImpl {
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
         
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
     }
     
     @Test
     public void testInternalStoreZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
 
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
         
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
     }
     
     @Test
     public void testInternalStoreBadHttpResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
@@ -951,20 +951,20 @@ public class TestZosDatasetImpl {
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("errorString");
         
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
     }
 
     @Test
     public void testInternalStoreZosmfResponseException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
         PowerMockito.doReturn("errorString").when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Unable to write to data set \"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" on image " + IMAGE);
         
-        zosDatasetSpy.store("content", MEMBER_NAME);
+        zosDatasetSpy.storeText("content", MEMBER_NAME, true);
     }
     
     @Test

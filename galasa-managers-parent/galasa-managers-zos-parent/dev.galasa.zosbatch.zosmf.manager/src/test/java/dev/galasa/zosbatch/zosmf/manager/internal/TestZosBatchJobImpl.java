@@ -177,11 +177,11 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testSubmitJob() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockSubmit);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockSubmit);
         Mockito.when(zosmfResponseMockSubmit.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockSubmit.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
@@ -193,7 +193,7 @@ public class TestZosBatchJobImpl {
     public void testSubmitJobIZosmfRestApiProcessorSendRequestException() throws ZosBatchException, ZosmfException {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         zosBatchJob.submitJob();
     }
@@ -202,7 +202,7 @@ public class TestZosBatchJobImpl {
     public void testSubmitIZosmfResponseGetJsonContentException() throws ZosBatchException, ZosmfException {        
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockSubmit);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockSubmit);
         Mockito.when(zosmfResponseMockSubmit.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
         zosBatchJob.submitJob();
@@ -210,7 +210,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testSubmitJobNotStatusCodeCreated() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockSubmit);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockSubmit);
         Mockito.when(zosmfResponseMockSubmit.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockSubmit.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
@@ -224,7 +224,7 @@ public class TestZosBatchJobImpl {
     public void testWaitForJob() throws ZosmfException, ZosBatchManagerException {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         JsonObject responseBody = getJsonObject();
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(responseBody);
@@ -268,7 +268,7 @@ public class TestZosBatchJobImpl {
         Mockito.doNothing().when(zosBatchJobSpy).archiveJobOutput();
         Mockito.doNothing().when(zosBatchJobSpy).purge();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -288,7 +288,7 @@ public class TestZosBatchJobImpl {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
@@ -301,7 +301,7 @@ public class TestZosBatchJobImpl {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
     
         Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonArray());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -318,7 +318,7 @@ public class TestZosBatchJobImpl {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
     
         Mockito.when(zosmfResponseMockStatus.getContent()).thenThrow(new ZosmfException("exception"));
         
@@ -334,7 +334,7 @@ public class TestZosBatchJobImpl {
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
     
         Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -347,7 +347,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testCancelJob() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
@@ -360,7 +360,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testCancelZosmfException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
@@ -370,7 +370,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testCancelResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
@@ -382,7 +382,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testCancelBadHttpResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -395,7 +395,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testPurgeJob() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
@@ -408,7 +408,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testPurgeZosmfException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
@@ -418,7 +418,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testPurgeResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
@@ -430,7 +430,7 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testPurgeBadHttpResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -448,7 +448,7 @@ public class TestZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         JsonObject jsonObject = getJsonObject();
         jsonObject.remove("status");
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
@@ -493,7 +493,7 @@ public class TestZosBatchJobImpl {
    @Test
    public void testUpdateJobStatusZosmfException() throws ZosBatchException, ZosmfException {
        Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-       Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+       Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
        
        exceptionRule.expect(ZosBatchException.class);
        exceptionRule.expectMessage("exception");
@@ -504,7 +504,7 @@ public class TestZosBatchJobImpl {
   @Test
   public void testUpdateJobStatusZosmfResponseException() throws ZosBatchException, ZosmfException {
       Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-      Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+      Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
       
       Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException("exception"));
       
@@ -517,7 +517,7 @@ public class TestZosBatchJobImpl {
  @Test
  public void testUpdateJobStatusBadHttpResponseException() throws ZosBatchException, ZosmfException {
      Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-     Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+     Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
      Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
      Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -572,7 +572,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testAddOutputFileContent() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getTextContent()).thenReturn("content");
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         ZosBatchJobOutputImpl zosBatchJobOutput = new ZosBatchJobOutputImpl(FIXED_JOBNAME, FIXED_JOBID);
@@ -589,7 +589,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testAddOutputZosmfException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new ZosmfException("exception"));
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
@@ -599,7 +599,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testAddOutputZosmfResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
@@ -612,7 +612,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testAddOutputZosmfResponseException1() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getTextContent()).thenReturn("content");
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND); 
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException("exception"));
@@ -625,7 +625,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testAddOutputBadHttpResponseException() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         

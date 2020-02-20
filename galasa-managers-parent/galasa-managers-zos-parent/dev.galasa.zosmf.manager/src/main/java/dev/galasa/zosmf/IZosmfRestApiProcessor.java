@@ -23,8 +23,9 @@ public interface IZosmfRestApiProcessor {
      * @param headers the required HTTP headers (e.g. See {@link ZosmfCustomHeaders} or null
      * @param body the request body or null
      * @param validStatusCodes list HTTP status codes expected from this request. default of HTTP 200 when null 
+     * @param convert is a data conversion required
      * @return the response {@link IZosmfResponse}
      * @throws ZosBatchException
      */
-    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException;
+    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes, boolean convert) throws ZosmfException;
 }

@@ -5,6 +5,7 @@
  */
 package dev.galasa.zosmf.internal;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -12,14 +13,18 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.ZosmfException;
 
 public class ZosmfResponseImpl implements IZosmfResponse {
 
-    private HttpClientResponse<?> httpClientresponse;
     private URL requestUrl;
+    private Object content;
+    private int statusCode;
+    private String statusLine;
 
     public ZosmfResponseImpl(String url, String path) throws MalformedURLException {
         this.requestUrl = new URL(url + path); 
@@ -27,17 +32,15 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 
     @Override
     public JsonObject getJsonContent() throws ZosmfException {
-        Object content = this.httpClientresponse.getContent();
-        if (!(content instanceof String) && !(content instanceof JsonObject)) {
+        if (!(this.content instanceof String) && !(content instanceof JsonObject)) {
             throw new ZosmfException("Content not a JsonObject or String Object - " + content.getClass().getName());
         }
         return content instanceof String ? new JsonParser().parse((String) content).getAsJsonObject() : (JsonObject) content;
     }
 
     @Override
-    public JsonArray getJsonArrayContent() throws ZosmfException {
-        Object content = this.httpClientresponse.getContent();
-        if (!(content instanceof String) && !(content instanceof JsonArray)) {
+    public JsonArray getJsonArrayContent() throws ZosmfException {;
+        if (!(this.content instanceof String) && !(content instanceof JsonArray)) {
             throw new ZosmfException("Content not a JsonArray or String Object - " + content.getClass().getName());
         }
         
@@ -46,8 +49,7 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 
     @Override
     public String getTextContent() throws ZosmfException {
-        Object content = this.httpClientresponse.getContent();
-        if (!(content instanceof String)) {
+        if (!(this.content instanceof String)) {
             throw new ZosmfException("Content not a String Object - " + content.getClass().getName());
         }
         return (String) content;
@@ -55,17 +57,17 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 
     @Override
     public Object getContent() throws ZosmfException {
-        return this.httpClientresponse.getContent();
+        return this.content;
     }
 
     @Override
     public int getStatusCode() {
-        return this.httpClientresponse.getStatusCode();
+        return this.statusCode;
     }
 
     @Override
     public String getStatusLine() {
-        return this.httpClientresponse.getStatusLine();
+        return this.statusLine;
     }
 
     @Override
@@ -74,7 +76,19 @@ public class ZosmfResponseImpl implements IZosmfResponse {
     }
 
     public void setHttpClientresponse(HttpClientResponse<?> httpClientResponse) {
-        this.httpClientresponse = httpClientResponse;
+        this.content = httpClientResponse.getContent();
+        this.statusCode = httpClientResponse.getStatusCode();
+        this.statusLine = httpClientResponse.getStatusLine();
+    }
+
+    public void setHttpClientresponse(CloseableHttpResponse httpClientResponse) throws ZosmfException{
+        try{
+            this.content = httpClientResponse.getEntity().getContent();
+            this.statusCode = httpClientResponse.getStatusLine().getStatusCode();
+            this.statusLine = httpClientResponse.getStatusLine().getReasonPhrase();
+        } catch (IOException e) {
+            throw new ZosmfException("Could not retrieve response", e);
+        }
     }
 
 }

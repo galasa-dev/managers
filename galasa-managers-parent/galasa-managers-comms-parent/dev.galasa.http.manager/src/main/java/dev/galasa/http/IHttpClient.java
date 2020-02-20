@@ -417,6 +417,7 @@ public interface IHttpClient {
     Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
             throws HttpClientException;
 
+
     /**
      * Issue an HTTP PUT to the provided URL, sending the provided
      * {@link JSONObject} and receiving a {@link JSONObject} in the response.
@@ -427,6 +428,17 @@ public interface IHttpClient {
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException;
+
+    /**
+     * Issue an HTTP PUT to the provided URL, sending the provided
+     * {@link byte[]} and receiving a {@link byte[]} in the response.
+     * 
+     * @param url
+     * @param binary
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException;
 
     Object putJson(String path, String data, boolean retry) throws HttpClientException;
 
