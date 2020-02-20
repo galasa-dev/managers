@@ -299,11 +299,11 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public String retrieveAsString() throws ZosDatasetException {
+    public String retrieveAsText() throws ZosDatasetException {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
-        return memberRetrieveAsString(null);
+        return memberRetrieveAsText(null);
     }
 
     @Override
@@ -323,11 +323,11 @@ public class ZosDatasetImpl implements IZosDataset {
                     Iterator<String> memberListIterator = memberList.iterator();
                     while (memberListIterator.hasNext()) {
                         String memberName = memberListIterator.next();
-                        String archiveLocation = storeArtifact(memberRetrieveAsString(memberName), this.dsname, memberName);
+                        String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
                         logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
                     }
                 } else {
-                    String archiveLocation = storeArtifact(retrieveAsString(), this.dsname);
+                    String archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
                     logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + archiveLocation);
                 }
             }
@@ -433,7 +433,7 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberStoreString(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
+    public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
         storeText(content, memberName, true);
     }
 
@@ -443,7 +443,7 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public String memberRetrieveAsString(@NotNull String memberName) throws ZosDatasetException {
+    public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException {
         return (String) retrieve(memberName);
     }
 
@@ -506,7 +506,7 @@ public class ZosDatasetImpl implements IZosDataset {
     @Override
     public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
         try {
-            String archiveLocation = storeArtifact(memberRetrieveAsString(memberName), this.dsname, memberName);
+            String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
             logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);

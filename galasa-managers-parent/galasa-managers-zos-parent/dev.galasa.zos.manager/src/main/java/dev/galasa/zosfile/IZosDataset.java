@@ -188,7 +188,7 @@ public interface IZosDataset {
      * @return data set content
      * @throws ZosDatasetException
      */
-    public String retrieveAsString() throws ZosDatasetException;
+    public String retrieveAsText() throws ZosDatasetException;
 
     /**
      * Retrieve content of the data set
@@ -240,7 +240,7 @@ public interface IZosDataset {
      * @param content
      * @throws ZosDatasetException
      */
-    public void memberStoreString(@NotNull String memberName, @NotNull String content) throws ZosDatasetException;
+    public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException;
 
     /**
      * Write content to the partitioned data set member
@@ -256,7 +256,7 @@ public interface IZosDataset {
      * @return
      * @throws ZosDatasetException
      */
-    public String memberRetrieveAsString(@NotNull String memberName) throws ZosDatasetException;
+    public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException;
 
     /**
      * Retrieve content from the partitioned data set member

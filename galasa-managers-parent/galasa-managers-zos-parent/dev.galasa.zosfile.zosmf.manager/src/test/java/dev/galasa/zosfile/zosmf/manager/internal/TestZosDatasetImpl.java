@@ -325,15 +325,15 @@ public class TestZosDatasetImpl {
     @Test
     public void testRetrieve() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsString(Mockito.any());
+        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsText(Mockito.any());
         
-        Assert.assertEquals("retrieve() should return the supplied value", "content", zosDatasetSpy.retrieveAsString());
+        Assert.assertEquals("retrieve() should return the supplied value", "content", zosDatasetSpy.retrieveAsText());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
         
-        zosDatasetSpy.retrieveAsString();
+        zosDatasetSpy.retrieveAsText();
     }
     
     @Test
@@ -341,7 +341,7 @@ public class TestZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
         PowerMockito.doReturn("archiveLocation").when(zosDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
-        PowerMockito.doReturn("content").when(zosDatasetSpy).retrieveAsString();      
+        PowerMockito.doReturn("content").when(zosDatasetSpy).retrieveAsText();      
         zosDatasetSpy.saveToResultsArchive();
         Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeArtifact(Mockito.any(), Mockito.any());
         
@@ -515,28 +515,28 @@ public class TestZosDatasetImpl {
     public void testMemberStore() throws ZosDatasetException {
         PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
-        zosDatasetSpy.memberStoreString(MEMBER_NAME, "content");
+        zosDatasetSpy.memberStoreText(MEMBER_NAME, "content");
         
         PowerMockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
         
-        zosDatasetSpy.memberStoreString(MEMBER_NAME, "content");
+        zosDatasetSpy.memberStoreText(MEMBER_NAME, "content");
     }
 
     @Test
     public void testMemberRetrieve() throws ZosDatasetException {
         PowerMockito.doReturn("content").when(zosDatasetSpy).retrieve(Mockito.any());
         
-        Assert.assertEquals("memberRetrieve() should return the supplied value", "content", zosDatasetSpy.memberRetrieveAsString(MEMBER_NAME));
+        Assert.assertEquals("memberRetrieve() should return the supplied value", "content", zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
         
         PowerMockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetSpy).retrieve(Mockito.any());
         
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("exception");
         
-        zosDatasetSpy.memberRetrieveAsString(MEMBER_NAME);
+        zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
     }
     
     @Test
@@ -599,7 +599,7 @@ public class TestZosDatasetImpl {
     @Test
     public void testMemberSaveToTestArchive() throws ZosFileManagerException {
         PowerMockito.doReturn("archiveLocation").when(zosDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
-        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsString(Mockito.any());
+        PowerMockito.doReturn("content").when(zosDatasetSpy).memberRetrieveAsText(Mockito.any());
         zosDatasetSpy.memberSaveToTestArchive(MEMBER_NAME);
         Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeArtifact(Mockito.any(), Mockito.any());
 

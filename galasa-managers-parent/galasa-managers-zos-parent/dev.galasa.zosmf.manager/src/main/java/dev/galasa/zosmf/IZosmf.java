@@ -146,7 +146,7 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
-     * @param convertis a data conversion required
+     * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the zOSMF server response
      * @throws ZosmfException
      */

@@ -323,7 +323,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         
         String content = null;
         try {
-            content = toDataset.retrieveAsString();
+            content = toDataset.retrieveAsText();
             toDataset.delete();
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException("Unable to delete IDCAMS REPRO temporay dataset", e);
