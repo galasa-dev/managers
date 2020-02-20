@@ -278,7 +278,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             //*** Create all the Persistent Volume Claims
             logger.info("Building Persistent Volume Claim Kubernetes resources");
-            build(ResourceType.API_PVC);
+            build(ResourceType.API_PVC); //*** TODO not needed until we reinstate the test catalog
             build(ResourceType.PROMETHEUS_PVC);
             build(ResourceType.GRAFANA_PVC);
 
@@ -286,6 +286,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             logger.info("Building Config Maps Kubernetes resources");
             build(ResourceType.CONFIG_CONFIGMAP);     
             build(ResourceType.BOOTSTRAP_CONFIGMAP);     
+            build(ResourceType.TESTCATALOG_CONFIGMAP);     
             build(ResourceType.PROMETHEUS_CONFIGMAP);     
             build(ResourceType.GRAFANA_CONFIGMAP);     
             build(ResourceType.GRAFANA_DASHBOARD_CONFIGMAP);     
@@ -450,9 +451,9 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         Map<String, Object> yaml = bootstrapResource.getYaml();
         @SuppressWarnings("unchecked")
         Map<String, Object> data = (Map<String, Object>) yaml.get("data");
-        String bootstrap = (String) data.get("dev.galasa.bootstrap.cfg");
+        String bootstrap = (String) data.get("bootstrap.properties");
         bootstrap = bootstrap.replace("${cpsURI}", this.cpsUri.toString());
-        data.put("dev.galasa.bootstrap.cfg", bootstrap);  
+        data.put("bootstrap.properties", bootstrap);  
     }
 
     private void generateKnownUrls() throws GalasaEcosystemManagerException {
@@ -467,7 +468,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             this.rasUrl = getHttpUrl(ResourceType.RAS_EXTERNAL_SERVICE, 5984);
             this.rasUri = new URI("couchdb:" + this.rasUrl.toString());
 
-            this.apiUrl = getHttpUrl(ResourceType.API_EXTERNAL_SERVICE, 8181);
+            this.apiUrl = getHttpUrl(ResourceType.API_EXTERNAL_SERVICE, 8080);
 
             this.metricsMetricsUrl = getHttpUrl(ResourceType.METRICS_EXTERNAL_SERVICE, 9010);
             this.metricsHealthUrl = getHttpUrl(ResourceType.METRICS_HEALTH_SERVICE, 9011);
@@ -723,6 +724,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         RAS_STATEFULSET("StatefulSet", "ras", IStatefulSet.class),
 
         BOOTSTRAP_CONFIGMAP("ConfigMap", "bootstrap-file", IConfigMap.class),
+        TESTCATALOG_CONFIGMAP("ConfigMap", "testcatalog-file", IConfigMap.class),
         API_PVC("PersistentVolumeClaim", "pvc-api", IPersistentVolumeClaim.class),
         API_EXTERNAL_SERVICE("Service", "api-external", IService.class),
         API_INTERNAL_SERVICE("Service", "api", IService.class),
@@ -1108,7 +1110,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             
             String gn = URLEncoder.encode(groupName, "utf-8");
             
-            HttpClientResponse<JsonObject> response = apiClient.postJson("run/" + gn, request);
+            HttpClientResponse<JsonObject> response = apiClient.postJson("runs/" + gn, request);
             
             if (response.getStatusCode() != 200) {
                 throw new GalasaEcosystemManagerException("Submit failed, status code " + response.getStatusCode());

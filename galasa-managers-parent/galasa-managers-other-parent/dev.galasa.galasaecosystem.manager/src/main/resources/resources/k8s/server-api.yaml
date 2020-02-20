@@ -15,36 +15,65 @@ spec:
       labels:
         app: api
     spec:
-      terminationGracePeriodSeconds: 5
       nodeSelector:
         beta.kubernetes.io/arch: amd64
         platform: hdc
+      initContainers:
+      - name: init-chown-data
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["chown", "-R", "1000", "/data"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
+          subPath: ""
       containers:
-      - name: api
-        image: docker.galasa.dev/galasa-master-api-amd64:${dockerVersion}
+      - name: resource-monitor
+        image: docker.galasa.dev/galasa-boot-embedded-amd64:${dockerVersion}
         imagePullPolicy: Always
+        command: ["java"]
+        args: 
+        - -jar
+        - boot.jar
+        - --obr
+        - file:galasa.obr
+        - --trace
+        - --api
+        - --bootstrap
+        - file:/bootstrap.properties
         ports:
-        - containerPort: 8181
+        - containerPort: 9010
+          name: metrics
+        - containerPort: 9011
+          name: health
+        - containerPort: 8080
           name: http
         livenessProbe:
           httpGet:
             path: /health
-            port: 8181
-          initialDelaySeconds: 20
-          periodSeconds: 30
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 60
         volumeMounts:
         - name: bootstrap
-          mountPath: /galasa/etc/dev.galasa.bootstrap.cfg
-          subPath: dev.galasa.bootstrap.cfg
-        - name: datadir
-          mountPath: /galasa/data/galasa
+          mountPath: /bootstrap.properties
+          subPath: bootstrap.properties
+        - name: testcatalog
+          mountPath: /galasa/load/dev.galasa.testcatalog.cfg
+          subPath: dev.galasa.testcatalog.cfg
+        - name: data
+          mountPath: /galasa/testcatalog         
       volumes:
       - name: bootstrap
         configMap:
           name: bootstrap-file
-      - name: datadir
+      - name: testcatalog
+        configMap:
+          name: testcatalog-file
+      - name: data
         persistentVolumeClaim:
           claimName: pvc-api
+
 ---
 apiVersion: v1
 kind: Service
@@ -54,8 +83,14 @@ metadata:
     app: api
 spec:
   ports:
-  - port: 8181
+  - port: 8080
     name: http
-    targetPort: 8181
+    targetPort: 8080
+  - port: 9010
+    name: metrics
+    targetPort: 9010
+  - port: 9011
+    name: health
+    targetPort: 9011
   selector:
     app: api
