@@ -35,14 +35,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import dev.galasa.api.run.Run;
+import dev.galasa.api.runs.ScheduleStatus;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
@@ -80,6 +84,8 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     private final HashMap<ResourceType, Resource> resources = new HashMap<>();
 
     private final Yaml                       yaml = new Yaml();
+
+    private final Gson                       gson = GalasaGsonBuilder.build();
 
     private String                           dockerVersion;
     private String                           mavenVersion;
@@ -1107,11 +1113,11 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
         try {
             IHttpClient apiClient = getApiHttpClient();
-            
+
             String gn = URLEncoder.encode(groupName, "utf-8");
-            
+
             HttpClientResponse<JsonObject> response = apiClient.postJson("runs/" + gn, request);
-            
+
             if (response.getStatusCode() != 200) {
                 throw new GalasaEcosystemManagerException("Submit failed, status code " + response.getStatusCode());
             }
@@ -1119,21 +1125,21 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             throw new GalasaEcosystemManagerException("Failed to submit test", e);
         }
     }
-    
+
     @Override
     public JsonObject getSubmittedRuns(String groupName) throws GalasaEcosystemManagerException {
-        
+
         try {
             IHttpClient apiClient = getApiHttpClient();
-            
+
             String gn = URLEncoder.encode(groupName, "utf-8");
-            
-            HttpClientResponse<JsonObject> response = apiClient.getJson("run/" + gn);
-            
+
+            HttpClientResponse<JsonObject> response = apiClient.getJson("runs/" + gn);
+
             if (response.getStatusCode() != 200) {
                 throw new GalasaEcosystemManagerException("get submitted runs failed, status code " + response.getStatusCode());
             }
-            
+
             return response.getContent();
         } catch(KubernetesManagerException | UnsupportedEncodingException | HttpClientException e) {
             throw new GalasaEcosystemManagerException("Failed to get submitted runs", e);
@@ -1143,22 +1149,43 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     @Override
     public JsonObject waitForGroupNames(String groupName, long timeout) throws GalasaEcosystemManagerException {
         logger.debug("Waiting for Run Group " + groupName + " to finish");
-        
+
+        HashMap<String, String> previousStatus = new HashMap<>();
+
         JsonObject response = null;
         Instant expire = Instant.now().plus(timeout, ChronoUnit.MINUTES);
         while(Instant.now().isBefore(expire)) {
             response = getSubmittedRuns(groupName);
-            
-            String status = response.get("scheduleStatus").getAsString();
-            
-            if ("FINISHED_RUN".equals(status)) {
+
+            ScheduleStatus schedule = this.gson.fromJson(response, ScheduleStatus.class);
+
+            if (schedule.getRuns() != null) {
+                for(Run run : schedule.getRuns()) {
+                    String status = run.getStatus();
+                    if (status != null) {
+                        String oldStatus = previousStatus.get(run.getName());
+                        if (!status.equals(oldStatus)) {
+                            logger.info("Run " + run.getName() + " is " + run.getStatus());
+                            previousStatus.put(run.getName(), status);
+                        }
+                    }
+                }
+            }
+
+            if (schedule.isComplete()) {
                 return response;
             }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new GalasaEcosystemManagerException("Interrupted");
+            }
         }
-        
+
         throw new GalasaEcosystemManagerException("Run Group " + groupName + " did not finish in time:-\n" + response);
     }
-        
+
 
 
 }
