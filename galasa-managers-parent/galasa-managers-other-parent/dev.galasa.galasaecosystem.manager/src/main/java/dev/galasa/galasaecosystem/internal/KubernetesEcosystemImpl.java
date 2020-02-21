@@ -50,6 +50,7 @@ import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
+import dev.galasa.galasaecosystem.internal.properties.DockerRegistry;
 import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
 import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
 import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
@@ -88,6 +89,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     private final Gson                       gson = GalasaGsonBuilder.build();
 
     private String                           dockerVersion;
+    private String                           dockerRegistry;
     private String                           mavenVersion;
     private URL                              mavenRepository;
     private final HashMap<String, String>    yamlReplacements = new HashMap<>();
@@ -134,12 +136,14 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         this.mavenVersion = MavenVersion.get();
         this.mavenRepository = MavenRepo.get();
         this.dockerVersion = DockerVersion.get();
+        this.dockerRegistry = DockerRegistry.get();
 
         ArrayList<Map<String, Object>>   managerYaml = new ArrayList<>();
         ArrayList<Map<String, Object>>   testYaml = new ArrayList<>();
 
         //*** Setup the blanket replacements
         yamlReplacements.put("${dockerVersion}", dockerVersion);
+        yamlReplacements.put("${dockerRegistry}", dockerRegistry);
 
         //*** Load all the yaml files ready for searching and processing
         try {

@@ -25,7 +25,8 @@ pipeline {
          steps {
             script {
                mvnProfile        = 'dev'
-               mvnGoal           = 'deploy sonar:sonar'
+//               mvnGoal           = 'deploy sonar:sonar'
+               mvnGoal           = 'deploy'
             }
          }
       }
