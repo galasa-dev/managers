@@ -1,0 +1,45 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
+package dev.galasa.galasaecosystem.internal.properties;
+
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.cps.CpsProperties;
+import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
+
+
+/**
+ * Docker Registry
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name galasaecosystem.docker.registry
+ * 
+ * @galasa.description The registry that contains the Docker images 
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default docker.galasa.dev
+ * 
+ * @galasa.valid_values a valid hostname
+ * 
+ * @galasa.examples 
+ * <code>galasaecosystem.docker.version=docker.galasa.dev</code>
+ * 
+ */
+public class DockerRegistry extends CpsProperties {
+
+    public static String get() throws GalasaEcosystemManagerException {
+        try {
+            String version = getStringNulled(GalasaEcosystemPropertiesSingleton.cps(), "docker", "registry") ;
+            if (version == null) {
+                return "docker.galasa.dev";
+            }
+            return version;
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new GalasaEcosystemManagerException("Problem retrieving the docker registry", e);
+        }
+    }
+}
