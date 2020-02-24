@@ -433,12 +433,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                         logger.debug("Bootstrap server has started");
                         return;
                     }
-                } catch(HttpClientException e) {
-                    Throwable t = e.getCause();
-                    if (!t.getMessage().contains("Connection refused")) {
-                        throw e;
-                    }
-                }
+                } catch(HttpClientException e) { } //   ignore http errors
 
                 if (checkMessage.isBefore(Instant.now())) {
                     logger.debug("Still waiting for bootstrap to start");
@@ -450,7 +445,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             throw new GalasaEcosystemManagerException("The bootstrap server did not start in time");
 
-        } catch(InterruptedException | KubernetesManagerException | HttpClientException e) {
+        } catch(InterruptedException | KubernetesManagerException e) {
             throw new GalasaEcosystemManagerException("Problem waiting for the bootstrap to become availabe", e);
         }
 
@@ -570,7 +565,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient();
+            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient(60);
             this.etcdHttpClient.setURI(this.cpsUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -585,7 +580,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.apiHttpClient = this.manager.getHttpManager().newHttpClient();
+            this.apiHttpClient = this.manager.getHttpManager().newHttpClient(60);
             this.apiHttpClient.setURI(this.apiUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
