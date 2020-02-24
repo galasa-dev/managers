@@ -565,7 +565,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient(60);
+            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient(30000);
             this.etcdHttpClient.setURI(this.cpsUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -580,7 +580,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.apiHttpClient = this.manager.getHttpManager().newHttpClient(60);
+            this.apiHttpClient = this.manager.getHttpManager().newHttpClient(30000);
             this.apiHttpClient.setURI(this.apiUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
