@@ -74,7 +74,7 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
 
     @Override
     public @NotNull IHttpClient newHttpClient() {
-        IHttpClient client = new HttpClientImpl(180, logger);
+        IHttpClient client = new HttpClientImpl(180000, logger);
         instantiatedClients.add(client);
         return client;
     }
