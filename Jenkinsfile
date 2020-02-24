@@ -30,18 +30,18 @@ pipeline {
       stage('Managers Parent') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Core Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-core-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -61,14 +61,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Comms Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-comms-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -84,14 +84,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Logging Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-logging-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -103,14 +103,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers zOS Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-zos-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -162,14 +162,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Djarsigner.skip=${env.SIGN_SKIP} -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Unix Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-unix-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -181,14 +181,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Cloud Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-cloud-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -212,14 +212,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Managers Other Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent/galasa-managers-other-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
 
@@ -231,14 +231,14 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
       stage('Remaining Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
+               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
                      sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
    
@@ -258,7 +258,7 @@ pipeline {
                         sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
                      }
                   }
-               }
+               } }
             }
          }
       }
