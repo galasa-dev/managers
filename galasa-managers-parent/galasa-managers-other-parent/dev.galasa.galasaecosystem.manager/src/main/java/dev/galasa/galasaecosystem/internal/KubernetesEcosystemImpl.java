@@ -1152,7 +1152,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         HashMap<String, String> previousStatus = new HashMap<>();
 
         JsonObject response = null;
-        Instant expire = Instant.now().plus(timeout, ChronoUnit.MINUTES);
+        Instant expire = Instant.now().plus(timeout, ChronoUnit.SECONDS);
         while(Instant.now().isBefore(expire)) {
             response = getSubmittedRuns(groupName);
 
