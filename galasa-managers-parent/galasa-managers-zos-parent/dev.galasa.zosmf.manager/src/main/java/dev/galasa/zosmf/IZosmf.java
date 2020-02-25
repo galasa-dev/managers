@@ -113,7 +113,11 @@ public interface IZosmf {
         /**
          * {@code X-IBM-Intrdr-Lrecl}
          */
-        X_IBM_INTRDR_LRECL("X-IBM-Intrdr-Lrecl");
+        X_IBM_INTRDR_LRECL("X-IBM-Intrdr-Lrecl"),
+        /**
+         * {@code X-CSRF-ZOSMF-HEADER}
+         */
+        X_CSRF_ZOSMF_HEADER("X-CSRF-ZOSMF-HEADER");
         
         private String header;
         
