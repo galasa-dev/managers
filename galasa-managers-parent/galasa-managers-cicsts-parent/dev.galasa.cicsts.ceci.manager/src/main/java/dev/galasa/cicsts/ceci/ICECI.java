@@ -59,10 +59,10 @@ public interface ICECI {
      * Set a double word CECI variable. 
      * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
-     * @param value a number representing a double word (8 bytes) with a decimal integer value from -9223372036854775808 to +9223372036854775807
+     * @param value a long representing a double word (8 bytes) with a decimal integer value from -9223372036854775808 to +9223372036854775807
      * @throws CECIException
      */
-    public void setVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull double value) throws CECIException;
+    public void setVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CECIException;
     
     /**
      * Set a full word CECI variable.
