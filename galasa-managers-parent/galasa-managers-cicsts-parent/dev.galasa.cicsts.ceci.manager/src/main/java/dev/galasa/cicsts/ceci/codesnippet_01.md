@@ -24,8 +24,8 @@ The following snippet shows the code required to issue the a basic CECI command.
 
 ```
 String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('About to execute Galasa Test...')";
-IExecInterfaceBlock eib = ceciTerminal.issueCommand(terminal, ceciCommand);
-if (!eib.getResponse().equals("NORMAL") {
+ICECIResponse resp = ceciTerminal.issueCommand(terminal, ceciCommand);
+if (!resp.isNormal() {
     ...
 }
 ```
@@ -38,8 +38,8 @@ Create a CONTAINER on a CHANNEL, EXEC CICS LINK to a PROGRAM with the CHANNEL an
 Create the input CONATINER called "MY-CONTAINER-IN" on CHANNEL "MY-CHANNEL" with the data "My_Contaier_Data". The CONTAINER will default to TEXT with no code page conversion:
 
 ```
-IExecInterfaceBlock eib = ceci.putContainer(ceciTerminal, "MY-CHANNEL", "MY-CONTAINER-IN", "My_Contaier_Data", null, null, null);
-if (!eib.getResponse().equals("NORMAL")) {
+ICECIResponse resp = ceci.putContainer(ceciTerminal, "MY-CHANNEL", "MY-CONTAINER-IN", "My_Contaier_Data", null, null, null);
+if (!resp.isNormal()) {
     ...
 }
 ```
@@ -47,7 +47,7 @@ Link to PROGRAM "MYPROG" with the CHANNEL "MY-CHANNEL":
 
 ```
 eib = ceci.linkProgramWithChannel(ceciTerminal, "MYPROG", "MY_CHANNEL", null, null, false);
-if (!eib.getResponse().equals("NORMAL")) {
+if (!resp.isNormal()) {
     ...
 }
 ```
@@ -55,7 +55,7 @@ Get the content of the CONTAINER "MY-CONTAINER-OUT" from CHANNEL "MY-CHANNEL" in
 
 ```
 eib = ceci.getContainer(ceciTerminal, "MY-CHANNEL", "MY-CONTAINER-OUT", "&DATAOUT", null, null);
-if (!eib.getResponse().equals("NORMAL")) {
+if (!resp.isNormal()) {
     ...
 }
 String dataOut = ceci.getVariable(ceciTerminal, "&DATAOUT");
@@ -76,8 +76,8 @@ Write the binary variable to a TS QUEUE called "MYQUEUE":
 
 ```
 String command = "WRITEQ TS QUEUE('MYQUEUE') FROM(&BINDATA)";
-IExecInterfaceBlock eib = ceci.issueCommand(ceciTerminal, command);
-if (!eib.getResponse().equals("NORMAL")) {
+ICECIResponse resp = ceci.issueCommand(ceciTerminal, command);
+if (!resp.isNormal()) {
     ...
 }
 
