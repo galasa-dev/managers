@@ -4,7 +4,7 @@
  * (c) Copyright IBM Corp. 2020.
  */
 /**
- * zOS Console Manager
+ * z/OS Console Manager
  * 
  * @galasa.manager zOS Console
  * 
@@ -12,9 +12,9 @@
  * 
  * @galasa.description
  * 
- * This Manager enables Galasa tests to issue console commands on a zOS image.
+ * This Manager enables Galasa tests to issue console commands on a z/OS image.
  * <br><br>
- * The manager is implemented using the zOS/MF Manager by default.
+ * The Manager is implemented using the z/OS MF Manager by default.
  * <br><br>
  */
 package dev.galasa.zosconsole;
