@@ -4,7 +4,7 @@
  * (c) Copyright IBM Corp. 2020.
  */
 /**
- * zOS Manager
+ * z/OS Manager
  * 
  * @galasa.manager zOS
  * 
@@ -12,6 +12,6 @@
  * 
  * @galasa.description
  * 
- * This Manager provides Galasa tests with access to a zOS image.
+ * This Manager provides Galasa tests with access to a z/OS image.
  */
 package dev.galasa.zos;

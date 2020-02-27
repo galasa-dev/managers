@@ -4,7 +4,7 @@
  * (c) Copyright IBM Corp. 2020.
  */
 /**
- * zOS Batch Manager
+ * z/OS Batch Manager
  * 
  * @galasa.manager zOS Batch
  * 
@@ -12,9 +12,9 @@
  * 
  * @galasa.description
  * 
- * This Manager enables Galasa tests to submit Batch Jobs to run on a zOS image.
+ * This Manager enables Galasa tests to submit batch jobs to run on a z/OS image.
  * <br><br>
- * The manager is implemented using the zOS/MF Manager by default.
+ * The Manager is implemented using the z/OS MF Manager by default.
  * <br><br>
  */
 package dev.galasa.zosbatch;
