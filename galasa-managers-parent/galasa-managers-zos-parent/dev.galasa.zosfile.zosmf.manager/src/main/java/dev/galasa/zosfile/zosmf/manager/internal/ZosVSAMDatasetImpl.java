@@ -323,7 +323,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         
         String content = null;
         try {
-            content = toDataset.retrieve();
+            content = toDataset.retrieveAsText();
             toDataset.delete();
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException("Unable to delete IDCAMS REPRO temporay dataset", e);
@@ -886,7 +886,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosVSAMDatasetException(e);
         }

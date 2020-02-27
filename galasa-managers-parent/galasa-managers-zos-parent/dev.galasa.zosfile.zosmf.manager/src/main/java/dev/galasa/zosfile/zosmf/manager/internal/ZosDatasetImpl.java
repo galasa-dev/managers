@@ -5,7 +5,9 @@
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -56,6 +58,7 @@ public class ZosDatasetImpl implements IZosDataset {
     private boolean datasetCreated = false;
     private boolean retainToTestEnd = false;
     private boolean temporary = false;
+    private boolean convert = true;
     
     private Collection<String> datasetMembers;
     private String memberStart = null;
@@ -157,7 +160,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.POST_JSON, urlPath, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -215,7 +218,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, null, null, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -252,7 +255,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -292,15 +295,23 @@ public class ZosDatasetImpl implements IZosDataset {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
-        store(content, null);
+        storeText(content, null, this.convert);
     }
 
     @Override
-    public String retrieve() throws ZosDatasetException {
+    public String retrieveAsText() throws ZosDatasetException {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
-        return retrieve(null);
+        return memberRetrieveAsText(null);
+    }
+
+    @Override
+    public byte[] retrieveAsBinary() throws ZosDatasetException {
+        if (isPDS()) {
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
+        }
+        return memberRetrieveAsBinary(null);
     }
     
     @Override
@@ -312,11 +323,11 @@ public class ZosDatasetImpl implements IZosDataset {
                     Iterator<String> memberListIterator = memberList.iterator();
                     while (memberListIterator.hasNext()) {
                         String memberName = memberListIterator.next();
-                        String archiveLocation = storeArtifact(retrieve(memberName), this.dsname, memberName);
+                        String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
                         logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
                     }
                 } else {
-                    String archiveLocation = storeArtifact(retrieve(), this.dsname);
+                    String archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
                     logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + archiveLocation);
                 }
             }
@@ -332,7 +343,7 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberCreate(@NotNull String memberName) throws ZosDatasetException {
-        store("", memberName);
+        storeText("", memberName, this.convert);
     }
 
     @Override
@@ -351,7 +362,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, null, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -386,7 +397,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, null, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -422,13 +433,36 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberStore(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
-        store(content, memberName);
+    public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
+        storeText(content, memberName, true);
     }
 
     @Override
-    public String memberRetrieve(@NotNull String memberName) throws ZosDatasetException {
-        return retrieve(memberName);
+    public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException {
+        storeBinary(content, memberName, false);
+    }
+
+    @Override
+    public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException {
+        return (String) retrieve(memberName);
+    }
+
+    @Override
+    public byte[] memberRetrieveAsBinary(@NotNull String memberName) throws ZosDatasetException {
+        InputStream in = (InputStream) retrieve(memberName);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[2048];
+        int count;
+
+        try {
+            while ((count = in.read(buffer)) != -1) {
+                out.write(buffer, 0, count);
+            }
+        } catch(IOException e){
+            throw new ZosDatasetException("Failed to collect binary", e);
+        }
+
+        return out.toByteArray();
     }
 
     @Override
@@ -442,7 +476,7 @@ public class ZosDatasetImpl implements IZosDataset {
             IZosmfResponse response;
             try {
                 response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, null, null,
-                        new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                        new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
             } catch (ZosmfException e) {
                 throw new ZosDatasetException(e);
             }
@@ -472,7 +506,7 @@ public class ZosDatasetImpl implements IZosDataset {
     @Override
     public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
         try {
-            String archiveLocation = storeArtifact(memberRetrieve(memberName), this.dsname, memberName);
+            String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
             logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);
@@ -481,7 +515,11 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setDataType(DatasetDataType dataType) {
-        logger.info("Data type set to " + dataType.toString());
+        String dType = dataType.toString();
+        if ("binary".equals(dType)){
+            this.convert = false;
+        }
+        logger.info("Data type set to " + dType);
         this.dataType = dataType;
     }
 
@@ -649,7 +687,7 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }
@@ -726,22 +764,27 @@ public class ZosDatasetImpl implements IZosDataset {
         return attributes.toString();
     }
     
-    protected String retrieve(String memberName) throws ZosDatasetException {
+    protected Object retrieve(String memberName) throws ZosDatasetException {
         Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+        boolean convert = true;
+        String dataType = getDataType().toString();
+        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), dataType);
         String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
         IZosmfResponse response;
+        if ("binary".equals(dataType)) {
+            convert = false;
+        }
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }        
-    
-        String content;
+  
+        Object content;
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             try {
-                content = response.getTextContent();
+                content = response.getContent();
             } catch (ZosmfException e) {
                 throw new ZosDatasetException("Unable to retrieve content of data set " + quoted(joinDSN(memberName)) + logOnImage());
             }
@@ -763,7 +806,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return content;
     }
 
-    protected void store(String content, String memberName) throws ZosDatasetException {
+    protected void storeText(String content, String memberName, boolean convert) throws ZosDatasetException {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -774,7 +817,40 @@ public class ZosDatasetImpl implements IZosDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, urlPath, headers, content, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), convert);
+        } catch (ZosmfException e) {
+            throw new ZosDatasetException(e);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
+            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
+            JsonObject responseBody;
+            try {
+                responseBody = response.getJsonContent();
+            } catch (ZosmfException e) {
+                throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage());
+            }
+            logger.trace(responseBody);
+            String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+    
+        logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
+    }
+
+    protected void storeBinary(byte[] content, String memberName, boolean convert) throws ZosDatasetException {
+        if (!exists()) {
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+    
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
+        IZosmfResponse response;
+        try {
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_BINARY, urlPath, headers, content, 
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
         }

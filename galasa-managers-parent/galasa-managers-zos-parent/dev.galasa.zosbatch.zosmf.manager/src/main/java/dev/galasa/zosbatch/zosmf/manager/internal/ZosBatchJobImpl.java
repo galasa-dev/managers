@@ -112,9 +112,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
         headers.put(ZosmfCustomHeaders.X_IBM_INTRDR_LRECL.toString(), String.valueOf(this.intdrLrecl));
         headers.put(ZosmfCustomHeaders.X_IBM_INTRDR_RECFM.toString(), this.intdrRecfm);
+        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }
@@ -202,9 +203,11 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         // First, get a list of spool files
         this.jobOutput = new ZosBatchJobOutputImpl(this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + this.jobname.getName() + SLASH + this.jobid + "/files";
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, this.jobFilesPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }
@@ -260,15 +263,16 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     protected void cancel(boolean purge) throws ZosBatchException {
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
+        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
             if (purge) {
-                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, this.jobPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
             } else {
                 JsonObject requestBody = new JsonObject();
                 requestBody.addProperty("request", "cancel");
                 requestBody.addProperty("version", "2.0");
-                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, this.jobPath, headers, requestBody, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, this.jobPath, headers, requestBody, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
             }
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
@@ -335,9 +339,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
         }
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
+        
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }
@@ -372,9 +379,11 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
     protected void addOutputFileContent(JsonObject responseBody, String path) throws ZosBatchException {
     
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, path, null, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, path, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }

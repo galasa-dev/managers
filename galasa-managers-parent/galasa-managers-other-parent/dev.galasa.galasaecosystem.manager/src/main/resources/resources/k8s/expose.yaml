@@ -6,9 +6,9 @@ spec:
   type: NodePort
   ports:
   - name: http
-    port: 8181
+    port: 8080
     protocol: TCP
-    targetPort: 8181
+    targetPort: 8080
   selector:
     app: api
 
