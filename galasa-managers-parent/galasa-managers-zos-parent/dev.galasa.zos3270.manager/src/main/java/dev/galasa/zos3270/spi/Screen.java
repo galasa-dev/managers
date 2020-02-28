@@ -82,17 +82,19 @@ public class Screen {
 
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
-    public Screen() throws InterruptedException {
+    public Screen() throws InterruptedException, Zos3270Exception {
         this(80, 24, null);
     }
 
-    public Screen(int columns, int rows, Network network) throws InterruptedException {
+    public Screen(int columns, int rows, Network network) throws InterruptedException, Zos3270Exception {
         this.network = network;
         this.columns = columns;
         this.rows = rows;
         this.screenSize = this.columns * this.rows;
         this.buffer = new IBufferHolder[this.screenSize];
-        lockKeyboard();
+        if(!lockKeyboard()){
+            throw new Zos3270Exception("Unable to lock keyboard when constructing Screen ");
+        }
     }
 
     /**
@@ -112,10 +114,9 @@ public class Screen {
             }else{
                 logger.trace("Failed to lock keyboard within: " + screenMaxWait + " milliseconds");
                 return false;
-            }
-                
-            
+            } 
         }
+        return true;
     }
 
     private synchronized void unlockKeyboard() {
