@@ -78,6 +78,8 @@ public class Screen {
     private Semaphore                               keyboardLock    = new Semaphore(1, true);
     private boolean                                 keyboardLockSet = false;
 
+    private final int                               screenMaxWait = 10000;
+
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
     public Screen() throws InterruptedException {
@@ -93,19 +95,35 @@ public class Screen {
         lockKeyboard();
     }
 
-    private synchronized void lockKeyboard() throws InterruptedException {
+    /**
+     * Attempts to acquire the mutex that represents the keyboard lock and waits for
+     * screenMaxWait milliseconds
+     * @return
+     * true if we were able to acquire the keyboard mutex, otherwise false;
+     * @throws InterruptedException
+     */
+    private synchronized boolean lockKeyboard() throws InterruptedException {
         if (!keyboardLockSet) {
-            logger.trace("Locking keyboard");
-            keyboardLockSet = true;
-            keyboardLock.acquire();
+            logger.trace("Attempting to locking keyboard...");
+            if(keyboardLock.tryAcquire(screenMaxWait, TimeUnit.MILLISECONDS)){
+                keyboardLockSet = true;
+                logger.trace("Keyboard locked");
+                return true;
+            }else{
+                logger.trace("Failed to lock keyboard within: " + screenMaxWait + " milliseconds");
+                return false;
+            }
+                
+            
         }
     }
 
     private synchronized void unlockKeyboard() {
         if (keyboardLockSet) {
-            logger.trace("Unlocking keyboard");
+            logger.trace("Attempting to unlock keyboard...");
             keyboardLockSet = false;
             keyboardLock.release();
+            logger.trace("Keyboard unlocked");
         }
     }
 
