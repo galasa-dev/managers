@@ -31,11 +31,11 @@ public class Terminal implements ITerminal {
 
     private Log           logger          = LogFactory.getLog(getClass());
 
-    public Terminal(String host, int port) throws InterruptedException {
+    public Terminal(String host, int port) throws InterruptedException, Zos3270Exception {
         this(host, port, false);
     }
 
-    public Terminal(String host, int port, boolean ssl) throws InterruptedException {
+    public Terminal(String host, int port, boolean ssl) throws InterruptedException, Zos3270Exception {
         network = new Network(host, port, ssl);
         screen = new Screen(80, 24, this.network);
     }
