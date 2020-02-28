@@ -34,6 +34,7 @@ import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
+import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.common.screens.FieldContents;
 import dev.galasa.zos3270.common.screens.TerminalField;
@@ -65,7 +66,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean                        logConsoleTerminals;
 
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework)
-            throws Zos3270ManagerException, InterruptedException {
+            throws Zos3270ManagerException, Zos3270Exception, InterruptedException {
         super(host, port, tls);
         this.terminalId = id;
         this.runId = framework.getTestRunName();
