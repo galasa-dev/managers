@@ -166,25 +166,6 @@ pipeline {
             }
          }
       }
-      stage('Managers CICS/TS Maven') {
-         steps {
-            withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withSonarQubeEnv('GalasaSonarQube') {
-                  dir('galasa-managers-parent/galasa-managers-cicsts-parent') {
-                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
-
-                     dir('dev.galasa.cicsts.manager') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
-                     }
-
-                     dir('dev.galasa.cicsts.ceci.manager') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=false -Dgpg.passphrase=$GPG  -P ${mvnProfile} -B -e -fae --non-recursive ${mvnGoal}"
-                     }
-                  }
-               }
-            }
-         }
-      }
       stage('Managers Unix Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
