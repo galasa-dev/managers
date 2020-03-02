@@ -4,17 +4,17 @@
  * (c) Copyright IBM Corp. 2020.
  */
 /**
- * zOS File Manager
+ * z/OS File Manager
  * 
- * @galasa.manager zOS file
+ * @galasa.manager z/OS file
  * 
  * @galasa.release.state BETA - This Manager is feature complete but may contain known or unknown bugs.
  * 
  * @galasa.description
  * 
- * This Manager enables Galasa tests to manage data sets and UNIIX files on a zOS image.
+ * This Manager enables Galasa tests to manage data sets and UNIX files on a z/OS image.
  * <br><br>
- * The manager is implemented using the zOS/MF Manager by default.
+ * The Manager is implemented using the z/OS MF Manager by default.
  * <br><br>
  */
 package dev.galasa.zosfile;

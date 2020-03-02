@@ -13,14 +13,14 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * zOS Batch Manager
+ * z/OS Batch Manager
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}ZosBatch</code> annotation will request the zOS Batch Manager to provide a
- * zOS Batch instance associated with a zOS image. 
- * The test can request multiple zOS Batch instances with the default being associated with the <b>primary</b> zOS image.<br>
- * At test end, the manager will store job output with the test results archive and remove jobs from the JES queue. 
+ * @galasa.description The <code>{@literal @}ZosBatch</code> annotation requests the z/OS Batch Manager to provide a
+ * z/OS Batch instance associated with a z/OS image. 
+ * The test can request multiple z/OS Batch instances, with the default being associated with the <b>primary</b> zOS image.<br>
+ * At test end, the Manager stores the job output with the test results archive and removes jobs from the JES queue. 
  * 
  * @galasa.examples 
  * {@literal @}ZosImage(imageTag="A")<br>
@@ -41,7 +41,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 public @interface ZosBatch {
     
     /**
-     * The <code>imageTag</code> is used to identify the zOS image.
+     * The <code>imageTag</code> is used to identify the z/OS image.
      */
     String imageTag() default "primary";
 }
