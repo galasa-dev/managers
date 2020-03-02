@@ -23,7 +23,8 @@
 		<module>galasa-managers-core-parent</module>
 		<module>galasa-managers-comms-parent</module>
 		<module>galasa-managers-cloud-parent</module>
-		<module>galasa-managers-zos-parent</module>
+		<module>galasa-managers-zos-parent</module>		
+        <module>galasa-managers-cicsts-parent</module>
 		<module>galasa-managers-unix-parent</module>
 		<module>galasa-managers-logging-parent</module>
 		<module>galasa-managers-other-parent</module>
