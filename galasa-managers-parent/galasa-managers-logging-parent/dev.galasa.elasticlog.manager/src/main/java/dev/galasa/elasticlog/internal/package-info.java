@@ -8,11 +8,11 @@
  * 
  * @galasa.description
  * 
- * This Manager exports test results to an elastic search endpoint, where the data can be visualized on a Kabana dashboard. 
+ * This Manager exports test results to an elastic search endpoint, where the data can be visualized on a Kibana dashboard. 
  * Other Managers can contribute to the information that is exported to Elastic.
  * <br><br>
  * As an absolute minimum, the CPS properties <code>elasticlog.endpoint.address</code> and <code>elasticlog.endpoint.index</code> 
- * must be provided. By default, this manager will only log automated tests, to enable logging from locally run tests, 
+ * must be provided. By default, this Manager only logs automated tests. To enable logging from locally run tests, 
  * <code>elasticlog.local.run.log</code> must be set to true. The bundle must also be loaded by the framework by using 
  * <code>framework.extra.bundles=dev.galasa.elasticlog.manager</code> in bootstrap.properties.
  * <br><br>
