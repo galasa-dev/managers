@@ -57,6 +57,9 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
 
     @Override
     public String getParams() {
+        if(parameters.isEmpty()){
+            return "";
+        }
         StringBuilder builder = new StringBuilder();
         int lineLength = 13; 
 
