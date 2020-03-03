@@ -8,7 +8,7 @@
  * 
  * @galasa.description
  * 
- * This Manager exports test results to an elastic search endpoint, where the data can be visualized on a Kabana dashboard. 
+ * This Manager exports test results to an elastic search endpoint, where the data can be visualized on a Kibana dashboard. 
  * Other Managers can contribute to the information that is exported to Elastic.
  * <br><br>
  * As an absolute minimum, the CPS properties <code>elasticlog.endpoint.address</code> and <code>elasticlog.endpoint.index</code> 
