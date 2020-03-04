@@ -58,5 +58,10 @@ public interface IZosBatchJobname {
      * @return String
      */
     public String getParams();
+
+     /**
+     * Delete the TYPRUN parameter from job card
+     */
+    public void removeTypeRun();
     
 }

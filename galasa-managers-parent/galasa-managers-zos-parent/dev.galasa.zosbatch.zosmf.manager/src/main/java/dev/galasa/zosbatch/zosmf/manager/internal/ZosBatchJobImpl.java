@@ -478,7 +478,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         jobCard.append("//");
         jobCard.append(jobname.getName());
         jobCard.append(" JOB ");
-        if("".equals(jobname.getParams())) {
+        String test1 = jobname.getParams();
+        if(!(test1.isEmpty())) {
             jobCard.append(jobname.getParams());
         }
         jobCard.append("\n");

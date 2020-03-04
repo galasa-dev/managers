@@ -56,23 +56,15 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     }
 
     @Override
+    public void removeTypeRun() {
+        parameters.remove("TYPRUN");
+    }
+
+    @Override
     public String getParams() {
         if(parameters.isEmpty()){
             return "";
         }
-        StringBuilder builder = new StringBuilder();
-        int lineLength = 13; 
-
-        for (String param: parameters.values()) {
-            lineLength =+ param.length() + 2;
-            if(lineLength > 57) {
-                builder.append("\n");
-                lineLength = param.length() + 2;
-            }
-            builder.append(param);
-            builder.append(", ");
-        }
-        builder.deleteCharAt(builder.length());
-        return builder.toString().trim();
+        return String.join(",\n", parameters.values());
     }
 }

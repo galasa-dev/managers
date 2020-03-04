@@ -27,7 +27,6 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
-import dev.galasa.http.internal.ContentType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosmf.IZosmf;
