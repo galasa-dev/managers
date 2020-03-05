@@ -11,6 +11,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.HashMap;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.core.StringStartsWith;
@@ -99,6 +100,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
+        Mockito.when(zosJobnameMock.getParams()).thenReturn("");
         
         PowerMockito.mockStatic(JobWaitTimeout.class);
         Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(2);
