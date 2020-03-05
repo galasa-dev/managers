@@ -228,6 +228,9 @@ public class Screen {
      */
     private synchronized void processSBA(OrderSetBufferAddress order) {
         this.workingCursor = order.getBufferAddress();
+        if (this.workingCursor >= this.screenSize) {
+            this.workingCursor = this.workingCursor - this.screenSize;
+        }
     }
 
     /**
