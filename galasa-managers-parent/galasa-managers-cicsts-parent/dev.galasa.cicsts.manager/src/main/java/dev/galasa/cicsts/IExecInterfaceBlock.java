@@ -12,7 +12,7 @@ package dev.galasa.cicsts;
 public interface IExecInterfaceBlock {
     
     /**
-     * Returns a {@link String} representation of the EIBRESP field
+     * Returns a {@link String} representation of the EIBRESP field if available
      * @return
      */
     public String getResponse();
@@ -31,9 +31,10 @@ public interface IExecInterfaceBlock {
 
     /**
      * Returns the value of the EIBTRNID field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
-    public String getEIBTRNID();
+    public String getEIBTRNID(boolean hex);
 
     /**
      * Returns the value of the EIBTASKN field in the EIB.
@@ -43,12 +44,14 @@ public interface IExecInterfaceBlock {
 
     /**
      * Returns the value of the EIBTRMID field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
-    public String getEIBTRMID();
+    public String getEIBTRMID(boolean hex);
 
     /**
      * Returns the value of the EIBCPOSN field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
     public int getEIBCPOSN();
@@ -75,25 +78,28 @@ public interface IExecInterfaceBlock {
      * Returns the value of the EIBRCODE  field in the EIB.
      * @return
      */
-    public int getEIBRCODE();
+    public char[] getEIBRCODE();
 
     /**
      * Returns the value of the EIBDS  field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
-    public String getEIBDS();
+    public String getEIBDS(boolean hex);
 
     /**
      * Returns the value of the EIBREQID field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
-    public String getEIBREQID();
+    public String getEIBREQID(boolean hex);
 
     /**
      * Returns the value of the EIBRSRCE field in the EIB.
+     * @param hex return a char array containing the hex values of the field
      * @return
      */
-    public String getEIBRSRCE();
+    public String getEIBRSRCE(boolean hex);
 
     /**
      * Returns the value of the EIBSYNC field in the EIB.

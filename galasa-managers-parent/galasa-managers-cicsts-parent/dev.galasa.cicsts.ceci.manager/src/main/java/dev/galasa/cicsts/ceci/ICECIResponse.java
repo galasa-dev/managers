@@ -40,7 +40,5 @@ public interface ICECIResponse {
      * Returns a map containing the output of the CECI CICS API command response fields and their values
      * @return 
      */
-    public Map<String, Object> getResponseValues();
-    
-
+    public Map<String, IResponseOutputValue> getResponseOutputValues();
 }

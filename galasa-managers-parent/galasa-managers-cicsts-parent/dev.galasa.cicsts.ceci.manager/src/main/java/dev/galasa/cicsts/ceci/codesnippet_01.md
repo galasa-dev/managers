@@ -46,7 +46,7 @@ if (!resp.isNormal()) {
 Link to PROGRAM "MYPROG" with the CHANNEL "MY-CHANNEL":
 
 ```
-eib = ceci.linkProgramWithChannel(ceciTerminal, "MYPROG", "MY_CHANNEL", null, null, false);
+eib = ceci.linkProgramWithChannel(ceciTerminal, "MYPROG", "MY-CHANNEL", null, null, false);
 if (!resp.isNormal()) {
     ...
 }
@@ -58,7 +58,7 @@ eib = ceci.getContainer(ceciTerminal, "MY-CHANNEL", "MY-CONTAINER-OUT", "&DATAOU
 if (!resp.isNormal()) {
     ...
 }
-String dataOut = ceci.getVariable(ceciTerminal, "&DATAOUT");
+String dataOut = ceci.retrieveVariableText(ceciTerminal, "&DATAOUT");
 ```
 
 
@@ -70,7 +70,7 @@ Create a binary CECI variable:
 
 ```
 char[] data = {0x0C7, 0x081, 0x093, 0x081, 0x0A2, 0x081, 0x040, 0x0C4, 0x081, 0x0A3, 0x081};
-ceci.setVariableBinary(ceciTerminal, "&BINDATA", data);
+ceci.defineVariableBinary(ceciTerminal, "&BINDATA", data);
 ```
 Write the binary variable to a TS QUEUE called "MYQUEUE": 
 
@@ -87,4 +87,26 @@ The "MYQUEUE" now contains the following data:
 
 ```
 Galasa Data
+```
+
+
+### Confirm the signed on userid 
+
+Use the following code to issue the CICS ASSIGN API and retrieve the signed on userid from the response: 
+
+
+```
+String command = "ASSIGN";
+ICECIResponse resp = ceci.issueCommand(ceciTerminal, command);
+String userid = resp.getResponseOutputValues().get("USERID").getTextValue();
+
+```
+
+Alternatively, issue ASSIGN and assign the userid value to a variable:
+
+```
+String command = "ASSIGN USERID(&USERID)";
+ICECIResponse resp = ceci.issueCommand(ceciTerminal, command);
+String userid = ceci.retrieveVariableText("&USERID");
+
 ```
