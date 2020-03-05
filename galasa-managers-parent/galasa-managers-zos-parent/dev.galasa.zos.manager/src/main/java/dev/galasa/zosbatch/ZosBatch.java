@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * z/OS Batch Manager
+ * z/OS Batch 
  * 
  * @galasa.annotation
  * 
