@@ -28,7 +28,7 @@ import dev.galasa.zos3270.ITerminal;
  * @galasa.extra
  * Requests to the <code>ICECI</code> Manager interface requires a {@link ITerminal} object which is logged on to CICS and is at 
  * the CECI initial screen.<br><br>
- * If mixed case is required, the test should first issue
+ * If mixed case is required, the terminal should be presented with no upper case translate status. For example, the test could first issue
  * <code>CEOT TRANIDONLY</code> to the {@link ITerminal} before invoking {@link ICECI} methods.<br><br>
  * See {@link CECI}, {@link ICECI} and {@link ITerminal} to find out more.
  * 
