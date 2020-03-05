@@ -242,7 +242,6 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			client.postJson(index + "/_doc/" + testCase + testingEnvironment, request, false);
 
 		} catch (HttpClientException e) {
-			e.printStackTrace();
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
 		} catch (URISyntaxException e) {
 			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
