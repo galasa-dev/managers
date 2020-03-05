@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * z/OS File Manager
+ * z/OS File 
  * 
  * @galasa.annotation
  * 
