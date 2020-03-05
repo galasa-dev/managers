@@ -13,21 +13,21 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * zOS File Manager
+ * z/OS File 
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}ZosFileHandler</code> annotation will request the zOS File Manager to provide a
- * handler to manage data sets and UNIX files a zOS image. 
- * A single zOS File Handler instance can manage multiple zOS data sets and UNIX files on multiple zOS images.<br>
- * Files will be deleted at method end unless created with the object's *createRetain()* method where it will be deleted at test end.<br>
+ * @galasa.description The <code>{@literal @}ZosFileHandler</code> annotation requests the z/OS Manager to provide a
+ * handler instance to manage data sets and UNIX files on a z/OS image. 
+ * A single z/OS File Handler instance can manage multiple z/OS data sets and UNIX files on multiple z/OS images.<br>
+ * Files are deleted at method end unless created with the object's *createRetain()* method where it is deleted at test end.<br>
  * 
  * @galasa.examples 
  * <code>{@literal @}ZosFileHandler<br>
  * public IZosFileHandler zosFileHandler;<br></code>
  * 
  * @galasa.extra
- * The <code>IZosFileHandler</code> interface has three methods supplying file name and zOS image:<br>
+ * The <code>IZosFileHandler</code> interface has three methods supplying file name and z/OS image:<br>
  * {@link IZosFileHandler#newDataset(String, dev.galasa.zos.IZosImage)}<br> 
  * {@link IZosFileHandler#newVSAMDataset(String, dev.galasa.zos.IZosImage)}<br>
  * {@link IZosFileHandler#newUNIXFile(String, dev.galasa.zos.IZosImage)}<br>
@@ -38,7 +38,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-@ZosFileManagerField
+@ZosFileField
 @ValidAnnotatedFields({ IZosFileHandler.class })
 public @interface ZosFileHandler {
 
