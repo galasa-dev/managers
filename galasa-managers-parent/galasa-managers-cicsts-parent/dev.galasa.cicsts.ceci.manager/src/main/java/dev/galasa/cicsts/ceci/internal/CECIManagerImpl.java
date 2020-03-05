@@ -74,7 +74,7 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi 
     }
     
     @GenerateAnnotatedField(annotation=CECI.class)
-    public ICECI generateZosmf(Field field, List<Annotation> annotations) throws CECIManagerException {
+    public ICECI generateCECI(Field field, List<Annotation> annotations) {
         return new CECIImpl();
     }
 }

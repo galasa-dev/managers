@@ -17,7 +17,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}ZosConsole</code> annotation requests the z/OS Console Manager to provide a
+ * @galasa.description The <code>{@literal @}ZosConsole</code> annotation requests the z/OS Manager to provide a
  * z/OS Console instance associated with a z/OS image. 
  * The test can request multiple z/OS Console instances, with the default being associated with the <b>primary</b> z/OS image.<br>
  * 
