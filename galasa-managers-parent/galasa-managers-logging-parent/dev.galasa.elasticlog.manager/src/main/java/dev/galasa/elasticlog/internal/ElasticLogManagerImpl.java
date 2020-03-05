@@ -233,31 +233,13 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			//Send document to index
 			client.postJson(index + "/_doc", request, false);
         
+			//Change index to latest document index
 			index = index + "_latest";
-
-			String id = null;
-			HttpClientResponse<String> response = client.head(endpoint + "/" + index);
-			if (response.getStatusCode() != 404) {
-				//Obtain id of document if test case is already recorded
-				String testCase = (String) this.runProperties.get("testCase");
-				String testingEnvironment = (String) this.runProperties.get("testingEnvironment");
-				String searchResponse = client.get(index + "/_search?q=testCase:" + testCase + 
-													" testingEnvironment:" + testingEnvironment + 
-													"&default_operator=AND");
-				if (searchResponse.contains(testCase)) {
-					JsonObject json = this.gson.fromJson(searchResponse, JsonObject.class);
-					id = json.get("hits").getAsJsonObject().get("hits").getAsJsonArray()
-										.get(0).getAsJsonObject().get("_id").getAsString();
-				}
-			}
-            
-			//Update document if already present or send new document
-			if (id != null) {
-				JsonObject update = new JsonObject();
-				update.add("doc", gson.fromJson(request, JsonObject.class));
-				client.postJson(index + "/_update/" + id, gson.toJson(update), false);
-			} else
-				client.postJson(index + "/_doc", request, false);
+		 	String testCase = (String) this.runProperties.get("testCase");
+		 	String testingEnvironment = (String) this.runProperties.get("testingEnvironment");
+		 	
+		 	//Create new doc if doesnt exist, updates if doc already exists
+			client.postJson(index + "/_doc/" + testCase + testingEnvironment, request, false);
 
 		} catch (HttpClientException e) {
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
