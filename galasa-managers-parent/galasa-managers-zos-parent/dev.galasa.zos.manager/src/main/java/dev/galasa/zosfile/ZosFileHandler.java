@@ -17,8 +17,8 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}ZosFileHandler</code> annotation requests the z/OS File Manager to provide a
- * handler to manage data sets and UNIX files on a z/OS image. 
+ * @galasa.description The <code>{@literal @}ZosFileHandler</code> annotation requests the z/OS Manager to provide a
+ * handler instance to manage data sets and UNIX files on a z/OS image. 
  * A single z/OS File Handler instance can manage multiple z/OS data sets and UNIX files on multiple z/OS images.<br>
  * Files are deleted at method end unless created with the object's *createRetain()* method where it is deleted at test end.<br>
  * 
@@ -38,7 +38,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-@ZosFileManagerField
+@ZosFileField
 @ValidAnnotatedFields({ IZosFileHandler.class })
 public @interface ZosFileHandler {
 

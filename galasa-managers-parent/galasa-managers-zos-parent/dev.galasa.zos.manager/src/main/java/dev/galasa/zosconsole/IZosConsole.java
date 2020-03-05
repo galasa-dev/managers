@@ -8,7 +8,7 @@ package dev.galasa.zosconsole;
 import javax.validation.constraints.NotNull;
 
 /**
- * Provides the test code access to the zOS Console Manager 
+ * Provides the test code access to the zOS Console via the zOS Manager 
  *
  */
 public interface IZosConsole {

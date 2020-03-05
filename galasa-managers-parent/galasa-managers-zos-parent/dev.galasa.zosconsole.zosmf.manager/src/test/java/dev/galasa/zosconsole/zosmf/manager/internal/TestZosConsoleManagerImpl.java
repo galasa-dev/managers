@@ -96,11 +96,11 @@ public class TestZosConsoleManagerImpl {
     }
     
     @Test
-        public void testInitialise1() throws ManagerException {
-            Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-            zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
-            Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
-        }
+    public void testInitialise1() throws ManagerException {
+        Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
+    }
 
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
