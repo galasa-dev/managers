@@ -239,6 +239,7 @@ public class CECIExecInterfaceBlockImpl implements IExecInterfaceBlock {
                     case "EIBTRMID": eibtrmid = value.substring(1, value.lastIndexOf('\'')); break;
                     case "EIBCPOSN": eibcposn = Integer.parseInt(value); break;
                     case "EIBCALEN": eibcalen = Integer.parseInt(value); break;
+                    case "EIBAID"  : eibaid   = toCharArray(value)[0]; break;
                     case "EIBFN"   : setEibfn(value); break;
                     case "EIBRCODE": eibrcode = toCharArray(value); break;
                     case "EIBDS"   : eibds    = value.substring(1, value.lastIndexOf('\'')); break;
