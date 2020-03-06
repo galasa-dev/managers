@@ -21,9 +21,6 @@ import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import dev.galasa.ManagerException;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
@@ -36,9 +33,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
-import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.http.HttpClientException;
-import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
@@ -60,14 +55,11 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	private List<IManager>						otherManagers	= new ArrayList<IManager>();
 
 	private IHttpManagerSpi						httpManager;
-	private IHttpClient							client;
-    
-	private Gson								gson;
 
 	private HashMap<String, Object>				runProperties	= new HashMap<String, Object>(); 
 
 	/**
-	 * Initialies the ElasticLogManager, adding the requirement of the HttpManager
+	 * Initialise the ElasticLogManager, adding a pointer to the other active managers
 	 *  
 	 * @param IFramework - the galasa framework
 	 * @param List<IManager> - list of all the managers
@@ -110,19 +102,6 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		activeManagers.add(this);
 
 		httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
-	}
-
-	/**
-	 * Provision build step, build the http client and gson object used by the manager 
-	 * 
-	 * @throws ManagerException
-	 * @throws ResourceUnavailableException
-	 */
-	@Override
-	public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-		this.client = this.httpManager.newHttpClient();
-		this.gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
-		logger.info("ElasticLog Clients Initialised");
 	}
 
 	/**
@@ -206,40 +185,36 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		if(tags != null)
 			this.runProperties.put("tags", tags.toArray(new String[0]));	    	
 	
-		String request = this.gson.toJson(this.runProperties);
+		//Convert HashMap of run properties to a Json String
+		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+		String request = gson.toJson(this.runProperties);
+
 		logger.info("Sending Run Request to ElasticLog Endpoint");
 		logger.trace("Document Request -\n" + request);
-		sendRunData(request);
-	}
-    
-	/**
-	 * Create the required indexes and send document requests
-	 * 
-	 * @param request - document request json
-	 * @throws ElasticLogManagerException
-	 */
-	private void sendRunData(String request) throws ElasticLogManagerException {
+		
 		//Register endpoint data as confidential
 		String index = ElasticLogIndex.get();
 		String endpoint = ElasticLogEndpoint.get();
 		ctf.registerText(index, "ElasticLog Index");
 		ctf.registerText(endpoint, "ElasticLog Endpoint");
 		try {
-            //Set up http client for requests
+			//Set up http client for requests
+			IHttpClient client = this.httpManager.newHttpClient();
 			client.setTrustingSSLContext();
 			client.addOkResponseCode(201);
 			client.setURI(new URI(endpoint));
 
 			//Send document to index
 			client.postJson(index + "/_doc", request, false);
+			logger.info("Run successfully logged to Elastic index " + index);
         
 			//Change index to latest document index
 			index = index + "_latest";
 		 	String testCase = (String) this.runProperties.get("testCase");
-		 	String testingEnvironment = (String) this.runProperties.get("testingEnvironment");
 		 	
 		 	//Create new doc if doesnt exist, updates if doc already exists
 			client.postJson(index + "/_doc/" + testCase + testingEnvironment, request, false);
+			logger.info("Run successfully logged to Elastic index " + index);
 
 		} catch (HttpClientException e) {
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
@@ -247,5 +222,4 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
 		}
 	}
-
 }
