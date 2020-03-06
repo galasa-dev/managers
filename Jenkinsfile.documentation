@@ -67,7 +67,7 @@ pipeline {
       stage('Generate Markdown') {
          steps {
             dir('galasa-managers-parent') {
-               sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgalasa.manager.doc.directory=${workspace}/galasa.dev/src/markdown-pages/docs/managers -P ${mvnProfile} -B -e -fae dev.galasa:galasautils-maven-plugin:0.5.0-SNAPSHOT:buildmanagerdoc"
+               sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgalasa.manager.doc.directory=${workspace}/galasa.dev/src/markdown-pages/docs/managers -P ${mvnProfile} -B -e -fae dev.galasa:galasautils-maven-plugin:0.5.0:buildmanagerdoc"
             }
          }
       }
