@@ -27,7 +27,7 @@ public class Terminal implements ITerminal {
     private NetworkThread networkThread;
     private boolean connected = false;
 
-    private int           defaultWaitTime = 1_200_000;
+    private int           defaultWaitTime = 120_000;
 
     private Log           logger          = LogFactory.getLog(getClass());
 

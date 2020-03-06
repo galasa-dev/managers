@@ -46,9 +46,9 @@ Batch job failed RETCODE=ABEND S0C4
 ```
 
 
-### Retrieve the job output to test run output
+### Retrieve the job output
 
-Use the following code to execute a command within the Docker Container and return the resulting output:
+Use the following code to retrieve the output from a zOS Batch Job:
 
 ```
 IZosBatchJobOutput jobOutput = batchJob.retrieveOutput();

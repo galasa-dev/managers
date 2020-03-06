@@ -29,9 +29,9 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.IZosFileHandler;
+import dev.galasa.zosfile.ZosFileField;
 import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
-import dev.galasa.zosfile.ZosFileManagerField;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
@@ -107,7 +107,7 @@ public class ZosFileManagerImpl extends AbstractManager {
 
         //*** Check to see if any of our annotations are present in the test class
         //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileManagerField.class);
+        List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
         if (!ourFields.isEmpty()) {
             youAreRequired(allManagers, activeManagers);
         }
@@ -125,7 +125,7 @@ public class ZosFileManagerImpl extends AbstractManager {
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        generateAnnotatedFields(ZosFileManagerField.class);
+        generateAnnotatedFields(ZosFileField.class);
     }
 
 
