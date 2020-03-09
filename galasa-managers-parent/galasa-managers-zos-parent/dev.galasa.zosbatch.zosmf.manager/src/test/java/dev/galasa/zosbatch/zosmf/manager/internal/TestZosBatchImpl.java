@@ -105,7 +105,6 @@ public class TestZosBatchImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
-        Mockito.when(zosJobnameMock.getParams()).thenReturn("");
         
         PowerMockito.mockStatic(JobnamePrefix.class);
         Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenReturn(FIXED_JOBNAME);

@@ -11,7 +11,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.HashMap;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.core.StringStartsWith;
@@ -39,10 +38,6 @@ import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobOutputImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobnameImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchManagerImpl;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
@@ -100,7 +95,6 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
-        Mockito.when(zosJobnameMock.getParams()).thenReturn("");
         
         PowerMockito.mockStatic(JobWaitTimeout.class);
         Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(2);
@@ -120,7 +114,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
         zosBatchJobSpy = Mockito.spy(zosBatchJob);
     }
     
@@ -135,7 +129,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("Unable to get job timeout property value");
         Mockito.when(JobWaitTimeout.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
@@ -144,7 +138,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("Unable to get use SYSAFF property value");
         Mockito.when(UseSysaff.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
@@ -153,7 +147,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("exception");
         Mockito.when(RestrictToImage.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
