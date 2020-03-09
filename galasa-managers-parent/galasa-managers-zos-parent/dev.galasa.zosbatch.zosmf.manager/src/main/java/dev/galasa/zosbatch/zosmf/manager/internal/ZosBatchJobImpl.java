@@ -91,7 +91,11 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     public ZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
         this.jobImage = jobImage;
         this.jobname = jobname;
-        this.jobcard = jobcard;
+        if (jobcard != null) {
+            this.jobcard = jobcard;
+        } else {
+            this.jobcard = new ZosBatchJobcard();
+        }
         storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
         this.jcl = parseJcl(jcl);
         
