@@ -16,6 +16,7 @@ import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.ZosBatchJobcard;
 
 /**
  * Implementation of {@link IZosBatch} using zOS/MF
@@ -32,16 +33,26 @@ public class ZosBatchImpl implements IZosBatch {
     
     @Override
     public @NotNull IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname) throws ZosBatchException {
-        
+        return submitJob(jcl, jobname, null);
+    }
+    
+    @Override
+    public @NotNull IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, ZosBatchJobcard jobcard)
+            throws ZosBatchException {
         if (jobname == null) {
             jobname = new ZosBatchJobnameImpl(this.image.getImageID());        
         }
         
-        ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl);
+        if (jobcard == null) {
+            jobcard = new ZosBatchJobcard();
+        }
+        
+        ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl, jobcard);
         this.zosBatchJobs.add(zosBatchJob);
         
         return zosBatchJob.submitJob();
     }
+
 
     /**
      * Clean up any existing batch jobs
@@ -69,4 +80,5 @@ public class ZosBatchImpl implements IZosBatch {
             iterator.remove();
         }
     }
+
 }
