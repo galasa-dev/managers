@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>dev.galasa.zos.manager</artifactId>
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa zOS Manager</name>

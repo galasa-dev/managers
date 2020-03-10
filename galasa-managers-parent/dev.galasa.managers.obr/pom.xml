@@ -10,7 +10,7 @@
 
 	<artifactId>dev.galasa.managers.obr</artifactId>
 	<!-- If updating version, reflect change in build/docker/testcatalogs/pom.xml -->
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 	<packaging>galasa-obr</packaging>
 
 	<name>Galasa Managers OBR</name>
@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager</artifactId>
-			<version>0.5.0</version>
+			<version>0.5.1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosbatch.zosmf.manager</artifactId>
-			<version>0.5.0</version>
+			<version>0.5.1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
