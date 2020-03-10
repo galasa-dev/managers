@@ -34,8 +34,8 @@ import dev.galasa.zosmf.ZosmfManagerException;
 public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     
     private IZosmfRestApiProcessor zosmfApiProcessor;
-    
-    private String imageId;
+
+    private IZosImage image;
     private String consoleName;
     private String command;    
     private String commandImmediateResponse;
@@ -44,13 +44,12 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     
     private static final String SLASH = "/";
     private static final String RESTCONSOLE_PATH = SLASH + "zosmf" + SLASH + "restconsoles" + SLASH + "consoles" + SLASH;
-    private static final String DEFAULT_CONSOLE_NAME = "defcn";
     
     private static final Log logger = LogFactory.getLog(ZosConsoleCommandImpl.class);
 
     public ZosConsoleCommandImpl(@NotNull String command, String consoleName, IZosImage image) throws ZosConsoleException {
-        this.imageId = image.getImageID();
-        this.consoleName = consoleName(consoleName);
+        this.image = image;
+        this.consoleName = consoleName;
         this.command = command;
         
         try {
@@ -63,7 +62,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     public @NotNull IZosConsoleCommand issueCommand() throws ZosConsoleException {
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("cmd", this.command);
-        requestBody.addProperty("system", this.imageId);
+        requestBody.addProperty("system", this.image.getImageID());
         
         IZosmfResponse response;
         try {
@@ -130,16 +129,6 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     public String getCommand() {
         return this.command;
     }
-
-    protected String consoleName(String consoleName) throws ZosConsoleException {
-        if (consoleName == null) {
-            return DEFAULT_CONSOLE_NAME;
-        }
-        if (consoleName.length() < 2 || consoleName.length() > 8) {
-            throw new ZosConsoleException("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
-        }
-        return consoleName;
-    }
     
     protected String logUnableToIsuueCommand() {
         return "Unable to issue console command \"" + this.command + "\"";
@@ -148,6 +137,6 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     @Override
     public String toString() {
         String cir = this.commandImmediateResponse != null ? " RESPONSE:\n " + this.commandImmediateResponse : "";
-        return "COMMAND=" + this.command + (this.imageId != null ? " IMAGE=" +  this.imageId : "") + cir;
+        return "COMMAND=" + this.command + (this.image != null ? " IMAGE=" +  this.image.getImageID() : "") + cir;
     }
 }
