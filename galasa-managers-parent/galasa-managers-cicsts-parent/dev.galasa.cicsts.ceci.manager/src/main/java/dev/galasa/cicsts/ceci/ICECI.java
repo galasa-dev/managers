@@ -116,7 +116,7 @@ public interface ICECI {
      * @return variable value
      * @throws CECIException
      */
-    public Long retrieveVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CECIException;
+    public long retrieveVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CECIException;
 
     /**
      * Retrieve a full word CECI variable.
@@ -206,7 +206,7 @@ public interface ICECI {
      * @param containerName the COTAINER name
      * @param content a string representing the container contents. Can be CECI variable name populated with (<b>&</b>name set via {@link #defineVariableText(ITerminal, String, String)}) 
      * or the actual data. The value of FLENGTH in the command will be set to the data length.
-     * @param dataType BIT or CHAR. If null, DATATYPE will be ommited from the command.
+     * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command.
      * @param fromCcsid provides a value for FROMCCSID. If null, will be omitted from the command.
      * @param fromCodepage provides a value for FROMCODEPAGE. If null, will be omitted from the command.
      * @return an {@link ICECIResponse} object containing the command's response.
@@ -221,13 +221,14 @@ public interface ICECI {
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param channelName the CHANNELNAME
      * @param containerName the COTAINER name
-     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ITerminal, String)} or {@link #retrieveVariableHex(ITerminal, String)} 
+     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ITerminal, String)} or {@link #retrieveVariableHex(ITerminal, String)}
+     * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command. 
      * @param intoCcsid provides a value for INTOCCSID. If null, will be omitted from the command.
      * @param intoCodepage provides a value for INTOCODEPAGE. If null, will be omitted from the command.
      * @return an {@link ICECIResponse} object containing the command's response.
      * @throws CECIException
      */
-    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CECIException;
+    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String dataType, String intoCcsid, String intoCodepage) throws CECIException;
 
 }
 
