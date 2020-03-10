@@ -35,12 +35,6 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 public class ElasticLogLocalRun extends CpsProperties {
 
     public static String get() throws ElasticLogManagerException {
-		try {
-			String elasticLogLocalRun = getStringNulled(ElasticLogPropertiesSingleton.cps(), "local", "run.log");
-
-			return elasticLogLocalRun;
-		} catch (ConfigurationPropertyStoreException e) {
-			throw new ElasticLogManagerException("Problem asking the CPS for the ElasticLog Local Run", e);
-        }
+		return getStringWithDefault(ElasticLogPropertiesSingleton.cps(), "false", "local", "run.log");
 	}
 }
