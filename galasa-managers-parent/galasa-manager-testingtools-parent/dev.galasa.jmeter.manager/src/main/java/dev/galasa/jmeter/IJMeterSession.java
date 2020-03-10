@@ -1,6 +1,16 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.jmeter;
 
-public interface IJMeterSession{
+import java.io.File;
+
+/**
+ * Interface for creation, management, deletion of JMeter sessions
+ */
+public interface IJMeterSession {
     
     /**
      * Start up a jmeter thread to run through the lifetime of the tests
