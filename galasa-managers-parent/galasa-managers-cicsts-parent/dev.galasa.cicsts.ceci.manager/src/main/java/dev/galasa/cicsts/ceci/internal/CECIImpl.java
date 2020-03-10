@@ -48,6 +48,7 @@ public class CECIImpl implements ICECI {
     private static final String VARIABLE_TYPE_FULL_WORD = "F";
     private static final String VARIABLE_TYPE_HALF_WORD = "H";
     private static final String VARIABLE_TYPE_PACKED = "P";
+    private static final String MESSAGE_DFHAC2206 = "DFHAC2206";
     
     private String command;
     private ITerminal terminal;
@@ -76,7 +77,7 @@ public class CECIImpl implements ICECI {
             // Issue the command
             terminal.enter().waitForKeyboard();
             // Check we didn't abend
-            if (terminal.retrieveScreen().contains("DFHAC2206")) {
+            if (terminal.retrieveScreen().contains(MESSAGE_DFHAC2206)) {
                 terminal.reportScreenWithCursor();
                 throw new CECIException("Command abended - see previous screen");
             }
@@ -84,6 +85,10 @@ public class CECIImpl implements ICECI {
             // If on user screen then need enter to return to the command
             if (!terminal.retrieveScreen().contains(COMMAND_EXECUTION_COMPLETE)) {
                 terminal.enter().waitForKeyboard();
+                if (!terminal.retrieveScreen().contains(COMMAND_EXECUTION_COMPLETE)) {
+                    terminal.reportScreenWithCursor();
+                    throw new CECIException("Command failed - see previous screen");
+                }
             }
             
             // Return the response
@@ -163,7 +168,7 @@ public class CECIImpl implements ICECI {
     }
     
     @Override
-    public Long retrieveVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CECIException {
+    public long retrieveVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CECIException {
         this.terminal = ceciTerminal;
         name = validateVariable(name, null, null);
         return Long.valueOf(getVariable(name, VARIABLE_TYPE_DOUBLE_WORD));
@@ -225,19 +230,16 @@ public class CECIImpl implements ICECI {
             hexOff();
             // Find the variables and delete them
             String fieldValue = variableScreen().tab().retrieveFieldAtCursor().trim();
-            while (!fieldValue.equals("PF")) {
-                if (!fieldValue.isEmpty()) {
-                    eof().tab();
-                    eof().enter().waitForKeyboard();
-                    fieldValue = tab(1).retrieveFieldAtCursor().trim();
-                } else {
-                    fieldValue = tab(2).retrieveFieldAtCursor().trim();
-                }
+            int tabCount = 1;
+            while (tabCount < 55 && !fieldValue.equals("PF")) {
+                fieldValue = eof().tab().retrieveFieldAtCursor().trim();
+                tabCount++;
             }
+            terminal.enter().waitForKeyboard();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CECIException("Unable to delete all variables", e);
-        } catch (FieldNotFoundException | KeyboardLockedException | TimeoutException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | FieldNotFoundException | NetworkException e) {
             throw new CECIException("Unable to delete all variables", e);
         }
     }
@@ -353,7 +355,7 @@ public class CECIImpl implements ICECI {
     }
 
     @Override
-    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CECIException {
+    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String dataType, String intoCcsid, String intoCodepage) throws CECIException {
         this.terminal = ceciTerminal;
         StringBuilder commandBuffer = new StringBuilder();
         commandBuffer.append("GET CONTAINER(");
@@ -363,6 +365,9 @@ public class CECIImpl implements ICECI {
         commandBuffer.append(") INTO(");
         commandBuffer.append(variableName);
         commandBuffer.append(")");
+        if (dataType != null) {
+            commandBuffer.append(dataType);
+        }
         if (intoCcsid != null) {
             commandBuffer.append(" INTOCCSID(");
             commandBuffer.append(intoCcsid);
@@ -376,7 +381,7 @@ public class CECIImpl implements ICECI {
         return issueCommand(terminal, commandBuffer.toString());
     }
     
-    private ITerminal initialScreen() throws CECIException {
+    protected ITerminal initialScreen() throws CECIException {
         try {
             if (!isCECIScreen()) {
                 // Might be on the USER screen. Send enter and try again
@@ -396,7 +401,7 @@ public class CECIImpl implements ICECI {
         }
     }
 
-    private ITerminal variableScreen() throws CECIException {
+    protected ITerminal variableScreen() throws CECIException {
         try {
             return initialScreen().pf5().waitForKeyboard();
         } catch (InterruptedException e) {
@@ -407,51 +412,51 @@ public class CECIImpl implements ICECI {
         }
     }
 
-    private boolean isCECIScreen() {
+    protected boolean isCECIScreen() {
         String screen = terminal.retrieveScreen(); 
         return isInitialScreen(screen) ||
                isHelpScreen(screen) ||
                isCommandBeforeScreen(screen) ||
                isCommandAfterScreen(screen) ||
                isEibScreen(screen) ||
-               isVarScreen(screen) ||
-               isVarExpansionScreen(screen) ||
+               isVariablesScreen(screen) ||
+               isVariablesExpansionScreen(screen) ||
                isMsgScreen(screen);
     }
 
-    private boolean isInitialScreen(String screen) {
+    protected boolean isInitialScreen(String screen) {
         return screen.contains(INITIAL_SCREEN_ID);
     }
 
-    private boolean isCommandBeforeScreen(String screen) {
+    protected boolean isCommandBeforeScreen(String screen) {
         return screen.contains(COMMAND_BEFORE_SCREEN_ID);
     }
 
-    private boolean isCommandAfterScreen(String screen) {
+    protected boolean isCommandAfterScreen(String screen) {
         return screen.contains(COMMAND_AFTER_SCREEN_ID);
     }
 
-    private boolean isHelpScreen(String screen) {
+    protected boolean isHelpScreen(String screen) {
         return screen.contains(HELP_SCREEN_ID);
     }
 
-    private boolean isEibScreen(String screen) {
+    protected boolean isEibScreen(String screen) {
         return screen.contains(EIB_SCREEN_ID);
     }
 
-    private boolean isVarScreen(String screen) {
+    protected boolean isVariablesScreen(String screen) {
         return screen.contains(VAR_SCREEN_ID);
     }
 
-    private boolean isMsgScreen(String screen) {
+    protected boolean isMsgScreen(String screen) {
         return screen.contains(MSG_SCREEN_ID);
     }
 
-    private boolean isVarExpansionScreen(String screen) {
+    protected boolean isVariablesExpansionScreen(String screen) {
         return screen.contains(VAR_EXPANSION_SCREEN_ID);
     }
 
-    private ITerminal home() throws CECIException, FieldNotFoundException, KeyboardLockedException, TimeoutException, NetworkException, InterruptedException {
+    protected ITerminal home() throws CECIException, FieldNotFoundException, KeyboardLockedException, TimeoutException, NetworkException, InterruptedException {
         String screen = terminal.retrieveScreen();
         if (isHelpScreen(screen)) {
             terminal.enter().waitForKeyboard();
@@ -468,20 +473,20 @@ public class CECIImpl implements ICECI {
         }
         
         // Now tab through PF keys, back to command line
-        if (isInitialScreen(screen) || isVarScreen(screen)) {
+        if (isInitialScreen(screen) || isVariablesScreen(screen)) {
             tab(8);
         } else if (isCommandBeforeScreen(screen) || isCommandAfterScreen(screen)) {
             tab(10);                
         } else if (isMsgScreen(screen)) {
             tab(11);                
-        } else if (isEibScreen(screen) || isVarExpansionScreen(screen)) {
+        } else if (isEibScreen(screen) || isVariablesExpansionScreen(screen)) {
             tab(12);                
         }
         
         return terminal;
     }
 
-    private ITerminal eof() throws FieldNotFoundException, KeyboardLockedException {
+    protected ITerminal eof() throws FieldNotFoundException, KeyboardLockedException {
         int fieldLen = terminal.retrieveFieldAtCursor().length();
         char nullChar = 0x00;
         char[] nulls = new char[fieldLen];
@@ -491,14 +496,14 @@ public class CECIImpl implements ICECI {
         return terminal;
     }
 
-    private ITerminal tab(int times) throws FieldNotFoundException, KeyboardLockedException {
+    protected ITerminal tab(int times) throws FieldNotFoundException, KeyboardLockedException {
         for (int i = 0; i < times; i++) {
             terminal.tab();
         }
         return terminal;
     }
 
-    private void checkForSyntaxMessages() throws CECIException {
+    protected void checkForSyntaxMessages() throws CECIException {
         try {
             String screen = terminal.pf9().waitForKeyboard().retrieveScreen();
             if (!screen.contains(NO_SYNTAX_MESSAGES)) {
@@ -513,7 +518,7 @@ public class CECIImpl implements ICECI {
         }
     }
     
-    private String validateVariable(String name, char[] value, String type) throws CECIException {
+    protected String validateVariable(String name, char[] value, String type) throws CECIException {
         name = name.trim();
         if (!name.startsWith("&")){
             name = "&" + name;
@@ -540,7 +545,7 @@ public class CECIImpl implements ICECI {
         return name;
     }
     
-    private int setVariable(String name, String value, String type) throws CECIException {
+    protected int setVariable(String name, String value, String type) throws CECIException {
         try {
             deleteVariable(terminal, name);
     
@@ -594,7 +599,7 @@ public class CECIImpl implements ICECI {
         }
     }
     
-    private int setVariableOnPage(String[] chunks, int start, int numberOfLines) throws CECIException {
+    protected int setVariableOnPage(String[] chunks, int start, int numberOfLines) throws CECIException {
         int chunkPos = start;        
         // Enter the page of data 
         for (int i = 0; i < numberOfLines; i++) {
@@ -612,7 +617,7 @@ public class CECIImpl implements ICECI {
         return chunkPos;
     }
 
-    private int setVariableHex(String name, char[] value) throws CECIException {
+    protected int setVariableHex(String name, char[] value) throws CECIException {
         try {
             deleteVariable(terminal, name);
             
@@ -658,7 +663,7 @@ public class CECIImpl implements ICECI {
         }
     }
 
-    private int setVariableHexOnPage(char[] value, int start, int numberOfLines) throws CECIException {
+    protected int setVariableHexOnPage(char[] value, int start, int numberOfLines) throws CECIException {
         try {
             int pos = start;
             int lineCount = 0;
@@ -687,7 +692,7 @@ public class CECIImpl implements ICECI {
         }
     }
 
-    private String getVariable(String name, String type) throws CECIException {
+    protected String getVariable(String name, String type) throws CECIException {
         try {            
             // Find the variable, expand it and move to the length field and get it's value
             String lengthString = tabToVariable(name).enter().waitForKeyboard().tab().retrieveFieldAtCursor().trim();
@@ -717,13 +722,13 @@ public class CECIImpl implements ICECI {
             throw new CECIException("Unable to determine variable field length");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new CECIException("Thread interrupted", e);
+            throw new CECIException("Unable to get CECI variable", e);
         } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
             throw new CECIException("Unable to get CECI variable", e);
         }
     }
     
-    private int getLength(String lengthString) {
+    protected int getLength(String lengthString) {
         if (lengthString.equals(VARIABLE_TYPE_DOUBLE_WORD)) {
             return 20;
         } else if (lengthString.equals(VARIABLE_TYPE_FULL_WORD)) {
@@ -737,7 +742,7 @@ public class CECIImpl implements ICECI {
         }
     }
 
-    private String getVariableFromPage(int valueLength, int numberOfLines) throws CECIException {
+    protected String getVariableFromPage(int valueLength, int numberOfLines) throws CECIException {
         StringBuilder sb = new StringBuilder();
         int lineCount = 0;
         while (sb.length() < valueLength && lineCount < numberOfLines) {
@@ -746,13 +751,13 @@ public class CECIImpl implements ICECI {
             try {
                 terminal.tab();
             } catch (FieldNotFoundException | KeyboardLockedException e) {
-                throw new CECIException("Unable to tab to next field", e);
+                throw new CECIException("Unable to get variable from page", e);
             }
         }
         return sb.toString();
     }
 
-    private char[] getVariableHex(String name) throws CECIException {
+    protected char[] getVariableHex(String name) throws CECIException {
         try {            
             // Find the variable, expand it, set hex on, move to the length field and get it's value
             String lengthString = tabToVariable(name).enter().waitForKeyboard().pf2().waitForKeyboard().tab().retrieveFieldAtCursor();
@@ -779,13 +784,13 @@ public class CECIImpl implements ICECI {
             throw new CECIException("Unable to determine variable field length");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new CECIException("Thread interrupted", e);
+            throw new CECIException("Unable to get CECI binary variable", e);
         } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
-            throw new CECIException("Unable to get CECI variable", e);
+            throw new CECIException("Unable to get CECI binary variable", e);
         }
     }
     
-    private String getVariableHexFromPage(int valueLength, int numberOfLines) throws CECIException {
+    protected String getVariableHexFromPage(int valueLength, int numberOfLines) throws CECIException {
         StringBuilder sb = new StringBuilder();
         int lineCount = 0;
         try {
@@ -804,12 +809,12 @@ public class CECIImpl implements ICECI {
                 lineCount++;
             }
         } catch (FieldNotFoundException | KeyboardLockedException e) {
-            throw new CECIException("Unable to tab to next field", e);
+            throw new CECIException("Unable to get binary variable from page", e);
         }
         return sb.toString();
     }
 
-    private ITerminal tabToVariable(String name) throws CECIException {
+    protected ITerminal tabToVariable(String name) throws CECIException {
         try {
             // Set Hex off
             hexOff();
@@ -821,12 +826,12 @@ public class CECIImpl implements ICECI {
             // Go to the first variable on the variable screen 
             variableScreen().tab();
             // Find an variable name field
-            String fieldValue = terminal.retrieveFieldAtCursor();
-            while (!fieldValue.contains(name)) {
+            String fieldValue = terminal.retrieveFieldAtCursor().trim();
+            while (!fieldValue.equals(name.trim())) {
                 if (fieldValue.equals("PF")) {
                     throw new CECIException("Unable to find variable " + name);
                 }
-                fieldValue = tab(3).retrieveFieldAtCursor();
+                fieldValue = tab(3).retrieveFieldAtCursor().trim();
             }
         } catch (FieldNotFoundException | KeyboardLockedException e) {
             throw new CECIException("Problem serching for variable " + name, e);
@@ -839,14 +844,14 @@ public class CECIImpl implements ICECI {
      * @return
      * @throws CECIException
      */
-    private boolean isHexOn() throws CECIException {
+    protected boolean isHexOn() throws CECIException {
         try {
             return terminal.pf4().waitForKeyboard().retrieveScreen().contains("EIBTIME      = X'");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new CECIException("Unable to determine if CECI HEX mode", e);
+            throw new CECIException("Unable to determine if CECI is in HEX mode", e);
         } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
-            throw new CECIException("Unable to determine if CECI HEX mode", e);
+            throw new CECIException("Unable to determine if CECI is in HEX mode", e);
         }
     }
     
@@ -855,7 +860,7 @@ public class CECIImpl implements ICECI {
      * @return
      * @throws CECIException
      */
-    private ITerminal hexOn() throws CECIException {
+    protected ITerminal hexOn() throws CECIException {
         try {
             if (!isHexOn()) {
                 return terminal.pf2().waitForKeyboard();
@@ -874,7 +879,7 @@ public class CECIImpl implements ICECI {
      * @return
      * @throws CECIException
      */
-    private ITerminal hexOff() throws CECIException {
+    protected ITerminal hexOff() throws CECIException {
         try {
             if (isHexOn()) {
                 return terminal.pf2().waitForKeyboard();
@@ -888,118 +893,135 @@ public class CECIImpl implements ICECI {
         return terminal;
     }
 
-    private ICECIResponse newCECIResponse() throws CECIException {
-        CECIResponseImpl ceciResponse;
-        try {
-            String screen = terminal.retrieveScreen();
+    protected ICECIResponse newCECIResponse() throws CECIException {
+        String screen = terminal.retrieveScreen();
 
-            String response = getFieldAfter(screen, "RESPONSE: ", "EIBRESP").trim();
-            int eibresp = Integer.parseInt(getFieldAfter(screen, "EIBRESP="));
-            int eibresp2 = Integer.parseInt(getFieldAfter(screen, "EIBRESP2="));
-        
-            ceciResponse = new CECIResponseImpl(response, eibresp, eibresp2);
-            ceciResponse.setResponseOutput(parseResponseOutput());
+        String response = getFieldAfter(screen, "RESPONSE: ", "EIBRESP").trim();
+        int eibresp = Integer.parseInt(getFieldAfter(screen, "EIBRESP="));
+        int eibresp2 = Integer.parseInt(getFieldAfter(screen, "EIBRESP2="));        
+
+        CECIResponseImpl ceciResponse = new CECIResponseImpl(response, eibresp, eibresp2);
+        ceciResponse.setResponseOutput(parseResponseOutput());
+        return ceciResponse;
+    }
+
+    protected Map<String, IResponseOutputValue> parseResponseOutput() throws CECIException {
+        Map<String, IResponseOutputValue> responseOutput = new LinkedHashMap<>();
+        try {
+            // The first option is 2 tabs from the command line
+            int optionCounter = 2;
+            String fieldValue = tab(2).retrieveFieldAtCursor();
+            boolean done = false;
+            while (!fieldValue.equals("PF")) {
+                while (!fieldValue.equals("PF")) {
+                    // Expand the option value
+                    terminal.enter().waitForKeyboard();
+                    
+                    String screen = terminal.retrieveScreen();
+                    String option = getFieldAfter(screen, "OPTION= ");
+                    if (responseOutput.containsKey(option)) {
+                        done = true;
+                        break;
+                    }
+                    responseOutput.put(option, getOptionValue(screen));
+                    // Return the the command page
+                    terminal.enter().waitForKeyboard();
+                    // Get the next option
+                    optionCounter++;
+                    fieldValue = tab(optionCounter).retrieveFieldAtCursor();
+                }
+                if (done) {
+                    break;
+                }
+                // Next page
+                terminal.pf11().waitForKeyboard();
+                optionCounter = 2;
+                fieldValue = tab(optionCounter).retrieveFieldAtCursor();
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CECIException("Unable to parse command output", e);
         } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
             throw new CECIException("Unable to parse command output", e);
         }
-        return ceciResponse;
-    }
-
-    private Map<String, IResponseOutputValue> parseResponseOutput() throws TimeoutException, KeyboardLockedException, NetworkException, FieldNotFoundException, InterruptedException, CECIException {
-        Map<String, IResponseOutputValue> responseOutput = new LinkedHashMap<>();
-        // The first option is 2 tabs from the command line
-        int optionCounter = 2;
-        String fieldValue = tab(2).retrieveFieldAtCursor();
-        boolean done = false;
-        while (!fieldValue.equals("PF")) {
-            while (!fieldValue.equals("PF")) {
-                // Expand the option value
-                terminal.enter().waitForKeyboard();
-                
-                String screen = terminal.retrieveScreen();
-                String option = getFieldAfter(screen, "OPTION= ");
-                if (responseOutput.containsKey(option)) {
-                    done = true;
-                    break;
-                }
-                String lengthString = getFieldAfter(screen, "LENGTH= ");
-                int length = getLength(lengthString);
-                // Move to data value
-                home();
-                tab(2);
-                StringBuilder sb = new StringBuilder();
-                // We need to retrieve data in pages
-                sb.append(getVariableFromPage(length, 20));
-                int pf11Count = 0;
-                while (sb.length() < length) {
-                    // Go to next page and tab to the data field
-                    home().pf11().waitForKeyboard();
-                    pf11Count++;
-                    tab(6);
-                    sb.append(getVariableFromPage(length-sb.length(), 16));                
-                }
-                if (lengthString.startsWith("+")) {
-                    // Also get the value in hex
-                    String hex = getThisVariableInHex(length, pf11Count);
-                   
-                    String[] characterValue = {sb.toString(), hex};
-                    responseOutput.put(option, new ResponseOutputValueImpl(characterValue));
-                    // Set hex off
-                    terminal.pf2().waitForKeyboard();
-                } else {
-                    responseOutput.put(option, new ResponseOutputValueImpl(sb.toString()));                    
-                }
-                // Return the the command page
-                terminal.enter().waitForKeyboard();
-                // Get the next option
-                optionCounter++;
-                fieldValue = tab(optionCounter).retrieveFieldAtCursor();
-            }
-            if (done) {
-                break;
-            }
-            // Next page
-            terminal.pf11().waitForKeyboard();
-            optionCounter = 2;
-            fieldValue = tab(optionCounter).retrieveFieldAtCursor();
-        }
         
         return responseOutput;
     }
 
-    private String getThisVariableInHex(int length, int pf11Count) throws CECIException, TimeoutException, KeyboardLockedException, NetworkException, FieldNotFoundException, InterruptedException {
-        int pf10Count = 0;
-        // Back to first page
-        while (pf10Count < pf11Count) {
-            home().pf10().waitForKeyboard();
-            pf10Count++;
-        }
-        // Set hex on and tab to the data field
-        terminal.pf2().waitForKeyboard();
-        home();
-        tab(2);
-        // Get the data in hex
-        StringBuilder sb = new StringBuilder();
-        sb.append(getVariableHexFromPage(length, 20));
-        // We need to retrieve data in pages
-        while (sb.length() < length) {
-            // Go to next page and tab to the data field
-            home().pf11().waitForKeyboard();
-            pf11Count++;
+    protected IResponseOutputValue getOptionValue(String screen) throws CECIException {
+        try {
+            String lengthString = getFieldAfter(screen, "LENGTH= ");
+            int length = getLength(lengthString);
+            // Move to data value
+            home();
             tab(2);
-            sb.append(getVariableHexFromPage(length-sb.length(), 16));                
+            StringBuilder sb = new StringBuilder();
+            // We need to retrieve data in pages
+            sb.append(getVariableFromPage(length, 20));
+            int pf11Count = 0;
+            while (sb.length() < length) {
+                // Go to next page and tab to the data field
+                home().pf11().waitForKeyboard();
+                pf11Count++;
+                tab(6);
+                sb.append(getVariableFromPage(length-sb.length(), 16));                
+            }
+            if (lengthString.startsWith("+")) {
+                // Also get the value in hex
+                String hex = getOptionValueInHex(length, pf11Count);
+               
+                String[] characterValue = {sb.toString(), hex};
+                // Set hex off
+                terminal.pf2().waitForKeyboard();
+                return new ResponseOutputValueImpl(characterValue);
+            } else {
+                return new ResponseOutputValueImpl(sb.toString());                    
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CECIException("Unable to parse command output option value", e);
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+            throw new CECIException("Unable to parse command output option value", e);
         }
-        return sb.toString();
     }
 
-    private String getFieldAfter(String screen, String field) {
+    protected String getOptionValueInHex(int length, int pf11Count) throws CECIException {
+        try {
+            int pf10Count = 0;
+            // Back to first page
+            while (pf10Count < pf11Count) {
+                home().pf10().waitForKeyboard();
+                pf10Count++;
+            }
+            // Set hex on and tab to the data field
+            terminal.pf2().waitForKeyboard();
+            home();
+            tab(2);
+            // Get the data in hex
+            StringBuilder sb = new StringBuilder();
+            sb.append(getVariableHexFromPage(length, 20));
+            // We need to retrieve data in pages
+            while (sb.length() < length) {
+                // Go to next page and tab to the data field
+                home().pf11().waitForKeyboard();
+                pf11Count++;
+                tab(2);
+                sb.append(getVariableHexFromPage(length-sb.length(), 16));                
+            }
+            return sb.toString();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CECIException("Unable to parse command output binary option value", e);
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+            throw new CECIException("Unable to parse command output binary option value", e);
+        }
+    }
+
+    protected String getFieldAfter(String screen, String field) {
         return getFieldAfter(screen, field, " ");
     }
 
-    private String getFieldAfter(String screen, String field, String nextField) {
+    protected String getFieldAfter(String screen, String field, String nextField) {
         int start = screen.indexOf(field) + field.length();
         int end = screen.indexOf(nextField, start);
         return screen.substring(start, end);

@@ -31,6 +31,7 @@ import org.powermock.reflect.Whitebox;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatchManagerException;
@@ -39,6 +40,7 @@ import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -87,6 +89,12 @@ public class TestZosBatchImpl {
     
     @Before
     public void setup() throws ZosBatchManagerException, IOException, NoSuchMethodException, SecurityException, ZosmfManagerException {
+        
+        IConfigurationPropertyStoreService cps = Mockito.mock(IConfigurationPropertyStoreService.class);
+        ZosBatchZosmfPropertiesSingleton singleton = new ZosBatchZosmfPropertiesSingleton();
+        singleton.activate();
+        ZosBatchZosmfPropertiesSingleton.setCps(cps);        
+        
         Path archivePathMock = Mockito.mock(Path.class);
         FileSystem fileSystemMock = Mockito.mock(FileSystem.class);
         FileSystemProvider fileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
@@ -105,7 +113,6 @@ public class TestZosBatchImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
-        Mockito.when(zosJobnameMock.getParams()).thenReturn("");
         
         PowerMockito.mockStatic(JobnamePrefix.class);
         Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenReturn(FIXED_JOBNAME);

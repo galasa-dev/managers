@@ -5,11 +5,6 @@
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -28,7 +23,6 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     private String name;
 
     private String jobNamePrefix;
-    private Map<String,String> parameters = new HashMap<>();
     
     public ZosBatchJobnameImpl(@NotNull String imageId) throws ZosBatchException {
 
@@ -48,23 +42,5 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     @Override
     public String toString() {
         return this.name;
-    }
-
-    @Override
-    public void setTypeRun(TYPRUN type) {
-        parameters.put("TYPRUN", type.toString());
-    }
-
-    @Override
-    public void removeTypeRun() {
-        parameters.remove("TYPRUN");
-    }
-
-    @Override
-    public String getParams() {
-        if(parameters.isEmpty()){
-            return "";
-        }
-        return String.join(",\n", parameters.values());
     }
 }
