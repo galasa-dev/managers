@@ -32,7 +32,7 @@ public @interface LinuxImage {
     /**
      * The tag of the Linux Image this variable is to be populated with
      */
-    String imageTag() default "primary";
+    String imageTag() default "PRIMARY";
 
     /**
      * The operating system of the Linux image

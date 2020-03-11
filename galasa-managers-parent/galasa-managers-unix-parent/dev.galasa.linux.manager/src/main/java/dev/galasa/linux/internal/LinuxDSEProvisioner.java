@@ -34,7 +34,7 @@ public class LinuxDSEProvisioner implements ILinuxProvisioner {
             throws LinuxManagerException {
 
         try {
-            String hostid = LinuxManagerImpl.nulled(this.cps.getProperty("linux.dse.tag", tag + ".hostid"));
+            String hostid = LinuxManagerImpl.nulled(this.cps.getProperty("dse.tag", tag + ".hostid"));
 
             if (hostid == null) {
                 return null;
