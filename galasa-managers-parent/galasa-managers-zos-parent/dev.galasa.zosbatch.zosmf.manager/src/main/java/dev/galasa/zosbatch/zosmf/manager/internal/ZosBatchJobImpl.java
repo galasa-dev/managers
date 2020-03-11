@@ -36,8 +36,13 @@ import dev.galasa.zosbatch.IZosBatchJobOutput;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.ZosBatchJobcard;
+import dev.galasa.zosbatch.ZosBatchJobcard.Typrun;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.MsgLevel;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.MsgClass;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.InputClass;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
@@ -58,6 +63,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     
     private IZosImage jobImage;
     private IZosBatchJobname jobname;
+    private final ZosBatchJobcard jobcard;
     private String jcl;  
     private int intdrLrecl = 80;  
     private String intdrRecfm = "F";    
@@ -82,9 +88,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     
     private static final Log logger = LogFactory.getLog(ZosBatchJobImpl.class);
 
-    public ZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl) throws ZosBatchException {
+    public ZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
         this.jobImage = jobImage;
         this.jobname = jobname;
+        if (jobcard != null) {
+            this.jobcard = jobcard;
+        } else {
+            this.jobcard = new ZosBatchJobcard();
+        }
         storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
         this.jcl = parseJcl(jcl);
         
@@ -116,7 +127,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
-        } catch (ZosmfException e) {
+        } catch (ZosmfException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
 
@@ -473,11 +484,97 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         }
     }
 
-    protected String jclWithJobcard() {
+    protected String jclWithJobcard() throws ZosBatchManagerException {
         StringBuilder jobCard = new StringBuilder();
         jobCard.append("//");
         jobCard.append(jobname.getName());
-        jobCard.append(" JOB \n");
+        jobCard.append(" JOB ");
+        String acct = this.jobcard.getAccount();
+        String prog = this.jobcard.getProgrammerName();
+        if (acct != null || prog != null) {
+            if (acct != null) {
+                jobCard.append("'");
+                jobCard.append(acct);
+                jobCard.append("'");
+            }
+            if (prog != null) {
+                jobCard.append(",");
+                jobCard.append("'");
+                jobCard.append(prog);
+                jobCard.append("'");
+            }
+        }
+        jobCard.append(",\n");
+        
+        String inputClass = this.jobcard.getInputClass();
+        String msgClass = this.jobcard.getMsgClass();
+        String msgLevel = this.jobcard.getMsgLevel();
+        
+        if (inputClass == null) {
+            inputClass = InputClass.get(this.jobImage);
+        }
+        
+        if (msgClass == null) {
+            msgClass = MsgClass.get(this.jobImage);
+        }
+        
+        if (msgLevel == null) {
+            msgLevel = MsgLevel.get(this.jobImage);
+        }
+        
+        String region = this.jobcard.getRegion();
+        if (region != null) {
+            jobCard.append("//         REGION=");
+            jobCard.append(region);
+            jobCard.append(",\n");
+        }
+        
+        String memlimit = this.jobcard.getRegion();
+        if (memlimit != null) {
+            jobCard.append("//         MEMLIMIT=");
+            jobCard.append(memlimit);
+            jobCard.append(",\n");
+        }
+        
+        Typrun tyrun = this.jobcard.getTyprun();
+        if (tyrun != null) {
+            jobCard.append("//         TYPRUN=");
+            jobCard.append(tyrun.toString());
+            jobCard.append(",\n");
+        }
+        
+        String userid = this.jobcard.getUserid();
+        if (userid != null) {
+            jobCard.append("//         USERID=");
+            jobCard.append(userid);
+            jobCard.append(",\n");
+        }
+        
+        String password = this.jobcard.getPassword();
+        if (password != null) {
+            jobCard.append("//         PASSWORD=");
+            jobCard.append(password);
+            jobCard.append(",\n");
+        }
+        
+        String cond = this.jobcard.getCond();
+        if (cond != null) {
+            jobCard.append("//         COND=");
+            jobCard.append(cond);
+            jobCard.append(",\n");
+        }
+        
+        jobCard.append("//         CLASS=");
+        jobCard.append(inputClass);
+        jobCard.append(",\n");
+        jobCard.append("//         MSGCLASS=");
+        jobCard.append(msgClass);
+        jobCard.append(",\n");
+        jobCard.append("//         MSGLEVEL=");
+        jobCard.append(msgLevel);
+        jobCard.append("\n");
+        
+        
         
         if (this.useSysaff) {
             jobCard.append("/*JOBPARM SYSAFF=");

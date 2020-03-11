@@ -228,6 +228,9 @@ public class Screen {
      */
     private synchronized void processSBA(OrderSetBufferAddress order) {
         this.workingCursor = order.getBufferAddress();
+        if (this.workingCursor >= this.screenSize) {
+            this.workingCursor = this.workingCursor - this.screenSize;
+        }
     }
 
     /**
@@ -377,7 +380,7 @@ public class Screen {
             if (wrapSoField == null) {
                 currentField = new Field();
             } else {
-                currentField = new Field(0, wrapSoField);
+                currentField = new Field(-1, wrapSoField);
             }
         }
 
@@ -388,7 +391,7 @@ public class Screen {
             } else if (bh instanceof BufferStartOfField) {
                 if (currentField != null) {
                     fields.add(currentField);
-                }
+                } 
                 currentField = new Field(i, (BufferStartOfField) bh);
             } else if (bh instanceof BufferChar) {
                 currentField.appendChar(((BufferChar) bh).getChar());// NOSONAR, can't be null
@@ -754,6 +757,10 @@ public class Screen {
         }
 
         return currentField;
+    }
+    
+    public void setCursorPosition(int newPosition) {
+        this.screenCursor = newPosition;
     }
 
 }

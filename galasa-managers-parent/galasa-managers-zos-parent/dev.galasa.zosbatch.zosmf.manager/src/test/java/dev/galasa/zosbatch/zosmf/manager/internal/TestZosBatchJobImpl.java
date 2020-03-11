@@ -34,18 +34,16 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobOutputImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobnameImpl;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchManagerImpl;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
+import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -96,6 +94,12 @@ public class TestZosBatchJobImpl {
 
     @Before
     public void setup() throws Exception {
+
+        IConfigurationPropertyStoreService cps = Mockito.mock(IConfigurationPropertyStoreService.class);
+        ZosBatchZosmfPropertiesSingleton singleton = new ZosBatchZosmfPropertiesSingleton();
+        singleton.activate();
+        ZosBatchZosmfPropertiesSingleton.setCps(cps);        
+                
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
@@ -118,7 +122,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
         zosBatchJobSpy = Mockito.spy(zosBatchJob);
     }
     
@@ -133,7 +137,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("Unable to get job timeout property value");
         Mockito.when(JobWaitTimeout.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
@@ -142,7 +146,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("Unable to get use SYSAFF property value");
         Mockito.when(UseSysaff.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
@@ -151,7 +155,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("exception");
         Mockito.when(RestrictToImage.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
-        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL");
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
@@ -641,7 +645,7 @@ public class TestZosBatchJobImpl {
         String jobWithJobcard = "//" + FIXED_JOBNAME + " JOB"; 
         Assert.assertThat("jclWithJobcard() should a return valid job card", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
         Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", true);
-        jobWithJobcard = jobWithJobcard + " \n/*JOBPARM SYSAFF="; 
+        jobWithJobcard = jobWithJobcard + " ,\n//         CLASS=A,\n//         MSGCLASS=A,\n//         MSGLEVEL=(1,1)\n/*JOBPARM SYSAFF="; 
         Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
         Whitebox.setInternalState(zosBatchJobSpy, "jcl", "JCL\n"); 
         Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));

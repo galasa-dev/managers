@@ -43,5 +43,4 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     public String toString() {
         return this.name;
     }
-
 }

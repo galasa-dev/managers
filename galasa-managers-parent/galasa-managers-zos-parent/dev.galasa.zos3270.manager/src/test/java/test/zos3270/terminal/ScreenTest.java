@@ -37,7 +37,7 @@ public class ScreenTest {
         screen.erase();
 
         Assert.assertEquals("Erase fields are incorrect",
-                "Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n",
+                "Field(pos=-1,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n",
                 screen.printFields());
 
     }
@@ -53,7 +53,7 @@ public class ScreenTest {
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 
         Assert.assertEquals("Clear fields are incorrect",
-                "Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n",
+                "Field(pos=-1,p=false,n=false,d=true,i=false,s=false,m=false,                    )\n",
                 screen.printFields());
     }
 
@@ -149,7 +149,7 @@ public class ScreenTest {
 
         String fields = screen.printFields();
         Assert.assertEquals("Screen layout is incorrect",
-                "Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXXXXXXXXXXXXXXXX)\n", fields);
+                "Field(pos=-1,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXXXXXXXXXXXXXXXX)\n", fields);
     }
 
     @Test
@@ -169,7 +169,7 @@ public class ScreenTest {
 
         String fields = screen.printFields();
         Assert.assertEquals("Screen layout is incorrect",
-                "Field(pos=0,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXZZZZZYYYYYYYYYY)\n", fields);
+                "Field(pos=-1,p=false,n=false,d=true,i=false,s=false,m=false,XXXXXZZZZZYYYYYYYYYY)\n", fields);
     }
 
 }
