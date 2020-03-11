@@ -17,5 +17,8 @@ import dev.galasa.jmeter.internal.JMeterManagerField;
 @JMeterManagerField
 @ValidAnnotatedFields({ IJMeterSession.class })
 public @interface JMeterSession{
-
+    /**
+     * Provides the session with a specific jmxFile during provisioning
+     */
+    String jmxPath();
 }

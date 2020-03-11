@@ -30,11 +30,16 @@ public interface IJMeterSession {
     public void waitForJMeter(long timeout);
 
     /**
+     * Allows the tester to provide a jmxFile to the running session
+     * @param path
+     */
+    public void setJmxFile(String path);
+    /**
      * Returning the jmxFile in UTF-8 encoding in String format
      * The working directory is found through the session instance
      * @param jmxFile the jmx-file
      */
-    public String getJmxFile(File jmxFile);
+    public String getJmxFile();
 
     /**
      * Returning the logFile in UTF-8 encoding in String format
