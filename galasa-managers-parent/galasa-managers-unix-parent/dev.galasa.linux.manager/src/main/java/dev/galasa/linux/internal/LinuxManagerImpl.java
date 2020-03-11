@@ -92,6 +92,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         try {
             this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
             LinuxPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            this.cps = LinuxPropertiesSingleton.cps();
         } catch (Exception e) {
             throw new LinuxManagerException("Unable to request framework services", e);
         }
@@ -167,7 +168,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         LinuxImage annotationLinuxImage = field.getAnnotation(LinuxImage.class);
 
         // *** Default the tag to primary
-        String tag = defaultString(annotationLinuxImage.imageTag(), "primary");
+        String tag = defaultString(annotationLinuxImage.imageTag(), "PRIMARY").toUpperCase();
 
         // *** Have we already generated this tag
         if (taggedImages.containsKey(tag)) {
