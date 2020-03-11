@@ -6,12 +6,20 @@
 package dev.galasa.jmeter;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * Interface for creation, management, deletion of JMeter sessions
  */
 public interface IJMeterSession {
     
+    /**
+     * This method gets called before start of a session providing necessary properties
+     * to the JMeter session
+     * @param properties A map of Strings with provided properties
+     */
+    public void applyProperties(Map<String, String> properties);
+
     /**
      * Start up a jmeter thread to run through the lifetime of the tests
      * Usage of cps.properties with their own default location for JMX files...
