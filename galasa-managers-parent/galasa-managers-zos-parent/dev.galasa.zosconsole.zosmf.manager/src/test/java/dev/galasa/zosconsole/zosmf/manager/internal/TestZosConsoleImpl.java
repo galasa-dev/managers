@@ -20,7 +20,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.ICredentialsToken;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosconsole.IZosConsoleCommand;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
@@ -37,6 +40,8 @@ import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 public class TestZosConsoleImpl {
     
     private ZosConsoleImpl zosConsole;
+    
+    private ZosConsoleImpl zosConsoleSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -49,7 +54,13 @@ public class TestZosConsoleImpl {
     
     @Mock
     private IZosmfResponse zosmfResponseMock;
-
+    
+    @Mock
+    private ICredentialsUsernamePassword credentialsUsernamePasswordMock;
+    
+    @Mock
+    private ICredentialsToken credentialsTokenMock;
+    
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -75,11 +86,14 @@ public class TestZosConsoleImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
         zosConsole = new ZosConsoleImpl(zosImageMock);
+        zosConsoleSpy = PowerMockito.spy(zosConsole);
+        
     }
     
     @Test
-    public void testIssueCommand() throws ZosConsoleException {    
-        IZosConsoleCommand zosConsoleCommand = zosConsole.issueCommand(CONSOLE_COMMAND );
+    public void testIssueCommand() throws Exception {
+        PowerMockito.doReturn(CONSOLE_NAME).when(zosConsoleSpy, "consoleName", Mockito.any());
+        IZosConsoleCommand zosConsoleCommand = zosConsoleSpy.issueCommand(CONSOLE_COMMAND );
 
         Assert.assertEquals("IZosConsoleCommand.getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommand.getCommand());
     }
@@ -98,5 +112,51 @@ public class TestZosConsoleImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenThrow(new ZosmfManagerException("exception"));
                 
         zosConsole.issueCommand("command", "name");
+    }
+
+    @Test
+    public void testConsoleName() throws Exception {
+         Assert.assertEquals("setConsoleName() should return " + CONSOLE_NAME, CONSOLE_NAME, zosConsole.consoleName(CONSOLE_NAME));
+         
+         PowerMockito.doReturn(credentialsUsernamePasswordMock).when(zosImageMock, "getDefaultCredentials");
+         PowerMockito.doReturn("USERID").when(credentialsUsernamePasswordMock, "getUsername");
+         Assert.assertEquals("setConsoleName() should return the default console name", "USERID", zosConsoleSpy.consoleName(null));
+    }
+
+    @Test
+    public void testConsoleNameExceptionZosManagerException() throws Exception {
+         PowerMockito.doThrow(new ZosManagerException()).when(zosImageMock, "getDefaultCredentials");
+         exceptionRule.expect(ZosConsoleException.class);
+         exceptionRule.expectMessage("Unable to get the run username for image image");
+         
+         zosConsoleSpy.consoleName(null);
+    }
+
+    @Test
+    public void testConsoleNameExceptionNotICredentialsUsernamePassword() throws Exception {
+        PowerMockito.doReturn(credentialsTokenMock).when(zosImageMock, "getDefaultCredentials");
+        exceptionRule.expect(ZosConsoleException.class);
+        exceptionRule.expectMessage("Unable to get the run username for image image");
+         
+        zosConsoleSpy.consoleName(null);
+    }
+
+    @Test
+    public void testConsoleNameExceptionTooShort() throws ZosConsoleException {
+        exceptionRule.expect(ZosConsoleException.class);        
+        String consoleName = "1";
+        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+         
+        zosConsole.consoleName(consoleName);
+    }
+
+
+    @Test
+    public void testConsoleNameExceptionToLong() throws ZosConsoleException {
+        exceptionRule.expect(ZosConsoleException.class);        
+        String consoleName = "123456789";
+        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+         
+        zosConsole.consoleName(consoleName);
     }
 }
