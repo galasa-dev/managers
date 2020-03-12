@@ -57,7 +57,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
-    private static final String PRIMARY_TAG = "primary";
+    private static final String PRIMARY_TAG = "PRIMARY";
 
     private static final String LOG_SELECTED_FOR_ZOS_TAG = " selected for zosTag '";
     private static final String LOG_ZOS_IMAGE = "zOS Image ";
@@ -148,7 +148,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             if (field.getType() == IZosImage.class) {
                 ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
                 String tag = annotationZosImage.imageTag();
-                if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toLowerCase())) {
+                if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toUpperCase())) {
                     IZosImage zosImage = generateZosImage(field);
                     registerAnnotatedField(field, zosImage);
                     annotatedFieldIterator.remove(); //*** Dont need it for the second pass
@@ -199,7 +199,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG).toUpperCase();
 
         //*** Have we already generated this tag
         if (taggedImages.containsKey(tag)) {
@@ -256,7 +256,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosIpHost annotationHost = field.getAnnotation(ZosIpHost.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationHost.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationHost.imageTag(), PRIMARY_TAG).toUpperCase();
 
         //*** Ensure we have this tagged host
         ZosBaseImageImpl image = taggedImages.get(tag);
@@ -272,7 +272,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosIpPort annotationPort = field.getAnnotation(ZosIpPort.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG).toUpperCase();
         String type = defaultString(annotationPort.type(), "standard");
 
         //*** Ensure we have this tagged host
