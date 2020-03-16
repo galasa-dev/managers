@@ -15,20 +15,25 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.jmeter.IJMeterSession;
 
+import org.apache.jmeter.*;
+
  public class JMeterSessionImpl implements IJMeterSession {
 
     private final IFramework            framework;
     private final JMeterManagerImpl     jMeterManager;
     private final int                   sessionID;
     private final Map<String, String>   jmxProperties;
+    // private final DockerManagerSpi      dockerManager;
+    // private final IDockerContainer       container;
 
     private static final Log            logger = LogFactory.getLog(JMeterSessionImpl.class);
     
-    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, Map<String, String> jmxProperties, int sessionID) {
+    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, Map<String, String> jmxProperties, int sessionID/*, DockerManagerSpi dockerManager*/) {
         this.framework      = framework;
         this.jMeterManager  = jMeterManager;
         this.sessionID      = sessionID;
         this.jmxProperties  = jmxProperties;
+        // this.dockerManager  = dockerManager;
 
         logger.info(String.format("Session %d has been succesfully initialised", this.sessionID));
     }

@@ -86,7 +86,7 @@ public class JMeterManagerImpl extends AbstractManager {
     public IJMeterSession startJMeterSession() {
         Map<String, String> jmxProperties = new HashMap<>();
         sessionID++;
-        IJMeterSession session = new JMeterSessionImpl(framework, this, jmxProperties, sessionID);
+        IJMeterSession session = new JMeterSessionImpl(framework, this, jmxProperties, sessionID/*, dockerManager*/);
         activeSessions.add(session);
 
         return session;
