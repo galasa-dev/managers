@@ -4,16 +4,39 @@
  * (c) Copyright IBM Corp. 2020.
  */
 
- package dev.galasa.jmeter.internal;
+package dev.galasa.jmeter.internal;
 
- import java.io.File;
- import java.util.Map;
+import java.io.File;
+import java.util.Map;
 
- import dev.galasa.jmeter.IJMeterSession;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import dev.galasa.framework.spi.IFramework;
+import dev.galasa.jmeter.IJMeterSession;
 
  public class JMeterSessionImpl implements IJMeterSession {
 
-     
+    private final IFramework            framework;
+    private final JMeterManagerImpl     jMeterManager;
+    private final int                   sessionID;
+    private final Map<String, String>   jmxProperties;
+
+    private static final Log            logger = LogFactory.getLog(JMeterSessionImpl.class);
+    
+    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, Map<String, String> jmxProperties, int sessionID) {
+        this.framework      = framework;
+        this.jMeterManager  = jMeterManager;
+        this.sessionID      = sessionID;
+        this.jmxProperties  = jmxProperties;
+
+        logger.info(String.format("Session %d has been succesfully initialised", this.sessionID));
+    }
+
+    @Override
+    public int getSessionID() {
+        return this.sessionID;
+    }
     
     @Override
      public void applyProperties(Map<String, String> properties) {

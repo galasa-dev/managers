@@ -8,6 +8,7 @@ import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterSession;
+import dev.galasa.jmeter.internal.JMeterManagerException;
 
 /*
  * Licensed Materials - Property of IBM
@@ -25,7 +26,7 @@ import dev.galasa.jmeter.JMeterSession;
     public IJMeterSession session;
 
     @Test
-    public void provisionedNotNull() throws Exception {
+    public void provisionedNotNull() throws JMeterManagerException {
 
       assertThat(logger).isNotNull();
       assertThat(session).isNotNull();

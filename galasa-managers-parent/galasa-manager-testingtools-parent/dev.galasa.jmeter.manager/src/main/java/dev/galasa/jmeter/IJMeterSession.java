@@ -80,5 +80,7 @@ public interface IJMeterSession {
      * @return exitcode as a long
      */
     public long getExitCode();
+
+    public int getSessionID();
 	
 }

@@ -4,7 +4,7 @@
  * (c) Copyright IBM Corp. 2020.
  */
 
-package dev.galasa.jmeter.properties;
+package dev.galasa.jmeter.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -37,9 +37,18 @@ public class JMeterPropertiesSingleton {
 
     public static IConfigurationPropertyStoreService cps() throws JMeterManagerException {
         if (singleton != null) {
-            return JMeterPropertiesSingleton.cps();
+            return singleton.cps();
         }
 
-        throw new JMeterManagerException("Attemting to acces the CPS before it has been initialised.");
+        throw new JMeterManagerException("Attempting to acces the CPS before it has been initialised.");
+    }
+
+    public static void setCps(IConfigurationPropertyStoreService cps) throws JMeterManagerException {
+        if (singleton != null) {
+            singleton.cps = cps;
+            return;
+        }
+
+        throw new JMeterManagerException("Attempting to set the set before the instance is available.");
     }
 }
