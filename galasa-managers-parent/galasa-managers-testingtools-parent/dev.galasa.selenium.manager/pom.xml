@@ -15,11 +15,10 @@
   
     <dependencies>
         <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>3.141.59</version>
-        </dependency>
-
+			<groupId>dev.galasa</groupId>
+			<artifactId>org.openqa.selenium</artifactId>
+			<version>3.141.59</version>
+		</dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.framework</artifactId>

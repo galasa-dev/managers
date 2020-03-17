@@ -13,6 +13,7 @@
   
   <modules>
     <module>dev.galasa.selenium.manager</module>
+    <module>dev.galasa.selenium.manager.ivt</module>
   </modules>
   
 </project>

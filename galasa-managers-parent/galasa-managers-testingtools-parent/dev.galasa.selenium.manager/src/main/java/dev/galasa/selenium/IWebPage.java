@@ -20,7 +20,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * TPI for the WebPageImpl object provisioned by the Selenium Manager
  */
 public interface IWebPage {
-
+  
     /**
      * Close current Window and quit browser if was only Window open
      */
