@@ -8,6 +8,8 @@ package dev.galasa.jmeter;
 import java.io.File;
 import java.util.Map;
 
+import dev.galasa.jmeter.internal.JMeterManagerException;
+
 /**
  * Interface for creation, management, deletion of JMeter sessions
  */
@@ -23,8 +25,9 @@ public interface IJMeterSession {
     /**
      * Start up a jmeter thread to run through the lifetime of the tests
      * Usage of cps.properties with their own default location for JMX files...
+     * @throws JMeterManagerException
      */
-    public void startJmeter();
+    public void startJmeter() throws JMeterManagerException;
 
     /**
      * Giving jmeter a deadline before it needs to be finished and the test gets shutdown

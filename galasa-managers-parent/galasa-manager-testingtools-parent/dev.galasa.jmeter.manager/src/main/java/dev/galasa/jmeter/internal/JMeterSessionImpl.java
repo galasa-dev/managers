@@ -7,6 +7,8 @@
 package dev.galasa.jmeter.internal;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -14,45 +16,77 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.jmeter.IJMeterSession;
+import dev.galasa.jmeter.internal.properties.JMeterHost;
 
-import org.apache.jmeter.*;
+import org.apache.jmeter.JMeter;
 
- public class JMeterSessionImpl implements IJMeterSession {
+public class JMeterSessionImpl implements IJMeterSession {
 
-    private final IFramework            framework;
-    private final JMeterManagerImpl     jMeterManager;
-    private final int                   sessionID;
-    private final Map<String, String>   jmxProperties;
-    // private final DockerManagerSpi      dockerManager;
-    // private final IDockerContainer       container;
+    private final IFramework framework;
+    private final JMeterManagerImpl jMeterManager;
+    private final int sessionID;
+    private Map<String, String> jmxProperties;
+    private String[] arguments;
+    private String jmxPath;
 
-    private static final Log            logger = LogFactory.getLog(JMeterSessionImpl.class);
-    
-    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, Map<String, String> jmxProperties, int sessionID/*, DockerManagerSpi dockerManager*/) {
-        this.framework      = framework;
-        this.jMeterManager  = jMeterManager;
-        this.sessionID      = sessionID;
-        this.jmxProperties  = jmxProperties;
-        // this.dockerManager  = dockerManager;
+    // private final DockerManagerSpi dockerManager;
+    // private final IDockerContainer container;
 
-        logger.info(String.format("Session %d has been succesfully initialised", this.sessionID));
+    private static final Log logger = LogFactory.getLog(JMeterSessionImpl.class);
+
+    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, Map<String, String> jmxProperties,
+            int sessionID, String jmxPath/* , DockerManagerSpi dockerManager */) {
+        this.framework = framework;
+        this.jMeterManager = jMeterManager;
+        this.sessionID = sessionID;
+
+        applyProperties(jmxProperties);
+        setJmxFile(jmxPath);
+
+        // this.dockerManager = dockerManager;
+
+        logger.info(String.format("Session %d have been succesfully initialised", this.sessionID));
     }
 
     @Override
     public int getSessionID() {
         return this.sessionID;
     }
-    
+
     @Override
-     public void applyProperties(Map<String, String> properties) {
-         // TODO Auto-generated method stub
+    public void applyProperties(Map<String, String> properties) {
 
-     }
+        if ((properties != null) && (properties.size() > 0)) {
+            this.jmxProperties = properties;
 
-     @Override
-     public void startJmeter() {
-         // TODO Auto-generated method stub
+            logger.info("The JMX-properties have been succesfully applied.");
+        }
 
+    }
+
+    @Override
+    public void startJmeter() throws JMeterManagerException {
+
+        JMeter jmeter = new JMeter();
+        File jmxFile = new File("resources/jmx/" + jmxPath);
+        // 1 Specified JMX File or all jmx files
+        if ( (jmxPath.toLowerCase().endsWith(".jmx")) || (jmxFile.exists()) ) {
+                
+            logger.info("test");
+            String fileName = jmxPath.substring(0,jmxPath.length() - ".jmx".length());
+            String jmxStr = "resources/jmx/" + fileName;
+            String jtlStr = "resources/reports/" + fileName + Integer.toString(sessionID) + ".jtl";
+            String logStr = "resources/logs/" + fileName + Integer.toString(sessionID) + ".log";
+            String propStr = "resources/properties/" + "jmeter.properties";
+
+            String[] args = {"-n", "-t", jmxStr, "-p", propStr, "-d", "/resources/jmeter/bin/",
+            "-l", jtlStr, "-j", logStr };
+
+            jmeter.start(args);
+            
+        } else {
+            throw new JMeterManagerException("The JmxPath has not been specified correctly.");
+        }
      }
 
      @Override
@@ -69,14 +103,15 @@ import org.apache.jmeter.*;
 
      @Override
      public void setJmxFile(String path) {
-         // TODO Auto-generated method stub
+         if (!path.isEmpty() && path != null) {
+             this.jmxPath = path;
+         }
 
      }
 
      @Override
      public String getJmxFile() {
-         // TODO Auto-generated method stub
-         return null;
+         return this.jmxPath;
      }
 
      @Override

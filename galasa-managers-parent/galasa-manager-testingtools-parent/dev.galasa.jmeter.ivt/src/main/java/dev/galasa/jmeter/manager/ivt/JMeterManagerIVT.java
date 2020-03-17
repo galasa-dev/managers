@@ -22,7 +22,7 @@ import dev.galasa.jmeter.internal.JMeterManagerException;
    @Logger
    public Log logger;
 
-    @JMeterSession(jmxPath = "")
+    @JMeterSession(jmxPath = "jmeter-example.jmx")
     public IJMeterSession session;
 
     @Test

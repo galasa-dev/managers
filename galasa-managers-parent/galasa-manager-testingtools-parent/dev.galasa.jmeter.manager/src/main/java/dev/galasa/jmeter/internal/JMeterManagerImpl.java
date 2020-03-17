@@ -6,12 +6,16 @@
 
 package dev.galasa.jmeter.internal;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,6 +41,7 @@ public class JMeterManagerImpl extends AbstractManager {
     private List<IJMeterSession>    activeSessions;
 
     private IFramework              framework;
+    private String                  jmxPath;
     // implemetation for running each session in a container
     // protected IDockerManagerSpi     dockerManager;
 
@@ -53,6 +58,10 @@ public class JMeterManagerImpl extends AbstractManager {
         // Testing: Is this manager actually used for the test when the whole framework launches?
         List<AnnotatedField> ourFields = findAnnotatedFields(JMeterManagerField.class);
         if (!ourFields.isEmpty()) {
+            if (ourFields.get(0).toString() != null) {
+                this.jmxPath = ourFields.get(0).toString();
+            }
+            
             youAreRequired(allManagers, activeManagers);
         }
 
@@ -83,14 +92,16 @@ public class JMeterManagerImpl extends AbstractManager {
             //dockerManager = addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
     }
 
-    public IJMeterSession startJMeterSession() {
-        Map<String, String> jmxProperties = new HashMap<>();
+    public IJMeterSession generateJMeterSession() throws JMeterManagerException {
+        // READING the properties from .properties file
+        Map<String, String> jmxProperties = getProperty();
         sessionID++;
-        IJMeterSession session = new JMeterSessionImpl(framework, this, jmxProperties, sessionID/*, dockerManager*/);
+        IJMeterSession session = new JMeterSessionImpl(framework, this, jmxProperties, sessionID, this.jmxPath /*, dockerManager*/);
         activeSessions.add(session);
 
         return session;
     }
+
 
     public void stopJMeterSession(int sessionID, long timeout) {
         for(IJMeterSession session: activeSessions) {
@@ -100,7 +111,24 @@ public class JMeterManagerImpl extends AbstractManager {
         }
     }
 
+    private static Map<String, String> getProperty() throws JMeterManagerException {
+        Properties properties = new Properties();
+        
+        Map<String, String> map = new HashMap<>();
 
+        try {
+                FileInputStream input = new FileInputStream(new File("/resources/jmeter.properties"));
+                properties.load(input);
+        } catch (Exception e) {
+            throw new JMeterManagerException("Couldn't locate a properties file",e);
+        }
+
+        for (Entry<Object, Object> entry : properties.entrySet()) {
+            map.put((String) entry.getKey(), (String) entry.getValue());
+        }
+
+        return map;
+    }
 
     
 }
