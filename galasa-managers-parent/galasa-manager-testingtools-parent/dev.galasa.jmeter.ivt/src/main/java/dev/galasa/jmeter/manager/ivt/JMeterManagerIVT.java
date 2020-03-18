@@ -30,5 +30,12 @@ import dev.galasa.jmeter.internal.JMeterManagerException;
 
       assertThat(logger).isNotNull();
       assertThat(session).isNotNull();
+
+      
+    }
+
+    @Test
+    public void startJMeterTest() throws JMeterManagerException{
+      session.startJmeter();
     }
  }

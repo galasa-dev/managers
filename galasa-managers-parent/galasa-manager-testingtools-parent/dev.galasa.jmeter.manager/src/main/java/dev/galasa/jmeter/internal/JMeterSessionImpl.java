@@ -79,7 +79,7 @@ public class JMeterSessionImpl implements IJMeterSession {
             String logStr = "resources/logs/" + fileName + Integer.toString(sessionID) + ".log";
             String propStr = "resources/properties/" + "jmeter.properties";
 
-            String[] args = {"-n", "-t", jmxStr, "-p", propStr, "-d", "/resources/jmeter/bin/",
+            String[] args = {"-n", "-t", jmxStr, "-p", propStr, "-d", "/resources/jmeter/",
             "-l", jtlStr, "-j", logStr };
 
             jmeter.start(args);
