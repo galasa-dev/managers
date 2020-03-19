@@ -8,7 +8,7 @@ package dev.galasa.jmeter.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
-import dev.galasa.jmeter.internal.JMeterManagerException;
+import dev.galasa.jmeter.JMeterManagerException;
 
 public class JMeterPort extends CpsProperties {
     public static String get() throws JMeterManagerException {

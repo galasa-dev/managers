@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2019.
  */
-package dev.galasa.jmeter.internal;
+package dev.galasa.jmeter;
 
 import dev.galasa.ManagerException;
 

@@ -6,22 +6,16 @@
 
 package dev.galasa.jmeter.internal;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
-import dev.galasa.docker.IDockerExec;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.jmeter.IJMeterSession;
-import dev.galasa.jmeter.internal.properties.JMeterHost;
+import dev.galasa.jmeter.JMeterManagerException;
 
 public class JMeterSessionImpl implements IJMeterSession {
 
@@ -33,16 +27,17 @@ public class JMeterSessionImpl implements IJMeterSession {
     private IDockerContainer container;
     private final long DEFAULT_TIMER = 30000L;
 
-    private static final Log logger = LogFactory.getLog(JMeterSessionImpl.class);
+    private Log logger;
 
     public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager,
-            int sessionID, String jmxPath, String propPath, IDockerContainer container) {
+            int sessionID, String jmxPath, String propPath, IDockerContainer container, Log logger) {
         this.framework = framework;
         this.jMeterManager = jMeterManager;
         this.sessionID = sessionID;
         this.container = container;
         this.jmxPath = jmxPath;
         this.propPath = propPath;
+        this.logger = logger;
 
         logger.info(String.format("Session %d have been succesfully initialised", this.sessionID));
     }
@@ -55,7 +50,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public void applyProperties(InputStream propStream) throws JMeterManagerException {
         try {
-            container.storeFile("/prop/"  propPath, propStream);
+            container.storeFile("/prop/" + propPath, propStream);
         } catch (Exception e) {
             throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
         }
@@ -67,30 +62,30 @@ public class JMeterSessionImpl implements IJMeterSession {
         try {
             if (!container.isRunning()) {
                 
-                String jtlPath = "/jmx/"  jmxPath.substring(0, jmxPath.indexOf(".jmx"))  ".jtl";
-                String prop = "/prop/"  propPath;
+                String jtlPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
+                String prop = "/prop/" + propPath;
                 
                 if ((jmxPath.toLowerCase().endsWith(".jmx")) && container.isRunning()) {
 
                     container.start();
-                    logger.info("Container from session "  sessionID  " has started.");
+                    logger.info("Container from session " + sessionID + " has started.");
 
                     if ( propPath.isEmpty()) {
-                        container.exec("-n", "-t", "/jmx/"  jmxPath, "-l", jtlPath);
+                        container.exec("-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath);
                     } else {
-                        container.exec("-n", "-t", "/jmx/"  jmxPath, "-l", jtlPath, "-p", prop);
+                        container.exec("-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath, "-p", prop);
                     }
                     
-                    logger.info("Container from session "  sessionID  " has exectuted the JMeter commands.");
+                    logger.info("Container from session " + sessionID + " has exectuted the JMeter commands.");
                     
                 } else {
                     throw new JMeterManagerException("The JmxPath has not been specified correctly.");
                 }
             } else {
-                throw new JMeterManagerException("Container of session "  sessionID  " is already running and in the process of executing JMeter.");
+                throw new JMeterManagerException("Container of session " + sessionID + " is already running and in the process of executing JMeter.");
             }
         } catch (DockerManagerException e) {
-            throw new JMeterManagerException("JMeter session "  sessionID  " could not be started", e);
+            throw new JMeterManagerException("JMeter session " + sessionID + " could not be started", e);
         }
         
 
@@ -103,16 +98,16 @@ public class JMeterSessionImpl implements IJMeterSession {
             return;
         }
         long timeout = DEFAULT_TIMER;
-        long  endTime = System.currentTimeMillis()  timeout;
-               long  heartbeat = System.currentTimeMillis()  500;
+        long  endTime = System.currentTimeMillis() + timeout;
+               long  heartbeat = System.currentTimeMillis() + 500;
                while(System.currentTimeMillis() < endTime) {
                        if (System.currentTimeMillis() > heartbeat) {
-                               logger.info("Waiting for JMeter session "  sessionID  " to finish");
-                               heartbeat = System.currentTimeMillis()  30000;
+                               logger.info("Waiting for JMeter session " + sessionID + " to finish");
+                               heartbeat = System.currentTimeMillis() + 30000;
                        }
                        try {
                                if (!container.isRunning()) {
-                                       logger.info("JMeter session "  sessionID  " has finished");
+                                       logger.info("JMeter session " + sessionID + " has finished");
                                        return;
                                }
                                Thread.sleep(1000);
@@ -127,16 +122,16 @@ public class JMeterSessionImpl implements IJMeterSession {
         if ( container == null) {
             return;
         }
-        long  endTime = System.currentTimeMillis()  timeout;
-               long  heartbeat = System.currentTimeMillis()  500;
+        long  endTime = System.currentTimeMillis() + timeout;
+               long  heartbeat = System.currentTimeMillis() + 500;
                while(System.currentTimeMillis() < endTime) {
                        if (System.currentTimeMillis() > heartbeat) {
-                               logger.info("Waiting for JMeter session "  sessionID  " to finish");
-                               heartbeat = System.currentTimeMillis()  30000;
+                               logger.info("Waiting for JMeter session " + sessionID + " to finish");
+                               heartbeat = System.currentTimeMillis() + 30000;
                        }
                        try {
                                if (!container.isRunning()) {
-                                       logger.info("JMeter session "  sessionID  " has finished");
+                                       logger.info("JMeter session " + sessionID + " has finished");
                                        return;
                                }
                                Thread.sleep(1000);
@@ -153,7 +148,7 @@ public class JMeterSessionImpl implements IJMeterSession {
      public void setJmxFile(InputStream jmxStream) throws JMeterManagerException{
         
         try {
-            container.storeFile("/jmx/"  jmxPath, jmxStream);
+            container.storeFile("/jmx/" + jmxPath, jmxStream);
         } catch (Exception e) {
             throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
         }
@@ -167,7 +162,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                 return null;
             }
 
-            String jmx = "/jmx/"  jmxPath;
+            String jmx = "/jmx/" + jmxPath;
             return container.retrieveFileAsString(jmx);
 
         } catch (Exception e) {
@@ -182,7 +177,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                 return null;
             }
 
-            String logPath = "/jmx/"  jmxPath.substring(0, jmxPath.indexOf(".jmx"))  ".log";
+            String logPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
             return container.retrieveFileAsString(logPath);
 
         } catch (Exception e) {
@@ -198,7 +193,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                 return null;
             }
 
-            String logPath = "/jmx/"  jmxPath.substring(0, jmxPath.indexOf(".jmx"))  ".log";
+            String logPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
             return container.retrieveFileAsString(logPath);
 
         } catch (Exception e) {
@@ -213,7 +208,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                 return null;
             }
 
-            String filePath = "/jmx/"  fileName;
+            String filePath = "/jmx/" + fileName;
             return container.retrieveFileAsString(filePath);
 
         } catch (Exception e) {
@@ -227,7 +222,7 @@ public class JMeterSessionImpl implements IJMeterSession {
         try {
             container.stop();
         } catch (DockerManagerException e) {
-            throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session"  sessionID);
+            throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session" + sessionID);
         } 
         
      }
@@ -238,7 +233,7 @@ public class JMeterSessionImpl implements IJMeterSession {
         try {
             return container.getExitCode();
         } catch (DockerManagerException e) {
-            throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session"  sessionID);
+            throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session" + sessionID);
         } 
 
      }

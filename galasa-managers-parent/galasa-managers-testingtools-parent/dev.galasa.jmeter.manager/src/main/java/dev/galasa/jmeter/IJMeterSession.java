@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
-import dev.galasa.jmeter.internal.JMeterManagerException;
+import dev.galasa.jmeter.JMeterManagerException;
 
 /**
  * Interface for creation, management, deletion of JMeter sessions

@@ -11,7 +11,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
-import dev.galasa.jmeter.internal.JMeterManagerException;
+import dev.galasa.jmeter.JMeterManagerException;
 
 @Component(service = JMeterPropertiesSingleton.class, immediate =  true )
 public class JMeterPropertiesSingleton {
