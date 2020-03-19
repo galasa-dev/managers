@@ -21,4 +21,6 @@ public @interface JMeterSession{
      * Provides the session with a specific jmxFile during provisioning
      */
     String jmxPath();
+
+    String propPath() default "";
 }
