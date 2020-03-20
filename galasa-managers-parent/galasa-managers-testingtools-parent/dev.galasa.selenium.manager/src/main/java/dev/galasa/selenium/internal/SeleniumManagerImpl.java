@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.selenium.internal;
 
 import java.io.IOException;
@@ -73,7 +78,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     }
 
     @GenerateAnnotatedField(annotation = SeleniumManager.class)
-    public ISeleniumManager generateHttpClient(Field field, List<Annotation> annotations) {
+    public ISeleniumManager generateSeleniumManager(Field field, List<Annotation> annotations) {
         return this;
     }
 

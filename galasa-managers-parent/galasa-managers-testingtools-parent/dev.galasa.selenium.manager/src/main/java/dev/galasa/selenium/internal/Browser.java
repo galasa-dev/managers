@@ -49,7 +49,7 @@ public enum Browser {
         case IE:
           return getIEDriver(instance);
         default:
-          return null;
+          throw new SeleniumManagerException("Unknown driver instance: " + driver);
       }
     } catch (Exception e) {
       throw new SeleniumManagerException("Unable to get driver instance", e);
