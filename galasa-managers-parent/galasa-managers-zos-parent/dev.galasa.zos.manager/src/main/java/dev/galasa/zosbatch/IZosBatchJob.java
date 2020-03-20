@@ -28,6 +28,20 @@ public interface IZosBatchJob {
     public String getJobId();
     
     /**
+     * The owner for this Job. Returns "????????" if no owner has been associated
+     * 
+     * @return batch job owner
+     */
+    public String getOwner();
+    
+    /**
+     * The type for this Job, i.e. <code>JOB</code>, <code>STC</code> or <code>TSU</code>. Returns "???" if no type has been associated
+     * 
+     * @return batch job type
+     */
+    public String getType();
+
+    /**
      * The batch job status, e.g.<br>
      * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
      * Returns "????????" if the job has not been submitted
@@ -76,5 +90,12 @@ public interface IZosBatchJob {
      * @throws ZosBatchException
      */
     public void purge() throws ZosBatchException;
+
+    /**
+     * Save the job output to the Test Results Archive.<br><b>NOTE: This is done automatically if the test submitted the job.
+     * 
+     * @throws ZosBatchException
+     */
+    public void saveOutputToTestResultsArchive() throws ZosBatchException;
 
 }

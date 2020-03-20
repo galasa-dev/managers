@@ -69,7 +69,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     private String intdrRecfm = "F";    
     private int jobWaitTimeout;
     
-    private String jobid;            
+    private String jobid;         
+    private String owner;         
+    private String type;         
     private String status;            
     private String retcode;
     private boolean jobComplete;
@@ -83,7 +85,9 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     private int uniqueId;
     
     private static final String SLASH = "/";
-    private static final String RESTJOBS_PATH = SLASH + "zosmf" + SLASH + "restjobs" + SLASH + "jobs" + SLASH;
+    private static final String QUERY = "?";
+    public static final String RESTJOBS_PATH = SLASH + "zosmf" + SLASH + "restjobs" + SLASH + "jobs";
+    
     private static final String LOG_JOB_NOT_SUBMITTED = "Job has not been submitted by manager";
     
     private static final Log logger = LogFactory.getLog(ZosBatchJobImpl.class);
@@ -96,19 +100,21 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         } else {
             this.jobcard = new ZosBatchJobcard();
         }
-        storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
-        this.jcl = parseJcl(jcl);
+        if (jcl != null) {
+            storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
+            this.jcl = parseJcl(jcl);
+
+            try {
+                this.useSysaff = UseSysaff.get(this.jobImage.getImageID());
+            } catch (ZosBatchManagerException e) {
+                throw new ZosBatchException("Unable to get use SYSAFF property value", e);
+            }
+        }
         
         try {
             this.jobWaitTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get job timeout property value", e);
-        }
-
-        try {
-            this.useSysaff = UseSysaff.get(this.jobImage.getImageID());
-        } catch (ZosBatchManagerException e) {
-            throw new ZosBatchException("Unable to get use SYSAFF property value", e);
         }
         
         try {
@@ -126,7 +132,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, RESTJOBS_PATH + SLASH, headers, jclWithJobcard(), new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -141,9 +147,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         logger.trace(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_CREATED) {
             this.jobid = responseBody.get("jobid").getAsString();
+            this.owner = responseBody.get("owner").getAsString();
+            this.type = responseBody.get("type").getAsString();
             this.retcode = jsonNull(responseBody, "retcode");
-            this.jobPath = RESTJOBS_PATH + this.jobname.getName() + SLASH + this.jobid;
-            this.jobFilesPath = this.jobPath + "/files";
+            setJobPathValues();
             logger.info("JOB " + this + " Submitted");
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -162,17 +169,27 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getJobId() {
-        return (this.jobid != null ? this.jobid : "????????");
+        return (this.jobid != null ? this.jobid : StringUtils.repeat(QUERY, 8));
+    }
+    
+    @Override
+    public String getOwner() {
+        return (this.owner != null ? this.owner : StringUtils.repeat(QUERY, 8));
+    }
+    
+    @Override
+    public String getType() {
+        return (this.type != null ? this.type : StringUtils.repeat(QUERY, 3));
     }
     
     @Override
     public String getStatus() {
-        return (this.status != null ? this.status : "????????");
+        return (this.status != null ? this.status : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getRetcode() {
-        return (this.retcode != null ? this.retcode : "????");
+        return (this.retcode != null ? this.retcode : StringUtils.repeat(QUERY, 4));
     }
 
     @Override
@@ -213,7 +230,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         
         // First, get a list of spool files
         this.jobOutput = new ZosBatchJobOutputImpl(this.jobname.getName(), this.jobid);
-        this.jobFilesPath = RESTJOBS_PATH + this.jobname.getName() + SLASH + this.jobid + "/files";
+        this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
@@ -269,6 +286,51 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         if (!isPurged()) {
             cancel(true);
         }
+    }
+    
+    @Override
+    public void saveOutputToTestResultsArchive() throws ZosBatchException {
+        if (jobOutput() == null) {
+            retrieveOutput();
+        }
+        String testMethodName = ZosBatchManagerImpl.currentTestMethod.getName();
+        logger.info(testMethodName);
+        String dirName = this.jobname.getName() + "_" + uniqueId + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+        logger.info("    " + dirName);
+        Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
+        while (iterator.hasNext()) {
+            IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
+            StringBuilder fileName = new StringBuilder();
+            fileName.append(spoolFile.getJobname());
+            fileName.append("_");
+            fileName.append(spoolFile.getJobid());
+            if (!spoolFile.getStepname().isEmpty()){
+                fileName.append("_");
+                fileName.append(spoolFile.getStepname());
+            }
+            if (!spoolFile.getProcstep().isEmpty()){
+                fileName.append("_");
+                fileName.append(spoolFile.getProcstep());
+            }
+            fileName.append("_");
+            fileName.append(spoolFile.getDdname());
+            fileName.append(".txt");
+            logger.info("        " + fileName.toString());
+            storeArtifact(spoolFile.getRecords(), dirName, fileName.toString());
+        }
+        this.jobArchived = true;
+    }
+
+    protected void setJobid(String jobid) {
+        this.jobid = jobid;
+    }
+    
+    protected void setOwner(String owner) {
+        this.owner = owner;
+    }
+    
+    protected void setType(String type) {
+        this.type = type;
     }
     
     protected void cancel(boolean purge) throws ZosBatchException {
@@ -343,7 +405,17 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     }
 
     private String jobStatus() {
-        return "JOBID=" + getJobId() + " JOBNAME=" + this.jobname.getName() + " STATUS=" + getStatus() + " RETCODE=" + getRetcode();
+        return "JOBID=" + getJobId() + 
+              " JOBNAME=" + this.jobname.getName() + 
+              " OWNER=" + getOwner() + 
+              " TYPE=" + getType() +
+              " STATUS=" + getStatus() + 
+              " RETCODE=" + getRetcode();
+    }
+
+    protected void setJobPathValues() {
+        this.jobPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid;
+        this.jobFilesPath = this.jobPath + "/files";
     }
 
     protected void updateJobStatus() throws ZosBatchException {
@@ -355,7 +427,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         
         IZosmfResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + this.jobname.getName() + "/" + this.jobid, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, RESTJOBS_PATH + SLASH + this.jobname.getName() + "/" + this.jobid, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }
@@ -369,6 +441,8 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             
         logger.trace(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
+            this.owner = jsonNull(responseBody, "owner");
+            this.type = jsonNull(responseBody, "type");
             this.status = jsonNull(responseBody, "status");
             if (this.status != null && "OUTPUT".equals(this.status)) {
                 this.jobComplete = true;
@@ -377,7 +451,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             if (retcodeProperty != null) {
                 this.retcode = retcodeProperty;
             } else {
-                this.retcode = "????";
+                this.retcode = StringUtils.repeat(QUERY, 4);
             }
             logger.debug(jobStatus());
         } else {
@@ -529,7 +603,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             jobCard.append(",\n");
         }
         
-        String memlimit = this.jobcard.getRegion();
+        String memlimit = this.jobcard.getMemlimit();
         if (memlimit != null) {
             jobCard.append("//         MEMLIMIT=");
             jobCard.append(memlimit);
@@ -597,7 +671,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         return null;
     }
 
-    protected String buildErrorString(String action, JsonObject responseBody) {
+    protected static String buildErrorString(String action, JsonObject responseBody) {
         if ("{}".equals(responseBody.toString())) {
             return "Error " + action;
         }
@@ -644,35 +718,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
 
     protected void archiveJobOutput() throws ZosBatchException {
         if (!isArchived() || !this.jobComplete) {
-            if (jobOutput() == null) {
-                retrieveOutput();
-            }
-            String testMethodName = ZosBatchManagerImpl.currentTestMethod.getName();
-            logger.info(testMethodName);
-            String dirName = this.jobname.getName() + "_" + uniqueId + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace("????", "UNKNOWN");
-            logger.info("    " + dirName);
-            Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
-            while (iterator.hasNext()) {
-                IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
-                StringBuilder fileName = new StringBuilder();
-                fileName.append(spoolFile.getJobname());
-                fileName.append("_");
-                fileName.append(spoolFile.getJobid());
-                if (!spoolFile.getStepname().isEmpty()){
-                    fileName.append("_");
-                    fileName.append(spoolFile.getStepname());
-                }
-                if (!spoolFile.getProcstep().isEmpty()){
-                    fileName.append("_");
-                    fileName.append(spoolFile.getProcstep());
-                }
-                fileName.append("_");
-                fileName.append(spoolFile.getDdname());
-                fileName.append(".txt");
-                logger.info("        " + fileName.toString());
-                storeArtifact(spoolFile.getRecords(), dirName, fileName.toString());
-            }
-            this.jobArchived = true;
+            saveOutputToTestResultsArchive();
         }
     }
 
