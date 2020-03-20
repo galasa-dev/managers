@@ -61,13 +61,19 @@ public class JMeterManagerImpl extends AbstractManager {
     @GenerateAnnotatedField(annotation = JMeterSession.class)
     public IJMeterSession generateJMeterSession(Field field, List<Annotation> annotations) throws JMeterManagerException {
 
-        
         sessionID++;
 
         IDockerContainer container;
+
+        JMeterSession sess = field.getAnnotation(JMeterSession.class);
+        this.jmxPath = sess.jmxPath();
+        this.propPath = sess.propPath();
+
+        logger.info(this.jmxPath);
+        logger.info(this.propPath);
         
         try {
-            container = dockerManager.getDockerContainer("egaillardon/jmeter");
+            container = dockerManager.provisionContainer("jmeter", "egaillardon/jmeter:latest", false, "PRIMARY");
         } catch (DockerManagerException e) {
             throw new JMeterManagerException(String.format("Unable to provision the docker container for session %d", sessionID));
         }
@@ -77,7 +83,6 @@ public class JMeterManagerImpl extends AbstractManager {
         activeSessions.add(session);
         activeContainers.add(container);
 
-        logger.info("Pls fix");
         return session;
         
     }
@@ -92,13 +97,6 @@ public class JMeterManagerImpl extends AbstractManager {
         
         List<AnnotatedField> ourFields = findAnnotatedFields(JMeterManagerField.class);
         if (!ourFields.isEmpty()) {
-            if (ourFields.get(0).toString() != null) {
-                this.jmxPath = ourFields.get(0).toString();
-            }
-            if (ourFields.size() > 1) 
-                this.propPath = ourFields.get(1).toString();
- 
-            logger.info(this.jmxPath);
             youAreRequired(allManagers, activeManagers);
         }
 

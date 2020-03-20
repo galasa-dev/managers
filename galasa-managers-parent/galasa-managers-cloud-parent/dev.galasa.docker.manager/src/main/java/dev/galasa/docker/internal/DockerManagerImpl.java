@@ -26,6 +26,7 @@ import dev.galasa.docker.IDockerManager;
 import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerPropertiesSingleton;
 import dev.galasa.docker.internal.properties.DockerRegistry;
+import dev.galasa.docker.spi.IDockerManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -46,7 +47,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
  * @author James Davies
  */
 @Component(service = { IManager.class })
-public class DockerManagerImpl extends AbstractManager implements IDockerManager {
+public class DockerManagerImpl extends AbstractManager implements IDockerManagerSpi {
     protected final String               NAMESPACE = "docker";
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
@@ -142,7 +143,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @return
      * @throws DockerManagerException
      */
-    private IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerEngineTag) throws DockerManagerException {
+    @Override
+    public IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerEngineTag) throws DockerManagerException {
         try {
             return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start, dockerEngineTag);
         } catch (DockerProvisionException e) {
