@@ -14,15 +14,22 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
  * zOS Batch jobname prefix
- * <p>
- * The 1-7 character for the zOS Batch jobname prefix when submitted via zOSMF
- * </p><p>
- * The property is:<br>
- * {@code zosbatch.jobname.[imageid].prefix=JOB} 
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_JOBNAME_PREFIX}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosbatch.jobname.[imageid].prefix
+ * 
+ * @galasa.description The zOS Batch jobname prefix when submitted via zOSMF
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default GAL
+ * 
+ * @galasa.valid_values 1-7 characters
+ * 
+ * @galasa.examples 
+ * <code>zosbatch.jobname.MVSA.prefix=JOB</code><br>
+ * <code>zosbatch.jobname.default.prefix=XXX</code>
  *
  */
 public class JobnamePrefix extends CpsProperties {
