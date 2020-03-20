@@ -65,7 +65,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                 String jtlPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
                 String prop = "/prop/" + propPath;
                 
-                if ((jmxPath.toLowerCase().endsWith(".jmx")) && container.isRunning()) {
+                if (jmxPath.toLowerCase().endsWith(".jmx")) {
 
                     container.start();
                     logger.info("Container from session " + sessionID + " has started.");

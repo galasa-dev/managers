@@ -36,8 +36,8 @@ import dev.galasa.jmeter.JMeterManagerException;
     @JMeterSession(jmxPath = "test.jmx")
     public IJMeterSession session;
 
-    @JMeterSession(jmxPath = "test.jmx", propPath = "jmeter.properties")
-    public IJMeterSession session2;
+    // @JMeterSession(jmxPath = "test.jmx", propPath = "jmeter.properties")
+    // public IJMeterSession session2;
 
 
     @Test
@@ -45,25 +45,25 @@ import dev.galasa.jmeter.JMeterManagerException;
 
       assertThat(logger).isNotNull();
       assertThat(session).isNotNull();
-      assertThat(session2).isNotNull();
+      //assertThat(session2).isNotNull();
 
     }
 
-    // @Test
-    // public void startJMeterTestWithoutProperties() throws JMeterManagerException, TestBundleResourceException {
+    @Test
+    public void startJMeterTestWithoutProperties() throws JMeterManagerException, TestBundleResourceException {
        
-    //   IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-    //   InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
+      IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
+      InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
 
-    //   session.setJmxFile(jmxStream);
-    //   session.startJmeter();
-    //   session.waitForJMeter();
-    //   logger.info("test");
-    //   String logOutput = session.getLogFile();
+      session.setJmxFile(jmxStream);
+      session.startJmeter();
+      session.waitForJMeter();
+      logger.info("test");
+      String logOutput = session.getLogFile();
 
-    //   assertThat(logOutput).contains("Created the tree successfully using test.jmx");
-    //   assertThat(logOutput).contains("... end of run");
-    // }
+      assertThat(logOutput).contains("Created the tree successfully using test.jmx");
+      assertThat(logOutput).contains("... end of run");
+    }
 
     // @Test
     // public void startJMeterTestWithProperties() throws JMeterManagerException, TestBundleResourceException{
