@@ -1,5 +1,5 @@
 <details>
-<summary>### Create a Docker Container</summary>
+<summary>Create a Docker Container</summary>
 
 The following snippet shows the minimum code that is required to request a Docker Container in a Galasa test:
 
@@ -17,7 +17,7 @@ There is no limit in Galasa on how many Docker Containers can be used within a s
 </details>
 
 <details>
-<summary>### Obtain the IP address and port of an exposed container port</summary>
+<summary>Obtain the IP address and port of an exposed container port</summary>
 
 Find the IP address and port by using the following code which provisions and starts an Apache HTTP server on port 80:
 
@@ -29,7 +29,8 @@ InetSocketAddress port80 = httpContainer.getFirstSocketForExposedPort(80);
 ```
 </details>
 
-### Stop and Start a container
+<details>
+<summary>Stop and Start a container</summary>
 
 Stop and start your Apache HTTP Server to test how your application responds by using the following code:
 
@@ -41,8 +42,10 @@ httpContainer.stop();
 
 httpContainer.start();
 ```
+</details>
 
-### Run a command in the container
+<details>
+<summary>Run a command in the container</summary>
 
 Use the following code to execute a command within the Docker Container and return the resulting output:
 ```
@@ -53,8 +56,10 @@ IDockerExec exec = httpContainer.exec("ls","-l","/var/log");
 exec.waitForExec();
 String output = exec.getCurrentOutput();
 ```
+</details>
 
-### Retrieve the log of the container
+<details>
+<summary>Retrieve the log of the container</summary>
 
 Use the following code to retrieve the container log:
 
@@ -64,3 +69,4 @@ public IDockercontainer httpcontainer;
 ...
 String log = httpContainer.getStdOut();
 ```
+</details>
