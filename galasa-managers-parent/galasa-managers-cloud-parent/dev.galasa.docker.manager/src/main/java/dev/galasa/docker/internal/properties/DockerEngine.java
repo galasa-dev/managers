@@ -12,7 +12,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 
 
 /**
- * Docker Engine CPS Property
+ * <details><summary>Docker Engine CPS Property</summary>
  * 
  * @galasa.cps.property
  * 
@@ -35,7 +35,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * Currently, the Docker Manager supports only a single Docker Engine although it is planned to allow multiple Engines to be configured.<br>
  * To allow local runs to access the local Docker Engine, you must add this property to the CPS and enable the TCP port of your local Docker Engine.<br>
  * If the Docker Engine is not using the default TCP port, you must provide the *docker.engine.port* configuration property in the CPS.
- * 
+ * </details>
  */
 public class DockerEngine extends CpsProperties {
 
