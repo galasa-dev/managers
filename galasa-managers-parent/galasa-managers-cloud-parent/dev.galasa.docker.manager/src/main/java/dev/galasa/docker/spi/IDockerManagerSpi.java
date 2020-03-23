@@ -16,8 +16,6 @@ public interface IDockerManagerSpi extends IDockerManager {
     /**
      * This method is able to provide the dockerContainer instance with a defined Dockerhub Container Tag
      */
-    @NotNull
-    IDockerContainer getDockerContainer(String dockerContainerTag) throws DockerManagerException;
     
     @NotNull
     IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerEngineTag) throws DockerManagerException;

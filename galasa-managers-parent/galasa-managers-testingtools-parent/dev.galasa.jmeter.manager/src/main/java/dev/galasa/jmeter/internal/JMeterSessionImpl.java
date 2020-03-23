@@ -13,6 +13,8 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
+import dev.galasa.docker.IDockerExec;
+import dev.galasa.docker.IDockerImage;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
@@ -60,30 +62,42 @@ public class JMeterSessionImpl implements IJMeterSession {
     public void startJmeter() throws JMeterManagerException {
         
         try {
-            if (!container.isRunning()) {
                 
-                String jtlPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
+                String jtlPath = "/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
                 String prop = "/prop/" + propPath;
+ 
                 
                 if (jmxPath.toLowerCase().endsWith(".jmx")) {
 
-                    container.start();
                     logger.info("Container from session " + sessionID + " has started.");
 
                     if ( propPath.isEmpty()) {
-                        container.exec("-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath);
+
+                        IDockerExec exec = container.exec("jmeter", "-n", "-t", jmxPath, "-l", jtlPath);
+                        
+                        if ( exec.getExitCode() == 0) {
+                            logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
+                        } else {
+                            throw new JMeterManagerException("The Jmeter command has failed");
+                        }
+                        logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
                     } else {
-                        container.exec("-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath, "-p", prop);
+                        
+                        IDockerExec exec = container.exec("jmeter", "-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath, "-p", prop);
+                    
+                        if ( exec.getExitCode() == 0) {
+                            logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
+                        } else {
+                            throw new JMeterManagerException("The Jmeter command has failed");
+                        }
                     }
                     
-                    logger.info("Container from session " + sessionID + " has exectuted the JMeter commands.");
+                    logger.info("Container from session " + sessionID + " has executed the JMeter commands.");
                     
                 } else {
                     throw new JMeterManagerException("The JmxPath has not been specified correctly.");
                 }
-            } else {
-                throw new JMeterManagerException("Container of session " + sessionID + " is already running and in the process of executing JMeter.");
-            }
+            
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("JMeter session " + sessionID + " could not be started", e);
         }
@@ -147,13 +161,17 @@ public class JMeterSessionImpl implements IJMeterSession {
      @Override
      public void setJmxFile(InputStream jmxStream) throws JMeterManagerException{
         
-        try {
-            container.storeFile("/jmx/" + jmxPath, jmxStream);
-        } catch (Exception e) {
-            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
-        }
-
-     }
+            try {
+                    container.start();
+                    container.storeFile("/jmeter/" + jmxPath, jmxStream);
+                    logger.info(jmxPath + " has been stored in the container.");
+                
+            } catch (Exception e) {
+                throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
+            }
+     } 
+       
+     
 
      @Override
      public String getJmxFile() throws JMeterManagerException {
@@ -166,7 +184,7 @@ public class JMeterSessionImpl implements IJMeterSession {
             return container.retrieveFileAsString(jmx);
 
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not retrieve the log file from the container.");
+            throw new JMeterManagerException("Could not retrieve the jmx file from the container.");
         }
      }
 
@@ -197,7 +215,7 @@ public class JMeterSessionImpl implements IJMeterSession {
             return container.retrieveFileAsString(logPath);
 
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not retrieve the log file from the container.");
+            throw new JMeterManagerException("Could not retrieve the console file from the container.");
         }
      }
 
@@ -212,7 +230,7 @@ public class JMeterSessionImpl implements IJMeterSession {
             return container.retrieveFileAsString(filePath);
 
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not retrieve the log file from the container.");
+            throw new JMeterManagerException("Could not retrieve " + fileName + " from the container.");
         }
      }
 

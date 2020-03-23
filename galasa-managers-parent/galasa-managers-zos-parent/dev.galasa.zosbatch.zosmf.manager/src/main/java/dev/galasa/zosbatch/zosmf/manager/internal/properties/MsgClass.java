@@ -40,7 +40,12 @@ public class MsgClass extends CpsProperties {
 
             if (msgClass == null) {
                 return DEFAULT_CLASS;
-            } 
+            }  
+            
+            msgClass = msgClass.toUpperCase();
+            if (msgClass.length() != 1 || !(msgClass.matches("^[A-Z0-9]*$"))) {
+                throw new ZosBatchManagerException("Message class value must be 1 character in the range [A-Z0-9]");
+            }
             
             return msgClass;
         } catch (ConfigurationPropertyStoreException e) {

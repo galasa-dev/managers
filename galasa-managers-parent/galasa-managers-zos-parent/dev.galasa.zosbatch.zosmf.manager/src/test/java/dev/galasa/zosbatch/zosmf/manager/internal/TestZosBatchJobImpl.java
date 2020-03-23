@@ -38,6 +38,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
@@ -65,6 +66,9 @@ public class TestZosBatchJobImpl {
     private ZosBatchJobnameImpl zosJobnameMock;
 
     @Mock
+    private ZosBatchJobcard zosBatchJobcardMock;
+
+    @Mock
     private ZosmfManagerImpl zosmfManagerMock;
     
     @Mock
@@ -79,9 +83,32 @@ public class TestZosBatchJobImpl {
     @Mock
     private ResultArchiveStorePath resultArchiveStorePathMock;
 
+    private static final String FIXED_IMAGE_ID = "IMAGE";
+
     private static final String FIXED_JOBNAME = "GAL45678";
     
     private static final String FIXED_JOBID = "JOB12345";
+    
+    private static final String FIXED_OWNER = "USERID";
+    
+    private static final String FIXED_TYPE = "TYP";
+    
+    private static final String FIXED_JOBCARD_ACCOUNT = "ACCOUNT";
+    
+    private static final String FIXED_JOBCARD_PROGRAMMER_NAME = "PROGRAMMER";
+    
+    private static final String FIXED_JOBCARD_CLASS = "A";
+    
+    private static final String FIXED_JOBCARD_MSGCLASS = "A";
+    
+    private static final String FIXED_JOBCARD_MSGLEVEL = "(1,1)";
+    
+    private static final String FIXED_JOBCARD_REGION = "0M";
+    private static final String FIXED_JOBCARD_MEMLIMIT = "0M";
+    private static final String FIXED_JOBCARD_TYPRUN = "SCAN";
+    private static final String FIXED_JOBCARD_USERID = FIXED_OWNER;
+    private static final String FIXED_JOBCARD_PASSWORD = "PASSWORD";
+    private static final String FIXED_JOBCARD_COND = "(4,LT)";
 
     private static final String FIXED_STATUS_OUTPUT = "OUTPUT";
 
@@ -100,7 +127,7 @@ public class TestZosBatchJobImpl {
         singleton.activate();
         ZosBatchZosmfPropertiesSingleton.setCps(cps);        
                 
-        Mockito.when(zosImageMock.getImageID()).thenReturn("image");
+        Mockito.when(zosImageMock.getImageID()).thenReturn(FIXED_IMAGE_ID);
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
         
@@ -122,12 +149,18 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", zosBatchJobcardMock);
         zosBatchJobSpy = Mockito.spy(zosBatchJob);
     }
     
     @Test
     public void testConstructor() throws ZosBatchException {
+        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        
+        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        
+        zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, null, null);
         Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
     }
     
@@ -161,8 +194,22 @@ public class TestZosBatchJobImpl {
     @Test
     public void testGetJobId() {
         Assert.assertEquals("getJobId() should return the 'unknown' value", "????????", zosBatchJob.getJobId());
-        Whitebox.setInternalState(zosBatchJob, "jobid", FIXED_JOBID);
+        zosBatchJob.setJobid(FIXED_JOBID);
         Assert.assertEquals("getJobId() should return the supplied value", FIXED_JOBID, zosBatchJob.getJobId());
+    }
+    
+    @Test
+    public void testGetOwner() {
+        Assert.assertEquals("getOwner() should return the 'unknown' value", "????????", zosBatchJob.getOwner());
+        zosBatchJob.setOwner(FIXED_OWNER);
+        Assert.assertEquals("getOwner() should return the supplied value", FIXED_OWNER, zosBatchJob.getOwner());
+    }
+    
+    @Test
+    public void testGetType() {
+        Assert.assertEquals("getType() should return the 'unknown' value", "???", zosBatchJob.getType());
+        zosBatchJob.setType(FIXED_TYPE);
+        Assert.assertEquals("getType() should return the supplied value", FIXED_TYPE, zosBatchJob.getType());
     }
     
     @Test
@@ -642,14 +689,47 @@ public class TestZosBatchJobImpl {
     @Test
     public void testJclWithJobcard() throws ZosBatchManagerException {
         Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", false);
-        String jobWithJobcard = "//" + FIXED_JOBNAME + " JOB"; 
-        Assert.assertThat("jclWithJobcard() should a return valid job card", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
-        Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", true);
-        jobWithJobcard = jobWithJobcard + " ,\n//         CLASS=A,\n//         MSGCLASS=A,\n//         MSGLEVEL=(1,1)\n/*JOBPARM SYSAFF="; 
-        Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
-        Whitebox.setInternalState(zosBatchJobSpy, "jcl", "JCL\n"); 
-        Assert.assertThat("jclWithJobcard() should return a valid job card with SYSAFF", zosBatchJobSpy.jclWithJobcard(), StringStartsWith.startsWith(jobWithJobcard));
+        String jobcard = "//" + FIXED_JOBNAME + " JOB @@@@,\n" + 
+                         "//         CLASS=A,\n" + 
+                         "//         MSGCLASS=A,\n" + 
+                         "//         MSGLEVEL=(1,1)";
+        String jobWithJobcard = jobcard.replace("@@@@", "") + "\nJCL\n"; 
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
         
+        Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", true);
+        jobWithJobcard = jobcard.replace("@@@@", "") + "\n/*JOBPARM SYSAFF=" + FIXED_IMAGE_ID + "\nJCL\n"; 
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
+
+        Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", false);
+        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(FIXED_JOBCARD_ACCOUNT);
+        jobWithJobcard = jobcard.replace("@@@@", "'" + FIXED_JOBCARD_ACCOUNT + "'") + "\nJCL\n";
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
+
+        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(null);
+        Mockito.when(zosBatchJobcardMock.getProgrammerName()).thenReturn(FIXED_JOBCARD_PROGRAMMER_NAME);
+        jobWithJobcard = jobcard.replace("@@@@", ",'" + FIXED_JOBCARD_PROGRAMMER_NAME + "'") + "\nJCL\n";
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
+
+        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(null);
+        Mockito.when(zosBatchJobcardMock.getProgrammerName()).thenReturn(null);
+        Mockito.when(zosBatchJobcardMock.getInputClass()).thenReturn(FIXED_JOBCARD_CLASS);
+        Mockito.when(zosBatchJobcardMock.getMsgClass()).thenReturn(FIXED_JOBCARD_MSGCLASS);
+        Mockito.when(zosBatchJobcardMock.getMsgLevel()).thenReturn(FIXED_JOBCARD_MSGLEVEL);
+        Mockito.when(zosBatchJobcardMock.getRegion()).thenReturn(FIXED_JOBCARD_REGION);
+        Mockito.when(zosBatchJobcardMock.getMemlimit()).thenReturn(FIXED_JOBCARD_MEMLIMIT);
+        Mockito.when(zosBatchJobcardMock.getTyprun()).thenReturn(ZosBatchJobcard.Typrun.SCAN);
+        Mockito.when(zosBatchJobcardMock.getUserid()).thenReturn(FIXED_JOBCARD_USERID);
+        Mockito.when(zosBatchJobcardMock.getPassword()).thenReturn(FIXED_JOBCARD_PASSWORD);
+        Mockito.when(zosBatchJobcardMock.getCond()).thenReturn(FIXED_JOBCARD_COND);
+        jobWithJobcard = jobcard.replace("@@@@", ",\n" +
+                "//         REGION=" + FIXED_JOBCARD_REGION + ",\n" + 
+                "//         MEMLIMIT=" + FIXED_JOBCARD_MEMLIMIT + ",\n" + 
+                "//         TYPRUN=" + FIXED_JOBCARD_TYPRUN + ",\n" +
+                "//         USERID=" + FIXED_JOBCARD_USERID + ",\n" +
+                "//         PASSWORD=" + FIXED_JOBCARD_PASSWORD + ",\n" + 
+                "//         COND=" + FIXED_JOBCARD_COND) + "\nJCL\n";
+        Whitebox.setInternalState(zosBatchJobSpy, "jcl", "JCL\n");
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
     }
     
     @Test 
@@ -715,7 +795,7 @@ public class TestZosBatchJobImpl {
     @Test
     public void testBuildErrorString() {
         String expectedString = "Error action";
-        String returnString = zosBatchJobSpy.buildErrorString("action", new JsonObject());
+        String returnString = ZosBatchJobImpl.buildErrorString("action", new JsonObject());
         Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
         
         JsonObject jsonObject = getJsonObject();
@@ -724,7 +804,7 @@ public class TestZosBatchJobImpl {
                 "details:details\n" + 
                 "stack:\n" + 
                 "stack";
-        returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
+        returnString = ZosBatchJobImpl.buildErrorString("action", jsonObject);
         Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
         
         jsonObject.remove("details");
@@ -740,7 +820,7 @@ public class TestZosBatchJobImpl {
                 "details line 2\n" + 
                 "stack:\n" + 
                 "stack";
-        returnString = zosBatchJobSpy.buildErrorString("action", jsonObject);
+        returnString = ZosBatchJobImpl.buildErrorString("action", jsonObject);
         Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
     }
     
@@ -761,8 +841,10 @@ public class TestZosBatchJobImpl {
         PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", "#JOBID#");
         Whitebox.setInternalState(zosBatchJobSpy, "status", "#STATUS#");
+        Whitebox.setInternalState(zosBatchJobSpy, "owner", "#OWNER#");
+        Whitebox.setInternalState(zosBatchJobSpy, "type", "#TYPE#");
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", "#RETCODE#");
-        String expectedString = "JOBID=#JOBID# JOBNAME=" + FIXED_JOBNAME + " STATUS=#STATUS# RETCODE=#RETCODE#";
+        String expectedString = "JOBID=#JOBID# JOBNAME=" + FIXED_JOBNAME + " OWNER=#OWNER# TYPE=#TYPE# STATUS=#STATUS# RETCODE=#RETCODE#";
         Assert.assertEquals("toString() should return supplied value", expectedString, zosBatchJobSpy.toString());
         
         PowerMockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
@@ -864,6 +946,8 @@ public class TestZosBatchJobImpl {
         JsonObject responseBody = new JsonObject();
         responseBody.addProperty("jobname", FIXED_JOBNAME);
         responseBody.addProperty("jobid", FIXED_JOBID);
+        responseBody.addProperty("owner", FIXED_OWNER);
+        responseBody.addProperty("type", FIXED_TYPE);
         responseBody.addProperty("retcode", FIXED_RETCODE_0000);
         responseBody.addProperty("status", FIXED_STATUS_OUTPUT);
         responseBody.addProperty("category", 0);

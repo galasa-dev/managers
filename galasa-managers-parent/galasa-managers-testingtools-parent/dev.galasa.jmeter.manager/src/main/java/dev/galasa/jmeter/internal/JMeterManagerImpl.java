@@ -73,7 +73,7 @@ public class JMeterManagerImpl extends AbstractManager {
         logger.info(this.propPath);
         
         try {
-            container = dockerManager.provisionContainer("jmeter", "egaillardon/jmeter:latest", false, "PRIMARY");
+            container = dockerManager.provisionContainer("jmeter", "galasa/jmeter:latest", false, "PRIMARY");
         } catch (DockerManagerException e) {
             throw new JMeterManagerException(String.format("Unable to provision the docker container for session %d", sessionID));
         }

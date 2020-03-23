@@ -23,7 +23,7 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     private String name;
 
     private String jobNamePrefix;
-    
+        
     public ZosBatchJobnameImpl(@NotNull String imageId) throws ZosBatchException {
 
         try {
@@ -42,5 +42,11 @@ public class ZosBatchJobnameImpl implements IZosBatchJobname {
     @Override
     public String toString() {
         return this.name;
+    }
+    
+    protected ZosBatchJobnameImpl() throws ZosBatchException {}
+    
+    protected void setName(String name) {
+        this.name = name;
     }
 }

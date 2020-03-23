@@ -11,15 +11,22 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
 
 /**
  * Restrict zOS batch processing to the zOSMF server on the specified image
- * <p>
- * Use only the zOSMF server running on the image associated with the zOS Batch job
- * </p><p>
- * The property is:<br>
- * {@code zosbatch.batchjob.[imageid].restrict.to.image=true}
- * </p>
- * <p>
- * The default value is false
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosbatch.batchjob.[imageid].restrict.to.image
+ * 
+ * @galasa.description Use only the zOSMF server running on the image associated with the zOS Batch job
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default false
+ * 
+ * @galasa.valid_values true or false
+ * 
+ * @galasa.examples 
+ * <code>zosbatch.batchjob.MVSA.restrict.to.image=true</code><br>
+ * <code>zosbatch.batchjob.default.restrict.to.image=false</code>
  *
  */
 public class RestrictToImage extends CpsProperties {
