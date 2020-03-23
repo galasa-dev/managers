@@ -42,6 +42,11 @@ public class InputClass extends CpsProperties {
                 return DEFAULT_CLASS;
             } 
             
+            inputClass = inputClass.toUpperCase();
+            if (inputClass.length() == 0 || inputClass.length() > 8 || !(inputClass.matches("^[A-Z0-9]*$"))) {
+                throw new ZosBatchManagerException("Input class value must be between 1 and 8 characters in the range [A-Z0-9]");
+            }
+            
             return inputClass;
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosBatchManagerException("Problem asking the CPS for the zOSMF default input class for zOS image "  + image.getImageID(), e);

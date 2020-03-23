@@ -311,7 +311,7 @@ public class ZosmfImpl implements IZosmf {
             this.httpClient.build();
         } catch (HttpClientException | ZosManagerException | URISyntaxException e) {
             throw new ZosmfException("Unable to create HTTP Client", e);
-        }        
+        }
         
         try {
             this.requestRetry = RequestRetry.get(image.getImageID());

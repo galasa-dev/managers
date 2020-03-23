@@ -162,31 +162,6 @@ public class TestZosConsoleCommandImpl {
     }
 
     @Test
-    public void testConsoleName() throws ZosConsoleException {
-         Assert.assertEquals("setConsoleName() should return the default console name", "defcn", zosConsoleCommand.consoleName(null));
-         Assert.assertEquals("setConsoleName() should return " + CONSOLE_NAME, CONSOLE_NAME, zosConsoleCommand.consoleName(CONSOLE_NAME));
-    }
-
-    @Test
-    public void testConsoleNameExceptionTooShort() throws ZosConsoleException {
-        exceptionRule.expect(ZosConsoleException.class);        
-        String consoleName = "1";
-        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
-         
-        zosConsoleCommand.consoleName(consoleName);
-    }
-
-
-    @Test
-    public void testConsoleNameExceptionToLong() throws ZosConsoleException {
-        exceptionRule.expect(ZosConsoleException.class);        
-        String consoleName = "123456789";
-        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
-         
-        zosConsoleCommand.consoleName(consoleName);
-    }
-
-    @Test
     public void testLogUnableToIsuueCommand() {
         Whitebox.setInternalState(zosConsoleCommandSpy, "command", CONSOLE_COMMAND);
         String response = "Unable to issue console command \"" + CONSOLE_COMMAND + "\"";
@@ -199,12 +174,12 @@ public class TestZosConsoleCommandImpl {
         Whitebox.setInternalState(zosConsoleCommandSpy, "command", CONSOLE_COMMAND);
         String nullString = null;
         Whitebox.setInternalState(zosConsoleCommandSpy, "commandImmediateResponse", nullString);
-        Whitebox.setInternalState(zosConsoleCommandSpy, "imageId", nullString);
+        Whitebox.setInternalState(zosConsoleCommandSpy, "image", nullString);
         String response = "COMMAND=" + CONSOLE_COMMAND;
         Assert.assertEquals("toString() should return the correct String", response, zosConsoleCommandSpy.toString());
 
-        Whitebox.setInternalState(zosConsoleCommandSpy, "imageId", "IMAGE");
-        response = response + " IMAGE=IMAGE";
+        Whitebox.setInternalState(zosConsoleCommandSpy, "image", zosImageMock);
+        response = response + " IMAGE=image";
         Assert.assertEquals("toString() should return the correct String", response, zosConsoleCommandSpy.toString());
 
         Whitebox.setInternalState(zosConsoleCommandSpy, "commandImmediateResponse", CONSOLE_RESOPNSE);

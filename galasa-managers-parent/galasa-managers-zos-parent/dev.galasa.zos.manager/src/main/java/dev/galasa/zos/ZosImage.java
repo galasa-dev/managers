@@ -30,7 +30,7 @@ public @interface ZosImage {
     /**
      * The tag of the zOS Image this variable is to be populated with
      */
-    String imageTag() default "primary";
+    String imageTag() default "PRIMARY";
     
     /**
      * Capabilities required of this zOS Image, if any.
