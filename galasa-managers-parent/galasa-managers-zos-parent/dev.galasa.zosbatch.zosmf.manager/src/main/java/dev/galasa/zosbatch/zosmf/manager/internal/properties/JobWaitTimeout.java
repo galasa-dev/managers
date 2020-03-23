@@ -11,20 +11,27 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
  * zOS Batch job execution wait timeout
- * <p>
- * The value in seconds to wait for the zOS Batch job execution to complete when submitted via zOSMF
- * </p><p>
- * The property is:<br>
- * {@code zosbatch.batchjob.[imageid].timeout=60}
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_JOB_WAIT_TIMEOUT}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosbatch.batchjob.[imageid].timeout
+ * 
+ * @galasa.description The value in seconds to wait for the zOS Batch job execution to complete when submitted via zOSMF
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default 350
+ * 
+ * @galasa.valid_values 0 to {@link Integer#MAX_VALUE}
+ * 
+ * @galasa.examples 
+ * <code>zosbatch.batchjob.MVSA.timeout=350</code><br>
+ * <code>zosbatch.batchjob.default.timeout=60</code>
  *
  */
 public class JobWaitTimeout extends CpsProperties {
 
-    private static final int DEFAULT_JOB_WAIT_TIMEOUT = 5 * 60;
+    private static final int DEFAULT_JOB_WAIT_TIMEOUT = 300;
 
     public static int get(String imageId) throws ZosBatchManagerException {
         try {

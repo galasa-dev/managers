@@ -40,7 +40,11 @@ public class MsgLevel extends CpsProperties {
 
             if (messageLevel == null) {
                 return DEFAULT_LEVEL;
-            } 
+            }  
+            
+            if (!(messageLevel.matches("[0-3]|(^[\\(]([0-3]?)[,][0-2]?[\\)])"))) {
+                throw new ZosBatchManagerException("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
+            }
             
             return messageLevel;
         } catch (ConfigurationPropertyStoreException e) {
