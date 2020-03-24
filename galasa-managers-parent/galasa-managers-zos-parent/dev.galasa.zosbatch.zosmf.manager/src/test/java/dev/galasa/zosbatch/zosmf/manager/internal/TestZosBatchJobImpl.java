@@ -37,6 +37,7 @@ import com.google.gson.JsonPrimitive;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
@@ -79,6 +80,12 @@ public class TestZosBatchJobImpl {
     
     @Mock
     private IZosmfResponse zosmfResponseMockStatus;
+    
+    @Mock
+    private ZosBatchJobOutputImpl zosBatchJobOutputMock;
+    
+    @Mock
+    private IZosBatchJobOutputSpoolFile zosBatchJobOutputSpoolFileMock;
     
     @Mock
     private ResultArchiveStorePath resultArchiveStorePathMock;
@@ -325,6 +332,11 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
         Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
+        
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
+        
+        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
     }
     
     @Test
@@ -445,7 +457,7 @@ public class TestZosBatchJobImpl {
     }
 
     @Test
-    public void testPurgeJob() throws ZosBatchException, ZosmfException {
+    public void testPurge() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
 
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -490,6 +502,14 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Purge job, category:0, rc:0, reason:0, message:message"));
 
         zosBatchJobSpy.purge();
+    }
+
+    @Test
+    public void testGetSpoolFile() throws ZosBatchException, ZosmfException {
+        Mockito.when(zosBatchJobOutputMock.getSpoolFile(Mockito.any())).thenReturn(zosBatchJobOutputSpoolFileMock);
+        PowerMockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+        
+        Assert.assertEquals("getSpoolFile() should return the the mocked IZosBatchJobOutputSpoolFile", zosBatchJobOutputSpoolFileMock, zosBatchJobSpy.getSpoolFile("DDNAME"));
     }
 
     @Test
@@ -639,7 +659,20 @@ public class TestZosBatchJobImpl {
     }
     
     @Test
-    public void testAddOutputZosmfException() throws ZosBatchException, ZosmfException {
+    public void testAddOutputSpoolFileNotFound() throws ZosBatchException, ZosmfException {
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);        
+        PowerMockito.doReturn(true).when(zosBatchJobSpy).spoolFileNotFound(Mockito.any());
+        
+        zosBatchJobSpy.addOutputFileContent(null, null);
+
+        Assert.assertEquals("Dummy assert", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
+    }
+    
+    @Test
+    public void testAddOutputFileContentZosmfException() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
@@ -649,7 +682,7 @@ public class TestZosBatchJobImpl {
     }
     
     @Test
-    public void testAddOutputZosmfResponseException() throws ZosBatchException, ZosmfException {
+    public void testAddOutputFileContentZosmfResponseException1() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -662,7 +695,7 @@ public class TestZosBatchJobImpl {
     }
     
     @Test
-    public void testAddOutputZosmfResponseException1() throws ZosBatchException, ZosmfException {
+    public void testAddOutputFileContentZosmfResponseException2() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getTextContent()).thenReturn("content");
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND); 
@@ -675,10 +708,23 @@ public class TestZosBatchJobImpl {
     }
     
     @Test
-    public void testAddOutputBadHttpResponseException() throws ZosBatchException, ZosmfException {
+    public void testAddOutputBadHttpResponseException1() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage(StringStartsWith.startsWith("Error Retrieve job output, category:0, rc:0, reason:0, message:message"));
+
+        zosBatchJobSpy.addOutputFileContent(null, null);
+    }
+    
+    @Test
+    public void testAddOutputBadHttpResponseException2() throws ZosBatchException, ZosmfException {
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
         
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Retrieve job output, category:0, rc:0, reason:0, message:message"));
@@ -834,6 +880,33 @@ public class TestZosBatchJobImpl {
 
         JsonObject.addProperty("property", "value");
         Assert.assertEquals("jsonNull() should return value", "value", zosBatchJob.jsonNull(JsonObject, "property"));
+    }
+    
+    @Test
+    public void testSpoolFileNotFound() {
+        JsonObject JsonObject = new JsonObject();
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+
+        JsonObject.addProperty("category", 6);
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+
+        JsonObject.addProperty("rc", 4);
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+
+        JsonObject.addProperty("reason", 12);
+        Assert.assertTrue("spoolFileNotFound() should return true", zosBatchJob.spoolFileNotFound(JsonObject));
+    }
+    
+    @Test
+    public void testJosnZero() {
+        JsonObject JsonObject = new JsonObject();
+        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJob.jsonZero(JsonObject, "none"));
+
+        JsonObject.add("empty", JsonNull.INSTANCE);
+        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJob.jsonZero(JsonObject, "empty"));
+
+        JsonObject.addProperty("property", 99);
+        Assert.assertEquals("jsonZero() should return 99", 99, zosBatchJob.jsonZero(JsonObject, "property"));
     }
     
     @Test
