@@ -14,7 +14,6 @@ At the end of the test, the Docker Manager automatically stops and discards the 
 
 There is no limit in Galasa on how many Docker Containers can be used within a single test. The only limit is the number of Docker Containers that can be started in the Galasa Ecosystem. This limit is set by the Galasa Administrator and is typically set to the maximum number of containers that can be supported by the Docker Server or Swarm.  If there are not enough slots available for an automated run, the run is put back on the queue in *waiting* state to retry. Local test runs fail if there are not enough container slots available.
 
-
 ### Obtain the IP address and port of an exposed container port
 
 Find the IP address and port by using the following code which provisions and starts an Apache HTTP server on port 80:
@@ -62,3 +61,4 @@ public IDockercontainer httpcontainer;
 ...
 String log = httpContainer.getStdOut();
 ```
+
