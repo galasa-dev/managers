@@ -13,8 +13,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobOutputSpoolFileImpl;
-
 @RunWith(MockitoJUnitRunner.class)
 public class TestZosBatchJobOutputSpoolFileImpl { 
 
@@ -60,7 +58,8 @@ public class TestZosBatchJobOutputSpoolFileImpl {
         Assert.assertEquals("getDdname() should return the supplied value", DDNAME, zosBatchJobOutputSpoolFile.getDdname());
         Assert.assertEquals("getRecords() should return the supplied value", RECORDS, zosBatchJobOutputSpoolFile.getRecords());
         
-        Assert.assertEquals("toString() should return the values of JOBNAME JOBID STEPNAME PROCSTEP DDNAME", JOBNAME + " " + JOBID + " " + STEPNAME +  " " + PROCSTEP + " " + DDNAME, zosBatchJobOutputSpoolFile.toString());
+        String expectedString = "JOB=" + JOBNAME + " JOBID=" + JOBID + " STEP=" + STEPNAME +  " PROCSTEP=" + PROCSTEP + " DDNAME=" + DDNAME;
+        Assert.assertEquals("toString() should return the values of JOBNAME JOBID STEPNAME PROCSTEP DDNAME", expectedString , zosBatchJobOutputSpoolFile.toString());
     }
     
     @Test
