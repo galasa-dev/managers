@@ -46,7 +46,7 @@ import dev.galasa.jmeter.JMeterManagerException;
     }
 
     @Test
-    public void startJMeterTestWithoutProperties() throws JMeterManagerException, TestBundleResourceException {
+    public void startJMeterTestWithProperties() throws JMeterManagerException, TestBundleResourceException {
        
       IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
       InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
