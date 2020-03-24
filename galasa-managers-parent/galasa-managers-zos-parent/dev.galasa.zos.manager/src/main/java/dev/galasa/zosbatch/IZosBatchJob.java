@@ -76,7 +76,18 @@ public interface IZosBatchJob {
      * @throws ZosBatchException
      */
     public IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
-
+    
+    /**
+     * Convenience method to retrieve the content of a spool file from the batch job given the ddname.<p>
+     * <b>NOTE:</b> Returns the first matching instance in the list. If the batch job has multiple steps, there may be multiple 
+     * instances of the ddname. 
+     * 
+     * @param ddname of the spool file
+     * @return the content of the first found spool file with the specified ddname
+     * @throws ZosBatchException
+     */
+    public IZosBatchJobOutputSpoolFile getSpoolFile(String ddname) throws ZosBatchException;
+    
     /**
      * Cancel the batch job
      * 

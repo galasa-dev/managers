@@ -89,4 +89,25 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutput, Iterable<IZosB
             }
         };
     }
+
+    @Override
+    public int size() {
+        return spoolFiles.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return spoolFiles.isEmpty();
+    }
+
+    public IZosBatchJobOutputSpoolFile getSpoolFile(String ddname) {
+        Iterator<IZosBatchJobOutputSpoolFile> spoolFilesIterator = spoolFiles.iterator();
+        while (spoolFilesIterator.hasNext()) {
+            IZosBatchJobOutputSpoolFile spoolFile = spoolFilesIterator.next();
+            if (spoolFile.getDdname().equals(ddname)) {
+                return spoolFile;
+            }
+        }
+        return null;
+    }
 }
