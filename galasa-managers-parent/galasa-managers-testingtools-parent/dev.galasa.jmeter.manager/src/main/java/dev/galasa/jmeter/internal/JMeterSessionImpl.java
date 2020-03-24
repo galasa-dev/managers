@@ -6,7 +6,6 @@
 
 package dev.galasa.jmeter.internal;
 
-
 import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
@@ -14,7 +13,6 @@ import org.apache.commons.logging.Log;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerExec;
-import dev.galasa.docker.IDockerImage;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
@@ -26,13 +24,15 @@ public class JMeterSessionImpl implements IJMeterSession {
     private final int sessionID;
     private String jmxPath;
     private String propPath;
+    private String jmxAbsolutePath = "";
+    private String propAbsolutePath = "";
     private IDockerContainer container;
     private final long DEFAULT_TIMER = 30000L;
 
     private Log logger;
 
-    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager,
-            int sessionID, String jmxPath, String propPath, IDockerContainer container, Log logger) {
+    public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, int sessionID, String jmxPath,
+            String propPath, IDockerContainer container, Log logger) throws DockerManagerException {
         this.framework = framework;
         this.jMeterManager = jMeterManager;
         this.sessionID = sessionID;
@@ -40,6 +40,8 @@ public class JMeterSessionImpl implements IJMeterSession {
         this.jmxPath = jmxPath;
         this.propPath = propPath;
         this.logger = logger;
+
+        container.start();
 
         logger.info(String.format("Session %d have been succesfully initialised", this.sessionID));
     }
@@ -49,211 +51,241 @@ public class JMeterSessionImpl implements IJMeterSession {
         return this.sessionID;
     }
 
+
+    /**
+     * Actually executing JMeter with the given JMX that has been set
+     */
     @Override
-    public void applyProperties(InputStream propStream) throws JMeterManagerException {
+    public void startJmeter(int timeout) throws JMeterManagerException {
+
         try {
-            container.storeFile("/prop/" + propPath, propStream);
-        } catch (Exception e) {
-            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
+
+            String jtlPath = "/jmeter/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
+
+            if (( this.jmxPath.toLowerCase().endsWith(".jmx") ) && ( !this.jmxAbsolutePath.isEmpty() )) {
+
+
+                if (this.propAbsolutePath.isEmpty()) {
+
+                    IDockerExec exec = container.exec(timeout,"jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath);
+                    exec.waitForExec(timeout);
+                    waitForJMeter();
+                    
+                    logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));  
+                } else {
+
+                    
+                    IDockerExec exec = container.exec("jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath);
+                    exec.waitForExec(timeout);
+                    waitForJMeter();
+        
+                    logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
+                    
+                }
+                    logger.info("Container from session " + sessionID + " has executed the JMeter commands.");
+                    
+            } else {
+                throw new JMeterManagerException("The JmxPath has not been specified correctly of session " + this.sessionID + ".");
+            }
+        
+        } catch (DockerManagerException e) {
+            throw new JMeterManagerException("JMeter session " + sessionID + " could not be started");
         }
     }
 
+    /**
+     * waiting for Jmeter with DEFAULT_TIMER timeout
+     */
     @Override
-    public void startJmeter() throws JMeterManagerException {
-        
-        try {
-                
-                String jtlPath = "/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
-                String prop = "/prop/" + propPath;
- 
-                
-                if (jmxPath.toLowerCase().endsWith(".jmx")) {
+    public void waitForJMeter() throws JMeterManagerException {
 
-                    logger.info("Container from session " + sessionID + " has started.");
-
-                    if ( propPath.isEmpty()) {
-
-                        IDockerExec exec = container.exec("jmeter", "-n", "-t", jmxPath, "-l", jtlPath);
-                        
-                        if ( exec.getExitCode() == 0) {
-                            logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
-                        } else {
-                            throw new JMeterManagerException("The Jmeter command has failed");
-                        }
-                        logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
-                    } else {
-                        
-                        IDockerExec exec = container.exec("jmeter", "-n", "-t", "/jmx/" + jmxPath, "-l", jtlPath, "-p", prop);
-                    
-                        if ( exec.getExitCode() == 0) {
-                            logger.info(container.retrieveFileAsString("/jmeter/test.jtl"));
-                        } else {
-                            throw new JMeterManagerException("The Jmeter command has failed");
-                        }
+    if ( container == null) {
+        return;
+    }
+    long timeout = DEFAULT_TIMER;
+    long  endTime = System.currentTimeMillis() + timeout;
+            long  heartbeat = System.currentTimeMillis() + 500;
+            while(System.currentTimeMillis() < endTime) {
+                    if (System.currentTimeMillis() > heartbeat) {
+                            logger.info("Waiting for JMeter session " + sessionID + " to finish");
+                            heartbeat = System.currentTimeMillis() + timeout;
                     }
-                    
-                    logger.info("Container from session " + sessionID + " has executed the JMeter commands.");
-                    
-                } else {
-                    throw new JMeterManagerException("The JmxPath has not been specified correctly.");
-                }
-            
-        } catch (DockerManagerException e) {
-            throw new JMeterManagerException("JMeter session " + sessionID + " could not be started", e);
-        }
-        
+                    try {
+                            if (container.retrieveStdOut().contains("end of run")) {
+                                    logger.info("JMeter session " + sessionID + " has finished");
+                                    return;
+                            }
+                            Thread.sleep(1000);
+                    } catch (Exception e) {
+                            throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
+                    }
+            }
+    }
 
-     }
+    /**
+     * waiting for Jmeter with specified timeout
+     */
+    @Override
+    public void waitForJMeter(long timeout) throws JMeterManagerException {
+    if ( container == null) {
+        return;
+    }
+    long  endTime = System.currentTimeMillis() + timeout;
+            long  heartbeat = System.currentTimeMillis() + 500;
+            while(System.currentTimeMillis() < endTime) {
+                    if (System.currentTimeMillis() > heartbeat) {
+                            logger.info("Waiting for JMeter session " + sessionID + " to finish");
+                            heartbeat = System.currentTimeMillis() + timeout;
+                    }
+                    try {
+                            if (container.retrieveStdOut().contains("end of run")) {
+                                logger.info("JMeter session " + sessionID + " has finished");
+                                return;
+                            }
+                            Thread.sleep(1000);
+                    } catch (Exception e) {
+                            throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
+                    }
+            }
+    }
 
-     @Override
-     public void waitForJMeter() throws JMeterManagerException {
+    /**
+     * Uses the annotation of JmxPath to store it in the container with the ArtifactManager
+     * @param jmxStream
+     * @throws JMeterManagerException
+    */
+    @Override
+    public void setJmxFile(InputStream jmxStream) throws JMeterManagerException{
     
-        if ( container == null) {
-            return;
+        try {
+            this.jmxAbsolutePath = "/jmeter/" + this.jmxPath;
+            container.storeFile(this.jmxAbsolutePath, jmxStream);
+            logger.info(jmxPath + " has been stored in the container.");
+            
+        } catch (Exception e) {
+            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
         }
-        long timeout = DEFAULT_TIMER;
-        long  endTime = System.currentTimeMillis() + timeout;
-               long  heartbeat = System.currentTimeMillis() + 500;
-               while(System.currentTimeMillis() < endTime) {
-                       if (System.currentTimeMillis() > heartbeat) {
-                               logger.info("Waiting for JMeter session " + sessionID + " to finish");
-                               heartbeat = System.currentTimeMillis() + 30000;
-                       }
-                       try {
-                               if (!container.isRunning()) {
-                                       logger.info("JMeter session " + sessionID + " has finished");
-                                       return;
-                               }
-                               Thread.sleep(1000);
-                       } catch (Exception e) {
-                               throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
-                       }
-               }
-     }
+    } 
 
-     @Override
-     public void waitForJMeter(long timeout) throws JMeterManagerException {
-        if ( container == null) {
-            return;
+    /**
+     * If the the property annotation is filled in, the custom property file gets used
+     * Uses the annotation of PropPath to store it in the container with the use ArtifactManager
+     * @param propStream
+     * @throws JMeterManagerException
+     */
+    @Override
+    public void applyProperties(InputStream propStream) throws JMeterManagerException {
+        try {
+            this.propAbsolutePath = "/jmeter/" + propPath;
+            container.storeFile(this.propAbsolutePath, propStream);
+        } catch (Exception e) {
+            throw new JMeterManagerException("Could not store the .jmx file correctly.", e);
         }
-        long  endTime = System.currentTimeMillis() + timeout;
-               long  heartbeat = System.currentTimeMillis() + 500;
-               while(System.currentTimeMillis() < endTime) {
-                       if (System.currentTimeMillis() > heartbeat) {
-                               logger.info("Waiting for JMeter session " + sessionID + " to finish");
-                               heartbeat = System.currentTimeMillis() + 30000;
-                       }
-                       try {
-                               if (!container.isRunning()) {
-                                       logger.info("JMeter session " + sessionID + " has finished");
-                                       return;
-                               }
-                               Thread.sleep(1000);
-                       } catch (Exception e) {
-                               throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
-                       }
-               }
-     }
-
-     /**
-      * Needs to happen first!!!
-      */
-     @Override
-     public void setJmxFile(InputStream jmxStream) throws JMeterManagerException{
-        
-            try {
-                    container.start();
-                    container.storeFile("/jmeter/" + jmxPath, jmxStream);
-                    logger.info(jmxPath + " has been stored in the container.");
-                
-            } catch (Exception e) {
-                throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
-            }
-     } 
-       
+    }
+    
      
-
-     @Override
-     public String getJmxFile() throws JMeterManagerException {
+    /**
+     * @return the jmxFile gets returned as a string like "cat" would in a linux container
+     * @throws JMeterManagerException 
+     */
+    @Override
+    public String getJmxFile() throws JMeterManagerException {
         try{
-            if ( container == null ) {
-                return null;
+            String jmx = "/jmeter/" + this.jmxPath;
+            String jmxStr = "";
+            if ( container.isRunning() ) {
+                jmxStr = container.retrieveFileAsString(jmx);
             }
 
-            String jmx = "/jmx/" + jmxPath;
-            return container.retrieveFileAsString(jmx);
-
+            return jmxStr;
         } catch (Exception e) {
             throw new JMeterManagerException("Could not retrieve the jmx file from the container.");
         }
-     }
+    }
 
-     @Override
-     public String getLogFile() throws JMeterManagerException {
+    /**
+     * @return the logFile gets returned as a string like "cat" would in a linux container
+     * @throws JMeterManagerException 
+     */
+    @Override
+    public String getLogFile() throws JMeterManagerException {
         try{
-            if ( container == null ) {
-                return null;
+            String logPath = "/jmeter/" + this.jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
+            String logAsStr = "";
+            if ( container.isRunning() ) {
+                logAsStr = container.retrieveFileAsString(logPath);
             }
-
-            String logPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
-            return container.retrieveFileAsString(logPath);
-
+            
+            return logAsStr;
         } catch (Exception e) {
             throw new JMeterManagerException("Could not retrieve the log file from the container.");
         }
-        
-     }
 
-     @Override
-     public String getConsoleOutput() throws JMeterManagerException {
+    }
+
+    /**
+     * @return the consoleOutput gets returned as a string
+     * @throws JMeterManagerException 
+     */
+    @Override
+    public String getConsoleOutput() throws JMeterManagerException {
         try{
-            if ( container == null ) {
-                return null;
+            String consoleStr = "";
+            if ( container.isRunning() ) {
+                consoleStr = container.retrieveStdOut();
             }
 
-            String logPath = "/jmx/" + jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
-            return container.retrieveFileAsString(logPath);
-
+            return consoleStr;
         } catch (Exception e) {
             throw new JMeterManagerException("Could not retrieve the console file from the container.");
         }
-     }
+    }
 
-     @Override
-     public String getListenerFile(String fileName) throws JMeterManagerException {
+    /**
+     * @param fileName
+     * @return the specified file gets returned as a string
+     * @throws JMeterManagerException 
+     */
+    @Override
+    public String getListenerFile(String fileName) throws JMeterManagerException {
         try{
-            if ( container == null ) {
-                return null;
+            String filePath = "/jmeter/" + fileName;
+            String listenerStr = "";
+            if ( container.isRunning() ) {        
+                listenerStr = container.retrieveFileAsString(filePath);
             }
 
-            String filePath = "/jmx/" + fileName;
-            return container.retrieveFileAsString(filePath);
-
+            return listenerStr;
         } catch (Exception e) {
             throw new JMeterManagerException("Could not retrieve " + fileName + " from the container.");
         }
-     }
+    }
 
-     @Override
-     public void stopTest(long timeout) throws JMeterManagerException {
-        
+     /**
+     * Kills off this full session 
+     * @throws JMeterManagerException 
+     */
+    @Override
+    public void stopTest() throws JMeterManagerException {   
         try {
             container.stop();
+            this.jMeterManager.activeContainers.remove(container);
+            this.jMeterManager.activeSessions.remove(this);
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session" + sessionID);
         } 
-        
-     }
+    }
 
-     @Override
-     public long getExitCode() throws JMeterManagerException {
-        
+    /**
+     * @return the exit code from the last executed command of the container
+     */
+    @Override
+    public long getExitCode() throws JMeterManagerException {     
         try {
             return container.getExitCode();
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issueing the shutdown of the container and JMeter session" + sessionID);
         } 
-
-     }
+    }
 
 }

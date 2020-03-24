@@ -29,7 +29,7 @@ public interface IJMeterSession {
      * Usage of cps.properties with their own default location for JMX files...
      * @throws JMeterManagerException
      */
-    public void startJmeter() throws JMeterManagerException;
+    public void startJmeter(int timeout) throws JMeterManagerException;
 
     /**
      * Giving jmeter a deadline before it needs to be finished and the test gets shutdown
@@ -86,7 +86,7 @@ public interface IJMeterSession {
      * @param timeout specifying a timeout in milliseconds
      * @throws JMeterManagerException
      */
-    public void stopTest(long timeout) throws JMeterManagerException;
+    public void stopTest() throws JMeterManagerException;
 
     /**
      * Returns the exit code of the the shutdown of the JMeterProcess
