@@ -15,109 +15,79 @@
   
     <dependencies>
 		<dependency>
-			<groupId>temp</groupId>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
 			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-java-3.141.59.jar</systemPath>
 		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-api</artifactId>
 			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-api-3.141.59.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-remote-driver</artifactId>
-			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-remote-driver-3.141.59.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-support</artifactId>
-			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-support-3.141.59.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-firefox-driver</artifactId>
-			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-firefox-driver-3.141.59.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>temp</groupId>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-chrome-driver</artifactId>
 			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-chrome-driver-3.141.59.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-safari-driver</artifactId>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-firefox-driver</artifactId>
 			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-safari-driver-3.141.59.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-opera-driver</artifactId>
-			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-opera-driver-3.141.59.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>temp</groupId>
-			<artifactId>selenium-edge-driver</artifactId>
-			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-edge-driver-3.141.59.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>temp</groupId>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-ie-driver</artifactId>
 			<version>3.141.59</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/selenium-ie-driver-3.141.59.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>guava</artifactId>
-			<version>25.0-jre</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/guava-25.0-jre.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>okhttp</artifactId>
-			<version>3.11.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/okhttp-3.11.0.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>okio</artifactId>
-			<version>1.14.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/okio-1.14.0.jar</systemPath>
-		</dependency>
-        <dependency>
-			<groupId>temp</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>1.8.15</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/byte-buddy-1.8.15.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>temp</groupId>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-opera-driver</artifactId>
+			<version>3.141.59</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-remote-driver</artifactId>
+			<version>3.141.59</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-safari-driver</artifactId>
+			<version>3.141.59</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-support</artifactId>
+			<version>3.141.59</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>25.0-jre</version>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.11.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okio</groupId>
+			<artifactId>okio</artifactId>
+			<version>1.14.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.8.15</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-exec</artifactId>
 			<version>1.3</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/commons-exec-1.3.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-edge-driver</artifactId>
+			<version>3.141.59</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -146,7 +116,7 @@
 				<artifactId>maven-bundle-plugin</artifactId>
 				<configuration>
 					<instructions>
-						<Embed-Dependency>*;scope=compile</Embed-Dependency>
+						<Bundle-SymbolicName>dev.galasa.selenium.manager</Bundle-SymbolicName>
 						<Embed-Dependency>*;scope=compile</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Import-Package>
@@ -155,34 +125,16 @@
 							dev.galasa.framework.spi,
 							dev.galasa.framework.spi.cps,
 							dev.galasa.selenium,
-							org.openqa.selenium,
-							org.openqa.selenium.support.ui,
-							org.openqa.selenium.firefox.internal,
+							org.openqa.selenium
 							org.openqa.selenium.*,
-							org.apache.commons,
-							org.apache.commons.exec,
-							org.apache.commons.*,
+							org.apache.commons.logging,
 							com.google.common.*,
-							okhttp3,
-							okhttp3.internal,
-							okhttp3.internal.*,
-							okio,
-							javax.net.*
+							javax.net,
+							javax.net.ssl
 						</Import-Package>
-						<Export-Package>dev.galasa.selenium,
-							org.openqa.selenium,
-							org.openqa.selenium.support.ui,
-							org.openqa.selenium.firefox.internal,
-							org.openqa.selenium.*,
-							org.apache.commons,
-							org.apache.commons.exec,
-							!org.apache.commons.io.monitor,
-							org.apache.commons.*,
-							com.google.common.*,
-							okhttp3,
-							okhttp3.internal,
-							okhttp3.internal.*,
-							okio
+						<Export-Package>
+							dev.galasa.selenium,
+							org.openqa.selenium
 						</Export-Package>
 					</instructions>
 				</configuration>

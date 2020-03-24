@@ -30,6 +30,7 @@ public class SeleniumManagerIVT {
         assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEqualTo("galasa");
         page.clearElementById("search_form_input_homepage");
         assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEmpty();
+        page.quit();
     }
 
     @Test
@@ -41,6 +42,7 @@ public class SeleniumManagerIVT {
         page.clickElementByLinkText("Twitter");
         page.waitForElementByLinkText("duckduckgo.com");
         assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
+        page.quit();
     }
 
     @Test
@@ -54,6 +56,7 @@ public class SeleniumManagerIVT {
         page.clickElementByPartialLinkText("People");
         page.waitForElementByLinkText("rsomers1998");
         assertThat(page.findElementsByLinkText("rsomers1998")).isNotEmpty();
+        page.quit();
     }
 
 }

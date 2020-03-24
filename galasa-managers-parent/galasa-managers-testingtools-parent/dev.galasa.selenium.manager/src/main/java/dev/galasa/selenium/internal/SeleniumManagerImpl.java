@@ -33,6 +33,7 @@ import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.internal.properties.SeleniumDseInstanceName;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
+import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager implements ISeleniumManager {
@@ -41,8 +42,8 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     private IConfigurationPropertyStoreService cps;
 
-    private Map<String, IWebPage> taggedPages = new HashMap<String, IWebPage>();
-    private List<IWebPage> webPages = new ArrayList<IWebPage>();
+    private Map<String, WebPageImpl> taggedPages = new HashMap<String, WebPageImpl>();
+    private List<WebPageImpl> webPages = new ArrayList<WebPageImpl>();
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
@@ -84,8 +85,8 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public void provisionDiscard() {
-        for(IWebPage page : webPages) {
-            page.quit();
+        for(WebPageImpl page : webPages) {
+            page.managerQuit();
         }
     }
 
@@ -105,6 +106,9 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
         try {
             String dseInstance = SeleniumDseInstanceName.get();
+            String driverType = SeleniumWebDriver.get(dseInstance);
+            if(driverType.equalsIgnoreCase("SAFARI") && !webPages.isEmpty())
+                throw new SeleniumManagerException("Safari Driver supports only one instance");
             driver = Browser.getWebDriver(dseInstance);
 
             if(driver == null)
@@ -113,7 +117,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        IWebPage webPage = new WebPageImpl(driver);
+        WebPageImpl webPage = new WebPageImpl(driver, webPages);
 
         if(tag != null && !tag.trim().isEmpty())
             taggedPages.put(tag, webPage);

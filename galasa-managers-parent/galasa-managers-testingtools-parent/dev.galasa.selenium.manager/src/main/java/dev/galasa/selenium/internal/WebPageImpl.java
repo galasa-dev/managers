@@ -23,10 +23,13 @@ public class WebPageImpl implements IWebPage {
 
     private WebDriver driver;
 
+    private List<WebPageImpl> webPages;
+
     public static final int DEFAULT_SECONDS_TIMEOUT = 30;
 
-    public WebPageImpl(WebDriver driver) {
+    public WebPageImpl(WebDriver driver, List<WebPageImpl> webPages) {
         this.driver = driver;
+        this.webPages = webPages;
     }
 
     @Override
@@ -440,6 +443,11 @@ public class WebPageImpl implements IWebPage {
 
     @Override
     public void quit() {
+        this.webPages.remove(this);
+        this.driver.quit();
+    }
+
+    public void managerQuit() {
         this.driver.quit();
     }
 
