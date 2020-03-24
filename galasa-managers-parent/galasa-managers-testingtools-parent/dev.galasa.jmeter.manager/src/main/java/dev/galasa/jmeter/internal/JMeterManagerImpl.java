@@ -67,8 +67,6 @@ public class JMeterManagerImpl extends AbstractManager {
 
         sessionID++;
 
-        IDockerContainer container;
-
         // Receiving the annotation values, JmxPath is essential and PropPath has an empty default
         JMeterSession sess = field.getAnnotation(JMeterSession.class);
         this.jmxPath = sess.jmxPath();
@@ -76,18 +74,17 @@ public class JMeterManagerImpl extends AbstractManager {
 
         logger.info(this.jmxPath);
         logger.info(this.propPath);
+
+        IJMeterSession session;
         
         try {
-            container = dockerManager.provisionContainer("jmeter", "lukasmarivoet/jmeter:latest", false, "PRIMARY");
+            IDockerContainer container = dockerManager.provisionContainer("jmeter_" + sessionID, "lukasmarivoet/jmeter:latest", false, "PRIMARY");
+            session = new JMeterSessionImpl(framework, this, sessionID, this.jmxPath, this.propPath, container, logger);
+            activeContainers.add(container);
+            activeSessions.add(session);
         } catch (DockerManagerException e) {
             throw new JMeterManagerException(String.format("Unable to provision the docker container for session %d", sessionID));
         }
-
-
-        // Provisioning the actual session with its individual DockerContainer
-        IJMeterSession session = new JMeterSessionImpl(framework, this, sessionID, this.jmxPath, this.propPath, container, logger);
-        activeContainers.add(container);
-        activeSessions.add(session);
 
         return session;
         
