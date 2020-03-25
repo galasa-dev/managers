@@ -15,8 +15,6 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.firefox.ProfilesIni;
-import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.CapabilityType;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -26,7 +24,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
 
 public enum Browser {
-  GECKO, IE, CHROME, EDGE, OPERA;
+  GECKO, IE, CHROME, EDGE;
 
   final static Log logger = LogFactory.getLog(Browser.class);
 
@@ -38,8 +36,6 @@ public enum Browser {
           return getGeckoDriver(instance);
         case CHROME:
           return getChromeDriver(instance);
-        case OPERA:
-          return getOperaDriver(instance);
         case EDGE:
           return getEdgeDriver(instance);
         case IE:
@@ -103,19 +99,6 @@ public enum Browser {
     capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
 
     return new ChromeDriver(capabilities);
-  }
-
-  public static WebDriver getOperaDriver(String instance) throws SeleniumManagerException {
-    try {
-      System.setProperty("webdriver.opera.driver", SeleniumWebDriverPath.get(instance, "opera"));
-    } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get Opera path from CPS for instance: " + instance, e);
-    }
-
-    OperaOptions capabilities = new OperaOptions();
-    capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-
-    return new OperaDriver(capabilities);
   }
 
   public static WebDriver getEdgeDriver(String instance) throws SeleniumManagerException {

@@ -22,7 +22,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com", "A");
+        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
         assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEmpty();
@@ -35,7 +35,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void clickingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com", "B");
+        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open");
@@ -47,7 +47,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void navigateGalasaGithub() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com", "C");
+        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
         page.sendKeysToElementById("search_form_input_homepage", "galasa dev github");

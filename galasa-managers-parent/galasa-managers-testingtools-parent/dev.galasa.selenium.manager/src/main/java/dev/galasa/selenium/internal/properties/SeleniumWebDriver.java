@@ -20,7 +20,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.required Yes
  * 
- * @galasa.valid_values GECKO,IE,EDGE,OPERA,CHROME
+ * @galasa.valid_values GECKO,IE,EDGE,CHROME
  * 
  * @galasa.examples 
  * <code>selenium.instance.PRIMARY.web.driver=GECKO</code>
