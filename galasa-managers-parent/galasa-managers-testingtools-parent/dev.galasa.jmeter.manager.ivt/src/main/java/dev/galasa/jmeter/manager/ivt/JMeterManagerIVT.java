@@ -56,14 +56,10 @@ import dev.galasa.jmeter.JMeterManagerException;
 
       session.setJmxFile(jmxStream);
       session.applyProperties(propStream);
-      session.startJmeter(60000);
-      String logOutput = session.getLogFile();
+      session.startJmeter();
 
-      session.stopTest();
-
-      assertThat(logOutput).contains("Loading file: test.jmx");
-      assertThat(logOutput).contains("Running test");
-      assertThat(logOutput).contains("Notifying test listeners of end of test");
+      assertThat(session.statusTest()).isTrue();
     }
+
   
  }

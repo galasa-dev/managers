@@ -8,6 +8,7 @@ package dev.galasa.jmeter.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -37,7 +38,7 @@ public class JMeterManagerImpl extends AbstractManager {
     protected final String NAMESPACE = "jmeter";
 
     private static final Log logger = LogFactory.getLog(JMeterManagerImpl.class);
-    protected List<IJMeterSession> activeSessions;
+    protected List<JMeterSessionImpl> activeSessions;
 
     private IFramework framework;
     private String jmxPath;
@@ -75,7 +76,7 @@ public class JMeterManagerImpl extends AbstractManager {
         logger.info(this.jmxPath);
         logger.info(this.propPath);
 
-        IJMeterSession session;
+        JMeterSessionImpl session;
         
         try {
             IDockerContainer container = dockerManager.provisionContainer("jmeter_" + sessionID, "lukasmarivoet/jmeter:latest", false, "PRIMARY");
@@ -111,7 +112,7 @@ public class JMeterManagerImpl extends AbstractManager {
         }
 
         this.framework = framework;
-        this.activeSessions = new ArrayList<IJMeterSession>();
+        this.activeSessions = new ArrayList<JMeterSessionImpl>();
         this.activeContainers = new ArrayList<IDockerContainer>();
 
         logger.info("JMeter manager has been succesfully initialised.");
@@ -154,6 +155,15 @@ public class JMeterManagerImpl extends AbstractManager {
                logger.info("The manager was not able to shutdown all sessions that are currently active");
             }
         }
+    }
+
+    @Override
+    public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException)
+            throws ManagerException {
+        for ( JMeterSessionImpl session : activeSessions) {
+            session.disconnect();
+        }
+        return null;
     }
 
     public void shutdown(int sessionID) {

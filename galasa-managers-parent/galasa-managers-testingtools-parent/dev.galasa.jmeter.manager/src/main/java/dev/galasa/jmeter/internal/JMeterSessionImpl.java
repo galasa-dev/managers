@@ -28,6 +28,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     private String propAbsolutePath = "";
     private IDockerContainer container;
     private final long DEFAULT_TIMER = 60000L;
+    private IDockerExec exec = null; 
 
     private Log logger;
 
@@ -51,99 +52,93 @@ public class JMeterSessionImpl implements IJMeterSession {
         return this.sessionID;
     }
 
-
     /**
-     * Actually executing JMeter with the given JMX that has been set
+     * Actually executing JMeter with the given JMX that has been set with the default 60s timeout
      */
     @Override
-    public void startJmeter(int timeout) throws JMeterManagerException {
+    public void startJmeter() throws JMeterManagerException {
 
         try {
 
+            int timeout = (int) DEFAULT_TIMER;
             String jtlPath = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
             String logfile = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
 
             if (( this.jmxPath.toLowerCase().endsWith(".jmx") ) && ( !this.jmxAbsolutePath.isEmpty() )) {
 
-
                 if (this.propAbsolutePath.isEmpty()) {
 
-                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
+                    exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
                     exec.waitForExec(timeout);
+
+                    if ( !(exec.getExitCode() == 0L) ) {
+                        logger.info("JMeter commands have failed.");
+                        throw new JMeterManagerException();
+                    }
                     
                 } else {
     
-                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
+                    exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
                     exec.waitForExec(timeout); 
-                }
-                    logger.info("Container from session " + sessionID + " has executed the JMeter commands.");
+
+                    if ( !(exec.getExitCode() == 0L) ) {
+                        logger.info("JMeter commands have failed.");
+                        throw new JMeterManagerException();
+                    }
+                } 
                     
             } else {
                 throw new JMeterManagerException("The JmxPath has not been specified correctly of session " + this.sessionID + ".");
             }
         
         } catch (Exception e) {
-            throw new JMeterManagerException("JMeter session " + sessionID + " could not be started");
+            throw new JMeterManagerException("JMeter session " + sessionID + " could not be executed properly.");
         }
     }
 
-    /**
-     * waiting for Jmeter with DEFAULT_TIMER timeout
-     */
-    @Override
-    public void waitForJMeter() throws JMeterManagerException {
 
-        if ( container == null) {
-            return;
-        }
-        long timeout = DEFAULT_TIMER;
-        long  endTime = System.currentTimeMillis() + timeout;
-        long  heartbeat = System.currentTimeMillis() + 500;
-        while(System.currentTimeMillis() < endTime) {
-                try {
-                    if (System.currentTimeMillis() > heartbeat) {
-                        logger.info("Waiting for JMeter session " + sessionID + " to finish");
-                        heartbeat = System.currentTimeMillis() + 100;
-                        logger.info(container.getExitCode());
-                    }
-                
-                    if (this.getLogFile().contains("Notifying test listeners of end of test")) {
-                        logger.info("JMeter session " + sessionID + " has finished");
-                        return;
-                    }
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                        throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
-                }
-        }
-    }
 
     /**
-     * waiting for Jmeter with specified timeout
+     * Actually executing JMeter with the given JMX that has been set with a specified timeout
      */
     @Override
-    public void waitForJMeter(long timeout) throws JMeterManagerException {
-        if ( container == null) {
-            return;
-        }
-        long  endTime = System.currentTimeMillis() + timeout;
-        long  heartbeat = System.currentTimeMillis() + 500;
-        while(System.currentTimeMillis() < endTime) {
-                try {
-                    if (System.currentTimeMillis() > heartbeat) {
-                        logger.info("Waiting for JMeter session " + sessionID + " to finish");
-                        heartbeat = System.currentTimeMillis() + 1000;
-                        logger.info(container.getExitCode());
+    public void startJmeter(int timeout) throws JMeterManagerException {
+
+        try {
+
+
+            String jtlPath = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
+            String logfile = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
+
+            if (( this.jmxPath.toLowerCase().endsWith(".jmx") ) && ( !this.jmxAbsolutePath.isEmpty() )) {
+
+                if (this.propAbsolutePath.isEmpty()) {
+
+                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
+                    exec.waitForExec(timeout);
+
+                    if ( !(exec.getExitCode() == 0L) ) {
+                        logger.info("JMeter commands have failed.");
+                        throw new JMeterManagerException();
                     }
-                
-                    if (this.getLogFile().contains("Notifying test listeners of end of test")) {
-                        logger.info("JMeter session " + sessionID + " has finished");
-                        return;
+                    
+                } else {
+    
+                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
+                    exec.waitForExec(timeout); 
+
+                    if ( !(exec.getExitCode() == 0L) ) {
+                        logger.info("JMeter commands have failed.");
+                        throw new JMeterManagerException();
                     }
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                        throw new JMeterManagerException("Problem with checking if JMeter container is still running", e);
-                }
+                } 
+                    
+            } else {
+                throw new JMeterManagerException("The JmxPath has not been specified correctly of session " + this.sessionID + ".");
+            }
+        
+        } catch (Exception e) {
+            throw new JMeterManagerException("JMeter session " + sessionID + " could not be executed properly.");
         }
     }
 
@@ -261,6 +256,23 @@ public class JMeterSessionImpl implements IJMeterSession {
         }
     }
 
+    /**
+     * @return if the test has been succesfull or not
+     */
+    @Override
+    public boolean statusTest() throws JMeterManagerException {
+        String logOutput = this.getLogFile();
+        boolean test = false;
+
+        if ( logOutput.contains("Loading file: " + this.jmxPath) && logOutput.contains("Running test") && logOutput.contains("Notifying test listeners of end of test") ) {
+            test = true;
+        } else {
+            throw new JMeterManagerException("The test didn't succeed with the given jmx for the session " + sessionID);
+        }
+
+        return test;
+    }
+
      /**
      * Kills off this full session 
      * @throws JMeterManagerException 
@@ -284,6 +296,14 @@ public class JMeterSessionImpl implements IJMeterSession {
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issue with retrieving the latest exit code" + sessionID);
         } 
+    }
+
+    public void disconnect() { 
+        if ( exec != null) {
+            exec.getConnection().disconnect();
+            logger.info("Closed the connection for session " + sessionID);
+        } 
+       
     }
 
 }

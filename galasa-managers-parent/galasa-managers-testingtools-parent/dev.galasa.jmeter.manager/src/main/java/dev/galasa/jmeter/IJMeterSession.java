@@ -25,24 +25,18 @@ public interface IJMeterSession {
     public void applyProperties(InputStream propStream) throws JMeterManagerException;
 
     /**
-     * Start up a jmeter thread to run through the lifetime of the tests
+     * Start up a jmeter thread to run through the lifetime of the tests with a default timeout of 60 seconds
+     * Usage of cps.properties with their own default location for JMX files...
+     * @throws JMeterManagerException
+     */
+    public void startJmeter() throws JMeterManagerException;
+
+    /**
+     * Start up a jmeter thread to run through the lifetime of the tests with a specified timeout
      * Usage of cps.properties with their own default location for JMX files...
      * @throws JMeterManagerException
      */
     public void startJmeter(int timeout) throws JMeterManagerException;
-
-    /**
-     * Giving jmeter a deadline before it needs to be finished and the test gets shutdown
-     * @throws JMeterManagerException
-     */
-    public void waitForJMeter() throws JMeterManagerException;
-
-    /**
-     * Giving jmeter a timed deadline before it needs to be finished and the test gets shutdown
-     * @param timeout specifying a timeout in milliseconds
-     * @throws JMeterManagerException
-     */
-    public void waitForJMeter(long timeout) throws JMeterManagerException;
 
     /**
      * Allows the tester to provide a jmxFile to the running session
@@ -80,6 +74,13 @@ public interface IJMeterSession {
      * @throws JMeterManagerException
      */
     public String getListenerFile(String fileName) throws JMeterManagerException;
+
+    /**
+     * 
+     * @return the logFile gets returned as a string like "cat" would in a linux container
+     * @throws JMeterManagerException
+     */
+    public boolean statusTest() throws JMeterManagerException;
 
     /**
      * Giving jmeter instance a shutdown signal to finish and clean up all running tests
