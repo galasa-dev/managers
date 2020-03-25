@@ -43,4 +43,20 @@ public interface IZosBatchJobOutput extends Iterable<IZosBatchJobOutputSpoolFile
      */
     public List<String> toList();
 
+    /**
+     * Returns the number of {@link IZosBatchJobOutputSpoolFile} elements in this {@link IZosBatchJobOutput}.  If this list contains
+     * more than <tt>Integer.MAX_VALUE</tt> elements, returns
+     * <tt>Integer.MAX_VALUE</tt>.
+     *
+     * @return the number of elements
+     */
+    public int size();
+
+    /**
+     * Returns <tt>true</tt> if this {@link IZosBatchJobOutputSpoolFile} contains no {@link IZosBatchJobOutput}
+     *
+     * @return <tt>true</tt> if empty
+     */
+    public boolean isEmpty();
+
 }

@@ -20,7 +20,6 @@ import com.google.gson.JsonObject;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobOutputImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestZosBatchJobOutputImpl {
@@ -93,5 +92,32 @@ public class TestZosBatchJobOutputImpl {
         exceptionRule.expectMessage("Object can not be updated");
         
         iterator.remove();
+    }
+    
+    @Test
+    public void testSize() throws ZosBatchException {
+        zosBatchJobOutput.addJcl("JCL");
+        Assert.assertEquals("size() should return a 1", 1, zosBatchJobOutput.size());
+    }
+    
+    @Test
+    public void testIsEmpty() throws ZosBatchException {
+        Assert.assertTrue("isEmpty() should return a true", zosBatchJobOutput.isEmpty());
+    }
+    
+    @Test
+    public void testGetSpoolFile() throws ZosBatchException {
+        Assert.assertNull("getSpoolFile() should return the supplied null", zosBatchJobOutput.getSpoolFile(DDNAME));
+        
+        JsonObject spoolFile = new JsonObject();
+        spoolFile.addProperty(JOBNAME, JOBNAME);
+        spoolFile.addProperty(JOBID, JOBID);
+        spoolFile.addProperty(STEPNAME, STEPNAME);
+        spoolFile.addProperty(PROCSTEP, PROCSTEP);
+        spoolFile.addProperty(DDNAME, DDNAME);
+        zosBatchJobOutput.add(spoolFile, RECORDS);
+        Assert.assertEquals("getSpoolFile() should return the supplied value", RECORDS, zosBatchJobOutput.getSpoolFile(DDNAME).getRecords());
+        
+        Assert.assertNull("getSpoolFile() should return the supplied null", zosBatchJobOutput.getSpoolFile("XXXXXXXX"));
     }
 }
