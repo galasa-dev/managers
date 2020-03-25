@@ -20,16 +20,16 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.required Yes
  * 
- * @galasa.valid_values FIREFOX,SAFARI,IE,EDGE,OPERA,CHROME
+ * @galasa.valid_values GECKO,IE,EDGE,OPERA,CHROME
  * 
  * @galasa.examples 
- * <code>selenium.instance.PRIMARY.web.driver=FIREFOX</code>
+ * <code>selenium.instance.PRIMARY.web.driver=GECKO</code>
  * 
  */
 public class SeleniumWebDriver extends CpsProperties {
 
     public static String get(String instance) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "FIREFOX", "instance", "web.driver", instance);
+        return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "GECKO", "instance", "web.driver", instance);
     }
 
 }

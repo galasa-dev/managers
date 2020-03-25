@@ -26,7 +26,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
 
 public enum Browser {
-  FIREFOX, IE, CHROME, EDGE, OPERA;
+  GECKO, IE, CHROME, EDGE, OPERA;
 
   final static Log logger = LogFactory.getLog(Browser.class);
 
@@ -34,7 +34,7 @@ public enum Browser {
     try {
       String driver = SeleniumWebDriver.get(instance);
       switch (getBrowser(driver)) {
-        case FIREFOX:
+        case GECKO:
           return getGeckoDriver(instance);
         case CHROME:
           return getChromeDriver(instance);
