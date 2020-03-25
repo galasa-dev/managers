@@ -106,9 +106,6 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
         try {
             String dseInstance = SeleniumDseInstanceName.get();
-            String driverType = SeleniumWebDriver.get(dseInstance);
-            if(driverType.equalsIgnoreCase("SAFARI") && !webPages.isEmpty())
-                throw new SeleniumManagerException("Safari Driver supports only one instance");
             driver = Browser.getWebDriver(dseInstance);
 
             if(driver == null)

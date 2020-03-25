@@ -18,8 +18,6 @@ import org.openqa.selenium.firefox.ProfilesIni;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.safari.SafariOptions;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.selenium.SeleniumManagerException;
@@ -28,7 +26,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
 
 public enum Browser {
-  FIREFOX, IE, CHROME, EDGE, SAFARI, OPERA;
+  FIREFOX, IE, CHROME, EDGE, OPERA;
 
   final static Log logger = LogFactory.getLog(Browser.class);
 
@@ -40,8 +38,6 @@ public enum Browser {
           return getGeckoDriver(instance);
         case CHROME:
           return getChromeDriver(instance);
-        case SAFARI:
-          return getSafariDriver(instance);
         case OPERA:
           return getOperaDriver(instance);
         case EDGE:
@@ -49,7 +45,7 @@ public enum Browser {
         case IE:
           return getIEDriver(instance);
         default:
-          throw new SeleniumManagerException("Unknown driver instance: " + driver);
+          throw new SeleniumManagerException("Unknown/Unsupported driver instance: " + driver);
       }
     } catch (Exception e) {
       throw new SeleniumManagerException("Unable to get driver instance", e);
@@ -107,19 +103,6 @@ public enum Browser {
     capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
 
     return new ChromeDriver(capabilities);
-  }
-
-  public static WebDriver getSafariDriver(String instance) throws SeleniumManagerException {
-    try {
-      System.setProperty("webdriver.safari.driver", SeleniumWebDriverPath.get(instance, "safari"));
-    } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get Safari path from CPS for instance: " + instance, e);
-    }
-
-    SafariOptions capabilities = new SafariOptions();
-    capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-
-    return new SafariDriver(capabilities);
   }
 
   public static WebDriver getOperaDriver(String instance) throws SeleniumManagerException {
