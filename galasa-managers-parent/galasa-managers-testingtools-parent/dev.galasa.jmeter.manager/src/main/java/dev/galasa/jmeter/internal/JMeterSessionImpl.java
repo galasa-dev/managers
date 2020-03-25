@@ -69,22 +69,12 @@ public class JMeterSessionImpl implements IJMeterSession {
                 if (this.propAbsolutePath.isEmpty()) {
 
                     IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
-                    
-                    while ( !exec.isFinished() ) {
-                        logger.info("Waiting to finish the command on session " + sessionID);
-                        Thread.sleep(2000);
-                    }
-                    exec = null;
+                    exec.waitForExec(timeout);
                     
                 } else {
     
                     IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
-                    
-                    while ( !exec.isFinished() ) {
-                        logger.info("Waiting to finish the command on session " + sessionID);
-                        Thread.sleep(2000);
-                    } 
-                    exec = null;      
+                    exec.waitForExec(timeout); 
                 }
                     logger.info("Container from session " + sessionID + " has executed the JMeter commands.");
                     

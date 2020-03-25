@@ -27,8 +27,8 @@ import dev.galasa.jmeter.JMeterManagerException;
  @Test
  public class JMeterManagerIVT {
 
-   @Logger
-   public Log logger;
+    @Logger
+    public Log logger;
 
     @ArtifactManager
     public IArtifactManager artifactManager;
@@ -52,7 +52,7 @@ import dev.galasa.jmeter.JMeterManagerException;
       InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
 
       bundleResources = artifactManager.getBundleResources(getClass());
-      InputStream propStream = bundleResources.retrieveFile("/test.jmx");
+      InputStream propStream = bundleResources.retrieveFile("/jmeter.properties");
 
       session.setJmxFile(jmxStream);
       session.applyProperties(propStream);
