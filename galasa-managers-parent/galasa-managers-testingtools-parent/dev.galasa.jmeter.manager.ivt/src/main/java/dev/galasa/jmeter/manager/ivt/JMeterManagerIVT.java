@@ -51,7 +51,11 @@ import dev.galasa.jmeter.JMeterManagerException;
       IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
       InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
 
+      bundleResources = artifactManager.getBundleResources(getClass());
+      InputStream propStream = bundleResources.retrieveFile("/test.jmx");
+
       session.setJmxFile(jmxStream);
+      session.applyProperties(propStream);
       session.startJmeter(60000);
       String logOutput = session.getLogFile();
 

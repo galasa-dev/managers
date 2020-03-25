@@ -13,7 +13,7 @@
   
   <modules>
     <module>dev.galasa.jmeter.manager</module>
-    <module>dev.galasa.jmeter.ivt</module>
+    <module>dev.galasa.jmeter.manager.ivt</module>
     <module>dev.galasa.selenium.manager</module>
   </modules>
   
