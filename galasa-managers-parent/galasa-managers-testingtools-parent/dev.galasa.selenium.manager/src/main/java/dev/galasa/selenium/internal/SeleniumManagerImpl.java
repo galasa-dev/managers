@@ -33,7 +33,6 @@ import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.internal.properties.SeleniumDseInstanceName;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
-import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager implements ISeleniumManager {
@@ -42,7 +41,6 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     private IConfigurationPropertyStoreService cps;
 
-    private Map<String, WebPageImpl> taggedPages = new HashMap<String, WebPageImpl>();
     private List<WebPageImpl> webPages = new ArrayList<WebPageImpl>();
 
     @Override
@@ -92,16 +90,12 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public IWebPage allocateWebPage() throws SeleniumManagerException {
-        return allocateWebPage(null, null);
+        return allocateWebPage(null);
     }
 
     @Override
     public IWebPage allocateWebPage(String url) throws SeleniumManagerException {
-        return allocateWebPage(url, null);
-    }
 
-    @Override
-    public IWebPage allocateWebPage(String url, String tag) throws SeleniumManagerException {
         WebDriver driver = null;
 
         try {
@@ -116,19 +110,11 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
         WebPageImpl webPage = new WebPageImpl(driver, webPages);
 
-        if(tag != null && !tag.trim().isEmpty())
-            taggedPages.put(tag, webPage);
-
         if(url != null && !url.trim().isEmpty())
             webPage.get(url);
         
         this.webPages.add(webPage);
         return webPage;
-    }
-
-    @Override
-    public IWebPage getWebPage(String tag) {
-        return taggedPages.get(tag);
     }
     
 }
