@@ -28,6 +28,7 @@
 			<groupId>dev.galasa</groupId>
 			<artifactId>com.jcraft.jsch</artifactId>
 			<version>0.1.55</version>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>
