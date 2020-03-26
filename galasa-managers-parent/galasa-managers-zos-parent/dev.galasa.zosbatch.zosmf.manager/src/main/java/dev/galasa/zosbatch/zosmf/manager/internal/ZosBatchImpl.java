@@ -156,6 +156,7 @@ public class ZosBatchImpl implements IZosBatch {
                 zosBatchJob.setJobid(responseBody.get("jobid").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());
                 zosBatchJob.setType(responseBody.get("type").getAsString());
+                zosBatchJob.setStatus(responseBody.get("status").getAsString());
                 zosBatchJob.setJobPathValues();
                 zosBatchJobList.add(zosBatchJob);
             }
