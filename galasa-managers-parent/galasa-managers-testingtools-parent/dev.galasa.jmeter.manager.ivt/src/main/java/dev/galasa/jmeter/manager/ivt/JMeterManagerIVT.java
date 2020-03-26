@@ -12,8 +12,6 @@ import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.docker.DockerContainer;
-import dev.galasa.docker.IDockerContainer;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
@@ -36,13 +34,16 @@ import dev.galasa.jmeter.JMeterManagerException;
     @JMeterSession(jmxPath = "test.jmx", propPath = "jmeter.properties")
     public IJMeterSession session;
 
+    @JMeterSession(jmxPath = "test.jmx")
+    public IJMeterSession session2;
 
     @Test
     public void provisionedNotNull() throws Exception {
 
       assertThat(logger).isNotNull();
       assertThat(session).isNotNull();
-
+      assertThat(session).isNotNull();
+    
     }
 
     @Test
@@ -59,6 +60,18 @@ import dev.galasa.jmeter.JMeterManagerException;
       session.startJmeter();
 
       assertThat(session.statusTest()).isTrue();
+    }
+
+    @Test
+    public void startJMeterTestWithoutProperties() throws JMeterManagerException, TestBundleResourceException {
+       
+      IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
+      InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
+
+      session2.setJmxFile(jmxStream);
+      session2.startJmeter();
+
+      assertThat(session2.statusTest()).isTrue();
     }
 
   

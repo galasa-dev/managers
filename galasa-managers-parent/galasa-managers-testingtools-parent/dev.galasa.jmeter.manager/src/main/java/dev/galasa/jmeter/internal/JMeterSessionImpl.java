@@ -72,7 +72,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     exec.waitForExec(timeout);
 
                     if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed.");
+                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
                     
@@ -82,7 +82,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     exec.waitForExec(timeout); 
 
                     if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed.");
+                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
                 } 
@@ -118,7 +118,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     exec.waitForExec(timeout);
 
                     if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed.");
+                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
                     
@@ -128,7 +128,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     exec.waitForExec(timeout); 
 
                     if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed.");
+                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
                 } 
