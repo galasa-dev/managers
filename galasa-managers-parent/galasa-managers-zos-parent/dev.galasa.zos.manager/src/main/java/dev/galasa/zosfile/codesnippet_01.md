@@ -1,4 +1,4 @@
-### Request a zOS File Handler instance
+<details><summary>Request a zOS File Handler instance</summary>
 
 The following snippet shows the code that is required to request a zOS File Handler instance in a Galasa test:
 
@@ -6,9 +6,9 @@ The following snippet shows the code that is required to request a zOS File Hand
 @ZosFileHandler
 public IZosFileHandler zosFileHandler;
 ```
+</details>
 
-
-### Read the content of an existing sequential data set
+<details><summary>Read the content of an existing sequential data set</summary>
 
 Create a new *IZosDataset* object representing an existing sequential data set. If the data set exists, retrieve the content:
 
@@ -25,9 +25,10 @@ if (dataSet.exists()) {
     ...
 }
 ```
+</details>
 
 
-### Read the content of an existing partitioned data set member
+<details><summary>Read the content of an existing partitioned data set member</summary>
 
 Create a new *IZosDataset* object representing an existing partitioned data set (PDS). If the PDS exists, check if the member exists and retrieve it's content:
 
@@ -45,9 +46,10 @@ IZosDataset dataSet = zosFileHandler.newDataset("GALASA.EXISTING.DATASET.SEQ, zo
         ...
     }
 ```
+</details>
 
 
-### Create a new sequential data set
+<details><summary>Create a new sequential data set</summary>
 
 Create a new *IZosDataset* object representing a new sequential data set. If the data set does not exist, allocate the data set with attributes to the equivalent of the following JCL:
 
@@ -82,9 +84,9 @@ IZosDataset dataSet = zosFileHandler.newDataset("GALASA.NEW.DATASET.SEQ", zosIma
     records.add("RECORD 3");
     dataSet.store(String.join("\n", records));
 ```
+</details>
 
-
-### Create a new partitioned data set member
+<details><summary>Create a new partitioned data set member</summary>
 
 Create a new *IZosDataset* object representing a new partitioned data (PDS) set member. If the data set does not exist, allocate the PDS with attributes to the equivalent of the following JCL:
 
@@ -133,9 +135,9 @@ use
 dataSet.setDatasetType(DSType.PDSE);
 ```
 instead of setting the number of directory blocks.
+</details>
 
-
-### Create a new VSAM KSDS
+<details><summary>Create a new VSAM KSDS</summary>
 
 Create a new *IZosVSAMDataset* object representing a new VSAM KSDS data set. If the data set is allocated with a minimum set of attributes:
 
@@ -145,7 +147,9 @@ vsamDataSet.setSpace(VSAMSpaceUnit.CYLINDERS, 1, 1);
 vsamDataSet.setRecordSize(50, 101);
 vsamDataSet.create();
 ```
+</details>
 
-### Read a zOS UNIX File
+<details><summary>Read a zOS UNIX File</summary>
 
 *To be completed...*
+</details>
