@@ -15,6 +15,7 @@
     <module>dev.galasa.jmeter.manager</module>
     <module>dev.galasa.jmeter.manager.ivt</module>
     <module>dev.galasa.selenium.manager</module>
+    <module>dev.galasa.selenium.manager.ivt</module>
   </modules>
-  
+
 </project>

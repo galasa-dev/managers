@@ -67,6 +67,16 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.cicsts.manager</artifactId>
+				<version>0.6.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.cicsts.ceci.manager</artifactId>
+				<version>0.6.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.linux.manager</artifactId>
 				<version>0.6.0-SNAPSHOT</version>
 			</dependency>
@@ -108,6 +118,11 @@
 			<dependency>
 				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
+				<version>0.6.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.galasa</groupId>
+				<artifactId>dev.galasa.selenium.manager</artifactId>
 				<version>0.6.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>

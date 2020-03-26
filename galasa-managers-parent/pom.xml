@@ -28,6 +28,7 @@
         <module>galasa-managers-cicsts-parent</module>
 		<module>galasa-managers-unix-parent</module>
 		<module>galasa-managers-logging-parent</module>
+		<module>galasa-managers-testingtools-parent</module>
 		<module>galasa-managers-other-parent</module>
 		<module>dev.galasa.managers.obr</module>
 		<module>dev.galasa.uber.obr</module>
