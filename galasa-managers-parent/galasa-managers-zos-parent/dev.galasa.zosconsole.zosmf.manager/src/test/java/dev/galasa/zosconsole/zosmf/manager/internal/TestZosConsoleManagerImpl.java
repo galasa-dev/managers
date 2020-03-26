@@ -162,7 +162,7 @@ public class TestZosConsoleManagerImpl {
         
         HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
         ZosConsoleImpl zosConsoleImpl = Mockito.mock(ZosConsoleImpl.class);
-        taggedZosConsoles.put("tag", zosConsoleImpl);
+        taggedZosConsoles.put("TAG", zosConsoleImpl);
         Whitebox.setInternalState(zosConsoleManagerSpy, "taggedZosConsoles", taggedZosConsoles);
         
         zosConsoleImplObject = zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);

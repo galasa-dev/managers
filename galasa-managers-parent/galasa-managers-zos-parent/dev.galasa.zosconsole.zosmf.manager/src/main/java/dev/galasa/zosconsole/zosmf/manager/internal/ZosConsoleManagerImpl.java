@@ -122,7 +122,7 @@ public class ZosConsoleManagerImpl extends AbstractManager {
         ZosConsole annotationZosConsole = field.getAnnotation(ZosConsole.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosConsole.imageTag(), "primary");
+        String tag = defaultString(annotationZosConsole.imageTag(), "PRIMARY").toUpperCase();
 
         //*** Have we already generated this tag
         if (this.taggedZosConsoles.containsKey(tag)) {
