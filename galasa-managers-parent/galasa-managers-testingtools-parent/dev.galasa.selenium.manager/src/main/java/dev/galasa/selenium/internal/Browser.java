@@ -134,7 +134,7 @@ public enum Browser {
     return new InternetExplorerDriver(capabilities);
   }
 
-  public static Browser getBrowser(@NotNull String browser) throws SeleniumManagerException {
+  public static @NotNull Browser getBrowser(@NotNull String browser) throws SeleniumManagerException {
     browser = browser.trim();
 
     for (Browser d : values()) {
