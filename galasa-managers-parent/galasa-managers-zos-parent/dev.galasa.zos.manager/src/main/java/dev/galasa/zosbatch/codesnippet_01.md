@@ -1,4 +1,4 @@
-### Request a zOS Batch instance
+<details><summary>Request a zOS Batch instance</summary>
 
 The following snippet shows the code that is required to request a zOS Batch instance in a Galasa test:
 
@@ -12,8 +12,9 @@ public IZosBatch zosBatch;
 
 
 The code creates a zOS Batch instance associated with the allocated with the zOS Image allocated in the *zosImageA* field.
+</details>
 
-### Submit a zOS Batch Job
+<details><summary>Submit a zOS Batch Job</summary>
 
 Submit a zOS Batch Job using the supplied JCL and a Galasa allocated Job Name:
 
@@ -21,9 +22,10 @@ Submit a zOS Batch Job using the supplied JCL and a Galasa allocated Job Name:
 String jcl = "//STEP1    EXEC PGM=IEFBR14";
 IZosBatchJob batchJob = zosBatch.submitJob(jcl, null);
 ```
+</details>
 
 
-### Submit a zOS Batch Job with job card parameters
+<details><summary>Submit a zOS Batch Job with job card parameters</summary>
 
 Submit a zOS Batch Job using the supplied JCL, a Galasa allocated Job Name and overidding the default input and message class:
 
@@ -34,9 +36,9 @@ ZosBatchJobcard jobcard = new ZosBatchJobcard().
                           .setMsgClass("X");
 IZosBatchJob batchJob = zosBatch.submitJob(jcl, null, jobcard);
 ```
+</details>
 
-
-### Wait for zOS Batch Job to complete
+<details><summary>Wait for zOS Batch Job to complete</summary>
 
 Wait for zOS Batch job to complete and check maximum return code:
 
@@ -57,9 +59,10 @@ or
 ```
 Batch job failed RETCODE=ABEND S0C4
 ```
+</details>
 
 
-### Retrieve the job output
+<details><summary>Retrieve the job output</summary>
 
 Use the following code to retrieve the output from a zOS Batch Job:
 
@@ -73,9 +76,9 @@ for (IZosBatchJobOutputSpoolFile spoolFile : spoolFiles) {
 }
 
 ```
+</details>
 
-
-### Obtain a list of active jobs
+<details><summary>Obtain a list of active jobs</summary>
 
 Use the following code to obtain a list of active jobs called *MYJOB1* with an owner of *USERID*:
 
@@ -88,9 +91,9 @@ for (IZosBatchJob job : jobs) {
 }
 
 ```
+</details>
 
-
-### Retrieve the content of a specific spool file from an active CICS region
+<details><summary>Retrieve the content of a specific spool file from an active CICS region</summary>
 
 Use the following code to retrieve and process the output from the *MSGUSR* spool file:
 
@@ -129,3 +132,4 @@ for (IZosBatchJob job : jobs) {
 ```
 
 Here, the code retrieves the content of the *SYSOUT* spool file for job step *STEP2*.
+</details>

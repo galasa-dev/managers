@@ -1,4 +1,4 @@
-### Request a zOS Console instance
+<details><summary>Request a zOS Console instance</summary>
 
 The following snippet shows the code that is required to request a zOS Console instance in a Galasa test:
 
@@ -11,9 +11,9 @@ public IZosConsole zosConsole;
 ```
 
 The code creates a zOS Console instance associated with the zOS Image allocated in the *zosImageA* field.
+</details>
 
-
-### Issue a zOS Console command and retrieve the immediate response
+<details><summary>Issue a zOS Console command and retrieve the immediate response</summary>
 
 Issue a zOS Console command and retrieve the immediate console command response:
 
@@ -23,9 +23,10 @@ IZosConsoleCommand consoleCommand = zosConsole.issueCommand(command);
 String immediateResponse = consoleCommand.getResponse();
 
 ```
+</details>
 
 
-### Issue a zOS Console command and retrieve the delayed response
+<details><summary>Issue a zOS Console command and retrieve the delayed response</summary>
 
 Issue a zOS Console command and retrieve the delayed console command response:
 
@@ -35,3 +36,4 @@ IZosConsoleCommand consoleCommand = zosConsole.issueCommand(command);
 String delayedResponse = consoleCommand.requestResponse();
 
 ```
+</details>
