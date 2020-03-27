@@ -12,7 +12,7 @@ The code creates an interface to the Selenium Manager which will allow the teste
 ### Create a WebPage
 
 ```
-IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
+IWebPage page = seleniumManager.allocateWebPage("https://galasa.dev/");
 ```
 
 The code creates a WebPage with a Selenium WebDriver controlling the browser. This object provides an interface for the tester to perform actions on the page to navigate around, check the page content and switch between windows.
