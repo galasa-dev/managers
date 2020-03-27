@@ -20,7 +20,6 @@
 	</properties>
 
 	<modules>
-		<module>galasa-managers-testingtools-parent</module>
 		<module>galasa-managers-core-parent</module>
 		<module>galasa-managers-comms-parent</module>
 		<module>galasa-managers-cloud-parent</module>

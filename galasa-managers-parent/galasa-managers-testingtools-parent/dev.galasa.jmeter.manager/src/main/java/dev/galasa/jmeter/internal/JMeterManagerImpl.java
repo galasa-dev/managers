@@ -8,7 +8,6 @@ package dev.galasa.jmeter.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -157,14 +156,6 @@ public class JMeterManagerImpl extends AbstractManager {
         }
     }
 
-    @Override
-    public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException)
-            throws ManagerException {
-        for ( JMeterSessionImpl session : activeSessions) {
-            session.disconnect();
-        }
-        return null;
-    }
 
     public void shutdown(int sessionID) {
         for(IJMeterSession session: activeSessions) {

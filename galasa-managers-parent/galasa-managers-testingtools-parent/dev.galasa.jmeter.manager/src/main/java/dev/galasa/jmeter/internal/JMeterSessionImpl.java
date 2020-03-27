@@ -281,6 +281,8 @@ public class JMeterSessionImpl implements IJMeterSession {
     public void stopTest() throws JMeterManagerException {   
         try {
             container.stop();
+            jMeterManager.activeContainers.remove(container);
+            jMeterManager.activeSessions.remove(this);
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issue with the shutdown of the container and JMeter session" + sessionID);
         } 
@@ -296,14 +298,6 @@ public class JMeterSessionImpl implements IJMeterSession {
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issue with retrieving the latest exit code" + sessionID);
         } 
-    }
-
-    public void disconnect() { 
-        if ( exec != null) {
-            exec.getConnection().disconnect();
-            logger.info("Closed the connection for session " + sessionID);
-        } 
-       
     }
 
 }
