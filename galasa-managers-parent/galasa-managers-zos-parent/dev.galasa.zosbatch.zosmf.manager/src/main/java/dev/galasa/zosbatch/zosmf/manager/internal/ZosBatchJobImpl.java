@@ -368,6 +368,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         this.type = type;
     }
     
+    protected void setStatus(String status) {
+        this.status = status;
+    }
+
     protected void cancel(boolean purge) throws ZosBatchException {
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_JOB_MODIFY_VERSION.toString(), "2.0");
