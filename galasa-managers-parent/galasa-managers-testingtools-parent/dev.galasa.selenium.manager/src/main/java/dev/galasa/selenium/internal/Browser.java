@@ -7,6 +7,8 @@ package dev.galasa.selenium.internal;
 
 import java.io.IOException;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.WebDriver;
@@ -132,7 +134,7 @@ public enum Browser {
     return new InternetExplorerDriver(capabilities);
   }
 
-  public static Browser getBrowser(String browser) throws SeleniumManagerException {
+  public static Browser getBrowser(@NotNull String browser) throws SeleniumManagerException {
     browser = browser.trim();
 
     for (Browser d : values()) {
