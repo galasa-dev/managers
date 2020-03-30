@@ -39,7 +39,8 @@ public class DockerExecImpl implements IDockerExec {
     private final int                                       timeout;
     private final ExecThread                                execThread;
     private final String                                    id;
-
+    
+    private HttpURLConnection                               conn = null;
     private boolean                                         finished;
     private final StringBuffer                              outputBuffer = new StringBuffer();
     private long                                            exitCode = -1;
@@ -115,6 +116,11 @@ public class DockerExecImpl implements IDockerExec {
        return waitForExec(120000);
     }
 
+    @Override
+    public HttpURLConnection getConnection() {
+        return conn;
+    }
+
     /**
      * Wait for exec with specidied timeout
      * 
@@ -173,7 +179,7 @@ public class DockerExecImpl implements IDockerExec {
 			OutputStream os = null;
 			try {
 				URL url = new URL(dockerEngine.getURI() + "/exec/" + id + "/start");
-				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				conn = (HttpURLConnection) url.openConnection();
 
 				conn.setConnectTimeout(timeout);
 				conn.setReadTimeout(timeout);
@@ -206,7 +212,7 @@ public class DockerExecImpl implements IDockerExec {
 				if (exitCodeObj != null) {
 					exitCode = Long.parseLong(exitCodeObj);
 				}
-				
+                
 				logger.debug("Command completed with exitcode " + exitCode);
 				
 				finished = true;
