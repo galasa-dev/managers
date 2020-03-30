@@ -1,6 +1,13 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
 package dev.galasa.selenium.internal;
 
 import java.io.IOException;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -127,7 +134,7 @@ public enum Browser {
     return new InternetExplorerDriver(capabilities);
   }
 
-  public static Browser getBrowser(String browser) {
+  public static @NotNull Browser getBrowser(@NotNull String browser) throws SeleniumManagerException {
     browser = browser.trim();
 
     for (Browser d : values()) {
@@ -135,6 +142,6 @@ public enum Browser {
         return d;
       }
     }
-    return null;
+    throw new SeleniumManagerException("Unsupported browser type: " + browser);
   }
 }
