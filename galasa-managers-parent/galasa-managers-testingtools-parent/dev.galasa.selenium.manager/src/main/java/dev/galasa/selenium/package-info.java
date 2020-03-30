@@ -12,7 +12,7 @@
  * 
  * @galasa.description
  * 
- * This Manager enables the test to run Selenium WebDrivers in order to drive Web Browsers during the test. Broswers can have actions performed against them 
+ * This Manager enables the test to run Selenium WebDrivers in order to drive Web Browsers during the test. Browsers can have actions performed against them 
  * to navigate WebPages and extract information about the current page.
  * <br><br>
  * As an absolute minimum, the CPS property <br>
