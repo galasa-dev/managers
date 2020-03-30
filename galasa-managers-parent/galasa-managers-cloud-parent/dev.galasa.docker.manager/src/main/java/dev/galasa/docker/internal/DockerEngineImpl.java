@@ -269,6 +269,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	private String deleteString(String path) throws DockerManagerException {
 		try {
+			dockerEngineClient.build();
 			HttpClientResponse<String> response = dockerEngineClient.deleteText(path);
 			String resp = response.getContent();
 
@@ -301,6 +302,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	private JsonObject getJson(String path) throws DockerManagerException {
 		try {
+			dockerEngineClient.build();
 			HttpClientResponse<JsonObject> response = dockerEngineClient.getJson(path);
 
 			JsonObject jsonResponse = response.getContent();
@@ -330,6 +332,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	private JsonObject postJson(String path, JsonObject data) throws DockerManagerException {
 		try {
+			dockerEngineClient.build();
 			HttpClientResponse<JsonObject> json = dockerEngineClient.postJson(path, data);
 			JsonObject response = json.getContent();
 
@@ -363,6 +366,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	private String postString(String path, String data) throws DockerManagerException {
 		try {
+			dockerEngineClient.build();
 			logger.debug("Posting: " + data + "to the endpoint: " + path);
 			HttpClientResponse<String> response = dockerEngineClient.postText(path, data);
 			String resp = response.getContent();
@@ -394,6 +398,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 * @param location
 	 */
 	public void sendArchiveFile(DockerContainerImpl container, InputStream file, String location) {
+		dockerEngineClient.build();
 		String path = "/containers/" + container.getContainerId() + "/archive?path=" + location;
 
 		dockerEngineClient.putFile(path, file);
@@ -408,6 +413,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	 * @throws HttpClientException
 	 */
 	public InputStream getArchiveFile(DockerContainerImpl container, String filePath) throws DockerManagerException {
+		dockerEngineClient.build();
 		String path = "/containers/" + container.getContainerId() + "/archive?path=" + filePath;
 
 		try {
