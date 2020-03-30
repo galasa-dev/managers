@@ -10,17 +10,17 @@ public ISeleniumManager seleniumManager;
 The code creates an interface to the Selenium Manager which will allow the tester to provision WebPages to test against.
 </details>
 
-<details><summary>Create a WebPage</summary>
+<details><summary>Open a WebPage</summary>
 
 ```
 IWebPage page = seleniumManager.allocateWebPage("https://galasa.dev/");
 ```
 
-The code creates a WebPage with a Selenium WebDriver controlling the browser. This object provides an interface for the tester to perform actions on the page to navigate around, check the page content and switch between windows.
+The code opens a WebPage with a Selenium WebDriver controlling the browser. This object provides an interface for the tester to perform actions on the page to navigate around, check the page content and switch between windows.
 
 At the end of the test, the Selenium Manager automatically closes the WebDriver which removes the WebPage.
 
-There is no limit in Galasa on how many Selenium WebPages can be used within a single test. The only limit is the ability of the Galasa Ecosystem they are running on to support the Selenium WebDrivers not timing out.
+There is no limit in Galasa on how many Selenium WebPages can be used within a single test. The only limit is the ability of the Galasa Ecosystem they are running on to support the number of Selenium WebDrivers ensuring that they do not time out.
 </details>
 
 <details><summary>Navigating around a WebPage Browser</summary>
@@ -42,5 +42,5 @@ String pageTitle = page.getTitle();
 String pageSource = page.getPageSource();
 ```
 
-The code shows different ways of gaining information about the WebPage to be tested against. Extracting the title is a very simple way of checking if the WebDriver is on the correct page and making sure that a WebElement is found.
+The code shows different ways of gaining information about the web page to be tested against. Extracting the title is a very simple way of checking if the WebDriver is on the correct page and making sure that a WebElement is found.
 </details>
