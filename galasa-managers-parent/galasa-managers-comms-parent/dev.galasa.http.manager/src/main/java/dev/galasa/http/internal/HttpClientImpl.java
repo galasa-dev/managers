@@ -355,9 +355,7 @@ public class HttpClientImpl implements IHttpClient {
         while (true) {
             CloseableHttpResponse response = null;
             try {
-                if (httpClient == null) {
-                    this.build();
-                }
+                this.build();
                 response = httpClient.execute(request, httpContext);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK
@@ -989,9 +987,7 @@ public class HttpClientImpl implements IHttpClient {
             request.addHeader(header);
         }
 
-        if (httpClient == null) {
-            this.build();
-        }
+        this.build();
 
         try {
             return httpClient.execute(request, httpContext);
