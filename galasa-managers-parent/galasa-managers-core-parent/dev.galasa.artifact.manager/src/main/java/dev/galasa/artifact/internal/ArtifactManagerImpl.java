@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.artifact.ArtifactManager;
+import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.ISkeletonProcessor;
@@ -37,6 +38,11 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
     @GenerateAnnotatedField(annotation = ArtifactManager.class)
     public IArtifactManager fillField(Field field, List<Annotation> annotations) {
         return this;
+    }
+
+    @GenerateAnnotatedField(annotation = BundleResources.class)
+    public IBundleResources fillBundleResources(Field field, List<Annotation> annotations) {
+        return new BundleResourcesImpl(field.getDeclaringClass(), getFramework());
     }
 
     @Override
