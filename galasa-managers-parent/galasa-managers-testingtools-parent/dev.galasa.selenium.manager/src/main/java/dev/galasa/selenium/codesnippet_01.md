@@ -7,7 +7,7 @@ The following snippet shows the minimum code that is required to request the Sel
 public ISeleniumManager seleniumManager;
 ```
 
-The code creates an interface to the Selenium Manager which will allow the tester to provision WebPages to test against.
+The code creates an interface to the Selenium Manager which will allow the tester to provision web pages to test against.
 </details>
 
 <details><summary>Open a WebPage</summary>
@@ -23,7 +23,7 @@ At the end of the test, the Selenium Manager automatically closes the WebDriver 
 There is no limit in Galasa on how many Selenium WebPages can be used within a single test. The only limit is the ability of the Galasa Ecosystem they are running on to support the number of Selenium WebDrivers ensuring that they do not time out.
 </details>
 
-<details><summary>Navigating around a WebPage Browser</summary>
+<details><summary>Navigating around a web page browser</summary>
 
 ```
 page.clearElementByCssSelector("input.js-search-input.search__input--adv");
@@ -31,10 +31,10 @@ page.sendKeysToElementByClass("js-search-input.search__input--adv", "Galasa");
 page.clickElementById("search_button_homepage");
 ```
 
-The code showcases different actions which can be performed on a WebPage interface to interact with different WebElements on the Browser. These WebElements are selected using a range of different techniques which allows the tester flexibility in how they are selected.
+The code showcases different actions which can be performed on a web page interface to interact with different WebElements on the Browser. These WebElements are selected using a range of different techniques which allows the tester flexibility in how they are selected.
 </details>
 
-<details><summary>Extracting WebPage information</summary>
+<details><summary>Extracting web page information</summary>
 
 ```
 WebElement element = page.findElementById("search_button_homepage");
