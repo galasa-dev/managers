@@ -36,8 +36,8 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
     private static final Log logger = LogFactory.getLog(ArtifactManagerImpl.class);
 
     @GenerateAnnotatedField(annotation = ArtifactManager.class)
-    public IArtifactManager fillField(Field field, List<Annotation> annotations) {
-        return this;
+    public IBundleResources fillField(Field field, List<Annotation> annotations) {
+        return new BundleResourcesImpl(field.getDeclaringClass(), getFramework());
     }
 
     @GenerateAnnotatedField(annotation = BundleResources.class)
