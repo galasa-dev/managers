@@ -13,8 +13,6 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
-import dev.galasa.artifact.BundleResources;
-import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
