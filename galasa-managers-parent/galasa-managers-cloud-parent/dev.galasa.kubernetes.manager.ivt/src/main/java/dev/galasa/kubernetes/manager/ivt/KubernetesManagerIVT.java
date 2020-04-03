@@ -13,7 +13,6 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
-import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
@@ -37,7 +36,7 @@ public class KubernetesManagerIVT {
     public IKubernetesNamespace namespace;
     
     @ArtifactManager
-    public IArtifactManager artifactManager;
+    public IBundleResources resources;
     
     @Test
     public void ensureSetupOk() {
@@ -46,9 +45,7 @@ public class KubernetesManagerIVT {
     
     @Test
     public void createConfigMap() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String configMapYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testConfigMap.yaml"));
+        String configMapYaml = resources.streamAsString(resources.retrieveFile("/testConfigMap.yaml"));
         
         IConfigMap configMap = (IConfigMap) namespace.createResource(configMapYaml);
         
@@ -57,9 +54,7 @@ public class KubernetesManagerIVT {
 
     @Test
     public void createPvc() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String pvcYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testPvc.yaml"));
+        String pvcYaml = resources.streamAsString(resources.retrieveFile("/testPvc.yaml"));
         
         IPersistentVolumeClaim persistentVolumeClaim = (IPersistentVolumeClaim) namespace.createResource(pvcYaml);
         
@@ -68,9 +63,7 @@ public class KubernetesManagerIVT {
 
     @Test
     public void createSecret() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String secretYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testSecret.yaml"));
+        String secretYaml = resources.streamAsString(resources.retrieveFile("/testSecret.yaml"));
         
         ISecret secret = (ISecret) namespace.createResource(secretYaml);
         
@@ -79,9 +72,7 @@ public class KubernetesManagerIVT {
 
     @Test
     public void createDeployment() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String deploymentYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testDeployment.yaml"));
+        String deploymentYaml = resources.streamAsString(resources.retrieveFile("/testDeployment.yaml"));
         
         IDeployment deployment = (IDeployment) namespace.createResource(deploymentYaml);
         
@@ -90,9 +81,7 @@ public class KubernetesManagerIVT {
 
     @Test
     public void createStatefulSet() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String statefulSetYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testStatefulSet.yaml"));
+        String statefulSetYaml = resources.streamAsString(resources.retrieveFile("/testStatefulSet.yaml"));
         
         IStatefulSet statefulSet = (IStatefulSet) namespace.createResource(statefulSetYaml);
         
@@ -101,9 +90,7 @@ public class KubernetesManagerIVT {
 
     @Test
     public void createService() throws TestBundleResourceException, IOException, KubernetesManagerException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-        
-        String serviceYaml = bundleResources.streamAsString(bundleResources.retrieveFile("/testService.yaml"));
+        String serviceYaml = resources.streamAsString(resources.retrieveFile("/testService.yaml"));
         
         IService service = (IService) namespace.createResource(serviceYaml);
         
