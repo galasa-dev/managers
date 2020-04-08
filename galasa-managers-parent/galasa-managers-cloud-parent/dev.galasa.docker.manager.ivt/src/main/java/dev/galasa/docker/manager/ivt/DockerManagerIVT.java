@@ -18,9 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.artifact.resources;
-import dev.galasa.artifact.Iresources;
 import dev.galasa.artifact.ArtifactManager;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
@@ -59,7 +58,7 @@ public class DockerManagerIVT {
     public IDockerContainer container;
 
     @ArtifactManager
-    public IBundleResources resources;
+    public IArtifactManager artifactManager;
 
     @HttpClient
     public IHttpClient httpClient;
@@ -97,8 +96,10 @@ public class DockerManagerIVT {
      */
     @Test
     public void storeFilesInContainer() throws DockerManagerException, TestBundleResourceException {
+        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
+
         // Retrieve the test html file
-        InputStream isHtml = resources.retrieveFile("/test1.html");
+        InputStream isHtml = bundleResources.retrieveFile("/test1.html");
 
         // Store it in the container
         container.storeFile("/usr/local/apache2/htdocs/test1.html", isHtml);
