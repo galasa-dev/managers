@@ -58,6 +58,7 @@ public class ArtifactManagerIVT {
         if (!textContent.trim().equals("Hello from Galasa")) {
             throw new Exception("Unable to read text file resources/textFiles/test1.txt");
         }
+    }
 
     private HashMap<String,Object> buildHashMap(){
         HashMap<String, Object> props = new HashMap<>();
