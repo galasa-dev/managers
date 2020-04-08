@@ -13,9 +13,7 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.artifact.ArtifactManager;
-import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IArtifactManager;
-import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
 
@@ -26,24 +24,23 @@ public class ArtifactManagerIVT {
     public Log              logger;
 
     @ArtifactManager
-    public IBundleResources resources;
+    public IArtifactManager artifacts;
 
     @Test
     public void checkManagerNotNull() throws Exception {
-        if (resources == null) {
-            throw new Exception("Bundle Resources instance was null");
+        if (artifacts == null) {
+            throw new Exception("Artifact Manager instance was null");
         }
     }
 
     @Test
     public void readTextFile() throws Exception, TestBundleResourceException, IOException {
-        InputStream file = resources.retrieveFile("/resources/textFiles/test1.txt");
-        String textContent = resources.streamAsString(file);
+        InputStream file = artifacts.getBundleResources(this.getClass()).retrieveFile("/resources/textFiles/test1.txt");
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(file);
         logger.debug("Read the following from the file test1.txt: " + textContent);
         if (!textContent.trim().equals("Hello from Galasa")) {
             throw new Exception("Unable to read text file resources/textFiles/test1.txt");
         }
-
     }
 
     @Test
@@ -53,8 +50,9 @@ public class ArtifactManagerIVT {
         props.put("ITEM2", "SECOND ITEM");
         props.put("ITEM3", "ITEM NUMBER THREE");
 
-        InputStream is = resources.retrieveSkeletonFile("/resources/skeletons/test1.skel", props);
-        String textContent = resources.streamAsString(is);
+        InputStream is = artifacts.getBundleResources(this.getClass())
+                .retrieveSkeletonFile("/resources/skeletons/test1.skel", props);
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
 
         logger.info("Receivied the following from the skeleton file: " + textContent);
         if (!textContent.trim().equals("The third parameter is ITEM NUMBER THREE")) {
@@ -69,8 +67,9 @@ public class ArtifactManagerIVT {
         props.put("ITEM2", "SECOND ITEM");
         props.put("ITEM3", "ITEM NUMBER THREE");
 
-        InputStream is = resources.retrieveSkeletonFile("/resources/skeletons/test2.skel", props);
-        String textContent = resources.streamAsString(is);
+        InputStream is = artifacts.getBundleResources(this.getClass())
+                .retrieveSkeletonFile("/resources/skeletons/test2.skel", props);
+        String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
         logger.info("Receivied the following from the skeleton file: " + textContent);
 
         if (!textContent.trim().contains("The third parameter is ITEM NUMBER THREE")) {

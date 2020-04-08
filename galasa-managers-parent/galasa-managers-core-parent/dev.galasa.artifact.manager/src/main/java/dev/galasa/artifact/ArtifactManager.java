@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
-@ValidAnnotatedFields({ IBundleResources.class })
+@ValidAnnotatedFields({ IArtifactManager.class })
 @ArtifactManagerField
 public @interface ArtifactManager {
 
