@@ -12,7 +12,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
@@ -23,6 +26,13 @@ import dev.galasa.zos3270.spi.Screen;
 
 public class Network3270Test {
 
+    @Mock
+    private Network network;
+
+    @Before
+    public void init(){
+        MockitoAnnotations.initMocks(this);
+    }
     @Test
     public void testProcessMessage() throws NetworkException, IOException, InterruptedException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -76,14 +86,51 @@ public class Network3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread networkThread = new NetworkThread(null, null, bais);
+            NetworkThread networkThread = new NetworkThread(null, network, bais);
             networkThread.processMessage(bais);
             fail("Should have thrown an error because unknown error");
         } catch (NetworkException e) {
-            Assert.assertEquals("Error message incorrect", "TN3270E message Data-Type -1 is unsupported",
+            Assert.assertEquals("Error message incorrect", "In IAC request not supported, Command was: 0 0",
                     e.getMessage());
         }
 
+    }
+
+    @Test
+    public void testDoTimingMark() throws NetworkException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //x'fffd06 is IAC DO TIMING_MARK
+        baos.write(0xff);
+        baos.write(0xfd);
+        baos.write(0x06);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+        try {
+            NetworkThread networkThread = new NetworkThread(null, network, bais);
+            networkThread.processMessage(bais);
+        } catch (NetworkException e) {
+            fail("Failed to process a IAC DO TIMING_MARK");
+        }
+    }
+
+    @Test
+    public void testShortTimingMark() throws NetworkException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //x'fffd is IAC DO
+        baos.write(0xff);
+        baos.write(0xfd);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+        try {
+            NetworkThread networkThread = new NetworkThread(null, network, bais);
+            networkThread.processMessage(bais);
+            fail("Should have thrown an exception due to a short IAC DO COMMAND");
+        } catch (NetworkException e) {
+            Assert.assertEquals("Error message incorrect", "Missing remaining 2 bytes of the telnet 3270 IAC header",
+                    e.getMessage());
+        }
     }
 
 }

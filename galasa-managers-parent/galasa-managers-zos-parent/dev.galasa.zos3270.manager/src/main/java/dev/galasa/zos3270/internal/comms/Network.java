@@ -31,6 +31,7 @@ public class Network {
 
     public static final byte    IAC             = -1;
 
+    public static final byte    DONT            = -2;
     public static final byte    DO              = -3;
     public static final byte    WILL            = -5;
     public static final byte    SB              = -6;
@@ -46,6 +47,7 @@ public class Network {
     public static final byte    INV_DEVICE_TYPE = 4;
     public static final byte    REASON          = 5;
     public static final byte    REJECT          = 6;
+    public static final byte    TIMING_MARK     = 6;
     public static final byte    REQUEST         = 7;
     public static final byte    SEND            = 8;
     public static final byte    TN3270E         = 40;
