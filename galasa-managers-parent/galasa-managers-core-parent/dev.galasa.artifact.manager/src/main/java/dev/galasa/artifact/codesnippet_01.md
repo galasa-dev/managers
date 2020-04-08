@@ -4,10 +4,19 @@ The following snippet shows the minimum code that is required to request the Art
 
 ```
 @ArtifactManager
-public IBundleResources resources;
+public IArtifactManager artifacts;
 ```
 
 The code creates an interface to the Artifact Manager. The Artifact Manager allows the test to stream resources from the same bundle as the test and can also be used to substitute parameters into a skeleton file.
+</details>
+
+<details><summary>Create a reference to the bundles resources</summary>
+
+```
+IBundleResources resources = artifacts.getBundleResources(this.getClass());
+```
+
+The IBundleResources object now references the list of resources that are held within the test bundle under /src/main/resources/  These resources can now be accessed directly by the test code.
 </details>
 
 <details><summary>Retrieving the content of a file as a string</summary> 
