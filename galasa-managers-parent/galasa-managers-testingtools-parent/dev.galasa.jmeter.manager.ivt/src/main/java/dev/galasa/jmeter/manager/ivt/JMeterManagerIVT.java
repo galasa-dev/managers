@@ -7,8 +7,7 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.artifact.ArtifactManager;
-import dev.galasa.artifact.IArtifactManager;
+import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
@@ -28,8 +27,8 @@ import dev.galasa.jmeter.JMeterManagerException;
     @Logger
     public Log logger;
 
-    @ArtifactManager
-    public IArtifactManager artifactManager;
+    @BundleResources
+    public IBundleResources resources;
 
     @JMeterSession(jmxPath = "test.jmx", propPath = "jmeter.properties")
     public IJMeterSession session;
@@ -48,12 +47,9 @@ import dev.galasa.jmeter.JMeterManagerException;
 
     @Test
     public void startJMeterTestWithProperties() throws JMeterManagerException, TestBundleResourceException {
-       
-      IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-      InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
+      InputStream jmxStream = resources.retrieveFile("/test.jmx");
 
-      bundleResources = artifactManager.getBundleResources(getClass());
-      InputStream propStream = bundleResources.retrieveFile("/jmeter.properties");
+      InputStream propStream = resources.retrieveFile("/jmeter.properties");
 
       session.setJmxFile(jmxStream);
       session.applyProperties(propStream);
@@ -64,9 +60,7 @@ import dev.galasa.jmeter.JMeterManagerException;
 
     @Test
     public void startJMeterTestWithoutProperties() throws JMeterManagerException, TestBundleResourceException {
-       
-      IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-      InputStream jmxStream = bundleResources.retrieveFile("/test.jmx");
+      InputStream jmxStream = resources.retrieveFile("/test.jmx");
 
       session2.setJmxFile(jmxStream);
       session2.startJmeter();
