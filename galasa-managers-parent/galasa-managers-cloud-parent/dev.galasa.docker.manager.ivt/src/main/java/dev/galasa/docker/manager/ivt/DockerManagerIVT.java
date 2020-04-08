@@ -18,6 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
+import dev.galasa.artifact.resources;
+import dev.galasa.artifact.Iresources;
 import dev.galasa.artifact.ArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
