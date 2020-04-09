@@ -40,12 +40,14 @@ public class Terminal implements ITerminal {
         screen = new Screen(80, 24, this.network);
     }
 
+    @Override
     public synchronized void connect() throws NetworkException {
         connected = network.connectClient();
         networkThread = new NetworkThread(screen, network, network.getInputStream());
         networkThread.start();
     }
 
+    @Override
     public void disconnect() throws InterruptedException {
         connected = false;
         if (network != null) {
