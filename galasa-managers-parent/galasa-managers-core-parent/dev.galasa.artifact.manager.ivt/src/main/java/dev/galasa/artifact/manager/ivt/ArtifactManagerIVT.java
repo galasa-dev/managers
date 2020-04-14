@@ -29,7 +29,7 @@ public class ArtifactManagerIVT {
     public IArtifactManager artifacts;
 
     @BundleResources
-    IBundleResources resources;
+    public IBundleResources resources;
 
     @Test
     public void checkManagerNotNull() throws Exception {
