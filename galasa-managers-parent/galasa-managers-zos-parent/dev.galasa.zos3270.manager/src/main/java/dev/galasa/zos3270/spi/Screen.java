@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +46,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.QueryReplyCharactersets;
 import dev.galasa.zos3270.internal.datastream.QueryReplyImplicitPartition;
+import dev.galasa.zos3270.internal.datastream.QueryReplyNull;
 import dev.galasa.zos3270.internal.datastream.QueryReplySummary;
 import dev.galasa.zos3270.internal.datastream.QueryReplyUsableArea;
 import dev.galasa.zos3270.internal.datastream.StructuredField;
@@ -148,6 +150,9 @@ public class Screen {
             case QUERY:
                 processReadPartitionQuery();
                 return;
+            case QUERY_LIST:
+                processReadPartitionQueryList(readPartition);
+                return;
             default:
                 throw new DatastreamException(
                         "Unsupported Read Partition Type - " + readPartition.getType().toString());
@@ -156,14 +161,53 @@ public class Screen {
     }
 
     private synchronized void processReadPartitionQuery() throws DatastreamException {
+        List<AbstractQueryReply> replies = getAllSupportedReplies();
+        QueryReplySummary summary = new QueryReplySummary(replies);
+
+        sendQueryReplies(summary, replies);
+    }
+
+    private synchronized void processReadPartitionQueryList(StructuredFieldReadPartition readPartition) throws DatastreamException {
+        switch (readPartition.getRequestType()) {
+            case StructuredFieldReadPartition.REQTYP_LIST:
+                List<AbstractQueryReply> supportedReplies = getAllSupportedReplies();
+                ArrayList<AbstractQueryReply> replies = prepareQueryListResponse(supportedReplies, readPartition.getQcodes());
+
+                sendQueryReplies(new QueryReplySummary(supportedReplies), replies);
+                return;
+            case StructuredFieldReadPartition.REQTYP_ALL:
+            case StructuredFieldReadPartition.REQTYP_EQUIVALENT:
+                processReadPartitionQuery();
+                return;
+            default:
+                throw new DatastreamException(
+                        "Unsupported Read Partition Request Type code = " + readPartition.getRequestType());
+        }
+    }
+
+    private ArrayList<AbstractQueryReply> prepareQueryListResponse(List<AbstractQueryReply> supportedReplies, Set<Byte> requestedQcodes) {
+        ArrayList<AbstractQueryReply> replies = new ArrayList<>();
+        for (AbstractQueryReply reply : supportedReplies) {
+            if (requestedQcodes.contains(reply.getID())) {
+                replies.add(reply);
+            }
+        }
+        if (replies.isEmpty()) {
+            replies.add(new QueryReplyNull());
+        }
+        return replies;
+    }
+
+    private List<AbstractQueryReply> getAllSupportedReplies() {
         ArrayList<AbstractQueryReply> replies = new ArrayList<>();
 
         replies.add(new QueryReplyUsableArea(this));
         replies.add(new QueryReplyImplicitPartition(this));
         replies.add(new QueryReplyCharactersets());
+        return replies;
+    }
 
-        QueryReplySummary summary = new QueryReplySummary(replies);
-
+    private void sendQueryReplies(QueryReplySummary summary, List<AbstractQueryReply> replies) throws DatastreamException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(AttentionIdentification.STRUCTURED_FIELD.getKeyValue());
@@ -391,7 +435,7 @@ public class Screen {
             } else if (bh instanceof BufferStartOfField) {
                 if (currentField != null) {
                     fields.add(currentField);
-                } 
+                }
                 currentField = new Field(i, (BufferStartOfField) bh);
             } else if (bh instanceof BufferChar) {
                 currentField.appendChar(((BufferChar) bh).getChar());// NOSONAR, can't be null
