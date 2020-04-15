@@ -759,7 +759,6 @@ public class ZosBatchJobImpl implements IZosBatchJob {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get(PROP_STACK).getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error "); 
         sb.append(action);
@@ -775,8 +774,11 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             sb.append("\ndetails:");
             sb.append(errorDetails);
         }
-        sb.append("\nstack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get(PROP_STACK);
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }

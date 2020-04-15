@@ -22,6 +22,7 @@ import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.ZosConsole;
 import dev.galasa.zosconsole.ZosConsoleField;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
+import dev.galasa.zosconsole.spi.IZosConsoleSpi;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
@@ -37,7 +38,7 @@ import dev.galasa.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPr
  *
  */
 @Component(service = { IManager.class })
-public class ZosConsoleManagerImpl extends AbstractManager {
+public class ZosConsoleManagerImpl extends AbstractManager implements IZosConsoleSpi {
     protected static final String NAMESPACE = "zosconsole";
 
     protected static IZosManagerSpi zosManager;
@@ -51,6 +52,7 @@ public class ZosConsoleManagerImpl extends AbstractManager {
     }
 
     private final HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
+    private final HashMap<String, ZosConsoleImpl> zosConsoles = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -134,5 +136,14 @@ public class ZosConsoleManagerImpl extends AbstractManager {
         this.taggedZosConsoles.put(tag, (ZosConsoleImpl) zosConsole);
         
         return zosConsole;
+    }
+
+
+    @Override
+    public @NotNull IZosConsole getZosConsole(IZosImage image) {
+        if (zosConsoles.containsKey(image.getImageID())) {
+            return zosConsoles.get(image.getImageID());
+        }
+        return new ZosConsoleImpl(image);
     }
 }
