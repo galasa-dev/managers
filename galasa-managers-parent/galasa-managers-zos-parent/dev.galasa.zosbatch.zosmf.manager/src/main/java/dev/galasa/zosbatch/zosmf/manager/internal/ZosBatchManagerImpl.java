@@ -28,6 +28,7 @@ import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchField;
 import dev.galasa.zosbatch.ZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
@@ -43,7 +44,7 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
  *
  */
 @Component(service = { IManager.class })
-public class ZosBatchManagerImpl extends AbstractManager {
+public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi {
     protected static final String NAMESPACE = "zosbatch";
 
     protected static IZosManagerSpi zosManager;
@@ -57,6 +58,7 @@ public class ZosBatchManagerImpl extends AbstractManager {
     }
 
     private final HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
+    private final HashMap<String, ZosBatchImpl> zosBatches = new HashMap<>();
     
     protected static Path archivePath;
     public static void setArchivePath(Path archivePath) {
@@ -197,5 +199,13 @@ public class ZosBatchManagerImpl extends AbstractManager {
 
     protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
         return new ZosBatchJobnameImpl(imageid);
+    }
+
+    @Override
+    public @NotNull IZosBatch getZosBatch(IZosImage image) {
+        if (zosBatches.containsKey(image.getImageID())) {
+            return zosBatches.get(image.getImageID());
+        }
+        return new ZosBatchImpl(image);
     }
 }

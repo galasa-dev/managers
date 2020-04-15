@@ -10,14 +10,14 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.zosconsole.IZosConsole;
-import dev.galasa.zosconsole.IZosConsoleCommand;
-import dev.galasa.zosconsole.ZosConsoleException;
-import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosconsole.IZosConsole;
+import dev.galasa.zosconsole.IZosConsoleCommand;
+import dev.galasa.zosconsole.ZosConsoleException;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
 
 /**
  * Implementation of {@link IZosConsole} using zOS/MF

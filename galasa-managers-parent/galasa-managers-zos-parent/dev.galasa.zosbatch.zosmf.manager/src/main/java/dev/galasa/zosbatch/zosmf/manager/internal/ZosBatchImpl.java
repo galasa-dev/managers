@@ -28,6 +28,7 @@ import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
@@ -40,7 +41,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
  * Implementation of {@link IZosBatch} using zOS/MF
  *
  */
-public class ZosBatchImpl implements IZosBatch {
+public class ZosBatchImpl implements IZosBatch, IZosBatchSpi {
     
     private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
     private IZosImage image;
@@ -167,6 +168,12 @@ public class ZosBatchImpl implements IZosBatch {
             throw new ZosBatchException(displayMessage);
         }
         return zosBatchJobList;
+    }
+
+    @Override
+    public IZosBatch getZosBatch(IZosImage image) {
+        this.image = image;
+        return this;
     }
 
 }
