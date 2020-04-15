@@ -7,19 +7,16 @@ package dev.galasa.docker.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
-import dev.galasa.artifact.ArtifactManager;
-import dev.galasa.artifact.IArtifactManager;
+import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
@@ -57,8 +54,8 @@ public class DockerManagerIVT {
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start = false)
     public IDockerContainer container;
 
-    @ArtifactManager
-    public IArtifactManager artifactManager;
+    @BundleResources
+    IBundleResources resources;
 
     @HttpClient
     public IHttpClient httpClient;
@@ -96,10 +93,8 @@ public class DockerManagerIVT {
      */
     @Test
     public void storeFilesInContainer() throws DockerManagerException, TestBundleResourceException {
-        IBundleResources bundleResources = artifactManager.getBundleResources(getClass());
-
         // Retrieve the test html file
-        InputStream isHtml = bundleResources.retrieveFile("/test1.html");
+        InputStream isHtml = resources.retrieveFile("/test1.html");
 
         // Store it in the container
         container.storeFile("/usr/local/apache2/htdocs/test1.html", isHtml);
