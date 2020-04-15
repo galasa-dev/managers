@@ -4,7 +4,7 @@ The ArtifactManager allows you to stream resources from within the same bundles 
 
 ```
 @BundleResources
-IBundleResources resources;
+public IBundleResources resources;
 ```
 The resources object now references the list of resources that are held within the test bundle under */src/main/resources/*.  These resources can now be accessed directly by the test code, by calling methods on the resources object.
 
