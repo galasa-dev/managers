@@ -63,12 +63,14 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private URL                            liveTerminalUrl;
     private int                            liveTerminalSequence;
     private boolean                        logConsoleTerminals;
+    private boolean                        autoConnect;
 
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect)
             throws Zos3270ManagerException, InterruptedException {
         super(host, port, tls);
         this.terminalId = id;
         this.runId = framework.getTestRunName();
+        this.autoConnect = autoConnect;
 
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
@@ -104,6 +106,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
 
         logConsoleTerminals = LogConsoleTerminals.get();
+    }
+
+    public boolean doAutoConnect() {
+        return this.autoConnect;
     }
 
     @Override

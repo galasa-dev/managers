@@ -49,7 +49,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
     private IZosManagerSpi                              zosManager;
 
-    private HashMap<Zos3270TerminalImpl, Boolean>       terminals     = new HashMap<>();
+    private List<Zos3270TerminalImpl>                   terminals     = new ArrayList<>();
 
     private int                                         terminalCount = 0;
 
@@ -116,8 +116,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
         // *** Default the tag to primary
         String tag = defaultString(terminalAnnotation.imageTag(), "primary");
-
-        // boolean for autoconnect at provision start
+        // *** Default the tag to primary
         boolean autoConnect = terminalAnnotation.autoConnect();
 
         // *** Ask the zosManager for the image for the Tag
@@ -129,9 +128,9 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework());
+                    host.isTelnetPortTls(), getFramework(), autoConnect);
 
-            this.terminals.put(terminal, autoConnect);
+            this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + tag);
 
             return terminal;
@@ -147,9 +146,9 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
         }
 
         logger.info("Connecting zOS3270 Terminals");
-        for (Zos3270TerminalImpl terminal : terminals.keySet()) {
+        for (Zos3270TerminalImpl terminal : terminals) {
             try {
-                if (terminals.get(terminal)) {
+                if (terminal.doAutoConnect()) {
                     terminal.connect();
                     logger.trace("Connected zOS 3270 Terminal " + terminal.getId());
                 } else {
@@ -165,7 +164,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
     @Override
     public void provisionStop() {
         logger.trace("Disconnecting terminals");
-        for (Zos3270TerminalImpl terminal : terminals.keySet()) {
+        for (Zos3270TerminalImpl terminal : terminals) {
             try {
                 terminal.flushTerminalCache();
                 terminal.disconnect();
