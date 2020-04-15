@@ -12,6 +12,6 @@
  * 
  * @galasa.description
  * 
- * This Manager is the internal implementation of the zOS TSO Manager using ssh. 
+ * This Manager is the internal implementation of the zOS TSO Manager using ssh.
  */
 package dev.galasa.zostso.ssh.manager.internal;
