@@ -1040,7 +1040,6 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get("stack").getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error in IDCAMS "); 
         sb.append(action); 
@@ -1059,8 +1058,11 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             sb.append("\ndetails:");
             sb.append(errorDetails);
         }
-        sb.append("\nstack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get("stack");
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }
