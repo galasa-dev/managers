@@ -708,7 +708,6 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get("stack").getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error "); 
         sb.append(action); 
@@ -726,8 +725,11 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             sb.append(" details:");
             sb.append(errorDetails);
         }
-        sb.append(" stack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get("stack");
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }
