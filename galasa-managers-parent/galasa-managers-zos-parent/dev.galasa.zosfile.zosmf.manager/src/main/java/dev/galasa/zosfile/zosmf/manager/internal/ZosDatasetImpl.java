@@ -964,7 +964,6 @@ public class ZosDatasetImpl implements IZosDataset {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get("stack").getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error "); 
         sb.append(action); 
@@ -982,8 +981,11 @@ public class ZosDatasetImpl implements IZosDataset {
             sb.append("\ndetails:");
             sb.append(errorDetails);
         }
-        sb.append("\nstack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get("stack");
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }

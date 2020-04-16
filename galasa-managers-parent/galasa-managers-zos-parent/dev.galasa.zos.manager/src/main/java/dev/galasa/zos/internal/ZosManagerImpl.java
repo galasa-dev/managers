@@ -48,6 +48,8 @@ import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
+import dev.galasa.zos.internal.properties.TSOExtraBundle;
+import dev.galasa.zos.internal.properties.UNIXExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 
@@ -88,6 +90,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         bundles.add(BatchExtraBundle.get());
         bundles.add(ConsoleExtraBundle.get());
         bundles.add(FileExtraBundle.get());
+        bundles.add(TSOExtraBundle.get());
+        bundles.add(UNIXExtraBundle.get());
 
         return bundles;
     }
