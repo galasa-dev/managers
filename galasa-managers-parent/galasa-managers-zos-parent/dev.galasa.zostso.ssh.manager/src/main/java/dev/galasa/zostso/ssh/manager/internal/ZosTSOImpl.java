@@ -30,25 +30,23 @@ public class ZosTSOImpl implements IZosTSO {
     }
 
     @Override
-    public @NotNull IZosTSOCommand issueCommand(@NotNull String command) throws ZosTSOCommandException {
-        
+    public @NotNull IZosTSOCommand issueCommand(@NotNull String command) throws ZosTSOCommandException {        
         return newZosTSOCommand(command).issueCommand();
     }
 
     @Override
-    public @NotNull IZosTSOCommand issueCommand(@NotNull String command, long timeout) throws ZosTSOCommandException {
-        
+    public @NotNull IZosTSOCommand issueCommand(@NotNull String command, long timeout) throws ZosTSOCommandException {        
         return newZosTSOCommand(command).issueCommand(timeout);
     }
 
-    private ZosTSOCommandImpl newZosTSOCommand(String command) throws ZosTSOCommandException {
+    protected ZosTSOCommandImpl newZosTSOCommand(String command) throws ZosTSOCommandException {
         ZosTSOCommandImpl zosTSOCommand;
         
         try {
             zosTSOCommand = new ZosTSOCommandImpl(command, this.image);
             this.zosTSOCommands.add(zosTSOCommand);
         } catch (ZosTSOCommandManagerException e) {
-            throw new ZosTSOCommandException("Unable to issue TSO command", e);
+            throw new ZosTSOCommandException("Unable to issue zOS TSO Command", e);
         }
         return zosTSOCommand;
     }

@@ -138,12 +138,14 @@ public class ZosConsoleManagerImpl extends AbstractManager implements IZosConsol
         return zosConsole;
     }
 
-
     @Override
     public @NotNull IZosConsole getZosConsole(IZosImage image) {
         if (zosConsoles.containsKey(image.getImageID())) {
             return zosConsoles.get(image.getImageID());
+        } else {
+            ZosConsoleImpl zosConsole = new ZosConsoleImpl(image);
+            zosConsoles.put(image.getImageID(), zosConsole);
+            return zosConsole;
         }
-        return new ZosConsoleImpl(image);
     }
 }
