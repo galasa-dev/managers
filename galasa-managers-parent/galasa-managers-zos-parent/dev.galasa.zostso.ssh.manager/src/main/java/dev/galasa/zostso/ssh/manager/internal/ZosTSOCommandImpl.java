@@ -30,7 +30,7 @@ public class ZosTSOCommandImpl implements IZosTSOCommand {
         try {
             this.zosUnix = ZosTSOCommandManagerImpl.zosUnixCommandManager.getZosUNIX(image);
         } catch (ZosUNIXCommandManagerException e) {
-            throw new ZosTSOCommandException("Unable to get zOS UNIX Command Manager", e);
+            throw new ZosTSOCommandException("Unable to get zOS UNIX Command Manager for image " + image.getImageID(), e);
         }
     }
 
@@ -53,12 +53,8 @@ public class ZosTSOCommandImpl implements IZosTSOCommand {
     }
 
     @Override
-    public String getResponse() throws ZosTSOCommandException {
-        try {
-            return this.zosUnixcommand.getResponse();
-        } catch (ZosUNIXCommandException e) {
-            throw new ZosTSOCommandException("Unable to get zOS TSO Command response", e);
-        }
+    public String getResponse() {
+        return this.zosUnixcommand.getResponse();
     }
 
     @Override
@@ -68,11 +64,13 @@ public class ZosTSOCommandImpl implements IZosTSOCommand {
 
     @Override
     public String toString() {
-        String resp = this.zosUnixcommand != null ? " RESPONSE:\n " + this.zosUnixcommand : "";
-        return "COMMAND=" + this.command + (this.image != null ? " IMAGE=" +  this.image.getImageID() : "") + resp;
+        if (this.zosUnixcommand != null) {
+            return this.zosUnixcommand.toString();
+        }
+        return "COMMAND=" + this.command + (this.image != null ? " IMAGE=" +  this.image.getImageID() : "");
     }
 
-    private String buildCommand() {
+    protected String buildCommand() {
         StringBuilder builtCommand = new StringBuilder();
         builtCommand.append("tsocmd ");
         if (!this.command.startsWith("\"")) {

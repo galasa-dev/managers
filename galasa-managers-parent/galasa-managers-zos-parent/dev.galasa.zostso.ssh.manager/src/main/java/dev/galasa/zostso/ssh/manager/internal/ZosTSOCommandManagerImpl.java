@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -29,6 +30,7 @@ import dev.galasa.zostso.ZosTSO;
 import dev.galasa.zostso.ZosTSOCommandManagerException;
 import dev.galasa.zostso.ZosTSOField;
 import dev.galasa.zostso.spi.IZosTSOSpi;
+import dev.galasa.zostso.ssh.manager.internal.properties.ZosTSOCommandSshPropertiesSingleton;
 import dev.galasa.zosunix.ZosUNIXCommandManagerException;
 import dev.galasa.zosunix.spi.IZosUNIXSpi;
 
@@ -51,7 +53,7 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
     }
 
     private final HashMap<String, ZosTSOImpl> taggedZosTSOs = new HashMap<>();
-    private final HashMap<String, ZosTSOImpl> zosTSOs = new HashMap<>();
+    private final HashMap<IZosImage, ZosTSOImpl> zosTSOs = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -60,6 +62,11 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, testClass);
+        try {
+            ZosTSOCommandSshPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new ZosTSOCommandManagerException("Unable to request framework services", e);
+        }
 
         //*** Check to see if any of our annotations are present in the test class
         //*** If there is,  we need to activate
@@ -132,9 +139,13 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
 
     @Override
     public @NotNull IZosTSO getZosTSO(IZosImage image) throws ZosTSOCommandManagerException {
-        if (zosTSOs.containsKey(image.getImageID())) {
-            return zosTSOs.get(image.getImageID());
+        if (this.zosTSOs.containsKey(image)) {
+            return this.zosTSOs.get(image);
         }
-        return new ZosTSOImpl(image);
+
+        ZosTSOImpl zosTSO = new ZosTSOImpl(image);
+        this.zosTSOs.put(image, zosTSO);
+        
+        return zosTSO;
     }
 }

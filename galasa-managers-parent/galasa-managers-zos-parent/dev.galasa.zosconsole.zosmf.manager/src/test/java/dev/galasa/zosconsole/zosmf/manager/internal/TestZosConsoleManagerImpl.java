@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPropertiesSingleton;
@@ -167,6 +168,14 @@ public class TestZosConsoleManagerImpl {
         
         zosConsoleImplObject = zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
         Assert.assertEquals("generateZosConsole() should retrn the supplied instance of ZosBatchImpl", zosConsoleImpl, zosConsoleImplObject);
+    }
+    
+    @Test
+    public void testGetZosConsole() {
+        IZosConsole zosConsole = zosConsoleManagerSpy.getZosConsole(zosImageMock);
+        Assert.assertNotNull("getZosConsole() should not be null", zosConsole);
+        IZosConsole zosConsole2 = zosConsoleManagerSpy.getZosConsole(zosImageMock);
+        Assert.assertEquals("getZosConsole() should return the existing IZosConsole instance", zosConsole, zosConsole2);
     }
     
     class DummyTestClass {

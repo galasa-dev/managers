@@ -13,9 +13,8 @@ public interface IZosTSOCommand {
     /**
      * Return the response from a TSO command
      * @return the response String
-     * @throws ZosTSOCommandException
      */
-    public String getResponse() throws ZosTSOCommandException;
+    public String getResponse();
     
     /**
      * Return the TSO command
