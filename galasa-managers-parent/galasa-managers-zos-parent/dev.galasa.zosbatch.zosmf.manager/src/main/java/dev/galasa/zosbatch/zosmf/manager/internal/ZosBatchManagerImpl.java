@@ -205,7 +205,10 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     public @NotNull IZosBatch getZosBatch(IZosImage image) {
         if (zosBatches.containsKey(image.getImageID())) {
             return zosBatches.get(image.getImageID());
+        } else {
+            ZosBatchImpl zosBatch = new ZosBatchImpl(image);
+            zosBatches.put(image.getImageID(), zosBatch);
+            return zosBatch;
         }
-        return new ZosBatchImpl(image);
     }
 }

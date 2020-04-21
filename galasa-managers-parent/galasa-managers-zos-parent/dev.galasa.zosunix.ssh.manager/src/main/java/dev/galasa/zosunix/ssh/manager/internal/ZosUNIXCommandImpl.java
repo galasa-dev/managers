@@ -39,7 +39,7 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
         try {
             credentials = image.getDefaultCredentials();
         } catch (ZosManagerException e) {
-            throw new ZosUNIXCommandException("Unable to get default crdentials for image " + image.getImageID(), e);
+            throw new ZosUNIXCommandException("Unable to get default credentials for image " + image.getImageID(), e);
         }
         try {
             this.commandShell = ipNetworkManager.getCommandShell(host, credentials);
@@ -53,7 +53,7 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
         try {            
             this.commandResponse = commandShell.issueCommand(this.command);
         } catch (IpNetworkManagerException e) {
-            throw new ZosUNIXCommandException("Unable to issue command zOS UNIX Command", e);
+            throw new ZosUNIXCommandException("Unable to issue zOS UNIX Command", e);
         }
         return this;
     }
@@ -68,7 +68,7 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
     }
 
     @Override
-    public String getResponse() throws ZosUNIXCommandException {
+    public String getResponse() {
         return this.commandResponse;
     }
 
