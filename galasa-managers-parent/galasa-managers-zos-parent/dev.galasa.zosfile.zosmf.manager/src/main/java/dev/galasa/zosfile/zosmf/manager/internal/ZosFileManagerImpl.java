@@ -32,6 +32,7 @@ import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileField;
 import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.spi.IZosFileSpi;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
@@ -40,7 +41,7 @@ import dev.galasa.zosmf.spi.IZosmfManagerSpi;
  *
  */
 @Component(service = { IManager.class })
-public class ZosFileManagerImpl extends AbstractManager {
+public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     protected static final String NAMESPACE = "zosfile";
 
     protected static IZosManagerSpi zosManager;
@@ -54,6 +55,7 @@ public class ZosFileManagerImpl extends AbstractManager {
     }
 
     private static final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
+    private static ZosFileHandlerImpl zosFileHandler;
 
     private static String runId;
     protected static void setRunId(String id) {
@@ -223,5 +225,12 @@ public class ZosFileManagerImpl extends AbstractManager {
         } catch (ZosManagerException e) {
             throw new ZosFileManagerException(e);
         }
+    }
+    @Override
+    public @NotNull IZosFileHandler getZosFileHandler() throws ZosFileManagerException {
+        if (zosFileHandler == null) {
+            zosFileHandler = new ZosFileHandlerImpl();
+        }
+        return zosFileHandler;
     }
 }
