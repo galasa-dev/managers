@@ -691,8 +691,8 @@ public class Screen {
                     start = 0;
                     end = buffer.length - 1;
 
-                    OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
-                    outboundBuffer.write(sba.getCharRepresentation());
+                    // OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
+                    // outboundBuffer.write(sba.getCharRepresentation());
                     fieldModified = true;
                 } else { // formatted
                     end = start - 1;
