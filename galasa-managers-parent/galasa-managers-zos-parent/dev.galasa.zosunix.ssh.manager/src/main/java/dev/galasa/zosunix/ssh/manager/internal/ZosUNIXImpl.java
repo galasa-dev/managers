@@ -39,14 +39,14 @@ public class ZosUNIXImpl implements IZosUNIX {
         return newZosUNIXCommand(command).issueCommand(timeout);
     }
 
-    private ZosUNIXCommandImpl newZosUNIXCommand(String command) throws ZosUNIXCommandException {
+    protected ZosUNIXCommandImpl newZosUNIXCommand(String command) throws ZosUNIXCommandException {
         ZosUNIXCommandImpl zosUNIXCommand;
         
         try {
             zosUNIXCommand = new ZosUNIXCommandImpl(command, this.image);
             this.zosUNIXCommands.add(zosUNIXCommand);
         } catch (ZosUNIXCommandManagerException e) {
-            throw new ZosUNIXCommandException("Unable to issue UNIX command", e);
+            throw new ZosUNIXCommandException("Unable to issue command zOS UNIX Command", e);
         }
         return zosUNIXCommand;
     }

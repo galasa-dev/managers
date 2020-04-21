@@ -14,9 +14,8 @@ public interface IZosUNIXCommand {
     /**
      * Return the response from a UNIX command
      * @return the response String
-     * @throws ZosUNIXCommandException
      */
-    public String getResponse() throws ZosUNIXCommandException;
+    public String getResponse();
     
     /**
      * Return the UNIX command
