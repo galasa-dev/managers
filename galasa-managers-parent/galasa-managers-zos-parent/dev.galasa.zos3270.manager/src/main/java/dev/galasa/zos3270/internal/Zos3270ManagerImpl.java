@@ -49,7 +49,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
     private IZosManagerSpi                              zosManager;
 
-    private List<Zos3270TerminalImpl>                   terminals     = new ArrayList<>();
+    private ArrayList<Zos3270TerminalImpl>              terminals     = new ArrayList<>();
 
     private int                                         terminalCount = 0;
 
