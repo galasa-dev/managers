@@ -8,6 +8,7 @@ package dev.galasa.zos3270.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -39,18 +40,18 @@ import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
 @Component(service = { IManager.class })
 public class Zos3270ManagerImpl extends AbstractManager implements IZos3270ManagerSpi {
-    protected static final String              NAMESPACE     = "zos3270";
+    protected static final String                       NAMESPACE     = "zos3270";
 
-    private static final Log                   logger        = LogFactory.getLog(Zos3270ManagerImpl.class);
+    private static final Log                            logger        = LogFactory.getLog(Zos3270ManagerImpl.class);
 
-    private IConfigurationPropertyStoreService cps;
-    private IDynamicStatusStoreService         dss;
+    private IConfigurationPropertyStoreService          cps;
+    private IDynamicStatusStoreService                  dss;
 
-    private IZosManagerSpi                     zosManager;
+    private IZosManagerSpi                              zosManager;
 
-    private ArrayList<Zos3270TerminalImpl>     terminals     = new ArrayList<>();
+    private ArrayList<Zos3270TerminalImpl>              terminals     = new ArrayList<>();
 
-    private int                                terminalCount = 0;
+    private int                                         terminalCount = 0;
 
     /*
      * (non-Javadoc)
@@ -115,6 +116,8 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
         // *** Default the tag to primary
         String tag = defaultString(terminalAnnotation.imageTag(), "primary");
+        // *** Default the tag to primary
+        boolean autoConnect = terminalAnnotation.autoConnect();
 
         // *** Ask the zosManager for the image for the Tag
         try {
@@ -125,7 +128,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework());
+                    host.isTelnetPortTls(), getFramework(), autoConnect);
 
             this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + tag);
@@ -145,8 +148,13 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
         logger.info("Connecting zOS3270 Terminals");
         for (Zos3270TerminalImpl terminal : terminals) {
             try {
-                terminal.connect();
-                logger.trace("Connected zOS 3270 Terminal " + terminal.getId());
+                if (terminal.doAutoConnect()) {
+                    terminal.connect();
+                    logger.trace("Connected zOS 3270 Terminal " + terminal.getId());
+                } else {
+                    logger.trace("AutoConnect flag is false for: " + terminal.getId());
+                }
+                
             } catch (NetworkException e) {
                 logger.info("Failed to connect zOS 3270 Terminal to " + terminal.getHostPort(), e);
             }
