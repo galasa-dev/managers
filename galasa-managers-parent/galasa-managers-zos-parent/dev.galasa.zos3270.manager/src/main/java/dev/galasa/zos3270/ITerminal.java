@@ -13,6 +13,10 @@ public interface ITerminal {
 
     boolean isConnected();
 
+    void connect() throws NetworkException;
+
+    void disconnect() throws InterruptedException;
+
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, InterruptedException;
 
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
