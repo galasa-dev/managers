@@ -45,7 +45,7 @@ import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 @PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBatchManagerImpl {
     
-    private ZosBatchManagerImpl zosBatchManager;
+    private ZosBatchManagerImpl zosBatchManager; 
     
     private ZosBatchManagerImpl zosBatchManagerSpy;
     
