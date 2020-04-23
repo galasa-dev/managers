@@ -6,6 +6,8 @@
 package dev.galasa.zosmf.internal;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -32,19 +34,32 @@ public class ZosmfResponseImpl implements IZosmfResponse {
 
     @Override
     public JsonObject getJsonContent() throws ZosmfException {
-        if (!(this.content instanceof String) && !(content instanceof JsonObject)) {
-            throw new ZosmfException("Content not a JsonObject or String Object - " + content.getClass().getName());
+        if (this.content instanceof String) {
+            return new JsonParser().parse((String) this.content).getAsJsonObject();
+        } else if (this.content instanceof byte[]) {
+            return new JsonParser().parse(new String((byte[]) this.content)).getAsJsonObject();
+        } else if (this.content instanceof InputStream) {
+            return new JsonParser().parse(new InputStreamReader((InputStream) this.content)).getAsJsonObject();
+        } else if (content instanceof JsonObject) {
+            return (JsonObject) this.content;
         }
-        return content instanceof String ? new JsonParser().parse((String) content).getAsJsonObject() : (JsonObject) content;
+        
+        throw new ZosmfException("Content not a JsonObject - " + content.getClass().getName());
     }
 
     @Override
-    public JsonArray getJsonArrayContent() throws ZosmfException {;
-        if (!(this.content instanceof String) && !(content instanceof JsonArray)) {
-            throw new ZosmfException("Content not a JsonArray or String Object - " + content.getClass().getName());
+    public JsonArray getJsonArrayContent() throws ZosmfException {
+        if (this.content instanceof String) {
+            return new JsonParser().parse((String) this.content).getAsJsonArray();
+        } else if (this.content instanceof byte[]) {
+            return new JsonParser().parse(new String((byte[]) this.content)).getAsJsonArray();
+        } else if (this.content instanceof InputStream) {
+            return new JsonParser().parse(new InputStreamReader((InputStream) this.content)).getAsJsonArray();
+        } else if (content instanceof JsonObject) {
+            return (JsonArray) this.content;
         }
         
-        return content instanceof String ? new JsonParser().parse((String) content).getAsJsonArray() : (JsonArray) content;
+        throw new ZosmfException("Content not a JsonArray Object - " + content.getClass().getName());
     }
 
     @Override

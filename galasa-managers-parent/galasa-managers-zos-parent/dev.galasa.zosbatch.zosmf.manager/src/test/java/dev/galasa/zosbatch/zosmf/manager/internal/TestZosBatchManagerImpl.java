@@ -176,6 +176,7 @@ public class TestZosBatchManagerImpl {
         Mockito.doNothing().when(zosBatchImpl).cleanup();
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
+        Whitebox.setInternalState(zosBatchManagerSpy, "zosBatches", taggedZosBatches);
         ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
 
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);

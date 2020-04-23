@@ -251,6 +251,11 @@ public class TestZosFileManagerImpl {
         ZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
     }
     
+    @Test
+    public void testGetZosFileHandler() throws ZosFileManagerException {
+        Assert.assertEquals("getZosFileHandler() should return the same IZosFileHandler", zosFileManagerSpy.getZosFileHandler(), zosFileManagerSpy.getZosFileHandler());
+    }
+    
     class DummyTestClass {
         @dev.galasa.zos.ZosImage
         public dev.galasa.zos.IZosImage zosImage;

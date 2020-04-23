@@ -897,7 +897,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosVSAMDatasetException("IDCAMS " + idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage());
+            throw new ZosVSAMDatasetException("IDCAMS " + idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage(), e);
         }
     
         logger.trace(responseBody);
