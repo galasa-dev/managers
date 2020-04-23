@@ -34,6 +34,9 @@
  * The Docker Manager supports only AMD64 platforms. It is planned to expand the capability to S390x.
  * <br><br>
  * The Docker Manager currently supports only a single Docker Engine. 
- * It is planned to allow multiple Docker Engines to be configured.
+ * It is planned to allow multiple Docker Engines to be configured.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/docker/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
  */
 package dev.galasa.docker;

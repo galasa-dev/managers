@@ -23,6 +23,10 @@
  * 
  * @galasa.limitations
  * 
- * JMeter tests cannot be run remotely on a target host.
+ * JMeter tests cannot be run remotely on a target host.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/jmeter/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.jmeter;

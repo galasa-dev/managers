@@ -27,6 +27,10 @@
  * 
  * @galasa.limitations
  * 
- * The Selenium Manager only supports GECKO, CHROME, EDGE and IE WebDrivers.
+ * The Selenium Manager only supports GECKO, CHROME, EDGE and IE WebDrivers.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/selenium/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.selenium;
