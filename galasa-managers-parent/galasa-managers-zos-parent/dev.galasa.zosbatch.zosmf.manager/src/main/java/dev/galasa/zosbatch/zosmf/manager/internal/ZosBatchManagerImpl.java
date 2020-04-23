@@ -156,6 +156,9 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
         for (Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
             entry.getValue().cleanup();
         }
+        for (Entry<String, ZosBatchImpl> entry : this.zosBatches.entrySet()) {
+            entry.getValue().cleanup();
+        }
 
         setCurrentTestMethod(null);
         
