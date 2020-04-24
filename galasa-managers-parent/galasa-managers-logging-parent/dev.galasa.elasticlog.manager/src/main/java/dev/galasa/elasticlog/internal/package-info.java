@@ -41,6 +41,10 @@
  * - testingAreas<br>
  * - tags<br>
  * <br>
- * If additional testing information is required, please raise a GitHub issue.
+ * If additional testing information is required, please raise a GitHub issue.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/elasticlog/manager/ivt/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.elasticlog.internal;

@@ -19,6 +19,10 @@
  * The Manager only supports the following platforms:<br>
  * - Kubernetes Namespace<br>
  * <br>
- * In the near future, this Manager will be able to provision ecosystems in Docker and on a plain Linux server
+ * In the near future, this Manager will be able to provision ecosystems in Docker and on a plain Linux server.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/galasaecosystem/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.galasaecosystem;

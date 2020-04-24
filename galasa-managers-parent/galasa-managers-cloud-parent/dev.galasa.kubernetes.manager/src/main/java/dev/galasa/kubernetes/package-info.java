@@ -28,6 +28,9 @@
  * - ConfigMap<br>
  * - PersistentVolumeClaim<br>
  * <br>
- * If additional resources are required, please raise a GitHub issue.
+ * If additional resources are required, please raise a GitHub issue.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/kubernetes/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
  */
 package dev.galasa.kubernetes;

@@ -12,7 +12,7 @@
  * 
  * @galasa.description
  * 
- * This manager allows Galasa tests to issue CICS/TS CECI commands.
+ * This manager allows Galasa tests to issue CICS/TS CECI commands.<br><br>
  *
  * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/cicsts/ceci/package-summary.html">Javadoc documentation for the Manager here</a>.
  * <br><br>
