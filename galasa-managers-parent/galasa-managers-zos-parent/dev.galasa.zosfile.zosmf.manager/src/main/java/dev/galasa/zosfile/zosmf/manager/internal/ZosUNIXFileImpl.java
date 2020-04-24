@@ -212,7 +212,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to write to " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+                throw new ZosUNIXFileException("Unable to write to " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
             }
             logger.trace(responseBody);
             String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody, this.unixPath); 
@@ -319,7 +319,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException("Unable to list " + LOG_UNIX_PATH + quoted(path) + logOnImage());
+            throw new ZosUNIXFileException("Unable to list " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
@@ -401,7 +401,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to create " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+                throw new ZosUNIXFileException("Unable to create " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
             }
             
             logger.trace(responseBody);
@@ -444,7 +444,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
             }
             
             logger.trace(responseBody);
@@ -480,7 +480,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(path) + logOnImage());
+            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(path) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
@@ -518,7 +518,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 content = response.getTextContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage(), e);
             }
         } else {
             
@@ -526,7 +526,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage(), e);
             }
             logger.trace(responseBody);    
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -596,7 +596,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
         }
         
         logger.trace(responseBody);

@@ -524,7 +524,7 @@ public class CECIImpl implements ICECI {
             name = "&" + name;
         }
         if (name.length() > 10) {
-            throw new CECIException("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leadin \"&\"");
+            throw new CECIException("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leading \"&\"");
         }
         final String expr = "^[&][a-zA-Z0-9@#]*";
         if (!name.matches(expr)) {
