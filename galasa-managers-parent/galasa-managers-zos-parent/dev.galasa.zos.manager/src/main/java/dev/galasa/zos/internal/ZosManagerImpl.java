@@ -427,8 +427,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         if (zosImage != null) {
             return zosImage;
         }
-        
-        ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, null);
+
+        String clusterId = DseClusterIdForTag.get(imageId);
+        ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, clusterId);
         this.images.put(image.getImageID(), image);
         return image;
     }
