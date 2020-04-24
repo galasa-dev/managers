@@ -33,5 +33,9 @@ public @interface Zos3270Terminal {
      * The tag of the zOS Image for terminal this variable is to be populated with
      */
     String imageTag() default "primary";
+    /**
+     * Allow user to choose if the terminal autoconnects in provision start stage
+     */
+    boolean autoConnect() default true;
 
 }

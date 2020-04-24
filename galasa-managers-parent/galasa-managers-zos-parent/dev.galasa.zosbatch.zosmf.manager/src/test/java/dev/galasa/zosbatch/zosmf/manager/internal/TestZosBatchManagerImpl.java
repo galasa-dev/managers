@@ -45,7 +45,7 @@ import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 @PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBatchManagerImpl {
     
-    private ZosBatchManagerImpl zosBatchManager;
+    private ZosBatchManagerImpl zosBatchManager; 
     
     private ZosBatchManagerImpl zosBatchManagerSpy;
     
@@ -176,6 +176,7 @@ public class TestZosBatchManagerImpl {
         Mockito.doNothing().when(zosBatchImpl).cleanup();
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
+        Whitebox.setInternalState(zosBatchManagerSpy, "zosBatches", taggedZosBatches);
         ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
 
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
