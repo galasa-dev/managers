@@ -34,7 +34,7 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     private String fieldName;
 
     public ZosFileHandlerImpl() {
-        this.fieldName = "INTERNAL";
+        this("INTERNAL");
     }
 
     public ZosFileHandlerImpl(String fieldName) {

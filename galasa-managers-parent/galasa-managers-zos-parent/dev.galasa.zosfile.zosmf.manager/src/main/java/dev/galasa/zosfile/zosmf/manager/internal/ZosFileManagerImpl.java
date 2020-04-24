@@ -53,9 +53,13 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
         ZosFileManagerImpl.zosmfManager = zosmfManager;
     }
+    
+    protected static ZosFileHandlerImpl zosFileHandler;
+    public static void setZosFileHandler(ZosFileHandlerImpl zosFileHandler) {
+        ZosFileManagerImpl.zosFileHandler = zosFileHandler;
+    }
 
     private static final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
-    private static ZosFileHandlerImpl zosFileHandler;
 
     private static String runId;
     protected static void setRunId(String id) {
@@ -226,10 +230,11 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
             throw new ZosFileManagerException(e);
         }
     }
+    
     @Override
     public @NotNull IZosFileHandler getZosFileHandler() throws ZosFileManagerException {
         if (zosFileHandler == null) {
-            zosFileHandler = new ZosFileHandlerImpl();
+            setZosFileHandler(new ZosFileHandlerImpl());
         }
         return zosFileHandler;
     }
