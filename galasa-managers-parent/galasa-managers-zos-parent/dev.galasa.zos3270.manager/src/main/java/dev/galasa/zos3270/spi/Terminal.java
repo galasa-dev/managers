@@ -111,6 +111,36 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorUp();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorDown();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorLeft();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorRight();
+        return this;
+    }
+
+    @Override
+    public ITerminal home() throws KeyboardLockedException, FieldNotFoundException {
+        screen.home();
+        return this;
+    }
+
+    @Override
     public ITerminal enter() throws KeyboardLockedException, NetworkException, InterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.ENTER));
         return this;
