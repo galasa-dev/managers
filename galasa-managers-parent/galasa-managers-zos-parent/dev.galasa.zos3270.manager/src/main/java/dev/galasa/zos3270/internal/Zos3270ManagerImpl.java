@@ -115,7 +115,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
         Zos3270Terminal terminalAnnotation = field.getAnnotation(Zos3270Terminal.class);
 
         // *** Default the tag to primary
-        String tag = defaultString(terminalAnnotation.imageTag(), "primary");
+        String tag = defaultString(terminalAnnotation.imageTag(), "PRIMARY").toUpperCase();
         // *** Default the tag to primary
         boolean autoConnect = terminalAnnotation.autoConnect();
 
