@@ -384,6 +384,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     @Override
     public @NotNull IZosImage getImageForTag(String tag) throws ZosManagerException {
         Objects.nonNull(tag);
+        tag = tag.toUpperCase();
         
         IZosImage image = this.taggedImages.get(tag);
         if (image == null) {
