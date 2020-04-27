@@ -78,7 +78,7 @@ public class JMeterManagerImpl extends AbstractManager {
         JMeterSessionImpl session;
         
         try {
-            IDockerContainer container = dockerManager.provisionContainer("jmeter_" + sessionID, "galasadev/galasa-jmeter:0.6.0", false, "PRIMARY");
+            IDockerContainer container = dockerManager.provisionContainer("jmeter_" + sessionID, "galasadev/galasa-jmeter:latest", false, "PRIMARY");
             session = new JMeterSessionImpl(framework, this, sessionID, this.jmxPath, this.propPath, container, logger);
             activeContainers.add(container);
             activeSessions.add(session);
