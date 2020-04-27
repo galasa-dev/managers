@@ -720,7 +720,7 @@ public class TestCECIImpl {
     public void testValidateVariableException1() throws Exception {
         String name = "&2345678901";
         exceptionRule.expect(CECIException.class);
-        exceptionRule.expectMessage("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leadin \"&\"");
+        exceptionRule.expectMessage("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leading \"&\"");
         
         ceciSpy.validateVariable(name, TEXT_VARIABLE_VALUE.toCharArray(), null);
     }

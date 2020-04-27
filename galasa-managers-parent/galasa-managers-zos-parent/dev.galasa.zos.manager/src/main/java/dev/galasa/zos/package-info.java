@@ -12,6 +12,10 @@
  * 
  * @galasa.description
  * 
- * This Manager provides Galasa tests with access to a z/OS image.
+ * This Manager provides Galasa tests with access to a z/OS image.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zos/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.zos;

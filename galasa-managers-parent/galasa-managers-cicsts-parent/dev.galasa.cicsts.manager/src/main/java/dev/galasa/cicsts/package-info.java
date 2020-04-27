@@ -12,6 +12,11 @@
  * 
  * @galasa.description
  * 
- * This manager provides Galasa tests to CICS/TS functions.
+ * This manager provides Galasa tests to CICS/TS functions.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/cicsts/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ *
+ *
  */
 package dev.galasa.cicsts;
