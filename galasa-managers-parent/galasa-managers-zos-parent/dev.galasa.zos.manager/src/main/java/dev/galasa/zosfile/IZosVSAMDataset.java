@@ -149,9 +149,10 @@ public interface IZosVSAMDataset {
     
     /**
      * Delete the VSAM data set on the zOS image.
+     * @return deleted
      * @throws ZosVSAMDatasetException
      */
-    public void delete() throws ZosVSAMDatasetException;
+    public boolean delete() throws ZosVSAMDatasetException;
 
     /**
      * Returns true if the VSAM data set exists on the zOS image
@@ -161,13 +162,22 @@ public interface IZosVSAMDataset {
     public boolean exists() throws ZosVSAMDatasetException;
     
     /**
-     * Write to content to the data set. The data must be a suitable format, 
+     * Write to content to the data set in text mode. The data must be a suitable format, 
      * e.g. must be in key sequenced order for a KSDS
      * <p>See {@link #setDataType(DatasetDataType)}
      * @param content
      * @throws ZosVSAMDatasetException
      */
-    public void store(@NotNull String content) throws ZosVSAMDatasetException;
+    public void storeText(@NotNull String content) throws ZosVSAMDatasetException;
+    
+    /**
+     * Write to content to the data set in binary mode. The data must be a suitable format, 
+     * e.g. must be in key sequenced order for a KSDS
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @param content
+     * @throws ZosVSAMDatasetException
+     */
+    public void storeBinary(@NotNull byte[] content) throws ZosVSAMDatasetException;
     
     /**
      * Write to content to the data set. The content of the from data set must be a suitable format, 
@@ -178,12 +188,20 @@ public interface IZosVSAMDataset {
     public void store(@NotNull IZosDataset fromDataset) throws ZosVSAMDatasetException;
     
     /**
-     * Retrieve content of the VSAM data set
+     * Retrieve content of the VSAM data set in text mode
      * <p>See {@link #setDataType(DatasetDataType)}
      * @return VSAM data set content
      * @throws ZosVSAMDatasetException
      */
-    public String retrieve() throws ZosVSAMDatasetException;
+    public String retrieveAsText() throws ZosVSAMDatasetException;
+    
+    /**
+     * Retrieve content of the VSAM data set in binary mode
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @return VSAM data set content
+     * @throws ZosVSAMDatasetException
+     */
+    public byte[] retrieveAsBinary() throws ZosVSAMDatasetException;
     
     /**
      * Store the content of the data set with the test output

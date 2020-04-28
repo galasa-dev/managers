@@ -14,7 +14,7 @@ import dev.galasa.zos.ZosManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zos.bundle.extra.[imageid].tso.manager
+ * @galasa.name zos.bundle.extra.tso.manager
  * 
  * @galasa.description The name of the Bundle that implements the zOS TSO Command Manager
  * 
@@ -25,7 +25,6 @@ import dev.galasa.zos.ZosManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zos.bundle.extra.MVSA.tso.manager=dev.galasa.zostso.ssh.manager</code><br>
  * <code>zos.bundle.extra.tso.manager=dev.galasa.zostso.ssh.manager</code>
  *
  */

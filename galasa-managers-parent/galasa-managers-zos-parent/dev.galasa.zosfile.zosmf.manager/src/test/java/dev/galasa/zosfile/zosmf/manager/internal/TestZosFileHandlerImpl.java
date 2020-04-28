@@ -207,7 +207,7 @@ public class TestZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).retainToTestEnd();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).delete();
+        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).delete();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasetsEndOfTestMethod();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupVsamDatasetsEndOfTestMethod");

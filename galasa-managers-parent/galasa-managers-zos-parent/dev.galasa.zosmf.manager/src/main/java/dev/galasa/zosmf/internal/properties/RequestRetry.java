@@ -10,16 +10,23 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
- * zOS console retry request
- * <p>
- * The number of times to retry zOS console request when zOSMF request fails
- * </p>
- * The property is:<br>
- * {@code zosmf.server.[imageid].request.retry=5}
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_REQUEST_RETRY}
- * </p>
+ * zOSMF Server retry request
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosmf.server.[imageid].https
+ * 
+ * @galasa.description The number of times to retry when zOSMF request fails
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default 3
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosmf.server.request.retry=5</code><br>
+ * <code>zosmf.server.SYSA.request.retry=5</code>
  *
  */
 public class RequestRetry extends CpsProperties {
