@@ -14,16 +14,22 @@ import dev.galasa.zos.internal.ZosProvisionedImageImpl;
 
 /**
  * IP Host ID of the zOS Image
- * <p>
- * The IP Host ID of the zOS Image for the supplied tag.<br> 
- * If CPS property zos.image.[tag].iphostid exists, then that is returned, otherwise the zOS Image ID is returned 
- * </p><p>
- * The property is:<br>
- * {@code zos.image.[tag].iphostidr=sysa.ibm.com} 
- * </p>
- * <p>
- * There is no default
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.image.[tag].iphostidr
+ * 
+ * @galasa.description The IP Host ID of the zOS Image for the supplied tag.<br> 
+ * If CPS property zos.image.[tag].iphostid exists, then that is returned, otherwise the zOS Image ID is returned
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.image.[tag].iphostidr=sysa.ibm.com</code><br>
  *
  */
 public class HostId extends CpsProperties {

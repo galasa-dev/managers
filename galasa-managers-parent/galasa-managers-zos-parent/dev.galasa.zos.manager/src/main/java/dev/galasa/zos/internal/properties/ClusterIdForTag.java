@@ -13,15 +13,21 @@ import dev.galasa.zos.ZosManagerException;
 
 /**
  * The zOS Cluster ID
- * <p>
- * The Cluster ID for the specified tag 
- * </p><p>
- * The property is:<br>
- * {@code zos.tag.[tag].clusterid=plex1} 
- * </p>
- * <p>
- * There is no default
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.tag.[tag].clusterid
+ * 
+ * @galasa.description The zOS Cluster ID for the specified tag
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.tag.[tag].clusterid=plex1</code><br>
  *
  */
 public class ClusterIdForTag extends CpsProperties {

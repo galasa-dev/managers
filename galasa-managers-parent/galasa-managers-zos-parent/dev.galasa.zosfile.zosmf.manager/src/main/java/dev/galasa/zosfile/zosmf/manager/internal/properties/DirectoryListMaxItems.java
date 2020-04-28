@@ -11,15 +11,21 @@ import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
  * The maximum number of items from a directory list
- * <p>
- * The maximum number of items zOSMF returns when listing the content of a directory
- * </p><p>
- * The property is:<br>
- * {@code zosfile.unix.[imageid].directory.list.max.items=1000}
- * </p>
- * <p>
- * The default value is {@value #MAX_ITEMS}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosfile.unix.[imageid].directory.list.max.items
+ * 
+ * @galasa.description The maximum number of items zOSMF returns when listing the content of a directory
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default 1000
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosfile.unix.[imageid].directory.list.max.items=1000</code><br>
  *
  */
 public class DirectoryListMaxItems extends CpsProperties {

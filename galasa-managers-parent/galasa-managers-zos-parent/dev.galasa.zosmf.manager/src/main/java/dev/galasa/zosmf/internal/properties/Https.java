@@ -11,15 +11,22 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * zOSMF Server port is https
- * <p>
- * Use https (SSL) for zOSMF server 
- * </p><p>
- * The property is:<br>
- * {@code zosmf.server.[imageid].https=true} 
- * </p>
- * <p>
- * The default value is {@value #USE_HTTPS}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosmf.server.[imageid].https
+ * 
+ * @galasa.description Use https (SSL) for zOSMF server
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default True
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosmf.server.https=true</code><br>
+ * <code>zosmf.server.SYSA.https=true</code>
  *
  */
 public class Https extends CpsProperties {

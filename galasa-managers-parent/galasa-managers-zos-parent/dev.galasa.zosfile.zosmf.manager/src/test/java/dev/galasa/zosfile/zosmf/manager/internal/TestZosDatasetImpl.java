@@ -93,10 +93,6 @@ public class TestZosDatasetImpl {
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictZosmfToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
         
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
-        Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
-        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        
         zosDataset = new ZosDatasetImpl(zosImageMock, DATASET_NAME);
         zosDatasetSpy = Mockito.spy(zosDataset);
     }
@@ -311,20 +307,6 @@ public class TestZosDatasetImpl {
         exceptionRule.expectMessage("Unable to list data set \"" + DATASET_NAME + "\" on image " + IMAGE);
     
         zosDatasetSpy.exists();
-    }
-
-    @Test
-    public void testStore() throws ZosDatasetException {
-        PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any());
-        
-        zosDatasetSpy.store(CONTENT);
-        
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set");
-        
-        zosDatasetSpy.store(CONTENT);
     }
 
     @Test
@@ -1096,6 +1078,9 @@ public class TestZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getContent()).thenThrow(new ZosmfException(EXCEPTION));
         
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
+        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
         

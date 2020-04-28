@@ -175,12 +175,6 @@ public interface IZosDataset {
     public boolean exists() throws ZosDatasetException;
 
     /**
-     * Deprecated - Use {@link #storeText(String)} or {@link #storeBinary(String)}
-     */
-    @Deprecated
-    public void store(@NotNull String content) throws ZosDatasetException;
-
-    /**
      * Write to content to the data set in Text mode 
      * <p>See {@link #setDataType(DatasetDataType)}
      * @param content

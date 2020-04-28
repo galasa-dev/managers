@@ -12,16 +12,22 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.ZosManagerException;
 
 /**
- * zOS Image
- * <p>
- * The image ID for the specified tag 
- * </p><p>
- * The property is:<br>
- * {@code zos.dse.tag.[tag].imageid=SYSA} 
- * </p>
- * <p>
- * There is no default
- * </p>
+ * The zOS Image
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.dse.tag.[tag].imageid
+ * 
+ * @galasa.description The image ID for the specified tag
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.dse.tag.[tag].imageid=SYSA</code><br>
  *
  */
 public class ImageIdForTag extends CpsProperties {
