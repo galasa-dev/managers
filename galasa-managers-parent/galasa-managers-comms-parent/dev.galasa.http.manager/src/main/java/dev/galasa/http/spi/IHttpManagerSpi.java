@@ -15,4 +15,7 @@ public interface IHttpManagerSpi extends IHttpManager {
     @NotNull
     IHttpClient newHttpClient();
 
+    @NotNull
+    IHttpClient newHttpClient(int timeout);
+
 }

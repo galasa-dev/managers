@@ -34,6 +34,7 @@ import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
@@ -44,7 +45,7 @@ import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 @PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBatchManagerImpl {
     
-    private ZosBatchManagerImpl zosBatchManager;
+    private ZosBatchManagerImpl zosBatchManager; 
     
     private ZosBatchManagerImpl zosBatchManagerSpy;
     
@@ -166,7 +167,7 @@ public class TestZosBatchManagerImpl {
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
         zosBatchManager.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
         Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
         
@@ -175,7 +176,8 @@ public class TestZosBatchManagerImpl {
         Mockito.doNothing().when(zosBatchImpl).cleanup();
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
-    	ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        Whitebox.setInternalState(zosBatchManagerSpy, "zosBatches", taggedZosBatches);
+        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
 
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
         Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
@@ -226,14 +228,22 @@ public class TestZosBatchManagerImpl {
     
     @Test
     public void testNewZosBatchJobnameImpl() throws Exception {
-    	IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
+        IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
         PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
         PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         PowerMockito.doReturn("PFX").when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-    	
+        
         IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobnameImpl("image");
         Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith("PFX"));
+    }
+    
+    @Test
+    public void testGetZosBatch() {
+        IZosBatch zosBatch = zosBatchManagerSpy.getZosBatch(zosImageMock);
+        Assert.assertNotNull("getZosBatch() should not be null", zosBatch);
+        IZosBatch zosBatch2 = zosBatchManagerSpy.getZosBatch(zosImageMock);
+        Assert.assertEquals("getZosBatch() should return the existing IZosBatch instance", zosBatch, zosBatch2);
     }
     
     class DummyTestClass {

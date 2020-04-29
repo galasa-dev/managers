@@ -90,7 +90,7 @@ public class HttpClientImpl implements IHttpClient {
 
     private final List<Header>  commonHeaders        = new ArrayList<>();
 
-    private final int           timeout              = -1;
+    private final int           timeout;
 
     private BasicCookieStore    cookieStore;
     private SSLContext          sslContext;
@@ -101,7 +101,8 @@ public class HttpClientImpl implements IHttpClient {
 
     private Log                 logger;
 
-    public HttpClientImpl(Log log) {
+    public HttpClientImpl(int timeout, Log log) {
+        this.timeout = timeout;
         this.logger = log;
         this.cookieStore = new BasicCookieStore();
 
@@ -354,9 +355,7 @@ public class HttpClientImpl implements IHttpClient {
         while (true) {
             CloseableHttpResponse response = null;
             try {
-                if (httpClient == null) {
-                    this.build();
-                }
+                this.build();
                 response = httpClient.execute(request, httpContext);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK
@@ -827,6 +826,15 @@ public class HttpClientImpl implements IHttpClient {
 
         return HttpClientResponse.byteResponse(execute(request.buildRequest()));
     }
+    
+    @Override
+    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+
+        return executeByteRequest(request);
+    }
 
     @Override
     public HttpClientResponse<String> getText(String url) throws HttpClientException {
@@ -979,9 +987,7 @@ public class HttpClientImpl implements IHttpClient {
             request.addHeader(header);
         }
 
-        if (httpClient == null) {
-            this.build();
-        }
+        this.build();
 
         try {
             return httpClient.execute(request, httpContext);

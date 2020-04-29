@@ -5,9 +5,12 @@
  */
 package dev.galasa.docker;
 
+import java.net.HttpURLConnection;
+
 /**
- * Docker Exec Resource Object that represents a command being executed on the 
- * container.<p>
+ * Docker Exec Resource Object that represents a command being executed on the
+ * container.
+ * <p>
  * 
  * @author James Davies
  *
@@ -51,6 +54,8 @@ public interface IDockerExec {
 	 * @return exit code
 	 */
 	public long getExitCode();
+
+	public HttpURLConnection getConnection();
 	
 	
 }

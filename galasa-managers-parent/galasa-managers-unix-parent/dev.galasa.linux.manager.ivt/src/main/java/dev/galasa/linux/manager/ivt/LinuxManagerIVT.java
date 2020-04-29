@@ -22,10 +22,10 @@ public class LinuxManagerIVT {
     @Logger
     public Log         logger;
 
-    @LinuxImage(operatingSystem = OperatingSystem.any)
+    @LinuxImage(operatingSystem = OperatingSystem.any, imageTag = "PRIMARY")
     public ILinuxImage linuxPrimary;
 
-    @LinuxIpHost
+    @LinuxIpHost(imageTag = "PRIMARY")
     public IIpHost     linuxHost;
 
     @Test

@@ -20,8 +20,6 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.required Yes
  * 
- * @galasa.default galasa
- * 
  * @galasa.valid_values Any lowercase, single-word string
  * 
  * @galasa.examples 

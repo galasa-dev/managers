@@ -48,6 +48,8 @@ import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
+import dev.galasa.zos.internal.properties.TSOExtraBundle;
+import dev.galasa.zos.internal.properties.UNIXExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 
@@ -57,7 +59,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
-    private static final String PRIMARY_TAG = "primary";
+    private static final String PRIMARY_TAG = "PRIMARY";
 
     private static final String LOG_SELECTED_FOR_ZOS_TAG = " selected for zosTag '";
     private static final String LOG_ZOS_IMAGE = "zOS Image ";
@@ -72,8 +74,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
 
     /* 
-     * By default we need to load the zosmf batch implementation, but provide the ability for 
-     * it to be overridden
+     * We need to load the default implementations, but provide the ability for them to be overridden
      */
     @Override
     public List<String> extraBundles(@NotNull IFramework framework) throws ZosManagerException {
@@ -88,6 +89,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         bundles.add(BatchExtraBundle.get());
         bundles.add(ConsoleExtraBundle.get());
         bundles.add(FileExtraBundle.get());
+        bundles.add(TSOExtraBundle.get());
+        bundles.add(UNIXExtraBundle.get());
 
         return bundles;
     }
@@ -148,7 +151,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             if (field.getType() == IZosImage.class) {
                 ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
                 String tag = annotationZosImage.imageTag();
-                if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toLowerCase())) {
+                if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toUpperCase())) {
                     IZosImage zosImage = generateZosImage(field);
                     registerAnnotatedField(field, zosImage);
                     annotatedFieldIterator.remove(); //*** Dont need it for the second pass
@@ -199,7 +202,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG).toUpperCase();
 
         //*** Have we already generated this tag
         if (taggedImages.containsKey(tag)) {
@@ -256,7 +259,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosIpHost annotationHost = field.getAnnotation(ZosIpHost.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationHost.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationHost.imageTag(), PRIMARY_TAG).toUpperCase();
 
         //*** Ensure we have this tagged host
         ZosBaseImageImpl image = taggedImages.get(tag);
@@ -272,7 +275,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosIpPort annotationPort = field.getAnnotation(ZosIpPort.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG);
+        String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG).toUpperCase();
         String type = defaultString(annotationPort.type(), "standard");
 
         //*** Ensure we have this tagged host
@@ -380,6 +383,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     @Override
     public @NotNull IZosImage getImageForTag(String tag) throws ZosManagerException {
         Objects.nonNull(tag);
+        tag = tag.toUpperCase();
         
         IZosImage image = this.taggedImages.get(tag);
         if (image == null) {
@@ -423,8 +427,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         if (zosImage != null) {
             return zosImage;
         }
-        
-        ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, null);
+
+        String clusterId = DseClusterIdForTag.get(imageId);
+        ZosBaseImageImpl image =  new ZosDseImageImpl(this, imageId, clusterId);
         this.images.put(image.getImageID(), image);
         return image;
     }

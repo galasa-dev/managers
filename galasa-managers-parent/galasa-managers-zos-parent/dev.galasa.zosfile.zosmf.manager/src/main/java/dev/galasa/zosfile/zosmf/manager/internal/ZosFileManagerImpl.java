@@ -29,9 +29,10 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.IZosFileHandler;
+import dev.galasa.zosfile.ZosFileField;
 import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
-import dev.galasa.zosfile.ZosFileManagerField;
+import dev.galasa.zosfile.spi.IZosFileSpi;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
@@ -40,7 +41,7 @@ import dev.galasa.zosmf.spi.IZosmfManagerSpi;
  *
  */
 @Component(service = { IManager.class })
-public class ZosFileManagerImpl extends AbstractManager {
+public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     protected static final String NAMESPACE = "zosfile";
 
     protected static IZosManagerSpi zosManager;
@@ -51,6 +52,11 @@ public class ZosFileManagerImpl extends AbstractManager {
     protected static IZosmfManagerSpi zosmfManager;
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
         ZosFileManagerImpl.zosmfManager = zosmfManager;
+    }
+    
+    protected static ZosFileHandlerImpl zosFileHandler;
+    public static void setZosFileHandler(ZosFileHandlerImpl zosFileHandler) {
+        ZosFileManagerImpl.zosFileHandler = zosFileHandler;
     }
 
     private static final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
@@ -107,7 +113,7 @@ public class ZosFileManagerImpl extends AbstractManager {
 
         //*** Check to see if any of our annotations are present in the test class
         //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileManagerField.class);
+        List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
         if (!ourFields.isEmpty()) {
             youAreRequired(allManagers, activeManagers);
         }
@@ -125,7 +131,7 @@ public class ZosFileManagerImpl extends AbstractManager {
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        generateAnnotatedFields(ZosFileManagerField.class);
+        generateAnnotatedFields(ZosFileField.class);
     }
 
 
@@ -223,5 +229,13 @@ public class ZosFileManagerImpl extends AbstractManager {
         } catch (ZosManagerException e) {
             throw new ZosFileManagerException(e);
         }
+    }
+    
+    @Override
+    public @NotNull IZosFileHandler getZosFileHandler() throws ZosFileManagerException {
+        if (zosFileHandler == null) {
+            setZosFileHandler(new ZosFileHandlerImpl());
+        }
+        return zosFileHandler;
     }
 }

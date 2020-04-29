@@ -92,6 +92,25 @@ public class NetworkThread extends Thread {
             throw new NetworkException("Missing first byte of the telnet 3270 header");
         }
 
+        //In the middle of the DT_3270_DATA stream we can receive IAC DO TIMING_MARK requests
+        if(header[0]  == Network.IAC) {
+            byte[] remainingHeader = new byte[2];
+            if (messageStream.read(remainingHeader) != 2) {
+                throw new NetworkException("Missing remaining 2 bytes of the telnet 3270 IAC header");
+            }
+            //respond with DON'T_TIMING_MARK
+            if(remainingHeader[0] == Network.DO && remainingHeader[1] == Network.TIMING_MARK){
+                byte [] response = new byte[3];
+                response[0] = Network.IAC;
+                response[1] = Network.DONT;    
+                response[2] = Network.TIMING_MARK;
+                network.sendDatastream(response);
+            }else{
+                throw new NetworkException("In IAC request not supported, Command was: " + remainingHeader[0] + " " + remainingHeader[1]);
+            }
+            return;
+        }
+
         if (header[0] == DT_3270_DATA) {
             byte[] remainingHeader = new byte[4];
             if (messageStream.read(remainingHeader) != 4) {
@@ -102,9 +121,10 @@ public class NetworkThread extends Thread {
 
             Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
-        } else {
-            throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
-        }
+            return;
+        } 
+
+        throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
     }
 
     public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {

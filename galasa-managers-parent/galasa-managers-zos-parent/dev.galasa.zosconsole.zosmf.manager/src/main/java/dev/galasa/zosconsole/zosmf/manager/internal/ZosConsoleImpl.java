@@ -10,11 +10,14 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.IZosConsoleCommand;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
-import dev.galasa.zos.IZosImage;
 
 /**
  * Implementation of {@link IZosConsole} using zOS/MF
@@ -39,12 +42,30 @@ public class ZosConsoleImpl implements IZosConsole {
         ZosConsoleCommandImpl zosConsoleCommand;
         
         try {
-            zosConsoleCommand = new ZosConsoleCommandImpl(command, consoleName, this.image);
+            zosConsoleCommand = new ZosConsoleCommandImpl(command, consoleName(consoleName), this.image);
             this.zosConsoleCommands.add(zosConsoleCommand);
         } catch (ZosConsoleManagerException e) {
             throw new ZosConsoleException("Unable to issue console command", e);
         }
         
         return zosConsoleCommand.issueCommand();
+    }
+
+    protected String consoleName(String consoleName) throws ZosConsoleException {
+        if (consoleName == null) {
+            try {
+                ICredentials creds = image.getDefaultCredentials();
+                if (!(creds instanceof ICredentialsUsernamePassword)) {
+                    throw new ZosConsoleException("Unable to get the run username for image "  + image.getImageID());
+                }
+                return ((ICredentialsUsernamePassword) creds).getUsername();
+            } catch (ZosManagerException e) {
+                throw new ZosConsoleException("Unable to get the run username for image "  + image.getImageID());
+            }
+        }
+        if (consoleName.length() < 2 || consoleName.length() > 8) {
+            throw new ZosConsoleException("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+        }
+        return consoleName;
     }
 }

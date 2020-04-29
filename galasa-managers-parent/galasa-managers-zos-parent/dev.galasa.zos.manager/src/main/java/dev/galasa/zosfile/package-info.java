@@ -1,4 +1,9 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 /**
- * zOS File Manager - TPI
+ * z/OS Manager File interface
  */
 package dev.galasa.zosfile;

@@ -13,10 +13,26 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * Requests access to the zOS Console Manager
+ * z/OS Console 
  * 
- * <p>Used to populate a {@link IZosConsole} field</p>
- *
+ * @galasa.annotation
+ * 
+ * @galasa.description The <code>{@literal @}ZosConsole</code> annotation requests the z/OS Manager to provide a
+ * z/OS Console instance associated with a z/OS image. 
+ * The test can request multiple z/OS Console instances, with the default being associated with the <b>primary</b> z/OS image.<br>
+ * 
+ * @galasa.examples 
+ * {@literal @}ZosImage(imageTag="A")<br>
+ * public IZosImage zosImageA;<br>
+ * {@literal @}ZosConsole(imageTag="A")<br>
+ * public IZosConsole zosConsoleA;<br></code>
+ * 
+ * @galasa.extra
+ * The <code>IZosConsole</code> interface has two methods, {@link IZosConsole#issueCommand(String)} and
+ * {@link IZosConsole#issueCommand(String, String)} to issue a command to the z/OS console and returns a <code>IZosConsoleCommand</code>
+ * instance.<br><br>
+ * See {@link ZosConsole}, {@link IZosConsole} and {@link IZosConsoleCommand} to find out more.
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})

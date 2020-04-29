@@ -11,6 +11,12 @@ import dev.galasa.zos3270.spi.NetworkException;
 
 public interface ITerminal {
 
+    boolean isConnected();
+
+    void connect() throws NetworkException;
+
+    void disconnect() throws InterruptedException;
+
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, InterruptedException;
 
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
@@ -25,6 +31,16 @@ public interface ITerminal {
     ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
 
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
+    
+    ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException;
+
+    ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException;
+
+    ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal enter() throws KeyboardLockedException, NetworkException, InterruptedException;
 

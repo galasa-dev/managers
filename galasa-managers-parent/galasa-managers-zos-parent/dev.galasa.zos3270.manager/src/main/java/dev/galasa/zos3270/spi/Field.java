@@ -55,7 +55,7 @@ public class Field {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Field(pos=");
-        sb.append(Integer.toString(getStart()));
+        sb.append(Integer.toString(start));
         sb.append(",p=");
         sb.append(Boolean.toString(fieldProtected));
         sb.append(",n=");
@@ -121,7 +121,7 @@ public class Field {
     public boolean isUnformatted() {
         return (this.start == -1);
     }
-
+    
     public String getFieldWithoutNulls() {
         StringBuilder sb = new StringBuilder();
         for (char c : text) {

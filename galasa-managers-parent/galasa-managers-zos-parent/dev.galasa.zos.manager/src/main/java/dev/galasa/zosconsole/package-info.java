@@ -1,4 +1,9 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 /**
- * zOS Console Manager - TPI
+ * z/OS Manager Console interface
  */
 package dev.galasa.zosconsole;

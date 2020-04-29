@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +46,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.QueryReplyCharactersets;
 import dev.galasa.zos3270.internal.datastream.QueryReplyImplicitPartition;
+import dev.galasa.zos3270.internal.datastream.QueryReplyNull;
 import dev.galasa.zos3270.internal.datastream.QueryReplySummary;
 import dev.galasa.zos3270.internal.datastream.QueryReplyUsableArea;
 import dev.galasa.zos3270.internal.datastream.StructuredField;
@@ -148,6 +150,9 @@ public class Screen {
             case QUERY:
                 processReadPartitionQuery();
                 return;
+            case QUERY_LIST:
+                processReadPartitionQueryList(readPartition);
+                return;
             default:
                 throw new DatastreamException(
                         "Unsupported Read Partition Type - " + readPartition.getType().toString());
@@ -156,14 +161,53 @@ public class Screen {
     }
 
     private synchronized void processReadPartitionQuery() throws DatastreamException {
+        List<AbstractQueryReply> replies = getAllSupportedReplies();
+        QueryReplySummary summary = new QueryReplySummary(replies);
+
+        sendQueryReplies(summary, replies);
+    }
+
+    private synchronized void processReadPartitionQueryList(StructuredFieldReadPartition readPartition) throws DatastreamException {
+        switch (readPartition.getRequestType()) {
+            case StructuredFieldReadPartition.REQTYP_LIST:
+                List<AbstractQueryReply> supportedReplies = getAllSupportedReplies();
+                ArrayList<AbstractQueryReply> replies = prepareQueryListResponse(supportedReplies, readPartition.getQcodes());
+
+                sendQueryReplies(new QueryReplySummary(supportedReplies), replies);
+                return;
+            case StructuredFieldReadPartition.REQTYP_ALL:
+            case StructuredFieldReadPartition.REQTYP_EQUIVALENT:
+                processReadPartitionQuery();
+                return;
+            default:
+                throw new DatastreamException(
+                        "Unsupported Read Partition Request Type code = " + readPartition.getRequestType());
+        }
+    }
+
+    private ArrayList<AbstractQueryReply> prepareQueryListResponse(List<AbstractQueryReply> supportedReplies, Set<Byte> requestedQcodes) {
+        ArrayList<AbstractQueryReply> replies = new ArrayList<>();
+        for (AbstractQueryReply reply : supportedReplies) {
+            if (requestedQcodes.contains(reply.getID())) {
+                replies.add(reply);
+            }
+        }
+        if (replies.isEmpty()) {
+            replies.add(new QueryReplyNull());
+        }
+        return replies;
+    }
+
+    private List<AbstractQueryReply> getAllSupportedReplies() {
         ArrayList<AbstractQueryReply> replies = new ArrayList<>();
 
         replies.add(new QueryReplyUsableArea(this));
         replies.add(new QueryReplyImplicitPartition(this));
         replies.add(new QueryReplyCharactersets());
+        return replies;
+    }
 
-        QueryReplySummary summary = new QueryReplySummary(replies);
-
+    private void sendQueryReplies(QueryReplySummary summary, List<AbstractQueryReply> replies) throws DatastreamException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(AttentionIdentification.STRUCTURED_FIELD.getKeyValue());
@@ -228,6 +272,9 @@ public class Screen {
      */
     private synchronized void processSBA(OrderSetBufferAddress order) {
         this.workingCursor = order.getBufferAddress();
+        if (this.workingCursor >= this.screenSize) {
+            this.workingCursor = this.workingCursor - this.screenSize;
+        }
     }
 
     /**
@@ -358,6 +405,20 @@ public class Screen {
         return screenSB.toString();
     }
 
+    public String retrieveFlatScreen() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < this.buffer.length; i++) {
+            if (this.buffer[i] == null) {
+                sb.append(" ");
+            } else {
+                sb.append(this.buffer[i].getStringWithoutNulls());
+            }
+        }
+        return sb.toString();
+    }
+
+
+
     public synchronized @NotNull Field[] calculateFields() {
         ArrayList<Field> fields = new ArrayList<>();
 
@@ -377,7 +438,7 @@ public class Screen {
             if (wrapSoField == null) {
                 currentField = new Field();
             } else {
-                currentField = new Field(0, wrapSoField);
+                currentField = new Field(-1, wrapSoField);
             }
         }
 
@@ -512,6 +573,81 @@ public class Screen {
 
     }
 
+    public synchronized void cursorUp() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor = this.screenCursor - this.columns;
+        if (this.screenCursor < 0) {
+            this.screenCursor = this.screenSize - this.screenCursor;
+        }
+    }
+
+    public synchronized void cursorDown() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor = this.screenCursor + this.columns;
+        if (this.screenCursor >= this.screenSize) {
+            this.screenCursor = this.screenCursor - this.screenSize;
+        }
+    }
+
+    public synchronized void cursorLeft() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor--;
+        if (this.screenCursor < 0) {
+            this.screenCursor = this.screenSize - this.screenCursor;
+        }
+    }
+
+    public synchronized void cursorRight() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor++;
+        if (this.screenCursor >= this.screenSize) {
+            this.screenCursor = this.screenCursor - this.screenSize;
+        }
+
+    }
+
+    public synchronized void home() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        Field[] fields = calculateFields();
+
+        if (fields == null || fields.length == 0) {
+            this.screenCursor = 0;
+            return;
+        }
+
+        //*** find first unprotected field
+        for(Field field : fields) {
+            if (!field.isProtected()) {
+                if (field.isUnformatted()) {
+                    this.screenCursor = 0;
+                    return;
+                }
+
+                this.screenCursor = field.getStart() + 1;
+                return;
+            }
+        }
+
+        this.screenCursor = 0;
+        return;
+    }
+
+
     public int getNoOfColumns() {
         return this.columns;
     }
@@ -568,48 +704,69 @@ public class Screen {
     }
 
     public synchronized void type(String text) throws KeyboardLockedException, FieldNotFoundException {
+        this.screenCursor = type(text, this.screenCursor);
+    }
+
+    public synchronized int type(String text, int column, int row) throws KeyboardLockedException, FieldNotFoundException {
+        int position = column + (row * this.columns);
+
+        return type(text, position);
+    }
+
+    public synchronized int type(String text, int position) throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {
             throw new KeyboardLockedException("Unable to type as keyboard is locked");
         }
 
-        if (buffer[this.screenCursor] != null && !(buffer[this.screenCursor] instanceof BufferChar)) {
+        if (buffer[position] != null && !(buffer[position] instanceof BufferChar)) {
             throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
         }
 
         BufferStartOfField sf = null;
-        for (int i = this.screenCursor - 1; i >= 0; i--) {
-            if (buffer[i] instanceof BufferStartOfField) {
-                sf = (BufferStartOfField) buffer[i];
+        int sfPos = position - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != position) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
                 break;
+            }
+            
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
             }
         }
 
         // *** if no field found, assume unprotected
         if (sf != null && sf.isProtected()) {
-            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + position);
         }
 
         if (text.length() == 0) {
-            return;
+            return position;
         }
 
         for (int i = 0; i < text.length(); i++) {
-            IBufferHolder bh = buffer[screenCursor];
+            IBufferHolder bh = buffer[position];
             if (bh != null && !(bh instanceof BufferChar)) {
                 throw new FieldNotFoundException(
-                        "Unable to type where the cursor is pointing to - " + this.screenCursor);
+                        "Unable to type where the cursor is pointing to - " + position);
             }
 
-            buffer[screenCursor] = new BufferChar(text.charAt(i));
-            screenCursor++;
-            if (screenCursor >= screenSize) {
-                screenCursor = 0;
+            buffer[position] = new BufferChar(text.charAt(i));
+            position++;
+            if (position >= screenSize) {
+                position = 0;
             }
         }
 
         if (sf != null) {
             sf.setFieldModified();
         }
+
+        return position;
     }
 
     public synchronized byte[] aid(AttentionIdentification aid) throws DatastreamException, InterruptedException {
@@ -644,8 +801,8 @@ public class Screen {
                     start = 0;
                     end = buffer.length - 1;
 
-                    OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
-                    outboundBuffer.write(sba.getCharRepresentation());
+                    // OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(0));
+                    // outboundBuffer.write(sba.getCharRepresentation());
                     fieldModified = true;
                 } else { // formatted
                     end = start - 1;
@@ -703,7 +860,7 @@ public class Screen {
         }
     }
 
-    public Object getScreenSize() {
+    public int getScreenSize() {
         return this.screenSize;
     }
 
@@ -754,6 +911,10 @@ public class Screen {
         }
 
         return currentField;
+    }
+
+    public void setCursorPosition(int newPosition) {
+        this.screenCursor = newPosition;
     }
 
 }

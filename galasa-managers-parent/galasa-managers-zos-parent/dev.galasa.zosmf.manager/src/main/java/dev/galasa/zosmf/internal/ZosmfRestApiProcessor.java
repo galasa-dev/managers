@@ -32,7 +32,6 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
     
-    private int retryRequest;
     private IZosmf currentZosmf;
     private String currentZosmfImageId;
     
@@ -57,12 +56,12 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
      * @return
      * @throws ZosBatchException
      */
-    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes) throws ZosmfException {
+    public @NotNull IZosmfResponse sendRequest(ZosmfRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes, boolean convert) throws ZosmfException {
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }
         IZosmfResponse response = null;
-        for (int i = 0; i <= this.retryRequest; i++) {
+        for (int i = 0; i <= ((ZosmfImpl) currentZosmf).getRequestRetry(); i++) {
             try {
                 IZosmf zosmfServer = getCurrentZosmfServer();
                 if (headers != null) {
@@ -72,7 +71,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                 }
                 switch (requestType) {
                 case GET:
-                    response = zosmfServer.get(path, validStatusCodes);
+                    response = zosmfServer.get(path, validStatusCodes, convert);
                     break;
                 case POST_JSON:
                     response = zosmfServer.postJson(path, (JsonObject) body, validStatusCodes);
@@ -82,6 +81,9 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                     break;
                 case PUT_JSON:
                     response = zosmfServer.putJson(path, (JsonObject) body, validStatusCodes);
+                    break;
+                case PUT_BINARY:
+                    response = zosmfServer.putBinary(path, (byte[]) body, validStatusCodes);
                     break;
                 case DELETE:
                     response = zosmfServer.delete(path, validStatusCodes);
@@ -97,11 +99,11 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                     getNextZosmf();
                 }
             } catch (ZosmfManagerException e) {
-                logger.error(e);
+                logger.error("Problem with zOSMF request", e);
                 getNextZosmf();
             }
         }
-        throw new ZosmfException("Unable to get valid response fron zOS/MF server");
+        throw new ZosmfException("Unable to get valid response from zOS/MF server");
     }
     
     private IZosmf getCurrentZosmfServer() {

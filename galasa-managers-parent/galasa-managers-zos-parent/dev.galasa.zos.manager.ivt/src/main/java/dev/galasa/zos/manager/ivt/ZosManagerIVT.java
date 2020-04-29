@@ -18,7 +18,7 @@ import dev.galasa.zos.ZosManagerException;
 
 @Test
 public class ZosManagerIVT {
-	
+    
     @Logger
     public Log logger;
     
@@ -47,10 +47,10 @@ public class ZosManagerIVT {
 
     @Test
     public void checkDefaultCredentials() throws Exception, ZosManagerException {
-    	ICredentials creds = imagePrimary.getDefaultCredentials();
-    	if (creds == null) {
+        ICredentials creds = imagePrimary.getDefaultCredentials();
+        if (creds == null) {
             throw new Exception("Primary Credentials is null");
-    	}
+        }
         logger.info("The Primary Credentials are being returned");
     }
 

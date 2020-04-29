@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -182,7 +180,8 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     
     private static final String LOG_VSAM_DATA_SET = "VSAM data set ";
     private static final String LOG_ARCHIVED_TO = " archived to ";
-    private static final String LOG_DOES_NOT_EXIST = " does not exist ";
+    private static final String LOG_DOES_NOT_EXIST = " does not exist";
+    private static final String LOG_UNABLE_TO_DELETE_REPRO_DATASET = "Unable to delete IDCAMS REPRO temporary dataset";
 
     private static final Log logger = LogFactory.getLog(ZosVSAMDatasetImpl.class);
 
@@ -203,7 +202,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     @Override
     public IZosVSAMDataset create() throws ZosVSAMDatasetException {
         if (exists()) {
-            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " aleady exists" + logOnImage());
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " already exists" + logOnImage());
         }        
         
         JsonArray amsInput = new JsonArray();
@@ -224,7 +223,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " created" + logOnImage() + retained);
             this.datasetCreated = true;
         } else {
-            logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " not created" + logOnImage());
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " not created" + logOnImage());
         }
         
         return this;
@@ -237,7 +236,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public void delete() throws ZosVSAMDatasetException {
+    public boolean delete() throws ZosVSAMDatasetException {
         if (!exists()) {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -254,8 +253,10 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             
         if (exists()) {
             logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " not deleted" + logOnImage());
+            return false;
         } else {
             logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " deleted" + logOnImage());
+            return true;
         }
     }
 
@@ -269,18 +270,29 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public void store(@NotNull String content) throws ZosVSAMDatasetException {
+    public void storeText(String content) throws ZosVSAMDatasetException {
         ZosDatasetImpl fromDataset = createReproDataset(content);
         store(fromDataset);
         try {
             fromDataset.delete();
         } catch (ZosDatasetException e) {
-            throw new ZosVSAMDatasetException("Unable to delete IDCAMS REPRO temporay dataset", e);
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
         }
     }
 
     @Override
-    public void store(@NotNull IZosDataset fromDataset) throws ZosVSAMDatasetException {
+    public void storeBinary(byte[] content) throws ZosVSAMDatasetException {
+        ZosDatasetImpl fromDataset = createReproDataset(content);
+        store(fromDataset);
+        try {
+            fromDataset.delete();
+        } catch (ZosDatasetException e) {
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
+        }
+    }
+
+    @Override
+    public void store(IZosDataset fromDataset) throws ZosVSAMDatasetException {
         if (!exists()) {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -304,7 +316,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public String retrieve() throws ZosVSAMDatasetException {
+    public String retrieveAsText() throws ZosVSAMDatasetException {
         if (!exists()) {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -323,10 +335,38 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         
         String content = null;
         try {
-            content = toDataset.retrieve();
+            content = toDataset.retrieveAsText();
             toDataset.delete();
         } catch (ZosDatasetException e) {
-            throw new ZosVSAMDatasetException("Unable to delete IDCAMS REPRO temporay dataset", e);
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
+        }
+        return content;
+    }
+
+    @Override
+    public byte[] retrieveAsBinary() throws ZosVSAMDatasetException {
+        if (!exists()) {
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+
+        ZosDatasetImpl toDataset = createReproDataset(null);
+        
+        JsonArray amsInput = new JsonArray();
+        String[] items = getReproToCommand(toDataset.getName()).split("\n");
+        for (String item : items ) {
+            amsInput.add(item);
+        }
+        JsonObject requestBody = new JsonObject();
+        requestBody.add(PROP_INPUT, amsInput);
+        
+        idcamsRequest(requestBody);
+        
+        byte[] content = null;
+        try {
+            content = toDataset.retrieveAsBinary();
+            toDataset.delete();
+        } catch (ZosDatasetException e) {
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
         }
         return content;
     }
@@ -334,7 +374,12 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     public void saveToResultsArchive() throws ZosVSAMDatasetException {
         try {
             if (exists()) {
-                String archiveLocation = storeArtifact(retrieve(), this.name);
+                String archiveLocation;
+                if (this.dataType.equals(DatasetDataType.TEXT)) {
+                    archiveLocation = storeArtifact(retrieveAsText(), this.name);
+                } else {
+                    archiveLocation = storeArtifact(retrieveAsBinary(), this.name);
+                }
                 logger.info(quoted(this.name) + LOG_ARCHIVED_TO + archiveLocation);
             }
         } catch (ZosFileManagerException e) {
@@ -773,7 +818,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return getListcatOutput();
     }
 
-    private ZosDatasetImpl createReproDataset(String content) throws ZosVSAMDatasetException {
+    private ZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;
         try {
             reproDsname = ZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
@@ -804,10 +849,16 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             reproDataset.createTemporary();
             reproDataset.setDataType(this.dataType);
             if (content != null) {
-                reproDataset.store(content);
+                if (content instanceof String) {
+                    reproDataset.storeText((String) content);
+                } else if (content instanceof byte[]) {
+                    reproDataset.storeBinary((byte[]) content);
+                } else {
+                    throw new ZosVSAMDatasetException("Invalid content type - " + content.getClass().getName());
+                }
             }
         } catch (ZosDatasetException e) {
-            throw new ZosVSAMDatasetException("Unable to create temporay dataset for IDCAMS REPRO", e);
+            throw new ZosVSAMDatasetException("Unable to create temporary dataset for IDCAMS REPRO", e);
         }
         return reproDataset;
     }
@@ -817,7 +868,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     private String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
-        if (!this.idcamsCommand.equals("LISTCAT")) {
+        if (!"LISTCAT".equals(this.idcamsCommand)) {
             getListcatOutput();
         }
         int start = this.idcamsOutput.indexOf(findString);
@@ -831,7 +882,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             
     }
 
-    private String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
+    private String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -847,7 +898,13 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             }
             artifactPath = artifactPath.resolve(uniqueId);
             Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-            Files.write(artifactPath, content.getBytes()); 
+            if (content instanceof String) {
+                Files.write(artifactPath, ((String) content).getBytes()); 
+            } else if (content instanceof byte[]) {
+                Files.write(artifactPath, (byte[]) content);
+            } else {
+                logger.debug("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
+            }
         } catch (IOException e) {
             throw new ZosFileManagerException("Unable to store artifact", e);
         }
@@ -870,7 +927,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         this.idcamsRc = responseBody.get("rc").getAsInt();
     }
 
-    private void idcamsRequest(JsonObject requestBody) throws ZosVSAMDatasetException {
+    protected void idcamsRequest(JsonObject requestBody) throws ZosVSAMDatasetException {
         this.idcamsInput = null;
         this.idcamsOutput = null;
         this.idcamsRc = -9999;
@@ -886,18 +943,18 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosVSAMDatasetException(e);
         }
-        if (response == null || response.getStatusCode() == 0) {
+        if (response.getStatusCode() == 0) {
             throw new ZosVSAMDatasetException("IDCAMS " + this.idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage());
         }            
         JsonObject responseBody;
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosVSAMDatasetException("IDCAMS " + idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage());
+            throw new ZosVSAMDatasetException("IDCAMS " + idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage(), e);
         }
     
         logger.trace(responseBody);
@@ -1020,7 +1077,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return " on image " + this.image.getImageID();
     }
 
-    private String buildErrorString(String action, JsonObject responseBody) {    
+    String buildErrorString(String action, JsonObject responseBody) {    
         int errorCategory = responseBody.get("category").getAsInt();
         int errorRc = responseBody.get("rc").getAsInt();
         int errorReason = responseBody.get("reason").getAsInt();
@@ -1040,7 +1097,6 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get("stack").getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error in IDCAMS "); 
         sb.append(action); 
@@ -1059,8 +1115,11 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             sb.append("\ndetails:");
             sb.append(errorDetails);
         }
-        sb.append("\nstack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get("stack");
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }

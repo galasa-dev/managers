@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPropertiesSingleton;
@@ -96,11 +97,11 @@ public class TestZosConsoleManagerImpl {
     }
     
     @Test
-        public void testInitialise1() throws ManagerException {
-            Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-            zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
-            Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
-        }
+    public void testInitialise1() throws ManagerException {
+        Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
+    }
 
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
@@ -162,11 +163,19 @@ public class TestZosConsoleManagerImpl {
         
         HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
         ZosConsoleImpl zosConsoleImpl = Mockito.mock(ZosConsoleImpl.class);
-        taggedZosConsoles.put("tag", zosConsoleImpl);
+        taggedZosConsoles.put("TAG", zosConsoleImpl);
         Whitebox.setInternalState(zosConsoleManagerSpy, "taggedZosConsoles", taggedZosConsoles);
         
         zosConsoleImplObject = zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
         Assert.assertEquals("generateZosConsole() should retrn the supplied instance of ZosBatchImpl", zosConsoleImpl, zosConsoleImplObject);
+    }
+    
+    @Test
+    public void testGetZosConsole() {
+        IZosConsole zosConsole = zosConsoleManagerSpy.getZosConsole(zosImageMock);
+        Assert.assertNotNull("getZosConsole() should not be null", zosConsole);
+        IZosConsole zosConsole2 = zosConsoleManagerSpy.getZosConsole(zosImageMock);
+        Assert.assertEquals("getZosConsole() should return the existing IZosConsole instance", zosConsole, zosConsole2);
     }
     
     class DummyTestClass {

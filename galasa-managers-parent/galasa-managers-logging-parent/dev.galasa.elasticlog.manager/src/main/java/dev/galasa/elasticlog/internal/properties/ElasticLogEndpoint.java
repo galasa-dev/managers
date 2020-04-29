@@ -20,8 +20,6 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.required Yes
  * 
- * @galasa.default https://yoursitehere.com/elasticendpoint
- * 
  * @galasa.valid_values Any valid URI string
  * 
  * @galasa.examples 

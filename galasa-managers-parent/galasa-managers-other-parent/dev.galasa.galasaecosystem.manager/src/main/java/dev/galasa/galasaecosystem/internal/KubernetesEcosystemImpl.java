@@ -6,13 +6,16 @@
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,17 +35,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import dev.galasa.api.run.Run;
+import dev.galasa.api.runs.ScheduleStatus;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
+import dev.galasa.galasaecosystem.internal.properties.DockerRegistry;
+import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
+import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
+import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -74,7 +86,12 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
     private final Yaml                       yaml = new Yaml();
 
-    private final String                     targetVersion = "0.4.0-SNAPSHOT";
+    private final Gson                       gson = GalasaGsonBuilder.build();
+
+    private String                           dockerVersion;
+    private String                           dockerRegistry;
+    private String                           mavenVersion;
+    private URL                              mavenRepository;
     private final HashMap<String, String>    yamlReplacements = new HashMap<>();
 
     private IHttpClient                      etcdHttpClient;
@@ -98,6 +115,10 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
     private URL                              engineHealthUrl;
     private URL                              prometheusUrl;
     private URL                              grafanaUrl;
+    private InetSocketAddress                simbankTelnetPort;
+    private URL                              simbankWebUrl;
+    private InetSocketAddress                simbankDatabasePort;
+    private URL                              simbankManagementFacilityUrl;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
         this.manager   = manager;
@@ -112,11 +133,17 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
      */
     protected void loadYamlResources() throws GalasaEcosystemManagerException {
 
+        this.mavenVersion = MavenVersion.get();
+        this.mavenRepository = MavenRepo.get();
+        this.dockerVersion = DockerVersion.get();
+        this.dockerRegistry = DockerRegistry.get();
+
         ArrayList<Map<String, Object>>   managerYaml = new ArrayList<>();
         ArrayList<Map<String, Object>>   testYaml = new ArrayList<>();
 
         //*** Setup the blanket replacements
-        yamlReplacements.put("${dockerVersion}", targetVersion);
+        yamlReplacements.put("${dockerVersion}", dockerVersion);
+        yamlReplacements.put("${dockerRegistry}", dockerRegistry);
 
         //*** Load all the yaml files ready for searching and processing
         try {
@@ -225,6 +252,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
     public void build() throws GalasaEcosystemManagerException {
         logger.info("Starting the build of Galasa Ecosystem " + this.tag + " Kubernetes namespace " + this.namespace.getFullId());
+
         Instant buildStart = Instant.now();
         try {
             //*** Build all the external services, need these for some configmaps
@@ -238,6 +266,10 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             build(ResourceType.ENGINE_EXTERNAL_SERVICE);
             build(ResourceType.PROMETHEUS_EXTERNAL_SERVICE);
             build(ResourceType.GRAFANA_EXTERNAL_SERVICE);
+            build(ResourceType.SIMBANK_TELNET_SERVICE);
+            build(ResourceType.SIMBANK_WEBSERVICE_SERVICE);
+            build(ResourceType.SIMBANK_DATABASE_SERVICE);
+            build(ResourceType.SIMBANK_MANAGEMENT_FACILITY_SERVICE);
 
             //*** Generate the known URLs
             generateKnownUrls();
@@ -256,7 +288,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             //*** Create all the Persistent Volume Claims
             logger.info("Building Persistent Volume Claim Kubernetes resources");
-            build(ResourceType.API_PVC);
+            build(ResourceType.API_PVC); //*** TODO not needed until we reinstate the test catalog
             build(ResourceType.PROMETHEUS_PVC);
             build(ResourceType.GRAFANA_PVC);
 
@@ -264,6 +296,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             logger.info("Building Config Maps Kubernetes resources");
             build(ResourceType.CONFIG_CONFIGMAP);     
             build(ResourceType.BOOTSTRAP_CONFIGMAP);     
+            build(ResourceType.TESTCATALOG_CONFIGMAP);     
             build(ResourceType.PROMETHEUS_CONFIGMAP);     
             build(ResourceType.GRAFANA_CONFIGMAP);     
             build(ResourceType.GRAFANA_DASHBOARD_CONFIGMAP);     
@@ -274,6 +307,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             logger.info("Building Prometheus and Grafana early, as doesn't need the CPS");
             build(ResourceType.PROMETHEUS_DEPLOYMENT);
             build(ResourceType.GRAFANA_DEPLOYMENT);
+            build(ResourceType.SIMBANK_DEPLOYMENT);
 
             //*** Create all the StatefulSets
             logger.info("Building Stateful Set Kubernetes resources");
@@ -308,12 +342,43 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             waitForMessageInAllPodLogs(ResourceType.METRICS_DEPLOYMENT, "metrics", "MetricsServer.run - Metrics Server has started", 180);
             waitForMessageInAllPodLogs(ResourceType.PROMETHEUS_DEPLOYMENT, "prometheus", "Server is ready to receive web requests", 180);
             waitForMessageInAllPodLogs(ResourceType.GRAFANA_DEPLOYMENT, "grafana", "msg=\"HTTP Server Listen\" logger=http.server address=[::]:3000", 180);
+            waitForMessageInAllPodLogs(ResourceType.SIMBANK_DEPLOYMENT, "simbank", "Simplatform main ... Simplatform started", 180);
 
             Instant buildEnd = Instant.now();
             long seconds = buildEnd.getEpochSecond() - buildStart.getEpochSecond();
 
-
             saveEcosystemInDss();
+
+            //*** Set up fast cleanup
+            storeCpsProperty("framework.resource.management.dead.heartbeat.timeout", "30");
+            storeCpsProperty("framework.resource.management.finished.timeout", "40");
+
+            //*** Set up streams
+            storeCpsProperty("framework.stream.int.obr", "mvn:dev.galasa/dev.galasa.inttests.obr/" + this.mavenVersion + "/obr");
+            storeCpsProperty("framework.stream.int.repo", this.mavenRepository.toString());
+            storeCpsProperty("framework.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + this.mavenVersion + "/obr");
+            storeCpsProperty("framework.stream.simbank.repo", this.mavenRepository.toString());
+
+            //*** Set up SimBank
+            storeCpsProperty("secure.credentials.SIMBANK.username", "IBMUSER");
+            storeCpsProperty("secure.credentials.SIMBANK.password", "SYS1");
+
+            storeCpsProperty("zos.dse.tag.SIMBANK.imageid", "SIMBANK");
+            storeCpsProperty("zos.dse.tag.SIMBANK.clusterid", "SIMBANK");
+            storeCpsProperty("zos.image.SIMBANK.ipv4.hostname", this.simbankTelnetPort.getHostString());
+            storeCpsProperty("zos.image.SIMBANK.telnet.port", Integer.toString(this.simbankTelnetPort.getPort()));
+            storeCpsProperty("zos.image.SIMBANK.telnet.tls", "false");
+            storeCpsProperty("zos.image.SIMBANK.credentials", "SIMBANK");
+
+            storeCpsProperty("zosmf.server.SIMBANK.images", "SIMBANK");
+            storeCpsProperty("zosmf.server.SIMBANK.hostname", this.simbankManagementFacilityUrl.getHost());
+            storeCpsProperty("zosmf.server.SIMBANK.port", Integer.toString(this.simbankManagementFacilityUrl.getPort()));
+
+            storeCpsProperty("simbank.dse.instance.name","SIMBANK");
+            storeCpsProperty("simbank.instance.SIMBANK.zos.image","SIMBANK");
+            storeCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(this.simbankDatabasePort.getPort()));
+            storeCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(this.simbankWebUrl.getPort()));
+
 
             logger.info("Kubernetes Ecosystem successfully built on " + this.namespace.getFullId() + " in " + seconds + " seconds");
 
@@ -325,20 +390,26 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             logger.info("CREDS URI     = " + this.credsUri.toString());
             logger.info("API URL       = " + this.apiUrl.toString());
             logger.info("");
-            logger.info("Resource Monitor Metrics URL  = " + this.resmonMetricsUrl);
-            logger.info("Resource Monitor Health URL   = " + this.resmonHealthUrl);
-            logger.info("Metrics Metrics URL           = " + this.metricsMetricsUrl);
-            logger.info("Metrics Health Health URL     = " + this.metricsHealthUrl);
-            logger.info("Engine Controller Metrics URL = " + this.engineMetricsUrl);
-            logger.info("Engine Controller Health URL  = " + this.engineHealthUrl);
-            logger.info("Prometheus URL                = " + this.prometheusUrl);
-            logger.info("Grafana URL                   = " + this.grafanaUrl);
+            logger.info("Resource Monitor Metrics URL    = " + this.resmonMetricsUrl);
+            logger.info("Resource Monitor Health URL     = " + this.resmonHealthUrl);
+            logger.info("Metrics Metrics URL             = " + this.metricsMetricsUrl);
+            logger.info("Metrics Health Health URL       = " + this.metricsHealthUrl);
+            logger.info("Engine Controller Metrics URL   = " + this.engineMetricsUrl);
+            logger.info("Engine Controller Health URL    = " + this.engineHealthUrl);
+            logger.info("Prometheus URL                  = " + this.prometheusUrl);
+            logger.info("Grafana URL                     = " + this.grafanaUrl);
+            logger.info("Simbank Telnet Port             = " + this.simbankTelnetPort);
+            logger.info("Simbank Webservice URL          = " + this.simbankWebUrl);
+            logger.info("Simbank Database Port           = " + this.simbankDatabasePort);
+            logger.info("Simbank Management Facility URL = " + this.simbankManagementFacilityUrl);
             logger.info("--------------------------------------------------------------------------------------------");
         } catch(GalasaEcosystemManagerException e) {
             try {
                 this.namespace.saveNamespaceConfiguration();
+                throw e;
             } catch (KubernetesManagerException e1) {
                 logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + this.tag);
+                throw e;
             }
         }
     }
@@ -362,12 +433,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                         logger.debug("Bootstrap server has started");
                         return;
                     }
-                } catch(HttpClientException e) {
-                    Throwable t = e.getCause();
-                    if (!t.getMessage().contains("Connection refused")) {
-                        throw e;
-                    }
-                }
+                } catch(HttpClientException e) { } //   ignore http errors
 
                 if (checkMessage.isBefore(Instant.now())) {
                     logger.debug("Still waiting for bootstrap to start");
@@ -379,7 +445,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             throw new GalasaEcosystemManagerException("The bootstrap server did not start in time");
 
-        } catch(InterruptedException | KubernetesManagerException | HttpClientException e) {
+        } catch(InterruptedException | KubernetesManagerException e) {
             throw new GalasaEcosystemManagerException("Problem waiting for the bootstrap to become availabe", e);
         }
 
@@ -390,9 +456,9 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         Map<String, Object> yaml = bootstrapResource.getYaml();
         @SuppressWarnings("unchecked")
         Map<String, Object> data = (Map<String, Object>) yaml.get("data");
-        String bootstrap = (String) data.get("dev.galasa.bootstrap.cfg");
+        String bootstrap = (String) data.get("bootstrap.properties");
         bootstrap = bootstrap.replace("${cpsURI}", this.cpsUri.toString());
-        data.put("dev.galasa.bootstrap.cfg", bootstrap);  
+        data.put("bootstrap.properties", bootstrap);  
     }
 
     private void generateKnownUrls() throws GalasaEcosystemManagerException {
@@ -407,7 +473,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             this.rasUrl = getHttpUrl(ResourceType.RAS_EXTERNAL_SERVICE, 5984);
             this.rasUri = new URI("couchdb:" + this.rasUrl.toString());
 
-            this.apiUrl = getHttpUrl(ResourceType.API_EXTERNAL_SERVICE, 8181);
+            this.apiUrl = getHttpUrl(ResourceType.API_EXTERNAL_SERVICE, 8080);
 
             this.metricsMetricsUrl = getHttpUrl(ResourceType.METRICS_EXTERNAL_SERVICE, 9010);
             this.metricsHealthUrl = getHttpUrl(ResourceType.METRICS_HEALTH_SERVICE, 9011);
@@ -420,6 +486,11 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
             this.prometheusUrl = getHttpUrl(ResourceType.PROMETHEUS_EXTERNAL_SERVICE, 9090);
             this.grafanaUrl = getHttpUrl(ResourceType.GRAFANA_EXTERNAL_SERVICE, 3000);
+
+            this.simbankTelnetPort = getPort(ResourceType.SIMBANK_TELNET_SERVICE, 2023);
+            this.simbankWebUrl = getHttpUrl(ResourceType.SIMBANK_WEBSERVICE_SERVICE, 2080);
+            this.simbankDatabasePort = getPort(ResourceType.SIMBANK_DATABASE_SERVICE, 2027);
+            this.simbankManagementFacilityUrl = getHttpUrl(ResourceType.SIMBANK_MANAGEMENT_FACILITY_SERVICE, 2040);
         } catch (KubernetesManagerException | MalformedURLException | URISyntaxException e) {
             throw new GalasaEcosystemManagerException("Problem generating the default URLs", e);
         }
@@ -429,6 +500,11 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         IService service = (IService) this.resources.get(type).getK8sResource();
         InetSocketAddress socketAddress = service.getSocketAddressForPort(port);
         return new URL("http://" + socketAddress.getHostString() + ":" + Integer.toString(socketAddress.getPort()));
+    }
+
+    private InetSocketAddress getPort(ResourceType type, int port) throws KubernetesManagerException, MalformedURLException {
+        IService service = (IService) this.resources.get(type).getK8sResource();
+        return service.getSocketAddressForPort(port);
     }
 
     private void storeCpsProperty(@NotNull String key, @NotNull String value) throws GalasaEcosystemManagerException {
@@ -489,7 +565,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient();
+            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient(30000);
             this.etcdHttpClient.setURI(this.cpsUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -504,7 +580,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
         try {
-            this.apiHttpClient = this.manager.getHttpManager().newHttpClient();
+            this.apiHttpClient = this.manager.getHttpManager().newHttpClient(30000);
             this.apiHttpClient.setURI(this.apiUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -653,6 +729,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         RAS_STATEFULSET("StatefulSet", "ras", IStatefulSet.class),
 
         BOOTSTRAP_CONFIGMAP("ConfigMap", "bootstrap-file", IConfigMap.class),
+        TESTCATALOG_CONFIGMAP("ConfigMap", "testcatalog-file", IConfigMap.class),
         API_PVC("PersistentVolumeClaim", "pvc-api", IPersistentVolumeClaim.class),
         API_EXTERNAL_SERVICE("Service", "api-external", IService.class),
         API_INTERNAL_SERVICE("Service", "api", IService.class),
@@ -684,7 +761,13 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
         ENGINE_EXTERNAL_SERVICE("Service", "engine-controller-external", IService.class),
         ENGINE_INTERNAL_SERVICE("Service", "engine-controller", IService.class),
-        ENGINE_DEPLOYMENT("Deployment", "engine-controller", IDeployment.class);
+        ENGINE_DEPLOYMENT("Deployment", "engine-controller", IDeployment.class),
+
+        SIMBANK_TELNET_SERVICE("Service", "simbank-telnet-external", IService.class),
+        SIMBANK_WEBSERVICE_SERVICE("Service", "simbank-webservice-external", IService.class),
+        SIMBANK_DATABASE_SERVICE("Service", "simbank-database-external", IService.class),
+        SIMBANK_MANAGEMENT_FACILITY_SERVICE("Service", "simbank-mf-external", IService.class),
+        SIMBANK_DEPLOYMENT("Deployment", "simbank", IDeployment.class);
 
         private final String type;
         private final String name;
@@ -740,40 +823,44 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
 
     @Override
-    public @NotNull URI getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
-        try {
-            switch(endpoint) {
-                case API:
-                    return this.apiUrl.toURI();
-                case CPS:
-                    return this.cpsUri;
-                case CREDS:
-                    return this.credsUri;
-                case DSS:
-                    return this.dssUri;
-                case ENGINE_CONTROLLER_HEALTH:
-                    return this.engineHealthUrl.toURI();
-                case ENGINE_CONTROLLER_METRICS:
-                    return this.engineMetricsUrl.toURI();
-                case GRAFANA:
-                    return this.grafanaUrl.toURI();
-                case METRICS_HEALTH:
-                    return this.metricsHealthUrl.toURI();
-                case METRICS_METRICS:
-                    return this.metricsMetricsUrl.toURI();
-                case PROMETHEUS:
-                    return this.prometheusUrl.toURI();
-                case RAS:
-                    return this.rasUri;
-                case RESOURCE_MANAGEMENT_HEALTH:
-                    return this.resmonHealthUrl.toURI();
-                case RESOURCE_MANAGEMENT_METRICS:
-                    return this.resmonMetricsUrl.toURI();
-                default:
-                    throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
-            }
-        } catch (URISyntaxException e) {
-            throw new GalasaEcosystemManagerException("Problem with endpoint URI", e);
+    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        switch(endpoint) {
+            case API:
+                return this.apiUrl;
+            case CPS:
+                return this.cpsUri;
+            case CREDS:
+                return this.credsUri;
+            case DSS:
+                return this.dssUri;
+            case ENGINE_CONTROLLER_HEALTH:
+                return this.engineHealthUrl;
+            case ENGINE_CONTROLLER_METRICS:
+                return this.engineMetricsUrl;
+            case GRAFANA:
+                return this.grafanaUrl;
+            case METRICS_HEALTH:
+                return this.metricsHealthUrl;
+            case METRICS_METRICS:
+                return this.metricsMetricsUrl;
+            case PROMETHEUS:
+                return this.prometheusUrl;
+            case RAS:
+                return this.rasUri;
+            case RESOURCE_MANAGEMENT_HEALTH:
+                return this.resmonHealthUrl;
+            case RESOURCE_MANAGEMENT_METRICS:
+                return this.resmonMetricsUrl;
+            case SIMBANK_WEBSERVICE:
+                return this.simbankWebUrl;
+            case SIMBANK_TELNET:
+                return this.simbankTelnetPort;
+            case SIMBANK_DATABASE:
+                return this.simbankDatabasePort;
+            case SIMBANK_MANAGEMENT_FACILITY:
+                return this.simbankManagementFacilityUrl;
+            default:
+                throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
         }
     }
 
@@ -827,11 +914,34 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                 case RESOURCE_MANAGEMENT_METRICS:
                     this.resmonMetricsUrl = uri.toURL();
                     break;
+                case SIMBANK_WEBSERVICE:
+                    this.simbankWebUrl = uri.toURL();
+                    break;
+                case SIMBANK_MANAGEMENT_FACILITY:
+                    this.simbankManagementFacilityUrl = uri.toURL();
+                    break;
                 default:
                     throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
             }
         } catch (MalformedURLException e) {
             throw new GalasaEcosystemManagerException("Problem with endpoint URI", e);
+        }
+    }
+
+    private void setEndpointPort(@NotNull EcosystemEndpoint endpoint, InetSocketAddress port) throws GalasaEcosystemManagerException {
+        if (port == null) {
+            throw new GalasaEcosystemManagerException("Endpoint port missing for " + endpoint.toString());
+        }
+
+        switch(endpoint) {
+            case SIMBANK_TELNET:
+                this.simbankTelnetPort = port;
+                break;
+            case SIMBANK_DATABASE:
+                this.simbankDatabasePort = port;
+                break;
+            default:
+                throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
         }
     }
 
@@ -888,8 +998,14 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
         for(EcosystemEndpoint endpoint : EcosystemEndpoint.values()) {
             String key = prefix + "." + endpoint.toString();
-            URI uri = getEndpoint(endpoint);
-            ecosystemProperties.put(key, uri.toString());
+            if (endpoint.getEndpointType() == URL.class) {
+                ecosystemProperties.put(key, getEndpoint(endpoint).toString());
+            } else if (endpoint.getEndpointType() == InetSocketAddress.class) {
+                InetSocketAddress socketAddress = (InetSocketAddress) getEndpoint(endpoint);
+                ecosystemProperties.put(key, socketAddress.getHostString() + ":" + socketAddress.getPort());
+            } else {
+                throw new GalasaEcosystemManagerException("Unknown endpoint type for " + endpoint.toString());
+            }
         }
 
         try {
@@ -920,27 +1036,36 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
                 if (!matcher.find()) {
                     continue;
                 }
-                
+
                 String tag = matcher.group(1);
                 String kubernetesNamespaceTag = entry.getValue();
-                
-                
+
+
                 IKubernetesNamespace namespace = manager.getKubernetesManager().getNamespaceByTag(kubernetesNamespaceTag);
-                
+
                 KubernetesEcosystemImpl ecosystem = new KubernetesEcosystemImpl(manager, tag, namespace);
-                
+
                 for(EcosystemEndpoint endpoint : EcosystemEndpoint.values()) {
                     String key = tagPrefix + tag + "." + endpoint.toString();
                     String value = AbstractManager.nulled(dss.get(key));
                     if (value == null) {
                         throw new GalasaEcosystemManagerException("Missing URI for tag " + tag + " endpoint " + endpoint.toString());
                     }
-                    ecosystem.setEndpoint(endpoint, new URI(value));
+                    if (endpoint.getEndpointType() == URL.class) {
+                        ecosystem.setEndpoint(endpoint, new URI(value));
+                    } else if (endpoint.getEndpointType() == InetSocketAddress.class) {
+                        int pos = value.indexOf(':');
+                        String host = value.substring(0, pos);
+                        String port = value.substring(pos + 1);
+                        ecosystem.setEndpointPort(endpoint, new InetSocketAddress(host, Integer.parseInt(port)));
+                    } else {
+                        throw new GalasaEcosystemManagerException("Unknown endpoint type for " + endpoint.toString());
+                    }
                 }
-                
+
                 taggedEcosystems.put(tag, ecosystem);            
             }
-            
+
         } catch(GalasaEcosystemManagerException e) {
             throw e;
         } catch(Exception e) {
@@ -948,6 +1073,118 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
         }
 
     }
+
+    @Override
+    public void submitRun(String runType, 
+            String requestor, 
+            String groupName, 
+            @NotNull String bundleName,
+            @NotNull String testName, 
+            String mavenRepository, 
+            String obr, 
+            String stream, 
+            Properties overrides)
+                    throws GalasaEcosystemManagerException {
+
+        JsonObject request = new JsonObject();
+        request.addProperty("testStream", stream);
+        request.addProperty("obr", obr);
+        request.addProperty("mavenRepository", mavenRepository);
+        request.addProperty("testStream", stream);
+        request.addProperty("trace", true);
+
+        JsonArray tests = new JsonArray(1);
+        tests.add(bundleName + "/" + testName);
+        request.add("classNames", tests);
+
+        if (overrides != null) {
+            JsonArray runProperties = new JsonArray();
+            request.add("runProperties", runProperties);
+            for(Entry<Object, Object> entry : overrides.entrySet()) {
+                JsonObject property = new JsonObject();
+                property.addProperty("key", entry.getKey().toString());
+                property.addProperty("value", entry.getValue().toString());
+                runProperties.add(property);
+            }
+        }
+
+        //*** submit the test
+
+        try {
+            IHttpClient apiClient = getApiHttpClient();
+
+            String gn = URLEncoder.encode(groupName, "utf-8");
+
+            HttpClientResponse<JsonObject> response = apiClient.postJson("runs/" + gn, request);
+
+            if (response.getStatusCode() != 200) {
+                throw new GalasaEcosystemManagerException("Submit failed, status code " + response.getStatusCode());
+            }
+        } catch(KubernetesManagerException | UnsupportedEncodingException | HttpClientException e) {
+            throw new GalasaEcosystemManagerException("Failed to submit test", e);
+        }
+    }
+
+    @Override
+    public JsonObject getSubmittedRuns(String groupName) throws GalasaEcosystemManagerException {
+
+        try {
+            IHttpClient apiClient = getApiHttpClient();
+
+            String gn = URLEncoder.encode(groupName, "utf-8");
+
+            HttpClientResponse<JsonObject> response = apiClient.getJson("runs/" + gn);
+
+            if (response.getStatusCode() != 200) {
+                throw new GalasaEcosystemManagerException("get submitted runs failed, status code " + response.getStatusCode());
+            }
+
+            return response.getContent();
+        } catch(KubernetesManagerException | UnsupportedEncodingException | HttpClientException e) {
+            throw new GalasaEcosystemManagerException("Failed to get submitted runs", e);
+        }
+    }
+
+    @Override
+    public JsonObject waitForGroupNames(String groupName, long timeout) throws GalasaEcosystemManagerException {
+        logger.debug("Waiting for Run Group " + groupName + " to finish");
+
+        HashMap<String, String> previousStatus = new HashMap<>();
+
+        JsonObject response = null;
+        Instant expire = Instant.now().plus(timeout, ChronoUnit.SECONDS);
+        while(Instant.now().isBefore(expire)) {
+            response = getSubmittedRuns(groupName);
+
+            ScheduleStatus schedule = this.gson.fromJson(response, ScheduleStatus.class);
+
+            if (schedule.getRuns() != null) {
+                for(Run run : schedule.getRuns()) {
+                    String status = run.getStatus();
+                    if (status != null) {
+                        String oldStatus = previousStatus.get(run.getName());
+                        if (!status.equals(oldStatus)) {
+                            logger.info("Run " + run.getName() + " is " + run.getStatus());
+                            previousStatus.put(run.getName(), status);
+                        }
+                    }
+                }
+            }
+
+            if (schedule.isComplete()) {
+                return response;
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new GalasaEcosystemManagerException("Interrupted");
+            }
+        }
+
+        throw new GalasaEcosystemManagerException("Run Group " + groupName + " did not finish in time:-\n" + response);
+    }
+
 
 
 }

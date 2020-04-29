@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.kubernetes.internal;
 
 import java.io.IOException;
@@ -64,6 +69,7 @@ import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.openapi.models.V1StatefulSetList;
 import io.kubernetes.client.openapi.models.V1StatefulSetSpec;
+import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.proto.V1.Namespace;
 import io.kubernetes.client.util.Yaml;
 
@@ -246,7 +252,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                 logger.debug("Deleting Deployment " + this.cluster.getId() + "/" + this.namespaceId + "/" + deployment.getMetadata().getName());
                 V1DeleteOptions options = new V1DeleteOptions();
                 options.setGracePeriodSeconds(0L);
-                appsApi.deleteNamespacedDeployment(deployment.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, null);
+                appsApi.deleteNamespacedDeployment(deployment.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, options);
             }
 
             //*** Delete all StatefulSets that exist in the namespace
@@ -256,7 +262,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                 logger.debug("Deleting StatefulSet " + this.cluster.getId() + "/" + this.namespaceId + "/" + statefulset.getMetadata().getName());
                 V1DeleteOptions options = new V1DeleteOptions();
                 options.setGracePeriodSeconds(0L);
-                appsApi.deleteNamespacedStatefulSet(statefulset.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, null);
+                appsApi.deleteNamespacedStatefulSet(statefulset.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, options);
             }
 
             //*** Delete all Services that exist in the namespace
@@ -264,8 +270,6 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
             for(V1Service service : serviceList.getItems()) {
                 logger.debug("Deleting Service " + this.cluster.getId() + "/" + this.namespaceId + "/" + service.getMetadata().getName());
-                V1DeleteOptions options = new V1DeleteOptions();
-                options.setGracePeriodSeconds(0L);
                 coreApi.deleteNamespacedService(service.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, null);
             }
 
@@ -284,6 +288,18 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                     throw new KubernetesManagerException("Failed to delete PVC:-\n" + response.status.toString());
                 }
             }
+
+            //*** Delete all remaining pods
+            V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            for(V1Pod pod : pods.getItems()) {
+                logger.debug("Deleting POD " + this.cluster.getId() + "/" + this.namespaceId + "/" + pod.getMetadata().getName());
+                V1DeleteOptions options = new V1DeleteOptions();
+                options.setGracePeriodSeconds(0L);
+                try {
+                    coreApi.deleteNamespacedPod(pod.getMetadata().getName(), this.namespaceId, null, null, 0, null, null, options);
+                } catch(Exception e) {} //*** Ignore all errors as may be deleting pods from deployments or statefulsets
+            }
+
 
             //*** Waiting for all pods and replicasets to be deleted
 
@@ -338,7 +354,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
      */
     public static void deleteDss(String runName, String clusterId, String namespaceId, IDynamicStatusStoreService dss, IFramework framework) throws KubernetesManagerException {
         KubernetesClusterImpl cluster = new KubernetesClusterImpl(clusterId, dss, framework);
-        
+
         //*** get the tag
         String tag;
         try {
@@ -349,7 +365,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         if (tag == null) {
             throw new KubernetesManagerException("Missing tag for Kubernetes namespace " + clusterId + "/" + namespaceId);
         }
-        
+
         KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, tag, framework, dss);
 
         namespace.discard(runName);
@@ -657,7 +673,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, convertedLabelSelector, null, null, null, null);
         for(V1Pod pod : pods.getItems()) {
             String name = pod.getMetadata().getName();
-            
+
             saveNamespaceFile(directory, pod, prefix, pod.getMetadata());
 
             if (pod.getSpec() != null && pod.getSpec().getContainers() != null) {
@@ -712,7 +728,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         String yaml = Yaml.dump(resource);
         Files.write(path, yaml.getBytes(), StandardOpenOption.CREATE, new SetContentType(ResultArchiveStoreContentType.TEXT));
     }
-    
+
     /**
      * Load all the allocated namespaces from the shared environment
      * 
@@ -720,7 +736,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
      * @throws KubernetesManagerException 
      */
     protected static void loadNamespacesFromRun(IFramework framework, IDynamicStatusStoreService dss, Map<String, KubernetesClusterImpl> clusters, Map<String, KubernetesNamespaceImpl> taggedNamespaces, IRun testRun) throws KubernetesManagerException {
-        
+
         try {
             String tagPrefix = "slot.run." + testRun.getName() + ".cluster.";
             Pattern dssTagPattern = Pattern.compile("^" + tagPrefix + "(\\w+)\\.namespace\\.(\\w+).tag$");
@@ -731,25 +747,25 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
                 if (!matcher.find()) {
                     continue;
                 }
-                
+
                 String clusterId   = matcher.group(1);             
                 String namespaceId = matcher.group(2);             
                 String seTag = entry.getValue();            
-                
+
                 // Check to see if we have already processed it
                 if (taggedNamespaces.containsKey(seTag)) {
                     continue;
                 }
-                
+
                 if (clusterId == null) {
                     throw new KubernetesManagerException("Missing cluster id for tag " + seTag);
                 }
-             
+
                 KubernetesClusterImpl cluster = clusters.get(clusterId);
                 if (cluster == null) {
                     throw new KubernetesManagerException("Missing configuration for cluster ID " + clusterId);
                 }
-                
+
                 KubernetesNamespaceImpl namespace = new KubernetesNamespaceImpl(cluster, namespaceId, seTag, framework, dss);
                 taggedNamespaces.put(seTag, namespace);
             }

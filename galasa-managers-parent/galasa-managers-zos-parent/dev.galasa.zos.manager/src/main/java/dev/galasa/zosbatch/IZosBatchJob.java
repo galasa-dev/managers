@@ -28,14 +28,32 @@ public interface IZosBatchJob {
     public String getJobId();
     
     /**
-     * The batch job status. Returns "????????" if the job has not been submitted
+     * The owner for this Job. Returns "????????" if no owner has been associated
+     * 
+     * @return batch job owner
+     */
+    public String getOwner();
+    
+    /**
+     * The type for this Job, i.e. <code>JOB</code>, <code>STC</code> or <code>TSU</code>. Returns "???" if no type has been associated
+     * 
+     * @return batch job type
+     */
+    public String getType();
+
+    /**
+     * The batch job status, e.g.<br>
+     * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
+     * Returns "????????" if the job has not been submitted
      * 
      * @return batch job status
      */
     public String getStatus();
     
     /**
-     * The batch job completion return code. Returns "????" if the job has not been submitted
+     * The batch job completion return code, e.g.<br>
+     * <code>CC 0000</code>, <code>CC 0020</code>, <code>JCL ERROR</code>, <code>ABEND S0C4/code> etc.<br>
+     * Returns "????" if the job has not been submitted
      * 
      * @return
      */
@@ -58,19 +76,37 @@ public interface IZosBatchJob {
      * @throws ZosBatchException
      */
     public IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
-
+    
+    /**
+     * Convenience method to retrieve the content of a spool file from the batch job given the ddname.<p>
+     * <b>NOTE:</b> Returns the first matching instance in the list. If the batch job has multiple steps, there may be multiple 
+     * instances of the ddname. 
+     * 
+     * @param ddname of the spool file
+     * @return the content of the first found spool file with the specified ddname
+     * @throws ZosBatchException
+     */
+    public IZosBatchJobOutputSpoolFile getSpoolFile(String ddname) throws ZosBatchException;
+    
     /**
      * Cancel the batch job
      * 
      * @throws ZosBatchException
      */
-    void cancelJob() throws ZosBatchException;
+    public void cancel() throws ZosBatchException;
 
     /**
      * Cancel the batch job and purge output from the queue
      * 
      * @throws ZosBatchException
      */
-    public void purgeJob() throws ZosBatchException;
+    public void purge() throws ZosBatchException;
+
+    /**
+     * Save the job output to the Test Results Archive.<br><b>NOTE: This is done automatically if the test submitted the job.
+     * 
+     * @throws ZosBatchException
+     */
+    public void saveOutputToTestResultsArchive() throws ZosBatchException;
 
 }

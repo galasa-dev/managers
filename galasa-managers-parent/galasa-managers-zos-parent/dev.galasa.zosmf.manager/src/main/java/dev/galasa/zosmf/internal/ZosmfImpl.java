@@ -34,6 +34,7 @@ import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.properties.Https;
+import dev.galasa.zosmf.internal.properties.RequestRetry;
 import dev.galasa.zosmf.internal.properties.ServerHostname;
 import dev.galasa.zosmf.internal.properties.ServerImages;
 import dev.galasa.zosmf.internal.properties.ServerPort;
@@ -52,6 +53,7 @@ public class ZosmfImpl implements IZosmf {
     private IZosImage image;
     private IHttpClient httpClient;
     private String zosmfUrl;
+    protected int requestRetry;
 
     private HashMap<String, String> commonHeaders = new HashMap<>();
 
@@ -86,7 +88,7 @@ public class ZosmfImpl implements IZosmf {
     }
 
     @Override
-    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes) throws ZosmfException {
+    public @NotNull IZosmfResponse get(String path, List<Integer> validStatusCodes, boolean convert) throws ZosmfException {
         String method = ZosmfRequestType.GET.name();
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
@@ -97,7 +99,12 @@ public class ZosmfImpl implements IZosmf {
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
             logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
+            if (convert) {
+                zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
+            } else {
+                zosmfResponse.setHttpClientresponse(this.httpClient.getFile(validPath(path)));
+            }
+            
             logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
@@ -189,6 +196,33 @@ public class ZosmfImpl implements IZosmf {
     }
 
     @Override
+    public @NotNull IZosmfResponse putBinary(String path, byte[] requestBody, List<Integer> validStatusCodes) throws ZosmfException  {
+        String method = ZosmfRequestType.PUT.name();
+        if (validStatusCodes == null) {
+            validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+        }
+        ZosmfResponseImpl zosmfResponse;
+
+        try {
+            setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
+            addCommonHeaders();
+            zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
+            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.debug(LOG_BODY + requestBody);
+            zosmfResponse.setHttpClientresponse(this.httpClient.putBinary(path, requestBody));
+            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
+                throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
+            }
+        } catch (MalformedURLException | HttpClientException  e) {
+            logger.error(e);
+            throw new ZosmfException(logBadRequest(method), e);
+        }
+
+        return zosmfResponse;
+    }
+
+    @Override
     public @NotNull IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException {
         String method = ZosmfRequestType.DELETE.name();
         if (validStatusCodes == null) {
@@ -244,13 +278,13 @@ public class ZosmfImpl implements IZosmf {
         try {
             zosmfHostname = ServerHostname.get(image.getImageID());
         } catch (ZosManagerException e) {
-            throw new ZosmfException("Problem getting hostname for image " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         String zosmfPort;
         try {
             zosmfPort = ServerPort.get(image.getImageID());
         } catch (ZosmfManagerException e) {
-            throw new ZosmfException("Problem getting port for zOSMF server on " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         String scheme = "http";
         try {
@@ -258,7 +292,7 @@ public class ZosmfImpl implements IZosmf {
                 scheme = "https";
             }
         } catch (ZosmfManagerException e) {
-            throw new ZosmfException("Problem getting SSL for zOSMF server on " + image.getImageID(), e);
+            throw new ZosmfException(e);
         }
         
         this.zosmfUrl = scheme + "://" + zosmfHostname + ":" + zosmfPort;
@@ -277,6 +311,12 @@ public class ZosmfImpl implements IZosmf {
             this.httpClient.build();
         } catch (HttpClientException | ZosManagerException | URISyntaxException e) {
             throw new ZosmfException("Unable to create HTTP Client", e);
+        }
+        
+        try {
+            this.requestRetry = RequestRetry.get(image.getImageID());
+        } catch (ZosManagerException e) {
+            throw new ZosmfException(e);
         }
     }
 
@@ -302,6 +342,10 @@ public class ZosmfImpl implements IZosmf {
 
     private String logBadRequest(String method) {
         return "Problem wth " + method + " to zOSMF server";
+    }
+
+    public int getRequestRetry() {
+        return this.requestRetry;
     }
     
     

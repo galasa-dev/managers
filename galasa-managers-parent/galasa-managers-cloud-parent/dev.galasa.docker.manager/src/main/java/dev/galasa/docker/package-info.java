@@ -8,15 +8,15 @@
  * 
  * @galasa.manager Docker
  * 
- * @galasa.release.state BETA
+ * @galasa.release.state Release
  * 
  * @galasa.description
  * 
- * This Manager enables tests to run Docker containers on a Docker Engine provided by the Galasa infrastructure, making it easy to write tests that consume container-based services.
+ * This Manager enables tests to run Docker Containers on a Docker Engine provided by the Galasa infrastructure, making it easy to write tests that consume container-based services.
  * The test does not need to worry about where the Docker infrastructure is, its credentials, or its capacity as this is all handled by the Manager.
  * <br><br>
  * The Docker Manager can be used by other Managers as a base for their own services. 
- * For example, the JMeter Manager can run a JMeter service inside a Docker container. 
+ * For example, the JMeter Manager can run a JMeter service inside a Docker Container. 
  * Using the Docker Manager in this way means that the test or administration team 
  * do not need to create dedicated JMeter resources.
  * <br><br> 
@@ -34,6 +34,9 @@
  * The Docker Manager supports only AMD64 platforms. It is planned to expand the capability to S390x.
  * <br><br>
  * The Docker Manager currently supports only a single Docker Engine. 
- * It is planned to allow multiple Docker Engines to be configured.
+ * It is planned to allow multiple Docker Engines to be configured.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/docker/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
  */
 package dev.galasa.docker;

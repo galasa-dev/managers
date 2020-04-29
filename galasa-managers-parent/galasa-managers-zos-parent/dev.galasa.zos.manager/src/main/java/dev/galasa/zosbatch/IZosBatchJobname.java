@@ -14,10 +14,10 @@ package dev.galasa.zosbatch;
  *
  */
 public interface IZosBatchJobname {
-
+ 
     /**
      * Get the name of the zOS batch Jobname
+     * @return String
      */
     public String getName();
-    
 }

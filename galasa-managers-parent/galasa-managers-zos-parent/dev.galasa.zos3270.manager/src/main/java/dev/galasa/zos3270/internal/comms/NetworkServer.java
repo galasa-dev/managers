@@ -106,6 +106,8 @@ public class NetworkServer /* extends Thread */ {
                         || "IBM-3278-3".equals(deviceType) || "IBM-3278-3-E".equals(deviceType)
                         || "IBM-3278-4".equals(deviceType) || "IBM-3278-4-E".equals(deviceType)
                         || "IBM-3278-5".equals(deviceType) || "IBM-3278-5-E".equals(deviceType)
+                        || "IBM-3279-2".equals(deviceType) || "IBM-3279-2-E".equals(deviceType)
+                        || "IBM-3279-3".equals(deviceType) 
                         || "IBM-DYNAMIC".equals(deviceType)) {
                     break;
                 }

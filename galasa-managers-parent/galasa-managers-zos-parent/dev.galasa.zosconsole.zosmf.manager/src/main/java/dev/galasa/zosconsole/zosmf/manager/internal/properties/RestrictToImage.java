@@ -11,16 +11,23 @@ import dev.galasa.zosconsole.ZosConsoleManagerException;
 
 /**
  * Restrict zOS console processing to the zOSMF server on the specified image
- * <p>
- * Use only the zOSMF server running on the image associated with the zOS Console
- * </p><p>
- * The property is:<br>
- * {@code zosconsole.console.[imageid].restrict.to.image=true}
- * </p>
- * <p>
- * The default value is false
- * </p>
- *
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosconsole.console.[imageid].restrict.to.image
+ * 
+ * @galasa.description Use only the zOSMF server running on the image associated with the zOS Console
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default False
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosconsole.console.restrict.to.image=true</code><br>
+ * <code>zosconsole.console.SYSA.restrict.to.image=true</code>
+ * 
  */
 public class RestrictToImage extends CpsProperties {
 

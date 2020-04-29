@@ -201,7 +201,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, urlPath, headers, content, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -212,7 +212,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to write to " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+                throw new ZosUNIXFileException("Unable to write to " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
             }
             logger.trace(responseBody);
             String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody, this.unixPath); 
@@ -310,7 +310,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -319,7 +319,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException("Unable to list " + LOG_UNIX_PATH + quoted(path) + logOnImage());
+            throw new ZosUNIXFileException("Unable to list " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
@@ -390,7 +390,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.POST_JSON, urlPath, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -401,7 +401,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to create " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+                throw new ZosUNIXFileException("Unable to create " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
             }
             
             logger.trace(responseBody);
@@ -433,7 +433,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, headers, null, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -444,7 +444,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
             }
             
             logger.trace(responseBody);
@@ -471,7 +471,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -480,7 +480,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(path) + logOnImage());
+            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(path) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
@@ -508,7 +508,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }        
@@ -518,7 +518,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 content = response.getTextContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage(), e);
             }
         } else {
             
@@ -526,7 +526,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 responseBody = response.getJsonContent();
             } catch (ZosmfException e) {
-                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage());
+                throw new ZosUNIXFileException( "Unable to retrieve content of " + quoted(path) + logOnImage(), e);
             }
             logger.trace(responseBody);    
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -587,7 +587,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         IZosmfResponse response;
         try {
             response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -596,7 +596,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         try {
             responseBody = response.getJsonContent();
         } catch (ZosmfException e) {
-            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(this.unixPath) + logOnImage());
+            throw new ZosUNIXFileException(LOG_UNABLE_TO_LIST_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
@@ -708,7 +708,6 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
                 errorDetails = element.getAsString();
             }
         }
-        String errorStack = responseBody.get("stack").getAsString();
         StringBuilder sb = new StringBuilder(); 
         sb.append("Error "); 
         sb.append(action); 
@@ -726,8 +725,11 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
             sb.append(" details:");
             sb.append(errorDetails);
         }
-        sb.append(" stack:\n");
-        sb.append(errorStack);
+        JsonElement stackElement = responseBody.get("stack");
+        if (stackElement != null) {
+            sb.append("\nstack:\n");
+            sb.append(stackElement.getAsString());
+        }
         
         return sb.toString();
     }

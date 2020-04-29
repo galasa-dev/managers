@@ -25,8 +25,9 @@ public class Terminal implements ITerminal {
     private final Screen  screen;
     private final Network network;
     private NetworkThread networkThread;
+    private boolean connected = false;
 
-    private int           defaultWaitTime = 1_200_000;
+    private int           defaultWaitTime = 120_000;
 
     private Log           logger          = LogFactory.getLog(getClass());
 
@@ -39,13 +40,16 @@ public class Terminal implements ITerminal {
         screen = new Screen(80, 24, this.network);
     }
 
+    @Override
     public synchronized void connect() throws NetworkException {
-        network.connectClient();
+        connected = network.connectClient();
         networkThread = new NetworkThread(screen, network, network.getInputStream());
         networkThread.start();
     }
 
+    @Override
     public void disconnect() throws InterruptedException {
+        connected = false;
         if (network != null) {
             network.close();
         }
@@ -53,6 +57,11 @@ public class Terminal implements ITerminal {
             networkThread.join();
             networkThread = null;
         }
+    }
+    
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
 
     @Override
@@ -100,6 +109,36 @@ public class Terminal implements ITerminal {
     @Override
     public ITerminal tab() throws KeyboardLockedException, FieldNotFoundException {
         screen.tab();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorUp();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorDown();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorLeft();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorRight();
+        return this;
+    }
+
+    @Override
+    public ITerminal home() throws KeyboardLockedException, FieldNotFoundException {
+        screen.home();
         return this;
     }
 

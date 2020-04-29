@@ -15,17 +15,23 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 
 /**
- * Run data set HLQ for the zOS Image
- * <p>
- * The data set HLQ(s) for temporary data sets created on zOS Image.<br> 
+ * The run data set HLQ for the zOS Image
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.run.[image].dataset.hlq
+ * 
+ * @galasa.description The data set HLQ(s) for temporary data sets created on zOS Image.<br> 
  * If CPS property zos.run.[image].dataset.hlq exists, then that is returned
- * </p><p>
- * The property is:<br>
- * {@code zos.run.[image].dataset.hlq=USERID.GALASA} 
- * </p>
- * <p>
- * Default is runuser.GALASA
- * </p>
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default runuser.GALASA
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.run.[image].dataset.hlq=USERID.GALASA</code><br>
  *
  */
 public class RunDatasetHLQ extends CpsProperties {

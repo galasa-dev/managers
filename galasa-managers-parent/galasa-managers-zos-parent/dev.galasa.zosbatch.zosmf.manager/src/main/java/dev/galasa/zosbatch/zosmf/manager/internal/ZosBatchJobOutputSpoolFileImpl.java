@@ -91,7 +91,7 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
 
     @Override
     public String toString() {
-        return jobname + " " + jobid + " " + stepname +  " " + procstep + " " + ddname;
+        return "JOB=" + jobname + " JOBID=" + jobid + " STEP=" + stepname +  " PROCSTEP=" + procstep + " DDNAME=" + ddname;
     }
 
 

@@ -44,14 +44,15 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
         this.cps = cps;
         this.tag = tag;
         this.hostid = hostid;
-        this.commandShell = createCommandShell();
-        this.fileSystem = createFileSystem();
 
         try {
             this.ipHost = new LinuxDSEIpHost(this.linuxManager, hostid);
         } catch (Exception e) {
             throw new LinuxManagerException("Unable to create the IP Host for host " + this.hostid, e);
         }
+
+        this.commandShell = createCommandShell();
+        this.fileSystem = createFileSystem();
 
         this.pathRoot = this.fileSystem.getPath("/");
         this.pathTemp = this.fileSystem.getPath("/tmp");
@@ -94,7 +95,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 
     @Override
     public @NotNull IIpHost getIpHost() {
-        throw new UnsupportedOperationException("need to write");
+        return this.ipHost;
     }
 
     @Override

@@ -28,6 +28,11 @@ spec:
           name: peer
         - containerPort: 2380
           name: client
+        livenessProbe:
+          tcpSocket:
+            port: 2379
+          initialDelaySeconds: 60
+          periodSeconds: 60
         env:
         - name: INITIAL_CLUSTER_SIZE
           value: "1"
