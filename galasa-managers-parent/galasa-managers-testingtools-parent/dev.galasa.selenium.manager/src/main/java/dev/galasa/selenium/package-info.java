@@ -8,7 +8,7 @@
  * 
  * @galasa.manager Selenium
  * 
- * @galasa.release.state ALPHA - This Manager is being actively developed. It is subject to change and has not been extensively tested. 
+ * @galasa.release.state BETA - This Manager is being actively developed. It is subject to change and has not been extensively tested. 
  * 
  * @galasa.description
  * 
