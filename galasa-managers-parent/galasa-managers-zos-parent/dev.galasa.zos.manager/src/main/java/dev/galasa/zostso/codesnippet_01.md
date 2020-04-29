@@ -1,4 +1,4 @@
-<details><summary>Request a zOS TSO Command instance
+<details><summary>Request a zOS TSO Command instance</summary>
 
 The following snippet shows the code that is required to request a zOS TSO Command instance in a Galasa test:
 
@@ -13,7 +13,7 @@ public IZosTSO tso;
 The code creates a zOS TSO Command instance associated with the zOS Image allocated in the *zosImageA* field.
 </details>
 
-<details><summary>Issue a zOS TSO Command and retrieve the immediate response
+<details><summary>Issue a zOS TSO Command and retrieve the immediate response</summary>
 
 Issue the zOS TSO `TIME` Command and retrieve the response:
 
