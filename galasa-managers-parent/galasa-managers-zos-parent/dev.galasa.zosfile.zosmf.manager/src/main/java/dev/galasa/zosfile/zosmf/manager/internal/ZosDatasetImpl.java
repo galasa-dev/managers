@@ -290,14 +290,6 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void store(String content) throws ZosDatasetException {
-        if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set");
-        }
-        storeText(content);
-    }
-
-    @Override
     public void storeText(String content) throws ZosDatasetException {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");

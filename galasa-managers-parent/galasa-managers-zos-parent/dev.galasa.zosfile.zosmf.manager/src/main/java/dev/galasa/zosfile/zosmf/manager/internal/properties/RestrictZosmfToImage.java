@@ -11,15 +11,22 @@ import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
  * Restrict processing to the zOSMF server on the specified image
- * <p>
- * Use only the zOSMF server running on the image associated with the zOS data set or file
- * </p><p>
- * The property is:<br>
- * {@code zosfile.zosmf.[imageid].restrict.to.image=true}
- * </p>
- * <p>
- * The default value is {@value #RESTRICT_TO_IMAGE}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosfile.zosmf.[imageid].restrict.to.image
+ * 
+ * @galasa.description Use only the zOSMF server running on the image associated with the zOS data set or file
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default False
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosfile.zosmf.restrict.to.image=true</code><br>
+ * <cods>zosfile.zosmf.SYSA.restrict.to.image=true</code>
  *
  */
 public class RestrictZosmfToImage extends CpsProperties {

@@ -6,10 +6,26 @@
 
 package dev.galasa.jmeter.internal;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.SequenceInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 
+import dev.galasa.ResultArchiveStoreContentType;
+import dev.galasa.SetContentType;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerExec;
@@ -27,9 +43,8 @@ public class JMeterSessionImpl implements IJMeterSession {
     private String jmxAbsolutePath = "";
     private String propAbsolutePath = "";
     private IDockerContainer container;
-    private final long DEFAULT_TIMER = 60000L;
-    private IDockerExec exec = null; 
-
+    private final int DEFAULT_TIMER = 60000;
+    private Path storedArtifactsRoot;
     private Log logger;
 
     public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, int sessionID, String jmxPath,
@@ -41,6 +56,8 @@ public class JMeterSessionImpl implements IJMeterSession {
         this.jmxPath = jmxPath;
         this.propPath = propPath;
         this.logger = logger;
+
+        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
 
         container.start();
 
@@ -57,46 +74,8 @@ public class JMeterSessionImpl implements IJMeterSession {
      */
     @Override
     public void startJmeter() throws JMeterManagerException {
-
-        try {
-
-            int timeout = (int) DEFAULT_TIMER;
-            String jtlPath = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl";
-            String logfile = jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
-
-            if (( this.jmxPath.toLowerCase().endsWith(".jmx") ) && ( !this.jmxAbsolutePath.isEmpty() )) {
-
-                if (this.propAbsolutePath.isEmpty()) {
-
-                    exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
-                    exec.waitForExec(timeout);
-
-                    if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
-                        throw new JMeterManagerException();
-                    }
-                    
-                } else {
-    
-                    exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
-                    exec.waitForExec(timeout); 
-
-                    if ( !(exec.getExitCode() == 0L) ) {
-                        logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
-                        throw new JMeterManagerException();
-                    }
-                } 
-                    
-            } else {
-                throw new JMeterManagerException("The JmxPath has not been specified correctly of session " + this.sessionID + ".");
-            }
-        
-        } catch (Exception e) {
-            throw new JMeterManagerException("JMeter session " + sessionID + " could not be executed properly.");
-        }
+        startJmeter(DEFAULT_TIMER);
     }
-
-
 
     /**
      * Actually executing JMeter with the given JMX that has been set with a specified timeout
@@ -121,7 +100,6 @@ public class JMeterSessionImpl implements IJMeterSession {
                         logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
-                    
                 } else {
     
                     IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
@@ -132,13 +110,14 @@ public class JMeterSessionImpl implements IJMeterSession {
                         throw new JMeterManagerException();
                     }
                 } 
-                    
+                storeOutput("jtlOutput_" + this.sessionID + ".txt", getListenerFile(this.jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".jtl")); 
+                storeOutput("logOutput_" + this.sessionID + ".txt", getLogFile()); 
             } else {
                 throw new JMeterManagerException("The JmxPath has not been specified correctly of session " + this.sessionID + ".");
             }
         
         } catch (Exception e) {
-            throw new JMeterManagerException("JMeter session " + sessionID + " could not be executed properly.");
+            throw new JMeterManagerException("JMeter session " + sessionID + " could not be executed properly.",e);
         }
     }
 
@@ -148,7 +127,7 @@ public class JMeterSessionImpl implements IJMeterSession {
      * @throws JMeterManagerException
     */
     @Override
-    public void setJmxFile(InputStream jmxStream) throws JMeterManagerException{
+    public void setDefaultGeneratedJmxFile(InputStream jmxStream) throws JMeterManagerException{
     
         try {
             this.jmxAbsolutePath = "/jmeter/" + this.jmxPath;
@@ -159,6 +138,57 @@ public class JMeterSessionImpl implements IJMeterSession {
             throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
         }
     } 
+
+    @Override
+    public void setChangedParametersJmxFile(InputStream jmxStream, Map<String,Object> parameters) throws JMeterManagerException {
+
+        HashMap<String,Object> changes = new HashMap<String,Object>();
+        changes.put("HOST", "flooded.io");
+        changes.put("PORT", "443");
+        changes.put("PROTOCOL", "HTTPS");
+        changes.put("PATH", "/");
+        changes.put("THREADS", "50");
+        changes.put("RAMPUP", "30");
+        changes.put("DURATION", "30");
+
+        for(Entry<String,Object> entry : parameters.entrySet()) {
+            changes.put(entry.getKey(), entry.getValue());
+        }
+        InputStream safeEOF = new ByteArrayInputStream(" ".getBytes());
+        InputStream streamPlus = new SequenceInputStream(jmxStream, safeEOF);
+        InputStreamReader ir = new InputStreamReader(streamPlus);
+
+        try {
+            Velocity.init();
+        } catch (Exception e) {
+            throw new JMeterManagerException("Error attempting to initialise velocity", e);
+        }
+
+        VelocityContext context = new VelocityContext();
+
+        // Supplied parameters will override our defaults
+        for (Entry<String, Object> entry : changes.entrySet()) {
+            context.put(entry.getKey(), entry.getValue());
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStreamWriter ow = new OutputStreamWriter(baos);
+
+        try {
+            Velocity.evaluate(context, ow, "VelocityRenderer", ir);
+            ow.close();
+        } catch (Exception e) {
+            throw new JMeterManagerException("Error attempting to process jmx-parameters with velocity", e);
+        }
+        try {
+            this.jmxAbsolutePath = "/jmeter/" + this.jmxPath;
+            container.storeFile(this.jmxAbsolutePath, new ByteArrayInputStream(baos.toByteArray()));
+            logger.info(jmxPath + " has been stored in the container.");
+            
+        } catch (Exception e) {
+            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
+        }
+    }
 
     /**
      * If the the property annotation is filled in, the custom property file gets used
@@ -176,6 +206,38 @@ public class JMeterSessionImpl implements IJMeterSession {
         } catch (Exception e) {
             throw new JMeterManagerException("Could not store the .jmx file correctly.", e);
         }
+    }
+
+    @Override
+    public void applyProperties(InputStream propStream, Map<String,Object> properties) throws JMeterManagerException {
+        InputStream safeEOF = new ByteArrayInputStream(" ".getBytes());
+        InputStream streamPlus = new SequenceInputStream(propStream, safeEOF);
+        InputStreamReader ir = new InputStreamReader(streamPlus);
+
+        try {
+            Velocity.init();
+        } catch (Exception e) {
+            throw new JMeterManagerException("Error attempting to initialise velocity", e);
+        }
+
+        VelocityContext context = new VelocityContext();
+
+        // Supplied parameters will override our defaults
+        for (Entry<String, Object> entry : properties.entrySet()) {
+            context.put(entry.getKey(), entry.getValue());
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStreamWriter ow = new OutputStreamWriter(baos);
+
+        try {
+            Velocity.evaluate(context, ow, "VelocityRenderer", ir);
+            ow.close();
+        } catch (Exception e) {
+            throw new JMeterManagerException("Error attempting to process properties with velocity", e);
+        }
+
+        applyProperties(new ByteArrayInputStream(baos.toByteArray()));
     }
     
      
@@ -257,7 +319,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     }
 
     /**
-     * @return if the test has been succesfull or not
+     * @return if the test has been performed properly or not
      */
     @Override
     public boolean statusTest() throws JMeterManagerException {
@@ -298,6 +360,15 @@ public class JMeterSessionImpl implements IJMeterSession {
         } catch (DockerManagerException e) {
             throw new JMeterManagerException("Issue with retrieving the latest exit code" + sessionID);
         } 
+    }
+
+    /**
+     * Allows for the connection with the RAS so that all the JMeter-sessions get stored
+     */
+    private void storeOutput(String file, String content) throws IOException {
+        Path requestPath = storedArtifactsRoot.resolve("jmeter").resolve(file);
+        Files.write(requestPath, content.getBytes(), new SetContentType(ResultArchiveStoreContentType.TEXT),
+                StandardOpenOption.CREATE);
     }
 
 }

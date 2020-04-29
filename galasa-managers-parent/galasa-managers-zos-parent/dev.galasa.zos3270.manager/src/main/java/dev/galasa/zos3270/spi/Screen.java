@@ -723,10 +723,19 @@ public class Screen {
         }
 
         BufferStartOfField sf = null;
-        for (int i = position - 1; i >= 0; i--) {
-            if (buffer[i] instanceof BufferStartOfField) {
-                sf = (BufferStartOfField) buffer[i];
+        int sfPos = position - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != position) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
                 break;
+            }
+            
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
             }
         }
 

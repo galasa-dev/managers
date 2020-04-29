@@ -11,15 +11,22 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * zOSMF Server hostname
- * <p>
- * The hostname zOSMF server 
- * </p><p>
- * The property is:<br>
- * {@code zosmf.server.[imageid].hostname=zosmfserver.ibm.com} 
- * </p>
- * <p>
- * There is no default value
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosmf.server.[imageid].https
+ * 
+ * @galasa.description The hostname zOSMF server
+ * 
+ * @galasa.required Yes
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosmf.server.hostname=zosmfserver.ibm.com</code><br>
+ * <code>zosmf.server.SYSA.hostname=zosmfserver.ibm.com</code>
  *
  */
 public class ServerHostname extends CpsProperties {

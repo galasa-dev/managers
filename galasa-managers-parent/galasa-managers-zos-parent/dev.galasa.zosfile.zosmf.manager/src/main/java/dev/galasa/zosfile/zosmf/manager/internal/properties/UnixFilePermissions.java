@@ -11,15 +11,22 @@ import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
  * UNIX permission bits to be used in creating the file or directory
- * <p>
- * The UNIX file or directory permission bits to be used in creating the file or directory
- * </p><p>
- * The property is:<br>
- * {@code zosfile.[imageid].unix.file.permission=rwxrwx---}
- * </p>
- * <p>
- * The default value is {@value #UNIX_FILE_PERMISSIONS}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosfile.[imageid].unix.file.permission
+ * 
+ * @galasa.description The UNIX file or directory permission bits to be used in creating the file or directory
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosfile.unix.file.permission=rwxrwx---</code><br>
+ * <code>zosfile.SYSA.unix.file.permission=rwxrwxrrx</code>
  *
  */
 public class UnixFilePermissions extends CpsProperties {

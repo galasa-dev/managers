@@ -11,15 +11,21 @@ import dev.galasa.zos.ZosManagerException;
 
 /**
  * Maximum slots for zOS Image
- * <p>
- * The maximum slots available on a zOS Image for the specified tag
- * </p><p>
- * The property is:<br>
- * {@code zos.image.[tag].max.slots=2} 
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_MAX_SLOTS}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.image.[tag].max.slots
+ * 
+ * @galasa.description The maximum slots available on a zOS Image for the specified tag
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default 2
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.image.[tag].max.slots=2</code><br>
  *
  */
 public class ImageMaxSlots extends CpsProperties {

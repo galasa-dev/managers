@@ -13,5 +13,7 @@
  * @galasa.description
  * 
  * This Manager is the internal implementation of the z/OS Batch Manager using z/OS MF.
+ * <p>
+ * See the <a href="../zos-manager">zOS Manager</a> for details of the z/OS Batch Annotations. 
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;

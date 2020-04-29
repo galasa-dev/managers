@@ -13,15 +13,21 @@ import dev.galasa.zos.ZosManagerException;
 
 /**
  * Developer Supplied Environment zOS Image
- * <p>
- * The image ID of the Developer Supplied Environment for the specified tag 
- * </p><p>
- * The property is:<br>
- * {@code zos.dse.tag.[tag].imageid=SYSA} 
- * </p>
- * <p>
- * There is no default
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.dse.tag.[tag].imageid
+ * 
+ * @galasa.description The image ID of the Developer Supplied Environment for the specified tag
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.dse.tag.[tag].imageid=SYSA</code><br>
  *
  */
 public class DseImageIdForTag extends CpsProperties {

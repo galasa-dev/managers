@@ -586,7 +586,7 @@ public interface IWebPage {
      * Load WebPage with the given URL in current Browser Window
      * @param url The URL of the specified WebPage
      */
-    public void get(String url);
+    public IWebPage get(String url);
 
     /**
      * Returns the String representation of the URL f the current WebPage
@@ -863,6 +863,16 @@ public interface IWebPage {
     /**
      * Maximizes the WebPage
      */
-    public void maximize();
+    public IWebPage maximize();
+
+    /**
+     * Waits for the page to fully load with the default timeout
+     */
+    public IWebPage waitForPageLoad();
+
+    /**
+     * Waits for the page to fully load with the given timeout
+     */
+    public IWebPage waitForPageLoad(int secondsTimeout);
 
 }

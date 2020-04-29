@@ -10,7 +10,7 @@ public IZosFileHandler zosFileHandler;
 
 <details><summary>Read the content of an existing sequential data set</summary>
 
-Create a new *IZosDataset* object representing an existing sequential data set. If the data set exists, retrieve the content:
+Create a new *IZosDataset* object representing an existing sequential data set. If the data set exists, retrieve the content in text mode:
 
 ```
 @ZosImage(imageTag="A")
@@ -21,7 +21,7 @@ public IZosFileHandler zosFileHandler;
 ...
 IZosDataset dataSet = zosFileHandler.newDataset("GALASA.EXISTING.DATASET.SEQ", zosImageA);
 if (dataSet.exists()) {
-    String dataSet.retrieve();
+    String dataSet.retrieveAsText();
     ...
 }
 ```
@@ -30,7 +30,7 @@ if (dataSet.exists()) {
 
 <details><summary>Read the content of an existing partitioned data set member</summary>
 
-Create a new *IZosDataset* object representing an existing partitioned data set (PDS). If the PDS exists, check if the member exists and retrieve it's content:
+Create a new *IZosDataset* object representing an existing partitioned data set (PDS). If the PDS exists, check if the member exists and retrieve it's content in text mode:
 
 ```
 @ZosImage(imageTag="A")
@@ -42,7 +42,7 @@ public IZosFileHandler zosFileHandler;
 IZosDataset dataSet = zosFileHandler.newDataset("GALASA.EXISTING.DATASET.SEQ, zosImageA);
     String memberName = "MEMBER1";
     if (dataSet.exists() && dataSet.memberExists(memberName)) {
-        String content = dataSet.memberRetrieve(memberName);
+        String content = dataSet.memberRetrieveAsText(memberName);
         ...
     }
 ```
@@ -58,7 +58,7 @@ Create a new *IZosDataset* object representing a new sequential data set. If the
 //            DSORG=PS,RECFM=FB,LRECL=80,BLKSIZE=32720,
 //            UNIT=SYSDA,SPACE=(TRK,(1,1))
 ```
-Finally, content is written to the data set:
+Finally, content is written to the data set in text mode:
 
 
 ```
@@ -82,7 +82,7 @@ IZosDataset dataSet = zosFileHandler.newDataset("GALASA.NEW.DATASET.SEQ", zosIma
     records.add("RECORD 1");
     records.add("RECORD 2");
     records.add("RECORD 3");
-    dataSet.store(String.join("\n", records));
+    dataSet.storeText(String.join("\n", records));
 ```
 </details>
 
@@ -95,7 +95,7 @@ Create a new *IZosDataset* object representing a new partitioned data (PDS) set 
 //            DSORG=PS,RECFM=FB,LRECL=80,BLKSIZE=32720,
 //            UNIT=SYSDA,SPACE=(TRK,(1,1,15))
 ```
-Finally, content is written to a member in the PDS:
+Finally, content is written to a member in the PDS in text mode:
 
 
 ```
@@ -121,7 +121,7 @@ List<String> records = new ArrayList<>();
     records.add("RECORD 1");
     records.add("RECORD 2");
     records.add("RECORD 3");
-    dataSet.memberStore(memberName, String.join("\n", records));
+    dataSet.memberStoreText(memberName, String.join("\n", records));
 }
 ```
 To create a PDS/E, i.e. the JCL equivalent of
