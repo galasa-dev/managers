@@ -134,7 +134,7 @@ public class TestCECIImpl {
         PowerMockito.doReturn(true).when(ceciSpy, "isCECIScreen");
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "initialScreen");
         PowerMockito.doNothing().when(ceciSpy, "checkForSyntaxMessages");
-        PowerMockito.doReturn(ceciResponseMock).when(ceciSpy, "newCECIResponse");        
+        PowerMockito.doReturn(ceciResponseMock).when(ceciSpy, "newCECIResponse", Mockito.anyBoolean());        
     }
 
     @Test
@@ -243,6 +243,8 @@ public class TestCECIImpl {
                                                               .thenReturn(String.format("%-10s", TEXT_VARIABLE_NAME));
         ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
         PowerMockito.verifyPrivate(ceciTerminalMock, Mockito.times(2)).invoke("retrieveScreen");
+        ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME.substring(1));
+        PowerMockito.verifyPrivate(ceciTerminalMock, Mockito.times(3)).invoke("retrieveScreen");
     }
 
     @Test
@@ -421,15 +423,13 @@ public class TestCECIImpl {
         PowerMockito.doReturn(ceciResponseMock).when(ceciSpy, "issueCommand", Mockito.any(), Mockito.any());
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.length()).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
         
-        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null, null));
+        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null));
         
-        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null, null));
+        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, "CCID", null));
         
-        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, "CHAR", null, null));
+        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, "CODEPAGE"));
         
-        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, "CCID", null));
-        
-        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null, "CODEPAGE"));
+        Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME.substring(1), null, null));
     }
     
     @Test
@@ -893,6 +893,10 @@ public class TestCECIImpl {
         
         value = new String(new char[32]).replace("\0", "X").toCharArray();
         numberOfLines = 2;
+        Assert.assertEquals("Error in setVariableHexOnPage() method", value.length, ceciSpy.setVariableHexOnPage(value, start, numberOfLines));        
+        
+        value = new char[0];
+        numberOfLines = -1;
         Assert.assertEquals("Error in setVariableHexOnPage() method", value.length, ceciSpy.setVariableHexOnPage(value, start, numberOfLines));
     }
 
@@ -1213,7 +1217,9 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("   RESPONSE: FILENOTFOUND          EIBRESP=+0000000012 EIBRESP2=+0000000001     ");
         PowerMockito.doReturn(new LinkedHashMap<>()).when(ceciSpy, "parseResponseOutput");
         
-        ICECIResponse ceciResponse = ceciSpy.newCECIResponse();
+        ICECIResponse ceciResponse = ceciSpy.newCECIResponse(false);
+        
+        ceciSpy.newCECIResponse(true);
         Assert.assertEquals("Error in newCECIResponse() method", "FILENOTFOUND", ceciResponse.getResponse());
         Assert.assertEquals("Error in newCECIResponse() method", 12, ceciResponse.getEIBRESP()); 
         Assert.assertEquals("Error in newCECIResponse() method", 1, ceciResponse.getEIBRESP2()); 
@@ -1304,11 +1310,14 @@ public class TestCECIImpl {
         setupTestGetVariable();
         String value = "F1F1"; 
         PowerMockito.doReturn(value).when(ceciSpy, "getVariableHexFromPage", Mockito.anyInt(), Mockito.anyInt());
+        
         Assert.assertEquals("Error in getOptionValue() method", value, ceciSpy.getOptionValueInHex(1, 0));
         
         Assert.assertEquals("Error in getOptionValue() method", value, ceciSpy.getOptionValueInHex(1, 1));
         
         Assert.assertEquals("Error in getOptionValue() method", value, ceciSpy.getOptionValueInHex(2, 0));
+        
+        Assert.assertEquals("Error in getOptionValue() method", value + value, ceciSpy.getOptionValueInHex(5, 0));
     }
     
     @Test
