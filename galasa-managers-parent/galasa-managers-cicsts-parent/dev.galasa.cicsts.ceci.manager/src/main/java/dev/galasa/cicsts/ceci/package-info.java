@@ -8,7 +8,7 @@
  * 
  * @galasa.manager CICS TS CECI
  * 
- * @galasa.release.state Alpha - This Manager is being actively developed. It is subject to change and has not been extensively tested.
+ * @galasa.release.state BETA - This Manager is almost ready.  It has been tested and the TPI is stable, but there may be minor changes to come.
  * 
  * @galasa.description
  * 
