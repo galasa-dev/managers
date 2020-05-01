@@ -8,7 +8,7 @@
  * 
  * @galasa.manager Selenium
  * 
- * @galasa.release.state ALPHA - This Manager is being actively developed. It is subject to change and has not been extensively tested. 
+ * @galasa.release.state BETA - This Manager is almost ready.  It has been tested and the TPI is stable, but there may be minor changes to come.
  * 
  * @galasa.description
  * 
@@ -27,6 +27,10 @@
  * 
  * @galasa.limitations
  * 
- * The Selenium Manager only supports GECKO, CHROME, EDGE and IE WebDrivers.
+ * The Selenium Manager only supports GECKO, CHROME, EDGE and IE WebDrivers.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/selenium/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.selenium;

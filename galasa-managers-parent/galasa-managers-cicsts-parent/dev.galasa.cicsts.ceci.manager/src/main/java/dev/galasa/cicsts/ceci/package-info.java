@@ -8,11 +8,11 @@
  * 
  * @galasa.manager CICS TS CECI
  * 
- * @galasa.release.state Alpha - This Manager is being actively developed. It is subject to change and has not been extensively tested.
+ * @galasa.release.state BETA - This Manager is almost ready.  It has been tested and the TPI is stable, but there may be minor changes to come.
  * 
  * @galasa.description
  * 
- * This manager allows Galasa tests to issue CICS/TS CECI commands.
+ * This manager allows Galasa tests to issue CICS/TS CECI commands.<br><br>
  *
  * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/cicsts/ceci/package-summary.html">Javadoc documentation for the Manager here</a>.
  * <br><br>

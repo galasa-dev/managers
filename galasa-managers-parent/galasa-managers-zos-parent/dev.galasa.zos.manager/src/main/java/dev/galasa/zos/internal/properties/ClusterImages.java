@@ -13,15 +13,21 @@ import dev.galasa.zos.ZosManagerException;
 
 /**
  * The images for a zOS Cluster
- * <p>
- * The zOS Images for the specifies Cluster
- * </p><p>
- * The property is:<br>
- * {@code zos.cluster.[clusterId].images=SYSA,SYSB,SYSC} 
- * </p>
- * <p>
- * There is no default
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.cluster.[clusterId].images
+ * 
+ * @galasa.description The zOS Images for the specifies Cluster
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.cluster.[clusterId].images=SYSA,SYSB,SYSC</code><br>
  *
  */
 public class ClusterImages extends CpsProperties {

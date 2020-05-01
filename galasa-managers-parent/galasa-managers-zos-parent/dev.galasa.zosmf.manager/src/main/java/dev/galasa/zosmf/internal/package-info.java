@@ -1,4 +1,4 @@
 /**
- * zOSMF Batch Manager - Internal Implementation
+ * zOSMF Manager
  */
 package dev.galasa.zosmf.internal;

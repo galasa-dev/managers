@@ -14,15 +14,22 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * zOSMF Server images
- * <p>
- * The zOSMF server images active on the supplied cluster 
- * </p><p>
- * The property is:<br>
- * {@code zosmf.server.[clusterid].images=SYSA,SYSB} 
- * </p>
- * <p>
- * There is no default value
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosmf.server.[clusterid].images
+ * 
+ * @galasa.description The zOSMF server images active on the supplied cluster 
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default True
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosmf.server.images=SYSA,SYSB</code><br>
+ * <code>zosmf.server.PLEXA.images=SYSA,SYSB</code>
  *
  */
 public class ServerImages extends CpsProperties {

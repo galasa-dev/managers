@@ -8,7 +8,7 @@
  * 
  * @galasa.manager JMeter
  * 
- * @galasa.release.state ALPHA - This Manager is being actively developed. It is subject to change and has not been extensively tested.
+ * @galasa.release.state BETA - This Manager is almost ready.  It has been tested and the TPI is stable, but there may be minor changes to come.
  * 
  * @galasa.description
  * 
@@ -23,6 +23,10 @@
  * 
  * @galasa.limitations
  * 
- * JMeter tests cannot be run remotely on a target host.
+ * JMeter tests cannot be run remotely on a target host.<br><br>
+ *
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/jmeter/package-summary.html">Javadoc documentation for the Manager here</a>.
+ * <br><br>
+ * 
  */
 package dev.galasa.jmeter;

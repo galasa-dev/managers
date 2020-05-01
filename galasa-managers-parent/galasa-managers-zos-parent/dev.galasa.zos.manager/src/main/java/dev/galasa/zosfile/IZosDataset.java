@@ -175,15 +175,23 @@ public interface IZosDataset {
     public boolean exists() throws ZosDatasetException;
 
     /**
-     * Write to content to the data set 
+     * Write to content to the data set in Text mode 
      * <p>See {@link #setDataType(DatasetDataType)}
      * @param content
      * @throws ZosDatasetException
      */
-    public void store(@NotNull String content) throws ZosDatasetException;
+    public void storeText(@NotNull String content) throws ZosDatasetException;
+
+    /**
+     * Write to content to the data set in Binary mode 
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @param content
+     * @throws ZosDatasetException
+     */
+    public void storeBinary(@NotNull byte[] content) throws ZosDatasetException;
     
     /**
-     * Retrieve content of the data set
+     * Retrieve content of the data set in Text mode
      * <p>See {@link #setDataType(DatasetDataType)}
      * @return data set content
      * @throws ZosDatasetException
@@ -191,7 +199,7 @@ public interface IZosDataset {
     public String retrieveAsText() throws ZosDatasetException;
 
     /**
-     * Retrieve content of the data set
+     * Retrieve content of the data set in Binary mode
      * <p>See {@link #setDataType(DatasetDataType)}
      * @return data set content
      * @throws ZosDatasetException
@@ -235,7 +243,7 @@ public interface IZosDataset {
     public boolean memberExists(@NotNull String memberName) throws ZosDatasetException;
     
     /**
-     * Write content to the partitioned data set member
+     * Write content to the partitioned data set member in Text mode
      * @param memberName
      * @param content
      * @throws ZosDatasetException
@@ -243,7 +251,7 @@ public interface IZosDataset {
     public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException;
 
     /**
-     * Write content to the partitioned data set member
+     * Write content to the partitioned data set member in Binary mode
      * @param memberName
      * @param content
      * @throws ZosDatasetException
@@ -251,7 +259,7 @@ public interface IZosDataset {
     public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException;
     
     /**
-     * Retrieve content from the partitioned data set member
+     * Retrieve content from the partitioned data set member in Text mode
      * @param memberName
      * @return
      * @throws ZosDatasetException
@@ -259,7 +267,7 @@ public interface IZosDataset {
     public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException;
 
     /**
-     * Retrieve content from the partitioned data set member
+     * Retrieve content from the partitioned data set member in Binary mode
      * @param memberName
      * @return
      * @throws ZosDatasetException

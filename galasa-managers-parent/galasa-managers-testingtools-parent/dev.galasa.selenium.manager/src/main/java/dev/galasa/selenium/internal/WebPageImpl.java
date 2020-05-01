@@ -8,7 +8,10 @@ package dev.galasa.selenium.internal;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Function;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriver.Navigation;
 import org.openqa.selenium.WebDriver.Options;
@@ -393,17 +396,22 @@ public class WebPageImpl implements IWebPage {
 
     @Override
     public WebElement findElement(By by) {
+        WebDriverWait wait = new WebDriverWait(this.driver, DEFAULT_SECONDS_TIMEOUT);
+        wait.until(ExpectedConditions.presenceOfElementLocated(by));
         return this.driver.findElement(by);
     }
 
     @Override
     public List<WebElement> findElements(By by) {
+        WebDriverWait wait = new WebDriverWait(this.driver, DEFAULT_SECONDS_TIMEOUT);
+        wait.until(ExpectedConditions.presenceOfElementLocated(by));
         return this.driver.findElements(by);
     }
 
     @Override
-    public void get(String url) {
+    public IWebPage get(String url) {
         this.driver.get(url);
+        return this;
     }
 
     @Override
@@ -610,8 +618,25 @@ public class WebPageImpl implements IWebPage {
     }
 
     @Override
-    public void maximize() {
+    public IWebPage maximize() {
         manage().window().maximize();
+        return this;
+    }
+
+    @Override
+    public IWebPage waitForPageLoad() {
+        return waitForPageLoad(DEFAULT_SECONDS_TIMEOUT);
+    }
+
+    @Override
+    public IWebPage waitForPageLoad(int secondsTimeout) {
+        WebDriverWait wait = new WebDriverWait(driver, secondsTimeout);
+        wait.until(new Function<WebDriver, Boolean>() {
+            public Boolean apply(WebDriver driver) {
+                return String.valueOf(((JavascriptExecutor) driver).executeScript("return document.readyState")).equals("complete");
+            }
+        });
+        return this;
     }
 
 }

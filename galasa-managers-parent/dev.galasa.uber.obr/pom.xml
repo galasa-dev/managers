@@ -4,34 +4,32 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-parent</artifactId>
-		<version>0.7.0-SNAPSHOT</version>
+		<version>0.8.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.uber.obr</artifactId>
-	<!-- If updating version, reflect change in dev.galasa.uber.karaffeature -->
-	<!-- Also, dev.galasa.eclipse.launcher.Launcher class -->
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
 	<packaging>galasa-obr</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework.obr</artifactId>
-			<version>0.7.0-SNAPSHOT</version>
+			<version>0.8.0-SNAPSHOT</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.extensions.obr</artifactId>
-			<version>0.7.0-SNAPSHOT</version>
+			<version>0.8.0-SNAPSHOT</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.managers.obr</artifactId>
-			<version>0.7.0-SNAPSHOT</version>
+			<version>0.8.0-SNAPSHOT</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>

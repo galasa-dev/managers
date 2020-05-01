@@ -61,7 +61,15 @@ public class Terminal implements ITerminal {
     
     @Override
     public boolean isConnected() {
-        return connected;
+        if (!connected) {
+            return false;
+        }
+        
+        if (network == null) {
+            return false;
+        }
+        
+        return network.isConnected();
     }
 
     @Override
@@ -107,8 +115,44 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException {
+        screen.eraseEof();
+        return this;
+    }
+
+    @Override
     public ITerminal tab() throws KeyboardLockedException, FieldNotFoundException {
         screen.tab();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorUp();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorDown();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorLeft();
+        return this;
+    }
+
+    @Override
+    public ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException {
+        screen.cursorRight();
+        return this;
+    }
+
+    @Override
+    public ITerminal home() throws KeyboardLockedException, FieldNotFoundException {
+        screen.home();
         return this;
     }
 

@@ -228,7 +228,7 @@ public class Screen {
 
     public synchronized void processOrders(List<AbstractOrder> orders) throws DatastreamException {
         logger.trace("Processing orders");
-        this.workingCursor = 0;
+//        this.workingCursor = 0;
         for (AbstractOrder order : orders) {
             if (order instanceof OrderSetBufferAddress) {
                 processSBA((OrderSetBufferAddress) order);
@@ -261,8 +261,8 @@ public class Screen {
             buffer[i] = null;
         }
 
-        this.screenCursor = 0;
-
+        this.screenCursor  = 0;
+        this.workingCursor = 0;
     }
 
     /**
@@ -405,6 +405,20 @@ public class Screen {
         return screenSB.toString();
     }
 
+    public String retrieveFlatScreen() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < this.buffer.length; i++) {
+            if (this.buffer[i] == null) {
+                sb.append(" ");
+            } else {
+                sb.append(this.buffer[i].getStringWithoutNulls());
+            }
+        }
+        return sb.toString();
+    }
+
+
+
     public synchronized @NotNull Field[] calculateFields() {
         ArrayList<Field> fields = new ArrayList<>();
 
@@ -513,6 +527,59 @@ public class Screen {
 
         throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
     }
+    
+    public synchronized void eraseEof() throws KeyboardLockedException, FieldNotFoundException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+        
+        if (buffer[screenCursor] != null && !(buffer[screenCursor] instanceof BufferChar)) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+        }
+
+        BufferStartOfField sf = null;
+        int sfPos = screenCursor - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != screenCursor) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
+                break;
+            }
+            
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
+            }
+        }
+
+        // *** if no field found, assume unprotected
+        if (sf != null && sf.isProtected()) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + screenCursor);
+        }
+        
+        //*** Set this and following characters to null
+        int pos = this.screenCursor;
+        while(true) {
+            if (!(buffer[pos] instanceof BufferChar)) {
+                break;
+            }
+            
+            buffer[pos] = new BufferChar((char) 0);
+            pos++;
+            if (pos >= this.screenSize) {
+                pos = 0;
+            }
+            
+            if (pos == this.screenCursor) {
+                break;
+            }
+        }
+        
+
+    }
+
 
     public synchronized void tab() throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {
@@ -558,6 +625,81 @@ public class Screen {
         }
 
     }
+
+    public synchronized void cursorUp() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor = this.screenCursor - this.columns;
+        if (this.screenCursor < 0) {
+            this.screenCursor = this.screenSize - this.screenCursor;
+        }
+    }
+
+    public synchronized void cursorDown() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor = this.screenCursor + this.columns;
+        if (this.screenCursor >= this.screenSize) {
+            this.screenCursor = this.screenCursor - this.screenSize;
+        }
+    }
+
+    public synchronized void cursorLeft() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor--;
+        if (this.screenCursor < 0) {
+            this.screenCursor = this.screenSize - this.screenCursor;
+        }
+    }
+
+    public synchronized void cursorRight() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        this.screenCursor++;
+        if (this.screenCursor >= this.screenSize) {
+            this.screenCursor = this.screenCursor - this.screenSize;
+        }
+
+    }
+
+    public synchronized void home() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        Field[] fields = calculateFields();
+
+        if (fields == null || fields.length == 0) {
+            this.screenCursor = 0;
+            return;
+        }
+
+        //*** find first unprotected field
+        for(Field field : fields) {
+            if (!field.isProtected()) {
+                if (field.isUnformatted()) {
+                    this.screenCursor = 0;
+                    return;
+                }
+
+                this.screenCursor = field.getStart() + 1;
+                return;
+            }
+        }
+
+        this.screenCursor = 0;
+        return;
+    }
+
 
     public int getNoOfColumns() {
         return this.columns;
@@ -615,48 +757,69 @@ public class Screen {
     }
 
     public synchronized void type(String text) throws KeyboardLockedException, FieldNotFoundException {
+        this.screenCursor = type(text, this.screenCursor);
+    }
+
+    public synchronized int type(String text, int column, int row) throws KeyboardLockedException, FieldNotFoundException {
+        int position = column + (row * this.columns);
+
+        return type(text, position);
+    }
+
+    public synchronized int type(String text, int position) throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {
             throw new KeyboardLockedException("Unable to type as keyboard is locked");
         }
 
-        if (buffer[this.screenCursor] != null && !(buffer[this.screenCursor] instanceof BufferChar)) {
+        if (buffer[position] != null && !(buffer[position] instanceof BufferChar)) {
             throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
         }
 
         BufferStartOfField sf = null;
-        for (int i = this.screenCursor - 1; i >= 0; i--) {
-            if (buffer[i] instanceof BufferStartOfField) {
-                sf = (BufferStartOfField) buffer[i];
+        int sfPos = position - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != position) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
                 break;
+            }
+            
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
             }
         }
 
         // *** if no field found, assume unprotected
         if (sf != null && sf.isProtected()) {
-            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + position);
         }
 
         if (text.length() == 0) {
-            return;
+            return position;
         }
 
         for (int i = 0; i < text.length(); i++) {
-            IBufferHolder bh = buffer[screenCursor];
+            IBufferHolder bh = buffer[position];
             if (bh != null && !(bh instanceof BufferChar)) {
                 throw new FieldNotFoundException(
-                        "Unable to type where the cursor is pointing to - " + this.screenCursor);
+                        "Unable to type where the cursor is pointing to - " + position);
             }
 
-            buffer[screenCursor] = new BufferChar(text.charAt(i));
-            screenCursor++;
-            if (screenCursor >= screenSize) {
-                screenCursor = 0;
+            buffer[position] = new BufferChar(text.charAt(i));
+            position++;
+            if (position >= screenSize) {
+                position = 0;
             }
         }
 
         if (sf != null) {
             sf.setFieldModified();
         }
+
+        return position;
     }
 
     public synchronized byte[] aid(AttentionIdentification aid) throws DatastreamException, InterruptedException {
@@ -750,7 +913,7 @@ public class Screen {
         }
     }
 
-    public Object getScreenSize() {
+    public int getScreenSize() {
         return this.screenSize;
     }
 
@@ -802,7 +965,7 @@ public class Screen {
 
         return currentField;
     }
-    
+
     public void setCursorPosition(int newPosition) {
         this.screenCursor = newPosition;
     }

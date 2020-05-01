@@ -29,8 +29,20 @@ public interface ITerminal {
     boolean isTextInField(String string);
 
     ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
+    
+    ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
+    
+    ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException;
+
+    ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException;
+
+    ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal enter() throws KeyboardLockedException, NetworkException, InterruptedException;
 

@@ -10,25 +10,11 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.ZosManagerException;
 
 /**
- * ????????????????????????????????????????????????????????????????????????????????????????????????????????
- * Extra bundle to required to implement the zOS File Manager
- * <p>
- * The name of the Bundle that implements the zOS File Manager 
- * </p><p>
- * The property is:<br>
- * {@code zos.bundle.extra.file.manager=dev.galasa.common.zosfile.zosmf.manager} 
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_BUNDLE_EXTRA_FILE_MANAGER}
- * </p>
- *
- */
-/**
  * Extra bundle to required to implement the zOS UNIX Command Manager
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zos.bundle.extra.[imageid].unix.manager
+ * @galasa.name zos.bundle.extra.unix.manager
  * 
  * @galasa.description The name of the Bundle that implements the zOS UNIX Command Manager
  * 
@@ -39,7 +25,6 @@ import dev.galasa.zos.ZosManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zos.bundle.extra.MVSA.unix.manager=dev.galasa.zosunix.ssh.manager</code><br>
  * <code>zos.bundle.extra.unix.manager=dev.galasa.zosunix.ssh.manager</code>
  *
  */

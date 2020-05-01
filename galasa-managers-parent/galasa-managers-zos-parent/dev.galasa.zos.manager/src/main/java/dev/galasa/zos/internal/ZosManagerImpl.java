@@ -74,8 +74,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
 
     /* 
-     * By default we need to load the zosmf batch implementation, but provide the ability for 
-     * it to be overridden
+     * We need to load the default implementations, but provide the ability for them to be overridden
      */
     @Override
     public List<String> extraBundles(@NotNull IFramework framework) throws ZosManagerException {
@@ -384,6 +383,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     @Override
     public @NotNull IZosImage getImageForTag(String tag) throws ZosManagerException {
         Objects.nonNull(tag);
+        tag = tag.toUpperCase();
         
         IZosImage image = this.taggedImages.get(tag);
         if (image == null) {

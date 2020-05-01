@@ -11,15 +11,21 @@ import dev.galasa.zos.ZosManagerException;
 
 /**
  * Extra bundle to required to implement the zOS File Manager
- * <p>
- * The name of the Bundle that implements the zOS File Manager 
- * </p><p>
- * The property is:<br>
- * {@code zos.bundle.extra.file.manager=dev.galasa.common.zosfile.zosmf.manager} 
- * </p>
- * <p>
- * The default value is {@value #DEFAULT_BUNDLE_EXTRA_FILE_MANAGER}
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zos.bundle.extra.file.manager
+ * 
+ * @galasa.description The name of the Bundle that implements the zOS File Manager
+ * 
+ * @galasa.required No
+ * 
+ * @galasa.default dev.galasa.common.zosfile.zosmf.manager
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zos.bundle.extra.file.manager=dev.galasa.common.zosfile.zosmf.manager</code><br>
  *
  */
 public class FileExtraBundle extends CpsProperties {

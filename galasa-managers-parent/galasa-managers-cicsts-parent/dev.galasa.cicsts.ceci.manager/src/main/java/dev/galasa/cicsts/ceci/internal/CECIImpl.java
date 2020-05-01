@@ -55,6 +55,11 @@ public class CECIImpl implements ICECI {
 
     @Override
     public ICECIResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command) throws CECIException {
+        return issueCommand(ceciTerminal, command, true);
+    }
+
+    @Override
+    public ICECIResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CECIException {
         this.terminal = ceciTerminal;
         
         String commandVariable = COMMAND_VARIABLE_NAME;
@@ -92,7 +97,7 @@ public class CECIImpl implements ICECI {
             }
             
             // Return the response
-            return newCECIResponse();
+            return newCECIResponse(parseOutput);
             
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -197,6 +202,9 @@ public class CECIImpl implements ICECI {
 
     @Override
     public void deleteVariable(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CECIException {
+        if (!name.startsWith("&")){
+            name = "&" + name;
+        }
         this.terminal = ceciTerminal;
         try {
             hexOff();
@@ -339,6 +347,7 @@ public class CECIImpl implements ICECI {
         commandBuffer.append(dataVariableName);
         commandBuffer.append(")");
         if (dataType != null) {
+            commandBuffer.append(" ");
             commandBuffer.append(dataType);
         }
         if (fromCcsid != null) {
@@ -355,8 +364,11 @@ public class CECIImpl implements ICECI {
     }
 
     @Override
-    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String dataType, String intoCcsid, String intoCodepage) throws CECIException {
+    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CECIException {
         this.terminal = ceciTerminal;
+        if (!variableName.startsWith("&")){
+            variableName = "&" + variableName;
+        }
         StringBuilder commandBuffer = new StringBuilder();
         commandBuffer.append("GET CONTAINER(");
         commandBuffer.append(containerName);
@@ -365,9 +377,6 @@ public class CECIImpl implements ICECI {
         commandBuffer.append(") INTO(");
         commandBuffer.append(variableName);
         commandBuffer.append(")");
-        if (dataType != null) {
-            commandBuffer.append(dataType);
-        }
         if (intoCcsid != null) {
             commandBuffer.append(" INTOCCSID(");
             commandBuffer.append(intoCcsid);
@@ -524,7 +533,7 @@ public class CECIImpl implements ICECI {
             name = "&" + name;
         }
         if (name.length() > 10) {
-            throw new CECIException("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leadin \"&\"");
+            throw new CECIException("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leading \"&\"");
         }
         final String expr = "^[&][a-zA-Z0-9@#]*";
         if (!name.matches(expr)) {
@@ -893,7 +902,7 @@ public class CECIImpl implements ICECI {
         return terminal;
     }
 
-    protected ICECIResponse newCECIResponse() throws CECIException {
+    protected ICECIResponse newCECIResponse(boolean parseOutput) throws CECIException {
         String screen = terminal.retrieveScreen();
 
         String response = getFieldAfter(screen, "RESPONSE: ", "EIBRESP").trim();
@@ -901,7 +910,11 @@ public class CECIImpl implements ICECI {
         int eibresp2 = Integer.parseInt(getFieldAfter(screen, "EIBRESP2="));        
 
         CECIResponseImpl ceciResponse = new CECIResponseImpl(response, eibresp, eibresp2);
-        ceciResponse.setResponseOutput(parseResponseOutput());
+        if (parseOutput) {
+            ceciResponse.setResponseOutput(parseResponseOutput());
+        } else {
+            ceciResponse.setResponseOutput(new LinkedHashMap<>());
+        }
         return ceciResponse;
     }
 

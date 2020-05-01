@@ -11,15 +11,22 @@ import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * zOSMF Server port
- * <p>
- * The hostname zOSMF server 
- * </p><p>
- * The property is:<br>
- * {@code zosmf.server.[imageid].port=443} 
- * </p>
- * <p>
- * There is no default value
- * </p>
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name zosmf.server.[imageid].https
+ * 
+ * @galasa.description The hostname zOSMF server 
+ * 
+ * @galasa.required Yes
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values 
+ * 
+ * @galasa.examples 
+ * <code>zosmf.server.port=443</code><br>
+ * <code>zosmf.server.SYSA.port=443</code>
  *
  */
 public class ServerPort extends CpsProperties {

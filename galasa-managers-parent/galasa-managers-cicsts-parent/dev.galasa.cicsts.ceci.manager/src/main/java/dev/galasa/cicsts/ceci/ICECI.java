@@ -22,10 +22,27 @@ public interface ICECI {
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param command a {@link String} containing the CECI command
-     * @return an {@link ICECIResponse} object containing the command's response.
+     * @return an {@link ICECIResponse} object containing the command's response and output values.
      * @throws CECIException 
      */
     public ICECIResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command) throws CECIException;
+    
+    /**
+     * Issue a CECI command. The command will be stored and executed from a CECI variable. 
+     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * If mixed case is required, the terminal should be presented with no upper case translate status. 
+     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * @param command a {@link String} containing the CECI command
+     * @param parseOutput parse the command output and store in {@link ICECIResponse}. Setting to false can improve performance on commands
+     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
+     * The following examples shows how to retrieve a specific returned value:<br><code>
+     * issueCommand(ITerminal, "ASSIGN USERID(&VAR)", false)<br>
+     * retrieveVariableText(ITerminal, "ASSIGN USERID(&VAR)", false)
+     * </code>
+     * @return an {@link ICECIResponse} object containing the command's response.
+     * @throws CECIException 
+     */
+    public ICECIResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CECIException;
 
     /**
      * Define a CECI text variable.
@@ -220,7 +237,7 @@ public interface ICECI {
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param channelName the CHANNELNAME
-     * @param containerName the COTAINER name
+     * @param containerName the CONTAINER name
      * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ITerminal, String)} or {@link #retrieveVariableHex(ITerminal, String)}
      * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command. 
      * @param intoCcsid provides a value for INTOCCSID. If null, will be omitted from the command.
@@ -228,7 +245,7 @@ public interface ICECI {
      * @return an {@link ICECIResponse} object containing the command's response.
      * @throws CECIException
      */
-    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String dataType, String intoCcsid, String intoCodepage) throws CECIException;
+    public ICECIResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CECIException;
 
 }
 

@@ -38,9 +38,9 @@ public class SeleniumManagerIVT {
         IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
-        page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open");
-        page.clickElementByLinkText("Twitter");
-        page.waitForElementByLinkText("duckduckgo.com");
+        page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
+            .clickElementByLinkText("Twitter")
+            .waitForElementByLinkText("duckduckgo.com");
         assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
         page.quit();
     }
@@ -50,11 +50,10 @@ public class SeleniumManagerIVT {
         IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
-        page.sendKeysToElementById("search_form_input_homepage", "galasa dev github");
-        page.clickElementById("search_button_homepage");
-        page.clickElementByLinkText("galasa · GitHub");
-        page.clickElementByPartialLinkText("People");
-        page.waitForElementByLinkText("rsomers1998");
+        page.sendKeysToElementById("search_form_input_homepage", "galasa dev github")
+            .clickElementById("search_button_homepage")
+            .clickElementByLinkText("galasa · GitHub")
+            .clickElementByPartialLinkText("People");
         assertThat(page.findElementsByLinkText("rsomers1998")).isNotEmpty();
         page.quit();
     }
