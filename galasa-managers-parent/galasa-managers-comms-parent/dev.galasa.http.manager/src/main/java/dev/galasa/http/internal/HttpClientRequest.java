@@ -34,6 +34,7 @@ import org.w3c.dom.Document;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 
 /**
