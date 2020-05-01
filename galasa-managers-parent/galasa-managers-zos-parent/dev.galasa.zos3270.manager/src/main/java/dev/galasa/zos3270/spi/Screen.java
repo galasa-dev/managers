@@ -228,7 +228,7 @@ public class Screen {
 
     public synchronized void processOrders(List<AbstractOrder> orders) throws DatastreamException {
         logger.trace("Processing orders");
-        this.workingCursor = 0;
+//        this.workingCursor = 0;
         for (AbstractOrder order : orders) {
             if (order instanceof OrderSetBufferAddress) {
                 processSBA((OrderSetBufferAddress) order);
@@ -261,8 +261,8 @@ public class Screen {
             buffer[i] = null;
         }
 
-        this.screenCursor = 0;
-
+        this.screenCursor  = 0;
+        this.workingCursor = 0;
     }
 
     /**
@@ -527,6 +527,59 @@ public class Screen {
 
         throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
     }
+    
+    public synchronized void eraseEof() throws KeyboardLockedException, FieldNotFoundException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+        
+        if (buffer[screenCursor] != null && !(buffer[screenCursor] instanceof BufferChar)) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+        }
+
+        BufferStartOfField sf = null;
+        int sfPos = screenCursor - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != screenCursor) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
+                break;
+            }
+            
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
+            }
+        }
+
+        // *** if no field found, assume unprotected
+        if (sf != null && sf.isProtected()) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + screenCursor);
+        }
+        
+        //*** Set this and following characters to null
+        int pos = this.screenCursor;
+        while(true) {
+            if (!(buffer[pos] instanceof BufferChar)) {
+                break;
+            }
+            
+            buffer[pos] = new BufferChar((char) 0);
+            pos++;
+            if (pos >= this.screenSize) {
+                pos = 0;
+            }
+            
+            if (pos == this.screenCursor) {
+                break;
+            }
+        }
+        
+
+    }
+
 
     public synchronized void tab() throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {

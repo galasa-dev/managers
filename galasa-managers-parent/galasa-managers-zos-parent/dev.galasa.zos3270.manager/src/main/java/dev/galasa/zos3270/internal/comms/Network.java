@@ -112,6 +112,10 @@ public class Network {
             }
         }
     }
+    
+    public boolean isConnected() {
+        return (this.socket != null);
+    }
 
     public Socket createSocket() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         Socket newSocket = null;
