@@ -31,6 +31,7 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.ITerminal;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.Zos3270Terminal;
 import dev.galasa.zos3270.internal.properties.Zos3270PropertiesSingleton;
@@ -168,7 +169,7 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
             try {
                 terminal.flushTerminalCache();
                 terminal.disconnect();
-            } catch (InterruptedException e) {
+            } catch (TerminalInterruptedException e) {
                 logger.warn("Thread interrupted whilst disconnecting terminals", e);
                 Thread.currentThread().interrupt();
             }

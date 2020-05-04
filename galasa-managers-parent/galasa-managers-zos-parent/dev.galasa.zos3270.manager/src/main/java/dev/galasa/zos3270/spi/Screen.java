@@ -25,6 +25,7 @@ import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.IScreenUpdateListener.Direction;
 import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
@@ -82,11 +83,11 @@ public class Screen {
 
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
-    public Screen() throws InterruptedException {
+    public Screen() throws TerminalInterruptedException {
         this(80, 24, null);
     }
 
-    public Screen(int columns, int rows, Network network) throws InterruptedException {
+    public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
         this.network = network;
         this.columns = columns;
         this.rows = rows;
@@ -95,11 +96,15 @@ public class Screen {
         lockKeyboard();
     }
 
-    private synchronized void lockKeyboard() throws InterruptedException {
+    private synchronized void lockKeyboard() throws TerminalInterruptedException {
         if (!keyboardLockSet) {
             logger.trace("Locking keyboard");
             keyboardLockSet = true;
-            keyboardLock.acquire();
+            try {
+                keyboardLock.acquire();
+            } catch (InterruptedException e) {
+                throw new TerminalInterruptedException("Lock keyboard was interrupted", e);
+            }
         }
     }
 
@@ -228,7 +233,7 @@ public class Screen {
 
     public synchronized void processOrders(List<AbstractOrder> orders) throws DatastreamException {
         logger.trace("Processing orders");
-//        this.workingCursor = 0;
+        //        this.workingCursor = 0;
         for (AbstractOrder order : orders) {
             if (order instanceof OrderSetBufferAddress) {
                 processSBA((OrderSetBufferAddress) order);
@@ -499,16 +504,24 @@ public class Screen {
      * @throws KeyboardLockedException
      * @throws InterruptedException
      */
-    public void waitForKeyboard(int maxWait) throws TimeoutException, InterruptedException {
-        if (!keyboardLock.tryAcquire(maxWait, TimeUnit.MILLISECONDS)) {
-            throw new TimeoutException("Wait for keyboard took longer than " + maxWait + "ms");
+    public void waitForKeyboard(int maxWait) throws TimeoutException, TerminalInterruptedException {
+        try {
+            if (!keyboardLock.tryAcquire(maxWait, TimeUnit.MILLISECONDS)) {
+                throw new TimeoutException("Wait for keyboard took longer than " + maxWait + "ms");
+            }
+        } catch(InterruptedException e) {
+            throw new TerminalInterruptedException("Wait for keyboard was interrupted", e);
         }
         keyboardLock.release();
     }
 
-    public void waitForTextInField(String text, int maxWait) throws InterruptedException, Zos3270Exception {
-        if (!ScreenUpdateTextListener.waitForText(this, text, maxWait)) {
-            throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
+    public void waitForTextInField(String text, int maxWait) throws TerminalInterruptedException, Zos3270Exception {
+        try {
+            if (!ScreenUpdateTextListener.waitForText(this, text, maxWait)) {
+                throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
+            }
+        } catch(InterruptedException e) {
+            throw new TerminalInterruptedException("Wait for text was interrupted", e);
         }
     }
 
@@ -527,12 +540,12 @@ public class Screen {
 
         throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
     }
-    
+
     public synchronized void eraseEof() throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {
             throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
         }
-        
+
         if (buffer[screenCursor] != null && !(buffer[screenCursor] instanceof BufferChar)) {
             throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
         }
@@ -547,7 +560,7 @@ public class Screen {
                 sf = (BufferStartOfField) buffer[sfPos];
                 break;
             }
-            
+
             sfPos--;
             if (sfPos < 0) {
                 sfPos = buffer.length - 1;
@@ -558,25 +571,25 @@ public class Screen {
         if (sf != null && sf.isProtected()) {
             throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + screenCursor);
         }
-        
+
         //*** Set this and following characters to null
         int pos = this.screenCursor;
         while(true) {
             if (!(buffer[pos] instanceof BufferChar)) {
                 break;
             }
-            
+
             buffer[pos] = new BufferChar((char) 0);
             pos++;
             if (pos >= this.screenSize) {
                 pos = 0;
             }
-            
+
             if (pos == this.screenCursor) {
                 break;
             }
         }
-        
+
 
     }
 
@@ -785,7 +798,7 @@ public class Screen {
                 sf = (BufferStartOfField) buffer[sfPos];
                 break;
             }
-            
+
             sfPos--;
             if (sfPos < 0) {
                 sfPos = buffer.length - 1;
@@ -822,7 +835,7 @@ public class Screen {
         return position;
     }
 
-    public synchronized byte[] aid(AttentionIdentification aid) throws DatastreamException, InterruptedException {
+    public synchronized byte[] aid(AttentionIdentification aid) throws DatastreamException, TerminalInterruptedException {
         lockKeyboard();
 
         try {

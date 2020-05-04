@@ -77,6 +77,7 @@ import org.w3c.dom.Document;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -758,6 +759,18 @@ public class HttpClientImpl implements IHttpClient {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
                 new ContentType[] { ContentType.APPLICATION_OCTET_STREAM, ContentType.APPLICATION_X_TAR });
+
+            return execute(request.buildRequest());
+        } catch (HttpClientException e) {
+            logger.error("Could not download file from speficifed path: "+ path, e);
+            throw new HttpClientException("Failed to get file",e);
+        }
+    }
+
+    public CloseableHttpResponse getFile(String path, ContentType[] contentTypes) throws HttpClientException {
+        try{
+            HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
+                contentTypes);
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {

@@ -5,17 +5,18 @@
  */
 package test.zos3270.terminal;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
@@ -38,13 +39,13 @@ import dev.galasa.zos3270.spi.Screen;
 public class ScreenTest {
 
     @Test
-    public void testScreenSize() throws InterruptedException {
+    public void testScreenSize() throws TerminalInterruptedException {
         Assert.assertEquals("default screen size incorrect", 1920, new Screen().getScreenSize());
         Assert.assertEquals("small screen size incorrect", 20, new Screen(10, 2, null).getScreenSize());
     }
 
     @Test
-    public void testErase() throws InterruptedException {
+    public void testErase() throws TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
         screen.erase();
 
@@ -55,7 +56,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testEraseUsingRA() throws DatastreamException, InterruptedException {
+    public void testEraseUsingRA() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -70,7 +71,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testOrders() throws DatastreamException, InterruptedException {
+    public void testOrders() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
         screen.erase();
 
@@ -99,7 +100,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testOrdersInsertAndTail() throws DatastreamException, InterruptedException {
+    public void testOrdersInsertAndTail() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -121,7 +122,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testOrdersJumbled() throws DatastreamException, InterruptedException {
+    public void testOrdersJumbled() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -145,7 +146,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testOrdersReplacedAll() throws DatastreamException, InterruptedException {
+    public void testOrdersReplacedAll() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
         screen.erase();
 
@@ -165,7 +166,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testOrderReplaceMiddle() throws DatastreamException, InterruptedException {
+    public void testOrderReplaceMiddle() throws DatastreamException, TerminalInterruptedException {
         Screen screen = new Screen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -185,7 +186,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testProcessReadPartitionQueryListEquivalent() throws InterruptedException, NetworkException {
+    public void testProcessReadPartitionQueryListEquivalent() throws TerminalInterruptedException, NetworkException {
         Network network = mock(Network.class);
         Screen screen = new Screen(80, 24, network);
 
@@ -198,7 +199,7 @@ public class ScreenTest {
     }
 
     @Test
-    public void testProcessReadPartitionQueryListNoSupportedFunctions() throws InterruptedException, NetworkException {
+    public void testProcessReadPartitionQueryListNoSupportedFunctions() throws TerminalInterruptedException, NetworkException {
         Network network = mock(Network.class);
         Screen screen = new Screen(80, 24, network);
 

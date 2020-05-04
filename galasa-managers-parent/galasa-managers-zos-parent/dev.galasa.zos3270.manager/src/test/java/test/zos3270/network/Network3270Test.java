@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
@@ -34,7 +35,7 @@ public class Network3270Test {
         MockitoAnnotations.initMocks(this);
     }
     @Test
-    public void testProcessMessage() throws NetworkException, IOException, InterruptedException {
+    public void testProcessMessage() throws NetworkException, IOException, TerminalInterruptedException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(0x00);
         baos.write(0x00);
