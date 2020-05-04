@@ -20,6 +20,7 @@ import dev.galasa.cicsts.ceci.ICECIResponse;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
@@ -54,7 +55,7 @@ public class TestCECIImpl {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
-    public void setup() throws FieldNotFoundException, KeyboardLockedException, NetworkException, InterruptedException, TimeoutException {
+    public void setup() throws FieldNotFoundException, KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException {
         ceci = new CECIImpl();
         ceciSpy = Mockito.spy(ceci);
 
@@ -1124,7 +1125,7 @@ public class TestCECIImpl {
     }
     
     @Test
-    public void testIsHexOnException1() throws CECIException, TimeoutException, KeyboardLockedException, InterruptedException {
+    public void testIsHexOnException1() throws CECIException, TimeoutException, KeyboardLockedException, TerminalInterruptedException {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" EIBTIME      = X'00");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new InterruptedException()); 
@@ -1135,7 +1136,7 @@ public class TestCECIImpl {
     }
     
     @Test
-    public void testIsHexOnException2() throws CECIException, TimeoutException, KeyboardLockedException, InterruptedException {
+    public void testIsHexOnException2() throws CECIException, TimeoutException, KeyboardLockedException, TerminalInterruptedException {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" EIBTIME      = X'00");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
