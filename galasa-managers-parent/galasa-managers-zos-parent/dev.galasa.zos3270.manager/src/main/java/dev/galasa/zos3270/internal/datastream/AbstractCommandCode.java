@@ -40,9 +40,10 @@ public abstract class AbstractCommandCode {
             case WRITE_STRUCTURED:
             case NONSNA_WRITE_STRUCTURED:
                 return new CommandWriteStructured();
+            case READ_BUFFER:
+                return new CommandReadBuffer();
             case ERASE_WRITE_ALTERNATE:
             case NONSNA_ERASE_WRITE_ALTERNATE:
-            case READ_BUFFER:
             case NONSNA_READ_BUFFER:
             case READ_MODIFIED:
             case NONSNA_READ_MODIFIED:

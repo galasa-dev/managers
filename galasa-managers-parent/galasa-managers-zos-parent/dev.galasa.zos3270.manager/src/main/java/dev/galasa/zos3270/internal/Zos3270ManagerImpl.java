@@ -8,7 +8,6 @@ package dev.galasa.zos3270.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
