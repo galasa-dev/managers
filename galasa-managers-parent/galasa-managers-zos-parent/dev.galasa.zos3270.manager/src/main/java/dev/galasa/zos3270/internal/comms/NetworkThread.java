@@ -142,6 +142,11 @@ public class NetworkThread extends Thread {
 
     public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
             throws DatastreamException {
+        
+        if (!buffer.hasRemaining()) {
+            return new Inbound3270Message(commandCode, null, null);
+        }
+        
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
         List<AbstractOrder> orders = processOrders(buffer);

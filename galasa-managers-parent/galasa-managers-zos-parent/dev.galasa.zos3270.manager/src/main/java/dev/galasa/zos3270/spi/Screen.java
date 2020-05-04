@@ -36,6 +36,7 @@ import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
 import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.internal.datastream.CommandReadBuffer;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.IAttribute;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
@@ -120,6 +121,8 @@ public class Screen {
         AbstractCommandCode commandCode = inbound.getCommandCode();
         if (commandCode instanceof CommandWriteStructured) {
             processStructuredFields(inbound.getStructuredFields());
+        } else if (commandCode instanceof CommandReadBuffer) {
+            processReadBuffer();
         } else {
             WriteControlCharacter writeControlCharacter = inbound.getWriteControlCharacter();
             List<AbstractOrder> orders = inbound.getOrders();
@@ -134,6 +137,36 @@ public class Screen {
             }
         }
 
+    }
+    
+    private synchronized void processReadBuffer() throws DatastreamException {
+        try {
+            ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
+
+            outboundBuffer.write(AttentionIdentification.ENTER.getKeyValue());
+
+            BufferAddress cursor = new BufferAddress(this.screenCursor);
+            outboundBuffer.write(cursor.getCharRepresentation());
+            
+            for(IBufferHolder bh : this.buffer) {
+                if (bh == null) {
+                    outboundBuffer.write(0);
+                } else if (bh instanceof BufferChar) {
+                    BufferChar bc = (BufferChar) bh;
+                    outboundBuffer.write(bc.getChar());
+                } else if (bh instanceof BufferStartOfField) {
+                    BufferStartOfField sf = (BufferStartOfField) bh;
+                    OrderStartField osf = new OrderStartField(sf.isProtected(), sf.isNumeric(), sf.isDisplay(), sf.isIntenseDisplay(), sf.isSelectorPen(), sf.isFieldModifed());
+                    outboundBuffer.write(osf.getBytes());
+                } else {
+                    throw new DatastreamException("Unrecognised Buffer Holder - " + bh.getClass().getName());
+                }
+            }
+            this.network.sendDatastream(outboundBuffer.toByteArray());
+        } catch(Exception e) {
+            throw new DatastreamException("Error whilst processing READ BUFFER", e);
+        }
+        
     }
 
     private synchronized void processStructuredFields(List<StructuredField> structuredFields)
