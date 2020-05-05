@@ -50,7 +50,7 @@ public class NetworkThread extends Thread {
 
     private boolean           endOfStream     = false;
 
-    private Log               logger          = LogFactory.getLog(getClass());
+    private static Log               logger          = LogFactory.getLog(NetworkThread.class);
 
     public NetworkThread(Screen screen, Network network, InputStream inputStream) {
         this.screen = screen;
@@ -127,7 +127,7 @@ public class NetworkThread extends Thread {
         throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
     }
 
-    public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
+    public static Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
         String hex = new String(Hex.encodeHex(buffer.array()));
         logger.trace("inbound=" + hex);
@@ -142,6 +142,11 @@ public class NetworkThread extends Thread {
 
     public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
             throws DatastreamException {
+        
+        if (!buffer.hasRemaining()) {
+            return new Inbound3270Message(commandCode, null, null);
+        }
+        
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
         List<AbstractOrder> orders = processOrders(buffer);

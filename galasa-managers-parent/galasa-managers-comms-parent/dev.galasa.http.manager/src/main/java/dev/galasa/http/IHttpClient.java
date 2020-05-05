@@ -22,7 +22,6 @@ import org.w3c.dom.Document;
 
 import com.google.gson.JsonObject;
 
-import dev.galasa.http.internal.ContentType;
 import dev.galasa.http.internal.HttpClientRequest;
 import dev.galasa.http.internal.RequestPart;
 
@@ -262,6 +261,15 @@ public interface IHttpClient {
      * @param String path = URL path
      */
     CloseableHttpResponse getFile(String path) throws HttpClientException;
+    
+    /**
+     * Download a file from a specified location to a specified destination on local host.
+     * 
+     * @param Path destination - local location
+     * @Param Content Types
+     * @param String path = URL path
+     */
+    CloseableHttpResponse getFile(String path, ContentType[] acceptTypes) throws HttpClientException;
 
     /**
      * Send a compressed (tar) file from a local location to a specified destination on a host.

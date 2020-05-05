@@ -15,20 +15,22 @@ public interface ITerminal {
 
     void connect() throws NetworkException;
 
-    void disconnect() throws InterruptedException;
+    void disconnect() throws TerminalInterruptedException;
 
-    ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, InterruptedException;
+    ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
 
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
             throws TextNotFoundException, KeyboardLockedException;
 
-    ITerminal waitForTextInField(String string) throws InterruptedException, Zos3270Exception;
+    ITerminal waitForTextInField(String string) throws TerminalInterruptedException, Zos3270Exception;
 
     ITerminal verifyTextInField(String string) throws TextNotFoundException;
 
     boolean isTextInField(String string);
 
     ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
+    
+    ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
     
@@ -42,63 +44,63 @@ public interface ITerminal {
 
     ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 
-    ITerminal enter() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal clear() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal clear() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf1() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf1() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf2() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf2() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf3() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf3() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf4() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf4() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf5() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf5() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf6() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf6() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf7() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf7() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf8() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf8() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf9() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf9() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf10() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf10() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf11() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf11() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf12() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf12() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf13() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf13() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf14() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf14() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf15() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf15() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf16() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf16() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf17() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf17() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf18() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf18() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf19() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf19() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf20() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf20() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf21() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf21() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf22() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf22() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf23() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf23() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pf24() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pf24() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pa1() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pa1() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pa2() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pa2() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
-    ITerminal pa3() throws KeyboardLockedException, NetworkException, InterruptedException;
+    ITerminal pa3() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
     /**
      * Temporary Print to console

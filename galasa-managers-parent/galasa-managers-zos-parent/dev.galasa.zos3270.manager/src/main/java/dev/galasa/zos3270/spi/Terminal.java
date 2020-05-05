@@ -14,6 +14,7 @@ import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
@@ -31,11 +32,11 @@ public class Terminal implements ITerminal {
 
     private Log           logger          = LogFactory.getLog(getClass());
 
-    public Terminal(String host, int port) throws InterruptedException {
+    public Terminal(String host, int port) throws TerminalInterruptedException {
         this(host, port, false);
     }
 
-    public Terminal(String host, int port, boolean ssl) throws InterruptedException {
+    public Terminal(String host, int port, boolean ssl) throws TerminalInterruptedException {
         network = new Network(host, port, ssl);
         screen = new Screen(80, 24, this.network);
     }
@@ -48,24 +49,36 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public void disconnect() throws InterruptedException {
+    public void disconnect() throws TerminalInterruptedException {
         connected = false;
         if (network != null) {
             network.close();
         }
         if (networkThread != null) {
-            networkThread.join();
+            try {
+                networkThread.join();
+            } catch (InterruptedException e) {
+                throw new TerminalInterruptedException("Join of the network thread was interrupted",e);
+            }
             networkThread = null;
         }
     }
     
     @Override
     public boolean isConnected() {
-        return connected;
+        if (!connected) {
+            return false;
+        }
+        
+        if (network == null) {
+            return false;
+        }
+        
+        return network.isConnected();
     }
 
     @Override
-    public ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, InterruptedException {
+    public ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException {
         logger.trace("Waiting for keyboard");
         screen.waitForKeyboard(defaultWaitTime);
         logger.trace("Wait for keyboard complete");
@@ -95,7 +108,7 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public Terminal waitForTextInField(String text) throws InterruptedException, Zos3270Exception {
+    public Terminal waitForTextInField(String text) throws TerminalInterruptedException, Zos3270Exception {
         screen.waitForTextInField(text, defaultWaitTime);
         return this;
     }
@@ -103,6 +116,12 @@ public class Terminal implements ITerminal {
     @Override
     public ITerminal type(String text) throws KeyboardLockedException, FieldNotFoundException {
         screen.type(text);
+        return this;
+    }
+
+    @Override
+    public ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException {
+        screen.eraseEof();
         return this;
     }
 
@@ -143,175 +162,175 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public ITerminal enter() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.ENTER));
         return this;
     }
 
     @Override
-    public ITerminal clear() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal clear() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.CLEAR));
         return this;
     }
 
     @Override
-    public ITerminal pf1() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf1() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF1));
         return this;
     }
 
     @Override
-    public ITerminal pf2() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf2() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF2));
         return this;
     }
 
     @Override
-    public ITerminal pf3() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf3() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF3));
         return this;
     }
 
     @Override
-    public ITerminal pf4() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf4() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF4));
         return this;
     }
 
     @Override
-    public ITerminal pf5() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf5() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF5));
         return this;
     }
 
     @Override
-    public ITerminal pf6() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf6() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF6));
         return this;
     }
 
     @Override
-    public ITerminal pf7() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf7() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF7));
         return this;
     }
 
     @Override
-    public ITerminal pf8() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf8() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF8));
         return this;
     }
 
     @Override
-    public ITerminal pf9() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf9() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF9));
         return this;
     }
 
     @Override
-    public ITerminal pf10() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf10() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF10));
         return this;
     }
 
     @Override
-    public ITerminal pf11() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf11() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF11));
         return this;
     }
 
     @Override
-    public ITerminal pf12() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf12() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF12));
         return this;
     }
 
     @Override
-    public ITerminal pf13() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf13() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF13));
         return this;
     }
 
     @Override
-    public ITerminal pf14() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf14() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF14));
         return this;
     }
 
     @Override
-    public ITerminal pf15() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf15() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF15));
         return this;
     }
 
     @Override
-    public ITerminal pf16() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf16() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF16));
         return this;
     }
 
     @Override
-    public ITerminal pf17() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf17() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF17));
         return this;
     }
 
     @Override
-    public ITerminal pf18() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf18() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF18));
         return this;
     }
 
     @Override
-    public ITerminal pf19() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf19() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF19));
         return this;
     }
 
     @Override
-    public ITerminal pf20() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf20() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF20));
         return this;
     }
 
     @Override
-    public ITerminal pf21() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf21() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF21));
         return this;
     }
 
     @Override
-    public ITerminal pf22() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf22() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF22));
         return this;
     }
 
     @Override
-    public ITerminal pf23() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf23() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF23));
         return this;
     }
 
     @Override
-    public ITerminal pf24() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pf24() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PF24));
         return this;
     }
 
     @Override
-    public ITerminal pa1() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pa1() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PA1));
         return this;
     }
 
     @Override
-    public ITerminal pa2() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pa2() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PA2));
         return this;
     }
 
     @Override
-    public ITerminal pa3() throws KeyboardLockedException, NetworkException, InterruptedException {
+    public ITerminal pa3() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.PA3));
         return this;
     }

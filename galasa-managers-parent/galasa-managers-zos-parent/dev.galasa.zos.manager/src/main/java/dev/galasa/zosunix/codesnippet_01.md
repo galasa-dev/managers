@@ -1,4 +1,4 @@
-<details><summary>Request a zOS UNIX Command instance
+<details><summary>Request a zOS UNIX Command instance</summary>
 
 The following snippet shows the code that is required to request a zOS UNIX Command instance in a Galasa test:
 
@@ -13,7 +13,7 @@ public IZosUNIX unix;
 The code creates a zOS UNIX Command instance associated with the zOS Image allocated in the *zosImageA* field.
 </details>
 
-<details><summary>Issue a zOS UNIX Command and retrieve the immediate response
+<details><summary>Issue a zOS UNIX Command and retrieve the immediate response</summary>
 
 Issue the zOS UNIX `date` Command and retrieve the response:
 

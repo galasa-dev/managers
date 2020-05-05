@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2019.
  */
-package dev.galasa.http.internal;
+package dev.galasa.http;
 
 import org.apache.http.HttpEntity;
 
@@ -35,15 +35,15 @@ public enum ContentType {
         this.custom = custom;
     }
 
-    protected org.apache.http.entity.ContentType getC() {
+    public org.apache.http.entity.ContentType getC() {
         return c;
     }
 
-    protected String getCustom() {
+    public String getCustom() {
         return custom;
     }
 
-    protected static ContentType get(HttpEntity e) {
+    public static ContentType get(HttpEntity e) {
 
         String type = e.getContentType().getValue();
 

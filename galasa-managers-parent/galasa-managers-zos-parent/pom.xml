@@ -4,11 +4,11 @@
   <parent>
     <groupId>dev.galasa</groupId>
     <artifactId>galasa-managers-parent</artifactId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>galasa-managers-zos-parent</artifactId>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <modules>
@@ -22,7 +22,6 @@
   	<module>dev.galasa.zosmf.manager</module>
   	<module>dev.galasa.zos.manager.ivt</module>
   	<module>dev.galasa.zos3270.manager.ivt</module>
-    <module>dev.galasa.zos3270.devtools</module>
     <module>dev.galasa.zos3270.common</module>
   </modules>
   
