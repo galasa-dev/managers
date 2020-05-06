@@ -22,6 +22,14 @@ public interface IBundleResources {
      * @throws TestBundleResourceException
      */
     InputStream retrieveFile(String path) throws TestBundleResourceException;
+    
+    /**
+     * Retrieve a file as a String
+     * @param path
+     * @return
+     * @throws TestBundleResourceException
+     */
+    String retrieveFileAsString(String path) throws TestBundleResourceException, IOException;
 
     /**
      * Retrieve a single file as an InputStream, if the file is a skeleton then any
@@ -36,6 +44,7 @@ public interface IBundleResources {
     InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters, int skeletonType)
             throws TestBundleResourceException;
 
+
     /**
      * Retrieve a single file as an InputStream, if the file is a skeleton then any
      * required substitutions will be performed before the stream is returned. Uses
@@ -47,6 +56,19 @@ public interface IBundleResources {
      * @throws TestBundleResourceException
      */
     InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters) throws TestBundleResourceException;
+
+
+    /**
+     * Retrieve a single file as a String, if the file is a skeleton then any
+     * required substitutions will be performed before the string is returned. Uses
+     * the default skeleton processor {@link SkeletonType#PLUSPLUS}
+     * @param path
+     * @param parameters
+     * @return
+     * @throws TestBundleResourceException
+     */
+    String retrieveSkeletonFileAsString(String path, Map<String, Object> parameters) throws TestBundleResourceException, IOException;
+
 
     /**
      * For a directory, retrieve a map of file paths within it, and InputStreams for

@@ -42,6 +42,24 @@ public class ArtifactManagerIVT {
     }
 
     @Test
+    public void testRetrieveFileAsStringMethod() throws Exception {
+        String textContent = resources.retrieveFileAsString("/resources/textFiles/test1.txt");
+        logger.debug("Read the following from the file test1.txt: " + textContent);
+        if (!textContent.trim().equals("Hello from Galasa")) {
+            throw new Exception("Unable to read text file resources/textFiles/test1.txt");
+        }
+    }
+
+    @Test
+    public void testRetrieveSkeletonFileAsStringMethod() throws Exception {
+        String textContent = resources.retrieveSkeletonFileAsString("/resources/skeletons/test1.skel", buildHashMap());
+        logger.info("Receivied the following from the skeleton file: " + textContent);
+        if (!textContent.trim().equals("The third parameter is ITEM NUMBER THREE")) {
+            throw new Exception("received the wrong result from retrieving a skeleton file, received: " + textContent);
+        }
+    }
+
+    @Test
     public void readTextFileArtifactManager() throws Exception, TestBundleResourceException, IOException {
         InputStream file = artifacts.getBundleResources(this.getClass()).retrieveFile("/resources/textFiles/test1.txt");
         String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(file);
