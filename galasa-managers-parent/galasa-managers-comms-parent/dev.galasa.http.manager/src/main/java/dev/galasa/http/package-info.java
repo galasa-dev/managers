@@ -22,17 +22,19 @@
  *                     target="_blank" rel="noopener noreferrer"> Docker Manager
  *                     IVT</a> (Installation Verification Test). As well as
  *                     providing client functionality to people who write tests,
- *                     it may also be used internally by other Managres to
- *                     enrich their range of offered services.
+ *                     it may also be used internally by other Managers to
+ *                     enrich their range of offered services. <br/>
+ *                     <br/>
  * 
  *                     This Manager supports outbound HTTP calls, JSON requests,
  *                     HTTP file transfer and Web Services calls. SSL is
  *                     supported.
  *
+ *                     <br/>
+ *                     <br/>
  *                     You can view the <a href=
  *                     "https://javadoc.galasa.dev/dev/galasa/http/package-summary.html"
  *                     target="_blank" rel="noopener noreferrer">Javadoc
- *                     documentation for the Manager here</a>. <br>
- *                     <br>
+ *                     documentation for the Manager here</a>.
  */
 package dev.galasa.http;
