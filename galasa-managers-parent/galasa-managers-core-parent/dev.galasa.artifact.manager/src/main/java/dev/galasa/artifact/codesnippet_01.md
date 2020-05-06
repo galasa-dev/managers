@@ -32,7 +32,7 @@ InputStream is = resources.retrieveFile("input/hobbit.txt");
 String textContext = resources.streamAsString(is);
 ```
 
-From 0.8.0 of galasa you can now stream a string content directly by using the following:
+From Galasa 0.8.0 you can stream a string content directly by using the following code:
 
 ```
 String textContent = resources.retrieveFileAsString("/resources/textFiles/test1.txt");
