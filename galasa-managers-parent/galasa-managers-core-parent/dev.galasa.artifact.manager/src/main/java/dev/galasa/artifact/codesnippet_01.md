@@ -31,6 +31,14 @@ The simplest thing that a test might want to do is retrieve the content of a fil
 InputStream is = resources.retrieveFile("input/hobbit.txt");
 String textContext = resources.streamAsString(is);
 ```
+
+From 0.8.0 of galasa you can now stream a string content directly by using the following:
+
+```
+String textContent = resources.retrieveFileAsString("/resources/textFiles/test1.txt");
+```
+
+This uses the same methods as the previous example but is one less line of code you have to write.
 </details>
 
 <details><summary>Substituting variables into a file</summary>
@@ -51,4 +59,11 @@ String textContext = resources.streamAsString(is);
 ```
 
 When the file is now retrieved from the local bundle all references to ++ACCOUNT_NUMBER++ and ++AMOUNT++ will be substituted for "123456789" and "50.05" respectively.  Note that these substitutions are for the instance of the test that is running.  The actual copy of the file in the bundle is unchanged and cannot affect any other instances of the test that are running at the same time.
+
+From Galasa 0.8.0 this has been updated to allow you to retrieve the content of a file directly as a string and still perform variable substitution as the following example shows:
+
+```
+String textContext = resources.retrieveSkeletonFile("input/hobbit.txt", parameters);
+```
+
 </details>

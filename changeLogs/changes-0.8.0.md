@@ -5,3 +5,4 @@
 | 177  | zOS 3270 Terminal has changed InterruptedException to TerminalInterruptedException to make test catches easier |
 | JATconv | Handle READ BUFFER and rejected device selection |
 | 258 | Refactor zOS TSO and UNIX command managers |
+| 246 | New API in Artifact manager to make streaming text content a single step process |

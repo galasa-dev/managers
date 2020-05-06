@@ -550,4 +550,15 @@ public class BundleResourcesImpl implements IBundleResources {
         }
     }
 
+    @Override
+    public String retrieveFileAsString(String path) throws TestBundleResourceException, IOException {
+        return this.streamAsString(this.retrieveFile(path));
+    }
+
+    @Override
+    public String retrieveSkeletonFileAsString(String path, Map<String, Object> parameters)
+            throws TestBundleResourceException, IOException {
+        return this.streamAsString(this.retrieveSkeletonFile(path, parameters));
+    }
+
 }
