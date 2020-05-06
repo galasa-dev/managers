@@ -34,12 +34,13 @@ to retrieve the contents of a web page.
 
 <details><summary>Make an outbound HTTP call</summary>
 
-This code makes an outbound HTTP call.
+This code makes a get request to the given path.
 
 ```
 String pageContent = client.get("/images",false);
 ```
 
 Use this call after a prior call to `setURI` to establish the URI endpoint of your request.
+The second parameter - a boolean - causes the function to retry as required if set to `true`.
 
 </details>
