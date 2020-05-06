@@ -1,0 +1,35 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
+package dev.galasa.zosunixcommand;
+
+import javax.validation.constraints.NotNull;
+
+/**
+ * Provides the test code access to zOS UNIX Commands via the zOS Manager 
+ *
+ */
+public interface IZosUNIXCommand {
+    
+    /**
+     * Issue a zOS UNIX command 
+     * 
+     * @param command The command
+     * @return the UNIX command response
+     * @throws ZosUNIXCommandException 
+     */
+    public String issueCommand(@NotNull String command) throws ZosUNIXCommandException;
+    
+    /**
+     * Issue a zOS UNIX command with a timeout 
+     * 
+     * @param command The command
+     * @param timeout time (in milliseconds) to wait with no new output appearing before timing out
+     * @return the UNIX command response
+     * @throws ZosUNIXCommandException 
+     */
+    public String issueCommand(@NotNull String command, long timeout) throws ZosUNIXCommandException;
+
+}

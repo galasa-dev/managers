@@ -17,8 +17,8 @@
   	<module>dev.galasa.zosbatch.zosmf.manager</module>
   	<module>dev.galasa.zosconsole.zosmf.manager</module>
   	<module>dev.galasa.zosfile.zosmf.manager</module>
-    <module>dev.galasa.zostso.ssh.manager</module>
-    <module>dev.galasa.zosunix.ssh.manager</module>
+    <module>dev.galasa.zostsocommand.ssh.manager</module>
+    <module>dev.galasa.zosunixcommand.ssh.manager</module>
   	<module>dev.galasa.zosmf.manager</module>
   	<module>dev.galasa.zos.manager.ivt</module>
   	<module>dev.galasa.zos3270.manager.ivt</module>
