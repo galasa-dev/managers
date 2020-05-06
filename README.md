@@ -4,6 +4,12 @@ The repository has a hierarchical structure with a "galasa-managers-parent" fold
 Managers are grouped by type within the parent folder, for example, the "galasa-managers-core-parent" folder contains the code and IVT (Installation Verification Test) tests for the Core Manager and Artifact Manager.
 Each Manager comes with its own set of associated IVT tests and Javadoc. 
 We're adding new Manager every month. Look at the [summary table of Managers](https://galasa.dev/docs/managers/) for a list of available and planned Managers and to find out what they do.
+
+## Contributing
+
+If you are interested in the development of Galasa, take a look at the documentation and feel free to post a question on [Spectrum](https://spectrum.chat/galasa?tab=posts) or raise new ideas / features / bugs etc. as issues on [GitHub](https://github.com/galasa-dev/projectmanagement).
+
+Take a look at the [contribution guidelines](https://github.com/galasa-dev/projectmanagement/blob/master/contributing.md).
  
 
 ## Documentation
@@ -15,12 +21,6 @@ More information can be found on the [Galasa Homepage](https://galasa.dev). Ques
 Find out how to install the Galasa Eclipse plug-in from our [Installing the Galasa plug-in](https://galasa.dev/docs/getting-started/installing) documentation.
 
 Other Galasa repositories are available on [GitHub](https://github.com/galasa-dev). 
-
-## Contributing
-
-If you are interested in the development of Galasa, take a look at the documentation and feel free to post a question on [Spectrum](https://spectrum.chat/galasa?tab=posts) or raise new ideas / features / bugs etc. as issues on [GitHub](https://github.com/galasa-dev/projectmanagement).
-
-Take a look at the [contribution guidelines](https://github.com/galasa-dev/projectmanagement/blob/master/contributing.md).
 
 ## License
 
