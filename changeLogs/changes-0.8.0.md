@@ -6,3 +6,4 @@
 | JATconv | Handle READ BUFFER and rejected device selection |
 | 258 | Refactor zOS TSO and UNIX command managers |
 | 246 | New TPI in Artifact manager to make streaming text content a single step process |
+| JATconv | The 3270 Manager will no longer throw an Exception for an invalid Order byte, it will replace it with a space on the screen and write a trace message to the log |
