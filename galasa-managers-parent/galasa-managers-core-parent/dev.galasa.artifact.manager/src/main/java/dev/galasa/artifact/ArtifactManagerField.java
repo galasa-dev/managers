@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2019.
  */
-package dev.galasa.artifact.internal;
+package dev.galasa.artifact;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
