@@ -10,7 +10,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import dev.galasa.artifact.internal.ArtifactManagerField;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**

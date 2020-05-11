@@ -22,6 +22,7 @@ import dev.galasa.cicsts.ceci.IResponseOutputValue;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
@@ -98,11 +99,7 @@ public class CECIImpl implements ICECI {
             
             // Return the response
             return newCECIResponse(parseOutput);
-            
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Error issuing CECI command", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Error issuing CECI command", e);
         }
     }
@@ -223,10 +220,7 @@ public class CECIImpl implements ICECI {
                     throw new CECIException("Delete variable failed");
                 }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to delete variable", e);
-        } catch (FieldNotFoundException | KeyboardLockedException | TimeoutException | NetworkException e) {
+        } catch (FieldNotFoundException | KeyboardLockedException | TimeoutException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to delete variable", e);
         }
     }
@@ -244,10 +238,7 @@ public class CECIImpl implements ICECI {
                 tabCount++;
             }
             terminal.enter().waitForKeyboard();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to delete all variables", e);
-        } catch (TimeoutException | KeyboardLockedException | FieldNotFoundException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | FieldNotFoundException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to delete all variables", e);
         }
     }
@@ -261,10 +252,7 @@ public class CECIImpl implements ICECI {
             hexOff();
             String eibText = terminal.pf4().waitForKeyboard().retrieveScreen() + terminal.pf11().waitForKeyboard().retrieveScreen();
             return new CECIExecInterfaceBlockImpl(eibText, eibHex);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to navigate to EIB screen", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException e) {
             throw new CECIException("Unable to navigate to EIB screen", e);
         }
     }
@@ -402,10 +390,7 @@ public class CECIImpl implements ICECI {
             }
             home();
             return eof().enter().waitForKeyboard();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to navigate to CECI initial screen", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to navigate to CECI initial screen", e);
         }
     }
@@ -413,10 +398,7 @@ public class CECIImpl implements ICECI {
     protected ITerminal variableScreen() throws CECIException {
         try {
             return initialScreen().pf5().waitForKeyboard();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to navigate to CECI variables screen", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to navigate to CECI variables screen", e);
         }
     }
@@ -465,7 +447,7 @@ public class CECIImpl implements ICECI {
         return screen.contains(VAR_EXPANSION_SCREEN_ID);
     }
 
-    protected ITerminal home() throws CECIException, FieldNotFoundException, KeyboardLockedException, TimeoutException, NetworkException, InterruptedException {
+    protected ITerminal home() throws CECIException, FieldNotFoundException, KeyboardLockedException, TimeoutException, NetworkException, TerminalInterruptedException {
         String screen = terminal.retrieveScreen();
         if (isHelpScreen(screen)) {
             terminal.enter().waitForKeyboard();
@@ -519,10 +501,7 @@ public class CECIImpl implements ICECI {
                 throw new CECIException("Command failed syntax check. \nCommand:\n  " + command + "\nSyntax Error Screen:\n" + screen);
             }
             terminal.enter().waitForKeyboard();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to check for syntax messages", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to check for syntax messages", e);
         }
     }
@@ -600,10 +579,7 @@ public class CECIImpl implements ICECI {
             logger.info("New CECI variable \"" + name + "\" defined");
             
             return value.length();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to set CECI variable", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to set CECI variable", e);
         }
     }
@@ -664,10 +640,7 @@ public class CECIImpl implements ICECI {
             logger.info("CECI HEX variable \"" + name + "\" defined");
             
             return Integer.parseInt(lengthString);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to set CECI binary variable", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to set CECI binary variable", e);
         }
     }
@@ -729,10 +702,7 @@ public class CECIImpl implements ICECI {
             return sb.toString();
         } catch (NumberFormatException e) {
             throw new CECIException("Unable to determine variable field length");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to get CECI variable", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to get CECI variable", e);
         }
     }
@@ -791,10 +761,7 @@ public class CECIImpl implements ICECI {
             return sb.toString().toCharArray();
         } catch (NumberFormatException e) {
             throw new CECIException("Unable to determine variable field length");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to get CECI binary variable", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to get CECI binary variable", e);
         }
     }
@@ -856,10 +823,7 @@ public class CECIImpl implements ICECI {
     protected boolean isHexOn() throws CECIException {
         try {
             return terminal.pf4().waitForKeyboard().retrieveScreen().contains("EIBTIME      = X'");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to determine if CECI is in HEX mode", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to determine if CECI is in HEX mode", e);
         }
     }
@@ -874,10 +838,7 @@ public class CECIImpl implements ICECI {
             if (!isHexOn()) {
                 return terminal.pf2().waitForKeyboard();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to set CECI HEX ON", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to set CECI HEX ON", e);
         }
         return terminal;
@@ -893,10 +854,7 @@ public class CECIImpl implements ICECI {
             if (isHexOn()) {
                 return terminal.pf2().waitForKeyboard();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to set CECI HEX OFF", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException e) {
+        } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CECIException("Unable to set CECI HEX OFF", e);
         }
         return terminal;
@@ -951,10 +909,7 @@ public class CECIImpl implements ICECI {
                 optionCounter = 2;
                 fieldValue = tab(optionCounter).retrieveFieldAtCursor();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to parse command output", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to parse command output", e);
         }
         
@@ -990,10 +945,7 @@ public class CECIImpl implements ICECI {
             } else {
                 return new ResponseOutputValueImpl(sb.toString());                    
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to parse command output option value", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to parse command output option value", e);
         }
     }
@@ -1022,10 +974,7 @@ public class CECIImpl implements ICECI {
                 sb.append(getVariableHexFromPage(length-sb.length(), 16));                
             }
             return sb.toString();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CECIException("Unable to parse command output binary option value", e);
-        } catch (TimeoutException | KeyboardLockedException | NetworkException | FieldNotFoundException e) {
+        } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to parse command output binary option value", e);
         }
     }

@@ -142,6 +142,11 @@ public class NetworkThread extends Thread {
 
     public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
             throws DatastreamException {
+        
+        if (!buffer.hasRemaining()) {
+            return new Inbound3270Message(commandCode, null, null);
+        }
+        
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
         List<AbstractOrder> orders = processOrders(buffer);
@@ -181,7 +186,8 @@ public class NetworkThread extends Thread {
                         break;
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });
-                        throw new DatastreamException("Unrecognised order byte 0x" + byteHex);
+                        logger.trace("Invalid byte detected in datastream, unrecognised byte order or text byte - 0x" + byteHex);
+                        order = new OrderText(" ");
                 }
                 orders.add(order);
             } else {

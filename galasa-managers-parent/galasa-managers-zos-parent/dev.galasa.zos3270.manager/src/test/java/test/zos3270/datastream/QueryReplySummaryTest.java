@@ -11,6 +11,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Test;
 
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
 import dev.galasa.zos3270.internal.datastream.QueryReplySummary;
 import dev.galasa.zos3270.internal.datastream.QueryReplyUsableArea;
@@ -19,7 +20,7 @@ import dev.galasa.zos3270.spi.Screen;
 public class QueryReplySummaryTest {
 
     @Test
-    public void testGoldenPath() throws InterruptedException {
+    public void testGoldenPath() throws TerminalInterruptedException {
         Screen screen = new Screen(80, 24, null);
 
         QueryReplyUsableArea qrua = new QueryReplyUsableArea(screen);

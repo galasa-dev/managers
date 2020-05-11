@@ -44,13 +44,21 @@ public class Network {
     public static final byte    RESPONSES       = 2;
     public static final byte    FUNCTIONS       = 3;
     public static final byte    IS              = 4;
-    public static final byte    INV_DEVICE_TYPE = 4;
     public static final byte    REASON          = 5;
     public static final byte    REJECT          = 6;
     public static final byte    TIMING_MARK     = 6;
     public static final byte    REQUEST         = 7;
     public static final byte    SEND            = 8;
     public static final byte    TN3270E         = 40;
+
+    public static final byte    CONN_PARTNER     = 0;
+    public static final byte    DEVICE_IN_USE    = 1;
+    public static final byte    INV_ASSOCIATE    = 2;
+    public static final byte    INV_NAME         = 3;
+    public static final byte    INV_DEVICE_TYPE  = 4;
+    public static final byte    TYPE_NAME_ERROR  = 5;
+    public static final byte    UNKNOWN_ERROR    = 6;
+    public static final byte    UNSUPPORTED_REQ  = 7;
 
     public static final Charset ascii7          = Charset.forName("us-ascii");
 
@@ -184,7 +192,21 @@ public class Network {
             outputStream.write(baos.toByteArray());
             outputStream.flush();
 
-            expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE, IS);
+            expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE);
+            
+            int byteIs = inputStream.read();
+            if (byteIs == -1) {
+                throw new NetworkException("Negotiation terminated early, attempting to get IS");
+            }
+            
+            if (byteIs != IS) {
+                if (byteIs == REJECT) {
+                    rejectedDeviceType(inputStream);
+                } else {
+                    throw new NetworkException("Unexpected byte for IAC SB TN3270E DEVICE_TYPE " + byteIs);
+                }
+            }
+            
 
             baos = new ByteArrayOutputStream();
             byte[] data = new byte[1];
@@ -239,6 +261,37 @@ public class Network {
 
         } catch (IOException e) {
             throw new NetworkException("IOException during terminal negotiation", e);
+        }
+    }
+
+    private void rejectedDeviceType(InputStream inputStream) throws NetworkException, IOException {
+        expect(inputStream, REASON);
+        
+        int reasonCode = inputStream.read();
+        
+        if (reasonCode == -1) {
+            throw new NetworkException("Missing reason code for rejected device type");
+        }
+        
+        switch(reasonCode) {
+            case CONN_PARTNER:
+                throw new NetworkException("Device negotiation failed do to CONN_PARTNER");
+            case DEVICE_IN_USE:
+                throw new NetworkException("Device negotiation failed do to DEVICE_IN_USE");
+            case INV_ASSOCIATE:
+                throw new NetworkException("Device negotiation failed do to INV_ASSOCIATE");
+            case INV_NAME:
+                throw new NetworkException("Device negotiation failed do to INV_NAME");
+            case INV_DEVICE_TYPE :
+                throw new NetworkException("Device negotiation failed do to INV_DEVICE_TYPE");
+            case TYPE_NAME_ERROR:
+                throw new NetworkException("Device negotiation failed do to TYPE_NAME_ERROR");
+            case UNKNOWN_ERROR:
+                throw new NetworkException("Device negotiation failed do to UNKNOWN_ERROR");
+            case UNSUPPORTED_REQ:
+                throw new NetworkException("Device negotiation failed do to UNSUPPORTED_REQ");
+            default:
+                throw new NetworkException("Unrecognised reason code for rejected device type =" + reasonCode);
         }
     }
 

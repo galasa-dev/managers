@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.artifact.ArtifactManager;
+import dev.galasa.artifact.ArtifactManagerField;
 import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
