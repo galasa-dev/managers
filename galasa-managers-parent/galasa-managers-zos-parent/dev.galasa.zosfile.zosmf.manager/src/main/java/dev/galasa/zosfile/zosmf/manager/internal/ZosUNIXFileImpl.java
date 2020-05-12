@@ -168,9 +168,10 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
     
     @Override
-    public void delete() throws ZosUNIXFileException {
+    public boolean delete() throws ZosUNIXFileException {
         delete(this.unixPath, false);
         this.deleted = true;
+        return this.deleted;
     }
     
     @Override
@@ -294,7 +295,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
     
     
-    private String getAttributesAsString(String path) throws ZosUNIXFileException {
+    protected String getAttributesAsString(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
             path = path.substring(0, path.length()-1);
         }
@@ -365,7 +366,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         return attributes.toString();
     }
 
-    private String determineType(String mode) {
+    protected String determineType(String mode) {
         String typeChar = mode.substring(0, 1);
         switch(typeChar) {
             case "-": return TYPE_FILE;
@@ -380,7 +381,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private IZosUNIXFile createPath(String path, String type) throws ZosUNIXFileException {
+    protected IZosUNIXFile createPath(String path, String type) throws ZosUNIXFileException {
 
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty(PROP_TYPE, type);
@@ -415,7 +416,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private void delete(String path, boolean recursive) throws ZosUNIXFileException {
+    protected void delete(String path, boolean recursive) throws ZosUNIXFileException {
         if (!created()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + " not created by this " + this.getClass().getInterfaces()[0].getSimpleName() + " object" + logOnImage());
         }
@@ -461,7 +462,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private boolean exists(String path) throws ZosUNIXFileException {
+    protected boolean exists(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
             path = path.substring(0, path.length()-1);
         }
@@ -501,7 +502,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private String retrieve(String path) throws ZosUNIXFileException {
+    protected String retrieve(String path) throws ZosUNIXFileException {
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
         String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
@@ -540,7 +541,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private void saveToResultsArchive(String path) throws ZosUNIXFileException {
+    protected void saveToResultsArchive(String path) throws ZosUNIXFileException {
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -564,7 +565,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private boolean isDirectory(String path) throws ZosUNIXFileException {
+    protected boolean isDirectory(String path) throws ZosUNIXFileException {
         if (path.equals(this.unixPath) && !exists(path)) {
             return this.isDirectory;
         }
@@ -572,7 +573,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private Map<String, String> listDirectory(String path, boolean recursive) throws ZosUNIXFileException {
+    protected Map<String, String> listDirectory(String path, boolean recursive) throws ZosUNIXFileException {
         if (!isDirectory(path)) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(path) + " is not a directory");
         }
@@ -611,7 +612,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    private Map<String, String> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
+    protected Map<String, String> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
         if (!root.endsWith(SLASH)) {
             root = root + SLASH;
         }
@@ -638,7 +639,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         return paths;
     }
     
-    private String storeArtifact(String content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
+    protected String storeArtifact(String content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -665,7 +666,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         return artifactPath.toString();
     }
     
-    private void splitUnixPath() {
+    protected void splitUnixPath() {
         if (this.unixPath.endsWith(SLASH)) {
             this.fileName = null;
             this.directoryPath = this.unixPath.substring(0,this.unixPath.length()-1);
@@ -678,7 +679,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
-    private String emptyStringWhenNull(JsonObject jsonElement, String property) {
+    protected String emptyStringWhenNull(JsonObject jsonElement, String property) {
         JsonElement element = jsonElement.get(property);
         if (element == null) {
             return "";
@@ -686,15 +687,15 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         return element.getAsString();
     }
 
-    private String quoted(String name) {
+    protected String quoted(String name) {
         return "\"" + name + "\"";
     }
 
-    private String logOnImage() {
+    protected String logOnImage() {
         return " on image " + this.image.getImageID();
     }
     
-    private String buildErrorString(String action, JsonObject responseBody, String path) {    
+    protected String buildErrorString(String action, JsonObject responseBody, String path) {    
         int errorCategory = responseBody.get("category").getAsInt();
         int errorRc = responseBody.get("rc").getAsInt();
         int errorReason = responseBody.get("reason").getAsInt();
@@ -755,7 +756,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
     
-    private void cleanCreatedPathStore() {
+    protected void cleanCreatedPathStore() {
         try {
             saveToResultsArchive(this.createdPath);
         } catch (ZosUNIXFileException e) {
@@ -763,7 +764,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
     
-    private void cleanCreatedDelete() {
+    protected void cleanCreatedDelete() {
         try {
             delete(this.createdPath, true);
         } catch (ZosUNIXFileException e) {

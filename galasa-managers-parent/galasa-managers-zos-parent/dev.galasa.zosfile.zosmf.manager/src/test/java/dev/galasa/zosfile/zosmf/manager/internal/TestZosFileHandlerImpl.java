@@ -309,7 +309,7 @@ public class TestZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).retainToTestEnd();
-        Mockito.doNothing().when(zosUNIXFileImplMock).delete();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).delete();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupFilesEndOfTestMethod();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(8)).invoke("cleanupFilesEndOfTestMethod");
