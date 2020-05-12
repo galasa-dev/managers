@@ -326,15 +326,15 @@ public class ZosDatasetImpl implements IZosDataset {
         try {
             if (exists()) {
                 if (isPDS()) {
-                    Collection<String> memberList = memberList();
-                    Iterator<String> memberListIterator = memberList.iterator();
-                    while (memberListIterator.hasNext()) {
-                        String memberName = memberListIterator.next();
-                        String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
-                        logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
-                    }
+                    savePDSToResultsArchive();
                 } else {
-                    String archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
+                    String archiveLocation;
+                    if (this.dataType.equals(DatasetDataType.TEXT)) {
+                        archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
+                    } else {
+                        archiveLocation = storeArtifact(retrieveAsBinary(), this.dsname);
+                    }
+                    
                     logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + archiveLocation);
                 }
             }
@@ -527,7 +527,12 @@ public class ZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            String archiveLocation;
+            if (this.dataType.equals(DatasetDataType.TEXT)) {
+                archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            } else {
+                archiveLocation = storeArtifact(memberRetrieveAsBinary(memberName), this.dsname, memberName);
+            }
             logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);
@@ -872,6 +877,21 @@ public class ZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
+    protected void savePDSToResultsArchive() throws ZosFileManagerException {
+        Collection<String> memberList = memberList();
+        Iterator<String> memberListIterator = memberList.iterator();
+        while (memberListIterator.hasNext()) {
+            String memberName = memberListIterator.next();
+            String archiveLocation;
+            if (this.dataType.equals(DatasetDataType.TEXT)) {
+                archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            } else {
+                archiveLocation = storeArtifact(memberRetrieveAsBinary(memberName), this.dsname, memberName);
+            }
+            logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
+        }
+    }
+
     protected void storeBinary(byte[] content, String memberName, boolean convert) throws ZosDatasetException {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
@@ -905,7 +925,7 @@ public class ZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
-    protected String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
+    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -921,7 +941,13 @@ public class ZosDatasetImpl implements IZosDataset {
             }
             artifactPath = artifactPath.resolve(uniqueId);
             Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-            Files.write(artifactPath, content.getBytes()); 
+            if (content instanceof String) {
+                Files.write(artifactPath, ((String) content).getBytes()); 
+            } else if (content instanceof byte[]) {
+                Files.write(artifactPath, (byte[]) content);
+            } else {
+                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
+            }
         } catch (IOException e) {
             throw new ZosFileManagerException("Unable to store artifact", e);
         }
