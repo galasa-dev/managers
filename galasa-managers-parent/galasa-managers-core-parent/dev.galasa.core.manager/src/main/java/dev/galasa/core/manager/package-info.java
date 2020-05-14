@@ -14,7 +14,7 @@
  * 
  * The Core Manager provides tests with access to some of the core features within the Galasa Framework. The Core Manager is always initialised and included in a test run and contributes the <code>Logger</code>, <code>StoredArtifactRoot</code> and <code>TestProperty</code> annotations.
  * <br><br>
- * The <code>@Logger</code> annotation is provided by the Core Manager to create the log which is then automatically stored in the Result Archive Store (RAS) by the Galasa framework. 
+ * The <code>Logger</code> annotation is provided by the Core Manager to create the log which is then automatically stored in the Result Archive Store (RAS) by the Galasa framework. 
  * <br><br>
  * The <code>StoredArtifactRoot</code> annotation lets your test write specific output to the RAS. Whilst the Galasa framework automatically sends test output to be stored in the RAS, this annotation enables you to write code to send output specific to your application to be stored. 
  * <br><br>
