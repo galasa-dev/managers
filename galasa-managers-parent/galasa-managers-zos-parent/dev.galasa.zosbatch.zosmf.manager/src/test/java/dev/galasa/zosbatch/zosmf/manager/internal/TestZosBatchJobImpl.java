@@ -341,6 +341,7 @@ public class TestZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
         Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
         
+        Whitebox.setInternalState(zosBatchJobSpy, "outputComplete", false);
         Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
         Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
         
@@ -525,9 +526,8 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testUpdateJobStatus() throws ZosBatchException, ZosmfException  {
-        String nullString = null;
-        Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
-        Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "status", (String) null);
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
@@ -540,7 +540,7 @@ public class TestZosBatchJobImpl {
         Assert.assertFalse("jobComplete should be false", zosBatchJobSpy.isComplete());
         
 
-        Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "status", (String) null);
         jsonObject.addProperty("status", "STATUS");
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         
@@ -548,7 +548,7 @@ public class TestZosBatchJobImpl {
         Assert.assertFalse("jobComplete should be false", zosBatchJobSpy.isComplete());
 
         
-        Whitebox.setInternalState(zosBatchJobSpy, "status", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "status", (String) null);
         jsonObject.addProperty("status", "OUTPUT");
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         
@@ -556,7 +556,7 @@ public class TestZosBatchJobImpl {
         Assert.assertTrue("jobComplete should be true", zosBatchJobSpy.isComplete());
         
 
-        Whitebox.setInternalState(zosBatchJobSpy, "retcode", nullString);
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
         jsonObject.remove("retcode");
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(jsonObject);
         

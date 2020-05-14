@@ -430,7 +430,7 @@ public interface IZosVSAMDataset {
      * @param primaryExtents
      * @param secondaryExtents
      */
-    public void setDataSpace(VSAMSpaceUnit spaceunit, int primaryExtents, int secondaryExtents);
+    public void setDataSpace(VSAMSpaceUnit spaceUnit, int primaryExtents, int secondaryExtents);
 
     /**
      * Set the volume(s) to be used for allocation of the DATA file
@@ -563,11 +563,11 @@ public interface IZosVSAMDataset {
      * Set the {@link VSAMSpaceUnit} for the INDEX file, and the number of
      * primary and secondary extents required.
      * 
-     * @param spacetype
+     * @param spaceUnit
      * @param primaryExtents
      * @param secondaryExtents
      */
-    public void setIndexSpace(VSAMSpaceUnit spacetype, int primaryExtents, int secondaryExtents);
+    public void setIndexSpace(VSAMSpaceUnit spaceUnit, int primaryExtents, int secondaryExtents);
 
     /**
      * Set the volume(s) on which to allocate the INDEX file
@@ -651,16 +651,14 @@ public interface IZosVSAMDataset {
     /**
      * Return the last IDCAMS command for this VSAM data set 
      * @return
-     * @throws ZosVSAMDatasetException 
      */
-    public String getCommandInput() throws ZosVSAMDatasetException;
+    public String getCommandInput();
 
     /**
      * Return the last IDCAMS output for this VSAM data set 
      * @return
-     * @throws ZosVSAMDatasetException 
      */
-    public String getCommandOutput() throws ZosVSAMDatasetException;
+    public String getCommandOutput();
 
     /**
      * Return the IDCAMS define command for this VSAM data set 

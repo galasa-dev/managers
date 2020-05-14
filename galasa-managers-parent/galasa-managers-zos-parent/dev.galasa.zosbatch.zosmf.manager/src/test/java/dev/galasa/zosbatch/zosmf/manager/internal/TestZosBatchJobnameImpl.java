@@ -17,7 +17,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.ZosBatchJobnameImpl;
 import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
 
 @RunWith(PowerMockRunner.class)

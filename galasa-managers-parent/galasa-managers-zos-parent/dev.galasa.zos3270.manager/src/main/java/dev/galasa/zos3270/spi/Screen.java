@@ -807,7 +807,7 @@ public class Screen {
     }
 
     public synchronized int type(String text, int column, int row) throws KeyboardLockedException, FieldNotFoundException {
-        int position = column + (row * this.columns);
+        int position = column + (row * column);
 
         return type(text, position);
     }
@@ -859,6 +859,8 @@ public class Screen {
             if (position >= screenSize) {
                 position = 0;
             }
+            
+            this.screenCursor = position;
         }
 
         if (sf != null) {
