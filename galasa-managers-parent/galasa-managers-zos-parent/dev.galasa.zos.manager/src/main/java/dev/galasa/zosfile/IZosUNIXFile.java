@@ -55,7 +55,7 @@ public interface IZosUNIXFile {
     public IZosUNIXFile createRetain() throws ZosUNIXFileException;
 
     /**
-     * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory Will 
+     * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory will throw {@link ZosUNIXFileException}
      * @return deleted
      * @throws ZosUNIXFileException
      */
@@ -63,9 +63,10 @@ public interface IZosUNIXFile {
     
     /**
      * Recursively delete the zOS UNIX directory and its contents from the zOS image
+     * @return deleted
      * @throws ZosUNIXFileException
      */
-    public void directoryDeleteNonEmpty() throws ZosUNIXFileException;
+    public boolean directoryDeleteNonEmpty() throws ZosUNIXFileException;
 
     /**
      * Return true if the zOS UNIX exists on the zOS image
