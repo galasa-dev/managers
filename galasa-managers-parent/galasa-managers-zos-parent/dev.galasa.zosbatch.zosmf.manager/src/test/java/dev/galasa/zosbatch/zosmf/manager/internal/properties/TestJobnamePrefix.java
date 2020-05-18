@@ -20,8 +20,6 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})

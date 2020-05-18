@@ -135,7 +135,7 @@ public class ZosDatasetImpl implements IZosDataset {
     @Override
     public IZosDataset create() throws ZosDatasetException {
         if (exists()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " aleady exists" + logOnImage());
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " already exists" + logOnImage());
         }
         
         JsonObject requestBody = new JsonObject();
@@ -310,7 +310,11 @@ public class ZosDatasetImpl implements IZosDataset {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
-        return (String) retrieve(null);
+        Object content = retrieve(null);
+        if (content instanceof InputStream) {
+            return new String(inputStreamToByteArray((InputStream) content));
+        }
+        return (String) content;
     }
 
     @Override
@@ -326,15 +330,15 @@ public class ZosDatasetImpl implements IZosDataset {
         try {
             if (exists()) {
                 if (isPDS()) {
-                    Collection<String> memberList = memberList();
-                    Iterator<String> memberListIterator = memberList.iterator();
-                    while (memberListIterator.hasNext()) {
-                        String memberName = memberListIterator.next();
-                        String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
-                        logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
-                    }
+                    savePDSToResultsArchive();
                 } else {
-                    String archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
+                    String archiveLocation;
+                    if (this.dataType.equals(DatasetDataType.TEXT)) {
+                        archiveLocation = storeArtifact(retrieveAsText(), this.dsname);
+                    } else {
+                        archiveLocation = storeArtifact(retrieveAsBinary(), this.dsname);
+                    }
+                    
                     logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + archiveLocation);
                 }
             }
@@ -345,7 +349,7 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean isPDS() throws ZosDatasetException {
-        return getAttibutesAsString().contains("PDS=true");
+        return emptyStringWhenNull(getAttibutes(), PROP_DSORG).startsWith("PO");
     }
 
     @Override
@@ -527,7 +531,12 @@ public class ZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            String archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            String archiveLocation;
+            if (this.dataType.equals(DatasetDataType.TEXT)) {
+                archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            } else {
+                archiveLocation = storeArtifact(memberRetrieveAsBinary(memberName), this.dsname, memberName);
+            }
             logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);
@@ -696,6 +705,60 @@ public class ZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         StringBuilder attributes = new StringBuilder();
+        JsonObject jsonObject = getAttibutes();
+        attributes.append("Data Set Name=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSNAME));
+        attributes.append(COMMA);
+        attributes.append("Volume serial=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_VOL));
+        attributes.append(COMMA);
+        attributes.append("Organization=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSORG));
+        attributes.append(COMMA);
+        attributes.append("Record format=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_RECFM));
+        attributes.append(COMMA);
+        attributes.append("Record length=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_LRECL));
+        attributes.append(COMMA);
+        attributes.append("Block size=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_BLKSZ));
+        attributes.append(COMMA);
+        attributes.append("Data set name type=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSTYPE));
+        attributes.append(COMMA);
+        attributes.append("Allocated extents=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_EXTX));
+        attributes.append(COMMA);
+        attributes.append("% Utilized=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_USED));
+        attributes.append(COMMA);
+        if (emptyStringWhenNull(jsonObject, PROP_DSORG).startsWith("PO")) {
+            attributes.append("PDS=true");
+            attributes.append(COMMA);
+            attributes.append("Number of members=");
+            attributes.append(memberList().size());
+            attributes.append(COMMA);
+        } else {
+            attributes.append("PDS=false");
+            attributes.append(COMMA);
+        }
+        attributes.append("Creation date=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_CDATE));
+        attributes.append(COMMA);
+        attributes.append("Referenced date=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_RDATE));
+        attributes.append(COMMA);
+        attributes.append("Expiration date=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_EDATE));
+
+        return attributes.toString();
+    }
+
+    public JsonObject getAttibutes() throws ZosDatasetException {
+        if (!exists()) {
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
         
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_ATTRIBUTES.toString(), "base");
@@ -718,56 +781,12 @@ public class ZosDatasetImpl implements IZosDataset {
         }
         
         logger.trace(responseBody);
+        JsonObject attributes;
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
             if (returnedRowsValue == 1) {
                 JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
-                JsonObject item = items.get(0).getAsJsonObject();
-                attributes.append("Data Set Name=");
-                attributes.append(emptyStringWhenNull(item, PROP_DSNAME));
-                attributes.append(COMMA);
-                attributes.append("Volume serial=");
-                attributes.append(emptyStringWhenNull(item, PROP_VOL));
-                attributes.append(COMMA);
-                attributes.append("Organization=");
-                attributes.append(emptyStringWhenNull(item, PROP_DSORG));
-                attributes.append(COMMA);
-                attributes.append("Record format=");
-                attributes.append(emptyStringWhenNull(item, PROP_RECFM));
-                attributes.append(COMMA);
-                attributes.append("Record length=");
-                attributes.append(emptyStringWhenNull(item, PROP_LRECL));
-                attributes.append(COMMA);
-                attributes.append("Block size=");
-                attributes.append(emptyStringWhenNull(item, PROP_BLKSZ));
-                attributes.append(COMMA);
-                attributes.append("Data set name type=");
-                attributes.append(emptyStringWhenNull(item, PROP_DSTYPE));
-                attributes.append(COMMA);
-                attributes.append("Allocated extents=");
-                attributes.append(emptyStringWhenNull(item, PROP_EXTX));
-                attributes.append(COMMA);
-                attributes.append("% Utilized=");
-                attributes.append(emptyStringWhenNull(item, PROP_USED));
-                attributes.append(COMMA);
-                if (emptyStringWhenNull(item, PROP_DSORG).startsWith("PO")) {
-                    attributes.append("PDS=true");
-                    attributes.append(COMMA);
-                    attributes.append("Number of members=");
-                    attributes.append(memberList().size());
-                    attributes.append(COMMA);
-                } else {
-                    attributes.append("PDS=false");
-                    attributes.append(COMMA);
-                }
-                attributes.append("Creation date=");
-                attributes.append(emptyStringWhenNull(item, PROP_CDATE));
-                attributes.append(COMMA);
-                attributes.append("Referenced date=");
-                attributes.append(emptyStringWhenNull(item, PROP_RDATE));
-                attributes.append(COMMA);
-                attributes.append("Expiration date=");
-                attributes.append(emptyStringWhenNull(item, PROP_EDATE));
+                attributes = items.get(0).getAsJsonObject();
             } else {
                 throw new ZosDatasetException("Unable to retrieve attibutes of data set " + quoted(this.dsname) + logOnImage());                
             }
@@ -779,7 +798,7 @@ public class ZosDatasetImpl implements IZosDataset {
         }
         logger.trace("Attibutes of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
         
-        return attributes.toString();
+        return attributes;
     }
     
     protected Object retrieve(String memberName) throws ZosDatasetException {
@@ -796,7 +815,7 @@ public class ZosDatasetImpl implements IZosDataset {
                     new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
         } catch (ZosmfException e) {
             throw new ZosDatasetException(e);
-        }        
+        }
   
         Object content;
         if (response.getStatusCode() == HttpStatus.SC_OK) {
@@ -872,6 +891,21 @@ public class ZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
+    protected void savePDSToResultsArchive() throws ZosFileManagerException {
+        Collection<String> memberList = memberList();
+        Iterator<String> memberListIterator = memberList.iterator();
+        while (memberListIterator.hasNext()) {
+            String memberName = memberListIterator.next();
+            String archiveLocation;
+            if (this.dataType.equals(DatasetDataType.TEXT)) {
+                archiveLocation = storeArtifact(memberRetrieveAsText(memberName), this.dsname, memberName);
+            } else {
+                archiveLocation = storeArtifact(memberRetrieveAsBinary(memberName), this.dsname, memberName);
+            }
+            logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + archiveLocation);
+        }
+    }
+
     protected void storeBinary(byte[] content, String memberName, boolean convert) throws ZosDatasetException {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
@@ -905,7 +939,7 @@ public class ZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
-    protected String storeArtifact(String content, String... artifactPathElements) throws ZosFileManagerException {
+    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosDatasetException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -921,9 +955,15 @@ public class ZosDatasetImpl implements IZosDataset {
             }
             artifactPath = artifactPath.resolve(uniqueId);
             Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-            Files.write(artifactPath, content.getBytes()); 
+            if (content instanceof String) {
+                Files.write(artifactPath, ((String) content).getBytes()); 
+            } else if (content instanceof byte[]) {
+                Files.write(artifactPath, (byte[]) content);
+            } else {
+                throw new ZosDatasetException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
+            }
         } catch (IOException e) {
-            throw new ZosFileManagerException("Unable to store artifact", e);
+            throw new ZosDatasetException("Unable to store artifact", e);
         }
         return artifactPath.toString();
     }

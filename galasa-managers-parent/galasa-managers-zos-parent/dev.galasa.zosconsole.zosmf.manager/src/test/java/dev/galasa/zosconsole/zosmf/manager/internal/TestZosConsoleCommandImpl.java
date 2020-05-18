@@ -172,9 +172,8 @@ public class TestZosConsoleCommandImpl {
     @Test
     public void testToString() {
         Whitebox.setInternalState(zosConsoleCommandSpy, "command", CONSOLE_COMMAND);
-        String nullString = null;
-        Whitebox.setInternalState(zosConsoleCommandSpy, "commandImmediateResponse", nullString);
-        Whitebox.setInternalState(zosConsoleCommandSpy, "image", nullString);
+        Whitebox.setInternalState(zosConsoleCommandSpy, "commandImmediateResponse", (String) null);
+        Whitebox.setInternalState(zosConsoleCommandSpy, "image", (String) null);
         String response = "COMMAND=" + CONSOLE_COMMAND;
         Assert.assertEquals("toString() should return the correct String", response, zosConsoleCommandSpy.toString());
 

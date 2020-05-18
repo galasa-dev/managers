@@ -95,7 +95,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     private boolean useDATA;
     private boolean uniqueDATA;
     private String dataName;
-    private VSAMSpaceUnit dataSpacetype;
+    private VSAMSpaceUnit dataSpaceUnit;
     private int dataPrimaryExtents;
     private int dataSecondaryExtents;
     private String dataVolumes;
@@ -103,8 +103,8 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     private String dataControlInterval;
     private EraseOption dataEraseOption;
     private String dataExceptionExit;
-    private int dataFreeSpaceControlInterval;
-    private int dataFreeSpaceControlArea;
+    private Integer dataFreeSpaceControlInterval;
+    private Integer dataFreeSpaceControlArea;
     private int dataKeyLength;
     private int dataKeyOffset;
     private String dataModelEntryName;
@@ -123,7 +123,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     private boolean useINDEX;
     private boolean uniqueINDEX;
     private String indexName;
-    private VSAMSpaceUnit indexSpacetype;
+    private VSAMSpaceUnit indexSpaceUnit;
     private int indexPrimaryExtents;
     private int indexSecondaryExtents;
     private String indexVolumes;
@@ -182,6 +182,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_UNABLE_TO_DELETE_REPRO_DATASET = "Unable to delete IDCAMS REPRO temporary dataset";
+    private static final String LOG_UNABLE_TO_RETRIEVE_CONTENT_FROM_REPRO_DATASET = "Unable to retrieve content from IDCAMS REPRO temporary dataset";
 
     private static final Log logger = LogFactory.getLog(ZosVSAMDatasetImpl.class);
 
@@ -336,6 +337,10 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         String content = null;
         try {
             content = toDataset.retrieveAsText();
+        } catch (ZosDatasetException e) {
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_RETRIEVE_CONTENT_FROM_REPRO_DATASET, e);
+        }
+        try {
             toDataset.delete();
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
@@ -364,6 +369,10 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         byte[] content = null;
         try {
             content = toDataset.retrieveAsBinary();
+        } catch (ZosDatasetException e) {
+            throw new ZosVSAMDatasetException(LOG_UNABLE_TO_RETRIEVE_CONTENT_FROM_REPRO_DATASET, e);
+        }
+        try {
             toDataset.delete();
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException(LOG_UNABLE_TO_DELETE_REPRO_DATASET, e);
@@ -542,8 +551,8 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public void setDataSpace(VSAMSpaceUnit spaceunit, int primaryExtents, int secondaryExtents) {
-        this.dataSpacetype = spaceUnit;
+    public void setDataSpace(VSAMSpaceUnit spaceUnit, int primaryExtents, int secondaryExtents) {
+        this.dataSpaceUnit = spaceUnit;
         this.dataPrimaryExtents = primaryExtents;
         this.dataSecondaryExtents = secondaryExtents;
     }
@@ -641,9 +650,8 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public void setIndexSpace(VSAMSpaceUnit spacetype, int primaryExtents,
-            int secondaryExtents) {
-        this.indexSpacetype = spacetype;
+    public void setIndexSpace(VSAMSpaceUnit spaceUnit, int primaryExtents, int secondaryExtents) {
+        this.indexSpaceUnit = spaceUnit;
         this.indexPrimaryExtents = primaryExtents;
         this.indexSecondaryExtents = secondaryExtents;
     }
@@ -707,12 +715,12 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     @Override
-    public String getCommandInput() throws ZosVSAMDatasetException {
+    public String getCommandInput() {
         return this.idcamsInput;
     }
 
     @Override
-    public String getCommandOutput() throws ZosVSAMDatasetException {
+    public String getCommandOutput() {
         return this.idcamsOutput;
     }
 
@@ -728,7 +736,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         if (spaceUnit == null) {
             throw new ZosVSAMDatasetException("VSAM space parameters required");
         }
-        appendParameter(spaceUnit, ((primaryExtents > 0) ? primaryExtents + " " + secondaryExtents : null), sb, true);
+        appendParameter(spaceUnit, primaryExtents + " " + secondaryExtents, sb, true);
     
     
         appendParameter(PARM_ACCOUNT, accountInfo, sb);
@@ -738,7 +746,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         appendParameter(PARM_DATACLASS, dataclass, sb);
         appendDeclaration(eraseOption, sb);
         appendParameter(PARM_EXCEPTIONEXIT, exceptionExit, sb);
-        appendParameter(PARM_FREESPACE, ((freeSpaceControlInterval != null && freeSpaceControlArea != null) ? freeSpaceControlInterval + " " + freeSpaceControlArea : null), sb);
+        appendParameter(PARM_FREESPACE, (freeSpaceControlInterval != null ? freeSpaceControlInterval + " " + freeSpaceControlArea : null), sb);
         appendParameter(PARM_FRLOG, frlogOption, sb);
         appendDeclaration(dataOrg, sb);
         appendParameter(PARM_KEYS, ((keyLength > 0) ? keyLength + " " + keyOffset : null), sb);
@@ -762,7 +770,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         sb.append("  )");
     
         if (useDATA) {
-            getDefineDataCommand(sb);
+            getDataDefineCommand(sb);
         }
     
         if (useINDEX) {
@@ -773,7 +781,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             appendParameter(PARM_CATALOG, catalog, sb);
         }
     
-        return sb.toString();
+        return StringUtils.stripEnd(sb.toString(), " -\n");
     }
 
     @Override
@@ -818,7 +826,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return getListcatOutput();
     }
 
-    private ZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
+    protected ZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;
         try {
             reproDsname = ZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
@@ -863,11 +871,11 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return reproDataset;
     }
 
-    private static String temporaryLLQ() {
+    protected static String temporaryLLQ() {
         return ZosFileManagerImpl.getRunId() + ".T" + StringUtils.leftPad(String.valueOf(++temporaryQualifierCounter), 4, "0");
     }
 
-    private String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
+    protected String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
         if (!"LISTCAT".equals(this.idcamsCommand)) {
             getListcatOutput();
         }
@@ -882,7 +890,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             
     }
 
-    private String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
+    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
             artifactPath = ZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
@@ -903,7 +911,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             } else if (content instanceof byte[]) {
                 Files.write(artifactPath, (byte[]) content);
             } else {
-                logger.debug("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
+                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
             }
         } catch (IOException e) {
             throw new ZosFileManagerException("Unable to store artifact", e);
@@ -911,7 +919,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return artifactPath.toString();
     }
 
-    private void setIdcamsOutput(JsonObject responseBody) {
+    protected void setIdcamsOutput(JsonObject responseBody) {
         StringBuilder sb = new StringBuilder();
         JsonElement outputElement = responseBody.get("output");
         if (outputElement == null) {
@@ -946,10 +954,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
                     new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
         } catch (ZosmfException e) {
             throw new ZosVSAMDatasetException(e);
-        }
-        if (response.getStatusCode() == 0) {
-            throw new ZosVSAMDatasetException("IDCAMS " + this.idcamsCommand + " request failed for " + LOG_VSAM_DATA_SET + quoted(this.name) + logOnImage());
-        }            
+        }           
         JsonObject responseBody;
         try {
             responseBody = response.getJsonContent();
@@ -970,7 +975,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         }
     }
 
-    private void getDefineDataCommand(StringBuilder sb) throws ZosVSAMDatasetException {
+    protected void getDataDefineCommand(StringBuilder sb) throws ZosVSAMDatasetException {
         sb.append("  DATA( ");
     
         appendParameter(PARM_NAME, "'" + dataName + "'", sb);
@@ -978,12 +983,12 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         if (spaceUnit == null) {
             throw new ZosVSAMDatasetException("VSAM DATA space parameters required");
         }
-        appendParameter(dataSpacetype, ((dataPrimaryExtents > 0) ? dataPrimaryExtents + " " + dataSecondaryExtents : null), sb);
+        appendParameter(dataSpaceUnit, ((dataPrimaryExtents > 0) ? dataPrimaryExtents + " " + dataSecondaryExtents : null), sb);
         appendParameter(PARM_BUFFERSPACE, ((dataBufferspace > 0) ? dataBufferspace : null), sb);
         appendParameter(PARM_CONTROLINTERVALSIZE, dataControlInterval, sb);
         appendDeclaration(dataEraseOption, sb);
         appendParameter(PARM_EXCEPTIONEXIT, dataExceptionExit, sb);
-        appendParameter(PARM_FREESPACE, dataFreeSpaceControlInterval + " " + dataFreeSpaceControlArea, sb);
+        appendParameter(PARM_FREESPACE, (dataFreeSpaceControlInterval != null ? dataFreeSpaceControlInterval + " " + dataFreeSpaceControlArea : null), sb);
         appendParameter(PARM_KEYS, ((dataKeyLength > 0) ? dataKeyLength + " " + dataKeyOffset : null), sb);
         String parameterValue = dataModelCatName != null ? " " + dataModelCatName : "";
         appendParameter(PARM_MODEL, ((dataModelEntryName != null) ? dataModelEntryName + parameterValue : null), sb);
@@ -1000,15 +1005,15 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         sb.append("  " + ((uniqueDATA) ? "UNIQUE" : "") + ")");
     }
 
-    private void getIndexDefineCommand(StringBuilder sb) throws ZosVSAMDatasetException {
+    protected void getIndexDefineCommand(StringBuilder sb) throws ZosVSAMDatasetException {
         sb.append("  INDEX( ");
 
         appendParameter(PARM_NAME, "'" + indexName + "'", sb);
         appendParameter(PARM_VOLUMES, indexVolumes, sb);
-        if (spaceUnit == null) {
+        if (indexSpaceUnit == null) {
             throw new ZosVSAMDatasetException("VSAM INDEX space parameters required");
         }
-        appendParameter(indexSpacetype, ((indexPrimaryExtents > 0) ? indexPrimaryExtents + " " + indexSecondaryExtents : null), sb);
+        appendParameter(indexSpaceUnit, ((indexPrimaryExtents > 0) ? indexPrimaryExtents + " " + indexSecondaryExtents : null), sb);
         appendParameter(PARM_CONTROLINTERVALSIZE, indexControlInterval, sb);
         appendParameter(PARM_EXCEPTIONEXIT, indexExceptionExit, sb);
         String parameterValue = indexModelCatName != null ? " " + indexModelCatName : "";
@@ -1028,7 +1033,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
      * @param value
      * @param sb
      */
-    private void appendDeclaration(Object value, StringBuilder sb) {
+    protected void appendDeclaration(Object value, StringBuilder sb) {
         if (value != null) {
             sb.append(" " + value);
         }
@@ -1042,7 +1047,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
      * @param sb
      * @throws ZosFileException
      */
-    private void appendParameter(Object parameter, Object value, StringBuilder sb) throws ZosVSAMDatasetException {
+    protected void appendParameter(Object parameter, Object value, StringBuilder sb) throws ZosVSAMDatasetException {
         appendParameter(parameter, value, sb, false);
     }
 
@@ -1055,7 +1060,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
      * @param required
      * @throws ZosFileException
      */
-    private void appendParameter(Object parameter, Object value, StringBuilder sb, boolean required) throws ZosVSAMDatasetException {
+    protected void appendParameter(Object parameter, Object value, StringBuilder sb, boolean required) throws ZosVSAMDatasetException {
         if ((parameter != null) && (value != null)) {
             sb.append("  " + parameter + "(" + value + ") -\n");
         } else {
@@ -1065,15 +1070,15 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         }
     }
 
-    private String getListcatCommand() {
+    protected String getListcatCommand() {
         return "LISTCAT -\n  ENTRY (" + this.name + ") ALL";
     }
 
-    private String quoted(String name) {
+    protected String quoted(String name) {
         return "\"" + name + "\"";
     }
 
-    private String logOnImage() {
+    protected String logOnImage() {
         return " on image " + this.image.getImageID();
     }
 
