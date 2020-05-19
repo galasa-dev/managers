@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.selenium.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,24 +25,29 @@ public class SeleniumManagerIVT {
     @SeleniumManager
     public ISeleniumManager seleniumManager;
 
+    public final String WEBSITE = "https://duckduckgo.com";
+    public final String TITLE = "DuckDuckGo";
+    public final String VALUE = "value";
+    public final String SEARCHID = "search_form_input_homepage";
+
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
-        assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
-        assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEmpty();
-        page.sendKeysToElementById("search_form_input_homepage", "galasa");
-        assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEqualTo("galasa");
-        page.clearElementById("search_form_input_homepage");
-        assertThat(page.findElementById("search_form_input_homepage").getAttribute("value")).isEmpty();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
+        page.sendKeysToElementById(SEARCHID, "galasa");
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEqualTo("galasa");
+        page.clearElementById(SEARCHID);
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
         page.quit();
     }
 
     @Test
     public void clickingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
-        assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
             .clickElementByLinkText("Twitter")
             .waitForElementByLinkText("duckduckgo.com");
@@ -47,10 +57,10 @@ public class SeleniumManagerIVT {
 
     @Test
     public void navigateGalasaGithub() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage("https://duckduckgo.com");
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
-        assertThat(page.getTitle()).containsOnlyOnce("DuckDuckGo");
-        page.sendKeysToElementById("search_form_input_homepage", "galasa dev github")
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        page.sendKeysToElementById(SEARCHID, "galasa dev github")
             .clickElementById("search_button_homepage")
             .clickElementByLinkText("galasa · GitHub")
             .clickElementByPartialLinkText("People");

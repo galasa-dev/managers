@@ -5,7 +5,6 @@
  */
 package dev.galasa.selenium.internal;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -29,17 +27,20 @@ import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.SeleniumManagerField;
 import dev.galasa.selenium.internal.properties.SeleniumDseInstanceName;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager implements ISeleniumManager {
 
-    public final static String NAMESPACE = "selenium";
+    public static final String NAMESPACE = "selenium";
 
-    private IConfigurationPropertyStoreService cps;
+    private IConfigurationPropertyStoreService cps; //NOSONAR
 
-    private List<WebPageImpl> webPages = new ArrayList<WebPageImpl>();
+    private List<WebPageImpl> webPages = new ArrayList<>();
+
+    private boolean required = false;
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
@@ -47,9 +48,10 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         super.initialise(framework, allManagers, activeManagers, testClass);
 
         List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if (ourFields.isEmpty() && !this.required) {
+            return;
         }
+        youAreRequired(allManagers, activeManagers);
 
         try {
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
@@ -62,6 +64,8 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     @Override
     public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
             throws ManagerException {
+        this.required = true;
+
         if (activeManagers.contains(this)) {
             return;
         }
@@ -102,7 +106,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
             if(driver == null)
                 throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
-        } catch (ConfigurationPropertyStoreException | SeleniumManagerException | IOException e) {
+        } catch (SeleniumManagerException e) {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
