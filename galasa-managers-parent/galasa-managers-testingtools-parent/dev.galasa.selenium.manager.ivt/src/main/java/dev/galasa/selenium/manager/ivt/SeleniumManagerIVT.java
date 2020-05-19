@@ -25,10 +25,10 @@ public class SeleniumManagerIVT {
     @SeleniumManager
     public ISeleniumManager seleniumManager;
 
-    public final String WEBSITE = "https://duckduckgo.com";
-    public final String TITLE = "DuckDuckGo";
-    public final String VALUE = "value";
-    public final String SEARCHID = "search_form_input_homepage";
+    public static final String WEBSITE = "https://duckduckgo.com";
+    public static final String TITLE = "DuckDuckGo";
+    public static final String VALUE = "value";
+    public static final String SEARCHID = "search_form_input_homepage";
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
