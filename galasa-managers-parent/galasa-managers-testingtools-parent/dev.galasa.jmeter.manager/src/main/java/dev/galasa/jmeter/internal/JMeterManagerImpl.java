@@ -37,8 +37,8 @@ public class JMeterManagerImpl extends AbstractManager {
     protected List<JMeterSessionImpl> activeSessions;
 
     private IFramework framework;
-    private String jmxPath;
-    private String propPath;
+    private String jmxPath; //NOSONAR
+    private String propPath; //NOSONAR
 
     // DockerManager Connection
     private IDockerManagerSpi dockerManager;
