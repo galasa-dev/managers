@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
-import dev.galasa.jmeter.internal.JMeterManagerField;
+import dev.galasa.jmeter.JMeterManagerField;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })

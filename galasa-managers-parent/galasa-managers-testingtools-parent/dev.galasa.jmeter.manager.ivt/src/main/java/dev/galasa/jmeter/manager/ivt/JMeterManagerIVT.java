@@ -38,7 +38,7 @@ import dev.galasa.jmeter.JMeterSession;
     public IJMeterSession session2;
 
     @Test
-    public void provisionedNotNull() throws Exception {
+    public void provisionedNotNull() {
 
       assertThat(logger).isNotNull();
       assertThat(session).isNotNull();
@@ -55,8 +55,13 @@ import dev.galasa.jmeter.JMeterSession;
        * Substituting variables from the adapted JMX-file 
        * If we want to dynamically change the host, the JMX-file needs to have $VARIABLE to substitute
        * This is a special case to adapt JMX-files to make them dynamic during runtime
+       * 
+       * USABLE VARIABLES in this Dynamic JMX: HOST, PORT, PROTOCOL, PATH, THREADS (DEFAULT 1), RAMPUP, DURATION (DEFAULT 15 seconds)
+       * HOST is Mandatory
+       * 
+       * look at the DynamicTest.jmx file for further clarification
        *  */ 
-      HashMap<String,Object> map = new HashMap<String,Object>();
+      HashMap<String,Object> map = new HashMap<>();
       map.put("HOST", "galasa.dev");
       map.put("PATH", "/docs");
 

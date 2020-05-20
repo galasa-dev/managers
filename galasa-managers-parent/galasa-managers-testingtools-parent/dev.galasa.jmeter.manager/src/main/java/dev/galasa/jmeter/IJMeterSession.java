@@ -8,8 +8,6 @@ package dev.galasa.jmeter;
 import java.io.InputStream;
 import java.util.Map;
 
-import dev.galasa.jmeter.JMeterManagerException;
-
 /**
  * Interface for creation, management, deletion of JMeter sessions
  */

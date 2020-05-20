@@ -40,12 +40,13 @@ public class JMeterSessionImpl implements IJMeterSession {
     private final int sessionID;
     private String jmxPath;
     private String propPath;
-    private String jmxAbsolutePath = "";
-    private String propAbsolutePath = "";
+    private String jmxAbsolutePath;
+    private String propAbsolutePath;
     private IDockerContainer container;
-    private final int DEFAULT_TIMER = 60000;
     private Path storedArtifactsRoot;
     private Log logger;
+    private final static int DEFAULT_TIMER              = 60000;
+    private final static String jmeterDockerPath        = "/jmeter/";
 
     public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, int sessionID, String jmxPath,
             String propPath, IDockerContainer container, Log logger) throws DockerManagerException {
@@ -56,6 +57,8 @@ public class JMeterSessionImpl implements IJMeterSession {
         this.jmxPath = jmxPath;
         this.propPath = propPath;
         this.logger = logger;
+        jmxAbsolutePath = "";
+        propAbsolutePath = "";
 
         storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
 
@@ -96,7 +99,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
                     exec.waitForExec(timeout);
 
-                    if ( !(exec.getExitCode() == 0L) ) {
+                    if ( exec.getExitCode() != 0L ) {
                         logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
@@ -105,7 +108,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
                     exec.waitForExec(timeout); 
 
-                    if ( !(exec.getExitCode() == 0L) ) {
+                    if ( exec.getExitCode() != 0L) {
                         logger.info("JMeter commands have failed with exitcode " + exec.getExitCode());
                         throw new JMeterManagerException();
                     }
@@ -130,7 +133,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     public void setDefaultGeneratedJmxFile(InputStream jmxStream) throws JMeterManagerException{
     
         try {
-            this.jmxAbsolutePath = "/jmeter/" + this.jmxPath;
+            this.jmxAbsolutePath = jmeterDockerPath + this.jmxPath;
             container.storeFile(this.jmxAbsolutePath, jmxStream);
             logger.info(jmxPath + " has been stored in the container.");
             
@@ -142,14 +145,14 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public void setChangedParametersJmxFile(InputStream jmxStream, Map<String,Object> parameters) throws JMeterManagerException {
 
-        HashMap<String,Object> changes = new HashMap<String,Object>();
-        changes.put("HOST", "flooded.io");
-        changes.put("PORT", "443");
-        changes.put("PROTOCOL", "HTTPS");
+        HashMap<String,Object> changes = new HashMap<>();
+        changes.put("HOST", "");
+        changes.put("PORT", "");
+        changes.put("PROTOCOL", "");
         changes.put("PATH", "/");
-        changes.put("THREADS", "50");
-        changes.put("RAMPUP", "30");
-        changes.put("DURATION", "30");
+        changes.put("THREADS", "1");
+        changes.put("RAMPUP", "");
+        changes.put("DURATION", "15");
 
         for(Entry<String,Object> entry : parameters.entrySet()) {
             changes.put(entry.getKey(), entry.getValue());
@@ -181,7 +184,7 @@ public class JMeterSessionImpl implements IJMeterSession {
             throw new JMeterManagerException("Error attempting to process jmx-parameters with velocity", e);
         }
         try {
-            this.jmxAbsolutePath = "/jmeter/" + this.jmxPath;
+            this.jmxAbsolutePath = jmeterDockerPath + this.jmxPath;
             container.storeFile(this.jmxAbsolutePath, new ByteArrayInputStream(baos.toByteArray()));
             logger.info(jmxPath + " has been stored in the container.");
             
@@ -199,7 +202,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public void applyProperties(InputStream propStream) throws JMeterManagerException {
         try {
-            this.propAbsolutePath = "/jmeter/" + propPath;
+            this.propAbsolutePath = jmeterDockerPath + propPath;
             container.storeFile(this.propAbsolutePath, propStream);
 
             logger.info(propPath + " has been stored in the container.");
@@ -248,7 +251,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public String getJmxFile() throws JMeterManagerException {
         try{
-            String jmx = "/jmeter/" + this.jmxPath;
+            String jmx = jmeterDockerPath + this.jmxPath;
             String jmxStr = "";
             if ( container.isRunning() ) {
                 jmxStr = container.retrieveFileAsString(jmx);
@@ -267,7 +270,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public String getLogFile() throws JMeterManagerException {
         try{
-            String logPath = "/jmeter/" + this.jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
+            String logPath = jmeterDockerPath + this.jmxPath.substring(0, jmxPath.indexOf(".jmx")) + ".log";
             String logAsStr = "";
             if ( container.isRunning() ) {
                 logAsStr = container.retrieveFileAsString(logPath);
@@ -306,7 +309,7 @@ public class JMeterSessionImpl implements IJMeterSession {
     @Override
     public String getListenerFile(String fileName) throws JMeterManagerException {
         try{
-            String filePath = "/jmeter/" + fileName;
+            String filePath = jmeterDockerPath + fileName;
             String listenerStr = "";
             if ( container.isRunning() ) {        
                 listenerStr = container.retrieveFileAsString(filePath);
