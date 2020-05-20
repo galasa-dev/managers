@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.jmeter.internal;
+package dev.galasa.jmeter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
