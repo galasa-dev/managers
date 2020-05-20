@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.selenium.internal;
+package dev.galasa.selenium;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
