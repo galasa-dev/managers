@@ -55,8 +55,6 @@ public class ZosmfResponseImpl implements IZosmfResponse {
             return new JsonParser().parse(new String((byte[]) this.content)).getAsJsonArray();
         } else if (this.content instanceof InputStream) {
             return new JsonParser().parse(new InputStreamReader((InputStream) this.content)).getAsJsonArray();
-        } else if (content instanceof JsonObject) {
-            return (JsonArray) this.content;
         }
         
         throw new ZosmfException("Content not a JsonArray Object - " + content.getClass().getName());
@@ -90,13 +88,13 @@ public class ZosmfResponseImpl implements IZosmfResponse {
         return this.requestUrl;
     }
 
-    public void setHttpClientresponse(HttpClientResponse<?> httpClientResponse) {
+    protected void setHttpClientresponse(HttpClientResponse<?> httpClientResponse) {
         this.content = httpClientResponse.getContent();
         this.statusCode = httpClientResponse.getStatusCode();
         this.statusLine = httpClientResponse.getStatusLine();
     }
 
-    public void setHttpClientresponse(CloseableHttpResponse httpClientResponse) throws ZosmfException{
+    protected void setHttpClientresponse(CloseableHttpResponse httpClientResponse) throws ZosmfException{
         try{
             this.content = httpClientResponse.getEntity().getContent();
             this.statusCode = httpClientResponse.getStatusLine().getStatusCode();

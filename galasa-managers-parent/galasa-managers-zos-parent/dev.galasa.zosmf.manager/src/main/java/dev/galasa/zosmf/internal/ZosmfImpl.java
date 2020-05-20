@@ -64,15 +64,7 @@ public class ZosmfImpl implements IZosmf {
 
     public ZosmfImpl(String imageTag) throws ZosmfException {
         this.imageTag = imageTag;
-
-        if (this.image == null) {
-            try {
-                this.image = ZosmfManagerImpl.zosManager.getImageForTag(this.imageTag);
-            } catch (ZosManagerException e) {
-                throw new ZosmfException(e);
-            }
-        }
-        
+        setImage();        
         initialize();
     }
 
@@ -130,7 +122,7 @@ public class ZosmfImpl implements IZosmf {
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
             logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
             logger.debug(LOG_BODY + requestBody);
-            zosmfResponse.setHttpClientresponse(this.httpClient.putJson(validPath(path), requestBody));
+            zosmfResponse.setHttpClientresponse(this.httpClient.postJson(validPath(path), requestBody));
             logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
@@ -256,11 +248,11 @@ public class ZosmfImpl implements IZosmf {
         return this.image.getImageID() + " " + this.zosmfUrl;
     }
 
-    private String validPath(String path) {
+    protected String validPath(String path) {
         return path.startsWith("/") ? path : "/" + path;
     }
 
-    private void initialize() throws ZosmfException {
+    protected void initialize() throws ZosmfException {
         
         String imageId = image.getImageID();
         String clusterId = image.getClusterID();
@@ -271,7 +263,7 @@ public class ZosmfImpl implements IZosmf {
             throw new ZosmfException(e);
         }        
         if (!configuredZosmfs.contains(imageId)) {
-            throw new ZosmfException("zOSMF server not configured for image '" + imageId + "' on cluster '" + clusterId + "' tag '" + imageTag + "'");
+            throw new ZosmfException("zOSMF server not configured for image '" + imageId + "' on cluster '" + clusterId + "'" + (imageTag != null ? " tag '" + imageTag + "'" : ""));
         }
         
         String zosmfHostname;
@@ -320,7 +312,17 @@ public class ZosmfImpl implements IZosmf {
         }
     }
 
-    private void addCommonHeaders() {
+    protected void setImage() throws ZosmfException {
+        if (this.image == null) {
+            try {
+                this.image = ZosmfManagerImpl.zosManager.getImageForTag(this.imageTag);
+            } catch (ZosManagerException e) {
+                throw new ZosmfException(e);
+            }
+        }
+    }
+
+    protected void addCommonHeaders() {
         for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
             logger.debug("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
             this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
@@ -328,25 +330,23 @@ public class ZosmfImpl implements IZosmf {
         
     }
 
-    private String logRequest(String method, URL requestUrl) {
+    protected String logRequest(String method, URL requestUrl) {
         return "Request: " + method + " " + requestUrl;
     }
 
-    private String logResponse(String statusLine, String method, URL requestUrl) {
+    protected String logResponse(String statusLine, String method, URL requestUrl) {
         return "Response: " + statusLine + " - " + method + " " + requestUrl;
     }
 
-    private String logBadStatusCode(int statusCode) {
+    protected String logBadStatusCode(int statusCode) {
         return "Unexpected HTTP status code: " + statusCode;
     }
 
-    private String logBadRequest(String method) {
+    protected String logBadRequest(String method) {
         return "Problem wth " + method + " to zOSMF server";
     }
 
-    public int getRequestRetry() {
+    protected int getRequestRetry() {
         return this.requestRetry;
-    }
-    
-    
+    }    
 }

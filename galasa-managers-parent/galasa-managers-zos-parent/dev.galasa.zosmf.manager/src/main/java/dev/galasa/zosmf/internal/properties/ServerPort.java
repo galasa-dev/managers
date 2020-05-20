@@ -38,9 +38,13 @@ public class ServerPort extends CpsProperties {
             if (serverPort == null) {
                 throw new ZosmfManagerException("Value for zOSMF server port not configured for zOS image "  + imageId);
             }
+            int serverPortInt = Integer.parseInt(serverPort);
+            if (serverPortInt < 0 || serverPortInt > 65535) {
+                throw new ZosmfManagerException("Invalid value (" + serverPort + ") for zOSMF server port property for zOS image "  + imageId + ". Range  0-65535");
+            }
             return serverPort;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server port for zOS image "  + imageId, e);
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server port property for zOS image "  + imageId, e);
         }
     }
 

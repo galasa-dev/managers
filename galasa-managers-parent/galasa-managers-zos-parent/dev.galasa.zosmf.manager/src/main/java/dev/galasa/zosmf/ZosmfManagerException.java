@@ -25,8 +25,7 @@ public class ZosmfManagerException extends ZosManagerException {
         super(message, cause);
     }
 
-    public ZosmfManagerException(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+    public ZosmfManagerException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 
