@@ -43,7 +43,7 @@ public class RequestRetry extends CpsProperties {
                 return Integer.parseInt(retryString);
             }
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosmfManagerException("Problem asking the CPS for the console command request retry property for zOS image "  + imageId, e);
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF request retry property for zOS image "  + imageId, e);
         }
     }
 

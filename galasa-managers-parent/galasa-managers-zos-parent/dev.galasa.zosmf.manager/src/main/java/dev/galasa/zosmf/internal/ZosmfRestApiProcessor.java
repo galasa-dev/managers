@@ -106,13 +106,13 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
         throw new ZosmfException("Unable to get valid response from zOS/MF server");
     }
     
-    private IZosmf getCurrentZosmfServer() {
+    protected IZosmf getCurrentZosmfServer() {
         logger.debug("Using zOSMF on " + this.currentZosmf);
         this.currentZosmf.clearHeaders();
         return this.currentZosmf;
     }
 
-    private void getNextZosmf() {
+    protected void getNextZosmf() {
         if (this.zosmfs.size() == 1) {
             logger.debug("Only one zOSMF server available");
             return;
