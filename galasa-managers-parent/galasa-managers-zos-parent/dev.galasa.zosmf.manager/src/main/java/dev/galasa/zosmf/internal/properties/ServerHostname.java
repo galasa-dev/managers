@@ -40,7 +40,7 @@ public class ServerHostname extends CpsProperties {
             }
             return serverHostname;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server hostname for zOS image "  + imageId, e);
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server hostname property for zOS image "  + imageId, e);
         }
     }
 

@@ -5,7 +5,6 @@
  */
 package dev.galasa.selenium.internal.properties;
 
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
@@ -28,7 +27,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  */
 public class SeleniumWebDriver extends CpsProperties {
 
-    public static String get(String instance) throws ConfigurationPropertyStoreException, SeleniumManagerException {
+    public static String get(String instance) throws SeleniumManagerException {
         return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "GECKO", "instance", "web.driver", instance);
     }
 

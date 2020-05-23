@@ -5,7 +5,6 @@
  */
 package dev.galasa.selenium.internal.properties;
 
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
@@ -30,7 +29,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  */
 public class SeleniumDseInstanceName extends CpsProperties {
 
-    public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
+    public static String get() throws SeleniumManagerException {
         return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "PRIMARY", "dse", "instance.name");
     }
 

@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.selenium.internal;
+package dev.galasa.jmeter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -12,6 +12,6 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-public @interface SeleniumManagerField {
-
+public @interface JMeterManagerField {
+    
 }

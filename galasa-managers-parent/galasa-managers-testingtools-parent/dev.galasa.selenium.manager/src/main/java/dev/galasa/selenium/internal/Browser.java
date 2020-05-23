@@ -5,8 +5,6 @@
  */
 package dev.galasa.selenium.internal;
 
-import java.io.IOException;
-
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -33,9 +31,9 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
 public enum Browser {
   GECKO, IE, CHROME, EDGE;
 
-  final static Log logger = LogFactory.getLog(Browser.class);
+  static final Log logger = LogFactory.getLog(Browser.class);
 
-  public static WebDriver getWebDriver(String instance) throws IOException, SeleniumManagerException {
+  public static WebDriver getWebDriver(String instance) throws SeleniumManagerException {
     try {
       String driver = SeleniumWebDriver.get(instance);
       switch (getBrowser(driver)) {
@@ -55,7 +53,7 @@ public enum Browser {
     }
   }
 
-  private static WebDriver getGeckoDriver(String instance) throws IOException, SeleniumManagerException {
+  private static WebDriver getGeckoDriver(String instance) throws SeleniumManagerException {
     FirefoxOptions options = new FirefoxOptions();
 
     try {
