@@ -177,6 +177,16 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
         //*** Auto generate the remaining fields
         generateAnnotatedFields(ZosManagerField.class);
+        throw new ResourceUnavailableException("Dummy failure");
+    }
+    
+    @Override
+    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
+        
+    }
+    
+    @Override
+    public void provisionStart() throws ManagerException, ResourceUnavailableException {
     }
 
 
@@ -295,8 +305,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         //***  Need the cluster we can allocate an image from
         String clusterId = ClusterIdForTag.get(tag);
         if (clusterId == null) {
-            clusterId = "default";
+            clusterId = "DEFAULT";
         }
+        clusterId = clusterId.toUpperCase();
 
         //*** Find a list of images
         for(String definedImage : ClusterImages.get(clusterId)) {
