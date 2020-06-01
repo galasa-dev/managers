@@ -807,7 +807,7 @@ public class Screen {
     }
 
     public synchronized int type(String text, int column, int row) throws KeyboardLockedException, FieldNotFoundException {
-        int position = column + (row * column);
+        int position = column + (row * columns);
 
         return type(text, position);
     }
