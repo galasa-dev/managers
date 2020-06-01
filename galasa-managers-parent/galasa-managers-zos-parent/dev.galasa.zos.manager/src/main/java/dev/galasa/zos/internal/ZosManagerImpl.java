@@ -177,20 +177,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
         //*** Auto generate the remaining fields
         generateAnnotatedFields(ZosManagerField.class);
-        throw new ResourceUnavailableException("Dummy failure");
     }
     
-    @Override
-    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-        
-    }
-    
-    @Override
-    public void provisionStart() throws ManagerException, ResourceUnavailableException {
-    }
-
-
-
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#provisionDiscard()
      */
