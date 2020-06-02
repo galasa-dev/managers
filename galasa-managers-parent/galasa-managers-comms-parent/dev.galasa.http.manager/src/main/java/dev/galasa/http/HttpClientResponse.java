@@ -29,7 +29,6 @@ import org.xml.sax.SAXException;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
 
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter

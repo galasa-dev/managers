@@ -5,10 +5,8 @@
  */
 package dev.galasa.http;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
