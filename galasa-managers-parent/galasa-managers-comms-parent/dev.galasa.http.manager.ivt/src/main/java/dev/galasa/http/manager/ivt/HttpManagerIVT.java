@@ -16,8 +16,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
-import org.assertj.core.internal.bytebuddy.agent.builder.ResettableClassFileTransformer;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import dev.galasa.Test;
@@ -54,9 +55,11 @@ public class HttpManagerIVT {
 
     @Test
     public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException {
-        client1.setURI(new URI("http://google.com"));
-        String response = client1.get("/images", false);
-        assertThat(response).isNotNull();
+        client1.setURI(new URI("https://httpbin.org"));
+        String response = client1.get("/get", false);
+        JsonElement jsonElement = new Gson().fromJson(response, JsonElement.class);
+        String url = jsonElement.getAsJsonObject().get("url").getAsString();
+        assertThat(url).isEqualTo("https://httpbin.org/get");
     }
 
     @Test
@@ -66,6 +69,31 @@ public class HttpManagerIVT {
         JsonObject json = resp.getContent();
         String title = json.get("title").getAsString();
         assertThat("delectus aut autem".equals(title)).isTrue();
+    }
+
+    @Test
+    public void jsonPostRequest() throws Exception {
+        client2.setURI(new URI("https://httpbin.org"));
+        HttpClientResponse<JsonObject> resp = client2.postJson("/post", constructJSON());
+        assertThat(resp.getStatusCode()).isEqualTo(200);
+    }
+
+    @Test
+    public void jsonPostRequest2() throws Exception {
+        client2.setURI(new URI("https://httpbin.org"));
+        Object resp = client2.postJson("/post", constructJSON().toString(), false);
+        JsonElement jsonElement = new Gson().fromJson(resp.toString(), JsonElement.class);
+        String title = jsonElement.getAsJsonObject().get("json").getAsJsonObject().get("title").getAsString();
+        assertThat(title).isEqualTo("foo"); 
+    }
+
+    private JsonObject constructJSON(){
+        JsonObject json = new JsonObject();
+        json.addProperty("title","foo");
+        json.addProperty("body","bar");
+        json.addProperty("userId",1);
+        json.addProperty("id", 1);
+        return json;
     }
 
     @Test

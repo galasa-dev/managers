@@ -58,6 +58,16 @@ public interface IHttpClient {
     void close();
 
     /**
+     * Issue DELETE request to the given path, request will not be retried 
+     * 
+     * @param path
+     * @param retry
+     * @return
+     * @throws HttpClientException
+     */
+    String delete(String path) throws HttpClientException;
+
+    /**
      * Issue DELETE request to the given path, request will be retried if retry is
      * set
      * 
@@ -66,7 +76,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object delete(String path, boolean retry) throws HttpClientException;
+    String delete(String path, boolean retry) throws HttpClientException;
 
     /**
      * Issue DELETE request to the given path with the given query parameters. If

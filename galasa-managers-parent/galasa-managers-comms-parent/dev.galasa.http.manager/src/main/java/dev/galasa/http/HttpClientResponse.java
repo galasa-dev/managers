@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter
@@ -273,7 +274,13 @@ public class HttpClientResponse<T> {
                     String sResponse = EntityUtils.toString(httpResponse.getEntity());
                     
 //                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-                    JsonElement jsonElement = new Gson().fromJson(sResponse, JsonElement.class);
+                    JsonElement jsonElement = null;
+                    try{
+                        jsonElement = new Gson().fromJson(sResponse, JsonElement.class);
+                    }catch(JsonSyntaxException jse){
+                        System.err.println("Unable to parse JSON from the following: " + sResponse);
+                        throw jse;
+                    }
                     if (jsonElement != null) {
                         if (jsonElement != null) {
                             JsonObject json = jsonElement.getAsJsonObject();
