@@ -768,7 +768,7 @@ public class HttpClientImpl implements IHttpClient {
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
-            logger.error("Could not download file from speficifed path: "+ path, e);
+            logger.error("Could not download file from specified path: "+ path, e);
             throw new HttpClientException("Failed to get file",e);
         }
     }
@@ -780,7 +780,7 @@ public class HttpClientImpl implements IHttpClient {
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
-            logger.error("Could not download file from speficifed path: "+ path, e);
+            logger.error("Could not download file from specified path: "+ path, e);
             throw new HttpClientException("Failed to get file",e);
         }
     }
