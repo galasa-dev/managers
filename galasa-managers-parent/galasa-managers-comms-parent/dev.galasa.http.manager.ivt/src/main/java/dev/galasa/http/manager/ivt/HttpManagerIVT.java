@@ -53,22 +53,19 @@ public class HttpManagerIVT {
         assertThat(client3).isNotNull();
     }
 
+    // @Test
+    // public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException {
+    //     client1.setURI(new URI("https://httpbin.org"));
+    //     String response = client1.get("/get", false);
+    //     JsonElement jsonElement = new Gson().fromJson(response, JsonElement.class);
+    //     String url = jsonElement.getAsJsonObject().get("url").getAsString();
+    //     assertThat(url).isEqualTo("https://httpbin.org/get");
+    // }
     @Test
-    public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException {
+    public void makeOutBoundHttpCall() throws Exception{
         client1.setURI(new URI("https://httpbin.org"));
-        String response = client1.get("/get", false);
-        JsonElement jsonElement = new Gson().fromJson(response, JsonElement.class);
-        String url = jsonElement.getAsJsonObject().get("url").getAsString();
-        assertThat(url).isEqualTo("https://httpbin.org/get");
-    }
-
-    @Test
-    public void makeJsonRequest() throws HttpClientException, URISyntaxException, Exception {
-        client2.setURI(new URI("http://jsonplaceholder.typicode.com"));
-        HttpClientResponse<JsonObject> resp = client2.getJson("/todos/1");
-        JsonObject json = resp.getContent();
-        String title = json.get("title").getAsString();
-        assertThat("delectus aut autem".equals(title)).isTrue();
+        JsonObject response = client1.getJson("/get").getContent();
+        assertThat(response.get("url").getAsString()).isEqualTo("https://httpbin.org/get");
     }
 
     @Test
@@ -99,12 +96,11 @@ public class HttpManagerIVT {
     @Test
     public void testResuableClient() throws Exception {
         reusableClient.setURI(new URI("http://google.com"));
-        String response = reusableClient.get("/images", false);
+        String response = reusableClient.getText("/images").getContent();
         assertThat(response).isNotNull();
 
         reusableClient.setURI(new URI("http://jsonplaceholder.typicode.com"));
-        HttpClientResponse<JsonObject> resp = reusableClient.getJson("/todos/1");
-        JsonObject json = resp.getContent();
+        JsonObject json = reusableClient.getJson("/todos/1").getContent();
         String title = json.get("title").getAsString();
         assertThat("delectus aut autem".equals(title)).isTrue();
     }

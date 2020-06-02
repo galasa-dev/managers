@@ -534,7 +534,6 @@ public class HttpClientImpl implements IHttpClient {
 
     @Override
     public String get(String path, boolean retry) throws HttpClientException {
-
         return (String) get(path, null,
                 new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
                 null, retry);
@@ -737,6 +736,7 @@ public class HttpClientImpl implements IHttpClient {
         byte[] response = execute(post, retry);
 
         return unmarshall(response, jaxbClasses);
+
     }
 
     @Override
