@@ -42,7 +42,7 @@ public class Https extends CpsProperties {
             }
             return Boolean.valueOf(https);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server use https for zOS image "  + imageId, e);
+            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server use https property for zOS image "  + imageId, e);
         }
     }
 

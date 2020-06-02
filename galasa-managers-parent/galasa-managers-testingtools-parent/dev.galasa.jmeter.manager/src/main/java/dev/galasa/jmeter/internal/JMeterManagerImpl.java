@@ -21,7 +21,6 @@ import dev.galasa.docker.IDockerManager;
 import dev.galasa.docker.spi.IDockerManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -29,23 +28,24 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
 import dev.galasa.jmeter.JMeterSession;
-import dev.galasa.jmeter.internal.properties.JMeterPropertiesSingleton;
+import dev.galasa.jmeter.JMeterManagerField;
 
 @Component(service = { IManager.class })
 public class JMeterManagerImpl extends AbstractManager {
 
-    protected final String NAMESPACE = "jmeter";
-
-    private static final Log logger = LogFactory.getLog(JMeterManagerImpl.class);
+    private static final Log logger                     = LogFactory.getLog(JMeterManagerImpl.class);
     protected List<JMeterSessionImpl> activeSessions;
 
     private IFramework framework;
-    private String jmxPath;
-    private String propPath;
+    private String jmxPath; //NOSONAR
+    private String propPath; //NOSONAR
 
     // DockerManager Connection
     private IDockerManagerSpi dockerManager;
     protected List<IDockerContainer> activeContainers;
+
+    protected final static String NAMESPACE             = "jmeter";
+    private boolean required                            = false;
 
 
     private int sessionID = 0;
@@ -87,32 +87,23 @@ public class JMeterManagerImpl extends AbstractManager {
         }
 
         return session;
-        
     }
-
-
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
+        
         super.initialise(framework, allManagers, activeManagers, testClass);
-
         
         List<AnnotatedField> ourFields = findAnnotatedFields(JMeterManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if (ourFields.isEmpty() && this.required) {
+            return;
         }
-
-        
-        try {
-            JMeterPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new JMeterManagerException("Failed to set the cps with the jmeter namespace");
-        }
+        youAreRequired(allManagers, activeManagers);
 
         this.framework = framework;
-        this.activeSessions = new ArrayList<JMeterSessionImpl>();
-        this.activeContainers = new ArrayList<IDockerContainer>();
+        this.activeSessions = new ArrayList<>();
+        this.activeContainers = new ArrayList<>();
 
         logger.info("JMeter manager has been succesfully initialised.");
 
@@ -131,12 +122,13 @@ public class JMeterManagerImpl extends AbstractManager {
     @Override
     public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
             throws ManagerException {
+        this.required = true;
+
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-
         dockerManager = addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
     }
 
@@ -146,7 +138,7 @@ public class JMeterManagerImpl extends AbstractManager {
     }
 
     @Override
-    public void shutdown(){
+    public void provisionStop(){
         for(IJMeterSession session: activeSessions) {
             try {
                 session.stopTest();

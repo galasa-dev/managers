@@ -8,8 +8,6 @@ package dev.galasa.selenium.internal;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Function;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -631,10 +629,8 @@ public class WebPageImpl implements IWebPage {
     @Override
     public IWebPage waitForPageLoad(int secondsTimeout) {
         WebDriverWait wait = new WebDriverWait(driver, secondsTimeout);
-        wait.until(new Function<WebDriver, Boolean>() {
-            public Boolean apply(WebDriver driver) {
-                return String.valueOf(((JavascriptExecutor) driver).executeScript("return document.readyState")).equals("complete");
-            }
+        wait.until(driver -> {
+            return String.valueOf("complete".equals(((JavascriptExecutor) driver).executeScript("return document.readyState")));
         });
         return this;
     }

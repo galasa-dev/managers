@@ -23,8 +23,7 @@ public class ZosmfException extends ZosmfManagerException {
         super(message, cause);
     }
 
-    public ZosmfException(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+    public ZosmfException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

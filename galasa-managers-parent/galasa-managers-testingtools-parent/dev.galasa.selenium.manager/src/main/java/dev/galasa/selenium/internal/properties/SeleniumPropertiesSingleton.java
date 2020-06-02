@@ -15,31 +15,31 @@ import dev.galasa.selenium.SeleniumManagerException;
 @Component(service = SeleniumPropertiesSingleton.class, immediate = true)
 public class SeleniumPropertiesSingleton {
 
-    private static SeleniumPropertiesSingleton  INSTANCE;
+    private static SeleniumPropertiesSingleton instance;
 
     private IConfigurationPropertyStoreService cps;
 
     @Activate
     public void activate() {
-        INSTANCE = this;
+        instance = this; //NOSONAR
     }
 
     @Deactivate
     public void deacivate() {
-        INSTANCE = null;
+        instance = null; //NOSONAR
     }
 
     public static IConfigurationPropertyStoreService cps() throws SeleniumManagerException {
-        if (INSTANCE != null) {
-            return INSTANCE.cps;
+        if (instance != null) {
+            return instance.cps;
         }
 
         throw new SeleniumManagerException("Attempt to access manager CPS before it has been initialised");
     }
 
     public static void setCps(IConfigurationPropertyStoreService cps) throws SeleniumManagerException {
-        if (INSTANCE != null) {
-            INSTANCE.cps = cps;
+        if (instance != null) {
+            instance.cps = cps;
             return;
         }
 

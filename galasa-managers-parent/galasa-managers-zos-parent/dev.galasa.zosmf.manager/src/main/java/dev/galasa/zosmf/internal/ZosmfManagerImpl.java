@@ -90,11 +90,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
         activeManagers.add(this);
         setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
         if (zosManager == null) {
-            throw new ZosManagerException("The zOS Manager is not available");
+            throw new ZosmfManagerException("The zOS Manager is not available");
         }
         setHttpManager(addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class));
         if (httpManager == null) {
-            throw new ZosManagerException("The HTTP Manager is not available");
+            throw new ZosmfManagerException("The HTTP Manager is not available");
         }
     }
 
@@ -142,9 +142,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
     @Override
     public IZosmf newZosmf(IZosImage image) throws ZosmfException {
         if (zosmfs.containsKey(image.getImageID())) {
-            return zosmfs.get(image.getImageID());
+            return this.zosmfs.get(image.getImageID());
         }
-        return new ZosmfImpl(image);
+        IZosmf zosmf = new ZosmfImpl(image);
+        this.zosmfs.put(image.getImageID(), zosmf);
+        return zosmf;
     }
 
 
