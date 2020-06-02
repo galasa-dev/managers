@@ -16,7 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.assertj.core.internal.bytebuddy.agent.builder.ResettableClassFileTransformer;
 
 import com.google.gson.JsonObject;
 
@@ -42,6 +42,9 @@ public class HttpManagerIVT {
     @HttpClient
     public IHttpClient client3;
 
+    @HttpClient
+    public IHttpClient reusableClient;
+
     @Test
     public void checkClientNotNull() throws Exception {
         assertThat(client1).isNotNull();
@@ -66,16 +69,27 @@ public class HttpManagerIVT {
     }
 
     @Test
+    public void testResuableClient() throws Exception {
+        reusableClient.setURI(new URI("http://google.com"));
+        String response = reusableClient.get("/images", false);
+        assertThat(response).isNotNull();
+
+        reusableClient.setURI(new URI("http://jsonplaceholder.typicode.com"));
+        HttpClientResponse<JsonObject> resp = reusableClient.getJson("/todos/1");
+        JsonObject json = resp.getContent();
+        String title = json.get("title").getAsString();
+        assertThat("delectus aut autem".equals(title)).isTrue();
+    }
+
+    @Test
     public void downLoadFileTest()
             throws URISyntaxException, HttpClientException, UnsupportedOperationException, IOException {
         boolean fileExists = false;
-        File f = new File("/tmp/dev.galasa_0.3.0.jar");
+        File f = new File("/tmp/jenkins.hpi");
 
-        client3.setURI(new URI("https://p2.galasa.dev"));
-        // client3.setAuthorisation("username", "password");
-        CloseableHttpResponse response = client3.getFile("/plugins/dev.galasa_0.3.0.jar");
+        client3.setURI(new URI("https://resources.galasa.dev"));
 
-        InputStream in = response.getEntity().getContent();
+        InputStream in = client3.getFile("/jenkins.hpi").getEntity().getContent();
         OutputStream out = new FileOutputStream(f);
 
         int count;
