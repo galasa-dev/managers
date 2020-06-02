@@ -57,15 +57,14 @@ public class DockerEngineImpl implements IDockerEngine {
 		this.dockerManager = dockerManager;
 		this.dockerEngineId = dockerEngineTag;
 
-		dockerEngineClient = dockerManager.httpManager.newHttpClient();
+		this.dockerEngineClient = dockerManager.httpManager.newHttpClient();
 		try {
 			String engine = DockerEngine.get(this);
 			String port = DockerEnginePort.get(this);
 
 			if (engine != null && port != null) {
 				this.uri = new URI(engine + ":" + port);
-				IHttpClient httpClient2 = dockerEngineClient;
-				httpClient2.setURI(this.uri);
+				dockerEngineClient.setURI(this.uri);
 			} else {
 				throw new DockerProvisionException("Could not retrieve proper endpoint for docker engine: Engine - "
 						+ engine + ", Port - " + port);
