@@ -621,18 +621,4 @@ public class WebPageImpl implements IWebPage {
         return this;
     }
 
-    @Override
-    public IWebPage waitForPageLoad() {
-        return waitForPageLoad(DEFAULT_SECONDS_TIMEOUT);
-    }
-
-    @Override
-    public IWebPage waitForPageLoad(int secondsTimeout) {
-        WebDriverWait wait = new WebDriverWait(driver, secondsTimeout);
-        wait.until(driver -> {
-            return String.valueOf("complete".equals(((JavascriptExecutor) driver).executeScript("return document.readyState")));
-        });
-        return this;
-    }
-
 }
