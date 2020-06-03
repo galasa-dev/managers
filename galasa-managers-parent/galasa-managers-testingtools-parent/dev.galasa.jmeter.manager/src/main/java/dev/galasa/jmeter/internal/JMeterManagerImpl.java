@@ -44,7 +44,7 @@ public class JMeterManagerImpl extends AbstractManager {
     private IDockerManagerSpi dockerManager;
     protected List<IDockerContainer> activeContainers;
 
-    protected final static String NAMESPACE             = "jmeter";
+    protected static final String NAMESPACE             = "jmeter";
     private boolean required                            = false;
 
 
@@ -79,7 +79,7 @@ public class JMeterManagerImpl extends AbstractManager {
         
         try {
             IDockerContainer container = dockerManager.provisionContainer("jmeter_" + sessionID, "galasadev/galasa-jmeter:latest", false, "PRIMARY");
-            session = new JMeterSessionImpl(framework, this, sessionID, this.jmxPath, this.propPath, container, logger);
+            session = new JMeterSessionImpl(framework, this, sessionID, this.jmxPath, this.propPath, container, logger, NAMESPACE);
             activeContainers.add(container);
             activeSessions.add(session);
         } catch (DockerManagerException e) {
