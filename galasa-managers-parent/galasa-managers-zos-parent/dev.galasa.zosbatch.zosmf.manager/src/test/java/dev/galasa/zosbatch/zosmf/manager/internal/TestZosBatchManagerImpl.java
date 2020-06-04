@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +22,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -42,7 +46,7 @@ import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfProper
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
+@PrepareForTest({LogFactory.class, ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBatchManagerImpl {
     
     private ZosBatchManagerImpl zosBatchManager; 
@@ -54,6 +58,11 @@ public class TestZosBatchManagerImpl {
     private List<IManager> allManagers;
     
     private List<IManager> activeManagers;
+    
+    @Mock
+    private Log logMock;
+    
+    private static String logMessage;
     
     @Mock
     private IFramework frameworkMock;
@@ -77,10 +86,25 @@ public class TestZosBatchManagerImpl {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
-    public void setup() throws Exception {        
+    public void setup() throws Exception {
+        PowerMockito.mockStatic(LogFactory.class);
+        Mockito.when(LogFactory.getLog(Mockito.any(Class.class))).thenReturn(logMock);
+        Answer<String> answer = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                logMessage = invocation.getArgument(0);
+                System.err.println("Captured Log Message:\n" + logMessage);
+                if (invocation.getArguments().length > 1 && invocation.getArgument(1) instanceof Throwable) {
+                    ((Throwable) invocation.getArgument(1)).printStackTrace();
+                }
+                return null;
+            }
+        };
+        Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
+        
         ZosBatchManagerImpl.setZosManager(zosManagerMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
-        ZosBatchManagerImpl.setCurrentTestMethod(this.getClass().getDeclaredMethod("setup"));
+        ZosBatchManagerImpl.setCurrentTestMethod(this.getClass().getDeclaredMethod("setup").getName());
         zosBatchZosmfPropertiesSingleton = new ZosBatchZosmfPropertiesSingleton();
         zosBatchZosmfPropertiesSingleton.activate();
         
@@ -99,7 +123,7 @@ public class TestZosBatchManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosBatchManager.initialise(frameworkMock, allManagers, activeManagers, TestZosBatchManagerImpl.class);
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, TestZosBatchManagerImpl.class);
         Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
     }
     
@@ -154,22 +178,42 @@ public class TestZosBatchManagerImpl {
     
     @Test
     public void testAreYouProvisionalDependentOn() {
-        Assert.assertTrue("Should be dependent on IZosManagerSpi" , zosBatchManager.areYouProvisionalDependentOn(zosManagerMock));
-        Assert.assertTrue("Should be dependent on IZosmfManagerSpi" , zosBatchManager.areYouProvisionalDependentOn(zosmfManagerMock));
-        Assert.assertFalse("Should not be dependent on IManager" , zosBatchManager.areYouProvisionalDependentOn(managerMock));
+        Assert.assertTrue("Should be dependent on IZosManagerSpi" , zosBatchManagerSpy.areYouProvisionalDependentOn(zosManagerMock));
+        Assert.assertTrue("Should be dependent on IZosmfManagerSpi" , zosBatchManagerSpy.areYouProvisionalDependentOn(zosmfManagerMock));
+        Assert.assertFalse("Should not be dependent on IManager" , zosBatchManagerSpy.areYouProvisionalDependentOn(managerMock));
     }
     
     @Test
     public void testStartOfTestMethod() throws Exception {
         zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-        Assert.assertEquals("currentTestMethod should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), ZosBatchManagerImpl.currentTestMethod);
+        Assert.assertEquals("currentTestMethod should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethod);
     }
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-        zosBatchManager.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
+        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
         Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
+    }
+    
+    @Test
+    public void testEndOfTestClass() throws Exception {
+        zosBatchManagerSpy.endOfTestClass("currentResult", null);
+        Assert.assertEquals("endOfTestClass() should set the required value", "cleanup", ZosBatchManagerImpl.currentTestMethod);
+    }
+    
+    @Test
+    public void testProvisionDiscard() throws ZosBatchException {
+        zosBatchManagerSpy.provisionDiscard();
+        Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup();
+        zosBatchManagerSpy.provisionDiscard();
+        Assert.assertEquals("provisionDiscard() should log specified message", "Problem in provision discard", logMessage);
+    }
+    
+    @Test
+    public void testCleanup() throws Exception {
+        zosBatchManagerSpy.cleanup();
         
         HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
         ZosBatchImpl zosBatchImpl = Mockito.mock(ZosBatchImpl.class);
@@ -177,10 +221,8 @@ public class TestZosBatchManagerImpl {
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
         Whitebox.setInternalState(zosBatchManagerSpy, "zosBatches", taggedZosBatches);
-        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-
-        zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
-        Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
+        zosBatchManagerSpy.cleanup();
+        PowerMockito.verifyPrivate(zosBatchImpl, Mockito.times(2)).invoke("cleanup");        
     }
     
     @Test
@@ -189,7 +231,7 @@ public class TestZosBatchManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosbatch.ZosBatch.class);
         annotations.add(annotation);
         
-        Object zosBatchImplObject = zosBatchManager.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
+        Object zosBatchImplObject = zosBatchManagerSpy.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
         Assert.assertTrue("Error in generateZosBatch() method", zosBatchImplObject instanceof ZosBatchImpl);
         
         HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
