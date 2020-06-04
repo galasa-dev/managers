@@ -125,7 +125,7 @@ public class DockerManagerIVT {
 
         httpClient.setURI(uri);
 
-        String html = httpClient.get("/test1.html");
+        String html = httpClient.getText("/test1.html").getContent();
 
         assertThat(html).as("Checking the HTML container the Galasa constant text").contains("Galasa Docker Test");
     }

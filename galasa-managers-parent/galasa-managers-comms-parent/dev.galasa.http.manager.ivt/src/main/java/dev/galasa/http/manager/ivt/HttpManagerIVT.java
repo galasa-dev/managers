@@ -1,29 +1,20 @@
-/*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
 package dev.galasa.http.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.apache.commons.logging.Log;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import com.google.gson.JsonObject;
+
+import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.http.HttpClient;
-import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 
@@ -34,48 +25,81 @@ public class HttpManagerIVT {
     public Log logger;
 
     @HttpClient
-    public IHttpClient client1;
-
-    @HttpClient
-    public IHttpClient client2;
-
-    @HttpClient
-    public IHttpClient client3;
+    public IHttpClient client;
 
     @Test
-    public void checkClientNotNull() throws Exception {
-        assertThat(client1).isNotNull();
-        assertThat(client2).isNotNull();
-        assertThat(client3).isNotNull();
+    public void checkNotNull(){
+        assertThat(logger).isNotNull();
+        assertThat(client).isNotNull();
+    }
+    @Test
+    public void getTests() throws Exception{
+        client.setURI(new URI("https://httpbin.org"));
+        String sResponse = client.getText("/get").getContent();
+        assertThat(sResponse).startsWith("{");
+        assertThat(sResponse).contains("\"url\": \"https://httpbin.org/get\"");
+
+        JsonObject jResponse = client.getJson("/get").getContent();
+        assertThat(jResponse.get("url").getAsString()).isEqualTo("https://httpbin.org/get");
+
+
     }
 
     @Test
-    public void makeOutBoundHttpCall() throws Exception, URISyntaxException, HttpClientException {
-        client1.setURI(new URI("http://google.com"));
-        String response = client1.get("/images", false);
-        assertThat(response).isNotNull();
+    public void headerTest() throws Exception{
+        String headerName = "Hobbit-Header";
+        String headerValue = "Frodo";
+
+        client.setURI(new URI("https://httpbin.org"));
+        client.addCommonHeader(headerName, headerValue);
+        JsonObject response = client.getJson("/get").getContent();
+        assertThat(response.toString()).contains(headerName);
+        assertThat(response.toString()).contains(headerValue);
     }
 
     @Test
-    public void makeJsonRequest() throws HttpClientException, URISyntaxException, Exception {
-        client2.setURI(new URI("http://jsonplaceholder.typicode.com"));
-        HttpClientResponse<JsonObject> resp = client2.getJson("/todos/1");
-        JsonObject json = resp.getContent();
-        String title = json.get("title").getAsString();
-        assertThat("delectus aut autem".equals(title)).isTrue();
+    public void authTest() throws Exception{
+        String user = "hobbit";
+        String pword = "passw0rd";
+        String path = "/basic-auth/" + user + "/" + pword;
+
+        client.setAuthorisation(user, pword);
+        HttpClientResponse<JsonObject> response = client.getJson(path);
+        assertThat(response.getStatusCode()).isEqualTo(200);
+        
+        assertThat(response.getContent().get("authenticated").getAsBoolean()).isTrue();
+        assertThat(response.getContent().get("user").getAsString()).isEqualTo(user);
+        
     }
 
     @Test
-    public void downLoadFileTest()
-            throws URISyntaxException, HttpClientException, UnsupportedOperationException, IOException {
+    public void postTests() throws Exception {
+        String key = "Project";
+        String value = "Galasa";
+        client.setURI(new URI("https://httpbin.org"));
+        JsonObject json = new JsonObject();
+        json.addProperty(key,value);
+        HttpClientResponse<JsonObject> jResponse = client.postJson("/post", json);
+        assertThat(jResponse.getStatusCode()).isEqualTo(200);
+        logger.info(jResponse.getContent().toString());
+        assertThat(jResponse.getContent().get("data").getAsString()).isEqualTo(json.toString());
+
+        HttpClientResponse<String> sResponse = client.postText("/post", json.toString());
+        assertThat(sResponse.getStatusCode()).isEqualTo(200);
+        logger.info(sResponse.getContent().toString());
+        assertThat(sResponse.getContent()).contains(key);
+        assertThat(sResponse.getContent()).contains(value);
+    }
+
+    @Test
+    public void downloadFileTest()
+            throws Exception {
         boolean fileExists = false;
-        File f = new File("/tmp/dev.galasa_0.3.0.jar");
+        File f = new File("/tmp/jenkins.hpi");
 
-        client3.setURI(new URI("https://p2.galasa.dev"));
-        // client3.setAuthorisation("username", "password");
-        CloseableHttpResponse response = client3.getFile("/plugins/dev.galasa_0.3.0.jar");
+        client.setURI(new URI("https://resources.galasa.dev"));
 
-        InputStream in = response.getEntity().getContent();
+        InputStream in = client.getFile("/jenkins.hpi").getEntity().getContent();
         OutputStream out = new FileOutputStream(f);
 
         int count;
@@ -94,4 +118,5 @@ public class HttpManagerIVT {
 
         f.delete();
     }
+    
 }
