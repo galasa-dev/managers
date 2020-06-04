@@ -13,20 +13,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import dev.galasa.ICredentials;
-import dev.galasa.ManagerException;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zostsocommand.ZosTSOCommandException;
 import dev.galasa.zostsocommand.ZosTSOCommandManagerException;
-import dev.galasa.zosunixcommand.ssh.manager.internal.ZosUNIXCommandManagerImpl;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
 import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
+import dev.galasa.zosunixcommand.ssh.manager.internal.ZosUNIXCommandManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 public class TestZosTSOImpl {

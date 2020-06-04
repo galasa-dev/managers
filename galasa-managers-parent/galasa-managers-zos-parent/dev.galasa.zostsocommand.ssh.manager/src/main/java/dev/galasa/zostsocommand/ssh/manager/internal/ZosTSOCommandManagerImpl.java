@@ -103,7 +103,7 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
         }
         setZosUnixCommandManager(addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class));
         if (zosUnixCommandManager == null) {
-            throw new ZosUNIXCommandManagerException("The zOS UNIX Manager is not available");
+            throw new ZosUNIXCommandManagerException("The zOS UNIX Command Manager is not available");
         }
     }
 

@@ -33,10 +33,7 @@ public class ZosProvisionedImageImpl extends ZosBaseImageImpl {
     }
 
     public boolean hasCapacity() throws ZosManagerException {
-        if (getCurrentUsage() >= 1.0f) {
-            return false;
-        }
-        return true;
+        return getCurrentUsage() < 1.0f;
     }
 
     public Float getCurrentUsage() throws ZosManagerException {
