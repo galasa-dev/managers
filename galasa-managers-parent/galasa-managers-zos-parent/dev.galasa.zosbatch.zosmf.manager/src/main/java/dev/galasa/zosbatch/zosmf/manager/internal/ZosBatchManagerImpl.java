@@ -15,6 +15,8 @@ import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
@@ -46,6 +48,8 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 @Component(service = { IManager.class })
 public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi {
     protected static final String NAMESPACE = "zosbatch";
+    
+    private static final Log logger = LogFactory.getLog(ZosBatchManagerImpl.class);
 
     protected static IZosManagerSpi zosManager;
     public static void setZosManager(IZosManagerSpi zosManager) {
@@ -65,8 +69,8 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
         ZosBatchManagerImpl.archivePath = archivePath;
     }
     
-    protected static Method currentTestMethod;
-    public static void setCurrentTestMethod(Method testMethod) {
+    protected static String currentTestMethod;
+    public static void setCurrentTestMethod(String testMethod) {
         ZosBatchManagerImpl.currentTestMethod = testMethod;
     }
     
@@ -143,7 +147,7 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      */
     @Override
     public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
-        setCurrentTestMethod(testMethod);
+        setCurrentTestMethod(testMethod.getName());
     }
 
     /*
@@ -153,16 +157,46 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+        cleanup();
+        setCurrentTestMethod(null);
+        
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#endOfTestClass(java.lang.String,
+     * java.lang.Throwable)
+     */
+    @Override
+    public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+        setCurrentTestMethod("cleanup");
+        
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#provisionDiscard()
+     */
+    @Override
+    public void provisionDiscard() {
+        try {
+            cleanup();
+        } catch (ZosBatchException e) {
+            logger.error("Problem in provision discard", e);
+        }
+    }
+    
+    protected void cleanup() throws ZosBatchException {
         for (Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
             entry.getValue().cleanup();
         }
         for (Entry<String, ZosBatchImpl> entry : this.zosBatches.entrySet()) {
             entry.getValue().cleanup();
         }
-
-        setCurrentTestMethod(null);
-        
-        return null;
     }
     
     @GenerateAnnotatedField(annotation=ZosBatch.class)
