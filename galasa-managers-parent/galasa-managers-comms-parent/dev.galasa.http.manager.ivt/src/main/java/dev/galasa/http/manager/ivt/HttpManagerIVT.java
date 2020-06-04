@@ -47,7 +47,7 @@ public class HttpManagerIVT {
 
     @Test
     public void headerTest() throws Exception{
-        String headerName = "HobbitHeader";
+        String headerName = "Hobbit-Header";
         String headerValue = "Frodo";
 
         client.setURI(new URI("https://httpbin.org"));
