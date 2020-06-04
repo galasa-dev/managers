@@ -270,7 +270,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         if (jobOutput() == null) {
             retrieveOutput();
         }
-        String testMethodName = ZosBatchManagerImpl.currentTestMethod.getName();
+        String testMethodName = ZosBatchManagerImpl.currentTestMethod;
         logger.info(testMethodName);
         String dirName = this.jobname.getName() + "_" + uniqueId + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
         logger.info("    " + dirName);
@@ -794,7 +794,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             if (ZosBatchManagerImpl.archivePath == null) {
                 throw new ZosBatchException("Unable to get archive path");
             }
-            Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod.getName());
+            Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethod);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

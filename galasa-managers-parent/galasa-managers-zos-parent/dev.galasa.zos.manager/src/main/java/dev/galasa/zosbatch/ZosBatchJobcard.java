@@ -204,7 +204,7 @@ public class ZosBatchJobcard {
         return nulled(progname);
     }
     
-    private String nulled(String value) {
+    protected String nulled(String value) {
         if (value == null) {
             return null;
         }
