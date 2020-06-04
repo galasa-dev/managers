@@ -29,7 +29,12 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 public @interface Cics {
 
     /**
-     * The tag of the CICS regions this variable is to be populated with
+     * The tag of the CICS region this variable is to be populated with
      */
     String cicsTag() default "PRIMARY";
+    
+    /**
+     * The tag of the zOS Image that this region will be provisioned on 
+     */
+    String imageTag() default "PRIMARY";
 }
