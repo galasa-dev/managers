@@ -40,7 +40,7 @@ public class TestEnumsAndExeptions {
     };
     
     @Test
-    public void testZosmfRequestType() throws ZosmfManagerException {
+    public void testZosmfRequestType() {
         Assert.assertEquals("Problem with ZosmfRequestType", "DELETE", ZosmfRequestType.DELETE.toString());
         Assert.assertEquals("Problem with ZosmfRequestType", "GET", ZosmfRequestType.GET.toString());
         Assert.assertEquals("Problem with ZosmfRequestType", "POST", ZosmfRequestType.POST.toString());
@@ -52,7 +52,7 @@ public class TestEnumsAndExeptions {
     }
     
     @Test
-    public void testZosmfCustomHeaders() throws ZosmfManagerException {
+    public void testZosmfCustomHeaders() {
         Assert.assertEquals("Problem with ZosmfCustomHeaders", "X-CSRF-ZOSMF-HEADER", ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString());
         Assert.assertEquals("Problem with ZosmfCustomHeaders", "X-IBM-Attributes", ZosmfCustomHeaders.X_IBM_ATTRIBUTES.toString());
         Assert.assertEquals("Problem with ZosmfCustomHeaders", "X-IBM-Data-Type", ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString());
