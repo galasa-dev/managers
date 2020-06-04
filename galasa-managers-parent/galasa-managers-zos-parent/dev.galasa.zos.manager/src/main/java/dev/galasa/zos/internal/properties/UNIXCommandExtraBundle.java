@@ -30,13 +30,13 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class UNIXCommandExtraBundle extends CpsProperties {
     
-    private static final String DEFAULT_BUNDLE_EXTRA_FILE_MANAGER = "dev.galasa.zosunixcommand.ssh.manager";
+    private static final String DEFAULT_EXTRA_BUNDLE_UNIX_COMMAND_MANAGER = "dev.galasa.zosunixcommand.ssh.manager";
     
     public static String get() throws ZosManagerException {
         try {
             String fileBundleName = getStringNulled(ZosPropertiesSingleton.cps(), "bundle.extra", "unixcommand.manager");
             if (fileBundleName == null)  {
-                return DEFAULT_BUNDLE_EXTRA_FILE_MANAGER;
+                return DEFAULT_EXTRA_BUNDLE_UNIX_COMMAND_MANAGER;
             }
             return fileBundleName;
         } catch (ConfigurationPropertyStoreException e) {
