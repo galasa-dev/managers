@@ -865,4 +865,14 @@ public interface IWebPage {
      */
     public IWebPage maximize();
 
+    /**
+     * Waits for the page to fully load with the default timeout
+     */
+    public IWebPage waitForPageLoad();
+
+    /**
+     * Waits for the page to fully load with the given timeout
+     */
+    public IWebPage waitForPageLoad(int secondsTimeout);
+
 }

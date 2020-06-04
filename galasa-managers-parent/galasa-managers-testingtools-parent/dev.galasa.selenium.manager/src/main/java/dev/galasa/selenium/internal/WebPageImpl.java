@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriver.Navigation;
 import org.openqa.selenium.WebDriver.Options;
@@ -617,6 +618,20 @@ public class WebPageImpl implements IWebPage {
     @Override
     public IWebPage maximize() {
         manage().window().maximize();
+        return this;
+    }
+
+    @Override
+    public IWebPage waitForPageLoad() {
+        return waitForPageLoad(DEFAULT_SECONDS_TIMEOUT);
+    }
+
+    @Override
+    public IWebPage waitForPageLoad(int secondsTimeout) {
+        WebDriverWait wait = new WebDriverWait(driver, secondsTimeout);
+        wait.until(webDriver -> 
+            String.valueOf("complete".equals(((JavascriptExecutor) driver).executeScript("return document.readyState")))
+        );
         return this;
     }
 
