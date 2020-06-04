@@ -130,6 +130,10 @@ public class Screen {
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
             }
+            
+            if (writeControlCharacter.isReset()) {
+                this.workingCursor = 0;
+            }
             processOrders(orders);
 
             if (writeControlCharacter.isKeyboardReset()) {
@@ -143,7 +147,7 @@ public class Screen {
         try {
             ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
 
-            outboundBuffer.write(AttentionIdentification.ENTER.getKeyValue());
+            outboundBuffer.write(AttentionIdentification.NONE.getKeyValue());
 
             BufferAddress cursor = new BufferAddress(this.screenCursor);
             outboundBuffer.write(cursor.getCharRepresentation());
@@ -153,7 +157,7 @@ public class Screen {
                     outboundBuffer.write(0);
                 } else if (bh instanceof BufferChar) {
                     BufferChar bc = (BufferChar) bh;
-                    outboundBuffer.write(bc.getChar());
+                    outboundBuffer.write(bc.getFieldEbcdic());
                 } else if (bh instanceof BufferStartOfField) {
                     BufferStartOfField sf = (BufferStartOfField) bh;
                     OrderStartField osf = new OrderStartField(sf.isProtected(), sf.isNumeric(), sf.isDisplay(), sf.isIntenseDisplay(), sf.isSelectorPen(), sf.isFieldModifed());
@@ -266,7 +270,6 @@ public class Screen {
 
     public synchronized void processOrders(List<AbstractOrder> orders) throws DatastreamException {
         logger.trace("Processing orders");
-        //        this.workingCursor = 0;
         for (AbstractOrder order : orders) {
             if (order instanceof OrderSetBufferAddress) {
                 processSBA((OrderSetBufferAddress) order);
