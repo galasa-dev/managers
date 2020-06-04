@@ -30,17 +30,17 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class FileExtraBundle extends CpsProperties {
     
-    private static final String DEFAULT_BUNDLE_EXTRA_FILE_MANAGER = "dev.galasa.zosfile.zosmf.manager";
+    private static final String DEFAULT_EXTRA_BUNDLE_FILE_MANAGER = "dev.galasa.zosfile.zosmf.manager";
     
     public static String get() throws ZosManagerException {
         try {
             String fileBundleName = getStringNulled(ZosPropertiesSingleton.cps(), "bundle.extra", "file.manager");
             if (fileBundleName == null)  {
-                return DEFAULT_BUNDLE_EXTRA_FILE_MANAGER;
+                return DEFAULT_EXTRA_BUNDLE_FILE_MANAGER;
             }
             return fileBundleName;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosManagerException("Problem asking CPS for the file manager extra bundle name", e); 
+            throw new ZosManagerException("Problem asking CPS for the zOS File Manager extra bundle name", e); 
         }
     }
 }
