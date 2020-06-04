@@ -1,0 +1,35 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
+package dev.galasa.cicsts;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import dev.galasa.framework.spi.ValidAnnotatedFields;
+
+/**
+ * Represents a CICS TS region that has been provisioned for the test
+ * 
+ * <p>
+ * Used to populate a {@link ICics} field
+ * </p>
+ * 
+ * @author Michael Baylis
+ *
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.FIELD })
+@CicstsManagerField
+@ValidAnnotatedFields({ ICics.class })
+public @interface Cics {
+
+    /**
+     * The tag of the CICS regions this variable is to be populated with
+     */
+    String cicsTag() default "PRIMARY";
+}

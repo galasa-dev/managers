@@ -1,0 +1,12 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
+package dev.galasa.cicsts.spi;
+
+public interface ICicstsManagerSpi {
+
+    void registerProvisioner(ICicsProvisioner provisioner);
+
+}
