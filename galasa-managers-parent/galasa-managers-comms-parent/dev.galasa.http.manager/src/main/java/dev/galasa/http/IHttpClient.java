@@ -5,10 +5,8 @@
  */
 package dev.galasa.http;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +58,16 @@ public interface IHttpClient {
     void close();
 
     /**
+     * Issue DELETE request to the given path, request will not be retried 
+     * 
+     * @param path
+     * @param retry
+     * @return
+     * @throws HttpClientException
+     */
+//     String delete(String path) throws HttpClientException;
+
+    /**
      * Issue DELETE request to the given path, request will be retried if retry is
      * set
      * 
@@ -68,7 +76,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object delete(String path, boolean retry) throws HttpClientException;
+//     String delete(String path, boolean retry) throws HttpClientException;
 
     /**
      * Issue DELETE request to the given path with the given query parameters. If
@@ -81,8 +89,8 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object delete(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-            throws HttpClientException;
+//     Object delete(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
+//             throws HttpClientException;
 
     /**
      * Issue DELETE request to the given path with the given query parameters. If
@@ -96,8 +104,8 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object delete(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
-            boolean retry) throws HttpClientException;
+//     Object delete(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
+//             boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP DELETE to the provided URL, receiving a JAXB Object in the
@@ -152,8 +160,8 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a JAXB content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>[] responseTypes)
-            throws HttpClientException;
+    // HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>[] responseTypes)
+    //         throws HttpClientException;
 
     /**
      * Execute an {@link HttpClientRequest} returning a {@link JSONObject} available
@@ -163,7 +171,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
      * @throws HttpClientException
      */
-    HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException;
+    // HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException;
 
     /**
      * Execute an {@link HttpClientRequest} returning a {@link String} available
@@ -173,7 +181,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a {@link String} content type
      * @throws HttpClientException
      */
-    HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException;
+    // HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException;
 
     /**
      * Execute an {@link HttpClientRequest} returning a {@link Document} available
@@ -183,7 +191,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a {@link Document} content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException;
+    // HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException;
 
     /**
      * Issue a GET request against the given path
@@ -192,7 +200,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    String get(String path) throws HttpClientException;
+//     String get(String path) throws HttpClientException;
 
     /**
      * Issue a GET request against the given path, will retry if retry is set to
@@ -203,7 +211,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    String get(String path, boolean retry) throws HttpClientException;
+//     String get(String path, boolean retry) throws HttpClientException;
 
     /**
      * Issue a GET request against the given path, will retry as required. If JAXB
@@ -215,7 +223,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object get(String path, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
+//     Object get(String path, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
 
     /**
      * 
@@ -226,11 +234,11 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object get(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-            throws HttpClientException;
+//     Object get(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
+//             throws HttpClientException;
 
-    Object get(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
-            boolean retry) throws HttpClientException;
+//     Object get(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
+//             boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP GET to the provided URL, receiving a JAXB Object in the
@@ -343,10 +351,10 @@ public interface IHttpClient {
     HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>[] responseTypes)
             throws HttpClientException;
 
-    Object postJAXB(String path, Object data, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
+//     Object postJAXB(String path, Object data, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
 
-    Object postJAXB(String path, Object data, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-            throws HttpClientException;
+//     Object postJAXB(String path, Object data, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
+//             throws HttpClientException;
 
     /**
      * Issue an HTTP POST to the provided URL, sending the provided
@@ -359,7 +367,7 @@ public interface IHttpClient {
      */
     HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException;
 
-    Object postJson(String path, String data, boolean retry) throws HttpClientException;
+//     Object postJson(String path, String data, boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP POST to the provided URL, sending the provided {@link String}
@@ -372,14 +380,14 @@ public interface IHttpClient {
      */
     HttpClientResponse<String> postText(String url, String text) throws HttpClientException;
 
-    Object postText(String path, String data, boolean retry) throws HttpClientException;
+//     Object postText(String path, String data, boolean retry) throws HttpClientException;
 
-    Object postTextAsXML(String path, String data, boolean retry) throws HttpClientException;
+//     Object postTextAsXML(String path, String data, boolean retry) throws HttpClientException;
 
-    Object postXml(String path, String data, boolean retry) throws HttpClientException;
+//     Object postXml(String path, String data, boolean retry) throws HttpClientException;
 
-    Object put(String path, Map<String, String> queryParams, ContentType contentType, Object data,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
+//     Object put(String path, Map<String, String> queryParams, ContentType contentType, Object data,
+//             ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP PUT to the provided URL, sending the provided jaxbObject and
@@ -407,7 +415,7 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object putJAXB(String path, Object data, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
+//     Object putJAXB(String path, Object data, boolean retry, Class<?>[] jaxbClasses) throws HttpClientException;
 
     /**
      * Issue PUT of the passed data object request to the given path with the given
@@ -422,8 +430,8 @@ public interface IHttpClient {
      * @return
      * @throws HttpClientException
      */
-    Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-            throws HttpClientException;
+//     Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
+//             throws HttpClientException;
 
 
     /**
@@ -448,12 +456,12 @@ public interface IHttpClient {
      */
     HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException;
 
-    Object putJson(String path, String data, boolean retry) throws HttpClientException;
+//     Object putJson(String path, String data, boolean retry) throws HttpClientException;
 
-    Object putMultipart(String path, List<RequestPart> parts, boolean retry) throws HttpClientException;
+//     Object putMultipart(String path, List<RequestPart> parts, boolean retry) throws HttpClientException;
 
-    Object putMultipart(String path, List<RequestPart> parts, Map<String, String> queryParams,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
+//     Object putMultipart(String path, List<RequestPart> parts, Map<String, String> queryParams,
+//             ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP PUT to the provided URL, sending the provided {@link String}
@@ -466,11 +474,11 @@ public interface IHttpClient {
      */
     HttpClientResponse<String> putText(String url, String text) throws HttpClientException;
 
-    Object putText(String path, String data, boolean retry) throws HttpClientException;
+//     Object putText(String path, String data, boolean retry) throws HttpClientException;
 
-    Object putText(String path, String data, Map<String, String> queryParams, boolean retry) throws HttpClientException;
+//     Object putText(String path, String data, Map<String, String> queryParams, boolean retry) throws HttpClientException;
 
-    Object putXml(String path, String data, boolean retry) throws HttpClientException;
+//     Object putXml(String path, String data, boolean retry) throws HttpClientException;
 
     /**
      * Set the username and password for all scopes

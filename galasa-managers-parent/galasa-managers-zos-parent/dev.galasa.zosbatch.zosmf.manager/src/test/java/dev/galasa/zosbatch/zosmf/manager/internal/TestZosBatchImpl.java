@@ -125,7 +125,7 @@ public class TestZosBatchImpl {
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
         Mockito.doThrow(new IOException()).when(fileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
         ZosBatchManagerImpl.setArchivePath(archivePathMock);
-        ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchImpl.class.getDeclaredMethod("setup"));        
+        ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchImpl.class.getDeclaredMethod("setup").getName());        
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         

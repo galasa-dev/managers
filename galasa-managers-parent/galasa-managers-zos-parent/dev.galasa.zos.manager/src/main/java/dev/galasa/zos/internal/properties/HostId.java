@@ -17,7 +17,7 @@ import dev.galasa.zos.internal.ZosProvisionedImageImpl;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zos.image.[tag].iphostidr
+ * @galasa.name zos.image.[tag].iphostid
  * 
  * @galasa.description The IP Host ID of the zOS Image for the supplied tag.<br> 
  * If CPS property zos.image.[tag].iphostid exists, then that is returned, otherwise the zOS Image ID is returned
@@ -29,7 +29,7 @@ import dev.galasa.zos.internal.ZosProvisionedImageImpl;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zos.image.[tag].iphostidr=sysa.ibm.com</code><br>
+ * <code>zos.image.[tag].iphostid=sysa.ibm.com</code><br>
  *
  */
 public class HostId extends CpsProperties {

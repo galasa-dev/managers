@@ -30,17 +30,17 @@ import dev.galasa.zos.ZosManagerException;
  */
 public class BatchExtraBundle extends CpsProperties {
     
-    private static final String DEFAULT_BUNDLE_EXTRA_BATCH_MANAGER = "dev.galasa.zosbatch.zosmf.manager";
+    private static final String DEFAULT_EXTRA_BUNDLE_BATCH_MANAGER = "dev.galasa.zosbatch.zosmf.manager";
     
     public static String get() throws ZosManagerException {
         try {
             String batchBundleName = getStringNulled(ZosPropertiesSingleton.cps(), "bundle.extra", "batch.manager");
             if (batchBundleName == null)  {
-                return DEFAULT_BUNDLE_EXTRA_BATCH_MANAGER;
+                return DEFAULT_EXTRA_BUNDLE_BATCH_MANAGER;
             }
             return batchBundleName;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosManagerException("Problem asking CPS for the batch manager extra bundle name", e); 
+            throw new ZosManagerException("Problem asking CPS for the zOS Batch Manager extra bundle name", e); 
         }
     }
 }

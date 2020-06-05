@@ -127,9 +127,12 @@ public class OrderStartField extends AbstractOrder implements IAttribute {
         bitSet.set(1, false);
         bitSet.set(0, fieldModifed);
 
-        int preConverted = bitSet.toByteArray()[0];
-        buffer[1] = BufferAddress.chars[preConverted];
-
+        if (bitSet.isEmpty()) {
+            buffer[1] = 0;
+        } else { 
+            int preConverted = bitSet.toByteArray()[0];
+            buffer[1] = BufferAddress.chars[preConverted];
+        }
         return buffer;
     }
 

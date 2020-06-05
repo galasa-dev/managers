@@ -21,6 +21,7 @@ import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import dev.galasa.ManagerException;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
@@ -205,7 +206,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			client.setURI(new URI(endpoint));
 
 			//Send document to index
-			client.postJson(index + "/_doc", request, false);
+			client.postText(index + "/_doc", request);
 			logger.info("Run successfully logged to Elastic index " + index);
         
 			//Change index to latest document index
@@ -213,7 +214,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		 	String testCase = (String) this.runProperties.get("testCase");
 		 	
 		 	//Create new doc if doesnt exist, updates if doc already exists
-			client.postJson(index + "/_doc/" + testCase + testingEnvironment, request, false);
+			client.postText(index + "/_doc/" + testCase + testingEnvironment, request);
 			logger.info("Run successfully logged to Elastic index " + index);
 
 		} catch (HttpClientException e) {
