@@ -15,7 +15,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestZosBatchZosmfPropertiesSingleton {

@@ -139,7 +139,7 @@ public class TestZosTSOCommandManagerImpl {
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
         exceptionRule.expect(ManagerException.class);
-        exceptionRule.expectMessage("The zOS UNIX Manager is not available");
+        exceptionRule.expectMessage("The zOS UNIX Command Manager is not available");
         zosTSOCommandManagerSpy.youAreRequired(allManagers, activeManagers);
     }
     

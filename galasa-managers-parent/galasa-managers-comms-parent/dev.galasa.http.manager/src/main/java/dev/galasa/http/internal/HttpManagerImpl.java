@@ -25,7 +25,6 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.http.HttpClient;
 import dev.galasa.http.IHttpClient;
-import dev.galasa.http.IHttpManager;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
 @Component(service = { IManager.class })

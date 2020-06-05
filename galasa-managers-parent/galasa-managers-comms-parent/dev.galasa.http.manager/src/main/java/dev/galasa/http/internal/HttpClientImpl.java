@@ -360,6 +360,7 @@ public class HttpClientImpl implements IHttpClient {
                 response = httpClient.execute(request, httpContext);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK
+                        && status.getStatusCode() != HttpStatus.SC_CREATED
                         && status.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY
                         && !okResponseCodes.contains(status.getStatusCode())) {
                     String message = "HTTP " + request.getMethod() + " to " + request.getURI().toASCIIString()
@@ -512,172 +513,215 @@ public class HttpClientImpl implements IHttpClient {
         }
     }
 
-    @Override
-    public Object get(String path, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
-        return get(path, null, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
-                jaxbClasses, retry);
-    }
+    // @Override
+    // public Object get(String path, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
+    //     return get(path, null, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
+    //             jaxbClasses, retry);
+    // }
 
-    @Override
-    public Object get(String path, Map<String, String> queryParams, boolean retry, Class<?>... jaxbClasses)
-            throws HttpClientException {
-        return get(path, queryParams, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
-                jaxbClasses, retry);
-    }
+    // @Override
+    // public Object get(String path, Map<String, String> queryParams, boolean retry, Class<?>... jaxbClasses)
+    //         throws HttpClientException {
+    //     return get(path, queryParams, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
+    //             jaxbClasses, retry);
+    // }
 
-    @Override
-    public String get(String path) throws HttpClientException {
+    // @Override
+    // public String get(String path) throws HttpClientException {
 
-        return get(path, false);
-    }
+    //     return get(path, false);
+    // }
 
-    @Override
-    public String get(String path, boolean retry) throws HttpClientException {
+    // @Override
+    // public String get(String path, boolean retry) throws HttpClientException {
+    //     return (String) get(path, null,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        return (String) get(path, null,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object get(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
+    //         boolean retry) throws HttpClientException {
 
-    @Override
-    public Object get(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
-            boolean retry) throws HttpClientException {
+    //     HttpGet get = new HttpGet(buildUri(path, queryParams));
+    //     addHeaders(get, null, acceptTypes);
 
-        HttpGet get = new HttpGet(buildUri(path, queryParams));
-        addHeaders(get, null, acceptTypes);
+    //     byte[] response = execute(get, retry);
 
-        byte[] response = execute(get, retry);
+    //     return unmarshall(response, jaxbClasses);
+    // }
 
-        return unmarshall(response, jaxbClasses);
-    }
+    // @Override
+    // public String delete(String path) throws HttpClientException {
+    //     return delete(path,false);
+    // }
 
-    @Override
-    public Object delete(String path, boolean retry) throws HttpClientException {
+    // @Override
+    // public String delete(String path, boolean retry) throws HttpClientException {
 
-        return delete(path, null,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    //     return (String) delete(path, null,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-    @Override
-    public Object delete(String path, Map<String, String> queryParams, ContentType[] acceptTypes,
-            Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
+    // @Override
+    // public Object delete(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
+    //         throws HttpClientException {
+    //     return delete(path, queryParams,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             jaxbClasses, retry);
+    // }
 
-        HttpDelete delete = new HttpDelete(buildUri(path, queryParams));
-        addHeaders(delete, null, acceptTypes);
+    // @Override
+    // public Object delete(String path, Map<String, String> queryParams, ContentType[] acceptTypes,
+    //         Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
 
-        byte[] response = execute(delete, retry);
+    //     HttpDelete delete = new HttpDelete(buildUri(path, queryParams));
+    //     addHeaders(delete, null, acceptTypes);
 
-        return unmarshall(response, jaxbClasses);
-    }
+    //     byte[] response = execute(delete, retry);
 
-    @Override
-    public Object putText(String path, String data, boolean retry) throws HttpClientException {
+    //     return unmarshall(response, jaxbClasses);
+    // }
 
-        return put(path, null, ContentType.TEXT_PLAIN, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object putText(String path, String data, boolean retry) throws HttpClientException {
 
-    @Override
-    public Object putText(String path, String data, Map<String, String> queryParams, boolean retry)
-            throws HttpClientException {
-        return put(path, queryParams, ContentType.TEXT_PLAIN, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    //     return put(path, null, ContentType.TEXT_PLAIN, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-    @Override
-    public Object putXml(String path, String data, boolean retry) throws HttpClientException {
+    // @Override
+    // public Object putText(String path, String data, Map<String, String> queryParams, boolean retry)
+    //         throws HttpClientException {
+    //     return put(path, queryParams, ContentType.TEXT_PLAIN, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        return put(path, null, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object putXml(String path, String data, boolean retry) throws HttpClientException {
 
-    @Override
-    public Object putJson(String path, String data, boolean retry) throws HttpClientException {
+    //     return put(path, null, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        return put(path, null, ContentType.APPLICATION_JSON, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object putJson(String path, String data, boolean retry) throws HttpClientException {
 
-    @Override
-    public Object put(String path, Map<String, String> queryParams, ContentType contentType, Object data,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
+    //     return put(path, null, ContentType.APPLICATION_JSON, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        byte[] dataBytes = marshall(data, jaxbClasses);
+    // @Override
+    // public Object putMultipart(String path, List<RequestPart> parts, boolean retry) throws HttpClientException {
+    //     return putMultipart(path, parts, null,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        HttpPut put = new HttpPut(buildUri(path, queryParams));
-        put.setEntity(new ByteArrayEntity(dataBytes));
-        addHeaders(put, contentType, acceptTypes);
+    // @Override
+    // public Object putMultipart(String path, List<RequestPart> parts, Map<String, String> queryParams,
+    //         ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
 
-        byte[] response = execute(put, retry);
+    //     String boundary = "arbitraryBoundaryString";
+    //     MultipartEntityBuilder meb = MultipartEntityBuilder.create();
+    //     meb.setMode(HttpMultipartMode.STRICT);
+    //     meb.setBoundary(boundary);
 
-        return unmarshall(response, jaxbClasses);
-    }
+    //     for (RequestPart part : parts) {
+    //         meb.addPart(part.getType(), part.getBody());
+    //     }
 
-    @Override
-    public Object putMultipart(String path, List<RequestPart> parts, boolean retry) throws HttpClientException {
-        return putMultipart(path, parts, null,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    //     HttpPut put = new HttpPut(buildUri(path, queryParams));
+    //     put.setEntity(meb.build());
+    //     addHeaders(put, null, acceptTypes);
+    //     put.addHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
 
-    @Override
-    public Object putMultipart(String path, List<RequestPart> parts, Map<String, String> queryParams,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
+    //     byte[] response = execute(put, retry);
 
-        String boundary = "arbitraryBoundaryString";
-        MultipartEntityBuilder meb = MultipartEntityBuilder.create();
-        meb.setMode(HttpMultipartMode.STRICT);
-        meb.setBoundary(boundary);
+    //     return unmarshall(response, jaxbClasses);
+    // }
 
-        for (RequestPart part : parts) {
-            meb.addPart(part.getType(), part.getBody());
-        }
+    // @Override
+    // public Object putJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
+    //     return put(path, null, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             jaxbClasses, retry);
+    // }
 
-        HttpPut put = new HttpPut(buildUri(path, queryParams));
-        put.setEntity(meb.build());
-        addHeaders(put, null, acceptTypes);
-        put.addHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
+    // @Override
+    // public Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
+    //         Class<?>... jaxbClasses) throws HttpClientException {
+    //     return put(path, queryParams, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             jaxbClasses, retry);
+    // }
 
-        byte[] response = execute(put, retry);
+    // @Override
+    // public Object put(String path, Map<String, String> queryParams, ContentType contentType, Object data,
+    //         ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
 
-        return unmarshall(response, jaxbClasses);
-    }
+    //     byte[] dataBytes = marshall(data, jaxbClasses);
 
-    @Override
-    public Object postText(String path, String data, boolean retry) throws HttpClientException {
+    //     HttpPut put = new HttpPut(buildUri(path, queryParams));
+    //     put.setEntity(new ByteArrayEntity(dataBytes));
+    //     addHeaders(put, contentType, acceptTypes);
 
-        return post(path, null, ContentType.TEXT_PLAIN, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    //     byte[] response = execute(put, retry);
 
-    @Override
-    public Object postTextAsXML(String path, String data, boolean retry) throws HttpClientException {
+    //     return unmarshall(response, jaxbClasses);
+    // }
 
-        return post(path, null, ContentType.TEXT_XML, data, new ContentType[] { ContentType.APPLICATION_XML,
-                ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN, ContentType.TEXT_XML }, null, retry);
-    }
+    // @Override
+    // public Object postText(String path, String data, boolean retry) throws HttpClientException {
 
-    @Override
-    public Object postXml(String path, String data, boolean retry) throws HttpClientException {
+    //     return post(path, null, ContentType.TEXT_PLAIN, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
-        return post(path, null, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object postTextAsXML(String path, String data, boolean retry) throws HttpClientException {
 
-    @Override
-    public Object postJson(String path, String data, boolean retry) throws HttpClientException {
+    //     return post(path, null, ContentType.TEXT_XML, data, new ContentType[] { ContentType.APPLICATION_XML,
+    //             ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN, ContentType.TEXT_XML }, null, retry);
+    // }
 
-        return post(path, null, ContentType.APPLICATION_JSON, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                null, retry);
-    }
+    // @Override
+    // public Object postXml(String path, String data, boolean retry) throws HttpClientException {
+
+    //     return post(path, null, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
+
+    // @Override
+    // public Object postJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses)
+    //         throws HttpClientException {
+    //     return post(path, null, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             jaxbClasses, retry);
+    // }
+
+    // @Override
+    // public Object postJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
+    //         Class<?>... jaxbClasses) throws HttpClientException {
+    //     return post(path, queryParams, ContentType.APPLICATION_XML, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             jaxbClasses, retry);
+    // }
+
+    // @Override
+    // public Object postJson(String path, String data, boolean retry) throws HttpClientException {
+
+    //     return post(path, null, ContentType.APPLICATION_JSON, data,
+    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
+    //             null, retry);
+    // }
 
     @Override
     public Object post(String path, Map<String, String> queryParams, ContentType contentType, Object data,
@@ -692,6 +736,7 @@ public class HttpClientImpl implements IHttpClient {
         byte[] response = execute(post, retry);
 
         return unmarshall(response, jaxbClasses);
+
     }
 
     @Override
@@ -716,45 +761,6 @@ public class HttpClientImpl implements IHttpClient {
         return unmarshall(response, null);
     }
 
-    @Override
-    public Object postJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses)
-            throws HttpClientException {
-        return post(path, null, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                jaxbClasses, retry);
-    }
-
-    @Override
-    public Object postJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
-            Class<?>... jaxbClasses) throws HttpClientException {
-        return post(path, queryParams, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                jaxbClasses, retry);
-    }
-
-    @Override
-    public Object putJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
-        return put(path, null, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                jaxbClasses, retry);
-    }
-
-    @Override
-    public Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
-            Class<?>... jaxbClasses) throws HttpClientException {
-        return put(path, queryParams, ContentType.APPLICATION_XML, data,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                jaxbClasses, retry);
-    }
-
-    @Override
-    public Object delete(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-            throws HttpClientException {
-        return delete(path, queryParams,
-                new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-                jaxbClasses, retry);
-    }
-
     public CloseableHttpResponse getFile(String path) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
@@ -762,7 +768,7 @@ public class HttpClientImpl implements IHttpClient {
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
-            logger.error("Could not download file from speficifed path: "+ path, e);
+            logger.error("Could not download file from specified path: "+ path, e);
             throw new HttpClientException("Failed to get file",e);
         }
     }
@@ -774,7 +780,7 @@ public class HttpClientImpl implements IHttpClient {
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
-            logger.error("Could not download file from speficifed path: "+ path, e);
+            logger.error("Could not download file from specified path: "+ path, e);
             throw new HttpClientException("Failed to get file",e);
         }
     }
@@ -887,8 +893,7 @@ public class HttpClientImpl implements IHttpClient {
         return executeTextRequest(request);
     }
 
-    @Override
-    public HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException {
+    private HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.textResponse(execute(request.buildRequest()));
     }
@@ -929,14 +934,14 @@ public class HttpClientImpl implements IHttpClient {
         return executeJsonRequest(request);
     }
 
-    @Override
-    public HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
+    // @Override
+    private HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
     }
 
-    @Override
-    public HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException {
+    // @Override
+    private HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.xmlResponse(execute(request.buildRequest()));
     }
@@ -981,8 +986,8 @@ public class HttpClientImpl implements IHttpClient {
         return executeJaxbRequest(request, responseTypes);
     }
 
-    @Override
-    public HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>... responseTypes)
+    // @Override
+    private HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>... responseTypes)
             throws HttpClientException {
 
         return HttpClientResponse.jaxbResponse(execute(request.buildRequest()), responseTypes);
