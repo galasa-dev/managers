@@ -8,7 +8,7 @@ package dev.galasa.cicsts;
 import dev.galasa.ProductVersion;
 import dev.galasa.zos.IZosImage;
 
-public interface ICics {
+public interface ICicsRegion {
 
     /***
      * Retrieve the CICS TS Region tag

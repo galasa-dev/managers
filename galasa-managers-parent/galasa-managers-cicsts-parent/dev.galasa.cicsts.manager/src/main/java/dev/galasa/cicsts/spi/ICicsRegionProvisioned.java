@@ -5,8 +5,8 @@
  */
 package dev.galasa.cicsts.spi;
 
-import dev.galasa.cicsts.ICics;
+import dev.galasa.cicsts.ICicsRegion;
 
-public interface ICicsProvisioned extends ICics {
+public interface ICicsProvisioned extends ICicsRegion {
 
 }

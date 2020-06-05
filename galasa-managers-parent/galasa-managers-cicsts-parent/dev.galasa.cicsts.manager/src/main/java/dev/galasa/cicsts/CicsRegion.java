@@ -16,7 +16,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Represents a CICS TS region that has been provisioned for the test
  * 
  * <p>
- * Used to populate a {@link ICics} field
+ * Used to populate a {@link ICicsRegion} field
  * </p>
  * 
  * @author Michael Baylis
@@ -25,8 +25,8 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @CicstsManagerField
-@ValidAnnotatedFields({ ICics.class })
-public @interface Cics {
+@ValidAnnotatedFields({ ICicsRegion.class })
+public @interface CicsRegion {
 
     /**
      * The tag of the CICS region this variable is to be populated with
