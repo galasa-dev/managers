@@ -235,6 +235,44 @@ public class HttpClientImpl implements IHttpClient {
         return HttpClientResponse.textResponse(execute(request.buildRequest()));
     }
 
+        
+    @Override
+    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> getBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN });
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> postBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> deleteBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN });
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    public HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException {
+
+        return HttpClientResponse.byteResponse(execute(request.buildRequest()));
+    }
+
 
 
     @Override
@@ -758,24 +796,9 @@ public class HttpClientImpl implements IHttpClient {
         commonHeaders.clear();
     }
 
-    public HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException {
-
-        return HttpClientResponse.byteResponse(execute(request.buildRequest()));
-    }
-    
-    @Override
-    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
-        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
-        request.setBody(binary);
-
-        return executeByteRequest(request);
-    }
     private HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException {
         return HttpClientResponse.xmlResponse(execute(request.buildRequest()));
     }
-
-    
 
     @Override
     public HttpClientResponse<String> head(String url) throws HttpClientException {

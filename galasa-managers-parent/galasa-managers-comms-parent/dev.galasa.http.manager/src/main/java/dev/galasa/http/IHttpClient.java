@@ -159,6 +159,50 @@ public interface IHttpClient {
      */
     HttpClientResponse<String> deleteText(String url) throws HttpClientException;
 
+        /**
+     * Issue an HTTP PUT to the provided URL, sending the provided
+     * {@link byte[]} and receiving a {@link byte[]} in the response.
+     * 
+     * @param url
+     * @param binary
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException;
+
+    /**
+     * Issue an HTTP GET to the provided URL, sending the provided
+     * {@link byte[]} and receiving a {@link byte[]} in the response.
+     * 
+     * @param url
+     * @param binary
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<byte[]> getBinary(String url, byte[] binary) throws HttpClientException;
+
+    /**
+     * Issue an HTTP POST to the provided URL, sending the provided
+     * {@link byte[]} and receiving a {@link byte[]} in the response.
+     * 
+     * @param url
+     * @param binary
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<byte[]> postBinary(String url, byte[] binary) throws HttpClientException;
+
+    /**
+     * Issue an HTTP DELETE to the provided URL, sending the provided
+     * {@link byte[]} and receiving a {@link byte[]} in the response.
+     * 
+     * @param url
+     * @param binary
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<byte[]> deleteBinary(String url, byte[] binary) throws HttpClientException;
+
     /**
      * Download a file from a specified location to a specified destination on local host.
      * 
@@ -175,23 +219,6 @@ public interface IHttpClient {
      * @param String path = URL path
      */
     CloseableHttpResponse getFile(String path, ContentType... acceptTypes) throws HttpClientException;
-
-    
-
-    
-
-   
-
-    /**
-     * Issue an HTTP PUT to the provided URL, sending the provided
-     * {@link byte[]} and receiving a {@link byte[]} in the response.
-     * 
-     * @param url
-     * @param binary
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException;
 
     /**
      * Send a compressed (tar) file from a local location to a specified destination on a host.
