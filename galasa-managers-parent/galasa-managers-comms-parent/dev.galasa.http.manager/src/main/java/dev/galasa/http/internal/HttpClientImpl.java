@@ -626,7 +626,6 @@ public class HttpClientImpl implements IHttpClient {
         commonHeaders.clear();
     }
 
-    @Override
     public HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.byteResponse(execute(request.buildRequest()));
@@ -719,14 +718,12 @@ public class HttpClientImpl implements IHttpClient {
 
         return executeJsonRequest(request);
     }
-
-    // @Override
+    
     private HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
     }
 
-    // @Override
     private HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.xmlResponse(execute(request.buildRequest()));

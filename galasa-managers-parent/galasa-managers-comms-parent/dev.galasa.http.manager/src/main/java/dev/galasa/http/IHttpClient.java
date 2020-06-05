@@ -23,81 +23,6 @@ import dev.galasa.http.internal.HttpClientRequest;
 public interface IHttpClient {
 
     /**
-     * Add a header that will be used on all http requests
-     * 
-     * @param name
-     * @param value
-     */
-    void addCommonHeader(String name, String value);
-
-    /**
-     * Remove all headers for this http request
-     */
-    void clearCommonHeaders();
-
-    /**
-     * Add a response code for the execute to ignore and treat as OK
-     * 
-     * @param responseCode
-     */
-    void addOkResponseCode(int responseCode);
-
-    /**
-     * Build the client
-     * 
-     * @return the built client
-     */
-    IHttpClient build();
-
-    /**
-     * close the underlying HTTPClient
-     */
-    void close();
-
-    /**
-     * Issue an HTTP DELETE to the provided URL, receiving a JAXB Object in the
-     * response. In order to unmarshal the response, an array of possible response
-     * classes must be provided in responseTypes
-     * 
-     * @param url
-     * @param responseTypes
-     * @return - {@link HttpClientResponse} with a JAXB content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException;
-
-    /**
-     * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
-     * the response.
-     * 
-     * @param url
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException;
-
-    /**
-     * Issue an HTTP DELETE to the provided URL, receiving a {@link String} in the
-     * response.
-     * 
-     * @param url
-     * @return - {@link HttpClientResponse} with a {@link String} content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<String> deleteText(String url) throws HttpClientException;
-
-    /**
-     * Execute an {@link HttpClientRequest} returning a byte array available through
-     * the returned {@link HttpClientResponse}.
-     *
-     * @param request
-     * @return - {@link HttpClientResponse} with a byte array content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException;
-
-
-    /**
      * Issue an HTTP GET to the provided URL, receiving a JAXB Object in the
      * response. In order to unmarshal the response, an array of possible response
      * classes must be provided in responseTypes
@@ -119,6 +44,16 @@ public interface IHttpClient {
      */
     HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException;
 
+     /**
+     * Issue an HTTP GET to the provided URL, receiving a {@link String} in the
+     * response.
+     * 
+     * @param url
+     * @return - {@link HttpClientResponse} with a {@link String} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> getText(String url) throws HttpClientException;
+
     /**
      * Download a file from a specified location to a specified destination on local host.
      * 
@@ -135,64 +70,6 @@ public interface IHttpClient {
      * @param String path = URL path
      */
     CloseableHttpResponse getFile(String path, ContentType... acceptTypes) throws HttpClientException;
-
-    /**
-     * Send a compressed (tar) file from a local location to a specified destination on a host.
-     * 
-     * @param Sting path - URL path
-     * @param File file - tar archive file
-     */
-    void putFile(String path, InputStream file);
-
-    /**
-     * Get the SSL context used by this client
-     * 
-     * @return the {@link SSLContext} or null if there is none
-     */
-    SSLContext getSSLContext();
-
-    /**
-     * Issue an HTTP GET to the provided URL, receiving a {@link String} in the
-     * response.
-     * 
-     * @param url
-     * @return - {@link HttpClientResponse} with a {@link String} content type
-     * @throws HttpClientException
-     */
-    HttpClientResponse<String> getText(String url) throws HttpClientException;
-
-    /**
-     * Get the username set for this client
-     * 
-     * @return the username
-     */
-    String getUsername();
-
-    /**
-     * Get the username set for this client for a specific scope
-     * 
-     * @param scope
-     * @return the username
-     */
-    String getUsername(URI scope);
-
-    /**
-     * Execute an {@link HttpClientRequest} returning a JAXB object available
-     * through the returned {@link HttpClientResponse}. In order to unmarshal the
-     * response, an array of possible response classes must be provided in
-     * responseTypes *
-     * 
-     * @param url
-     * @return - {@link HttpClientResponse}
-     * @throws HttpClientException
-     */
-    HttpClientResponse<String> head(String url) throws HttpClientException;
-
-    Object post(String path, Map<String, String> queryParams, ContentType contentType, Object data,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
-
-    Object postForm(String path, Map<String, String> queryParams, HashMap<String, String> fields,
-            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
 
     /**
      * Issue an HTTP POST to the provided URL, sending the provided jaxbObject and
@@ -277,6 +154,118 @@ public interface IHttpClient {
      */
     HttpClientResponse<String> putText(String url, String text) throws HttpClientException;
 
+    /**
+     * Send a compressed (tar) file from a local location to a specified destination on a host.
+     * 
+     * @param Sting path - URL path
+     * @param File file - tar archive file
+     */
+    void putFile(String path, InputStream file);
+
+    /**
+     * Issue an HTTP DELETE to the provided URL, receiving a JAXB Object in the
+     * response. In order to unmarshal the response, an array of possible response
+     * classes must be provided in responseTypes
+     * 
+     * @param url
+     * @param responseTypes
+     * @return - {@link HttpClientResponse} with a JAXB content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException;
+
+    /**
+     * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
+     * the response.
+     * 
+     * @param url
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException;
+
+    /**
+     * Issue an HTTP DELETE to the provided URL, receiving a {@link String} in the
+     * response.
+     * 
+     * @param url
+     * @return - {@link HttpClientResponse} with a {@link String} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> deleteText(String url) throws HttpClientException;
+
+    /**
+     * Get the SSL context used by this client
+     * 
+     * @return the {@link SSLContext} or null if there is none
+     */
+    SSLContext getSSLContext();
+
+    /**
+     * Get the username set for this client
+     * 
+     * @return the username
+     */
+    String getUsername();
+
+    /**
+     * Get the username set for this client for a specific scope
+     * 
+     * @param scope
+     * @return the username
+     */
+    String getUsername(URI scope);
+
+    /**
+     * Execute an {@link HttpClientRequest} returning a JAXB object available
+     * through the returned {@link HttpClientResponse}. In order to unmarshal the
+     * response, an array of possible response classes must be provided in
+     * responseTypes *
+     * 
+     * @param url
+     * @return - {@link HttpClientResponse}
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> head(String url) throws HttpClientException;
+
+    Object post(String path, Map<String, String> queryParams, ContentType contentType, Object data,
+            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
+
+    Object postForm(String path, Map<String, String> queryParams, HashMap<String, String> fields,
+            ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException;
+
+    
+    /**
+     * Add a header that will be used on all http requests
+     * 
+     * @param name
+     * @param value
+     */
+    void addCommonHeader(String name, String value);
+
+    /**
+     * Remove all headers for this http request
+     */
+    void clearCommonHeaders();
+
+    /**
+     * Add a response code for the execute to ignore and treat as OK
+     * 
+     * @param responseCode
+     */
+    void addOkResponseCode(int responseCode);
+
+    /**
+     * Build the client
+     * 
+     * @return the built client
+     */
+    IHttpClient build();
+
+    /**
+     * close the underlying HTTPClient
+     */
+    void close();
     /**
      * Set the username and password for all scopes
      * 
