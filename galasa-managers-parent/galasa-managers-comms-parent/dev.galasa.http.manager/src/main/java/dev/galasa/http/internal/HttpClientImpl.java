@@ -735,7 +735,7 @@ public class HttpClientImpl implements IHttpClient {
     @Override
     public HttpClientResponse<Object> getJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
 
-        HttpClientRequest request = HttpClientRequest.newGetRequest(url,
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
                 new ContentType[] { ContentType.APPLICATION_XML });
 
         return executeJaxbRequest(request, responseTypes);
@@ -745,7 +745,7 @@ public class HttpClientImpl implements IHttpClient {
     public HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
             throws HttpClientException {
 
-        HttpClientRequest request = HttpClientRequest.newPutRequest(url,
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url,null).toString(),
                 new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
         request.setJAXBBody(jaxbObject);
 
@@ -756,7 +756,7 @@ public class HttpClientImpl implements IHttpClient {
     public HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
             throws HttpClientException {
 
-        HttpClientRequest request = HttpClientRequest.newPostRequest(url,
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
                 new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
         request.setJAXBBody(jaxbObject);
 
@@ -766,7 +766,7 @@ public class HttpClientImpl implements IHttpClient {
     @Override
     public HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
 
-        HttpClientRequest request = HttpClientRequest.newDeleteRequest(url,
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
                 new ContentType[] { ContentType.APPLICATION_XML });
 
         return executeJaxbRequest(request, responseTypes);
