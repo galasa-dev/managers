@@ -64,7 +64,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a JAXB content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Object> deleteJaxb(String url, Class<?>[] responseTypes) throws HttpClientException;
+    HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException;
 
     /**
      * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
@@ -107,7 +107,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a JAXB content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Object> getJaxb(String url, Class<?>[] responseTypes) throws HttpClientException;
+    HttpClientResponse<Object> getJaxb(String url, Class<?>... responseTypes) throws HttpClientException;
 
     /**
      * Issue an HTTP GET to the provided URL, receiving a {@link JSONObject} in the
@@ -134,7 +134,7 @@ public interface IHttpClient {
      * @Param Content Types
      * @param String path = URL path
      */
-    CloseableHttpResponse getFile(String path, ContentType[] acceptTypes) throws HttpClientException;
+    CloseableHttpResponse getFile(String path, ContentType... acceptTypes) throws HttpClientException;
 
     /**
      * Send a compressed (tar) file from a local location to a specified destination on a host.
@@ -205,7 +205,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a JAXB content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>[] responseTypes)
+    HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
             throws HttpClientException;
 
     /**
@@ -241,7 +241,7 @@ public interface IHttpClient {
      * @return - {@link HttpClientResponse} with a JAXB content type
      * @throws HttpClientException
      */
-    HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>[] responseTypes)
+    HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
             throws HttpClientException;
 
     /**

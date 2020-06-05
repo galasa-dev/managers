@@ -559,7 +559,7 @@ public class HttpClientImpl implements IHttpClient {
         }
     }
 
-    public CloseableHttpResponse getFile(String path, ContentType[] contentTypes) throws HttpClientException {
+    public CloseableHttpResponse getFile(String path, ContentType... contentTypes) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
                 contentTypes);
