@@ -9,8 +9,8 @@ import javax.validation.constraints.NotNull;
 
 import dev.galasa.ManagerException;
 
-public interface ICicsProvisioner {
+public interface ICicsRegionProvisioner {
 
-    ICicsProvisioned provision(@NotNull String tag) throws ManagerException;
+    ICicsRegionProvisioned provision(@NotNull String tag) throws ManagerException;
 
 }
