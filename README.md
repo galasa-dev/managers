@@ -7,14 +7,14 @@ We're adding new Manager every month. Look at the [summary table of Managers](ht
 
 ## Contributing
 
-If you are interested in the development of Galasa, take a look at the documentation and feel free to post a question on [Spectrum](https://spectrum.chat/galasa?tab=posts) or raise new ideas / features / bugs etc. as issues on [GitHub](https://github.com/galasa-dev/projectmanagement).
+If you are interested in the development of Galasa, take a look at the documentation and feel free to post a question on the <a href="https://galasa.slack.com" target="_blank"> Galasa Slack channel</a>, or start sharing usage and development experiences with other Galasa users and the IBM team. If you're not a member of the Slack channel yet, you can <a href="https://join.slack.com/t/galasa/shared_invite/zt-ele2ic8x-VepEO1o13t4Jtb3ZuM4RUA" target="_blank"> register to join</a>. You can also raise new ideas / features / bugs etc. as issues on [GitHub](https://github.com/galasa-dev/projectmanagement).  
 
 Take a look at the [contribution guidelines](https://github.com/galasa-dev/projectmanagement/blob/master/contributing.md).
  
 
 ## Documentation
 
-More information can be found on the [Galasa Homepage](https://galasa.dev). Questions related to the usage of Galasa can be posted on [Spectrum](https://spectrum.chat/galasa?tab=posts).
+More information can be found on the [Galasa Homepage](https://galasa.dev). Questions related to the usage of Galasa can be posted on the [Galasa Slack channel](https://galasa.slack.com).
 
 ## Where can I get the latest release?
 
