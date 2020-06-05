@@ -36,6 +36,7 @@ public enum AttentionIdentification {
     PA1((byte) 0x6c),
     PA2((byte) 0x6e),
     PA3((byte) 0x6b),
+    NONE((byte) 0x60),
     STRUCTURED_FIELD((byte) 0x88);
 
     private final byte keyValue;

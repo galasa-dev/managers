@@ -177,20 +177,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
         //*** Auto generate the remaining fields
         generateAnnotatedFields(ZosManagerField.class);
-        throw new ResourceUnavailableException("Dummy failure");
     }
     
-    @Override
-    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-        
-    }
-    
-    @Override
-    public void provisionStart() throws ManagerException, ResourceUnavailableException {
-    }
-
-
-
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#provisionDiscard()
      */
@@ -208,7 +196,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     //*** We do not allow auto generate of the zos image fields as they need
     //*** to be done first AND the primary image needs to be the first one
-    private IZosImage generateZosImage(Field field) throws ZosManagerException {
+    protected IZosImage generateZosImage(Field field) throws ZosManagerException {
         ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
 
         //*** Default the tag to primary
@@ -347,7 +335,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     }
 
 
-    private static class ImageUsage implements Comparable<ImageUsage> {
+    protected static class ImageUsage implements Comparable<ImageUsage> {
         private final ZosProvisionedImageImpl image;
         private       Float        usage;
 
@@ -376,7 +364,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         
         @Override
         public int hashCode() {
-            return super.hashCode();
+            return Objects.hash(image);
          }
 
         @Override

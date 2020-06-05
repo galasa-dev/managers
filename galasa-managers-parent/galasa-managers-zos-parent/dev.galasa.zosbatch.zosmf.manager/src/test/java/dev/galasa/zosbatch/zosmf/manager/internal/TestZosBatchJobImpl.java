@@ -151,7 +151,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);        
         
         ZosBatchManagerImpl.setArchivePath(newMockedPath(false));
-        ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchJobImpl.class.getDeclaredMethod("setup"));
+        ZosBatchManagerImpl.setCurrentTestMethod(TestZosBatchJobImpl.class.getDeclaredMethod("setup").getName());
 
         Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
