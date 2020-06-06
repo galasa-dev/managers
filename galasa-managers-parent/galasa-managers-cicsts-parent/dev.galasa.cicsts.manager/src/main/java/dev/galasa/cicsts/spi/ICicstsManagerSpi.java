@@ -14,8 +14,5 @@ import dev.galasa.cicsts.CicstsManagerException;
 public interface ICicstsManagerSpi {
 
     void registerProvisioner(ICicsRegionProvisioner provisioner);
-    
-    @NotNull
-    List<ICicsRegionProvisioned> getDseCicsRegions() throws CicstsManagerException;
 
 }
