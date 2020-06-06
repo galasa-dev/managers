@@ -251,7 +251,7 @@ public class TestZosManagerImpl {
     @Test
     public void testProvisionGenerate() throws Exception {
         PowerMockito.doNothing().when(zosManagerSpy, "generateAnnotatedFields", Mockito.any());
-        PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage(Mockito.any());
+        PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage((Field)Mockito.any());
         PowerMockito.doNothing().when(zosManagerSpy, "registerAnnotatedField", Mockito.any(), Mockito.any());
         Whitebox.setInternalState(zosManagerSpy, "testClass", (Object) DummyTestClass.class);
         HashMap<Field, Object> annotatedFields = new HashMap<>();

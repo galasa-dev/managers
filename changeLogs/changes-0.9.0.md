@@ -2,4 +2,4 @@
 
 | PM Issue      | Change        |
 | ------------- | ------------- |
-| ? | ? |
+| #299 | Add image annotation dependency code to the zOS Manager |

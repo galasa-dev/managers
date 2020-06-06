@@ -7,12 +7,14 @@ package dev.galasa.zos.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -39,6 +41,7 @@ import dev.galasa.zos.ZosImage;
 import dev.galasa.zos.ZosIpHost;
 import dev.galasa.zos.ZosIpPort;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.ZosManagerField;
 import dev.galasa.zos.internal.properties.BatchExtraBundle;
 import dev.galasa.zos.internal.properties.ClusterIdForTag;
 import dev.galasa.zos.internal.properties.ClusterImages;
@@ -52,6 +55,7 @@ import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zos.spi.ZosImageDependencyField;
 
 @Component(service = { IManager.class })
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
@@ -140,9 +144,11 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
         //*** Get all our annotated fields
         List<AnnotatedField> annotatedFields = findAnnotatedFields(ZosManagerField.class);
+        Set<String> dependencyTags = findProvisionDependentAnnotatedFieldTags(ZosImageDependencyField.class, "imageTag");
 
         //*** First, locate the IZosImpl field that has a tag of primary
         //*** And then generate it
+        boolean primaryFound = false;
         Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
         while(annotatedFieldIterator.hasNext()) {
             AnnotatedField annotatedField = annotatedFieldIterator.next();
@@ -152,12 +158,19 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
                 ZosImage annotationZosImage = field.getAnnotation(ZosImage.class);
                 String tag = annotationZosImage.imageTag();
                 if (tag == null || PRIMARY_TAG.equalsIgnoreCase(tag.toUpperCase())) {
-                    IZosImage zosImage = generateZosImage(field);
+                    IZosImage zosImage = generateZosImage("PRIMARY");
                     registerAnnotatedField(field, zosImage);
                     annotatedFieldIterator.remove(); //*** Dont need it for the second pass
+                    primaryFound = true;
                     break;
                 }
             }
+        }
+
+        // Check if there are any dependencies that require the PRIMARY tag
+        if (!primaryFound && dependencyTags.contains("PRIMARY")) {
+            generateZosImage("PRIMARY");
+            dependencyTags.remove("PRIMARY");
         }
 
         //*** Second pass, generate all the remaining zosimages now the primary is allocated
@@ -173,6 +186,11 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
                 IZosImage zosImage = generateZosImage(field);
                 registerAnnotatedField(field, zosImage);
             }
+        }
+
+        // Check for any remaining dependencies
+        for(String tag : dependencyTags) {
+            generateZosImage(tag);
         }
 
         //*** Auto generate the remaining fields
@@ -193,7 +211,6 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         }
     }
 
-
     //*** We do not allow auto generate of the zos image fields as they need
     //*** to be done first AND the primary image needs to be the first one
     protected IZosImage generateZosImage(Field field) throws ZosManagerException {
@@ -201,7 +218,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
         //*** Default the tag to primary
         String tag = defaultString(annotationZosImage.imageTag(), PRIMARY_TAG).toUpperCase();
+        return generateZosImage(tag);
+    }
 
+    //*** We do not allow auto generate of the zos image fields as they need
+    //*** to be done first AND the primary image needs to be the first one
+    protected IZosImage generateZosImage(String tag) throws ZosManagerException {
         //*** Have we already generated this tag
         if (taggedImages.containsKey(tag)) {
             return taggedImages.get(tag);
