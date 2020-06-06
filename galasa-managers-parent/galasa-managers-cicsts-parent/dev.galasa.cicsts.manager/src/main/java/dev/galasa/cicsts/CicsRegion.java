@@ -11,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
+import dev.galasa.zos.spi.ZosImageDependencyField;
 
 /**
  * Represents a CICS TS region that has been provisioned for the test
@@ -25,6 +26,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @CicstsManagerField
+@ZosImageDependencyField
 @ValidAnnotatedFields({ ICicsRegion.class })
 public @interface CicsRegion {
 
