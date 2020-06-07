@@ -14,6 +14,6 @@ public interface ICicstsManagerSpi {
     void registerProvisioner(ICicsRegionProvisioner provisioner);
 
     @NotNull
-	List<ICicsRegionLogonProvider> getLogonProviders();
+    List<ICicsRegionLogonProvider> getLogonProviders();
 
 }
