@@ -54,6 +54,8 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
 
         DseCicsImpl cicsRegion = new DseCicsImpl(this.cicstsManager, cicsTag, imageTag, applid);
 
+        logger.info("Provisioned DSE " + cicsRegion.toString() + " on zOS Image " + cicsRegion.getZosImage().getImageID() + " for tag '" + cicsRegion.getTag());
+
         return cicsRegion;
     }
 

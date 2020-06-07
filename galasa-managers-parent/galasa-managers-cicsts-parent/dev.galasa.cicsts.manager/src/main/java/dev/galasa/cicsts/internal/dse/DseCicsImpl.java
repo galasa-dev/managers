@@ -16,6 +16,8 @@ public class DseCicsImpl implements ICicsRegionProvisioned {
 
     private ProductVersion version;
 
+    private int lastTerminalId;
+
     public DseCicsImpl(CicstsManagerImpl cicstsManager, String cicsTag, String imageTag, String applid)
             throws CicstsManagerException {
         this.cicsTag = cicsTag;
@@ -68,6 +70,12 @@ public class DseCicsImpl implements ICicsRegionProvisioned {
     @Override
     public String toString() {
         return "CICS Region[" + this.applid + "]";
+    }
+
+    @Override
+    public String getNextTerminalId() {
+        lastTerminalId++;
+        return this.applid + "_" + Integer.toString(lastTerminalId);
     }
 
 }
