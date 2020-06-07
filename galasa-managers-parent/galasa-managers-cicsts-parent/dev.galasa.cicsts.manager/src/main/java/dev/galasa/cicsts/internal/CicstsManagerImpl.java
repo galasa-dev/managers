@@ -231,8 +231,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @Override
     @NotNull
     public List<ICicsRegionLogonProvider> getLogonProviders() {
-        ArrayList<ICicsRegionLogonProvider> providers = new ArrayList<>(this.logonProviders);
-        return providers;
+        return new ArrayList<>(this.logonProviders);
     }
 
 }
