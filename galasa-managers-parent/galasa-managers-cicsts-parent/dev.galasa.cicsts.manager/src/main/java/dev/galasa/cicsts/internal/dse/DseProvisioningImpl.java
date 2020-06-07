@@ -16,7 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ManagerException;
-import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.internal.CicstsManagerImpl;
 import dev.galasa.cicsts.internal.properties.DseApplid;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
