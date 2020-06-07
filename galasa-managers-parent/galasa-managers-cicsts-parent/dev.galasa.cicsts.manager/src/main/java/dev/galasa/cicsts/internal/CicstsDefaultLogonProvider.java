@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.cicsts.internal;
 
 import org.apache.commons.logging.Log;
@@ -13,7 +18,7 @@ import dev.galasa.zos3270.Zos3270Exception;
 
 public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
 
-    private final static Log logger = LogFactory.getLog(CicstsDefaultLogonProvider.class);
+    private static final Log logger = LogFactory.getLog(CicstsDefaultLogonProvider.class);
 
     private final String initialText;
     private final String gmText;
@@ -39,22 +44,12 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
 
             // Check we are at the right screen
             if (initialText != null) {
-                try {
-                    cicsTerminal.verifyTextInField(initialText);
-                } catch (TextNotFoundException e) {
-                    throw new CicstsManagerException(
-                            "Unable to logon to CICS, initial screen does not contain '" + initialText + "'");
-                }
+                checkForInitialText(cicsTerminal);
             }
 
             cicsTerminal.type("LOGON APPLID(" + cicsTerminal.getCicsRegion().getApplid() + ")").enter();
 
-            try {
-                cicsTerminal.waitForTextInField(gmText);
-            } catch (Exception e) {
-                throw new CicstsManagerException(
-                        "Unable to wait for the initial CICS screen, looking for '" + gmText + "'", e);
-            }
+            waitForGmText(cicsTerminal);
 
             cicsTerminal.clear();
 
@@ -64,6 +59,24 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
         }
 
         return false;
+    }
+
+    private void checkForInitialText(ICicsTerminal cicsTerminal) throws CicstsManagerException {
+        try {
+            cicsTerminal.verifyTextInField(initialText);
+        } catch (TextNotFoundException e) {
+            throw new CicstsManagerException(
+                    "Unable to logon to CICS, initial screen does not contain '" + initialText + "'");
+        }
+    }
+
+    private void waitForGmText(ICicsTerminal cicsTerminal) throws CicstsManagerException {
+        try {
+            cicsTerminal.waitForTextInField(gmText);
+        } catch (Exception e) {
+            throw new CicstsManagerException("Unable to wait for the initial CICS screen, looking for '" + gmText + "'",
+                    e);
+        }
     }
 
 }

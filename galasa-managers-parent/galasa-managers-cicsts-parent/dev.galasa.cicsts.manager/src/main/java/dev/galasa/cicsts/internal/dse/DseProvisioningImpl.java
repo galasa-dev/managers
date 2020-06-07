@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.cicsts.internal.dse;
 
 import java.lang.annotation.Annotation;
@@ -26,7 +31,7 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
 
     private final boolean enabled;
 
-    public DseProvisioningImpl(CicstsManagerImpl cicstsManager) throws CicstsManagerException {
+    public DseProvisioningImpl(CicstsManagerImpl cicstsManager) {
         this.cicstsManager = cicstsManager;
 
         String provisionType = this.cicstsManager.getProvisionType();

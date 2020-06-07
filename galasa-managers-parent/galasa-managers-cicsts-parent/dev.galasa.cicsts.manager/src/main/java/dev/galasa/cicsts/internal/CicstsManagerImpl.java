@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.cicsts.internal;
 
 import java.lang.annotation.Annotation;
@@ -102,7 +107,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         // We need zos to provision first
-        if (this.zosManager == otherManager) {
+        if (this.zosManager == otherManager) { // NOSONAR - ignore return single statement rule as will prob need other managers soon
             return true;
         }
 
@@ -178,12 +183,6 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
 
     @Override
-    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-        // TODO Auto-generated method stub
-        super.provisionBuild();
-    }
-
-    @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
 
         // Add the default Logon Provider incase one isn't supplied
@@ -204,10 +203,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public void provisionStop() {
-        for(CicsTerminalImpl terminal : this.terminals) {
+        for (CicsTerminalImpl terminal : this.terminals) {
             try {
                 terminal.disconnect();
-            } catch (TerminalInterruptedException e) {
+            } catch (TerminalInterruptedException e) { // NOSONAR - wish to hide disconnect errors
             }
         }
     }
@@ -225,9 +224,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         return this.zosManager;
     }
 
-	public String getProvisionType() {
-		return this.provisionType;
-	}
+    public String getProvisionType() {
+        return this.provisionType;
+    }
 
     @Override
     @NotNull
