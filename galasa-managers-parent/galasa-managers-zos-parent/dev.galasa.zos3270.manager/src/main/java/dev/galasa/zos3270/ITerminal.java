@@ -116,5 +116,9 @@ public interface ITerminal {
     String retrieveFieldAtCursor();
 
     String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException;
+    
+    String getId();
+    
+    void setDisplayDatastream(boolean inbound, boolean outbound);
 
 }

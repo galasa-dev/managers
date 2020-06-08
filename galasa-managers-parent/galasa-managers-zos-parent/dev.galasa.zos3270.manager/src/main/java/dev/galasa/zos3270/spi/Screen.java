@@ -82,6 +82,8 @@ public class Screen {
     private Semaphore                               keyboardLock    = new Semaphore(1, true);
     private boolean                                 keyboardLockSet = false;
 
+    private static boolean                          displayOutboundDatastream = false;
+
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
     public Screen() throws TerminalInterruptedException {
@@ -109,6 +111,10 @@ public class Screen {
         }
     }
 
+    public void networkClosed() throws TerminalInterruptedException {
+        lockKeyboard();
+    }
+
     private synchronized void unlockKeyboard() {
         if (keyboardLockSet) {
             logger.trace("Unlocking keyboard");
@@ -130,7 +136,7 @@ public class Screen {
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
             }
-            
+
             if (writeControlCharacter.isReset()) {
                 this.workingCursor = 0;
             }
@@ -142,7 +148,7 @@ public class Screen {
         }
 
     }
-    
+
     private synchronized void processReadBuffer() throws DatastreamException {
         try {
             ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
@@ -151,7 +157,7 @@ public class Screen {
 
             BufferAddress cursor = new BufferAddress(this.screenCursor);
             outboundBuffer.write(cursor.getCharRepresentation());
-            
+
             for(IBufferHolder bh : this.buffer) {
                 if (bh == null) {
                     outboundBuffer.write(0);
@@ -170,7 +176,7 @@ public class Screen {
         } catch(Exception e) {
             throw new DatastreamException("Error whilst processing READ BUFFER", e);
         }
-        
+
     }
 
     private synchronized void processStructuredFields(List<StructuredField> structuredFields)
@@ -259,8 +265,10 @@ public class Screen {
                 baos.write(reply.toByte());
             }
 
-            String hex = new String(Hex.encodeHex(baos.toByteArray()));
-            logger.trace("outbound sf=" + hex);
+            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+                String hex = new String(Hex.encodeHex(baos.toByteArray()));
+                logger.trace("outbound sf=" + hex);
+            }
 
             network.sendDatastream(baos.toByteArray());
         } catch (Exception e) {
@@ -862,7 +870,7 @@ public class Screen {
             if (position >= screenSize) {
                 position = 0;
             }
-            
+
             this.screenCursor = position;
         }
 
@@ -947,12 +955,12 @@ public class Screen {
                     }
                 }
 
-                String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
-                logger.trace("outbound=" + hex);
             }
 
-            String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
-            logger.trace("outbound=" + hex);
+            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+                String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
+                logger.info("outbound=" + hex);
+            }
 
             for (IScreenUpdateListener listener : updateListeners) {
                 listener.screenUpdated(Direction.SENDING, aid);
@@ -1019,6 +1027,10 @@ public class Screen {
 
     public void setCursorPosition(int newPosition) {
         this.screenCursor = newPosition;
+    }
+
+    public static void setDisplayOutboundDatastream(boolean newDisplayOutboundDatastream) {
+        displayOutboundDatastream = newDisplayOutboundDatastream;
     }
 
 }

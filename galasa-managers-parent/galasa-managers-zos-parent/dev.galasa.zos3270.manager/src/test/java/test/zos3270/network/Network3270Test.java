@@ -50,7 +50,7 @@ public class Network3270Test {
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-        NetworkThread networkThread = new NetworkThread(new Screen(), null, bais);
+        NetworkThread networkThread = new NetworkThread(null, new Screen(), null, bais);
         networkThread.processMessage(bais);
 
         Assert.assertTrue("Will test the screen at this point, later", true);
@@ -65,7 +65,7 @@ public class Network3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread networkThread = new NetworkThread(null, null, bais);
+            NetworkThread networkThread = new NetworkThread(null, null, null, bais);
             networkThread.processMessage(bais);
             fail("Should have thrown an error because header < 5");
         } catch (NetworkException e) {
@@ -87,7 +87,7 @@ public class Network3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread networkThread = new NetworkThread(null, network, bais);
+            NetworkThread networkThread = new NetworkThread(null, null, network, bais);
             networkThread.processMessage(bais);
             fail("Should have thrown an error because unknown error");
         } catch (NetworkException e) {
@@ -108,7 +108,7 @@ public class Network3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread networkThread = new NetworkThread(null, network, bais);
+            NetworkThread networkThread = new NetworkThread(null, null, network, bais);
             networkThread.processMessage(bais);
         } catch (NetworkException e) {
             fail("Failed to process a IAC DO TIMING_MARK");
@@ -125,7 +125,7 @@ public class Network3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread networkThread = new NetworkThread(null, network, bais);
+            NetworkThread networkThread = new NetworkThread(null, null, network, bais);
             networkThread.processMessage(bais);
             fail("Should have thrown an exception due to a short IAC DO COMMAND");
         } catch (NetworkException e) {
