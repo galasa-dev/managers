@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -46,6 +47,7 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.ipnetwork.internal.IpNetworkManagerImpl;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.ZosManagerField;
 import dev.galasa.zos.internal.ZosManagerImpl.ImageUsage;
 import dev.galasa.zos.internal.properties.BatchExtraBundle;
 import dev.galasa.zos.internal.properties.ClusterIdForTag;
@@ -60,6 +62,7 @@ import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
+import dev.galasa.zos.spi.ZosImageDependencyField;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
@@ -251,12 +254,16 @@ public class TestZosManagerImpl {
     @Test
     public void testProvisionGenerate() throws Exception {
         PowerMockito.doNothing().when(zosManagerSpy, "generateAnnotatedFields", Mockito.any());
-        PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage(Mockito.any());
+        PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage((Field)Mockito.any());
+        PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage((String)Mockito.any());
         PowerMockito.doNothing().when(zosManagerSpy, "registerAnnotatedField", Mockito.any(), Mockito.any());
+        PowerMockito.when(zosManagerSpy, "findProvisionDependentAnnotatedFieldTags", Mockito.any(), Mockito.any()).thenReturn(new  HashSet<String>());
         Whitebox.setInternalState(zosManagerSpy, "testClass", (Object) DummyTestClass.class);
+
         HashMap<Field, Object> annotatedFields = new HashMap<>();
         annotatedFields.put(DummyTestClass.class.getField("zosImage1"), zosImageMock);
         Whitebox.setInternalState(zosManagerSpy, "annotatedFields", annotatedFields);        
+
         zosManagerSpy.provisionGenerate();
         PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(1)).invoke("generateAnnotatedFields", Mockito.any());
 

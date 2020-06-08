@@ -9,13 +9,11 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.cicsts.CicstsManagerException;
-
 public interface ICicstsManagerSpi {
 
     void registerProvisioner(ICicsRegionProvisioner provisioner);
-    
+
     @NotNull
-    List<ICicsRegionProvisioned> getDseCicsRegions() throws CicstsManagerException;
+    List<ICicsRegionLogonProvider> getLogonProviders();
 
 }

@@ -5,12 +5,15 @@
  */
 package dev.galasa.cicsts.spi;
 
+import java.lang.annotation.Annotation;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ManagerException;
 
 public interface ICicsRegionProvisioner {
 
-    ICicsRegionProvisioned provision(@NotNull String tag) throws ManagerException;
+    ICicsRegionProvisioned provision(@NotNull String cicsTag, @NotNull String imageTag, @NotNull List<Annotation> annotations) throws ManagerException;
 
 }

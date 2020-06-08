@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2019.
  */
-package dev.galasa.zos.internal;
+package dev.galasa.zos;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
