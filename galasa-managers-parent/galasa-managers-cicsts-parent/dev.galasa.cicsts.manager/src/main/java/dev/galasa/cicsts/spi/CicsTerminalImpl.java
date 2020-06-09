@@ -26,6 +26,8 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;
+        
+        setAutoReconnect(true);
     }
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost)

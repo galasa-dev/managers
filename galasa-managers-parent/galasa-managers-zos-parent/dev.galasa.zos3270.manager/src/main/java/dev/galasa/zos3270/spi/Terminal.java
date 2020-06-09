@@ -25,31 +25,43 @@ public class Terminal implements ITerminal {
 
     private final Screen  screen;
     private final Network network;
+    private final String  id;
     private NetworkThread networkThread;
     private boolean connected = false;
 
     private int           defaultWaitTime = 120_000;
 
     private Log           logger          = LogFactory.getLog(getClass());
+    
+    private boolean       autoReconnect   = false;
 
-    public Terminal(String host, int port) throws TerminalInterruptedException {
-        this(host, port, false);
+    public Terminal(String id, String host, int port) throws TerminalInterruptedException {
+        this(id, host, port, false);
     }
 
-    public Terminal(String host, int port, boolean ssl) throws TerminalInterruptedException {
+    public Terminal(String id, String host, int port, boolean ssl) throws TerminalInterruptedException {
         network = new Network(host, port, ssl);
         screen = new Screen(80, 24, this.network);
+        this.id = id;
+    }
+    
+    public void setAutoReconnect(boolean newAutoReconnect) {
+        this.autoReconnect = newAutoReconnect;
     }
 
     @Override
     public synchronized void connect() throws NetworkException {
         connected = network.connectClient();
-        networkThread = new NetworkThread(screen, network, network.getInputStream());
+        networkThread = new NetworkThread(this, screen, network, network.getInputStream());
+        logger.info("starting a new network thread");
         networkThread.start();
     }
 
     @Override
     public void disconnect() throws TerminalInterruptedException {
+        boolean oldAutoReconnect = autoReconnect;
+        autoReconnect = false;
+        
         connected = false;
         if (network != null) {
             network.close();
@@ -61,6 +73,24 @@ public class Terminal implements ITerminal {
                 throw new TerminalInterruptedException("Join of the network thread was interrupted",e);
             }
             networkThread = null;
+        }
+        
+        autoReconnect = oldAutoReconnect;
+    }
+    
+    public void networkClosed() {
+        connected = false;
+        if (network != null) {
+            network.close();
+        }
+        networkThread = null;
+        
+        if (autoReconnect) {
+            try {
+                connect();
+            } catch (NetworkException e) {
+                logger.error("Auto reconnect failed",e);
+            }
         }
     }
     
@@ -346,6 +376,11 @@ public class Terminal implements ITerminal {
         logger.info("\n" + screen.printScreenTextWithCursor());
         return this;
     }
+    
+    @Override
+    public String getId() {
+        return this.id;
+    }
 
     /**
      * Returns the screen print out as a String. For use in edge testing cases.
@@ -381,6 +416,12 @@ public class Terminal implements ITerminal {
 
     public String getHostPort() {
         return this.network.getHostPort();
+    }
+
+    @Override
+    public void setDisplayDatastream(boolean inbound, boolean outbound) {
+        NetworkThread.setDisplayInboundDatastream(inbound);
+        Screen.setDisplayOutboundDatastream(outbound);
     }
 
 }
