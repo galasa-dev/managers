@@ -31,7 +31,7 @@ public class TestGoldenPath {
 
     private TestHarnessFramework framework;
 
-    private SampleTest testClass;
+    private SampleGalasaTst testClass;
     
     private static CicstsPropertiesSingleton cicsProperties;
 
@@ -51,7 +51,7 @@ public class TestGoldenPath {
     public void before() throws Exception {
         this.framework = new TestHarnessFramework();
 
-        testClass = new SampleTest();
+        testClass = new SampleGalasaTst();
     }
 
     @Test

@@ -10,7 +10,7 @@ import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.ICicsRegion;
 
 @Test
-public class SampleTest {
+public class SampleGalasaTst {
 
     @CicsRegion
     public ICicsRegion region1;
