@@ -162,6 +162,12 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal backTab() throws KeyboardLockedException, FieldNotFoundException {
+        screen.backTab();
+        return this;
+    }
+
+    @Override
     public ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException {
         screen.cursorUp();
         return this;

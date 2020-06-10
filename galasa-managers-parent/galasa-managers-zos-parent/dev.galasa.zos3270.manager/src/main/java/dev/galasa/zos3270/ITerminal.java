@@ -34,6 +34,8 @@ public interface ITerminal {
 
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
     
+    ITerminal backTab() throws FieldNotFoundException, KeyboardLockedException;
+    
     ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException;
