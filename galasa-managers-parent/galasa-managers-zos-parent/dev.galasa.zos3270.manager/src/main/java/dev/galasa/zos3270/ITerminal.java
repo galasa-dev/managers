@@ -46,6 +46,8 @@ public interface ITerminal {
 
     ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 
+    ITerminal newLine() throws KeyboardLockedException, FieldNotFoundException;
+
     ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
     ITerminal clear() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
