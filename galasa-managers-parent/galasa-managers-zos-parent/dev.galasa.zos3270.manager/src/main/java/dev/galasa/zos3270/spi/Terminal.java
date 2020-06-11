@@ -198,6 +198,12 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal newLine() throws KeyboardLockedException, FieldNotFoundException {
+        screen.newLine();
+        return this;
+    }
+
+    @Override
     public ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.ENTER));
         return this;

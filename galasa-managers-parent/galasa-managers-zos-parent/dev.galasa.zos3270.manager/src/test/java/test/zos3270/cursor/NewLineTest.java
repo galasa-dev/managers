@@ -21,21 +21,21 @@ import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
 
 /**
- * Test the backTab function
+ * Test the newline function
  * 
  * @author Michael Baylis
  *
  */
-public class BackTabTest {
+public class NewLineTest {
     
     /**
-     * Test what happens in a empty screen with no fields, should position at 0
+     * Test what happens in a empty screen with no fields, should position to the next line
      * 
      * @throws Exception
      */
     @Test 
     public void emptyScreen() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = new Screen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -44,49 +44,22 @@ public class BackTabTest {
 
         screen.setCursorPosition(2);
         
-        screen.backTab();
+        screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 0, empty screen").isEqualTo(0);
+        assertThat(screen.getCursor()).as("Cursor should be at 10, empty screen").isEqualTo(10);
         
     }
 
 
     /**
-     * Test with single field,  but the cursor offset it in,  so 
-     * should return at the beginning of the same field
+     * Test with single field,  but the cursor at the start, should move a line down
      * 
      * @throws Exception
      */
     @Test 
-    public void testSameFieldCursorOffset() throws Exception {
+    public void testSameFieldStartingAtBegginningOfField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
-        screen.erase();
-
-        ArrayList<AbstractOrder> orders = new ArrayList<>();
-        orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderStartField(false, false, true, false, false, false));
-
-        screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
-                new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
-
-        screen.setCursorPosition(2);
-        
-        screen.backTab();
-        
-        assertThat(screen.getCursor()).as("Cursor should be at 1, offsetted in same field").isEqualTo(1);
-        
-    }
-    
-    /**
-     * Test with a single field with the cursor already at the beginning, should stay at same place
-     * 
-     * @throws Exception
-     */
-    @Test 
-    public void testSameFieldCursorAtBeginning() throws Exception {
-        
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = new Screen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -98,26 +71,105 @@ public class BackTabTest {
 
         screen.setCursorPosition(1);
         
-        screen.backTab();
+        screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 1, start of same field").isEqualTo(1);
+        assertThat(screen.getCursor()).as("Cursor should be at 10, offsetted in same field").isEqualTo(10);
         
     }
     
     /**
-     * Test with multiple fields, should move to previous field
+     * Test with single field,  but the cursor offset it in,  so 
+     * should move to the next line in the field
+     * 
+     * @throws Exception
+     */
+    @Test 
+    public void testSameFieldStartingALineDown() throws Exception {
+        
+        Screen screen = new Screen(10, 4, null);
+        screen.erase();
+
+        ArrayList<AbstractOrder> orders = new ArrayList<>();
+        orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+
+        screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
+                new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
+
+        screen.setCursorPosition(10);
+        
+        screen.newLine();
+        
+        assertThat(screen.getCursor()).as("Cursor should be at 20, offsetted in same field").isEqualTo(20);
+        
+    }
+    
+    /**
+     * Test with single field,  but the cursor on last line of screen,  should move to the top
+     * 
+     * @throws Exception
+     */
+    @Test 
+    public void testSameFieldStartingBottom() throws Exception {
+        
+        Screen screen = new Screen(10, 4, null);
+        screen.erase();
+
+        ArrayList<AbstractOrder> orders = new ArrayList<>();
+        orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+
+        screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
+                new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
+
+        screen.setCursorPosition(35);
+        
+        screen.newLine();
+        
+        assertThat(screen.getCursor()).as("Cursor should be at 1, offsetted in same field").isEqualTo(1);
+        
+    }
+    
+    /**
+     * Test with multiple fields, should move to second field
      * 
      * @throws Exception
      */
     @Test 
     public void testDifferentField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = new Screen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+
+        screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
+                new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
+
+        screen.setCursorPosition(1);
+        
+        screen.newLine();
+        
+        assertThat(screen.getCursor()).as("Cursor should be at 11, start of next field").isEqualTo(11);
+        
+    }
+    
+    /**
+     * Test with wrapped field,  should move to the 0
+     * 
+     * @throws Exception
+     */
+    @Test 
+    public void testWrappedField() throws Exception {
+        
+        Screen screen = new Screen(10, 2, null);
+        screen.erase();
+
+        ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
 
@@ -126,37 +178,9 @@ public class BackTabTest {
 
         screen.setCursorPosition(11);
         
-        screen.backTab();
+        screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 1, start of previous field").isEqualTo(1);
-        
-    }
-    
-    /**
-     * Test with multiple fields,  should wrap to last field on screen
-     * 
-     * @throws Exception
-     */
-    @Test 
-    public void testDifferentWrappedField() throws Exception {
-        
-        Screen screen = new Screen(10, 2, null);
-        screen.erase();
-
-        ArrayList<AbstractOrder> orders = new ArrayList<>();
-        orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
-        orders.add(new OrderStartField(false, false, true, false, false, false));
-
-        screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
-                new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
-
-        screen.setCursorPosition(1);
-        
-        screen.backTab();
-        
-        assertThat(screen.getCursor()).as("Cursor should be at 11, start of previous wrapped field").isEqualTo(11);
+        assertThat(screen.getCursor()).as("Cursor should be at 0, as field is wrapped").isEqualTo(0);
         
     }
     
@@ -168,7 +192,7 @@ public class BackTabTest {
     @Test 
     public void testProtectedScreen() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = new Screen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -182,21 +206,21 @@ public class BackTabTest {
 
         screen.setCursorPosition(15);
         
-        screen.backTab();
+        screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 0, start of screen as no unprotected fields").isEqualTo(0);
+        assertThat(screen.getCursor()).as("Cursor should be at 20, move to next line as no unprotected fields").isEqualTo(20);
         
     }
     
     /**
-     * Test a weird screen full of unprotected fields of zero length, should stay the same place
+     * Test a weird screen full of unprotected fields of zero length, should position origin
      * 
      * @throws Exception
      */
     @Test 
     public void testUnprotectedZeroLength() throws Exception {
         
-        Screen screen = new Screen(5, 1, null);
+        Screen screen = new Screen(2, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -210,17 +234,22 @@ public class BackTabTest {
         orders.add(new OrderStartField(false, false, true, false, false, false));
         orders.add(new OrderSetBufferAddress(new BufferAddress(4)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(7)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 
-        screen.setCursorPosition(3);
+        screen.setCursorPosition(2);
         
-        screen.backTab();
+        screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 3, start of screen as no unprotected fields with a char").isEqualTo(3);
+        assertThat(screen.getCursor()).as("Cursor should be at 4, move to next line as no unprotected fields with a char").isEqualTo(4);
         
     }
-
     
 }

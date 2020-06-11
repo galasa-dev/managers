@@ -788,18 +788,81 @@ public class Screen {
 
         //*** find first unprotected field
         for(Field field : fields) {
-            if (!field.isProtected()) {
-                if (field.isUnformatted()) {
+            if (!field.isProtected() && field.length() > 1) {
+                if (field.isDummyField()) {
                     this.screenCursor = 0;
-                    return;
+                } else {
+                    this.screenCursor = field.getStart() + 1;
                 }
-
-                this.screenCursor = field.getStart() + 1;
                 return;
             }
         }
 
         this.screenCursor = 0;
+        return;
+    }
+
+
+    public synchronized void newLine() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        Field[] fields = calculateFields();
+
+
+        int newCursor = ((this.screenCursor / this.columns) + 1) * this.columns;
+        if (newCursor >= this.screenSize) {
+            newCursor = 0;
+        }
+
+        if (fields == null || fields.length == 0) {
+            this.screenCursor = newCursor;
+            return;
+        }
+
+        // locate the field that contains the new position
+        int fieldPos = 0;
+        Field startField = null;
+        for(; fieldPos < fields.length; fieldPos++) {
+            if (fields[fieldPos].containsPosition(newCursor)) {
+                startField = fields[fieldPos];
+                break;
+            }
+        }
+        
+        if (!startField.isProtected() && startField.length() > 1) {
+            if (newCursor == startField.getStart() && !startField.isDummyField()) {
+                newCursor++;
+            }
+            this.screenCursor = newCursor;
+            return;
+        }
+        
+        // This field is protected, so locate the next unprotected field
+        while(true) {
+            fieldPos++;
+            if (fieldPos >= fields.length) {
+                fieldPos = 0;
+            }
+            
+            Field nextField = fields[fieldPos];
+            
+            if (!nextField.isProtected() && nextField.length() > 1) {
+                if (nextField.isDummyField()) {
+                    this.screenCursor = nextField.getStart();
+                } else {
+                    this.screenCursor = nextField.getStart() + 1;
+                }
+                
+            }
+            
+            if (nextField == startField) {
+                break;
+            }
+        }
+        
+        this.screenCursor = newCursor;
         return;
     }
 

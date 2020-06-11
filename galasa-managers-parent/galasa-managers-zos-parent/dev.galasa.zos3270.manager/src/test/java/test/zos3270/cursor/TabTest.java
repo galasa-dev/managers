@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package test.zos3270.cursor;
 
 import static org.assertj.core.api.Assertions.assertThat;
