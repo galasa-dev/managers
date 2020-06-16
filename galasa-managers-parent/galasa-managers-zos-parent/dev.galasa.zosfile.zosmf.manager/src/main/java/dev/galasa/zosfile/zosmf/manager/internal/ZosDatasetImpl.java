@@ -942,7 +942,7 @@ public class ZosDatasetImpl implements IZosDataset {
     protected String storeArtifact(Object content, String... artifactPathElements) throws ZosDatasetException {
         Path artifactPath;
         try {
-            artifactPath = ZosFileManagerImpl.getDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
+            artifactPath = ZosFileManagerImpl.getDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

@@ -893,7 +893,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
-            artifactPath = ZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
+            artifactPath = ZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

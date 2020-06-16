@@ -17,7 +17,6 @@ public interface IZosFileSpi {
 
     /**
      * Returns a zOS File Handler instance
-     * @param image zOS Image
      * @return an {@link IZosFileHandler} implementation instance
      */
     @NotNull

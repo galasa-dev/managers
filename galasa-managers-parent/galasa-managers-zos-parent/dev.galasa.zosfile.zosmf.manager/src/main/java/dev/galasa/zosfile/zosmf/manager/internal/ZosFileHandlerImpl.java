@@ -62,24 +62,18 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
         return zosVsamDataset;
     }
     
-    public void cleanupEndOfTestMethod() throws ZosFileManagerException {
-        cleanupDatasetsEndOfTestMethod();
-        cleanupVsamDatasetsEndOfTestMethod();
-        cleanupFilesEndOfTestMethod();
+    public void cleanup(boolean testComplete) throws ZosFileManagerException {
+        cleanupDatasets(testComplete);
+        cleanupVsamDatasets(testComplete);
+        cleanupUnixFiles(testComplete);
     }
     
-    public void cleanupEndOfClass() throws ZosFileManagerException {
-        cleanupDatasetsEndOfTestClass();
-        cleanupVsamDatasetsEndOfTestClass();
-        cleanupFilesEndOfTestClass();
-    }
-    
-    public void cleanupDatasetsEndOfTestMethod() throws ZosFileManagerException {
+    public void cleanupDatasets(boolean testComplete) throws ZosFileManagerException {
         Iterator<ZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
         while (datasetIterator.hasNext()) {
             ZosDatasetImpl zosDataset = datasetIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
-                if (zosDataset.isTemporary()) {
+                if (!zosDataset.isTemporary()) {
                     zosDataset.saveToResultsArchive();
                 }
                 if (zosDataset.retainToTestEnd()) {
@@ -90,9 +84,13 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
             }
             datasetIterator.remove();
         }
+        
+        if (testComplete) {
+            cleanupDatasetsTestComplete();
+        }
     }
-
-    public void cleanupDatasetsEndOfTestClass() throws ZosFileManagerException {
+    
+    protected void cleanupDatasetsTestComplete() throws ZosDatasetException {
         Iterator<ZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
         while (datasetForCleanupIterator.hasNext()) {
             ZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
@@ -102,8 +100,8 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
             }
         }
     }
-    
-    public void cleanupVsamDatasetsEndOfTestMethod() throws ZosFileManagerException {
+
+    public void cleanupVsamDatasets(boolean testComplete) throws ZosFileManagerException {
         Iterator<ZosVSAMDatasetImpl> vsamDatasetIterator = this.zosVsamDatasets.iterator();
         while (vsamDatasetIterator.hasNext()) {
             ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
@@ -117,9 +115,13 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
             }
             vsamDatasetIterator.remove();
         }
+        
+        if (testComplete) {
+            cleanupVsamDatasetsTestComplete();
+        }
     }
-    
-    public void cleanupVsamDatasetsEndOfTestClass() throws ZosFileManagerException {
+        
+    protected void cleanupVsamDatasetsTestComplete() throws ZosVSAMDatasetException {
         Iterator<ZosVSAMDatasetImpl> vsamDatasetForCleanupIterator = this.zosVsamDatasetsForCleanup.iterator();
         while (vsamDatasetForCleanupIterator.hasNext()) {
             ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
@@ -129,8 +131,8 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
             }
         }
     }
-        
-    public void cleanupFilesEndOfTestMethod() throws ZosFileManagerException {
+
+    public void cleanupUnixFiles(boolean testComplete) throws ZosFileManagerException {
         Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
         while (unixFileIterator.hasNext()) {
             ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
@@ -143,12 +145,16 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
             this.zosUnixFilesForCleanup.add(zosUnixFile);
             unixFileIterator.remove();
         }
+        
+        if (testComplete) {
+            cleanupUnixFilesTestComplete();
+        }
     }
-    
-    public void cleanupFilesEndOfTestClass() {
-        Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFilesForCleanup.iterator();
-        while (unixFileIterator.hasNext()) {
-            ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
+
+    protected void cleanupUnixFilesTestComplete() {
+        Iterator<ZosUNIXFileImpl> zosUnixFilesForCleanupIterator = this.zosUnixFilesForCleanup.iterator();
+        while (zosUnixFilesForCleanupIterator.hasNext()) {
+            ZosUNIXFileImpl zosUnixFile = zosUnixFilesForCleanupIterator.next();
             zosUnixFile.cleanCreatedPath();
         }
     }
