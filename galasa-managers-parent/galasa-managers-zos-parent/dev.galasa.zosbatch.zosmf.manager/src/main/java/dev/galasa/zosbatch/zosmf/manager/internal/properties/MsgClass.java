@@ -11,23 +11,23 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 
 /**
- * zOS Batch default input class
+ * zOS Batch default MSGCLASS
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zosbatch.default.[imageid].input.class
+ * @galasa.name zosbatch.default.[imageid].message.class
  * 
- * @galasa.description The default input class to set on the job card for submitted jobs
+ * @galasa.description The default message class to set on the job card for submitted jobs
  * 
  * @galasa.required No
  * 
  * @galasa.default A
  * 
- * @galasa.valid_values a valid JES input class literal
+ * @galasa.valid_values a valid JES message class literal
  * 
  * @galasa.examples 
- * <code>zosbatch.default.MVSA.input.class=S</code><br>
- * <code>zosbatch.default.input.class=A</code>
+ * <code>zosbatch.default.MVSA.message.class=S</code><br>
+ * <code>zosbatch.default.message.class=A</code>
  * 
  */
 public class MsgClass extends CpsProperties {
