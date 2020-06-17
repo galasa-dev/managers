@@ -34,6 +34,8 @@ public interface ITerminal {
 
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
     
+    ITerminal backTab() throws FieldNotFoundException, KeyboardLockedException;
+    
     ITerminal cursorUp() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal cursorDown() throws KeyboardLockedException, FieldNotFoundException;
@@ -43,6 +45,8 @@ public interface ITerminal {
     ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
+
+    ITerminal newLine() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException;
 
@@ -116,5 +120,9 @@ public interface ITerminal {
     String retrieveFieldAtCursor();
 
     String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException;
+    
+    String getId();
+    
+    void setDisplayDatastream(boolean inbound, boolean outbound);
 
 }

@@ -104,7 +104,6 @@ public class TestZosBatchManagerImpl {
         
         ZosBatchManagerImpl.setZosManager(zosManagerMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
-        ZosBatchManagerImpl.setCurrentTestMethod(this.getClass().getDeclaredMethod("setup").getName());
         zosBatchZosmfPropertiesSingleton = new ZosBatchZosmfPropertiesSingleton();
         zosBatchZosmfPropertiesSingleton.activate();
         
@@ -128,11 +127,11 @@ public class TestZosBatchManagerImpl {
     }
     
     @Test
-        public void testInitialise1() throws ManagerException {
-            Mockito.doNothing().when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-            zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
-            Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
-        }
+    public void testInitialise1() throws ManagerException {
+        Mockito.doNothing().when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
+    }
 
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
@@ -182,33 +181,51 @@ public class TestZosBatchManagerImpl {
         Assert.assertTrue("Should be dependent on IZosmfManagerSpi" , zosBatchManagerSpy.areYouProvisionalDependentOn(zosmfManagerMock));
         Assert.assertFalse("Should not be dependent on IManager" , zosBatchManagerSpy.areYouProvisionalDependentOn(managerMock));
     }
-    
+
+    @Test
+    public void testProvisionStart() throws Exception {
+        Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
+        zosBatchManagerSpy.provisionStart();
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+    }
+
     @Test
     public void testStartOfTestMethod() throws Exception {
-        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
-        Assert.assertEquals("currentTestMethod should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethod);
+        Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
+        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), null);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
     }
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
         Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
-        ZosBatchManagerImpl.setCurrentTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        ZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
         zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
-        Assert.assertNull("currentTestMethod should be null", ZosBatchManagerImpl.currentTestMethod);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expected value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
     }
     
     @Test
-    public void testEndOfTestClass() throws Exception {
-        zosBatchManagerSpy.endOfTestClass("currentResult", null);
-        Assert.assertEquals("endOfTestClass() should set the required value", "cleanup", ZosBatchManagerImpl.currentTestMethod);
+    public void testEndOfTestClass() throws NoSuchMethodException, SecurityException, ManagerException {
+        Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
+        ZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        zosBatchManagerSpy.endOfTestClass(null, null);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "postTest", ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
     }
     
     @Test
-    public void testProvisionDiscard() throws ZosBatchException {
-        zosBatchManagerSpy.provisionDiscard();
+    public void testEndOfTestRun() throws NoSuchMethodException, SecurityException, ManagerException {
+        Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
+        ZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        zosBatchManagerSpy.endOfTestRun();
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "dummyTestMethod", ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+
         Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup();
-        zosBatchManagerSpy.provisionDiscard();
-        Assert.assertEquals("provisionDiscard() should log specified message", "Problem in provision discard", logMessage);
+        zosBatchManagerSpy.endOfTestRun();
+        Assert.assertEquals("testEndOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
     
     @Test
@@ -293,6 +310,10 @@ public class TestZosBatchManagerImpl {
         public dev.galasa.zosbatch.IZosBatch zosBatch;
         @dev.galasa.zosbatch.ZosBatchJobname(imageTag="tag")
         public dev.galasa.zosbatch.IZosBatchJobname zosBatchJobname;
+        @dev.galasa.Before
+        public void dummyBeforeMethod() throws ZosBatchException {
+            zosBatch.submitJob("JCL", null);
+        }
         @dev.galasa.Test
         public void dummyTestMethod() throws ZosBatchException {
             zosBatch.submitJob("JCL", null);

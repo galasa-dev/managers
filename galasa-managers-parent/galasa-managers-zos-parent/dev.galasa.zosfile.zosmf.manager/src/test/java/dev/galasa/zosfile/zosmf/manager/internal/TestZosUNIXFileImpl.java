@@ -855,7 +855,7 @@ public class TestZosUNIXFileImpl {
         Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
         ZosFileManagerImpl.setUnixPathArtifactRoot(archivePathMock);
-        ZosFileManagerImpl.setCurrentTestMethod("testStoreArtifact");
+        ZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testStoreArtifact");
         
         return fileSystemProviderMock;
     }

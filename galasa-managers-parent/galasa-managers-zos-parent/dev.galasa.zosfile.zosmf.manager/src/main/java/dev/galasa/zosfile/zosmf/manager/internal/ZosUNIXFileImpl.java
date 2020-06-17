@@ -641,7 +641,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     protected String storeArtifact(Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
-            artifactPath = ZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethod);
+            artifactPath = ZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

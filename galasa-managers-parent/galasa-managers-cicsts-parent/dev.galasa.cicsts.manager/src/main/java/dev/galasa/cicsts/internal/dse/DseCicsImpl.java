@@ -33,7 +33,6 @@ public class DseCicsImpl implements ICicsRegionProvisioned {
         } catch (ZosManagerException e) {
             throw new CicstsManagerException("Unable to locate zOS Image tagged " + imageTag, e);
         }
-
     }
 
     @Override

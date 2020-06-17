@@ -82,6 +82,8 @@ public class Screen {
     private Semaphore                               keyboardLock    = new Semaphore(1, true);
     private boolean                                 keyboardLockSet = false;
 
+    private static boolean                          displayOutboundDatastream = false;
+
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
     public Screen() throws TerminalInterruptedException {
@@ -109,6 +111,10 @@ public class Screen {
         }
     }
 
+    public void networkClosed() throws TerminalInterruptedException {
+        lockKeyboard();
+    }
+
     private synchronized void unlockKeyboard() {
         if (keyboardLockSet) {
             logger.trace("Unlocking keyboard");
@@ -130,7 +136,7 @@ public class Screen {
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
             }
-            
+
             if (writeControlCharacter.isReset()) {
                 this.workingCursor = 0;
             }
@@ -142,7 +148,7 @@ public class Screen {
         }
 
     }
-    
+
     private synchronized void processReadBuffer() throws DatastreamException {
         try {
             ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
@@ -151,7 +157,7 @@ public class Screen {
 
             BufferAddress cursor = new BufferAddress(this.screenCursor);
             outboundBuffer.write(cursor.getCharRepresentation());
-            
+
             for(IBufferHolder bh : this.buffer) {
                 if (bh == null) {
                     outboundBuffer.write(0);
@@ -170,7 +176,7 @@ public class Screen {
         } catch(Exception e) {
             throw new DatastreamException("Error whilst processing READ BUFFER", e);
         }
-        
+
     }
 
     private synchronized void processStructuredFields(List<StructuredField> structuredFields)
@@ -259,8 +265,10 @@ public class Screen {
                 baos.write(reply.toByte());
             }
 
-            String hex = new String(Hex.encodeHex(baos.toByteArray()));
-            logger.trace("outbound sf=" + hex);
+            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+                String hex = new String(Hex.encodeHex(baos.toByteArray()));
+                logger.trace("outbound sf=" + hex);
+            }
 
             network.sendDatastream(baos.toByteArray());
         } catch (Exception e) {
@@ -635,41 +643,87 @@ public class Screen {
             throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
         }
 
-        Field[] fields = calculateFields();
-
-        int fieldPosition = 0;
-        Field startField = null;
-        for (; fieldPosition < fields.length; fieldPosition++) {
-            Field field = fields[fieldPosition];
-            if (field.containsPosition(this.screenCursor)) {
-                startField = field;
-                break;
-            }
-        }
-
-        if (startField == null) {
-            throw new FieldNotFoundException("Unable to locate field to tab from, should not have happened");
-        }
-
-        if (screenCursor == startField.getStart() && !startField.isProtected()) {
-            this.screenCursor = startField.getStart() + 1;
-            return;
-        }
-
-        while (true) {
-            fieldPosition++;
-            if (fieldPosition >= fields.length) {
-                fieldPosition = 0;
+        int startPosition = this.screenCursor;
+        boolean foundUnprotectedField = false;
+        while(true) {
+            // advance the cursor
+            this.screenCursor++;
+            if (this.screenCursor >= this.screenSize) {
+                this.screenCursor = 0;
             }
 
-            Field field = fields[fieldPosition];
-            if (!field.isProtected()) {
-                this.screenCursor = field.getStart() + 1;
+            // Get the entry at this position
+            IBufferHolder previousBuffer = this.buffer[this.screenCursor];
+            if (previousBuffer == null || previousBuffer instanceof BufferChar) {
+                // if this is a character and we are in an unprotected field, use it
+                if (foundUnprotectedField) {
+                    return;
+                }
+            } else  if (previousBuffer instanceof BufferStartOfField) {
+                // we have a start of field
+                BufferStartOfField sof = (BufferStartOfField) previousBuffer;
+                // record if it is unprotected or not
+                foundUnprotectedField = !sof.isProtected();
+            } else {
+                throw new FieldNotFoundException("Unrecognised buffer type at pos " + this.screenCursor);
+            }
+
+            if (this.screenCursor == startPosition) {
+                // we have completely wrapped, so no unprotected chars position to zero
+                this.screenCursor = 0;
                 return;
             }
+        }
 
-            if (field == startField) {
-                throw new FieldNotFoundException("Unable to locate an unprotected field to tab to");
+    }
+
+    public synchronized void backTab() throws KeyboardLockedException, FieldNotFoundException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        int startPosition = this.screenCursor;
+        int lastCharField = -1;
+        boolean foundUnprotectedField = false;
+        while(true) {
+            // Get the previous position in buffer, wrapped if necessary
+            int previousPositionInBuffer = this.screenCursor - 1;
+            if (previousPositionInBuffer < 0) {
+                previousPositionInBuffer = this.screenSize - 1;
+            }
+
+            // Get the entry in the previous position
+            IBufferHolder previousBuffer = this.buffer[previousPositionInBuffer];
+            if (previousBuffer == null || previousBuffer instanceof BufferChar) {
+                // if it is null or a character, mark position as the last valid position whether unprotected or not
+                lastCharField = previousPositionInBuffer;
+            } else  if (previousBuffer instanceof BufferStartOfField) {
+                // we have a start of field
+                BufferStartOfField sof = (BufferStartOfField) previousBuffer;
+                //if it is protected, invalidate the last valid char position
+                if (sof.isProtected()) {
+                    lastCharField = -1;
+                } else {
+                    // as unprotected field,  indicate that there is atleast one on the screen
+                    foundUnprotectedField = true;
+                    // if we have found a valid char position then use it
+                    if (lastCharField != -1) {
+                        this.screenCursor = lastCharField;
+                        return;
+                    }
+                }
+            } else {
+                throw new FieldNotFoundException("Unrecognised buffer type at pos " + previousPositionInBuffer);
+            }
+
+            this.screenCursor = previousPositionInBuffer;
+            if (this.screenCursor == startPosition) {
+                // we have completely wrapped, either was original at the only unprotected field
+                // or there was no unprotected fields, so move to origin.
+                if (!foundUnprotectedField) {
+                    this.screenCursor = 0;
+                }
+                return;
             }
         }
 
@@ -734,18 +788,81 @@ public class Screen {
 
         //*** find first unprotected field
         for(Field field : fields) {
-            if (!field.isProtected()) {
-                if (field.isUnformatted()) {
+            if (!field.isProtected() && field.length() > 1) {
+                if (field.isDummyField()) {
                     this.screenCursor = 0;
-                    return;
+                } else {
+                    this.screenCursor = field.getStart() + 1;
                 }
-
-                this.screenCursor = field.getStart() + 1;
                 return;
             }
         }
 
         this.screenCursor = 0;
+        return;
+    }
+
+
+    public synchronized void newLine() throws KeyboardLockedException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
+        }
+
+        Field[] fields = calculateFields();
+
+
+        int newCursor = ((this.screenCursor / this.columns) + 1) * this.columns;
+        if (newCursor >= this.screenSize) {
+            newCursor = 0;
+        }
+
+        if (fields == null || fields.length == 0) {
+            this.screenCursor = newCursor;
+            return;
+        }
+
+        // locate the field that contains the new position
+        int fieldPos = 0;
+        Field startField = null;
+        for(; fieldPos < fields.length; fieldPos++) {
+            if (fields[fieldPos].containsPosition(newCursor)) {
+                startField = fields[fieldPos];
+                break;
+            }
+        }
+        
+        if (!startField.isProtected() && startField.length() > 1) {
+            if (newCursor == startField.getStart() && !startField.isDummyField()) {
+                newCursor++;
+            }
+            this.screenCursor = newCursor;
+            return;
+        }
+        
+        // This field is protected, so locate the next unprotected field
+        while(true) {
+            fieldPos++;
+            if (fieldPos >= fields.length) {
+                fieldPos = 0;
+            }
+            
+            Field nextField = fields[fieldPos];
+            
+            if (!nextField.isProtected() && nextField.length() > 1) {
+                if (nextField.isDummyField()) {
+                    this.screenCursor = nextField.getStart();
+                } else {
+                    this.screenCursor = nextField.getStart() + 1;
+                }
+                
+            }
+            
+            if (nextField == startField) {
+                break;
+            }
+        }
+        
+        this.screenCursor = newCursor;
         return;
     }
 
@@ -862,7 +979,7 @@ public class Screen {
             if (position >= screenSize) {
                 position = 0;
             }
-            
+
             this.screenCursor = position;
         }
 
@@ -947,12 +1064,12 @@ public class Screen {
                     }
                 }
 
-                String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
-                logger.trace("outbound=" + hex);
             }
 
-            String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
-            logger.trace("outbound=" + hex);
+            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+                String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
+                logger.info("outbound=" + hex);
+            }
 
             for (IScreenUpdateListener listener : updateListeners) {
                 listener.screenUpdated(Direction.SENDING, aid);
@@ -1019,6 +1136,10 @@ public class Screen {
 
     public void setCursorPosition(int newPosition) {
         this.screenCursor = newPosition;
+    }
+
+    public static void setDisplayOutboundDatastream(boolean newDisplayOutboundDatastream) {
+        displayOutboundDatastream = newDisplayOutboundDatastream;
     }
 
 }

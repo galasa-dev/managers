@@ -13,7 +13,6 @@ import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.internal.properties.DefaultLogonGmText;
 import dev.galasa.cicsts.internal.properties.DefaultLogonInitialText;
 import dev.galasa.cicsts.spi.ICicsRegionLogonProvider;
-import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.Zos3270Exception;
 
 public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
@@ -37,7 +36,9 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
     public boolean logonToCicsRegion(ICicsTerminal cicsTerminal) throws CicstsManagerException {
 
         try {
-            cicsTerminal.connect();
+            if (!cicsTerminal.isConnected()) {
+                cicsTerminal.connect();
+            }
 
             // Ensure we can type something first
             cicsTerminal.waitForKeyboard();
@@ -58,13 +59,13 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
             throw new CicstsManagerException("Problem logging onto the CICS region");
         }
 
-        return false;
+        return true;
     }
 
     private void checkForInitialText(ICicsTerminal cicsTerminal) throws CicstsManagerException {
         try {
-            cicsTerminal.verifyTextInField(initialText);
-        } catch (TextNotFoundException e) {
+            cicsTerminal.waitForTextInField(initialText);
+        } catch (Exception e) {
             throw new CicstsManagerException(
                     "Unable to logon to CICS, initial screen does not contain '" + initialText + "'");
         }

@@ -9,12 +9,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
@@ -43,6 +46,8 @@ import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 @Component(service = { IManager.class })
 public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     protected static final String NAMESPACE = "zosfile";
+    
+    private static final Log logger = LogFactory.getLog(ZosFileManagerImpl.class);
 
     protected static IZosManagerSpi zosManager;
     public static void setZosManager(IZosManagerSpi zosManager) {
@@ -53,13 +58,16 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
         ZosFileManagerImpl.zosmfManager = zosmfManager;
     }
-    
-    protected static ZosFileHandlerImpl zosFileHandler;
-    public static void setZosFileHandler(ZosFileHandlerImpl zosFileHandler) {
-        ZosFileManagerImpl.zosFileHandler = zosFileHandler;
-    }
 
-    private static final List<ZosFileHandlerImpl> zosFileHandlers = new ArrayList<>();
+    private static final Map<String, ZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
+
+    private static final String ZOS_DATASETS = "zOS_Datasets";
+    
+    private static final String ZOS_VSAM_DATASETS = "zOS_VSAM_Datasets";
+    
+    private static final String ZOS_UNIX_PATHS = "zOS_Unix_Paths";
+
+    private static final String PROVISIONING = "provisioning";
 
     private static String runId;
     protected static void setRunId(String id) {
@@ -69,7 +77,11 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         return runId;
     }
 
-    private static Path datasetArtifactRoot;
+    private Path artifactsRoot;
+
+    private boolean provisionCleanupComplete;
+
+    protected static Path datasetArtifactRoot;
     protected static void setDatasetArtifactRoot(Path path) {
         datasetArtifactRoot = path;
     }
@@ -77,7 +89,7 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         return datasetArtifactRoot;
     }
 
-    private static Path vsamDatasetArtifactRoot;
+    protected static Path vsamDatasetArtifactRoot;
     protected static void setVsamDatasetArtifactRoot(Path path) {
         vsamDatasetArtifactRoot = path;
     }
@@ -85,7 +97,7 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         return vsamDatasetArtifactRoot;
     }
 
-    private static Path unixPathArtifactRoot;
+    protected static Path unixPathArtifactRoot;
     protected static void setUnixPathArtifactRoot(Path path) {
         unixPathArtifactRoot = path;
     }
@@ -93,9 +105,9 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         return unixPathArtifactRoot;
     }
     
-    protected static String currentTestMethod;
-    public static void setCurrentTestMethod(String testMethod) {
-        ZosFileManagerImpl.currentTestMethod = testMethod;
+    protected static String currentTestMethodArchiveFolderName;
+    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
+        ZosFileManagerImpl.currentTestMethodArchiveFolderName = folderName;
     }
     
     /* (non-Javadoc)
@@ -120,9 +132,11 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         
         setRunId(getFramework().getTestRunName());
         
-        setDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_Datasets"));        
-        setVsamDatasetArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_VSAM_Datasets"));        
-        setUnixPathArtifactRoot(getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve("zOS_Unix_Paths"));
+        artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        
+        setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
+        setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
+        setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
     }
         
     
@@ -170,11 +184,45 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     /*
      * (non-Javadoc)
      * 
+     * @see dev.galasa.framework.spi.IManager#provisionBuild()
+     */
+    @Override
+    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
+        setDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_DATASETS));        
+        setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
+        setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
+        setCurrentTestMethodArchiveFolderName("preTest");
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#startOfTestClass()
+     */
+    @Override
+    public void startOfTestClass() throws ManagerException {
+        cleanup(false);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
-    public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
-        setCurrentTestMethod(testMethod.getName());
+    public void startOfTestMethod(@NotNull Method testExecutionMethod, Method testMethod) throws ManagerException {
+        if (!provisionCleanupComplete) {
+            cleanup(false);
+            provisionCleanupComplete = true;
+        }
+        setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
+        setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
+        setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
+        if (testMethod != null) {
+            setCurrentTestMethodArchiveFolderName(testMethod.getName() + "." + testExecutionMethod.getName());
+        } else {
+            setCurrentTestMethodArchiveFolderName(testExecutionMethod.getName());
+        }
     }
 
     /*
@@ -184,12 +232,7 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
      */
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = zosFileHandlers.iterator();
-        while (zosFileHandlerImplIterator.hasNext()) {
-            zosFileHandlerImplIterator.next().cleanupEndOfTestMethod();
-        }
-
-        setCurrentTestMethod(null);
+        cleanup(false);
         
         return null;
     }
@@ -201,26 +244,63 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        setCurrentTestMethod("endOfTestCleanup");
-        Iterator<ZosFileHandlerImpl> zosFileHandlerImplIterator = zosFileHandlers.iterator();
-        while (zosFileHandlerImplIterator.hasNext()) {
-            zosFileHandlerImplIterator.next().cleanupEndOfClass();
-        }
+        cleanup(true);
+        setDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_DATASETS));        
+        setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
+        setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
+        setCurrentTestMethodArchiveFolderName("postTest");
         
         return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#provisionDiscard()
+     */
+    @Override
+    public void provisionDiscard() {
+        try {
+            cleanup(true);
+        } catch (ZosFileManagerException e) {
+            logger.error("Problem in provisionDiscard()", e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
+     */
+    @Override
+    public void endOfTestRun() {
+        try {
+            cleanup(true);
+        } catch (ZosFileManagerException e) {
+            logger.error("Problem in endOfTestRun()", e);
+        }
+    }
+    
+    protected void cleanup(boolean testComplete) throws ZosFileManagerException {
+        for (Entry<String, ZosFileHandlerImpl> entry : zosFileHandlers.entrySet()) {
+            entry.getValue().cleanup(testComplete);
+        }
     }
     
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
     public IZosFileHandler generateZosFileHandler(Field field, List<Annotation> annotations) {
         ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl(field.getName());
-        zosFileHandlers.add(zosFileHandlerImpl);        
+        zosFileHandlers.put(zosFileHandlerImpl.toString(), zosFileHandlerImpl);        
         return zosFileHandlerImpl;
     }
     
     public static IZosFileHandler newZosFileHandler() {
-        ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl();
-        zosFileHandlers.add(zosFileHandlerImpl);
-        return zosFileHandlerImpl;
+        ZosFileHandlerImpl zosFileHandlerImpl;
+        if (zosFileHandlers.get("INTERNAL") == null) {
+            zosFileHandlerImpl = new ZosFileHandlerImpl();
+            zosFileHandlers.put(zosFileHandlerImpl.toString(), zosFileHandlerImpl);
+        }
+        return zosFileHandlers.get("INTERNAL");
     }
     
     public static String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
@@ -233,9 +313,6 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     
     @Override
     public @NotNull IZosFileHandler getZosFileHandler() throws ZosFileManagerException {
-        if (zosFileHandler == null) {
-            setZosFileHandler(new ZosFileHandlerImpl());
-        }
-        return zosFileHandler;
+        return newZosFileHandler();
     }
 }
