@@ -27,7 +27,7 @@ public class ZosTSOCommandImpl implements IZosTSOCommand {
         try {
             this.zosUnixCommand = ZosTSOCommandManagerImpl.zosUnixCommandManager.getZosUNIXCommand(image);
         } catch (ZosUNIXCommandManagerException e) {
-            throw new ZosTSOCommandException("Unable to get zOS UNIX Command instance");
+            throw new ZosTSOCommandException("Unable to get zOS UNIX Command instance", e);
         }
     }
 
