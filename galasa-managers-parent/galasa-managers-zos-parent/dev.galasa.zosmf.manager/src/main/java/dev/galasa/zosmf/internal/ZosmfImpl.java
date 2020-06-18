@@ -343,7 +343,7 @@ public class ZosmfImpl implements IZosmf {
     }
 
     protected String logBadRequest(String method) {
-        return "Problem wth " + method + " to zOSMF server";
+        return "Problem with " + method + " to zOSMF server";
     }
 
     protected int getRequestRetry() {
