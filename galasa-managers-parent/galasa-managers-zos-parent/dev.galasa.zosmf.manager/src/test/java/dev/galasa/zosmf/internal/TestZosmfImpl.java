@@ -213,7 +213,7 @@ public class TestZosmfImpl {
         setupGet();
         Mockito.when(httpClientMock.getText(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem wth GET to zOSMF server");
+        exceptionRule.expectMessage( "Problem with GET to zOSMF server");
         zosmfSpy.get(PATH, null, true);
     }
     
@@ -259,7 +259,7 @@ public class TestZosmfImpl {
         setupPostJson();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem wth POST to zOSMF server");
+        exceptionRule.expectMessage( "Problem with POST to zOSMF server");
         zosmfSpy.postJson(PATH, new JsonObject(), null);
     }
 
@@ -298,7 +298,7 @@ public class TestZosmfImpl {
         setupPutText();
         Mockito.when(httpClientMock.putText(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem wth PUT to zOSMF server");
+        exceptionRule.expectMessage( "Problem with PUT to zOSMF server");
         zosmfSpy.putText(PATH, "", null);
     }
 
@@ -337,7 +337,7 @@ public class TestZosmfImpl {
         setupPutJson();
         Mockito.when(httpClientMock.putJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem wth PUT to zOSMF server");
+        exceptionRule.expectMessage( "Problem with PUT to zOSMF server");
         zosmfSpy.putJson(PATH, new JsonObject(), null);
     }
 
@@ -376,7 +376,7 @@ public class TestZosmfImpl {
         setupPutBinary();
         Mockito.when(httpClientMock.putBinary(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Problem wth PUT to zOSMF server");
+        exceptionRule.expectMessage("Problem with PUT to zOSMF server");
         zosmfSpy.putBinary(PATH, "".getBytes(), null);
     }
 
@@ -415,7 +415,7 @@ public class TestZosmfImpl {
         setupDelete();
         Mockito.when(httpClientMock.deleteJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem wth DELETE to zOSMF server");
+        exceptionRule.expectMessage( "Problem with DELETE to zOSMF server");
         zosmfSpy.delete(PATH, null);
     }
 

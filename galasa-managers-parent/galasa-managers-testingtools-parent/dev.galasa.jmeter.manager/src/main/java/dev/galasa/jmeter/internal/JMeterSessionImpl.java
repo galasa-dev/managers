@@ -42,14 +42,18 @@ public class JMeterSessionImpl implements IJMeterSession {
     private String propPath;
     private String jmxAbsolutePath;
     private String propAbsolutePath;
+    private String jmeterDockerPath;
+    private String jmeter;
     private IDockerContainer container;
     private Path storedArtifactsRoot;
     private Log logger;
-    private final static int DEFAULT_TIMER              = 60000;
-    private final static String jmeterDockerPath        = "/jmeter/";
+    private static final int DEFAULT_TIMER              = 60000;
+    
+    private static final String STOREDMESSAGE           = " has been stored in the container.";
+    private static final String ERRORMESSAGE            = "Could not store the .jmx file correctly.";
 
     public JMeterSessionImpl(IFramework framework, JMeterManagerImpl jMeterManager, int sessionID, String jmxPath,
-            String propPath, IDockerContainer container, Log logger) throws DockerManagerException {
+            String propPath, IDockerContainer container, Log logger, String jmeter) throws DockerManagerException {
         this.framework = framework;
         this.jMeterManager = jMeterManager;
         this.sessionID = sessionID;
@@ -57,8 +61,10 @@ public class JMeterSessionImpl implements IJMeterSession {
         this.jmxPath = jmxPath;
         this.propPath = propPath;
         this.logger = logger;
-        jmxAbsolutePath = "";
-        propAbsolutePath = "";
+        this.jmxAbsolutePath = "";
+        this.propAbsolutePath = "";
+        this.jmeterDockerPath = "/" + jmeter + "/";
+        this.jmeter = jmeter;
 
         storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
 
@@ -96,7 +102,7 @@ public class JMeterSessionImpl implements IJMeterSession {
 
                 if (this.propAbsolutePath.isEmpty()) {
 
-                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
+                    IDockerExec exec = container.exec(timeout, jmeter, "-n", "-t", this.jmxPath, "-l", jtlPath, "-j", logfile);
                     exec.waitForExec(timeout);
 
                     if ( exec.getExitCode() != 0L ) {
@@ -105,7 +111,7 @@ public class JMeterSessionImpl implements IJMeterSession {
                     }
                 } else {
     
-                    IDockerExec exec = container.exec(timeout, "jmeter", "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
+                    IDockerExec exec = container.exec(timeout, jmeter, "-n", "-t", this.jmxPath, "-l", jtlPath, "-p", this.propPath, "-j", logfile);
                     exec.waitForExec(timeout); 
 
                     if ( exec.getExitCode() != 0L) {
@@ -135,10 +141,10 @@ public class JMeterSessionImpl implements IJMeterSession {
         try {
             this.jmxAbsolutePath = jmeterDockerPath + this.jmxPath;
             container.storeFile(this.jmxAbsolutePath, jmxStream);
-            logger.info(jmxPath + " has been stored in the container.");
+            logger.info(jmxPath + STOREDMESSAGE);
             
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
+            throw new JMeterManagerException(ERRORMESSAGE,e);
         }
     } 
 
@@ -186,10 +192,10 @@ public class JMeterSessionImpl implements IJMeterSession {
         try {
             this.jmxAbsolutePath = jmeterDockerPath + this.jmxPath;
             container.storeFile(this.jmxAbsolutePath, new ByteArrayInputStream(baos.toByteArray()));
-            logger.info(jmxPath + " has been stored in the container.");
+            logger.info(jmxPath + STOREDMESSAGE);
             
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not store the .jmx file correctly.",e);
+            throw new JMeterManagerException(ERRORMESSAGE,e);
         }
     }
 
@@ -205,9 +211,9 @@ public class JMeterSessionImpl implements IJMeterSession {
             this.propAbsolutePath = jmeterDockerPath + propPath;
             container.storeFile(this.propAbsolutePath, propStream);
 
-            logger.info(propPath + " has been stored in the container.");
+            logger.info(propPath + STOREDMESSAGE);
         } catch (Exception e) {
-            throw new JMeterManagerException("Could not store the .jmx file correctly.", e);
+            throw new JMeterManagerException(ERRORMESSAGE, e);
         }
     }
 
@@ -369,7 +375,7 @@ public class JMeterSessionImpl implements IJMeterSession {
      * Allows for the connection with the RAS so that all the JMeter-sessions get stored
      */
     private void storeOutput(String file, String content) throws IOException {
-        Path requestPath = storedArtifactsRoot.resolve("jmeter").resolve(file);
+        Path requestPath = storedArtifactsRoot.resolve(jmeter).resolve(file);
         Files.write(requestPath, content.getBytes(), new SetContentType(ResultArchiveStoreContentType.TEXT),
                 StandardOpenOption.CREATE);
     }

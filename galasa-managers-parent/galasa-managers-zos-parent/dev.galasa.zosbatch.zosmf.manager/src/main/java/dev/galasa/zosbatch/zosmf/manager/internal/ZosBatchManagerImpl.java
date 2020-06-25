@@ -51,6 +51,10 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     
     private static final Log logger = LogFactory.getLog(ZosBatchManagerImpl.class);
 
+    private static final String ZOSBATCH_JOBS = "zosBatchJobs";
+
+    private static final String PROVISIONING = "provisioning";
+
     protected static IZosManagerSpi zosManager;
     public static void setZosManager(IZosManagerSpi zosManager) {
         ZosBatchManagerImpl.zosManager = zosManager;
@@ -63,15 +67,17 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
 
     private final HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
     private final HashMap<String, ZosBatchImpl> zosBatches = new HashMap<>();
+
+    private Path artifactsRoot;
     
     protected static Path archivePath;
     public static void setArchivePath(Path archivePath) {
         ZosBatchManagerImpl.archivePath = archivePath;
     }
     
-    protected static String currentTestMethod;
-    public static void setCurrentTestMethod(String testMethod) {
-        ZosBatchManagerImpl.currentTestMethod = testMethod;
+    protected static String currentTestMethodArchiveFolderName;
+    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
+        ZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
     }
     
     /* (non-Javadoc)
@@ -94,8 +100,7 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
             youAreRequired(allManagers, activeManagers);
         }
         
-        Path artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
-        setArchivePath(artifactsRoot.resolve("zosBatchJobs"));
+        artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
     }
     
 
@@ -143,11 +148,28 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     /*
      * (non-Javadoc)
      * 
+     * @see dev.galasa.framework.spi.IManager#provisionStart()
+     */
+    @Override
+    public void provisionStart() throws ManagerException, ResourceUnavailableException {
+        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
+        setCurrentTestMethodArchiveFolderName("preTest");
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
-    public void startOfTestMethod(@NotNull Method testMethod) throws ManagerException {
-        setCurrentTestMethod(testMethod.getName());
+    public void startOfTestMethod(@NotNull Method testExecutionMethod, Method testMethod) throws ManagerException {
+        cleanup();
+        setArchivePath(artifactsRoot.resolve(ZOSBATCH_JOBS));
+        if (testMethod != null) {
+            setCurrentTestMethodArchiveFolderName(testMethod.getName() + "." + testExecutionMethod.getName());
+        } else {
+            setCurrentTestMethodArchiveFolderName(testExecutionMethod.getName());
+        }
     }
 
     /*
@@ -158,7 +180,6 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     @Override
     public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
         cleanup();
-        setCurrentTestMethod(null);
         
         return null;
     }
@@ -171,7 +192,9 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        setCurrentTestMethod("cleanup");
+        cleanup();
+        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
+        setCurrentTestMethodArchiveFolderName("postTest");
         
         return null;
     }
@@ -179,14 +202,14 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     /*
      * (non-Javadoc)
      * 
-     * @see dev.galasa.framework.spi.IManager#provisionDiscard()
+     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
      */
     @Override
-    public void provisionDiscard() {
+    public void endOfTestRun() {
         try {
             cleanup();
         } catch (ZosBatchException e) {
-            logger.error("Problem in provision discard", e);
+            logger.error("Problem in endOfTestRun()", e);
         }
     }
     

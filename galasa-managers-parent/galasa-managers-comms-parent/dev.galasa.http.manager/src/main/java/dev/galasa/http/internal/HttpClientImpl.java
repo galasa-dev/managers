@@ -50,8 +50,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -61,8 +59,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -106,8 +102,178 @@ public class HttpClientImpl implements IHttpClient {
         this.timeout = timeout;
         this.logger = log;
         this.cookieStore = new BasicCookieStore();
-
     }
+
+    @Override
+    public HttpClientResponse<Object> getJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML });
+
+        return executeJaxbRequest(request, responseTypes);
+    }
+
+    @Override
+    public HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
+            throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url,null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setJAXBBody(jaxbObject);
+
+        return executeJaxbRequest(request, responseTypes);
+    }
+
+    @Override
+    public HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
+            throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setJAXBBody(jaxbObject);
+
+        return executeJaxbRequest(request, responseTypes);
+    }
+
+    @Override
+    public HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML });
+
+        return executeJaxbRequest(request, responseTypes);
+    }
+
+    private HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>... responseTypes)
+            throws HttpClientException {
+
+        return HttpClientResponse.jaxbResponse(execute(request.buildRequest()), responseTypes);
+    }
+
+    @Override
+    public HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException {
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_JSON });
+        return executeJsonRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
+        request.setJSONBody(json);
+
+        return executeJsonRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
+        request.setJSONBody(json);
+
+        return executeJsonRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_JSON });
+
+        return executeJsonRequest(request);
+    }
+
+    private HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
+
+        return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
+    }
+
+
+    @Override
+    public HttpClientResponse<String> getText(String url) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.TEXT_PLAIN });
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> putText(String url, String text) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(text);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> postText(String url, String text) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(text);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> deleteText(String url) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.TEXT_PLAIN });
+
+        return executeTextRequest(request);
+    }
+
+    private HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException {
+
+        return HttpClientResponse.textResponse(execute(request.buildRequest()));
+    }
+
+        
+    @Override
+    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> getBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN });
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> postBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<byte[]> deleteBinary(String url, byte[] binary) throws HttpClientException {       
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+        new ContentType[] { ContentType.TEXT_PLAIN });
+        request.setBody(binary);
+        return executeByteRequest(request);
+    }
+
+    public HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException {
+
+        return HttpClientResponse.byteResponse(execute(request.buildRequest()));
+    }
+
+
 
     @Override
     public void setURI(URI host) {
@@ -513,216 +679,6 @@ public class HttpClientImpl implements IHttpClient {
         }
     }
 
-    // @Override
-    // public Object get(String path, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
-    //     return get(path, null, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object get(String path, Map<String, String> queryParams, boolean retry, Class<?>... jaxbClasses)
-    //         throws HttpClientException {
-    //     return get(path, queryParams, new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public String get(String path) throws HttpClientException {
-
-    //     return get(path, false);
-    // }
-
-    // @Override
-    // public String get(String path, boolean retry) throws HttpClientException {
-    //     return (String) get(path, null,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object get(String path, Map<String, String> queryParams, ContentType[] acceptTypes, Class<?>[] jaxbClasses,
-    //         boolean retry) throws HttpClientException {
-
-    //     HttpGet get = new HttpGet(buildUri(path, queryParams));
-    //     addHeaders(get, null, acceptTypes);
-
-    //     byte[] response = execute(get, retry);
-
-    //     return unmarshall(response, jaxbClasses);
-    // }
-
-    // @Override
-    // public String delete(String path) throws HttpClientException {
-    //     return delete(path,false);
-    // }
-
-    // @Override
-    // public String delete(String path, boolean retry) throws HttpClientException {
-
-    //     return (String) delete(path, null,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object delete(String path, Map<String, String> queryParams, boolean retry, Class<?>[] jaxbClasses)
-    //         throws HttpClientException {
-    //     return delete(path, queryParams,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object delete(String path, Map<String, String> queryParams, ContentType[] acceptTypes,
-    //         Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
-
-    //     HttpDelete delete = new HttpDelete(buildUri(path, queryParams));
-    //     addHeaders(delete, null, acceptTypes);
-
-    //     byte[] response = execute(delete, retry);
-
-    //     return unmarshall(response, jaxbClasses);
-    // }
-
-    // @Override
-    // public Object putText(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return put(path, null, ContentType.TEXT_PLAIN, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object putText(String path, String data, Map<String, String> queryParams, boolean retry)
-    //         throws HttpClientException {
-    //     return put(path, queryParams, ContentType.TEXT_PLAIN, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object putXml(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return put(path, null, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object putJson(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return put(path, null, ContentType.APPLICATION_JSON, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object putMultipart(String path, List<RequestPart> parts, boolean retry) throws HttpClientException {
-    //     return putMultipart(path, parts, null,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object putMultipart(String path, List<RequestPart> parts, Map<String, String> queryParams,
-    //         ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
-
-    //     String boundary = "arbitraryBoundaryString";
-    //     MultipartEntityBuilder meb = MultipartEntityBuilder.create();
-    //     meb.setMode(HttpMultipartMode.STRICT);
-    //     meb.setBoundary(boundary);
-
-    //     for (RequestPart part : parts) {
-    //         meb.addPart(part.getType(), part.getBody());
-    //     }
-
-    //     HttpPut put = new HttpPut(buildUri(path, queryParams));
-    //     put.setEntity(meb.build());
-    //     addHeaders(put, null, acceptTypes);
-    //     put.addHeader("Content-Type", "multipart/mixed; boundary=" + boundary);
-
-    //     byte[] response = execute(put, retry);
-
-    //     return unmarshall(response, jaxbClasses);
-    // }
-
-    // @Override
-    // public Object putJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses) throws HttpClientException {
-    //     return put(path, null, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object putJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
-    //         Class<?>... jaxbClasses) throws HttpClientException {
-    //     return put(path, queryParams, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object put(String path, Map<String, String> queryParams, ContentType contentType, Object data,
-    //         ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
-
-    //     byte[] dataBytes = marshall(data, jaxbClasses);
-
-    //     HttpPut put = new HttpPut(buildUri(path, queryParams));
-    //     put.setEntity(new ByteArrayEntity(dataBytes));
-    //     addHeaders(put, contentType, acceptTypes);
-
-    //     byte[] response = execute(put, retry);
-
-    //     return unmarshall(response, jaxbClasses);
-    // }
-
-    // @Override
-    // public Object postText(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return post(path, null, ContentType.TEXT_PLAIN, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object postTextAsXML(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return post(path, null, ContentType.TEXT_XML, data, new ContentType[] { ContentType.APPLICATION_XML,
-    //             ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN, ContentType.TEXT_XML }, null, retry);
-    // }
-
-    // @Override
-    // public Object postXml(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return post(path, null, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
-    // @Override
-    // public Object postJAXB(String path, Object data, boolean retry, Class<?>... jaxbClasses)
-    //         throws HttpClientException {
-    //     return post(path, null, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object postJAXB(String path, Object data, Map<String, String> queryParams, boolean retry,
-    //         Class<?>... jaxbClasses) throws HttpClientException {
-    //     return post(path, queryParams, ContentType.APPLICATION_XML, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             jaxbClasses, retry);
-    // }
-
-    // @Override
-    // public Object postJson(String path, String data, boolean retry) throws HttpClientException {
-
-    //     return post(path, null, ContentType.APPLICATION_JSON, data,
-    //             new ContentType[] { ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN },
-    //             null, retry);
-    // }
-
     @Override
     public Object post(String path, Map<String, String> queryParams, ContentType contentType, Object data,
             ContentType[] acceptTypes, Class<?>[] jaxbClasses, boolean retry) throws HttpClientException {
@@ -773,7 +729,7 @@ public class HttpClientImpl implements IHttpClient {
         }
     }
 
-    public CloseableHttpResponse getFile(String path, ContentType[] contentTypes) throws HttpClientException {
+    public CloseableHttpResponse getFile(String path, ContentType... contentTypes) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
                 contentTypes);
@@ -840,163 +796,13 @@ public class HttpClientImpl implements IHttpClient {
         commonHeaders.clear();
     }
 
-    @Override
-    public HttpClientResponse<byte[]> executeByteRequest(HttpClientRequest request) throws HttpClientException {
-
-        return HttpClientResponse.byteResponse(execute(request.buildRequest()));
-    }
-    
-    @Override
-    public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
-        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
-        request.setBody(binary);
-
-        return executeByteRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<String> getText(String url) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.TEXT_PLAIN });
-
-        return executeTextRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<String> putText(String url, String text) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
-        request.setBody(text);
-
-        return executeTextRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<String> postText(String url, String text) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
-        request.setBody(text);
-
-        return executeTextRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<String> deleteText(String url) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.TEXT_PLAIN });
-
-        return executeTextRequest(request);
-    }
-
-    private HttpClientResponse<String> executeTextRequest(HttpClientRequest request) throws HttpClientException {
-
-        return HttpClientResponse.textResponse(execute(request.buildRequest()));
-    }
-
-    @Override
-    public HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException {
-        HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_JSON });
-        return executeJsonRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
-        request.setJSONBody(json);
-
-        return executeJsonRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
-        request.setJSONBody(json);
-
-        return executeJsonRequest(request);
-    }
-
-    @Override
-    public HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_JSON });
-
-        return executeJsonRequest(request);
-    }
-
-    // @Override
-    private HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
-
-        return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
-    }
-
-    // @Override
     private HttpClientResponse<Document> executeXmlRequest(HttpClientRequest request) throws HttpClientException {
-
         return HttpClientResponse.xmlResponse(execute(request.buildRequest()));
     }
 
     @Override
-    public HttpClientResponse<Object> getJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newGetRequest(url,
-                new ContentType[] { ContentType.APPLICATION_XML });
-
-        return executeJaxbRequest(request, responseTypes);
-    }
-
-    @Override
-    public HttpClientResponse<Object> putJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
-            throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPutRequest(url,
-                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
-        request.setJAXBBody(jaxbObject);
-
-        return executeJaxbRequest(request, responseTypes);
-    }
-
-    @Override
-    public HttpClientResponse<Object> postJaxb(String url, Object jaxbObject, Class<?>... responseTypes)
-            throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPostRequest(url,
-                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
-        request.setJAXBBody(jaxbObject);
-
-        return executeJaxbRequest(request, responseTypes);
-    }
-
-    @Override
-    public HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newDeleteRequest(url,
-                new ContentType[] { ContentType.APPLICATION_XML });
-
-        return executeJaxbRequest(request, responseTypes);
-    }
-
-    // @Override
-    private HttpClientResponse<Object> executeJaxbRequest(HttpClientRequest request, Class<?>... responseTypes)
-            throws HttpClientException {
-
-        return HttpClientResponse.jaxbResponse(execute(request.buildRequest()), responseTypes);
-    }
-
-    @Override
     public HttpClientResponse<String> head(String url) throws HttpClientException {
-        HttpClientRequest request = HttpClientRequest.newHeadRequest(url);
-
+        HttpClientRequest request = HttpClientRequest.newHeadRequest(buildUri(url, null).toString());
         return HttpClientResponse.textResponse(execute(request.buildRequest()));
     }
 
@@ -1004,9 +810,7 @@ public class HttpClientImpl implements IHttpClient {
         for (Header header : commonHeaders) {
             request.addHeader(header);
         }
-
         this.build();
-
         try {
             return httpClient.execute(request, httpContext);
         } catch (IOException e) {

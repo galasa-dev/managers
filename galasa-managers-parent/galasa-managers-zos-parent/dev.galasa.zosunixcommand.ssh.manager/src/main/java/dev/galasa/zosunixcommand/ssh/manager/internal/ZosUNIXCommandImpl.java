@@ -7,6 +7,9 @@ package dev.galasa.zosunixcommand.ssh.manager.internal;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.ICredentials;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
@@ -25,6 +28,8 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
 
     private IIpNetworkManagerSpi ipNetworkManager;
     private ICommandShell commandShell;
+    
+    private static final Log logger = LogFactory.getLog(ZosUNIXCommandImpl.class);
     
     public ZosUNIXCommandImpl(IZosImage image) throws ZosUNIXCommandException {
         this.ipNetworkManager = ZosUNIXCommandManagerImpl.ipNetworkManager;
@@ -46,8 +51,10 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
     @Override
     public String issueCommand(@NotNull String command) throws ZosUNIXCommandException {
         String commandResponse;
-        try {            
+        try {
+            logger.debug("About to issue command :" + command);
             commandResponse = commandShell.issueCommand(command);
+            logger.debug("response :" + commandResponse);
         } catch (IpNetworkManagerException e) {
             throw new ZosUNIXCommandException("Unable to issue zOS UNIX Command", e);
         }
@@ -57,8 +64,10 @@ public class ZosUNIXCommandImpl implements IZosUNIXCommand {
     @Override
     public String issueCommand(@NotNull String command, long timeout) throws ZosUNIXCommandException {
         String commandResponse;
-        try {            
+        try {
+            logger.debug("About to issue command :" + command);
             commandResponse = commandShell.issueCommand(command, timeout);
+            logger.debug("response :" + commandResponse);
         } catch (IpNetworkManagerException e) {
             throw new ZosUNIXCommandException("Unable to issue zOS UNIX Command", e);
         }

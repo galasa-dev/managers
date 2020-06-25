@@ -1170,7 +1170,7 @@ public class TestZosVSAMDatasetImpl {
         Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
         Mockito.when(ZosFileManagerImpl.getVsamDatasetArtifactRoot()).thenReturn(archivePathMock);
-        Whitebox.setInternalState(ZosFileManagerImpl.class, "currentTestMethod", "testStoreArtifact");
+        Whitebox.setInternalState(ZosFileManagerImpl.class, "currentTestMethodArchiveFolderName", "testStoreArtifact");
         
         return fileSystemProviderMock;
     }

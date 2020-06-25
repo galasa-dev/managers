@@ -16,6 +16,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
@@ -31,6 +32,7 @@ import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.DatastreamException;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.spi.Terminal;
 
 public class NetworkThread extends Thread {
 
@@ -47,38 +49,47 @@ public class NetworkThread extends Thread {
     private final InputStream inputStream;
     private final Screen      screen;
     private final Network     network;
+    private final Terminal    terminal;
 
     private boolean           endOfStream     = false;
+    
+    private static boolean           displayInboundDatastream = false;
 
     private static Log               logger          = LogFactory.getLog(NetworkThread.class);
 
-    public NetworkThread(Screen screen, Network network, InputStream inputStream) {
+    public NetworkThread(Terminal terminal, Screen screen, Network network, InputStream inputStream) {
         this.screen = screen;
         this.network = network;
         this.inputStream = inputStream;
+        this.terminal = terminal;
     }
 
     @Override
     public void run() {
+        logger.trace("Starting network thread on terminal " + terminal.getId());
 
         while (!endOfStream) {
             try {
                 processMessage(inputStream);
             } catch (NetworkException e) {
                 logger.error("Problem with Network Thread", e);
-                network.close();
-                return;
+                break;
             } catch (IOException e) {
                 if (e.getMessage().contains("Socket closed")) {
-                    return;
+                    break;
                 }
                 logger.error("Problem with Network Thread", e);
-                network.close();
-                return;
+                break;
             }
         }
+        try {
+            screen.networkClosed();
+        } catch (TerminalInterruptedException e) {
+            logger.error("Problem locking keyboard on network close",e);
+        }
 
-        network.close();
+        logger.trace("Ending network thread on terminal " + terminal.getId());
+        terminal.networkClosed();
     }
 
     public void processMessage(InputStream messageStream) throws IOException, NetworkException {
@@ -129,8 +140,10 @@ public class NetworkThread extends Thread {
 
     public static Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
-        String hex = new String(Hex.encodeHex(buffer.array()));
-        logger.trace("inbound=" + hex);
+        if (logger.isTraceEnabled() || displayInboundDatastream) {
+            String hex = new String(Hex.encodeHex(buffer.array()));
+            logger.info("inbound=" + hex);
+        }
 
         AbstractCommandCode commandCode = AbstractCommandCode.getCommandCode(buffer.get());
         if (commandCode instanceof CommandWriteStructured) {
@@ -250,6 +263,10 @@ public class NetworkThread extends Thread {
         byte[] bytes = byteArrayOutputStream.toByteArray();
 
         return ByteBuffer.wrap(bytes);
+    }
+    
+    public static void setDisplayInboundDatastream(boolean newDisplayInboundDatastream) {
+        displayInboundDatastream = newDisplayInboundDatastream;
     }
 
 }
