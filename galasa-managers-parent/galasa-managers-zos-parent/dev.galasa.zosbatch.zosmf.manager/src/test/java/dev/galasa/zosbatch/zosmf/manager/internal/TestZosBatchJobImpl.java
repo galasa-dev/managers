@@ -308,12 +308,12 @@ public class TestZosBatchJobImpl {
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("waitForJob() should return the Integer.MIN_VALUE", Integer.MIN_VALUE, zosBatchJobSpy.waitForJob());
 
-        Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", false);
-        Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(1);
-        Thread.currentThread().interrupt();
+//        Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", false);
+//        Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(1);
+//        Thread.currentThread().interrupt();
 //        exceptionRule.expect(ZosBatchException.class);
 //        exceptionRule.expectMessage("java.lang.InterruptedException");
-        zosBatchJobSpy.waitForJob();
+//        zosBatchJobSpy.waitForJob();
     }
 
     @Test
