@@ -44,6 +44,7 @@ import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
+import dev.galasa.zosunixcommand.ssh.manager.internal.ZosUNIXCommandManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class})
@@ -78,6 +79,9 @@ public class TestZosFileManagerImpl {
 
     @Mock
     private ZosmfManagerImpl zosmfManagerMock;
+    
+    @Mock
+    private ZosUNIXCommandManagerImpl zosUNIXCommandManagerMock;
 
     @Mock
     private IZosImage zosImageMock;
@@ -152,8 +156,9 @@ public class TestZosFileManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
+        allManagers.add(zosUNIXCommandManagerMock);
         zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(3)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosFileManagerSpy);        
         zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
@@ -162,6 +167,8 @@ public class TestZosFileManagerImpl {
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
+        allManagers.add(zosmfManagerMock);
+        allManagers.add(zosUNIXCommandManagerMock);
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("The zOS Manager is not available");
         zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
@@ -170,8 +177,19 @@ public class TestZosFileManagerImpl {
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
+        allManagers.add(zosUNIXCommandManagerMock);
+        allManagers.add(zosManagerMock);
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("The zOSMF Manager is not available");
+        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+    }
+    
+    @Test
+    public void testYouAreRequiredException3() throws ManagerException {
+        allManagers.add(zosManagerMock);
+        allManagers.add(zosmfManagerMock);
+        exceptionRule.expect(ZosFileManagerException.class);
+        exceptionRule.expectMessage("The zOS UNIX Command Manager is not available");
         zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
     }
     
