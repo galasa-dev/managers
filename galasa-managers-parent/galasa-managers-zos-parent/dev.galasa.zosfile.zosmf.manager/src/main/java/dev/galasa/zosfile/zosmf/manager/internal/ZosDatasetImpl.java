@@ -64,21 +64,28 @@ public class ZosDatasetImpl implements IZosDataset {
     // parameters
     private String volser = null;
     private String unit = null;
-    private String dsorg = null;
-    private String alcunit = null;
+    private DatasetOrganization dsorg = null;
+    private SpaceUnit alcunit = null;
     private int primary = -1;
     private int secondary = -1;
     private int dirblk = -1;
     private int avgblk = -1;
-    private String recfm = null;
+    private RecordFormat recfm = null;
     private int blksize = -1;
     private int lrecl = -1;
     private String storeclass = null;
     private String mgntclass = null;
     private String dataclass = null;
-    private String dstype = null;
+    private DSType dstype = null;
+    private int extents = -1;
+    private int used = -1;
+    private String createDate = null;
+    private String referencedDate = null;
+    private String expirationDate = null;
 
     private DatasetDataType dataType = DatasetDataType.TEXT;
+
+    private ZosDatasetAttributesListdsi zosDatasetAttributesListdsi;
 
     private static final String PROP_VOLSER = "volser";     
     private static final String PROP_UNIT = "unit";       
@@ -94,12 +101,17 @@ public class ZosDatasetImpl implements IZosDataset {
     private static final String PROP_STORECLASS = "storeclass";
     private static final String PROP_MGNTCLASS = "mgntclass";
     private static final String PROP_DATACLASS = "dataclass";
-    private static final String PROP_DSTYPE = "dstype";
+    private static final String PROP_DSNTYPE = "dsntype";
     private static final String PROP_DSNAME = "dsname";
     private static final String PROP_RETURNED_ROWS = "returnedRows";
     private static final String PROP_MORE_ROWS = "moreRows";
     private static final String PROP_ITEMS = "items";
     private static final String PROP_MEMBER = "member";
+    
+    private static final String PROP_LISTDSIRC    = "listdsirc";
+    private static final String PROP_SYSREASON    = "sysreason";
+    private static final String PROP_SYSMSGLVL1   = "sysmsglvl1";  
+    private static final String PROP_SYSMSGLVL2   = "sysmsglvl2";
 
     private static final String PROP_BLKSZ = "blksz";
     private static final String PROP_EXTX = "extx";
@@ -142,7 +154,7 @@ public class ZosDatasetImpl implements IZosDataset {
         requestBody = addPropertyWhenSet(requestBody, PROP_VOLSER, this.volser);
         requestBody = addPropertyWhenSet(requestBody, PROP_UNIT, this.unit);
         requestBody = addPropertyWhenSet(requestBody, PROP_DSORG, this.dsorg);
-        requestBody = addPropertyWhenSet(requestBody, PROP_ALCUNIT, this.alcunit);
+        requestBody = addPropertyWhenSet(requestBody, PROP_ALCUNIT, this.alcunit != null? alcunit.toString().replaceFirst("S$",""): null);
         requestBody = addPropertyWhenSet(requestBody, PROP_PRIMARY, this.primary);
         requestBody = addPropertyWhenSet(requestBody, PROP_SECONDARY, this.secondary);
         requestBody = addPropertyWhenSet(requestBody, PROP_DIRBLK, this.dirblk);
@@ -153,7 +165,7 @@ public class ZosDatasetImpl implements IZosDataset {
         requestBody = addPropertyWhenSet(requestBody, PROP_STORECLASS, this.storeclass);
         requestBody = addPropertyWhenSet(requestBody, PROP_MGNTCLASS, this.mgntclass);
         requestBody = addPropertyWhenSet(requestBody, PROP_DATACLASS, this.dataclass);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DSTYPE, this.dstype);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DSNTYPE, this.dstype != null && this.dstype.equals(DSType.PDSE)? DSType.LIBRARY : this.dstype);
         
         String urlPath = RESTFILES_DATASET_PATH + SLASH  + this.dsname;
         IZosmfResponse response;
@@ -565,13 +577,13 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setDatasetOrganization(DatasetOrganization organization) {
-        this.dsorg = organization.toString();
+        this.dsorg = organization;
     }
 
     @Override
     public void setSpace(SpaceUnit spaceUnit, int primaryExtents, int secondaryExtents) {
         // Singular value rather than plural
-        this.alcunit = spaceUnit.toString().replaceFirst("S$","");
+        this.alcunit = spaceUnit;
         this.primary = primaryExtents;
         this.secondary = secondaryExtents;
     }
@@ -583,7 +595,7 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setRecordFormat(RecordFormat recordFormat) {
-        this.recfm = recordFormat.toString();
+        this.recfm = recordFormat;
     }
 
     @Override
@@ -613,7 +625,7 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setDatasetType(DSType dsType) {
-        this.dstype = dsType.toString();
+        this.dstype = dsType;
     }
 
     @Override
@@ -637,12 +649,12 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public String getDatasetOrganization() {
+    public DatasetOrganization getDatasetOrganization() {
         return this.dsorg;
     }
 
     @Override
-    public String getSpaceUnit() {
+    public SpaceUnit getSpaceUnit() {
         return this.alcunit;
     }
 
@@ -662,7 +674,7 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public String getRecordFormat() {
+    public RecordFormat getRecordFormat() {
         return this.recfm;
     }
 
@@ -693,10 +705,68 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public DSType getDatasetType() {
-        if (this.dstype == null) {
-            return null;
+        return dstype;
+    }
+    
+    @Override
+    public int getExtents() {
+        return this.extents;
+    }
+    
+    @Override
+    public int getUsed() {
+        return this.used;
+    }
+
+    @Override
+    public String getReferencedDate() {
+        return this.referencedDate;
+    }
+
+    @Override
+    public String getExpirationDate() {
+        return this.expirationDate;
+    }
+
+    @Override
+    public String getCreateDate() {
+        return this.createDate;
+    }
+
+    @Override
+    public void retrieveAttibutes() throws ZosDatasetException {
+        if (this.zosDatasetAttributesListdsi == null) {
+            this.zosDatasetAttributesListdsi = new ZosDatasetAttributesListdsi(this.image);
         }
-        return DSType.valueOf(this.dstype);
+        JsonObject datasteAttributes = zosDatasetAttributesListdsi.get(this.dsname);
+        
+        int listdsiRc = datasteAttributes.get(PROP_LISTDSIRC).getAsInt();
+        JsonElement value;
+        if (listdsiRc != 0) {
+            value = datasteAttributes.get(PROP_SYSREASON);
+            int sysreason = -1;
+            if (value != null) {
+                sysreason = value.getAsInt();
+            }
+            String sysmsglvl1 = emptyStringWhenNull(datasteAttributes, PROP_SYSMSGLVL1);
+            String sysmsglvl2 = emptyStringWhenNull(datasteAttributes, PROP_SYSMSGLVL2);
+            String message;
+            if (listdsiRc == 4) {
+                message = "Unable to get full attributes for data set " + quoted(this.dsname) + ". LISTDSI RC=" + listdsiRc +
+                        "\nSYSREASON=" + sysreason +
+                        "\nSYSMSGLVL1: " + sysmsglvl1 +
+                        "\nSYSMSGLVL2: " + sysmsglvl2;
+                logger.warn(message);
+            } else {
+                message = "Unable to get attributes for data set " + quoted(this.dsname) + ". LISTDSI RC=" + listdsiRc + 
+                        "\nSYSREASON=" + sysreason + 
+                        "\nSYSMSGLVL1: " + sysmsglvl1 + 
+                        "\nSYSMSGLVL2: " + sysmsglvl2;
+                throw new ZosDatasetException(message);
+            }
+        }
+        
+        setAttributes(datasteAttributes);
     }
 
     @Override
@@ -724,8 +794,8 @@ public class ZosDatasetImpl implements IZosDataset {
         attributes.append("Block size=");
         attributes.append(emptyStringWhenNull(jsonObject, PROP_BLKSZ));
         attributes.append(COMMA);
-        attributes.append("Data set name type=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSTYPE));
+        attributes.append("Data set type=");
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSNTYPE));
         attributes.append(COMMA);
         attributes.append("Allocated extents=");
         attributes.append(emptyStringWhenNull(jsonObject, PROP_EXTX));
@@ -755,7 +825,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return attributes.toString();
     }
 
-    public JsonObject getAttibutes() throws ZosDatasetException {
+    protected JsonObject getAttibutes() throws ZosDatasetException {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -801,6 +871,88 @@ public class ZosDatasetImpl implements IZosDataset {
         return attributes;
     }
     
+    protected void setAttributes(JsonObject datasteAttributes) {
+        JsonElement value;
+        value = datasteAttributes.get(PROP_VOLSER);
+        if (value != null) {
+            setVolumes(value.getAsString());
+        }
+        
+        value = datasteAttributes.get(PROP_UNIT);
+        if (value != null) {
+            this.setUnit(value.getAsString());
+        }
+        
+        value = datasteAttributes.get(PROP_DSORG);
+        if (value != null) {
+            setDatasetOrganization(DatasetOrganization.valueOfLabel(value.getAsString()));
+        }
+        
+        value = datasteAttributes.get(PROP_ALCUNIT);
+        if (value != null) {
+            this.alcunit = SpaceUnit.valueOf(value.getAsString() + "S");
+        }
+        
+        value = datasteAttributes.get(PROP_PRIMARY);
+        if (value != null) {
+            this.primary = value.getAsInt();
+        }
+        
+        value = datasteAttributes.get(PROP_SECONDARY);
+        if (value != null) {
+            this.secondary = value.getAsInt();
+        }
+        
+        value = datasteAttributes.get(PROP_DIRBLK);
+        if (value != null) {
+            this.dirblk = value.getAsInt();
+        }
+        value = datasteAttributes.get(PROP_BLKSIZE);
+        if (value != null) {
+            setBlockSize(value.getAsInt());
+        }
+    
+        value = datasteAttributes.get(PROP_RECFM);
+        if (value != null) {
+            setRecordFormat(RecordFormat.valueOfLabel(value.getAsString()));
+        }
+        
+        value = datasteAttributes.get(PROP_LRECL);
+        if (value != null) {
+            setRecordlength(value.getAsInt());
+        }
+        
+        value = datasteAttributes.get(PROP_DSNTYPE);
+        if (value != null) {
+            setDatasetType(DSType.valueOfLabel(value.getAsString()));
+        }
+        
+        value = datasteAttributes.get(PROP_USED);
+        if (value != null) {
+            this.used = value.getAsInt();
+        }
+        
+        value = datasteAttributes.get(PROP_EXTX);
+        if (value != null) {
+            this.extents = value.getAsInt();
+        }
+        
+        value = datasteAttributes.get(PROP_CDATE);
+        if (value != null) {
+            this.createDate = value.getAsString();
+        }
+        
+        value = datasteAttributes.get(PROP_RDATE);
+        if (value != null) {
+            this.referencedDate = value.getAsString();
+        }
+        
+        value = datasteAttributes.get(PROP_EDATE);
+        if (value != null) {
+            this.expirationDate = value.getAsString();
+        }
+    }
+
     protected Object retrieve(String memberName) throws ZosDatasetException {
       Map<String, String> headers = new HashMap<>();
       String dType = this.dataType.toString();
@@ -968,7 +1120,7 @@ public class ZosDatasetImpl implements IZosDataset {
         return artifactPath.toString();
     }
 
-    private String emptyStringWhenNull(JsonObject jsonElement, String property) {
+    protected String emptyStringWhenNull(JsonObject jsonElement, String property) {
         JsonElement element = jsonElement.get(property);
         if (element == null) {
             return "";
@@ -983,9 +1135,13 @@ public class ZosDatasetImpl implements IZosDataset {
             } else if (value instanceof Integer) {
                 if ((int) value >= 0) {
                     requestBody.addProperty(property, (Integer) value);
-                }
+                }                
             } else {
-                throw new ZosDatasetException("Invlaid type of " + quoted(value.getClass().getName()) + " for property " + quoted(property) + logOnImage());
+                try {
+                    requestBody.addProperty(property, value.toString());
+                } catch (Exception e) {
+                    throw new ZosDatasetException("Invlaid type of " + quoted(value.getClass().getName()) + " for property " + quoted(property) + logOnImage(), e);
+                }
             }
         }
         return requestBody;

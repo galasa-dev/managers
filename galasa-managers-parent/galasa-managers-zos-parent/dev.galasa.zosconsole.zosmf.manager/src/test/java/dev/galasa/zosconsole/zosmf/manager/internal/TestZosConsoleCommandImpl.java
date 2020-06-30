@@ -89,8 +89,12 @@ public class TestZosConsoleCommandImpl {
     
     @Test
     public void testIssueCommand() throws ZosConsoleException {
-        zosConsoleCommand.issueCommand();
-        Assert.assertEquals("getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommand.getCommand());
+        PowerMockito.when(zosConsoleCommandSpy.isRouteCommand()).thenReturn(false);
+        zosConsoleCommandSpy.issueCommand();
+        Assert.assertEquals("getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommandSpy.getCommand());
+        PowerMockito.when(zosConsoleCommandSpy.isRouteCommand()).thenReturn(true);
+        zosConsoleCommandSpy.issueCommand();
+        Assert.assertEquals("getCommand() should return the supplied value", CONSOLE_COMMAND, zosConsoleCommandSpy.getCommand());
     }
     
     @Test
@@ -167,6 +171,16 @@ public class TestZosConsoleCommandImpl {
         String response = "Unable to issue console command \"" + CONSOLE_COMMAND + "\"";
         
         Assert.assertEquals("logUnableToIsuueCommand() should return the correct String", response, zosConsoleCommandSpy.logUnableToIsuueCommand());
+    }
+
+    @Test
+    public void testIsRouteCommand() throws ZosConsoleException {
+        Whitebox.setInternalState(zosConsoleCommandSpy, "command", CONSOLE_COMMAND);
+        Assert.assertFalse("isRouteCommand() should return false", zosConsoleCommandSpy.isRouteCommand());
+        Whitebox.setInternalState(zosConsoleCommandSpy, "command", "RO XX," + CONSOLE_COMMAND);
+        Assert.assertTrue("isRouteCommand() should return true", zosConsoleCommandSpy.isRouteCommand());
+        Whitebox.setInternalState(zosConsoleCommandSpy, "command", "ROUTE XX," + CONSOLE_COMMAND);
+        Assert.assertTrue("isRouteCommand() should return true", zosConsoleCommandSpy.isRouteCommand());
     }
 
     @Test
