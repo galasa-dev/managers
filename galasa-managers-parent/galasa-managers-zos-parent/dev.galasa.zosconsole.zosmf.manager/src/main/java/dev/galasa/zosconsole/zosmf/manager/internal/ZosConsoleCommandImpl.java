@@ -94,7 +94,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
                     " Return Code=" + commandErrorReturnCode + " Reason Code=" + commandErrorReasonCode);
             throw new ZosConsoleException("Console command \"" + this.command + "\" failed. Reason \"" + this.commandImmediateResponse + "\"");
         }
-        logger.info("Command " + this + " issued");
+        logger.info("Issued command: " + this.command);
                 
         return this;
     }
