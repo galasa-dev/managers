@@ -1,11 +1,10 @@
-/**
- * zOS 3270 Terminal Manager - TPI
  /*
  *Licensed Materials - Property of IBM
  *
  *(c) Copyright IBM Corp. 2020.
  */
- * Zos3270Terminal Manager
+/**
+ * zOS 3270 Terminal Manager - TPI
  * 
  * @galasa.manager Zos3270Terminal
  * 
@@ -22,4 +21,4 @@
  * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zos3270/package-summary.html">Javadoc documentation for this Manager here</a>.
  * <br><br>
  */
-package dev.galasa.zos3270;
+ package dev.galasa.zos3270;
