@@ -21,4 +21,4 @@
  * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zos3270/package-summary.html">Javadoc documentation for this Manager here</a>.
  * <br><br>
  */
- package dev.galasa.zos3270;
+package dev.galasa.zos3270;
