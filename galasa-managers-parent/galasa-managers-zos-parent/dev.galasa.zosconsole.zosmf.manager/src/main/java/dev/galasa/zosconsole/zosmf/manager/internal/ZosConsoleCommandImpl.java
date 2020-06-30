@@ -62,7 +62,9 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     public @NotNull IZosConsoleCommand issueCommand() throws ZosConsoleException {
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("cmd", this.command);
-        requestBody.addProperty("system", this.image.getImageID());
+        if (!isRouteCommand()) {
+            requestBody.addProperty("system", this.image.getImageID());
+        }
         
         IZosmfResponse response;
         try {
@@ -132,6 +134,13 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     
     protected String logUnableToIsuueCommand() {
         return "Unable to issue console command \"" + this.command + "\"";
+    }
+
+    protected boolean isRouteCommand() {
+        if (this.command.startsWith("RO ") || this.command.startsWith("ROUTE ")) {
+            return true;
+        }
+        return false;
     }
 
     @Override

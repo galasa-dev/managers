@@ -38,6 +38,7 @@ import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
 import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
+import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 /**
  * zOS File Manager implemented using zOS/MF
@@ -57,6 +58,11 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     protected static IZosmfManagerSpi zosmfManager;
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
         ZosFileManagerImpl.zosmfManager = zosmfManager;
+    }
+
+    protected static IZosUNIXCommandSpi zosUnixCommandManager;
+    public static void setZosUnixCommandCommandManager(IZosUNIXCommandSpi zosUnixCommandManager) {
+        ZosFileManagerImpl.zosUnixCommandManager = zosUnixCommandManager;
     }
 
     private static final Map<String, ZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
@@ -168,6 +174,10 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         if (zosmfManager == null) {
             throw new ZosFileManagerException("The zOSMF Manager is not available");
         }
+        setZosUnixCommandCommandManager(addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class));
+        if (zosUnixCommandManager == null) {
+            throw new ZosFileManagerException("The zOS UNIX Command Manager is not available");
+        }
     }
 
     /*
@@ -178,7 +188,8 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi ||
-               otherManager instanceof IZosmfManagerSpi;
+                otherManager instanceof IZosmfManagerSpi ||
+                otherManager instanceof IZosUNIXCommandSpi;
     }
 
     /*

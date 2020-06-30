@@ -15,6 +15,9 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +27,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -51,7 +56,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({RestrictZosmfToImage.class})
+@PrepareForTest({RestrictZosmfToImage.class, LogFactory.class})
 public class TestZosDatasetImpl {
     
     private ZosDatasetImpl zosDataset;
@@ -69,6 +74,14 @@ public class TestZosDatasetImpl {
     
     @Mock
     private IZosmfResponse zosmfResponseMock;
+    
+    @Mock
+    private ZosDatasetAttributesListdsi zosDatasetAttributesListdsiMock;
+    
+    @Mock
+    private Log logMock;
+    
+    private static String logMessage;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -87,6 +100,21 @@ public class TestZosDatasetImpl {
     
     @Before
     public void setup() throws Exception {
+        PowerMockito.mockStatic(LogFactory.class);
+        Mockito.when(LogFactory.getLog(Mockito.any(Class.class))).thenReturn(logMock);
+        Answer<String> answer = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                logMessage = invocation.getArgument(0);
+                System.err.println("Captured Log Message:\n" + logMessage);
+                if (invocation.getArguments().length > 1 && invocation.getArgument(1) instanceof Throwable) {
+                    ((Throwable) invocation.getArgument(1)).printStackTrace();
+                }
+                return null;
+            }
+        };
+        Mockito.doAnswer(answer).when(logMock).warn(Mockito.any());
+        
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
         
         PowerMockito.mockStatic(RestrictZosmfToImage.class);
@@ -117,7 +145,13 @@ public class TestZosDatasetImpl {
        
         zosDatasetSpy.create();        
         Assert.assertFalse("created() should return false", zosDatasetSpy.created());
-       
+
+        Whitebox.setInternalState(zosDatasetSpy, "alcunit", SpaceUnit.TRACKS);
+        Whitebox.setInternalState(zosDatasetSpy, "dstype", DSType.PDSE);
+        zosDatasetSpy.create();
+        
+        Whitebox.setInternalState(zosDatasetSpy, "dstype", DSType.PDS);
+        
         // First call returns false, second returns true
         PowerMockito.doReturn(false).doReturn(true).when(zosDatasetSpy).exists();
         zosDatasetSpy.create();
@@ -840,7 +874,7 @@ public class TestZosDatasetImpl {
         Assert.assertNull("getDatasetOrganization() should return null", zosDatasetSpy.getDatasetOrganization());
         DatasetOrganization value = DatasetOrganization.SEQUENTIAL;
         zosDatasetSpy.setDatasetOrganization(value);
-        Assert.assertEquals("getDatasetOrganization() should return the supplied value", value.toString(), zosDatasetSpy.getDatasetOrganization());
+        Assert.assertEquals("getDatasetOrganization() should return the supplied value", value, zosDatasetSpy.getDatasetOrganization());
     }
     
     @Test
@@ -852,7 +886,7 @@ public class TestZosDatasetImpl {
         int primaryExtents = 99;
         int secondaryExtents = 99;
         zosDatasetSpy.setSpace(spaceUnit, primaryExtents, secondaryExtents);
-        Assert.assertEquals("getSpaceUnit() should return the supplied value", spaceUnit.toString(), zosDatasetSpy.getSpaceUnit());
+        Assert.assertEquals("getSpaceUnit() should return the supplied value", spaceUnit, zosDatasetSpy.getSpaceUnit());
         Assert.assertEquals("getPrimaryExtents() should return the supplied value", primaryExtents, zosDatasetSpy.getPrimaryExtents());
         Assert.assertEquals("getSecondaryExtents() should return the supplied value", secondaryExtents, zosDatasetSpy.getSecondaryExtents());
     }
@@ -870,7 +904,7 @@ public class TestZosDatasetImpl {
         Assert.assertNull("getRecordFormat() should return null", zosDatasetSpy.getRecordFormat());
         RecordFormat value = RecordFormat.FIXED;
         zosDatasetSpy.setRecordFormat(value);
-        Assert.assertEquals("getRecordFormat() should return the supplied value", value.toString(), zosDatasetSpy.getRecordFormat());
+        Assert.assertEquals("getRecordFormat() should return the supplied value", value, zosDatasetSpy.getRecordFormat());
     }
     
     @Test
@@ -921,6 +955,41 @@ public class TestZosDatasetImpl {
     }
     
     @Test
+    public void testExtents() {
+        int value = 99;
+        Whitebox.setInternalState(zosDatasetSpy, "extents", value);
+        Assert.assertEquals("getExtents() should return expected value", value, zosDatasetSpy.getExtents());
+    }
+    
+    @Test
+    public void testUsed() {
+        int value = 99;
+        Whitebox.setInternalState(zosDatasetSpy, "used", value);
+        Assert.assertEquals("getExtents() should return expected value", value, zosDatasetSpy.getUsed());
+    }
+    
+    @Test
+    public void testCreateDate() {
+        String value = "01/01/2000";
+        Whitebox.setInternalState(zosDatasetSpy, "createDate", value);
+        Assert.assertEquals("getCreateDate() should return expected value", value, zosDatasetSpy.getCreateDate());
+    }
+    
+    @Test
+    public void testReferencedDate() {
+        String value = "01/01/2000";
+        Whitebox.setInternalState(zosDatasetSpy, "referencedDate", value);
+        Assert.assertEquals("getReferencedDate() should return expected value", value, zosDatasetSpy.getReferencedDate());
+    }
+    
+    @Test
+    public void testExpirationDate() {
+        String value = "01/01/2000";
+        Whitebox.setInternalState(zosDatasetSpy, "expirationDate", value);
+        Assert.assertEquals("getExpirationDate() should return expected value", value, zosDatasetSpy.getExpirationDate());
+    }
+    
+    @Test
     public void testGetName() {
         Assert.assertEquals("getName() should return DATASET_NAME", DATASET_NAME, zosDatasetSpy.getName());
         Assert.assertEquals("toString() should return DATASET_NAME", DATASET_NAME, zosDatasetSpy.toString());
@@ -942,7 +1011,7 @@ public class TestZosDatasetImpl {
         attributes.append("Record format=,");
         attributes.append("Record length=,");
         attributes.append("Block size=,");
-        attributes.append("Data set name type=,");
+        attributes.append("Data set type=,");
         attributes.append("Allocated extents=,");
         attributes.append("% Utilized=,");
         attributes.append("PDS=false,");
@@ -967,7 +1036,7 @@ public class TestZosDatasetImpl {
         attributes.append("Record format=,");
         attributes.append("Record length=,");
         attributes.append("Block size=,");
-        attributes.append("Data set name type=,");
+        attributes.append("Data set type=,");
         attributes.append("Allocated extents=,");
         attributes.append("% Utilized=,");
         attributes.append("PDS=true,");
@@ -1054,6 +1123,86 @@ public class TestZosDatasetImpl {
         zosDatasetSpy.getAttibutes();        
     }
     
+    @Test
+    public void testRetrieveAttibutes() throws ZosDatasetException {
+        Whitebox.setInternalState(zosDatasetSpy, "zosDatasetAttributesListdsi", zosDatasetAttributesListdsiMock);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("listdsirc", 0);
+        Mockito.when(zosDatasetAttributesListdsiMock.get(Mockito.anyString())).thenReturn(jsonObject);
+        PowerMockito.doNothing().when(zosDatasetSpy).setAttributes(Mockito.any());
+        zosDatasetSpy.retrieveAttibutes();
+        Mockito.verify(zosDatasetSpy, Mockito.times(1)).setAttributes(Mockito.any());
+        PowerMockito.doReturn("MESSAGE").when(zosDatasetSpy).emptyStringWhenNull(Mockito.any(),Mockito.any());
+        
+        jsonObject.addProperty("listdsirc", 4);
+        zosDatasetSpy.retrieveAttibutes();
+        Mockito.verify(zosDatasetSpy, Mockito.times(2)).setAttributes(Mockito.any());
+        
+        jsonObject.addProperty("sysreason", 12);
+        zosDatasetSpy.retrieveAttibutes();
+        String expectedMessage = "Unable to get full attributes for data set \"" + DATASET_NAME + "\". LISTDSI RC=4\n" + 
+                "SYSREASON=12\n" + 
+                "SYSMSGLVL1: MESSAGE\n" + 
+                "SYSMSGLVL2: MESSAGE";
+        Assert.assertEquals("retrieveAttibutes() should log specified message", expectedMessage , logMessage);
+        
+        jsonObject.addProperty("listdsirc", 12);
+        expectedMessage = "Unable to get attributes for data set \"" + DATASET_NAME + "\". LISTDSI RC=12\n" + 
+                "SYSREASON=12\n" + 
+                "SYSMSGLVL1: MESSAGE\n" + 
+                "SYSMSGLVL2: MESSAGE";
+        exceptionRule.expect(ZosDatasetException.class);
+        exceptionRule.expectMessage(expectedMessage);
+        zosDatasetSpy.retrieveAttibutes();
+    }
+    
+    @Test
+    public void testRetrieveAttibutesException() throws ZosDatasetException {
+        exceptionRule.expect(ZosDatasetException.class);
+        exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
+        zosDatasetSpy.retrieveAttibutes();
+    }
+    
+    @Test
+    public void testSetAttributes() {
+        JsonObject jsonObject = new JsonObject();
+        zosDatasetSpy.setAttributes(jsonObject);
+        
+        jsonObject.addProperty("volser", "VOLSER");
+        jsonObject.addProperty("unit", "UNIT");
+        jsonObject.addProperty("dsorg", "PO");
+        jsonObject.addProperty("alcunit", "CYLINDER");
+        jsonObject.addProperty("primary", "1");
+        jsonObject.addProperty("secondary", 2);
+        jsonObject.addProperty("dirblk", 3);
+        jsonObject.addProperty("blksize", 4);
+        jsonObject.addProperty("recfm", "FB");
+        jsonObject.addProperty("lrecl", 5);
+        jsonObject.addProperty("dsntype", "PDSE");
+        jsonObject.addProperty("used", 6);
+        jsonObject.addProperty("extx", 7);
+        jsonObject.addProperty("cdate", "CDATE");
+        jsonObject.addProperty("rdate", "RDATE");
+        jsonObject.addProperty("edate", "EDATE");
+        zosDatasetSpy.setAttributes(jsonObject);
+
+        Assert.assertEquals("setAttributes() should set supplied value", "VOLSER", zosDatasetSpy.getVolumes());
+        Assert.assertEquals("setAttributes() should set supplied value", "UNIT", zosDatasetSpy.getUnit());
+        Assert.assertEquals("setAttributes() should set supplied value", DatasetOrganization.PARTITIONED, zosDatasetSpy.getDatasetOrganization());
+        Assert.assertEquals("setAttributes() should set supplied value", SpaceUnit.CYLINDERS, zosDatasetSpy.getSpaceUnit());
+        Assert.assertEquals("setAttributes() should set supplied value", 1, zosDatasetSpy.getPrimaryExtents());
+        Assert.assertEquals("setAttributes() should set supplied value", 2, zosDatasetSpy.getSecondaryExtents());
+        Assert.assertEquals("setAttributes() should set supplied value", 3, zosDatasetSpy.getDirectoryBlocks());
+        Assert.assertEquals("setAttributes() should set supplied value", 4, zosDatasetSpy.getBlockSize());
+        Assert.assertEquals("setAttributes() should set supplied value", RecordFormat.FIXED_BLOCKED, zosDatasetSpy.getRecordFormat());
+        Assert.assertEquals("setAttributes() should set supplied value", 5, zosDatasetSpy.getRecordlength());
+        Assert.assertEquals("setAttributes() should set supplied value", DSType.PDSE, zosDatasetSpy.getDatasetType());
+        Assert.assertEquals("setAttributes() should set supplied value", 6, zosDatasetSpy.getUsed());
+        Assert.assertEquals("setAttributes() should set supplied value", 7, zosDatasetSpy.getExtents());
+        Assert.assertEquals("setAttributes() should set supplied value", "CDATE", zosDatasetSpy.getCreateDate());
+        Assert.assertEquals("setAttributes() should set supplied value", "RDATE", zosDatasetSpy.getReferencedDate());
+        Assert.assertEquals("setAttributes() should set supplied value", "EDATE", zosDatasetSpy.getExpirationDate());
+    }
     @Test
     public void testInputStreamToByteArray() throws ZosDatasetException, IOException {
         ByteArrayInputStream contentIs = new ByteArrayInputStream(CONTENT.getBytes());
@@ -1326,9 +1475,9 @@ public class TestZosDatasetImpl {
         Assert.assertEquals("testAddPropertyWhenSet() should return the correct int property value", 99, returnedJsonObject.get("property").getAsInt());
 
         exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Invlaid type of \"java.lang.Double\" for property \"property\" on image " + IMAGE);
+        exceptionRule.expectMessage("Invlaid type of \"" + DummyClass.class.getName() + "\" for property \"property\" on image " + IMAGE);
         jsonObject = getJsonObject();
-        zosDatasetSpy.addPropertyWhenSet(jsonObject, "property", 12.34);
+        zosDatasetSpy.addPropertyWhenSet(jsonObject, "property", new DummyClass());
     }
     
     @Test
@@ -1460,5 +1609,12 @@ public class TestZosDatasetImpl {
             }
         }
         return memberList;
+    }
+    
+    class DummyClass {
+        @Override
+        public String toString() {
+            throw new NotImplementedException("Not Implemented");
+        }
     }
 }

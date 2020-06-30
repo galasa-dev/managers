@@ -27,4 +27,4 @@
  *  <br><br>
  *                     
  */
-package dev.galasa.http;
+package dev.galasa.ipnetwork;

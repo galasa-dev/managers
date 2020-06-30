@@ -19,6 +19,7 @@ public interface IZosDataset {
      * <li>{@link #HFS}</li>
      * <li>{@link #PDS}</li>
      * <li>{@link #PDSE}</li>
+     * <li>{@link #LIBRARY}</li>
      * <li>{@link #LARGE}</li>
      * <li>{@link #BASIC}</li>
      * <li>{@link #EXTREQ}</li>
@@ -26,13 +27,34 @@ public interface IZosDataset {
      */
     public enum DSType {
 
-        HFS,
-        PDS,
-        PDSE,
-        LARGE,
-        BASIC,
-        EXTREQ,
-        EXTPREF;
+        HFS("HFS"),
+        PDS("PDS"),
+        PDSE("PDSE"),
+        LIBRARY("LIBRARY"),
+        LARGE("LARGE"),
+        BASIC("BASIC"),
+        EXTREQ("EXTREQ"),
+        EXTPREF("EXTPREF");
+        
+        private String type;
+        
+        DSType(String type) {
+            this.type = type;
+        }
+        
+        @Override
+        public String toString() {
+            return type;
+        }
+        
+        public static DSType valueOfLabel(String label) {
+            for (DSType element : values()) {
+                if (element.type.equals(label)) {
+                    return element;
+                }
+            }
+            return null;
+        }
     }
     
     /**
@@ -63,6 +85,15 @@ public interface IZosDataset {
         public String toString() {
             return format;
         }
+        
+        public static RecordFormat valueOfLabel(String label) {
+            for (RecordFormat element : values()) {
+                if (element.format.equals(label)) {
+                    return element;
+                }
+            }
+            return null;
+        }
     }
     
     /**
@@ -84,6 +115,15 @@ public interface IZosDataset {
         @Override
         public String toString() {
             return format;
+        }
+        
+        public static DatasetOrganization valueOfLabel(String label) {
+            for (DatasetOrganization element : values()) {
+                if (element.format.equals(label)) {
+                    return element;
+                }
+            }
+            return null;
         }
     }
     
@@ -111,6 +151,15 @@ public interface IZosDataset {
         @Override
         public String toString() {
             return unit;
+        }
+        
+        public static SpaceUnit valueOfLabel(String label) {
+            for (SpaceUnit element : values()) {
+                if (element.unit.equals(label)) {
+                    return element;
+                }
+            }
+            return null;
         }
     }
     
@@ -143,6 +192,15 @@ public interface IZosDataset {
         @Override
         public String toString() {
             return dataType;
+        }
+        
+        public static DatasetDataType valueOfLabel(String label) {
+            for (DatasetDataType element : values()) {
+                if (element.dataType.equals(label)) {
+                    return element;
+                }
+            }
+            return null;
         }
     }
     
@@ -401,13 +459,13 @@ public interface IZosDataset {
      * Return the organization ({@link DatasetOrganization}) of the data set
      * @return
      */
-    public String getDatasetOrganization();
+    public DatasetOrganization getDatasetOrganization();
 
     /**
      * Return the allocation space unit of the data set
      * @return
      */
-    public String getSpaceUnit();
+    public SpaceUnit getSpaceUnit();
 
     /**
      * Return primary allocation extents of the data set
@@ -431,7 +489,7 @@ public interface IZosDataset {
      * Return the record format of the data set
      * @return
      */
-    public String getRecordFormat();
+    public RecordFormat getRecordFormat();
 
     /**
      * Return block size of the data set
@@ -470,6 +528,42 @@ public interface IZosDataset {
      */
     public DSType getDatasetType();
     
+    /**
+     * Get the number of extents of the data set
+     * @return
+     */
+    public int getExtents();
+
+    /**
+     * Get the number of used extents of the data set
+     * @return
+     */
+    public int getUsed();
+
+    /**
+     * Get the data set creation date
+     * @return
+     */
+    public String getCreateDate();
+
+    /**
+     * Get the data set referenced date
+     * @return
+     */
+    public String getReferencedDate();
+
+    /**
+     * Get the data set expiration date
+     * @return
+     */
+    public String getExpirationDate();
+
+    /**
+     * Retrieve the attributes of an existing data set to make the values available in the getter methods
+     * @throws @ZosDatasetException
+     */
+    public void retrieveAttibutes() throws ZosDatasetException;
+
     /**
      * Return the attributes of the data set as a {@link String} 
      * @return
