@@ -5,7 +5,6 @@
  */
 package dev.galasa.cicsts.ceci.internal;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -212,10 +211,9 @@ public class CECIImpl implements ICECI {
                     if (fieldValue.equals("PF")) {
                         throw new CECIException("Unable to find variable to delete");
                     }
-                    fieldValue = tab(3).retrieveFieldAtCursor().trim();
+                    fieldValue = multipleTab(3).retrieveFieldAtCursor().trim();
                 }
-                eof().tab();
-                eof().enter().waitForKeyboard();
+                terminal.eraseEof().tab().eraseEof().enter().waitForKeyboard();
                 if (variableScreen().retrieveScreen().contains(name + " ")) {
                     throw new CECIException("Delete variable failed");
                 }
@@ -234,7 +232,7 @@ public class CECIImpl implements ICECI {
             String fieldValue = variableScreen().tab().retrieveFieldAtCursor().trim();
             int tabCount = 1;
             while (tabCount < 55 && !fieldValue.equals("PF")) {
-                fieldValue = eof().tab().retrieveFieldAtCursor().trim();
+                fieldValue = terminal.eraseEof().tab().retrieveFieldAtCursor().trim();
                 tabCount++;
             }
             terminal.enter().waitForKeyboard();
@@ -388,8 +386,7 @@ public class CECIImpl implements ICECI {
                 }
                 
             }
-            home();
-            return eof().enter().waitForKeyboard();
+            return terminal.home().eraseEof().home().enter().waitForKeyboard();
         } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to navigate to CECI initial screen", e);
         }
@@ -447,47 +444,8 @@ public class CECIImpl implements ICECI {
         return screen.contains(VAR_EXPANSION_SCREEN_ID);
     }
 
-    protected ITerminal home() throws CECIException, FieldNotFoundException, KeyboardLockedException, TimeoutException, NetworkException, TerminalInterruptedException {
-        String screen = terminal.retrieveScreen();
-        if (isHelpScreen(screen)) {
-            terminal.enter().waitForKeyboard();
-        }
-        // Position cursor at start of PF Keys line
-        String inputField = terminal.retrieveFieldAtCursor();
-        int tabCount = 0;        
-        while (!inputField.contentEquals("PF")) {
-            inputField = terminal.tab().retrieveFieldAtCursor();
-            tabCount++;
-            if (tabCount > 115) {
-                throw new CECIException("Unable to tab to CEIC command line");
-            }
-        }
-        
-        // Now tab through PF keys, back to command line
-        if (isInitialScreen(screen) || isVariablesScreen(screen)) {
-            tab(8);
-        } else if (isCommandBeforeScreen(screen) || isCommandAfterScreen(screen)) {
-            tab(10);                
-        } else if (isMsgScreen(screen)) {
-            tab(11);                
-        } else if (isEibScreen(screen) || isVariablesExpansionScreen(screen)) {
-            tab(12);                
-        }
-        
-        return terminal;
-    }
-
-    protected ITerminal eof() throws FieldNotFoundException, KeyboardLockedException {
-        int fieldLen = terminal.retrieveFieldAtCursor().length();
-        char nullChar = 0x00;
-        char[] nulls = new char[fieldLen];
-        Arrays.fill(nulls, nullChar);
-        terminal.type(String.valueOf(nulls));
-        
-        return terminal;
-    }
-
-    protected ITerminal tab(int times) throws FieldNotFoundException, KeyboardLockedException {
+    //TODO: Check where newLine() is more appropriate
+    protected ITerminal multipleTab(int times) throws FieldNotFoundException, KeyboardLockedException {
         for (int i = 0; i < times; i++) {
             terminal.tab();
         }
@@ -548,7 +506,7 @@ public class CECIImpl implements ICECI {
                 if (fieldValue.equals("PF")) {
                     throw new CECIException("No space on CECI variable screen for new variables");
                 }
-                fieldValue = tab(3).retrieveFieldAtCursor();
+                fieldValue = multipleTab(3).retrieveFieldAtCursor();
             } 
             // Enter variable name and variable length
             String lengthString = type;
@@ -560,8 +518,8 @@ public class CECIImpl implements ICECI {
             terminal.enter().waitForKeyboard().pf5().waitForKeyboard();
             
             // Tab to variable, expand it variable and move to the first data field
-            tabToVariable(name).enter().waitForKeyboard();
-            tab(3);
+            moveToVariable(name).enter().waitForKeyboard();
+            multipleTab(3);
             
             // Data is written in 64 character chunks and if the length > and we need to write data in pages
             String[] chunks = value.split("(?<=\\G.{64})");
@@ -570,8 +528,8 @@ public class CECIImpl implements ICECI {
             int next = setVariableOnPage(chunks, 0, 20);
             while (next < chunks.length) {
                 // Go to next page and tab to the first entry field
-                home().pf11().waitForKeyboard();
-                tab(7);
+                terminal.home().pf11().waitForKeyboard();
+                multipleTab(7);
                 next = setVariableOnPage(chunks, next, 16);
             }
             
@@ -614,7 +572,7 @@ public class CECIImpl implements ICECI {
                 if (fieldValue.equals("PF")) {
                     throw new CECIException("No space on CECI variable screen for new variables");
                 }
-                fieldValue = tab(3).retrieveFieldAtCursor();
+                fieldValue = multipleTab(3).retrieveFieldAtCursor();
             } 
             // Enter variable name and variable length
             String lengthString = String.valueOf(value.length);
@@ -623,16 +581,16 @@ public class CECIImpl implements ICECI {
             terminal.enter().waitForKeyboard().pf5().waitForKeyboard();
             
             // Tab to variable, expand it, set hex on and move to the first data field
-            tabToVariable(name).enter().waitForKeyboard().pf2().waitForKeyboard();
-            tab(3);
+            moveToVariable(name).enter().waitForKeyboard().pf2().waitForKeyboard();
+            multipleTab(3);
             
             // Data is written in 4 byte chunks and we need to write data in pages            
             // Write the first page 
             int next = setVariableHexOnPage(value, 0, 20);
             while (next < value.length) {
                 // Go to next page and tab to the first entry field
-                home().pf11().waitForKeyboard();
-                tab(23);
+                terminal.home().pf11().waitForKeyboard();
+                multipleTab(23);
                 next = setVariableHexOnPage(value, next, 16);
             }
             
@@ -659,8 +617,8 @@ public class CECIImpl implements ICECI {
                         pos++;
                         byteCount++;
                     }
-                    terminal.type(sb.toString());
-                    terminal.tab();
+                    // TODO: Remove cursorLeft() when #344 fixed
+                    terminal.type(sb.toString()).cursorLeft().tab();
                     blockCount++;
                 }
                 lineCount++;
@@ -677,7 +635,7 @@ public class CECIImpl implements ICECI {
     protected String getVariable(String name, String type) throws CECIException {
         try {            
             // Find the variable, expand it and move to the length field and get it's value
-            String lengthString = tabToVariable(name).enter().waitForKeyboard().tab().retrieveFieldAtCursor().trim();
+            String lengthString = moveToVariable(name).enter().waitForKeyboard().tab().retrieveFieldAtCursor().trim();
             if (type != null && !lengthString.equals(type)) {
                 throw new CECIException("Unexpected variable type \"" + lengthString + "\" for \"" + name + "\"");
             }
@@ -687,14 +645,14 @@ public class CECIImpl implements ICECI {
             StringBuilder sb = new StringBuilder();
             
             // Move to the first data field
-            tab(2);
+            multipleTab(2);
             
             // We need to retrieve data in pages
             sb.append(getVariableFromPage(valueLength, 20));
             while (sb.length() < valueLength) {
                 // Go to next page and tab to the first entry field
-                home().pf11().waitForKeyboard();
-                tab(7);
+                terminal.home().pf11().waitForKeyboard();
+                multipleTab(7);
                 sb.append(getVariableFromPage(valueLength-sb.length(), 16));                
             }
             
@@ -739,21 +697,21 @@ public class CECIImpl implements ICECI {
     protected char[] getVariableHex(String name) throws CECIException {
         try {            
             // Find the variable, expand it, set hex on, move to the length field and get it's value
-            String lengthString = tabToVariable(name).enter().waitForKeyboard().pf2().waitForKeyboard().tab().retrieveFieldAtCursor();
+            String lengthString = moveToVariable(name).enter().waitForKeyboard().pf2().waitForKeyboard().tab().retrieveFieldAtCursor();
             
             int valueLength = Integer.parseInt(lengthString);
             
             StringBuilder sb = new StringBuilder();
             
             // Move to the first data field
-            tab(2);
+            multipleTab(2);
             
             // We need to retrieve data in pages
             sb.append(getVariableHexFromPage(valueLength, 20));
             while (sb.length() < valueLength) {
                 // Go to next page and tab to the first entry field
-                home().pf11().waitForKeyboard();
-                tab(23);
+                terminal.home().pf11().waitForKeyboard();
+                multipleTab(23);
                 sb.append(getVariableHexFromPage(valueLength-sb.length(), 16));                
             }
             
@@ -790,7 +748,7 @@ public class CECIImpl implements ICECI {
         return sb.toString();
     }
 
-    protected ITerminal tabToVariable(String name) throws CECIException {
+    protected ITerminal moveToVariable(String name) throws CECIException {
         try {
             // Set Hex off
             hexOff();
@@ -807,7 +765,7 @@ public class CECIImpl implements ICECI {
                 if (fieldValue.equals("PF")) {
                     throw new CECIException("Unable to find variable " + name);
                 }
-                fieldValue = tab(3).retrieveFieldAtCursor().trim();
+                fieldValue = multipleTab(3).retrieveFieldAtCursor().trim();
             }
         } catch (FieldNotFoundException | KeyboardLockedException e) {
             throw new CECIException("Problem serching for variable " + name, e);
@@ -881,7 +839,7 @@ public class CECIImpl implements ICECI {
         try {
             // The first option is 2 tabs from the command line
             int optionCounter = 2;
-            String fieldValue = tab(2).retrieveFieldAtCursor();
+            String fieldValue = multipleTab(2).retrieveFieldAtCursor();
             boolean done = false;
             while (!fieldValue.equals("PF")) {
                 while (!fieldValue.equals("PF")) {
@@ -899,7 +857,7 @@ public class CECIImpl implements ICECI {
                     terminal.enter().waitForKeyboard();
                     // Get the next option
                     optionCounter++;
-                    fieldValue = tab(optionCounter).retrieveFieldAtCursor();
+                    fieldValue = multipleTab(optionCounter).retrieveFieldAtCursor();
                 }
                 if (done) {
                     break;
@@ -907,7 +865,7 @@ public class CECIImpl implements ICECI {
                 // Next page
                 terminal.pf11().waitForKeyboard();
                 optionCounter = 2;
-                fieldValue = tab(optionCounter).retrieveFieldAtCursor();
+                fieldValue = multipleTab(optionCounter).retrieveFieldAtCursor();
             }
         } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CECIException("Unable to parse command output", e);
@@ -921,17 +879,17 @@ public class CECIImpl implements ICECI {
             String lengthString = getFieldAfter(screen, "LENGTH= ");
             int length = getLength(lengthString);
             // Move to data value
-            home();
-            tab(2);
+            terminal.home();
+            multipleTab(2);
             StringBuilder sb = new StringBuilder();
             // We need to retrieve data in pages
             sb.append(getVariableFromPage(length, 20));
             int pf11Count = 0;
             while (sb.length() < length) {
                 // Go to next page and tab to the data field
-                home().pf11().waitForKeyboard();
+                terminal.home().pf11().waitForKeyboard();
                 pf11Count++;
-                tab(6);
+                multipleTab(6);
                 sb.append(getVariableFromPage(length-sb.length(), 16));                
             }
             if (lengthString.startsWith("+")) {
@@ -955,22 +913,22 @@ public class CECIImpl implements ICECI {
             int pf10Count = 0;
             // Back to first page
             while (pf10Count < pf11Count) {
-                home().pf10().waitForKeyboard();
+                terminal.home().pf10().waitForKeyboard();
                 pf10Count++;
             }
             // Set hex on and tab to the data field
             terminal.pf2().waitForKeyboard();
-            home();
-            tab(2);
+            terminal.home();
+            multipleTab(2);
             // Get the data in hex
             StringBuilder sb = new StringBuilder();
             sb.append(getVariableHexFromPage(length, 20));
             // We need to retrieve data in pages
             while (sb.length() < length) {
                 // Go to next page and tab to the data field
-                home().pf11().waitForKeyboard();
+                terminal.home().pf11().waitForKeyboard();
                 pf11Count++;
-                tab(2);
+                multipleTab(2);
                 sb.append(getVariableHexFromPage(length-sb.length(), 16));                
             }
             return sb.toString();

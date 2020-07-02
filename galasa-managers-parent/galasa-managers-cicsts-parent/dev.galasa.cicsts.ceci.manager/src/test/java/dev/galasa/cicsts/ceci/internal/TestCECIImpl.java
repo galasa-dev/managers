@@ -69,6 +69,10 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.pf10()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.pf11()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.tab()).thenReturn(ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.home()).thenReturn(ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.newLine()).thenReturn(ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.cursorLeft()).thenReturn(ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.eraseEof()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.reportScreenWithCursor()).thenReturn(ceciTerminalMock);
     }
@@ -335,8 +339,7 @@ public class TestCECIImpl {
     private void setupTestDeleteVariable() throws Exception {
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "hexOff");
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "variableScreen");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "eof");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
     }
 
     @Test
@@ -478,8 +481,6 @@ public class TestCECIImpl {
     
     private void setupTestInitialScreen() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "home");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "eof");
     }
 
     @Test
@@ -594,68 +595,10 @@ public class TestCECIImpl {
     }
 
     @Test
-    public void testHome() throws Exception {
-        Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(SPACES);
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(SPACES).thenReturn("PF");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
-        PowerMockito.doReturn(true).when(ceciSpy, "isHelpScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isHelpScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isInitialScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isInitialScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isVariablesScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isVariablesScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isCommandBeforeScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isCommandBeforeScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isCommandAfterScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isCommandAfterScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isMsgScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isMsgScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isEibScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-        
-        PowerMockito.doReturn(false).when(ceciSpy, "isEibScreen", Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isVariablesExpansionScreen", Mockito.any());
-        Assert.assertEquals("Error in home() method", ceciTerminalMock, ceciSpy.home());
-    }
-
-    @Test
-    public void testHomeException() throws Exception {
-        Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(SPACES);
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(SPACES);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());       
-        exceptionRule.expect(CECIException.class);
-        exceptionRule.expectMessage("Unable to tab to CEIC command line");
-        
-        ceciSpy.home();
-    }
-
-    @Test
-    public void testEof() throws Exception {
-        Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(SPACES).thenReturn(TEXT_VARIABLE_NAME);
-        
-        Assert.assertEquals("Error in eof() method", ceciTerminalMock, ceciSpy.eof());
-    }
-
-    @Test
-    public void testTab() throws Exception {
+    public void testMultipleTab() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         
-        Assert.assertEquals("Error in tab() method", ceciTerminalMock, ceciSpy.tab(1));
+        Assert.assertEquals("Error in multipleTab() method", ceciTerminalMock, ceciSpy.multipleTab(1));
     }
 
     @Test
@@ -806,9 +749,8 @@ public class TestCECIImpl {
         PowerMockito.doNothing().when(ceciSpy, "deleteVariable", Mockito.any(), Mockito.any());
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "hexOff");
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "variableScreen");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tabToVariable", Mockito.any());
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "home");
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "moveToVariable", Mockito.any());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
     }
 
     @Test
@@ -976,9 +918,8 @@ public class TestCECIImpl {
 
     private void setupTestGetVariable() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tabToVariable", Mockito.any());
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "home");
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "moveToVariable", Mockito.any());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
     }
     
     @Test
@@ -1068,51 +1009,50 @@ public class TestCECIImpl {
     }
     
     @Test
-    public void testTabToVariable() throws Exception {
-        setupTestTabToVariable();
+    public void testMoveToVariable() throws Exception {
+        setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " "); 
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "X")).thenReturn(String.format("%-10s", TEXT_VARIABLE_NAME));
 
-        Assert.assertEquals("Error in tabToVariable() method", ceciTerminalMock, ceciSpy.tabToVariable(TEXT_VARIABLE_NAME));
+        Assert.assertEquals("Error in moveToVariable() method", ceciTerminalMock, ceciSpy.moveToVariable(TEXT_VARIABLE_NAME));
     }
     
     @Test
-    public void testTabToVariableException1() throws Exception {
-        setupTestTabToVariable();
+    public void testMoveToVariableException1() throws Exception {
+        setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" "); 
         exceptionRule.expect(CECIException.class);
         exceptionRule.expectMessage("Unable to find variable " + TEXT_VARIABLE_NAME);
     
-        ceciSpy.tabToVariable(TEXT_VARIABLE_NAME);
+        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
     }
     
     @Test
-    public void testTabToVariableException2() throws Exception {
-        setupTestTabToVariable();
+    public void testMoveToVariableException2() throws Exception {
+        setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " "); 
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("PF");
         exceptionRule.expect(CECIException.class);
         exceptionRule.expectMessage("Unable to find variable " + TEXT_VARIABLE_NAME);
     
-        ceciSpy.tabToVariable(TEXT_VARIABLE_NAME);
+        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
     }
     
     @Test
-    public void testTabToVariableException3() throws Exception {
-        setupTestTabToVariable();
+    public void testMoveToVariableException3() throws Exception {
+        setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " ");
         Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException());  
         exceptionRule.expect(CECIException.class);
         exceptionRule.expectMessage("Problem serching for variable " + TEXT_VARIABLE_NAME);
     
-        ceciSpy.tabToVariable(TEXT_VARIABLE_NAME);
+        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
     }
 
-    private void setupTestTabToVariable() throws Exception {
+    private void setupMoveToVariable() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "hexOff");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "home");
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "variableScreen");        
     }
     
@@ -1229,7 +1169,7 @@ public class TestCECIImpl {
     @Test
     public void testParseResponseOutput() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("OPTION1").thenReturn("OPTION2");
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("OPTION= OPTION1      LENGTH= +00008 ").thenReturn("OPTION= OPTION2      LENGTH= +00008 ");
         PowerMockito.doReturn(new ResponseOutputValueImpl("XXXXXXXX")).when(ceciSpy, "getOptionValue", Mockito.any());
@@ -1244,7 +1184,7 @@ public class TestCECIImpl {
     @Test
     public void testParseResponseOutputException1() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("OPTION1");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
         exceptionRule.expect(CECIException.class);
@@ -1256,7 +1196,7 @@ public class TestCECIImpl {
     @Test
     public void testParseResponseOutputException2() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "tab", Mockito.anyInt());
+        PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("OPTION1");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
         exceptionRule.expect(CECIException.class);
