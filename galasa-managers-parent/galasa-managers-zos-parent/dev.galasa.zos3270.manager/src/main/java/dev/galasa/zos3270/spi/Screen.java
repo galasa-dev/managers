@@ -634,7 +634,9 @@ public class Screen {
             }
         }
 
-
+        if (sf != null) {
+            sf.setFieldModified();
+        }
     }
 
 
