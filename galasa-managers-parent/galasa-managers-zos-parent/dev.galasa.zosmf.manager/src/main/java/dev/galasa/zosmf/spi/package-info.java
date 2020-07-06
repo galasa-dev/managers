@@ -1,4 +1,4 @@
 /**
- * zOSMF Batch Manager - Internal SPI
+ * zOSMF Manager - Internal SPI
  */
 package dev.galasa.zosmf.spi;
