@@ -40,6 +40,8 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaMethod;
+import dev.galasa.framework.spi.language.GalasaTest;
 
 /**
  * zOS Batch Manager implemented using zOS/MF
@@ -85,19 +87,21 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
             ZosBatchZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosBatchManagerException("Unable to request framework services", e);
         }
 
-        //*** Check to see if any of our annotations are present in the test class
-        //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(ZosBatchField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if(galasaTest.isJava()) {
+            //*** Check to see if any of our annotations are present in the test class
+            //*** If there is,  we need to activate
+            List<AnnotatedField> ourFields = findAnnotatedFields(ZosBatchField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
         
         artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
@@ -162,13 +166,13 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
-    public void startOfTestMethod(@NotNull Method testExecutionMethod, Method testMethod) throws ManagerException {
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
         cleanup();
         setArchivePath(artifactsRoot.resolve(ZOSBATCH_JOBS));
-        if (testMethod != null) {
-            setCurrentTestMethodArchiveFolderName(testMethod.getName() + "." + testExecutionMethod.getName());
+        if (galasaMethod.getJavaTestMethod() != null) {
+            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
         } else {
-            setCurrentTestMethodArchiveFolderName(testExecutionMethod.getName());
+            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaExecutionMethod().getName());
         }
     }
 
@@ -178,7 +182,7 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
      * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
      */
     @Override
-    public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
         cleanup();
         
         return null;

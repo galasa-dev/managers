@@ -23,6 +23,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
@@ -44,14 +45,16 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
 
-        List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
-        if (ourFields.isEmpty() && !this.required) {
-            return;
+        if(galasaTest.isJava()) {
+            List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
+            if (ourFields.isEmpty() && !this.required) {
+                return;
+            }
+            youAreRequired(allManagers, activeManagers);
         }
-        youAreRequired(allManagers, activeManagers);
 
         try {
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);

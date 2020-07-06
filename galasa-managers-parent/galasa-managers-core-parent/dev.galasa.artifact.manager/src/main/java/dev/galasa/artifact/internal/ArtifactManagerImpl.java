@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class })
 public class ArtifactManagerImpl extends AbstractManager implements IArtifactManager {
@@ -80,11 +81,14 @@ public class ArtifactManagerImpl extends AbstractManager implements IArtifactMan
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
-        List<AnnotatedField> ourFields = findAnnotatedFields(ArtifactManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
+
+        if(galasaTest.isJava()) {
+            List<AnnotatedField> ourFields = findAnnotatedFields(ArtifactManagerField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
     }
 

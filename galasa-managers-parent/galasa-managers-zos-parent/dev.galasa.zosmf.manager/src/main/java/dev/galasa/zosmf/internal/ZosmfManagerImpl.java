@@ -29,6 +29,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zosmf.IZosmf;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.Zosmf;
@@ -63,19 +64,21 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
      */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
             ZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosmfManagerException("Unable to request framework services", e);
         }
 
-        //*** Check to see if any of our annotations are present in the test class
-        //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(ZosmfManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if(galasaTest.isJava()) {
+            //*** Check to see if any of our annotations are present in the test class
+            //*** If there is,  we need to activate
+            List<AnnotatedField> ourFields = findAnnotatedFields(ZosmfManagerField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
     }
     

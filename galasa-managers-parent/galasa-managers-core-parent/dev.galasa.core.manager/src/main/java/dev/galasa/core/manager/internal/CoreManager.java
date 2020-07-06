@@ -24,18 +24,20 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.core.manager.TestProperty;
-import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.language.GalasaTest;
 
-@Component(service = { IManager.class })
-public class CoreManager extends AbstractManager implements ICoreManager {
+@Component(service = { IManager.class, IGherkinManager.class })
+public class CoreManager extends AbstractGherkinManager implements ICoreManager {
 
 	private IConfigurationPropertyStoreService cpsTest;
 	private IConfidentialTextService           ctf;
@@ -48,8 +50,8 @@ public class CoreManager extends AbstractManager implements ICoreManager {
 	 */
 	@Override
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-		super.initialise(framework, allManagers, activeManagers, testClass);
+			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+		super.initialise(framework, allManagers, activeManagers, galasaTest);
 
 		try {
 			this.cpsTest = framework.getConfigurationPropertyService("test");

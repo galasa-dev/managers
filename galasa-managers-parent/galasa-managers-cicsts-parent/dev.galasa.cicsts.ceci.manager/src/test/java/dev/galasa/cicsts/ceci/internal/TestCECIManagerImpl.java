@@ -22,6 +22,7 @@ import dev.galasa.cicsts.ceci.internal.properties.CECIPropertiesSingleton;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zos3270.ITerminal;
 
@@ -64,16 +65,16 @@ public class TestCECIManagerImpl {
     @Test
     public void testInitialise() throws ManagerException, ConfigurationPropertyStoreException {        
         allManagers.add(managerMock);
-        ceciManager.initialise(frameworkMock, allManagers, activeManagers, TestCECIManagerImpl.class);
+        ceciManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestCECIManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", ceciManagerSpy.getFramework(), frameworkMock);
         
-        ceciManager.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        ceciManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", ceciManagerSpy.getFramework(), frameworkMock);
         
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(CECIManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        ceciManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        ceciManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
 
     @Test

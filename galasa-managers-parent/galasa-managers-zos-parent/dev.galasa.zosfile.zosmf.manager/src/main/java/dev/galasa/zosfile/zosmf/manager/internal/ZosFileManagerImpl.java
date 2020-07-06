@@ -28,6 +28,8 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaMethod;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
@@ -121,19 +123,21 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
      */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
             ZosFileZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosFileManagerException("Unable to request framework services", e);
         }
 
-        //*** Check to see if any of our annotations are present in the test class
-        //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if(galasaTest.isJava()) {
+            //*** Check to see if any of our annotations are present in the test class
+            //*** If there is,  we need to activate
+            List<AnnotatedField> ourFields = findAnnotatedFields(ZosFileField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
         
         setRunId(getFramework().getTestRunName());
@@ -221,7 +225,7 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
-    public void startOfTestMethod(@NotNull Method testExecutionMethod, Method testMethod) throws ManagerException {
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
         if (!provisionCleanupComplete) {
             cleanup(false);
             provisionCleanupComplete = true;
@@ -229,10 +233,10 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
         setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
-        if (testMethod != null) {
-            setCurrentTestMethodArchiveFolderName(testMethod.getName() + "." + testExecutionMethod.getName());
+        if (galasaMethod.getJavaTestMethod() != null) {
+            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
         } else {
-            setCurrentTestMethodArchiveFolderName(testExecutionMethod.getName());
+            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaExecutionMethod().getName());
         }
     }
 
@@ -242,7 +246,7 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
      * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.reflect.Method,java.lang.String,java.lang.Throwable)
      */
     @Override
-    public String endOfTestMethod(@NotNull Method testMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
         cleanup(false);
         
         return null;

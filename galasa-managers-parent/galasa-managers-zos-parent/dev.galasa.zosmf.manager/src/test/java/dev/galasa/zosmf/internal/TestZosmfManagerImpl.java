@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.internal.HttpManagerImpl;
 import dev.galasa.zos.IZosImage;
@@ -118,14 +119,14 @@ public class TestZosmfManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosmfManager.initialise(frameworkMock, allManagers, activeManagers, TestZosmfManagerImpl.class);
+        zosmfManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosmfManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosmfManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosmfManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosmfManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosmfManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosmfManagerSpy.getFramework(), frameworkMock);
     }
 
@@ -134,7 +135,7 @@ public class TestZosmfManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosmfManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosmfManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosmfManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test

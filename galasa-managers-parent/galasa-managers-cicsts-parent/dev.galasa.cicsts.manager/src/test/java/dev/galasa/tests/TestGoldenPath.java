@@ -5,7 +5,6 @@
  */
 package dev.galasa.tests;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +21,7 @@ import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.internal.CicstsManagerImpl;
 import dev.galasa.cicsts.internal.properties.CicstsPropertiesSingleton;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.testharness.TestHarnessFramework;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.spi.IZosManagerSpi;
@@ -75,7 +75,7 @@ public class TestGoldenPath {
         framework.cpsStore.properties.put("cicsts.dse.tag.SECONDARY.applid","REGION2");
         
         cicstsManager.extraBundles(framework);
-        cicstsManager.initialise(framework, allManagers, activeManagers, testClass.getClass());
+        cicstsManager.initialise(framework, allManagers, activeManagers, new GalasaTest(testClass.getClass()));
         cicstsManager.youAreRequired(allManagers, activeManagers);
         boolean dependentOnZos = cicstsManager.areYouProvisionalDependentOn(zosManager);
         assertThat(dependentOnZos).as("CICS TS must be dependent on zOS").isTrue();

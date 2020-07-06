@@ -34,6 +34,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
@@ -70,8 +71,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	 */
 	@Override
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-			@NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-		super.initialise(framework, allManagers, activeManagers, testClass);
+			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+		super.initialise(framework, allManagers, activeManagers, galasaTest);
 
 		try {
 			this.framework = framework;

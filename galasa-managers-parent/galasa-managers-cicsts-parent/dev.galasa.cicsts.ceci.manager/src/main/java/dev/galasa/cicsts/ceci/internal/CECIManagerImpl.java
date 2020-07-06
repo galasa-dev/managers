@@ -26,6 +26,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class })
 public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi {
@@ -36,19 +37,21 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi 
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
      */
     @Override
-    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
             CECIPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new CECIManagerException("Unable to request framework services", e);
         }
 
-        //*** Check to see if any of our annotations are present in the test class
-        //*** If there is,  we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(CECIManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if(galasaTest.isJava()) {
+            //*** Check to see if any of our annotations are present in the test class
+            //*** If there is,  we need to activate
+            List<AnnotatedField> ourFields = findAnnotatedFields(CECIManagerField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
     }
 

@@ -38,6 +38,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResourcePoolingService;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.properties.LinuxImageCapabilities;
 import dev.galasa.openstack.manager.internal.properties.LinuxImages;
@@ -71,8 +72,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
      */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
 
         // *** If this bundle was loaded, it means it was specifically requested.
         // *** Therefore mark as youAreRequired and if linux is present register as a
