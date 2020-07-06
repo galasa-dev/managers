@@ -60,11 +60,16 @@
 				<artifactId>dev.galasa.zosfile.zosmf.manager</artifactId>
 				<version>0.10.0-SNAPSHOT</version>
 			</dependency>
-			<dependency>
-				<groupId>dev.galasa</groupId>
-				<artifactId>dev.galasa.zosmf.manager</artifactId>
-				<version>0.10.0-SNAPSHOT</version>
-			</dependency>
+            <dependency>
+                <groupId>dev.galasa</groupId>
+                <artifactId>dev.galasa.zosmf.manager</artifactId>
+                <version>0.10.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.galasa</groupId>
+                <artifactId>dev.galasa.zosprogram.manager</artifactId>
+                <version>0.10.0-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>dev.galasa</groupId>
                 <artifactId>dev.galasa.zostsocommand.ssh.manager</artifactId>
