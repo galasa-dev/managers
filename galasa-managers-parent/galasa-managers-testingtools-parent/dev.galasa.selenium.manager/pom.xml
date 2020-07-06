@@ -114,6 +114,7 @@
 							dev.galasa.framework,
 							dev.galasa.framework.spi,
 							dev.galasa.framework.spi.cps,
+							dev.galasa.framework.spi.language,
 							dev.galasa.selenium,
 							org.openqa.selenium
 							org.openqa.selenium.*,

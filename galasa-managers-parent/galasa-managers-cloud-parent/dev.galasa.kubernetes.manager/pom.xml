@@ -78,6 +78,7 @@
 							dev.galasa.framework.spi,
 							dev.galasa.framework.spi.cps,
 							dev.galasa.framework.spi.creds,
+							dev.galasa.framework.spi.language,
 							dev.galasa.kubernetes,
 							org.apache.commons.logging,
 							org.apache.commons.io,
