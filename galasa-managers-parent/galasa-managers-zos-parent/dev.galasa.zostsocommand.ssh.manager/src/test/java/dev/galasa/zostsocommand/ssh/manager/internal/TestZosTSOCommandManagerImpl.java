@@ -5,7 +5,6 @@ package dev.galasa.zostsocommand.ssh.manager.internal;
  * (c) Copyright IBM Corp. 2020.
  */
 
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zostsocommand.ssh.manager.internal.properties.ZosTSOCommandSshPropertiesSingleton;
@@ -90,14 +90,14 @@ public class TestZosTSOCommandManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosTSOCommandManager.initialise(frameworkMock, allManagers, activeManagers, TestZosTSOCommandManagerImpl.class);
+        zosTSOCommandManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosTSOCommandManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosTSOCommandManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosTSOCommandManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosTSOCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosTSOCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosTSOCommandManagerSpy.getFramework(), frameworkMock);
     }
 
@@ -106,7 +106,7 @@ public class TestZosTSOCommandManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosTSOCommandManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosTSOCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosTSOCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test

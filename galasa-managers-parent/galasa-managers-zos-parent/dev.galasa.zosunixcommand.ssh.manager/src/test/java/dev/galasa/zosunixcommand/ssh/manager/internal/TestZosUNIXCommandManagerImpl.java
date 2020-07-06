@@ -26,6 +26,7 @@ import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.internal.IpNetworkManagerImpl;
@@ -98,14 +99,14 @@ public class TestZosUNIXCommandManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosUnixCommandManager.initialise(frameworkMock, allManagers, activeManagers, TestZosUNIXCommandManagerImpl.class);
+        zosUnixCommandManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosUNIXCommandManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosUnixCommandManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosUnixCommandManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosUnixCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosUnixCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosUnixCommandManagerSpy.getFramework(), frameworkMock);
     }
 
@@ -114,7 +115,7 @@ public class TestZosUNIXCommandManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosUNIXCommandManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosUnixCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosUnixCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test

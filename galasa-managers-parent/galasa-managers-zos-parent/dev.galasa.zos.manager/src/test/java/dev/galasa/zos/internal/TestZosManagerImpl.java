@@ -41,6 +41,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.framework.spi.utils.DssUtils;
 import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
@@ -213,14 +214,14 @@ public class TestZosManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosManager.initialise(frameworkMock, allManagers, activeManagers, TestZosManagerImpl.class);
+        zosManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
     }
 
@@ -229,7 +230,7 @@ public class TestZosManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, TestZosManagerImpl.class);
+        zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
     }
     
     @Test

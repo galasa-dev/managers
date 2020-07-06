@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.KubernetesNamespace;
@@ -72,21 +73,23 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     public void initialise(@NotNull IFramework framework, 
             @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, 
-            @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
 
-        //*** Check to see if we are needed
-        if (!required) {
-            for(Field field : testClass.getFields()) {
-                if (field.getType() == IKubernetesNamespace.class) {
-                    required = true;
-                    break;
+        if(galasaTest.isJava()) {
+            //*** Check to see if we are needed
+            if (!required) {
+                for(Field field : galasaTest.getJavaTestClass().getFields()) {
+                    if (field.getType() == IKubernetesNamespace.class) {
+                        required = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!required) {
-            return;
+            if (!required) {
+                return;
+            }
         }
 
         youAreRequired(allManagers, activeManagers);

@@ -36,6 +36,8 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.framework.spi.cps.CpsProperties;
+import dev.galasa.framework.spi.language.GalasaMethod;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.IZosBatch;
@@ -122,14 +124,14 @@ public class TestZosBatchManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, TestZosBatchManagerImpl.class);
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosBatchManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
     }
 
@@ -138,7 +140,7 @@ public class TestZosBatchManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test
@@ -192,9 +194,9 @@ public class TestZosBatchManagerImpl {
     @Test
     public void testStartOfTestMethod() throws Exception {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
-        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), null);
+        zosBatchManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), null));
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
-        zosBatchManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethod"));
+        zosBatchManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethod")));
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
     }
     
@@ -202,7 +204,7 @@ public class TestZosBatchManagerImpl {
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
         Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
         ZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
-        zosBatchManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), "pass", null);
+        zosBatchManagerSpy.endOfTestMethod(new GalasaMethod(null, DummyTestClass.class.getDeclaredMethod("dummyTestMethod")), "pass", null);
         Assert.assertEquals("currentTestMethodArchiveFolderName should be expected value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
     }
     

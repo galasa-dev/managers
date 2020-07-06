@@ -29,6 +29,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.linux.ILinuxImage;
 import dev.galasa.linux.LinuxImage;
 import dev.galasa.linux.LinuxIpHost;
@@ -79,14 +80,16 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
      */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
 
-        // *** Check to see if any of our annotations are present in the test class
-        // *** If there is, we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
-        if (!ourFields.isEmpty()) {
-            youAreRequired(allManagers, activeManagers);
+        if(galasaTest.isJava()) {
+            // *** Check to see if any of our annotations are present in the test class
+            // *** If there is, we need to activate
+            List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
+            if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
         }
 
         try {

@@ -35,6 +35,8 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.language.GalasaMethod;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.internal.ZosManagerImpl;
@@ -126,14 +128,14 @@ public class TestZosFileManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, TestZosFileManagerImpl.class);
+        zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosFileManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
         public void testInitialise1() throws ManagerException {
             Mockito.doNothing().when(zosFileManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-            zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+            zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
             Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
         }
 
@@ -142,7 +144,7 @@ public class TestZosFileManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test
@@ -221,10 +223,10 @@ public class TestZosFileManagerImpl {
     public void testStartOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
         Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
-        zosFileManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"), null);
+        zosFileManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"), null));
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "dummyTestMethodDataset", ZosFileManagerImpl.currentTestMethodArchiveFolderName);
         
-        zosFileManagerSpy.startOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"));
+        zosFileManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset")));
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), ZosFileManagerImpl.currentTestMethodArchiveFolderName);
     }
     
@@ -232,7 +234,7 @@ public class TestZosFileManagerImpl {
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
         Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
         ZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("dummyTestMethodDataset");
-        zosFileManagerSpy.endOfTestMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"), "pass", null);
+        zosFileManagerSpy.endOfTestMethod(new GalasaMethod(null, DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset")), "pass", null);
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), ZosFileManagerImpl.currentTestMethodArchiveFolderName);
     }
     

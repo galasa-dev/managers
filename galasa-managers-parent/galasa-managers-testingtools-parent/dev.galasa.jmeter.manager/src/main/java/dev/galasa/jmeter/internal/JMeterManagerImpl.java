@@ -25,6 +25,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
 import dev.galasa.jmeter.JMeterSession;
@@ -91,15 +92,17 @@ public class JMeterManagerImpl extends AbstractManager {
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         
-        super.initialise(framework, allManagers, activeManagers, testClass);
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         
-        List<AnnotatedField> ourFields = findAnnotatedFields(JMeterManagerField.class);
-        if (ourFields.isEmpty() && this.required) {
-            return;
+        if(galasaTest.isJava()) {
+            List<AnnotatedField> ourFields = findAnnotatedFields(JMeterManagerField.class);
+            if (ourFields.isEmpty() && this.required) {
+                return;
+            }
+            youAreRequired(allManagers, activeManagers);
         }
-        youAreRequired(allManagers, activeManagers);
 
         this.framework = framework;
         this.activeSessions = new ArrayList<>();

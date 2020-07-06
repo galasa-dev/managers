@@ -40,6 +40,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
 
@@ -62,19 +63,21 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
-            @NotNull List<IManager> activeManagers, @NotNull Class<?> testClass) throws ManagerException {
-        super.initialise(framework, allManagers, activeManagers, testClass);
+            @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
+        super.initialise(framework, allManagers, activeManagers, galasaTest);
         // *** Check to see if any of our annotations are present in the test class
         // *** If there is, we need to activate
-        List<AnnotatedField> ourFields = findAnnotatedFields(CicstsManagerField.class);
-        if (ourFields.isEmpty() && !required) {
-            return;
+        if(galasaTest.isJava()) {
+            List<AnnotatedField> ourFields = findAnnotatedFields(CicstsManagerField.class);
+            if (ourFields.isEmpty() && !required) {
+                return;
+            }
+
+            youAreRequired(allManagers, activeManagers);
+
+            this.provisionType = ProvisionType.get();
+            this.provisioners.add(new DseProvisioningImpl(this));
         }
-
-        youAreRequired(allManagers, activeManagers);
-
-        this.provisionType = ProvisionType.get();
-        this.provisioners.add(new DseProvisioningImpl(this));
     }
 
     @Override

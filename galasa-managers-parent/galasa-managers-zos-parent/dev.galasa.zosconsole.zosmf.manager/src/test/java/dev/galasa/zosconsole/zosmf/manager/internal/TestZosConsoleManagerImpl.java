@@ -28,6 +28,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosconsole.IZosConsole;
@@ -92,14 +93,14 @@ public class TestZosConsoleManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosConsoleManager.initialise(frameworkMock, allManagers, activeManagers, TestZosConsoleManagerImpl.class);
+        zosConsoleManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosConsoleManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
     }
     
     @Test
     public void testInitialise1() throws ManagerException {
         Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
     }
 
@@ -108,7 +109,7 @@ public class TestZosConsoleManagerImpl {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         exceptionRule.expect(ZosConsoleManagerException.class);
         exceptionRule.expectMessage("Unable to request framework services");
-        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, DummyTestClass.class);
+        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test

@@ -30,6 +30,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaTest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CoreManagerTest {
@@ -54,7 +55,7 @@ public class CoreManagerTest {
         CoreManager coreManager = new CoreManager();
         
         ArrayList<IManager> activeManagers = new ArrayList<>();
-        coreManager.initialise(framework, null, activeManagers, null);
+        coreManager.initialise(framework, null, activeManagers, new GalasaTest(this.getClass()));
         
         Assert.assertTrue("Core Manager missing from active managers", activeManagers.contains(coreManager));
     }
@@ -65,7 +66,7 @@ public class CoreManagerTest {
         TestClass testClass = new TestClass();
         
         ArrayList<IManager> activeManagers = new ArrayList<>();
-        coreManager.initialise(framework, null, activeManagers, testClass.getClass());
+        coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
 
         coreManager.provisionGenerate();
         coreManager.fillAnnotatedFields(testClass);
