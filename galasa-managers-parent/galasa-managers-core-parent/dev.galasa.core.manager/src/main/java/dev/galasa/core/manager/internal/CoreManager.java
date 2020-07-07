@@ -27,6 +27,8 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.core.manager.TestProperty;
+import dev.galasa.core.manager.internal.gherkin.GherkinLog;
+import dev.galasa.core.manager.internal.gherkin.GherkinStoreVariable;
 import dev.galasa.framework.TestRunException;
 import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -102,7 +104,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 			case GIVEN:
 				Matcher matcherStoreVariable = patternStoreVariable.matcher(executable.getValue());
 				if(matcherStoreVariable.matches()) {
-					CoreGherkinExecution.storeVariable(matcherStoreVariable, cpsTest, testVariables);
+					GherkinStoreVariable.execute(matcherStoreVariable, cpsTest, testVariables);
 					return;
 				}
 				break;
@@ -110,7 +112,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 			case THEN:
 				Matcher matcherLog = patternLog.matcher(executable.getValue());
 				if(matcherLog.matches()) {
-					CoreGherkinExecution.log(matcherLog, testVariables, logger);
+					GherkinLog.execute(matcherLog, testVariables, logger);
 					return;
 				}
 				break;
