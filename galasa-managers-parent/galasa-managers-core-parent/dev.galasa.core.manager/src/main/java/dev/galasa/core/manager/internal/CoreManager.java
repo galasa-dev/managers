@@ -9,6 +9,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,12 +27,14 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.core.manager.TestProperty;
+import dev.galasa.framework.TestRunException;
 import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
@@ -41,6 +46,13 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 
 	private IConfigurationPropertyStoreService cpsTest;
 	private IConfidentialTextService           ctf;
+
+	private final static Log logger = LogFactory.getLog(CoreManager.class);
+
+	private final static Pattern patternStoreVariable = Pattern.compile("<([A-z0-9_.]+)> is test property ([A-z0-9_.]+)");
+	private final static Pattern patternLogVariable = Pattern.compile("Write to log \"Hello <([A-z0-9_.]+)>\"");
+
+	private final static Pattern[] gherkinPatterns = { patternStoreVariable, patternLogVariable };
 
 	/*
 	 * (non-Javadoc)
@@ -60,8 +72,50 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 		}
 		this.ctf = framework.getConfidentialTextService();
 
+		if(galasaTest.isGherkin()) {
+			for(IGherkinExecutable gherkinExecutable : galasaTest.getGherkinTest().getAllExecutables()) {
+				for(Pattern regexPattern : gherkinPatterns) {
+					Matcher gherkinMatcher = regexPattern.matcher(gherkinExecutable.getValue());
+					if(gherkinMatcher.matches()) {
+						try {
+							gherkinExecutable.registerManager((IGherkinManager) this);
+						} catch (TestRunException e) {
+							throw new ManagerException("Unable to register Manager for Gherkin Statement", e);
+						}
+					}
+				}
+			}
+		}
+
 		// *** We always want the Core Manager initialised and included in the Test Run
 		activeManagers.add(this);
+	}
+	
+	@Override
+	public void executeGherkin(@NotNull IGherkinExecutable executable, Map<String, Object> testVariables)
+			throws ManagerException {
+		Matcher matcherStoreVariable = patternStoreVariable.matcher(executable.getValue());
+		if(matcherStoreVariable.matches()) {
+			String variableName = matcherStoreVariable.group(1);
+			String cpsProp = matcherStoreVariable.group(2);
+			String cpsPrefix = cpsProp.substring(0, cpsProp.indexOf("."));
+			String cpsSuffix = cpsProp.substring(cpsProp.indexOf(".") + 1);
+			try {
+				String cpsValue = cpsTest.getProperty(cpsPrefix, cpsSuffix);
+				testVariables.put(variableName, cpsValue);
+			} catch (ConfigurationPropertyStoreException e) {
+				throw new ManagerException("Unable to access CPS", e);
+			}
+			return;
+		}
+
+		Matcher matcherLogVariable = patternLogVariable.matcher(executable.getValue());
+		if(matcherLogVariable.matches()) {
+			String variableName = matcherLogVariable.group(1);
+			String variableValue = (String) testVariables.get(variableName);
+			logger.info("Hello " + variableValue);
+			return;
+		}
 	}
 
 	@Override
