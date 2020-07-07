@@ -50,7 +50,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 	private final static Log logger = LogFactory.getLog(CoreManager.class);
 
 	private final static Pattern patternStoreVariable = Pattern.compile("<(\\w+)> is test property ([\\w.]+)");
-	private final static Pattern patternLog = Pattern.compile("Write to log \"([\\w\\W]+)\"");
+	private final static Pattern patternLog = Pattern.compile("Write to log \"(.*)\"");
 
 	private final static Pattern[] gherkinPatterns = { patternStoreVariable, patternLog };
 
