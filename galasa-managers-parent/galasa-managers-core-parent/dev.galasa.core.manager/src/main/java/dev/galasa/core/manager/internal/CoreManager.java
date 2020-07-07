@@ -49,10 +49,10 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 
 	private final static Log logger = LogFactory.getLog(CoreManager.class);
 
-	private final static Pattern patternStoreVariable = Pattern.compile("<([A-z0-9_.]+)> is test property ([A-z0-9_.]+)");
-	private final static Pattern patternLogVariable = Pattern.compile("Write to log \"Hello <([A-z0-9_.]+)>\"");
+	private final static Pattern patternStoreVariable = Pattern.compile("<(\\w+)> is test property ([\\w.]+)");
+	private final static Pattern patternLog = Pattern.compile("Write to log \"([\\w\\W]+)\"");
 
-	private final static Pattern[] gherkinPatterns = { patternStoreVariable, patternLogVariable };
+	private final static Pattern[] gherkinPatterns = { patternStoreVariable, patternLog };
 
 	/*
 	 * (non-Javadoc)
@@ -73,48 +73,50 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 		this.ctf = framework.getConfidentialTextService();
 
 		if(galasaTest.isGherkin()) {
-			for(IGherkinExecutable gherkinExecutable : galasaTest.getGherkinTest().getAllExecutables()) {
-				for(Pattern regexPattern : gherkinPatterns) {
-					Matcher gherkinMatcher = regexPattern.matcher(gherkinExecutable.getValue());
-					if(gherkinMatcher.matches()) {
-						try {
-							gherkinExecutable.registerManager((IGherkinManager) this);
-						} catch (TestRunException e) {
-							throw new ManagerException("Unable to register Manager for Gherkin Statement", e);
-						}
-					}
-				}
-			}
+			registerGherkinStatements(galasaTest);
 		}
 
 		// *** We always want the Core Manager initialised and included in the Test Run
 		activeManagers.add(this);
 	}
+
+	private void registerGherkinStatements(GalasaTest galasaTest) throws ManagerException {
+		for(IGherkinExecutable gherkinExecutable : galasaTest.getGherkinTest().getAllExecutables()) {
+			for(Pattern regexPattern : gherkinPatterns) {
+				Matcher gherkinMatcher = regexPattern.matcher(gherkinExecutable.getValue());
+				if(gherkinMatcher.matches()) {
+					try {
+						gherkinExecutable.registerManager((IGherkinManager) this);
+					} catch (TestRunException e) {
+						throw new ManagerException("Unable to register Manager for Gherkin Statement", e);
+					}
+				}
+			}
+		}
+	}
 	
 	@Override
 	public void executeGherkin(@NotNull IGherkinExecutable executable, Map<String, Object> testVariables)
 			throws ManagerException {
-		Matcher matcherStoreVariable = patternStoreVariable.matcher(executable.getValue());
-		if(matcherStoreVariable.matches()) {
-			String variableName = matcherStoreVariable.group(1);
-			String cpsProp = matcherStoreVariable.group(2);
-			String cpsPrefix = cpsProp.substring(0, cpsProp.indexOf("."));
-			String cpsSuffix = cpsProp.substring(cpsProp.indexOf(".") + 1);
-			try {
-				String cpsValue = cpsTest.getProperty(cpsPrefix, cpsSuffix);
-				testVariables.put(variableName, cpsValue);
-			} catch (ConfigurationPropertyStoreException e) {
-				throw new ManagerException("Unable to access CPS", e);
-			}
-			return;
-		}
+		switch(executable.getKeyword()) {
+			case GIVEN:
+				Matcher matcherStoreVariable = patternStoreVariable.matcher(executable.getValue());
+				if(matcherStoreVariable.matches()) {
+					CoreGherkinExecution.storeVariable(matcherStoreVariable, cpsTest, testVariables);
+					return;
+				}
+				break;
+				
+			case THEN:
+				Matcher matcherLog = patternLog.matcher(executable.getValue());
+				if(matcherLog.matches()) {
+					CoreGherkinExecution.log(matcherLog, testVariables, logger);
+					return;
+				}
+				break;
 
-		Matcher matcherLogVariable = patternLogVariable.matcher(executable.getValue());
-		if(matcherLogVariable.matches()) {
-			String variableName = matcherLogVariable.group(1);
-			String variableValue = (String) testVariables.get(variableName);
-			logger.info("Hello " + variableValue);
-			return;
+			default:
+				break;
 		}
 	}
 
