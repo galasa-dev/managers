@@ -6,15 +6,21 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 
+import dev.galasa.framework.spi.language.gherkin.GherkinKeyword;
+
 public class GherkinLog {
 
-    private final static Pattern patternVariable = Pattern.compile(".*(<\\w+>).*");
+    public final static GherkinKeyword keyword = GherkinKeyword.THEN;
+
+    public final static Pattern pattern = Pattern.compile("Write to log \"(.*)\"");
+
+    private final static Pattern patternVariable = Pattern.compile("(<(\\w+)>)");
 
     public static void execute(Matcher matcherLog, Map<String, Object> testVariables, Log logger) {
         String output = matcherLog.group(1);
         Matcher matcherVariable = patternVariable.matcher(output);
-        while(matcherVariable.matches()) {
-            String variableName = matcherVariable.group(1).replaceAll("<|>", "");
+        while(matcherVariable.find()) {
+            String variableName = matcherVariable.group(2);
             String variableValue = (String) testVariables.get(variableName);
             output = output.replace(matcherVariable.group(1), variableValue);
             matcherVariable = patternVariable.matcher(output);
