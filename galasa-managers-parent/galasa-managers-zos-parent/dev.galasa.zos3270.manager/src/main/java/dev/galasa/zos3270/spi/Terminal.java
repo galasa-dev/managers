@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos3270.AttentionIdentification;
+import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
@@ -138,8 +139,21 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public Terminal waitForTextInField(String text) throws TerminalInterruptedException, Zos3270Exception {
+    public ITerminal waitForTextInField(String text) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
         screen.waitForTextInField(text, defaultWaitTime);
+        return this;
+    }
+
+    @Override
+    public ITerminal waitForTextInField(String[] ok, String[] error)
+            throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
+        return waitForTextInField(ok, error, this.defaultWaitTime);
+    }
+
+    @Override
+    public ITerminal waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds)
+            throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
+        screen.waitForTextInField(ok, error, timeoutInMilliseconds);
         return this;
     }
 
