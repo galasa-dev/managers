@@ -218,9 +218,6 @@ public class ZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean delete() throws ZosDatasetException {
-        if (!created()) {
-            throw new ZosDatasetException(quoted(this.dsname) + " not created by this test run" + logOnImage());
-        }
         if (!exists()) {
             throw new ZosDatasetException(quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }

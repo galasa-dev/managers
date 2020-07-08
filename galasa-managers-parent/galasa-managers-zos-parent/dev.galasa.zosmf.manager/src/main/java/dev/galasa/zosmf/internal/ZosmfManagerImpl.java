@@ -163,7 +163,10 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
                 }
             }
         } catch (ZosManagerException e) {
-            throw new ZosmfManagerException("Unable to get zOSMF servers for cluster " + clusterId, e);
+            throw new ZosmfManagerException("Unable to get zOSMF servers for cluster \"" + clusterId + "\"", e);
+        }
+        if (zosmfs.isEmpty()) {
+            throw new ZosmfManagerException("No zOSMF servers defined for cluster \"" + clusterId + "\"");
         }
         return zosmfs;
     }

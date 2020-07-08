@@ -221,11 +221,31 @@ public class TestZosmfManagerImpl {
         Assert.assertTrue("getZosmfs() should return the mocked ZosmfImpl", zosmfManagerSpy.getZosmfs(CLUSTER).containsValue(zosmfMock));
         
         Assert.assertTrue("getZosmfs() should return the mocked ZosmfImpl", zosmfManagerSpy.getZosmfs(CLUSTER).containsValue(zosmfMock));
+    }
+    
+    @Test
+    public void testGetZosmfsException1() throws ZosManagerException {
+        setupZosmfImplInitialize();
 
         Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
         Whitebox.setInternalState(zosmfManagerSpy, "zosmfs", new HashMap<>());
         exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Unable to get zOSMF servers for cluster " + CLUSTER);
+        exceptionRule.expectMessage("Unable to get zOSMF servers for cluster \"" + CLUSTER + "\"");
+        
+        zosmfManagerSpy.getZosmfs(CLUSTER);
+    }
+    
+    @Test
+    public void testGetZosmfsException2() throws ZosManagerException {
+        setupZosmfImplInitialize();
+        
+        PowerMockito.mockStatic(ServerImages.class);
+        Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList());
+
+        Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
+        Whitebox.setInternalState(zosmfManagerSpy, "zosmfs", new HashMap<>());
+        exceptionRule.expect(ZosmfManagerException.class);
+        exceptionRule.expectMessage("No zOSMF servers defined for cluster \"" + CLUSTER + "\"");
         
         zosmfManagerSpy.getZosmfs(CLUSTER);
     }
