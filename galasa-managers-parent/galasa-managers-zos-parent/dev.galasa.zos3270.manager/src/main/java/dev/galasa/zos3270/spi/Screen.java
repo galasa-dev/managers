@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos3270.AttentionIdentification;
+import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.IScreenUpdateListener.Direction;
@@ -531,6 +532,28 @@ public class Screen {
         throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
     }
 
+    public int searchFieldContaining(@NotNull String[] okText, String[] errorText) throws TextNotFoundException, ErrorTextFoundException {
+        if (errorText != null) {
+            for(int i = 0; i < errorText.length; i++) {
+                for (Field field : calculateFields()) {
+                    if (field.containsText(errorText[i])) {
+                        throw new ErrorTextFoundException("Found error text '" + errorText[i] + "' on screen", i);
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i < okText.length; i++) {
+            for (Field field : calculateFields()) {
+                if (field.containsText(okText[i])) {
+                    return i;
+                }
+            }
+        }
+
+        throw new TextNotFoundException("Unable to locate text on sreen");
+    }
+
     public boolean isTextInField(String text) {
         for (Field field : calculateFields()) {
             if (field.containsText(text)) {
@@ -559,15 +582,24 @@ public class Screen {
         keyboardLock.release();
     }
 
-    public void waitForTextInField(String text, int maxWait) throws TerminalInterruptedException, Zos3270Exception {
+    public void waitForTextInField(String text, long maxWait) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
+        waitForTextInField(new String[] {text}, null, maxWait);
+    }
+
+    public void waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
         try {
-            if (!ScreenUpdateTextListener.waitForText(this, text, maxWait)) {
-                throw new TextNotFoundException(CANT_FIND_TEXT + text + "'");
+            if (ScreenUpdateTextListener.waitForText(this, ok, error, timeoutInMilliseconds) < 0) {
+                if (ok != null && ok.length == 1 && error == null) {
+                    throw new TextNotFoundException(CANT_FIND_TEXT + ok[0] + "'");
+                }
+                throw new TextNotFoundException("Unable to find a field containing any of the request text");
             }
         } catch(InterruptedException e) {
             throw new TerminalInterruptedException("Wait for text was interrupted", e);
         }
     }
+
+
 
     public synchronized void positionCursorToFieldContaining(@NotNull String text)
             throws KeyboardLockedException, TextNotFoundException {
@@ -832,7 +864,7 @@ public class Screen {
                 break;
             }
         }
-        
+
         if (!startField.isProtected() && startField.length() > 1) {
             if (newCursor == startField.getStart() && !startField.isDummyField()) {
                 newCursor++;
@@ -840,30 +872,30 @@ public class Screen {
             this.screenCursor = newCursor;
             return;
         }
-        
+
         // This field is protected, so locate the next unprotected field
         while(true) {
             fieldPos++;
             if (fieldPos >= fields.length) {
                 fieldPos = 0;
             }
-            
+
             Field nextField = fields[fieldPos];
-            
+
             if (!nextField.isProtected() && nextField.length() > 1) {
                 if (nextField.isDummyField()) {
                     this.screenCursor = nextField.getStart();
                 } else {
                     this.screenCursor = nextField.getStart() + 1;
                 }
-                
+
             }
-            
+
             if (nextField == startField) {
                 break;
             }
         }
-        
+
         this.screenCursor = newCursor;
         return;
     }
