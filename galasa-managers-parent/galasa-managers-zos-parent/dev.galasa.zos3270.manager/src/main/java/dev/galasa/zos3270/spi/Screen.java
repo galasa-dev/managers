@@ -137,13 +137,13 @@ public class Screen {
                 erase();
             }
 
-            if (writeControlCharacter.isReset()) {
-                this.workingCursor = 0;
-            }
             processOrders(orders);
 
             if (writeControlCharacter.isKeyboardReset()) {
                 unlockKeyboard();
+            }
+            if (writeControlCharacter.isResetMDT()) {
+                this.workingCursor = 0;
             }
         }
 
@@ -1138,6 +1138,10 @@ public class Screen {
 
     public void setCursorPosition(int newPosition) {
         this.screenCursor = newPosition;
+    }
+
+    public void setCursorPosition(int column, int row) {
+        this.screenCursor = (row * this.columns) + column;
     }
 
     public static void setDisplayOutboundDatastream(boolean newDisplayOutboundDatastream) {
