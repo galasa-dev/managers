@@ -414,9 +414,6 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
 
 
     protected void delete(String path, boolean recursive) throws ZosUNIXFileException {
-        if (!created()) {
-            throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + " not created by this Galasa class" + logOnImage());
-        }
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }

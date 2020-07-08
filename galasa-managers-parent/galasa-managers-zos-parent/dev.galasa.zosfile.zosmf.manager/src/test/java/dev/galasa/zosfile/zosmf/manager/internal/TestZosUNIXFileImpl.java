@@ -498,14 +498,6 @@ public class TestZosUNIXFileImpl {
     }
     
     @Test
-    public void testInternalDeleteNotCreatedException() throws ZosUNIXFileException, ZosmfException {
-        PowerMockito.doReturn(false).when(zosUNIXFileSpy).created();
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path \"" + UNIX_PATH + "\" not created by this Galasa class on image " + IMAGE);
-        zosUNIXFileSpy.delete(UNIX_PATH, false);
-    }
-    
-    @Test
     public void testInternalDeletenotExistException() throws ZosUNIXFileException, ZosmfException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).created();
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
