@@ -17,6 +17,7 @@ import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
 
@@ -52,7 +53,7 @@ public class TabTest {
 
 
     /**
-     * Test with single field,  but the cursor offset it in,  so 
+     * Test with two fields,  but the cursor at SF 
      * should return at the beginning of the same field
      * 
      * @throws Exception
@@ -66,15 +67,19 @@ public class TabTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-
+        orders.add(new OrderText("UField1"));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderText("UField2"));
+        
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
 
-        screen.setCursorPosition(2);
+        screen.setCursorPosition(0);
         
         screen.tab();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 1, offsetted in same field").isEqualTo(1);
+        assertThat(screen.getCursor()).as("Cursor should be at 1, cursor was at SF of unprotected field").isEqualTo(1);
         
     }
     
