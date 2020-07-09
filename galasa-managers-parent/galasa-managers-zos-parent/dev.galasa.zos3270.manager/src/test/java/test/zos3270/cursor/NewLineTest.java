@@ -17,6 +17,7 @@ import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
 
@@ -144,8 +145,16 @@ public class NewLineTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderText("UField1"));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
+        orders.add(new OrderStartField(true, false, true, false, false, false));
+        orders.add(new OrderText("PField1"));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(20)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderText("UField2"));
+        orders.add(new OrderSetBufferAddress(new BufferAddress(30)));
+        orders.add(new OrderStartField(false, false, true, false, false, false));
+        orders.add(new OrderText("UField3"));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -154,7 +163,7 @@ public class NewLineTest {
         
         screen.newLine();
         
-        assertThat(screen.getCursor()).as("Cursor should be at 11, start of next field").isEqualTo(11);
+        assertThat(screen.getCursor()).as("Cursor should be at 21, start of next field").isEqualTo(21);
         
     }
     

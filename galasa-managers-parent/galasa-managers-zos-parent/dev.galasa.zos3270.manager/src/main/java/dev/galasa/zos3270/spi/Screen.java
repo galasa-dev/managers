@@ -679,6 +679,11 @@ public class Screen {
 
         int startPosition = this.screenCursor;
         boolean foundUnprotectedField = false;
+        
+        IBufferHolder sfCheck = this.buffer[this.screenCursor];    
+        if (sfCheck instanceof BufferStartOfField) {
+            foundUnprotectedField = !((BufferStartOfField)sfCheck).isProtected();
+        }
         while(true) {
             // advance the cursor
             this.screenCursor++;
@@ -888,7 +893,7 @@ public class Screen {
                 } else {
                     this.screenCursor = nextField.getStart() + 1;
                 }
-
+                return;
             }
 
             if (nextField == startField) {
