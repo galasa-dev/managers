@@ -16,7 +16,7 @@ public class GherkinPostText {
     public final static GherkinKeyword keyword = GherkinKeyword.GIVEN;
 
     public final static Pattern pattern = Pattern
-            .compile("The Http Client posts text ([\\w\\W]+) to URI ([\\w\\W]+) at endpoint ([\\w\\W]+)");
+            .compile("The Http Client posts text (.+) to URI (.+) at endpoint (.+)");
 
     public final static Class<?>[] dependencies = {};
 
