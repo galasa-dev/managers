@@ -235,15 +235,6 @@ public class TestZosDatasetImpl {
     }
     
     @Test
-    public void testDeleteNotCreated() throws ZosDatasetException {
-        PowerMockito.doReturn(false).when(zosDatasetSpy).created();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" not created by this test run on image " + IMAGE);
-        
-        zosDatasetSpy.delete();        
-    }
-    
-    @Test
     public void testDeleteNotExists() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
