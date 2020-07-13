@@ -14,6 +14,8 @@ public class GherkinLog {
 
     public final static Pattern pattern = Pattern.compile("Write to log \"(.*)\"");
 
+    public final static Class<?>[] dependencies = {};
+
     private final static Pattern patternVariable = Pattern.compile("(<(\\w+)>)");
 
     public static void execute(Matcher matcherLog, Map<String, Object> testVariables, Log logger) {

@@ -15,6 +15,8 @@ public class GherkinStoreVariable {
 
     public final static Pattern pattern = Pattern.compile("<(\\w+)> is test property ([\\w.]+)");
 
+    public final static Class<?>[] dependencies = {};
+
     public static void execute(Matcher matcherStoreVariable, IConfigurationPropertyStoreService cpsTest, Map<String, Object> testVariables)
             throws ManagerException {
         String variableName = matcherStoreVariable.group(1);

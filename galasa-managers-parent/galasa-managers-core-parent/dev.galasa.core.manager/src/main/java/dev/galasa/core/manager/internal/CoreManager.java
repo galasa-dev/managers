@@ -69,7 +69,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 		this.ctf = framework.getConfidentialTextService();
 
 		if(galasaTest.isGherkin()) {
-			GherkinStatements.register(galasaTest, this);
+			GherkinStatements.register(galasaTest, this, allManagers, activeManagers);
 		}
 
 		// *** We always want the Core Manager initialised and included in the Test Run

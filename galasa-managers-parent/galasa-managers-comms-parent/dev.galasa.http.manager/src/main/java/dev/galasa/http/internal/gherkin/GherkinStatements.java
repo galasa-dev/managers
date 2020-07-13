@@ -1,37 +1,32 @@
-package dev.galasa.core.manager.internal.gherkin;
+package dev.galasa.http.internal.gherkin;
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import dev.galasa.ManagerException;
-import dev.galasa.core.manager.internal.CoreManager;
 import dev.galasa.framework.TestRunException;
 import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.http.internal.HttpManagerImpl;
 
 public class GherkinStatements {
 
-    public static void register(GalasaTest galasaTest, CoreManager manager, List<IManager> allManagers, List<IManager> activeManagers) throws ManagerException {
+    public static void register(GalasaTest galasaTest, HttpManagerImpl manager, List<IManager> allManagers, List<IManager> activeManagers) throws ManagerException {
 		for(IGherkinExecutable gherkinExecutable : galasaTest.getGherkinTest().getAllExecutables()) {
             switch (gherkinExecutable.getKeyword()) {
-                case GIVEN:
-                    match(GherkinStoreVariable.pattern, gherkinExecutable, manager, allManagers, activeManagers, GherkinStoreVariable.dependencies);
+                case WHEN:
+                match(GherkinPostText.pattern, gherkinExecutable, manager, allManagers, activeManagers, GherkinPostText.dependencies);
                     break;
-
-                case THEN:
-                    match(GherkinLog.pattern, gherkinExecutable, manager, allManagers, activeManagers, GherkinLog.dependencies);
-                    break;
-            
                 default:
                     break;
             }
-		}
+        }
     }
     
-    private static void match(Pattern regexPattern, IGherkinExecutable gherkinExecutable, CoreManager manager,
+    private static void match(Pattern regexPattern, IGherkinExecutable gherkinExecutable, HttpManagerImpl manager,
             List<IManager> allManagers, List<IManager> activeManagers, Class<?>[] dependencies) throws ManagerException {
         Matcher gherkinMatcher = regexPattern.matcher(gherkinExecutable.getValue());
         if(gherkinMatcher.matches()) {
