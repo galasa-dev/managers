@@ -14,7 +14,6 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IStatementOwner;
-import dev.galasa.framework.spi.language.gherkin.CustomExecutionMethod;
 import dev.galasa.framework.spi.language.gherkin.ExecutionMethod;
 import dev.galasa.framework.spi.language.gherkin.GherkinKeyword;
 
@@ -31,13 +30,8 @@ public class CoreStatementOwner implements IStatementOwner {
         this.cpsTest = cps;
     }
 
-    @Override
-    public Boolean registerCustom(CustomExecutionMethod annotation, IGherkinExecutable executable) {
-        return false;
-    }
-
     @ExecutionMethod(keyword = GherkinKeyword.GIVEN, regex = "<(\\w+)> is test property ([\\w.]+)")
-    public void execute(IGherkinExecutable executable, Map<String,Object> testVariables) throws ManagerException {
+    public void storeTestProperty(IGherkinExecutable executable, Map<String,Object> testVariables) throws ManagerException {
         String variableName = executable.getRegexGroups().get(0);
         String cpsProp = executable.getRegexGroups().get(1);
         String cpsPrefix = cpsProp.substring(0, cpsProp.indexOf("."));
@@ -54,7 +48,7 @@ public class CoreStatementOwner implements IStatementOwner {
     }
 
     @ExecutionMethod(keyword = GherkinKeyword.THEN, regex = "Write to log \"(.*)\"")
-    public void gherkinLog(IGherkinExecutable executable, Map<String,Object> testVariables) {
+    public void writeToLog(IGherkinExecutable executable, Map<String,Object> testVariables) {
         String output = executable.getRegexGroups().get(0);
         Matcher matcherVariable = patternVariable.matcher(output);
         while(matcherVariable.find()) {
