@@ -9,8 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
 
 import javax.validation.constraints.NotNull;
 
@@ -26,18 +24,16 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.core.manager.TestProperty;
-import dev.galasa.core.manager.internal.gherkin.GherkinLog;
-import dev.galasa.core.manager.internal.gherkin.GherkinStatements;
-import dev.galasa.core.manager.internal.gherkin.GherkinStoreVariable;
+import dev.galasa.core.manager.internal.gherkin.CoreStatementOwner;
 import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
-import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.IStatementOwner;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -47,8 +43,6 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 
 	private IConfigurationPropertyStoreService cpsTest;
 	private IConfidentialTextService           ctf;
-
-	private final static Log logger = LogFactory.getLog(CoreManager.class);
 
 	/*
 	 * (non-Javadoc)
@@ -69,36 +63,16 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 		this.ctf = framework.getConfidentialTextService();
 
 		if(galasaTest.isGherkin()) {
-			GherkinStatements.register(galasaTest, this);
+			IStatementOwner coreOwner = new CoreStatementOwner(this, cpsTest);
+			IStatementOwner[] statementOwners = { coreOwner };
+
+			if(registerStatements(galasaTest.getGherkinTest(), statementOwners)) {
+				youAreRequired(allManagers, activeManagers);
+			}
 		}
 
 		// *** We always want the Core Manager initialised and included in the Test Run
 		activeManagers.add(this);
-	}
-	
-	@Override
-	public void executeGherkin(@NotNull IGherkinExecutable executable, Map<String, Object> testVariables)
-			throws ManagerException {
-		switch(executable.getKeyword()) {
-			case GIVEN:
-				Matcher matcherStoreVariable = GherkinStoreVariable.pattern.matcher(executable.getValue());
-				if(matcherStoreVariable.matches()) {
-					GherkinStoreVariable.execute(matcherStoreVariable, cpsTest, testVariables);
-					return;
-				}
-				break;
-				
-			case THEN:
-				Matcher matcherLog = GherkinLog.pattern.matcher(executable.getValue());
-				if(matcherLog.matches()) {
-					GherkinLog.execute(matcherLog, testVariables, logger);
-					return;
-				}
-				break;
-
-			default:
-				break;
-		}
 	}
 
 	@Override
