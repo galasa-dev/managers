@@ -9,8 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,24 +17,19 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
-import dev.galasa.framework.spi.IGherkinExecutable;
-import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClient;
 import dev.galasa.http.IHttpClient;
-import dev.galasa.http.internal.gherkin.GherkinPostText;
-import dev.galasa.http.internal.gherkin.GherkinStatements;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
-@Component(service = { IManager.class, IGherkinManager.class })
-public class HttpManagerImpl extends AbstractGherkinManager implements IHttpManagerSpi {
+@Component(service = { IManager.class })
+public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi {
 
     private static final Log  logger              = LogFactory.getLog(HttpManagerImpl.class);
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
@@ -68,28 +61,6 @@ public class HttpManagerImpl extends AbstractGherkinManager implements IHttpMana
             if (!ourFields.isEmpty()) {
                 youAreRequired(allManagers, activeManagers);
             }
-        } else if(galasaTest.isGherkin()) {
-            GherkinStatements.register(galasaTest, this, allManagers, activeManagers);
-        }
-    }
-
-    @Override
-    public void executeGherkin(@NotNull IGherkinExecutable executable, Map<String, Object> testVariables)
-            throws ManagerException {
-        try {
-            switch(executable.getKeyword()) {
-                case WHEN:
-                    Matcher matcherPostText = GherkinPostText.pattern.matcher(executable.getValue());
-                    if(matcherPostText.matches()) {
-                        GherkinPostText.execute(matcherPostText, this, testVariables);
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } catch (Exception e) {
-            throw new ManagerException("Unable to execute statement: " + executable.getValue(), e);
         }
     }
 
