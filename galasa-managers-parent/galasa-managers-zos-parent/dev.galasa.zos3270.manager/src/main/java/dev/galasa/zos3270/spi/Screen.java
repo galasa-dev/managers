@@ -137,13 +137,13 @@ public class Screen {
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
             }
+            
+            this.workingCursor = this.screenCursor;
 
             processOrders(orders);
 
             if (writeControlCharacter.isKeyboardReset()) {
                 unlockKeyboard();
-            }
-            if (writeControlCharacter.isResetMDT()) {
                 this.workingCursor = 0;
             }
         }
