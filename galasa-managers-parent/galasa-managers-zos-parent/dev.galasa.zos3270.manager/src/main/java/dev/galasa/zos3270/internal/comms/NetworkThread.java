@@ -10,13 +10,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.zos3270.IDatastreamListener;
 import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.IDatastreamListener.DatastreamDirection;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
@@ -52,8 +55,6 @@ public class NetworkThread extends Thread {
     private final Terminal    terminal;
 
     private boolean           endOfStream     = false;
-    
-    private static boolean           displayInboundDatastream = false;
 
     private static Log               logger          = LogFactory.getLog(NetworkThread.class);
 
@@ -138,11 +139,17 @@ public class NetworkThread extends Thread {
         throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
     }
 
-    public static Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
+    public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
 
-        if (logger.isTraceEnabled() || displayInboundDatastream) {
+        if (logger.isTraceEnabled() || !this.screen.getDatastreamListeners().isEmpty()) {
             String hex = new String(Hex.encodeHex(buffer.array()));
-            logger.info("inbound=" + hex);
+            if (logger.isTraceEnabled()) {
+                logger.trace("inbound=" + hex);
+            }
+
+            for(IDatastreamListener listener : this.screen.getDatastreamListeners()) {
+                listener.datastreamUpdate(DatastreamDirection.INBOUND, hex);
+            }
         }
 
         AbstractCommandCode commandCode = AbstractCommandCode.getCommandCode(buffer.get());
@@ -155,11 +162,11 @@ public class NetworkThread extends Thread {
 
     public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
             throws DatastreamException {
-        
+
         if (!buffer.hasRemaining()) {
             return new Inbound3270Message(commandCode, null, null);
         }
-        
+
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
         List<AbstractOrder> orders = processOrders(buffer);
@@ -263,10 +270,6 @@ public class NetworkThread extends Thread {
         byte[] bytes = byteArrayOutputStream.toByteArray();
 
         return ByteBuffer.wrap(bytes);
-    }
-    
-    public static void setDisplayInboundDatastream(boolean newDisplayInboundDatastream) {
-        displayInboundDatastream = newDisplayInboundDatastream;
     }
 
 }

@@ -16,20 +16,24 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.spi.NetworkException;
+import dev.galasa.zos3270.spi.Screen;
 
 public class VampScreenTest {
 
     @Test
-    public void testVampScreen() throws IOException, DecoderException, NetworkException {
+    public void testVampScreen() throws IOException, DecoderException, NetworkException, TerminalInterruptedException {
         URL vampFile = getClass().getClassLoader().getResource("vampstream.txt");
         String vampHex = IOUtils.toString(vampFile.openStream(), "utf-8");
         byte[] stream = Hex.decodeHex(vampHex);
         ByteBuffer buffer = ByteBuffer.wrap(stream);
 
-        List<AbstractOrder> orders = NetworkThread.process3270Data(buffer).getOrders();
+        NetworkThread networkThread = new NetworkThread(null, new Screen(), null, null);
+        
+        List<AbstractOrder> orders = networkThread.process3270Data(buffer).getOrders();
         Assert.assertEquals("Count of orders is incorrect", 225, orders.size());
     }
 

@@ -146,6 +146,7 @@ public interface ITerminal {
     
     String getId();
     
-    void setDisplayDatastream(boolean inbound, boolean outbound);
+    void registerDatastreamListener(IDatastreamListener listener);
+    void unregisterDatastreamListener(IDatastreamListener listener);
 
 }
