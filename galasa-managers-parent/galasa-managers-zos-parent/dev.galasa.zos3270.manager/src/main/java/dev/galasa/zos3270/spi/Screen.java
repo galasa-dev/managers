@@ -23,6 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.IDatastreamListener;
+import dev.galasa.zos3270.IDatastreamListener.DatastreamDirection;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.IScreenUpdateListener.Direction;
 import dev.galasa.zos3270.KeyboardLockedException;
@@ -83,7 +85,7 @@ public class Screen {
     private Semaphore                               keyboardLock    = new Semaphore(1, true);
     private boolean                                 keyboardLockSet = false;
 
-    private static boolean                          displayOutboundDatastream = false;
+    private final LinkedList<IDatastreamListener> datastreamListeners =  new LinkedList<>();
 
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
@@ -266,9 +268,15 @@ public class Screen {
                 baos.write(reply.toByte());
             }
 
-            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+            if (logger.isTraceEnabled() || !this.datastreamListeners.isEmpty()) {
                 String hex = new String(Hex.encodeHex(baos.toByteArray()));
-                logger.trace("outbound sf=" + hex);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("outbound sf=" + hex);
+                }
+
+                for(IDatastreamListener listener : this.datastreamListeners) {
+                    listener.datastreamUpdate(DatastreamDirection.OUTBOUND, hex);
+                }
             }
 
             network.sendDatastream(baos.toByteArray());
@@ -1105,9 +1113,15 @@ public class Screen {
 
             }
 
-            if (logger.isTraceEnabled() || displayOutboundDatastream) {
+            if (logger.isTraceEnabled() || !this.datastreamListeners.isEmpty()) {
                 String hex = new String(Hex.encodeHex(outboundBuffer.toByteArray()));
-                logger.info("outbound=" + hex);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("outbound=" + hex);
+                }
+                
+                for(IDatastreamListener listener : this.datastreamListeners) {
+                    listener.datastreamUpdate(DatastreamDirection.OUTBOUND, hex);
+                }
             }
 
             for (IScreenUpdateListener listener : updateListeners) {
@@ -1181,8 +1195,22 @@ public class Screen {
         this.screenCursor = (row * this.columns) + column;
     }
 
-    public static void setDisplayOutboundDatastream(boolean newDisplayOutboundDatastream) {
-        displayOutboundDatastream = newDisplayOutboundDatastream;
+    public synchronized void registerDatastreamListener(IDatastreamListener listener) {
+        if (listener == null) {
+            return;
+        }
+        
+        if (!this.datastreamListeners.contains(listener)) {
+            this.datastreamListeners.add(listener);
+        }
+    }
+    
+    public synchronized void unregisterDatastreamListener(IDatastreamListener listener) {
+        this.datastreamListeners.remove(listener);
+    }
+    
+    public List<IDatastreamListener> getDatastreamListeners() {
+        return this.datastreamListeners;
     }
 
 }
