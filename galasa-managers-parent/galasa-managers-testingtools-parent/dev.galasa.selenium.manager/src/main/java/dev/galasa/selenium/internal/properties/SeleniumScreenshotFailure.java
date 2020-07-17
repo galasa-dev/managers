@@ -5,20 +5,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
 /**
-* Selenium Gecko Profile CPS Property
+* Selenium Screenshot Failure CPS Property
 * 
 * @galasa.cps.property
 * 
-* @galasa.name selenium.instance.INSTANCE.gecko.profile
+* @galasa.name selenium.screenshot.failure
 * 
-* @galasa.description Provides a profile to use when using the gecko driver for extensions
+* @galasa.description Takes a screenshot on a test method failing
 * 
 * @galasa.required No
 * 
-* @galasa.valid_values A valid String name of a profile
+* @galasa.valid_values true or false
 * 
 * @galasa.examples 
-* <code>selenium.instance.PRIMARY.gecko.profile=default</code>
+* <code>selenium.screenshot.failure=true</code>
 * 
 */
 public class SeleniumScreenshotFailure extends CpsProperties {
