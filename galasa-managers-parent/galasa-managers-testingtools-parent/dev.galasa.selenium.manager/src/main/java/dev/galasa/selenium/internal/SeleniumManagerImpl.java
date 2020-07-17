@@ -7,6 +7,7 @@ package dev.galasa.selenium.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +19,13 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
@@ -31,6 +34,7 @@ import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.SeleniumManagerField;
 import dev.galasa.selenium.internal.properties.SeleniumDseInstanceName;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
+import dev.galasa.selenium.internal.properties.SeleniumScreenshotFailure;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager implements ISeleniumManager {
@@ -38,8 +42,10 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     public static final String NAMESPACE = "selenium";
 
     private IConfigurationPropertyStoreService cps; //NOSONAR
+    private IFramework framework;
 
     private List<WebPageImpl> webPages = new ArrayList<>();
+    private Path screenshotRasDirectory;
 
     private boolean required = false;
 
@@ -57,6 +63,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         }
 
         try {
+            this.framework = framework;
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
             SeleniumPropertiesSingleton.setCps(cps);
         } catch (Exception e) {
@@ -78,12 +85,32 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        screenshotRasDirectory = storedArtifactsRoot.resolve("selenium").resolve("screenshots");
+
         generateAnnotatedFields(SeleniumManagerField.class);
     }
 
     @GenerateAnnotatedField(annotation = SeleniumManager.class)
     public ISeleniumManager generateSeleniumManager(Field field, List<Annotation> annotations) {
         return this;
+    }
+
+    @Override
+    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
+            Throwable currentException) throws ManagerException {
+        try{
+            if(!currentResult.equals("Passed")) {
+                if(SeleniumScreenshotFailure.get()) {
+                    for(IWebPage page : webPages) {
+                        page.takeScreenShot();
+                    }
+                }
+            }
+        } catch (ConfigurationPropertyStoreException e) {
+
+        }
+        return null;
     }
 
     @Override
@@ -113,7 +140,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages);
+        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
 
         if(url != null && !url.trim().isEmpty())
             webPage.get(url);

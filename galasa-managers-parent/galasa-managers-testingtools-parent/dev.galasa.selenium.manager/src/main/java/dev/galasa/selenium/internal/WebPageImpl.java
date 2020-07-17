@@ -5,11 +5,19 @@
  */
 package dev.galasa.selenium.internal;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriver.Navigation;
 import org.openqa.selenium.WebDriver.Options;
@@ -19,6 +27,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.galasa.selenium.IWebPage;
+import dev.galasa.selenium.SeleniumManagerException;
 
 public class WebPageImpl implements IWebPage {
 
@@ -26,11 +35,14 @@ public class WebPageImpl implements IWebPage {
 
     private List<WebPageImpl> webPages;
 
+    private Path screenshotRasDirectory;
+
     public static final int DEFAULT_SECONDS_TIMEOUT = 30;
 
-    public WebPageImpl(WebDriver driver, List<WebPageImpl> webPages) {
+    public WebPageImpl(WebDriver driver, List<WebPageImpl> webPages, Path screenshotRasDirectory) {
         this.driver = driver;
         this.webPages = webPages;
+        this.screenshotRasDirectory = screenshotRasDirectory;
     }
 
     @Override
@@ -632,6 +644,18 @@ public class WebPageImpl implements IWebPage {
         wait.until(webDriver -> 
             String.valueOf("complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")))
         );
+        return this;
+    }
+
+    @Override
+    public IWebPage takeScreenShot() throws SeleniumManagerException {
+        File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        String time = String.valueOf(Instant.now().toEpochMilli());
+        try {
+            Files.copy(scrFile.toPath(), screenshotRasDirectory.resolve("screenshot_" + time + ".png"));
+        } catch (IOException e) {
+            throw new SeleniumManagerException("Unable to take screenshot", e);
+        }
         return this;
     }
 

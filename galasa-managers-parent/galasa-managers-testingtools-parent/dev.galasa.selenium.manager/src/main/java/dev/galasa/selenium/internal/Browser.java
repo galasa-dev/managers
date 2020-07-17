@@ -24,6 +24,7 @@ import org.openqa.selenium.remote.CapabilityType;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.internal.properties.SeleniumGeckoPreferences;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoProfile;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
@@ -89,6 +90,24 @@ public enum Browser {
     capabilities.setAcceptInsecureCerts(true);
     capabilities.setCapability("moz:firefoxOptions", options);
     capabilities.setProfile(ffProfile);
+
+    try {
+      String cpsPreferences = SeleniumGeckoPreferences.get(instance);
+      if(cpsPreferences != null) {
+        String[] preferences = cpsPreferences.split(",");
+        for(String preference : preferences) {
+          String[] keyValue = preference.split("=");
+          if(keyValue.length != 2) {
+            logger.debug("Ignoring preference " + preference);
+          } else {
+            capabilities.addPreference(keyValue[0], keyValue[1]);
+            logger.debug("Adding extra preference " + preference);
+          }
+        }
+      }
+    } catch (ConfigurationPropertyStoreException e) {
+      throw new SeleniumManagerException("Unable to get Gecko preferences from CPS for instance: " + instance, e);
+    }
 
     return new FirefoxDriver(capabilities);
   }

@@ -875,4 +875,9 @@ public interface IWebPage {
      */
     public IWebPage waitForPageLoad(int secondsTimeout);
 
+    /**
+     * Takes a screenshot of the current screen and stores it in the RAS
+     */
+    public IWebPage takeScreenShot() throws SeleniumManagerException;
+
 }
