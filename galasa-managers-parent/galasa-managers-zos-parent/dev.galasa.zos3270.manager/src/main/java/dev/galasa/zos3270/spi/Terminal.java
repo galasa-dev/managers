@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.IDatastreamListener;
 import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -54,7 +55,6 @@ public class Terminal implements ITerminal {
     public synchronized void connect() throws NetworkException {
         connected = network.connectClient();
         networkThread = new NetworkThread(this, screen, network, network.getInputStream());
-        logger.info("starting a new network thread");
         networkThread.start();
     }
 
@@ -445,9 +445,13 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public void setDisplayDatastream(boolean inbound, boolean outbound) {
-        NetworkThread.setDisplayInboundDatastream(inbound);
-        Screen.setDisplayOutboundDatastream(outbound);
+    public void registerDatastreamListener(IDatastreamListener listener) {
+        this.screen.registerDatastreamListener(listener);
+    }
+
+    @Override
+    public void unregisterDatastreamListener(IDatastreamListener listener) {
+        this.screen.unregisterDatastreamListener(listener);
     }
 
 }
