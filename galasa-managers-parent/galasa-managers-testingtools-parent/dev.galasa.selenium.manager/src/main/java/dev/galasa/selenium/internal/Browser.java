@@ -100,7 +100,13 @@ public enum Browser {
           if(keyValue.length != 2) {
             logger.debug("Ignoring preference " + preference);
           } else {
-            capabilities.addPreference(keyValue[0], keyValue[1]);
+            if(isInt(keyValue[1])) {
+              capabilities.addPreference(keyValue[0], Integer.parseInt(keyValue[1]));
+            } else if(isBool(keyValue[1])) {
+              capabilities.addPreference(keyValue[0], Boolean.parseBoolean(keyValue[1]));
+            } else {
+              capabilities.addPreference(keyValue[0], keyValue[1]);
+            }
             logger.debug("Adding extra preference " + preference);
           }
         }
@@ -160,5 +166,18 @@ public enum Browser {
       }
     }
     throw new SeleniumManagerException("Unsupported browser type: " + browser);
+  }
+
+  private static Boolean isInt(String value) {
+    try{
+      Integer.parseInt(value);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  private static Boolean isBool(String value) {
+    return value.equalsIgnoreCase("TRUE") || value.equalsIgnoreCase("FALSE");
   }
 }
