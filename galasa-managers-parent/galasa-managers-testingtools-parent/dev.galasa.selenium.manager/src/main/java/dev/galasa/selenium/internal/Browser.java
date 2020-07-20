@@ -178,6 +178,6 @@ public enum Browser {
   }
 
   private static Boolean isBool(String value) {
-    return value.equalsIgnoreCase("TRUE") || value.equalsIgnoreCase("FALSE");
+    return "TRUE".equalsIgnoreCase(value) || "FALSE".equalsIgnoreCase(value);
   }
 }
