@@ -217,6 +217,21 @@ public interface IZosDataset {
      * @throws ZosDatasetException 
      */
     public IZosDataset createRetain() throws ZosDatasetException;
+    
+    /**
+     * Allocate the physical data set on the zOS image. Will be retained across test methods and Will be not be saved to test archive before being
+     * deleted at test class end
+     * @return
+     * @throws ZosDatasetException 
+     */
+    public IZosDataset createRetainTemporary() throws ZosDatasetException;
+
+    /**
+     * Allocate the physical data set on the zOS image. Will be not be saved to test archive before being deleted at test method end
+     * @return
+     * @throws ZosDatasetException 
+     */
+    public IZosDataset createTemporary() throws ZosDatasetException;
 
     /**
      * Delete the data set on the zOS image.

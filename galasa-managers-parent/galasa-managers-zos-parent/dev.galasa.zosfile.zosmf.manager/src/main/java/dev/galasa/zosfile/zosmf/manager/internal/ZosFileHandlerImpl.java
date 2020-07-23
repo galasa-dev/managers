@@ -95,7 +95,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
         while (datasetForCleanupIterator.hasNext()) {
             ZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
-                zosDataset.saveToResultsArchive();
+                if (!zosDataset.isTemporary()) {
+                    zosDataset.saveToResultsArchive();
+                }
                 zosDataset.delete();
             }
         }

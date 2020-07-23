@@ -211,6 +211,14 @@ public class ZosDatasetImpl implements IZosDataset {
         return create();
     }
     
+    @Override
+    public IZosDataset createRetainTemporary() throws ZosDatasetException {
+        this.retainToTestEnd = true;
+        this.temporary = true;
+        return create();
+    }
+    
+    @Override
     public IZosDataset createTemporary() throws ZosDatasetException {
         this.temporary = true;
         return create();

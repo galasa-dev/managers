@@ -12,6 +12,6 @@
  * 
  * @galasa.description
  * 
- * This Manager allows Galasa tests to compile and program bind zOS Programs.
+ * This Manager allows Galasa tests to compile and link zOS Programs.
  */
 package dev.galasa.zosprogram;
