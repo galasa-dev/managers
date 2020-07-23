@@ -163,6 +163,13 @@ public class TestZosDatasetImpl {
         Assert.assertTrue("created() should return true", zosDatasetSpy.created());
         Assert.assertTrue("retainToTestEnd() should return true", zosDatasetSpy.retainToTestEnd());
        
+        // Create retain temporary
+        PowerMockito.doReturn(false).doReturn(true).when(zosDatasetSpy).exists();
+        zosDatasetSpy.createRetainTemporary();
+        Assert.assertTrue("created() should return true", zosDatasetSpy.created());
+        Assert.assertTrue("retainToTestEnd() should return true", zosDatasetSpy.retainToTestEnd());
+        Assert.assertTrue("isTemporary() should return true", zosDatasetSpy.isTemporary());
+       
         // Create temporary
         PowerMockito.doReturn(false).doReturn(true).when(zosDatasetSpy).exists();
         zosDatasetSpy.createTemporary();

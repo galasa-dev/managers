@@ -40,15 +40,26 @@ import dev.galasa.zosprogram.internal.ZosProgramManagerField;
 public @interface ZosProgram {
     
     /**
-     * The program name (without file extension)
+     * The program name
      */
     String name();
+
+    /**
+     * Path to the location of the program source in the Galasa test bundle. This can be either the full path including the file name
+     * or the directory containing the source with the name specified in the name attribute with the extension specified in the language attribute. 
+     */
+    String location() default "resources";
     
     /**
-     * The  programming language. See {@link ZosProgram.Language}
+     * The programming language. See {@link ZosProgram.Language}
      */
     Language language();
     
+    /**
+     * Is a CICS program.
+     */
+    boolean isCics() default false;
+
     /**
      * The load module data set name
      */
@@ -66,7 +77,7 @@ public @interface ZosProgram {
         /**
          * COBOL program with <code>.cbl</code> file extension 
          */
-        COBOL(".cbl"),
+        COBOL(".cbl");
 //        /**
 //         * C program with <code>.c</code> file extension 
 //         */
@@ -82,11 +93,7 @@ public @interface ZosProgram {
 //        /**
 //         * Assembler 64 program with <code>.asm<\code> file extension 
 //         */
-//        ASSEMBLER_64(".asm"), 
-        /**
-         * Not intended to be specified, used as a default value where the language should be inferred from a file extension
-         */
-        NONE("");
+//        ASSEMBLER_64(".asm");
         
         private final String extension;
         
