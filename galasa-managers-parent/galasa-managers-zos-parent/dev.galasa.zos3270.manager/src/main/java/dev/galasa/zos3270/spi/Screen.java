@@ -42,6 +42,7 @@ import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.internal.datastream.CommandReadBuffer;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.IAttribute;
+import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -88,6 +89,8 @@ public class Screen {
     private final LinkedList<IDatastreamListener> datastreamListeners =  new LinkedList<>();
 
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
+    
+    private AttentionIdentification                 lastAid = AttentionIdentification.NONE;
 
     public Screen() throws TerminalInterruptedException {
         this(80, 24, null);
@@ -139,11 +142,15 @@ public class Screen {
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
             }
-            
+
+            if (writeControlCharacter.isResetMDT()) {
+                resetMdt();
+            }
+
             this.workingCursor = this.screenCursor;
-
+            
             processOrders(orders);
-
+            
             if (writeControlCharacter.isKeyboardReset()) {
                 unlockKeyboard();
                 this.workingCursor = 0;
@@ -151,12 +158,22 @@ public class Screen {
         }
 
     }
+    
+    private void resetMdt() {
+        for(int i = 0; i < this.screenSize; i++) {
+            IBufferHolder bh = this.buffer[i];
+            if (bh instanceof BufferStartOfField) {
+                BufferStartOfField sof = (BufferStartOfField) bh;
+                sof.clearFieldModified();
+            }
+        }
+    }
 
     private synchronized void processReadBuffer() throws DatastreamException {
         try {
             ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
 
-            outboundBuffer.write(AttentionIdentification.NONE.getKeyValue());
+            outboundBuffer.write(this.lastAid.getKeyValue());
 
             BufferAddress cursor = new BufferAddress(this.screenCursor);
             outboundBuffer.write(cursor.getCharRepresentation());
@@ -302,6 +319,8 @@ public class Screen {
                 processSA((OrderSetAttribute) order);
             } else if (order instanceof OrderInsertCursor) {
                 this.screenCursor = this.workingCursor;
+            } else if (order instanceof OrderEraseUnprotectedToAddress) {
+                processEUA((OrderEraseUnprotectedToAddress)order);
             } else {
                 throw new DatastreamException("Unsupported Order - " + order.getClass().getName());
             }
@@ -395,6 +414,74 @@ public class Screen {
         this.buffer[this.workingCursor] = bsf;
         incrementWorkingCursor();
     }
+    
+    private void processEUA(OrderEraseUnprotectedToAddress order) {
+        boolean charProtected = true;
+        IBufferHolder bh = this.buffer[this.workingCursor];
+        // are we on a SF, if so take the protected setting
+        if (bh instanceof BufferStartOfField) {
+            charProtected = ((BufferStartOfField)bh).isProtected();
+        } else {
+            // we have to go looking backwards for it
+            int searchCursor = this.workingCursor - 1;
+            if (searchCursor < 0) {
+                searchCursor = this.screenSize - 1;
+            }
+            boolean found = false;
+            while(searchCursor != this.workingCursor) {
+                bh = this.buffer[searchCursor];
+                
+                if (bh instanceof BufferStartOfField) {
+                    charProtected = ((BufferStartOfField)bh).isProtected();
+                    found = true;
+                    break;
+                }
+                
+                searchCursor--;
+                if (searchCursor < 0) {
+                    searchCursor = this.screenSize - 1;
+                }
+            }
+            
+            if (!found) {
+                // assume no fields, so unprotected;
+                charProtected = false;
+            }
+        }
+        
+        
+        int toAddress = order.getBufferAddress();
+        if (toAddress >= this.screenSize) {
+            toAddress = this.screenSize - 1;
+        }
+        if (toAddress < 0) {
+            toAddress = 0;
+        }
+        
+        int eraseCursor = this.workingCursor;
+        while(true) {
+            bh = this.buffer[eraseCursor];
+            if (bh instanceof BufferStartOfField) {
+                charProtected = ((BufferStartOfField)bh).isProtected();
+            } else {
+                if (!charProtected) {
+                    this.buffer[eraseCursor] = null;
+                }
+            }
+            
+            eraseCursor++;
+            if (eraseCursor >= this.screenSize) {
+                eraseCursor = 0;
+            }
+            
+            if (eraseCursor == toAddress) {
+                break;
+            }
+        }
+        
+    }
+
+
 
     private void processSA(OrderSetAttribute order) {
         // TODO add processing for character attributes
@@ -687,7 +774,7 @@ public class Screen {
 
         int startPosition = this.screenCursor;
         boolean foundUnprotectedField = false;
-        
+
         IBufferHolder sfCheck = this.buffer[this.screenCursor];    
         if (sfCheck instanceof BufferStartOfField) {
             foundUnprotectedField = !((BufferStartOfField)sfCheck).isProtected();
@@ -912,6 +999,65 @@ public class Screen {
         this.screenCursor = newCursor;
         return;
     }
+    
+    public void backSpace() throws KeyboardLockedException, FieldNotFoundException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to type as keyboard is locked");
+        }
+        
+        int position = this.screenCursor;
+
+        if (buffer[position] != null && !(buffer[position] instanceof BufferChar)) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+        }
+
+        BufferStartOfField sf = null;
+        int sfPos = position - 1;
+        if (sfPos < 0) {
+            sfPos = buffer.length - 1;
+        }
+        while(sfPos != position) {
+            if (buffer[sfPos] instanceof BufferStartOfField) {
+                sf = (BufferStartOfField) buffer[sfPos];
+                break;
+            }
+
+            sfPos--;
+            if (sfPos < 0) {
+                sfPos = buffer.length - 1;
+            }
+        }
+
+        // *** if no field found, assume unprotected
+        if (sf != null && sf.isProtected()) {
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + position);
+        }
+        
+        if (position == 0) {
+            return;  // NOOP, as dont go beyond the start or wrap or through an error
+        }
+        
+        if (sfPos == (position - 1)) {
+            throw new FieldNotFoundException("Unable to backspace where the cursor is pointing to - " + position + ", start of field");
+        }
+        
+        while(true) {
+            this.buffer[position - 1] = this.buffer[position];
+            this.buffer[position] = null;
+            
+            position++;
+            if (position >= this.screenSize) {
+                break;
+            }
+            
+            if (buffer[position] != null && !(buffer[position] instanceof BufferChar)) {
+                break;
+            }
+        }
+        
+        this.screenCursor--;
+
+    }
 
 
     public int getNoOfColumns() {
@@ -985,7 +1131,7 @@ public class Screen {
         }
 
         if (buffer[position] != null && !(buffer[position] instanceof BufferChar)) {
-            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + this.screenCursor);
+            throw new FieldNotFoundException("Unable to type where the cursor is pointing to - " + position);
         }
 
         BufferStartOfField sf = null;
@@ -1022,16 +1168,36 @@ public class Screen {
             }
 
             buffer[position] = new BufferChar(text.charAt(i));
-            position++;
-            if (position >= screenSize) {
-                position = 0;
+
+            if (sf != null) {
+                sf.setFieldModified();
             }
 
-            this.screenCursor = position;
-        }
+            // We have successfully typed a character, so make sure the cursor is positioned
+            // at the next unprotected char, even if it is the position we were just at
 
-        if (sf != null) {
-            sf.setFieldModified();
+            boolean unprotected = true;
+            while(true) {
+                position++;
+                if (position >= screenSize) {
+                    position = 0;
+                }
+
+                this.screenCursor = position;
+                bh = buffer[position];
+                
+                if (unprotected && (bh == null || (bh instanceof BufferChar))) {
+                    break;
+                }
+                
+                if (bh != null && (bh instanceof BufferStartOfField)) {
+                    BufferStartOfField sof = (BufferStartOfField) bh;
+                    unprotected = !sof.isProtected();
+                    if (unprotected) {
+                        sf = sof;
+                    }
+                }
+            }
         }
 
         return position;
@@ -1085,9 +1251,8 @@ public class Screen {
                     if (bh instanceof BufferStartOfField) {
                         BufferStartOfField bsf = (BufferStartOfField) bh;
                         fieldModified = bsf.isFieldModifed();
-                        fieldProtected = bsf.isProtected();
 
-                        if (fieldModified && !fieldProtected) {
+                        if (fieldModified) { // Send whether unprotected or not
                             OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(pos + 1));
                             outboundBuffer.write(sba.getCharRepresentation());
                         }
@@ -1118,7 +1283,7 @@ public class Screen {
                 if (logger.isTraceEnabled()) {
                     logger.trace("outbound=" + hex);
                 }
-                
+
                 for(IDatastreamListener listener : this.datastreamListeners) {
                     listener.datastreamUpdate(DatastreamDirection.OUTBOUND, hex);
                 }
@@ -1127,6 +1292,8 @@ public class Screen {
             for (IScreenUpdateListener listener : updateListeners) {
                 listener.screenUpdated(Direction.SENDING, aid);
             }
+            
+            this.lastAid = aid;
 
             return outboundBuffer.toByteArray();
         } catch (IOException e) {
@@ -1157,7 +1324,7 @@ public class Screen {
     }
 
     public void setBuffer(int col, int row, String text) {
-        int pos = (row * 80) + col;
+        int pos = (row * columns) + col;
         for (int i = 0; i < text.length(); i++) {
             buffer[pos] = new BufferChar(text.charAt(i));
             pos++;
@@ -1165,7 +1332,7 @@ public class Screen {
     }
 
     public void nullify(int col, int row, int len) {
-        int pos = (row * 80) + col;
+        int pos = (row * columns) + col;
         for (int i = 0; i < len; i++) {
             buffer[pos] = null;
             pos++;
@@ -1173,7 +1340,7 @@ public class Screen {
     }
 
     public Field getFieldAt(int col, int row) {
-        int pos = (row * 80) + col;
+        int pos = (row * columns) + col;
 
         Field[] fields = calculateFields();
         Field currentField = fields[0];
@@ -1199,18 +1366,19 @@ public class Screen {
         if (listener == null) {
             return;
         }
-        
+
         if (!this.datastreamListeners.contains(listener)) {
             this.datastreamListeners.add(listener);
         }
     }
-    
+
     public synchronized void unregisterDatastreamListener(IDatastreamListener listener) {
         this.datastreamListeners.remove(listener);
     }
-    
+
     public List<IDatastreamListener> getDatastreamListeners() {
         return this.datastreamListeners;
     }
+
 
 }

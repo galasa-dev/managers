@@ -72,10 +72,15 @@ public class BufferStartOfField implements IBufferHolder {
     public void setFieldModified() {
         this.fieldModifed = true;
     }
+    
+    public void clearFieldModified() {
+        this.fieldModifed = false;
+    }
 
     @Override
     public String getStringWithoutNulls() {
         return " ";
     }
+
 
 }
