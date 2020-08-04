@@ -116,6 +116,24 @@ public class Network3270Test {
     }
 
     @Test
+    public void testWontTimingMark() throws NetworkException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //x'fffc06 is IAC WONT TIMING_MARK
+        baos.write(0xff);
+        baos.write(0xfc);
+        baos.write(0x06);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+        try {
+            NetworkThread networkThread = new NetworkThread(null, null, network, bais);
+            networkThread.processMessage(bais);
+        } catch (NetworkException e) {
+            fail("Failed to ignore a IAC WONT TIMING_MARK");
+        }
+    }
+
+    @Test
     public void testShortTimingMark() throws NetworkException, IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         //x'fffd is IAC DO
