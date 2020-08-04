@@ -66,6 +66,8 @@ public interface ITerminal {
     ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException;
     
     ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal backSpace() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 

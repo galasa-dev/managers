@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
@@ -18,11 +17,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos3270.IDatastreamListener;
-import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.IDatastreamListener.DatastreamDirection;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
-import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
+import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
+import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -111,13 +111,15 @@ public class NetworkThread extends Thread {
                 throw new NetworkException("Missing remaining 2 bytes of the telnet 3270 IAC header");
             }
             //respond with DON'T_TIMING_MARK
-            if(remainingHeader[0] == Network.DO && remainingHeader[1] == Network.TIMING_MARK){
+            if (remainingHeader[0] == Network.DO && remainingHeader[1] == Network.TIMING_MARK){
                 byte [] response = new byte[3];
                 response[0] = Network.IAC;
                 response[1] = Network.DONT;    
                 response[2] = Network.TIMING_MARK;
                 network.sendDatastream(response);
-            }else{
+            } else if (remainingHeader[0] == Network.WONT && remainingHeader[1] == Network.TIMING_MARK){
+                //IGNORE
+            } else {
                 throw new NetworkException("In IAC request not supported, Command was: " + remainingHeader[0] + " " + remainingHeader[1]);
             }
             return;
@@ -203,6 +205,9 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderInsertCursor.ID:
                         order = new OrderInsertCursor();
+                        break;
+                    case OrderEraseUnprotectedToAddress.ID:
+                        order = new OrderEraseUnprotectedToAddress(buffer);
                         break;
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });

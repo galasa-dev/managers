@@ -218,6 +218,12 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal backSpace() throws KeyboardLockedException, FieldNotFoundException {
+        screen.backSpace();
+        return this;
+    }
+
+    @Override
     public ITerminal enter() throws KeyboardLockedException, NetworkException, TerminalInterruptedException {
         network.sendDatastream(screen.aid(AttentionIdentification.ENTER));
         return this;

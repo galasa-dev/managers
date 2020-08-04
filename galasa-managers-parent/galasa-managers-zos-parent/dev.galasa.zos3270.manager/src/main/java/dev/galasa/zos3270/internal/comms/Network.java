@@ -14,6 +14,8 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLContext;
@@ -33,6 +35,7 @@ public class Network {
 
     public static final byte    DONT            = -2;
     public static final byte    DO              = -3;
+    public static final byte    WONT            = -4;
     public static final byte    WILL            = -5;
     public static final byte    SB              = -6;
     public static final byte    SE              = -16;
@@ -72,6 +75,9 @@ public class Network {
     private OutputStream        outputStream;
     private InputStream         inputStream;
 
+    private KeepAlive           keepAlive;
+    private Instant             lastSend        = Instant.now();
+
     public Network(String host, int port) {
         this(host, port, false);
     }
@@ -106,6 +112,9 @@ public class Network {
             this.outputStream = newOutputStream;
             this.inputStream = newInputStream;
             newSocket = null;
+            
+            this.keepAlive = new KeepAlive();
+            this.keepAlive.start();
 
             return true;
         } catch (Exception e) {
@@ -120,7 +129,7 @@ public class Network {
             }
         }
     }
-    
+
     public boolean isConnected() {
         return (this.socket != null);
     }
@@ -158,6 +167,9 @@ public class Network {
             socket = null;
             inputStream = null;
             outputStream = null;
+            
+            this.keepAlive.shutdown = true;
+            this.keepAlive.interrupt();
         }
     }
 
@@ -193,12 +205,12 @@ public class Network {
             outputStream.flush();
 
             expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE);
-            
+
             int byteIs = inputStream.read();
             if (byteIs == -1) {
                 throw new NetworkException("Negotiation terminated early, attempting to get IS");
             }
-            
+
             if (byteIs != IS) {
                 if (byteIs == REJECT) {
                     rejectedDeviceType(inputStream);
@@ -206,7 +218,7 @@ public class Network {
                     throw new NetworkException("Unexpected byte for IAC SB TN3270E DEVICE_TYPE " + byteIs);
                 }
             }
-            
+
 
             baos = new ByteArrayOutputStream();
             byte[] data = new byte[1];
@@ -266,13 +278,13 @@ public class Network {
 
     private void rejectedDeviceType(InputStream inputStream) throws NetworkException, IOException {
         expect(inputStream, REASON);
-        
+
         int reasonCode = inputStream.read();
-        
+
         if (reasonCode == -1) {
             throw new NetworkException("Missing reason code for rejected device type");
         }
-        
+
         switch(reasonCode) {
             case CONN_PARTNER:
                 throw new NetworkException("Device negotiation failed do to CONN_PARTNER");
@@ -316,20 +328,47 @@ public class Network {
     }
 
     public void sendDatastream(OutputStream outputStream, byte[] outboundDatastream) throws NetworkException {
-        try {
-            byte[] header = new byte[] { 0, 0, 0, 0, 0 };
-            byte[] trailer = new byte[] { (byte) 0xff, (byte) 0xef };
+        synchronized(outputStream) {
+            try {
+                byte[] header = new byte[] { 0, 0, 0, 0, 0 };
+                byte[] trailer = new byte[] { (byte) 0xff, (byte) 0xef };
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(header);
-            baos.write(outboundDatastream);
-            baos.write(trailer);
-            outputStream.write(baos.toByteArray());
-            outputStream.flush();
-        } catch (IOException e) {
-            throw new NetworkException("Unable to write outbound datastream", e);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                baos.write(header);
+                baos.write(outboundDatastream);
+                baos.write(trailer);
+                outputStream.write(baos.toByteArray());
+                outputStream.flush();
+                
+                this.lastSend = Instant.now();
+            } catch (IOException e) {
+                throw new NetworkException("Unable to write outbound datastream", e);
+            }
+        }
+    }
+
+    private void sendKeepAlive() {
+        if (this.outputStream == null) {
+            return;
+        }
+        
+        if (this.lastSend.plus(10, ChronoUnit.MINUTES).isAfter(Instant.now())) {
+            return;
         }
 
+        synchronized(this.outputStream) {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                baos.write(IAC);
+                baos.write(DO);
+                baos.write(TIMING_MARK);
+                outputStream.write(baos.toByteArray());
+                outputStream.flush();
+                this.lastSend = Instant.now();
+            } catch(Exception e) {
+                logger.error("Failed to write DO TIMING MARK",e);
+            }
+        }
     }
 
     public String getHostPort() {
@@ -353,6 +392,28 @@ public class Network {
             return new X509Certificate[0];
         }
 
+    }
+
+    private class KeepAlive extends Thread {
+        
+        private boolean shutdown = false;
+
+        public KeepAlive() {
+            setName("3270 keep alive");
+        }
+
+        @Override
+        public void run() {
+            while(!shutdown) {
+                sendKeepAlive();
+                
+                try {
+                    Thread.sleep(5000);
+                } catch(Exception e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
     }
 
 }
