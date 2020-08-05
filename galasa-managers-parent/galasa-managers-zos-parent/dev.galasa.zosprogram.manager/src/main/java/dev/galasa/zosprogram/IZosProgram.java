@@ -8,6 +8,7 @@ package dev.galasa.zosprogram;
 import java.lang.reflect.Field;
 
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosprogram.ZosProgram.Language;
 
@@ -58,4 +59,10 @@ public interface IZosProgram {
      * @throws ZosProgramException 
      */
     public String getProgramSource() throws ZosProgramException;
+
+    /**
+     * Return the compile zOS Batch Job 
+     * @return the batch job
+     */
+    public IZosBatchJob getCompileJob();
 }

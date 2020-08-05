@@ -15,6 +15,7 @@ import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosprogram.IZosProgram;
@@ -34,29 +35,31 @@ public class ZosProgramImpl implements IZosProgram {
     private String name;
     private String location;
     private Language language;
-    private boolean isCics;
+    private boolean cics;
     private IZosDataset loadlib;
     private String programSource;
+    private IZosBatchJob compileJob;
 
-    public ZosProgramImpl(Field field, String imageTag, String name, String location, Language language, boolean isCics, String loadlib) throws ZosProgramException {
+    public ZosProgramImpl(Field field, String imageTag, String name, String location, Language language, boolean cics, String loadlib) throws ZosProgramException {
         this.field = field;
         try {
-            initalise(ZosProgramManagerImpl.zosManager.getImageForTag(imageTag), name, location, language, isCics, loadlib);
+            initalise(ZosProgramManagerImpl.zosManager.getImageForTag(imageTag), name, location, language, cics, loadlib);
         } catch (ZosManagerException e) {
             throw new ZosProgramException(e);
         }
     }
 
-    public ZosProgramImpl(IZosImage image, String name, String location, Language language, boolean isCics, String loadlib) throws ZosProgramException {
-        initalise(image, name, location, language, isCics, loadlib);
+    public ZosProgramImpl(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramException {
+        this.programSource = programSource;
+        initalise(image, name, null, language, cics, loadlib);
     }
     
-    protected void initalise(IZosImage image, String name, String location, Language language, boolean isCics, String loadlib) throws ZosProgramException {
+    protected void initalise(IZosImage image, String name, String location, Language language, boolean cics, String loadlib) throws ZosProgramException {
         this.image = image;
         this.name = name;
         this.location = location;
         this.language = language;
-        this.isCics = isCics;
+        this.cics = cics;
                 
         setLoadlib(loadlib);
     }
@@ -82,7 +85,7 @@ public class ZosProgramImpl implements IZosProgram {
 
     @Override
     public boolean isCics() {
-        return this.isCics;
+        return this.cics;
     }
 
     @Override
@@ -107,6 +110,11 @@ public class ZosProgramImpl implements IZosProgram {
     public String toString() {
         return "name=" + name + ", location=" + location + ", language=" + language +  ", loadlib=" + loadlib + ", image=" + image;
     }
+
+    @Override
+    public IZosBatchJob getCompileJob() {
+        return this.compileJob;
+    }
     
     protected void setLoadlib(Object loadlib) throws ZosProgramException {
         if (loadlib != null) {
@@ -114,12 +122,16 @@ public class ZosProgramImpl implements IZosProgram {
                 this.loadlib = (IZosDataset) loadlib;
             } else {
                 try {
-                    this.loadlib = ZosProgramManagerImpl.zosFileManager.getZosFileHandler().newDataset((String) loadlib, image);
+                    this.loadlib = ZosProgramManagerImpl.zosFile.getZosFileHandler().newDataset((String) loadlib, image);
                 } catch (ZosFileManagerException e) {
                     throw new ZosProgramException("Unable to instantiate loadlib data set object", e); 
                 }
             }
         }
+    }
+
+    protected void setCompileJob(IZosBatchJob compileJob) {
+        this.compileJob = compileJob;
     }
 
     protected void loadProgramSource() throws ZosProgramException {
@@ -140,5 +152,9 @@ public class ZosProgramImpl implements IZosProgram {
         } catch (TestBundleResourceException | IOException e) {
             throw new ZosProgramException("Problem loading program source", e);
         }
+    }
+    
+    protected String logForField() {
+        return (getField() != null? " for field \"" + getField().getName() + "\"": "");
     }
 }
