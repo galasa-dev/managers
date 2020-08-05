@@ -8,13 +8,15 @@ package dev.galasa.zosprogram;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosprogram.ZosProgram.Language;
 
-public class TestExeptions {
+public class TestExeptionsAndEnums {
     
     private static final String EXCEPTION_MESSAGE = "exception-message";
     
@@ -35,6 +37,18 @@ public class TestExeptions {
             description.appendText("\"" + EXCEPTION_CAUSE + "\"");
         }
     };
+    
+    @Test
+    public void testLanguage() {
+        Assert.assertEquals("Problem with LanguageExtended", ".cbl", Language.COBOL.getFileExtension());
+
+        Assert.assertEquals("Problem with LanguageExtended", Language.COBOL, Language.fromExtension(".cbl"));
+        
+        String extension = ".xxx";
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Extension " + extension  + " does not match supported languages");
+        Language.fromExtension(extension);
+    }
     
     @Test
     public void testZosProgramException1() throws ZosProgramException {

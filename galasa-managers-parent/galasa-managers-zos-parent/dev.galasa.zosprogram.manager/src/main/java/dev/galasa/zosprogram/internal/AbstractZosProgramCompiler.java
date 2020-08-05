@@ -23,12 +23,15 @@ import dev.galasa.zosprogram.ZosProgramManagerException;
 
 public class AbstractZosProgramCompiler {
     
-    private static final Log logger = LogFactory.getLog(AbstractZosProgramCompiler.class);
+    private static final Log logger = LogFactory.getLog(AbstractZosProgramCompiler.class); 
     
     protected ZosProgramImpl zosProgram;
-
-    private IZosBatchJob compileJob;
-
+    
+    protected static final String NEWLINE = "\n";
+    protected static final String LOADSET = "DISP=(OLD,DELETE),DSN=&&LOADSET";
+    protected static final String DD = "//         DD ";
+    protected static final String DD_ASTERISK = "//         DD *";
+    protected static final String LKED_SYSIN_NAME_REPLACE = "  NAME ++NAME++(R)";
 
     public AbstractZosProgramCompiler(ZosProgramImpl zosProgram) throws ZosProgramException {
         this.zosProgram = zosProgram;
@@ -56,34 +59,32 @@ public class AbstractZosProgramCompiler {
     }
 
     protected void submitCompileJob(String compileJcl) throws ZosProgramException {
+        IZosBatchJob compileJob;
         try {
             compileJob = ZosProgramManagerImpl.getZosBatch(zosProgram.getImage()).submitJob(compileJcl, null);
+            zosProgram.setCompileJob(compileJob);
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem submitting compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + getFieldName(), e);
+            throw new ZosProgramException("Problem submitting compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField(), e);
         }
         int maxCc;
         try {
             maxCc = compileJob.waitForJob();
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem waiting for compile job for " + getFieldName() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
+            throw new ZosProgramException("Problem waiting for compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
         }
         try {
             compileJob.saveOutputToTestResultsArchive();
             compileJob.purge();
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem saving compile job output for " + getFieldName() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
+            throw new ZosProgramException("Problem saving compile job output for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
         }
         if (maxCc < 0 || maxCc > 8) {
-            String message = "Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + " for field \"" + getFieldName() + "\" failed: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId();
+            String message = "Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + " failed: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId();
             logger.error(message);
             throw new ZosProgramException(message);
         } else {
-            logger.info("Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + " for field \"" + getFieldName() + "\" complete: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId());
+            logger.info("Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + " complete: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId());
         }
-    }
-    
-    protected String getFieldName() {
-        return (zosProgram.getField() != null? " for field \"" + zosProgram.getField().getName() + "\"": "");
     }
     
     protected String getSkelName() {
@@ -98,14 +99,13 @@ public class AbstractZosProgramCompiler {
         if (datasetList.isEmpty()) {
             return "DUMMY";
         }
-        StringBuilder concatenation = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         Iterator<String> it = datasetList.iterator();
         while (it.hasNext()) {
-            concatenation.append("DISP=SHR,DSN=");
-            concatenation.append(it.next());
-            concatenation.append("\n//         DD ");
+            sb.append("DISP=SHR,DSN=");
+            sb.append(it.next());
+            sb.append("\n//         DD ");
         }
-        concatenation.delete(concatenation.length()-15, concatenation.length());
-        return concatenation.toString();
+        return sb.delete(sb.length()-15, sb.length()).toString();
     }
 }

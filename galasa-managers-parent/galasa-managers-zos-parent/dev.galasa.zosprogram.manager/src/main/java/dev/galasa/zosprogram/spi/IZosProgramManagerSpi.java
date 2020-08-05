@@ -19,16 +19,23 @@ import dev.galasa.zosprogram.ZosProgramManagerException;
  */
 public interface IZosProgramManagerSpi {
     /**
-     * Returns a zOS Program compiled and linked on a single image
+     * Returns a new zOS Program
      * @param image The zOS Image
      * @param name The program name
-     * @param location Path to the location of the program source in the bundle. This can be either the full path including the file name
-     * or the directory containing the source with the name specified in the name attribute with the extension specified in the language attribute.
+     * @param programSource The program source in the bundle
      * @param language The programming language. See {@link ZosProgram.Language}
-     * @param isCics Is a CICS program.
+     * @param cics Is a CICS program.
      * @param loadlib The load module data set name
      * @return The zOS Program
      * @throws ZosProgramManagerException
      */
-    public IZosProgram newZosProgram(@NotNull IZosImage image, @NotNull String name, @NotNull String location, @NotNull Language language, boolean isCics, String loadlib) throws ZosProgramManagerException;
+    public IZosProgram newZosProgram(@NotNull IZosImage image, @NotNull String name, @NotNull String source, @NotNull Language language, boolean cics, String loadlib) throws ZosProgramManagerException;
+
+    /**
+     * Compile and link the zOS Program
+     * @param zosProgram the program
+     * @return
+     * @throws ZosProgramManagerException
+     */
+    public IZosProgram compile(@NotNull IZosProgram zosProgram) throws ZosProgramManagerException;
 }

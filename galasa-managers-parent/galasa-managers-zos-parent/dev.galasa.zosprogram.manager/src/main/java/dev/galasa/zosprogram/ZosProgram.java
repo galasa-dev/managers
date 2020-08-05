@@ -56,9 +56,9 @@ public @interface ZosProgram {
     Language language();
     
     /**
-     * Is a CICS program.
+     * Is a CICS program and requires the CICS translator.
      */
-    boolean isCics() default false;
+    boolean cics() default false;
 
     /**
      * The load module data set name
@@ -73,11 +73,11 @@ public @interface ZosProgram {
     /**
      * Enumeration of supported languages
      */
-    public enum Language{
+    public enum Language {
         /**
          * COBOL program with <code>.cbl</code> file extension 
          */
-        COBOL(".cbl");
+        COBOL(".cbl"),
 //        /**
 //         * C program with <code>.c</code> file extension 
 //         */
@@ -94,6 +94,10 @@ public @interface ZosProgram {
 //         * Assembler 64 program with <code>.asm<\code> file extension 
 //         */
 //        ASSEMBLER_64(".asm");
+        /**
+         * Do Not Use 
+         */
+        INVALID("");
         
         private final String extension;
         
