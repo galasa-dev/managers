@@ -7,13 +7,13 @@ package dev.galasa.selenium.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -26,6 +26,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.galasa.ResultArchiveStoreContentType;
+import dev.galasa.SetContentType;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
@@ -642,8 +644,8 @@ public class WebPageImpl implements IWebPage {
     public IWebPage waitForPageLoad(int secondsTimeout) {
         WebDriverWait wait = new WebDriverWait(driver, secondsTimeout);
         wait.until(webDriver -> 
-            String.valueOf("complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")))
-        );
+        String.valueOf("complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")))
+                );
         return this;
     }
 
@@ -652,7 +654,9 @@ public class WebPageImpl implements IWebPage {
         File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
         String time = String.valueOf(Instant.now().toEpochMilli());
         try {
-            Files.copy(scrFile.toPath(), screenshotRasDirectory.resolve("screenshot_" + time + ".png"));
+            try(OutputStream os = Files.newOutputStream(screenshotRasDirectory.resolve("screenshot_" + time + ".png"), new SetContentType(ResultArchiveStoreContentType.PNG))) {
+                Files.copy(scrFile.toPath(), os); 
+            }
         } catch (IOException e) {
             throw new SeleniumManagerException("Unable to take screenshot", e);
         }
