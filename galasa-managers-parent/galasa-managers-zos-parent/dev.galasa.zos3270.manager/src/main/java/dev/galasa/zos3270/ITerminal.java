@@ -55,6 +55,8 @@ public interface ITerminal {
     
     ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException;
 
+    ITerminal eraseInput() throws KeyboardLockedException, FieldNotFoundException;
+
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
     
     ITerminal backTab() throws FieldNotFoundException, KeyboardLockedException;
