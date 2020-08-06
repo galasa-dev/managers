@@ -36,7 +36,7 @@ public class BackSpaceTest {
      * 
      * @throws Exception
      */
-    //    @Test 
+    @Test 
     public void emptyScreen() throws Exception {
         Screen screen = new Screen(10, 2, null);
         screen.erase();
@@ -61,7 +61,7 @@ public class BackSpaceTest {
      * 
      * @throws Exception
      */
-    //    @Test 
+    @Test 
     public void testGoldenPath() throws Exception {
 
         Screen screen = new Screen(10, 2, null);
@@ -95,7 +95,7 @@ public class BackSpaceTest {
      * 
      * @throws Exception
      */
-//    @Test 
+    @Test 
     public void testProtectedScreen() throws Exception {
 
         Screen screen = new Screen(10, 2, null);

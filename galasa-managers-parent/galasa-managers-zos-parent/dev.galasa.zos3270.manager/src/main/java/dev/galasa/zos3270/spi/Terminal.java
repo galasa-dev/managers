@@ -170,6 +170,12 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal eraseInput() throws KeyboardLockedException, FieldNotFoundException {
+        screen.eraseInput();
+        return this;
+    }
+
+    @Override
     public ITerminal tab() throws KeyboardLockedException, FieldNotFoundException {
         screen.tab();
         return this;

@@ -767,6 +767,59 @@ public class Screen {
     }
 
 
+    public synchronized void eraseInput() throws KeyboardLockedException, FieldNotFoundException {
+        if (keyboardLockSet) {
+            throw new KeyboardLockedException("Unable to erase input as keyboard is locked");
+        }
+
+        boolean unprotected = false;
+        BufferStartOfField startOfFieldUnprotected = null;
+
+        // *** Check to see if the screen is wrapped or unformatted
+        if (!(this.buffer[0] instanceof BufferStartOfField)) {
+            BufferStartOfField wrapSoField = null;
+            for (int i = this.buffer.length - 1; i >= 0; i--) {
+                IBufferHolder bh = this.buffer[i];
+                if (bh instanceof BufferStartOfField) {
+                    wrapSoField = (BufferStartOfField) bh;
+                    break;
+                }
+            }
+
+            if (wrapSoField == null) {
+                unprotected = true;  // unformatted, screen, so all unprotected
+            } else {
+                unprotected = !wrapSoField.isProtected();
+                startOfFieldUnprotected = wrapSoField;
+            }
+        }
+        
+        
+        
+        for(int i = 0; i < this.screenSize; i++) {
+            IBufferHolder bh = this.buffer[i];
+            
+            if (bh instanceof BufferStartOfField) {
+                BufferStartOfField sof = (BufferStartOfField) bh;
+                unprotected = !sof.isProtected();
+                if (unprotected) {
+                    startOfFieldUnprotected = sof;
+                } else {
+                    startOfFieldUnprotected = null;
+                }
+            } else {
+                if (unprotected) {
+                    this.buffer[i] = null;
+                    if (startOfFieldUnprotected != null) {
+                        startOfFieldUnprotected.setFieldModified();
+                    }
+                }
+            }
+        }
+        
+    }
+
+
     public synchronized void tab() throws KeyboardLockedException, FieldNotFoundException {
         if (keyboardLockSet) {
             throw new KeyboardLockedException("Unable to move cursor as keyboard is locked");
