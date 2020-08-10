@@ -22,9 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.ipnetwork.IIpHost;
-import dev.galasa.ipnetwork.IIpPort;
-import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -36,6 +33,9 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.framework.spi.utils.DssUtils;
+import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.ipnetwork.IIpPort;
+import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zos.ZosIpHost;
@@ -439,6 +439,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             } else {
                 logger.info(LOG_ZOS_IMAGE + zosImage.getImageID() + " selected");                
             }
+        }
+        if (zosImage == null) {
+            throw new ZosManagerException("zOS image \"" + imageId + "\" not defined");
         }
         return zosImage;
     }
