@@ -48,7 +48,6 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.ipnetwork.internal.IpNetworkManagerImpl;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
-import dev.galasa.zos.ZosManagerField;
 import dev.galasa.zos.internal.ZosManagerImpl.ImageUsage;
 import dev.galasa.zos.internal.properties.BatchExtraBundle;
 import dev.galasa.zos.internal.properties.ClusterIdForTag;
@@ -63,7 +62,6 @@ import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
-import dev.galasa.zos.spi.ZosImageDependencyField;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
@@ -577,24 +575,38 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
         Assert.assertEquals("getImage() should return the expected value", zosProvisionedImageMock1, zosManagerSpy.getImage(IMAGE_ID_1));
         Assert.assertEquals("getImage() should log specified message", "zOS Image " + IMAGE_ID_1 + " selected with slot name "+ SLOT_NAME, logMessage);
-        
-        images.clear();
-        images.put(IMAGE_ID, zosProvisionedImageMock);
+    }
+    
+    @Test
+    public void testGetImageException1() throws ZosManagerException {
+        HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
+        ArrayList<ImageUsage> definedImages = new ArrayList<>();
+        ZosProvisionedImageImpl zosProvisionedImageMock = Mockito.mock(ZosProvisionedImageImpl.class);
+        images.put(IMAGE_ID_1, zosProvisionedImageMock);
         Whitebox.setInternalState(zosManagerSpy, "images", images);
-        definedImages.clear();
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
-        Assert.assertEquals("getImage() should return the expected value", null, zosManagerSpy.getImage(IMAGE_ID_1));
-        
-        images.clear();
-        images.put(IMAGE_ID, zosProvisionedImageMock);
+        exceptionRule.expect(ZosManagerException.class);
+        exceptionRule.expectMessage("zOS image \"" + IMAGE_ID + "\" not defined");
+        zosManagerSpy.getImage(IMAGE_ID);
+    }
+    
+    @Test
+    public void testGetImageException2() throws ZosManagerException {
+        HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
+        ArrayList<ImageUsage> definedImages = new ArrayList<>();
+        ZosProvisionedImageImpl zosProvisionedImageMock = Mockito.mock(ZosProvisionedImageImpl.class);
+        Mockito.when(zosProvisionedImageMock.getImageID()).thenReturn(IMAGE_ID);
+        Mockito.when(zosProvisionedImageMock.getSlotName()).thenReturn(SLOT_NAME);
+        Mockito.doReturn(99.9f).when(zosProvisionedImageMock).getCurrentUsage();
+        Mockito.when(zosProvisionedImageMock.allocateImage()).thenReturn(false);
+        Mockito.when(zosProvisionedImageMock.allocateImage()).thenReturn(false);
+        images.put(IMAGE_ID_1, zosProvisionedImageMock);
+        definedImages.add(new ImageUsage(zosProvisionedImageMock));
         Whitebox.setInternalState(zosManagerSpy, "images", images);
-        Mockito.when(zosProvisionedImageMock1.allocateImage()).thenReturn(false);
-        Mockito.when(zosProvisionedImageMock2.allocateImage()).thenReturn(false);
-        definedImages.clear();
-        definedImages.add(new ImageUsage(zosProvisionedImageMock2));
-        definedImages.add(new ImageUsage(zosProvisionedImageMock1));
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
-        Assert.assertEquals("getImage() should return the expected value", null, zosManagerSpy.getImage(IMAGE_ID_1));
+        exceptionRule.expect(ZosManagerException.class);
+        exceptionRule.expectMessage("zOS image \"" + IMAGE_ID + "\" not defined");
+        zosManagerSpy.getImage(IMAGE_ID);
     }
     
     @Test
