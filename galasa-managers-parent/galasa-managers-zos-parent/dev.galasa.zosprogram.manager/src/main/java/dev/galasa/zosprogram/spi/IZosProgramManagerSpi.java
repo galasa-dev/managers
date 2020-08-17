@@ -30,12 +30,4 @@ public interface IZosProgramManagerSpi {
      * @throws ZosProgramManagerException
      */
     public IZosProgram newZosProgram(@NotNull IZosImage image, @NotNull String name, @NotNull String source, @NotNull Language language, boolean cics, String loadlib) throws ZosProgramManagerException;
-
-    /**
-     * Compile and link the zOS Program
-     * @param zosProgram the program
-     * @return
-     * @throws ZosProgramManagerException
-     */
-    public IZosProgram compile(@NotNull IZosProgram zosProgram) throws ZosProgramManagerException;
 }

@@ -21,6 +21,7 @@ import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosprogram.IZosProgram;
 import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.ZosProgramException;
+import dev.galasa.zosprogram.ZosProgramManagerException;
 
 /**
  * Implementation of {@link IZosProgram}
@@ -39,11 +40,12 @@ public class ZosProgramImpl implements IZosProgram {
     private IZosDataset loadlib;
     private String programSource;
     private IZosBatchJob compileJob;
+    private boolean compile;
 
-    public ZosProgramImpl(Field field, String imageTag, String name, String location, Language language, boolean cics, String loadlib) throws ZosProgramException {
+    public ZosProgramImpl(Field field, String imageTag, String name, String location, Language language, boolean cics, String loadlib, boolean compile) throws ZosProgramException {
         this.field = field;
         try {
-            initalise(ZosProgramManagerImpl.zosManager.getImageForTag(imageTag), name, location, language, cics, loadlib);
+            initalise(ZosProgramManagerImpl.zosManager.getImageForTag(imageTag), name, location, language, cics, loadlib, compile);
         } catch (ZosManagerException e) {
             throw new ZosProgramException(e);
         }
@@ -51,15 +53,16 @@ public class ZosProgramImpl implements IZosProgram {
 
     public ZosProgramImpl(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramException {
         this.programSource = programSource;
-        initalise(image, name, null, language, cics, loadlib);
+        initalise(image, name, null, language, cics, loadlib, false);
     }
     
-    protected void initalise(IZosImage image, String name, String location, Language language, boolean cics, String loadlib) throws ZosProgramException {
+    protected void initalise(IZosImage image, String name, String location, Language language, boolean cics, String loadlib, boolean compile) throws ZosProgramException {
         this.image = image;
         this.name = name;
         this.location = location;
         this.language = language;
         this.cics = cics;
+        this.compile = compile;
                 
         setLoadlib(loadlib);
     }
@@ -156,5 +159,35 @@ public class ZosProgramImpl implements IZosProgram {
     
     protected String logForField() {
         return (getField() != null? " for field \"" + getField().getName() + "\"": "");
+    }
+
+    @Override
+    public IZosProgram compile() throws ZosProgramManagerException {
+        logger.info("Compile " + getLanguage() + " program \"" + getName() + "\"" + logForField());
+        switch (getLanguage()) {
+        case ASSEMBLER:
+            ZosAssemblerProgramCompiler assemblerProgram = new ZosAssemblerProgramCompiler(this);
+            assemblerProgram.compile();
+            break;
+        case COBOL:
+            ZosCobolProgramCompiler cobolProgram = new ZosCobolProgramCompiler(this);
+            cobolProgram.compile();
+            break;
+        case C:
+            ZosCProgramCompiler cProgram = new ZosCProgramCompiler(this);
+            cProgram.compile();
+            break;
+        case PL1:
+            ZosPl1ProgramCompiler pl1Program = new ZosPl1ProgramCompiler(this);
+            pl1Program.compile();
+            break;
+        default:
+            throw new ZosProgramManagerException("Invalid program language: " + getLanguage());
+        }
+        return this;
+    }
+
+    protected boolean getCompile() {
+        return this.compile;
     }
 }

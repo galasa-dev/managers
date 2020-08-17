@@ -41,11 +41,11 @@ import dev.galasa.zosprogram.internal.properties.ProgramLanguageLinkSyslibs;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ProgramLanguageDatasetPrefix.class, LanguageEnvironmentDatasetPrefix.class, ProgramLanguageCompileSyslibs.class, ProgramLanguageLinkSyslibs.class, CICSDatasetPrefix.class})
-public class TestZosCobolProgramCompiler {
+public class TestZosCProgramCompiler {
     
-    private ZosCobolProgramCompiler zosCobolProgramCompiler;
+    private ZosCProgramCompiler zosCProgramCompiler;
     
-    private ZosCobolProgramCompiler zosCobolProgramCompilerSpy;
+    private ZosCProgramCompiler zosCProgramCompilerSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -70,7 +70,7 @@ public class TestZosCobolProgramCompiler {
 
     private static final String NAME = "NAME";
 
-    private static final Language LANGUAGE = Language.COBOL;
+    private static final Language LANGUAGE = Language.C;
 
     private static final String SOURCE = "SOURCE";
 
@@ -78,7 +78,7 @@ public class TestZosCobolProgramCompiler {
 
     @Before
     public void setup() throws Exception {
-        Mockito.when(zosProgramMock.getLanguage()).thenReturn(Language.COBOL);
+        Mockito.when(zosProgramMock.getLanguage()).thenReturn(Language.C);
         Mockito.when(zosProgramMock.getLoadlib()).thenReturn(loadlibMock);
         Mockito.when(zosProgramMock.getImage()).thenReturn(zosImageMock);
         Mockito.when(zosProgramMock.getName()).thenReturn(NAME);
@@ -97,8 +97,8 @@ public class TestZosCobolProgramCompiler {
         Mockito.when(CICSDatasetPrefix.get(Mockito.any())).thenReturn(Arrays.asList());
         Mockito.when(zosProgramMock.getLoadlib()).thenReturn(loadlibMock);
         
-        zosCobolProgramCompiler = new ZosCobolProgramCompiler(zosProgramMock);
-        zosCobolProgramCompilerSpy = Mockito.spy(zosCobolProgramCompiler);
+        zosCProgramCompiler = new ZosCProgramCompiler(zosProgramMock);
+        zosCProgramCompilerSpy = Mockito.spy(zosCProgramCompiler);
     }
     
     @Test
@@ -106,43 +106,43 @@ public class TestZosCobolProgramCompiler {
         HashMap<String, Object> parameters = new HashMap<>();
         Mockito.when(zosProgramMock.isCics()).thenReturn(true);
         parameters.put("LKED.SYSLIB", "DUMMY");
-        parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
-        parameters.put("COBOL.SYSLIB", "DUMMY");
+        parameters.put("LKED.PARM", "'AMODE=31,MAP,RENT,DYNAM=DLL,CASE=MIXED'");
+        parameters.put("C.SYSLIB", "DUMMY");
         parameters.put("SOURCE", SOURCE);
-        parameters.put("COBOL.PARM", "'MAP,OFFSET,CICS'");
+        parameters.put("C.PARM", "'SOURCE,LIST,RENT,CICS'");
         parameters.put("SYSLMOD", LOADLIB);
-        parameters.put("TYPE", "COBOL/CICS");
+        parameters.put("TYPE", "C/CICS");
         parameters.put("PROGRAM", NAME);
-        parameters.put("COBOL.STEPLIB", "DUMMY");
-        parameters.put("LKED.SYSIN",
+        parameters.put("C.STEPLIB", "DUMMY");
+        parameters.put("LKED.SYSIN", 
                 "*\n" + 
                 "  INCLUDE SYSLIB(DFHELII)\n" + 
                 "//         DD DISP=(OLD,DELETE),DSN=&&SYSLIN\n" + 
                 "//         DD *\n" + 
                 "  NAME NAME(R)");
-        Assert.assertEquals("Error in buildParameters() method", parameters, zosCobolProgramCompilerSpy.buildParameters());
+        Assert.assertEquals("Error in buildParameters() method", parameters, zosCProgramCompilerSpy.buildParameters());
         
         parameters = new HashMap<>();
         Mockito.when(zosProgramMock.isCics()).thenReturn(false);
         parameters.put("LKED.SYSLIB", "DUMMY");
-        parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
-        parameters.put("COBOL.SYSLIB", "DUMMY");
+        parameters.put("LKED.PARM", "'AMODE=31,MAP,RENT,DYNAM=DLL,CASE=MIXED'");
+        parameters.put("C.SYSLIB", "DUMMY");
         parameters.put("SOURCE", SOURCE);
-        parameters.put("COBOL.PARM", "'MAP,OFFSET'");
+        parameters.put("C.PARM", "'SOURCE,LIST,RENT'");
         parameters.put("SYSLMOD", LOADLIB);
-        parameters.put("TYPE", "COBOL/BATCH");
+        parameters.put("TYPE", "C/BATCH");
         parameters.put("PROGRAM", NAME);
-        parameters.put("COBOL.STEPLIB", "DUMMY");
+        parameters.put("C.STEPLIB", "DUMMY");
         parameters.put("LKED.SYSIN", 
                 "DISP=(OLD,DELETE),DSN=&&SYSLIN\n" + 
                 "//         DD *\n" + 
                 "  NAME NAME(R)");
-        Assert.assertEquals("Error in buildParameters() method", parameters, zosCobolProgramCompilerSpy.buildParameters());
+        Assert.assertEquals("Error in buildParameters() method", parameters, zosCProgramCompilerSpy.buildParameters());
         
         Mockito.when(ProgramLanguageDatasetPrefix.get(Mockito.any(), Mockito.any())).thenThrow(new ZosProgramManagerException());
         exceptionRule.expect(ZosProgramException.class);
         exceptionRule.expectMessage("Problem building compile JCL for " + LANGUAGE + " program " + NAME);
-        zosCobolProgramCompilerSpy.compile();
+        zosCProgramCompilerSpy.compile();
     }
     
     @Test
@@ -152,13 +152,13 @@ public class TestZosCobolProgramCompiler {
         List<String> lePrefix = new LinkedList<>();
         List<String> cicsPrefix = new LinkedList<>();
         String datasetList = "";
-        Assert.assertEquals("Error in buildSteplib() method", datasetList, zosCobolProgramCompilerSpy.buildSteplib(languagePrefix, lePrefix, cicsPrefix));
+        Assert.assertEquals("Error in buildSteplib() method", datasetList, zosCProgramCompilerSpy.buildSteplib(languagePrefix, lePrefix, cicsPrefix));
 
         lePrefix.add("LE");
-        languagePrefix.add("COBOL");
+        languagePrefix.add("C");
         cicsPrefix.add("CICS");
-        datasetList = "COBOL.SIGYCOMP@LE.SCEERUN@LE.SCEERUN2@CICS.SDFHLOAD";
-        Assert.assertEquals("Error in buildSteplib() method", datasetList, zosCobolProgramCompilerSpy.buildSteplib(languagePrefix, lePrefix, cicsPrefix));
+        datasetList = "C.SCCNCMP@LE.SCEERUN@LE.SCEERUN2@CICS.SDFHLOAD";
+        Assert.assertEquals("Error in buildSteplib() method", datasetList, zosCProgramCompilerSpy.buildSteplib(languagePrefix, lePrefix, cicsPrefix));
     }
     
     @Test
@@ -168,13 +168,13 @@ public class TestZosCobolProgramCompiler {
         List<String> lePrefix = new LinkedList<>();
         List<String> cicsPrefix = new LinkedList<>();
         String datasetList = "";
-        Assert.assertEquals("Error in buildCompileSyslib() method", datasetList, zosCobolProgramCompilerSpy.buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
+        Assert.assertEquals("Error in buildCompileSyslib() method", datasetList, zosCProgramCompilerSpy.buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
 
         compileSyslibs.add("MY.SYSLIB");
         lePrefix.add("LE");
         cicsPrefix.add("CICS");
-        datasetList = "MY.SYSLIB@LE.SCEESAMP@CICS.SDFHCOB@CICS.SDFHMAC@CICS.SDFHSAMP";
-        Assert.assertEquals("Error in buildCompileSyslib() method", datasetList, zosCobolProgramCompilerSpy.buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
+        datasetList = "MY.SYSLIB@LE.SCEESAMP@CICS.SDFHC370@CICS.SDFHMAC@CICS.SDFHSAMP";
+        Assert.assertEquals("Error in buildCompileSyslib() method", datasetList, zosCProgramCompilerSpy.buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
     }
     
     @Test
@@ -184,18 +184,13 @@ public class TestZosCobolProgramCompiler {
         List<String> lePrefix = new LinkedList<>();
         List<String> cicsPrefix = new LinkedList<>();
         String datasetList = "";
-        Assert.assertEquals("Error in buildLinkSyslib() method", datasetList, zosCobolProgramCompilerSpy.buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
+        Assert.assertEquals("Error in buildLinkSyslib() method", datasetList, zosCProgramCompilerSpy.buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
 
         linkSyslibs.add("MY.SYSLIB");
         lePrefix.add("LE");
         cicsPrefix.add("CICS");
         datasetList = "MY.SYSLIB@CICS.SDFHLOAD@LE.SCEELKEX@LE.SCEELKED";
-        Assert.assertEquals("Error in buildLinkSyslib() method", datasetList, zosCobolProgramCompilerSpy.buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
-    }
-    
-    @Test
-    public void getGetSkelName() {
-        Assert.assertEquals("Error in getSkelName() method", "cobol.skel", zosCobolProgramCompilerSpy.getSkelName());
+        Assert.assertEquals("Error in buildLinkSyslib() method", datasetList, zosCProgramCompilerSpy.buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
     }
 
     private void setupFormatDatasetConcatenationAnswer() {
@@ -215,6 +210,6 @@ public class TestZosCobolProgramCompiler {
                 return sb.toString();
             }
         };
-        Mockito.doAnswer(answer).when(zosCobolProgramCompilerSpy).formatDatasetConcatenation(Mockito.any());
+        Mockito.doAnswer(answer).when(zosCProgramCompilerSpy).formatDatasetConcatenation(Mockito.any());
     }
 }
