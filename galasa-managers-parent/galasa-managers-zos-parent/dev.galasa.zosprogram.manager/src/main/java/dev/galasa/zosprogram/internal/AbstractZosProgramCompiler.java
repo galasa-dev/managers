@@ -28,9 +28,10 @@ public class AbstractZosProgramCompiler {
     protected ZosProgramImpl zosProgram;
     
     protected static final String NEWLINE = "\n";
-    protected static final String LOADSET = "DISP=(OLD,DELETE),DSN=&&LOADSET";
+    protected static final String SYSLIN = "DISP=(OLD,DELETE),DSN=&&SYSLIN";
     protected static final String DD = "//         DD ";
     protected static final String DD_ASTERISK = "//         DD *";
+    protected static final String LKED_SYSIN_ENTRY = "  ENTRY ++NAME++";
     protected static final String LKED_SYSIN_NAME_REPLACE = "  NAME ++NAME++(R)";
 
     public AbstractZosProgramCompiler(ZosProgramImpl zosProgram) throws ZosProgramException {
@@ -78,7 +79,7 @@ public class AbstractZosProgramCompiler {
         } catch (ZosBatchException e) {
             throw new ZosProgramException("Problem saving compile job output for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
         }
-        if (maxCc < 0 || maxCc > 8) {
+        if (maxCc < 0 || maxCc > 4) {
             String message = "Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + " failed: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId();
             logger.error(message);
             throw new ZosProgramException(message);
@@ -102,8 +103,13 @@ public class AbstractZosProgramCompiler {
         StringBuilder sb = new StringBuilder();
         Iterator<String> it = datasetList.iterator();
         while (it.hasNext()) {
-            sb.append("DISP=SHR,DSN=");
-            sb.append(it.next());
+            String dataset = it.next();
+            if (dataset.startsWith("ASIS-")) {
+                sb.append(dataset.substring(5));
+            } else {
+                sb.append("DISP=SHR,DSN=");
+                sb.append(dataset);
+            }
             sb.append("\n//         DD ");
         }
         return sb.delete(sb.length()-15, sb.length()).toString();

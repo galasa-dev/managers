@@ -213,5 +213,10 @@ public class TestAbstractZosProgramCompiler {
         datasetList.add("DSN2");
         concatenation = disp + "DSN1\n//         DD " + disp + "DSN2";
         Assert.assertEquals("Error in formatDatasetConcatenation() method", concatenation , abstractZosProgramCompilerSpy.formatDatasetConcatenation(datasetList));
+        
+        datasetList.clear();
+        datasetList.add("ASIS-DSN");
+        concatenation = "DSN";
+        Assert.assertEquals("Error in formatDatasetConcatenation() method", concatenation , abstractZosProgramCompilerSpy.formatDatasetConcatenation(datasetList));
     }
 }

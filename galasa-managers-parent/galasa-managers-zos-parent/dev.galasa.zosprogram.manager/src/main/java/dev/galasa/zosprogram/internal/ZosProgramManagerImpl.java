@@ -179,7 +179,11 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         setManagerBundleResources(artifactManager.getBundleResources(this.getClass()));
         setTestBundleResources(artifactManager.getBundleResources(getTestClass()));
         for (Entry<String, ZosProgramImpl> entry : zosPrograms.entrySet()) {
-            compile(entry.getValue());
+            if (entry.getValue().getCompile()) {
+                entry.getValue().compile();
+            } else {
+                logger.warn("WARNING: " + entry.getValue().getLanguage() + " program \"" + entry.getValue().getName() + "\"" + ((ZosProgramImpl) entry.getValue()).logForField() + " is set to \"compile = false\" and has not been compiled");
+            }
         }
     }
     
@@ -193,8 +197,9 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         Language language = annotationZosProgram.language();
         boolean cics = annotationZosProgram.cics();
         String loadlib = nulled(annotationZosProgram.loadlib());
+        boolean compile = annotationZosProgram.compile();
         
-        ZosProgramImpl zosProgram = new ZosProgramImpl(field, tag, name, location, language, cics, loadlib);
+        ZosProgramImpl zosProgram = new ZosProgramImpl(field, tag, name, location, language, cics, loadlib, compile);
         zosPrograms.put(field.getName(), zosProgram);
         
         return zosProgram;
@@ -204,20 +209,6 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
     @Override
     public IZosProgram newZosProgram(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramManagerException {
         return new ZosProgramImpl(image, name, programSource, language, cics, loadlib);
-    }
-    
-    @Override
-    public IZosProgram compile(IZosProgram zosProgram) throws ZosProgramManagerException {
-        logger.info("Compile " + zosProgram.getLanguage() + " program \"" + zosProgram.getName() + "\"" + ((ZosProgramImpl) zosProgram).logForField());
-        switch (zosProgram.getLanguage()) {
-        case COBOL:
-            ZosCobolProgramCompiler cobolProgram = new ZosCobolProgramCompiler((ZosProgramImpl) zosProgram);
-            cobolProgram.compile();
-            break;
-        default:
-            throw new ZosProgramManagerException("Invalid program language: " + zosProgram.getLanguage());
-        }
-        return zosProgram;
     }
 
 

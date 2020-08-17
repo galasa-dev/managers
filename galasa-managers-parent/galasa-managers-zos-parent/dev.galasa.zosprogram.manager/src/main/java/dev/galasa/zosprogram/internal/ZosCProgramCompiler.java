@@ -20,9 +20,9 @@ import dev.galasa.zosprogram.internal.properties.ProgramLanguageCompileSyslibs;
 import dev.galasa.zosprogram.internal.properties.ProgramLanguageDatasetPrefix;
 import dev.galasa.zosprogram.internal.properties.ProgramLanguageLinkSyslibs;
 
-public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
+public class ZosCProgramCompiler extends AbstractZosProgramCompiler {
 
-    public ZosCobolProgramCompiler(ZosProgramImpl zosProgram) throws ZosProgramException {
+    public ZosCProgramCompiler(ZosProgramImpl zosProgram) throws ZosProgramException {
         super(zosProgram);
     }
 
@@ -37,11 +37,11 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
             List<String> linkSyslibs = ProgramLanguageLinkSyslibs.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
             if (zosProgram.isCics()) {
                 parameters.put("TYPE", zosProgram.getLanguage().toString() + "/CICS");
-                parameters.put("COBOL.PARM", "'MAP,OFFSET,CICS'");
+                parameters.put("C.PARM", "'SOURCE,LIST,RENT,CICS'");
                 List<String> cicsPrefix = CICSDatasetPrefix.get(zosProgram.getImage().getImageID());
-                parameters.put("COBOL.STEPLIB", buildSteplib(languagePrefix, lePrefix, cicsPrefix));
-                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
-                parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
+                parameters.put("C.STEPLIB", buildSteplib(languagePrefix, lePrefix, cicsPrefix));
+                parameters.put("C.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
+                parameters.put("LKED.PARM", "'AMODE=31,MAP,RENT,DYNAM=DLL,CASE=MIXED'");
                 parameters.put("LKED.SYSLIB", buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
                 StringBuilder sb = new StringBuilder();
                 sb.append("*\n");
@@ -55,10 +55,10 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
                 parameters.put("LKED.SYSIN", sb.toString());
             } else {
                 parameters.put("TYPE", zosProgram.getLanguage().toString() + "/BATCH");
-                parameters.put("COBOL.PARM", "'MAP,OFFSET'");
-                parameters.put("COBOL.STEPLIB", buildSteplib(languagePrefix, lePrefix, Collections.emptyList()));
-                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, Collections.emptyList()));
-                parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
+                parameters.put("C.PARM", "'SOURCE,LIST,RENT'");
+                parameters.put("C.STEPLIB", buildSteplib(languagePrefix, lePrefix, Collections.emptyList()));
+                parameters.put("C.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, Collections.emptyList()));
+                parameters.put("LKED.PARM", "'AMODE=31,MAP,RENT,DYNAM=DLL,CASE=MIXED'");
                 parameters.put("LKED.SYSLIB", buildLinkSyslib(linkSyslibs, lePrefix, Collections.emptyList()));
                 StringBuilder sb = new StringBuilder();
                 sb.append(SYSLIN);
@@ -80,7 +80,7 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         List<String> datasetList = new LinkedList<>();
         Iterator<String> it = languagePrefix.iterator();
         while (it.hasNext()) {
-            datasetList.add(it.next() + ".SIGYCOMP");
+            datasetList.add(it.next() + ".SCCNCMP");
         }
         it = lePrefix.iterator();
         while (it.hasNext()) {
@@ -107,7 +107,7 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         it = cicsPrefix.iterator();
         while (it.hasNext()) {
             String pfx = it.next();
-            datasetList.add(pfx + ".SDFHCOB");
+            datasetList.add(pfx + ".SDFHC370");
             datasetList.add(pfx + ".SDFHMAC");
             datasetList.add(pfx + ".SDFHSAMP");
         }
@@ -133,6 +133,6 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
     
     @Override
     protected String getSkelName() {
-        return "cobol.skel";
+        return "c.skel";
     }
 }

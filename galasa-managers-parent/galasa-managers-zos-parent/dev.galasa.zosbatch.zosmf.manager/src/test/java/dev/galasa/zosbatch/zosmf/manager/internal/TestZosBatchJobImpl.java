@@ -962,13 +962,18 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testToString() throws ZosBatchException {        
-        PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();        
+        PowerMockito.doReturn(true).when(zosBatchJobSpy).isPurged();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", "#JOBID#");
         Whitebox.setInternalState(zosBatchJobSpy, "status", "#STATUS#");
         Whitebox.setInternalState(zosBatchJobSpy, "owner", "#OWNER#");
         Whitebox.setInternalState(zosBatchJobSpy, "type", "#TYPE#");
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", "#RETCODE#");
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", "#RETCODE#");
         String expectedString = "JOBID=#JOBID# JOBNAME=" + FIXED_JOBNAME + " OWNER=#OWNER# TYPE=#TYPE# STATUS=#STATUS# RETCODE=#RETCODE#";
+        Assert.assertEquals("toString() should return supplied value", expectedString, zosBatchJobSpy.toString());
+        
+        PowerMockito.doReturn(false).when(zosBatchJobSpy).isPurged();
         Assert.assertEquals("toString() should return supplied value", expectedString, zosBatchJobSpy.toString());
         
         PowerMockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
