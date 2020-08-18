@@ -287,21 +287,21 @@ public class Network {
 
         switch(reasonCode) {
             case CONN_PARTNER:
-                throw new NetworkException("Device negotiation failed do to CONN_PARTNER");
+                throw new NetworkException("Device negotiation failed due to CONN_PARTNER");
             case DEVICE_IN_USE:
-                throw new NetworkException("Device negotiation failed do to DEVICE_IN_USE");
+                throw new NetworkException("Device negotiation failed due to DEVICE_IN_USE");
             case INV_ASSOCIATE:
-                throw new NetworkException("Device negotiation failed do to INV_ASSOCIATE");
+                throw new NetworkException("Device negotiation failed due to INV_ASSOCIATE");
             case INV_NAME:
-                throw new NetworkException("Device negotiation failed do to INV_NAME");
+                throw new NetworkException("Device negotiation failed due to INV_NAME");
             case INV_DEVICE_TYPE :
-                throw new NetworkException("Device negotiation failed do to INV_DEVICE_TYPE");
+                throw new NetworkException("Device negotiation failed due to INV_DEVICE_TYPE");
             case TYPE_NAME_ERROR:
-                throw new NetworkException("Device negotiation failed do to TYPE_NAME_ERROR");
+                throw new NetworkException("Device negotiation failed due to TYPE_NAME_ERROR");
             case UNKNOWN_ERROR:
-                throw new NetworkException("Device negotiation failed do to UNKNOWN_ERROR");
+                throw new NetworkException("Device negotiation failed due to UNKNOWN_ERROR");
             case UNSUPPORTED_REQ:
-                throw new NetworkException("Device negotiation failed do to UNSUPPORTED_REQ");
+                throw new NetworkException("Device negotiation failed due to UNSUPPORTED_REQ");
             default:
                 throw new NetworkException("Unrecognised reason code for rejected device type =" + reasonCode);
         }
