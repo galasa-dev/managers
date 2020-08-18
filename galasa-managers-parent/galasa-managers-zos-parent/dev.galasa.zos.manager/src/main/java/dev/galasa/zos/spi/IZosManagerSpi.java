@@ -14,6 +14,15 @@ import dev.galasa.zos.ZosManagerException;
 public interface IZosManagerSpi extends IZosManager {
     
     /**
+     * Returns a zOS Image for the specified tag, if necessary provisions it
+     * @param tag the tag of the image
+     * @return and image, never null
+     * @throws ZosManagerException if the tag is missing
+     */
+    @NotNull
+    IZosImage provisionImageForTag(@NotNull String tag) throws ZosManagerException;
+
+    /**
      * Returns a zOS Image for the specified tag
      * @param tag the tag of the image
      * @return and image, never null
