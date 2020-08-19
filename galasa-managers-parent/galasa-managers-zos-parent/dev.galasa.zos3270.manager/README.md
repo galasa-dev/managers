@@ -30,13 +30,17 @@ Where xxxxxx is the text in an protected or unprotected field on the screen.
 ### Terminal keys
 
 `AND press terminal key TAB`
+
 `AND press terminal key CLEAR`
+
 `AND press terminal key ENTER`
+
 `AND press terminal key PFxx` where xx is the PF number
 
 ### Type something
 
 `AND type "xxxxxx" on terminal` where xxxxx is what you want to type where the cursor is
+
 `AND type "xxxxxx" on terminal in field labelled "yyyyyy"` where xxxxxx is the what you want to type,  yyyyyy is the field label.  WARNING, this will move the cursor.  It will locate ANY text yyyyyy and then press TAB and then type.
 
 ### Wait for the keyboard to unlock
