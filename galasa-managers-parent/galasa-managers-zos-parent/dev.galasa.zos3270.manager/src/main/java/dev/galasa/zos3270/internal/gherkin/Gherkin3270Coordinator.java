@@ -44,8 +44,7 @@ public class Gherkin3270Coordinator {
                 new Gherkin3270PressBasicKeys(this, this.manager),
                 new Gherkin3270PressPfKeys(this, this.manager),
                 new Gherkin3270Credentials(this, this.manager),
-                new Gherkin3270Type(this, this.manager),
-                new Gherkin3270TypeInField(this, this.manager)};
+                new Gherkin3270Type(this, this.manager)};
     }
     
     protected Zos3270TerminalImpl getTerminal(String id) {
