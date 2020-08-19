@@ -7,9 +7,13 @@ NOTE, the spacing and capitalisation must be exact at this time.  We will try to
 ### Obtaining a Terminal for use in a feature file
 
 `GIVEN a terminal`
+
 `GIVEN a terminal with id of A`
+
 `GIVEN a terminal tagged PRIMARY`
+
 `GIVEN a terminal with id of A tagged PRIMARY`
+
 
 There are 4 flavours to the "given a terminal".  you can specify an ID for a terminal so that a feature file can operate multiple terminals in the same feature file.  You can also specify a zOS image tag to influence which image the terminal connects to.
 
@@ -37,16 +41,16 @@ Where xxxxxx is the text in an protected or unprotected field on the screen.
 
 ### Wait for the keyboard to unlock
 
-`wait for terminal keyboard`
+`AND wait for terminal keyboard`
 
 ### Wait for text on the screen
 
-`wait for "xxxxxx" in any terminal field`
+`THEN wait for "xxxxxx" in any terminal field`
 
 This will wait for the text to appear on the screen on any screen update.  WARNING, the keyboard may not be unlocked when this statement finishes.
 
 ### Check single text on screen
 
-`check "xxxxxx" appears only once on terminal`
+`THEN check "xxxxxx" appears only once on terminal`
 
 This will search the screen for text xxxxxx and ensure it occurs once.  This is immediate, will not wait for updates.
