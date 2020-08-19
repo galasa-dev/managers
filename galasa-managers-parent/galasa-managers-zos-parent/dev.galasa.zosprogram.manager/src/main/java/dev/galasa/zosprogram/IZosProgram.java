@@ -61,6 +61,13 @@ public interface IZosProgram {
     public String getProgramSource() throws ZosProgramException;
 
     /**
+     * Compile and link the zOS Program. Only applicable when {@link ZosProgram#compile()} annotation element is set to {@code false} 
+     * @return
+     * @throws ZosProgramManagerException
+     */
+    public IZosProgram compile() throws ZosProgramManagerException;
+
+    /**
      * Return the compile zOS Batch Job 
      * @return the batch job
      */

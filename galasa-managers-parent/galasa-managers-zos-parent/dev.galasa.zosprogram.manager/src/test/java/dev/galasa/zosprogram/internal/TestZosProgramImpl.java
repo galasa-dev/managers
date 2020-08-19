@@ -7,6 +7,7 @@ package dev.galasa.zosprogram.internal;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,13 +27,18 @@ import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJobname;
+import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
 import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.ZosProgramException;
+import dev.galasa.zosprogram.ZosProgramManagerException;
 import dev.galasa.zosprogram.internal.properties.CICSDatasetPrefix;
 import dev.galasa.zosprogram.internal.properties.LanguageEnvironmentDatasetPrefix;
 import dev.galasa.zosprogram.internal.properties.ProgramLanguageCompileSyslibs;
@@ -71,6 +77,15 @@ public class TestZosProgramImpl {
     @Mock
     private IBundleResources testBundleResourcesMock;
 
+    @Mock
+    private IBundleResources bundleResourcesMock;
+
+    @Mock
+    private ZosProgramManagerImpl zosBatchManagerMock;
+
+    @Mock
+    private IZosBatch zosBatchMock;
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     
@@ -90,8 +105,10 @@ public class TestZosProgramImpl {
 
     private static final String EXCEPTION = "EXCEPTION";
 
+    private static final String JCL = "JCL";
+
     @Before
-    public void setup() throws Exception {        
+    public void setup() throws Exception {
         ZosProgramManagerImpl.setZosManager(zosManagerMock);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
         ZosProgramManagerImpl.setZosFile(zosFileManagerMock);
@@ -99,7 +116,7 @@ public class TestZosProgramImpl {
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenReturn(loadlibMock);
         Mockito.when(loadlibMock.toString()).thenReturn(LOADLIB_NAME);
         
-        zosProgram = new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME);
+        zosProgram = new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
         zosProgramSpy = Mockito.spy(zosProgram);
     }
     
@@ -113,7 +130,7 @@ public class TestZosProgramImpl {
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
         exceptionRule.expect(ZosProgramException.class);
         exceptionRule.expectMessage(EXCEPTION);
-        new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME);
+        new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
     }
     
     @Test
@@ -125,6 +142,7 @@ public class TestZosProgramImpl {
         Assert.assertTrue("Error in isCics()", zosProgramSpy.isCics());
         Assert.assertEquals("Error in getLoadlib()", loadlibMock, zosProgramSpy.getLoadlib());
         Assert.assertEquals("Error in getImage()", zosImageMock, zosProgramSpy.getImage());
+        Assert.assertEquals("Error in getCompile()", true, zosProgramSpy.getCompile());
         zosProgramSpy.setCompileJob(zosBatchJobMock);
         Assert.assertEquals("Error in getCompileJob()", zosBatchJobMock, zosProgramSpy.getCompileJob());
     }
@@ -181,6 +199,51 @@ public class TestZosProgramImpl {
         exceptionRule.expect(ZosProgramException.class);
         exceptionRule.expectMessage("Problem loading program source");
         zosProgramSpy.loadProgramSource();
+    }
+    
+    @Test
+    public void testCompile() throws ZosProgramManagerException, IOException, ZosBatchException {
+        Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.ASSEMBLER);
+        Mockito.when(zosProgramSpy.getLoadlib()).thenReturn(loadlibMock);
+        Mockito.when(zosProgramSpy.getImage()).thenReturn(zosImageMock);
+        Mockito.when(zosProgramSpy.getName()).thenReturn(NAME);
+        PowerMockito.mockStatic(ProgramLanguageDatasetPrefix.class);
+        Mockito.when(ProgramLanguageDatasetPrefix.get(Mockito.any(), Mockito.any())).thenReturn(Arrays.asList());
+        PowerMockito.mockStatic(LanguageEnvironmentDatasetPrefix.class);
+        Mockito.when(LanguageEnvironmentDatasetPrefix.get(Mockito.any())).thenReturn(Arrays.asList());
+        PowerMockito.mockStatic(ProgramLanguageCompileSyslibs.class);
+        Mockito.when(ProgramLanguageCompileSyslibs.get(Mockito.any(), Mockito.any())).thenReturn(Arrays.asList());
+        PowerMockito.mockStatic(ProgramLanguageLinkSyslibs.class);
+        Mockito.when(ProgramLanguageLinkSyslibs.get(Mockito.any(), Mockito.any())).thenReturn(Arrays.asList());
+        PowerMockito.mockStatic(CICSDatasetPrefix.class);
+        Mockito.when(CICSDatasetPrefix.get(Mockito.any())).thenReturn(Arrays.asList());
+        Mockito.when(bundleResourcesMock.streamAsString(Mockito.any())).thenReturn(JCL);
+        ZosProgramManagerImpl.setManagerBundleResources(bundleResourcesMock);
+        ZosProgramManagerImpl.setTestBundleResources(bundleResourcesMock);
+        IZosBatchSpi zosBatchSpiMock = Mockito.mock(IZosBatchSpi.class);
+        ZosProgramManagerImpl.setZosBatch(zosBatchSpiMock);
+        Mockito.when(ZosProgramManagerImpl.getZosBatch(Mockito.any())).thenReturn(zosBatchMock);
+        Mockito.when(zosBatchJobMock.getRetcode()).thenReturn("CC 0000");
+        IZosBatchJobname zosJobnameMock = Mockito.mock(IZosBatchJobname.class);
+        Mockito.when(zosJobnameMock.getName()).thenReturn("JOBNAME");
+        Mockito.when(zosBatchJobMock.getJobname()).thenReturn(zosJobnameMock);
+        Mockito.when(zosBatchJobMock.getJobId()).thenReturn("JOBID");
+        Mockito.when(zosBatchMock.submitJob(Mockito.any(), Mockito.isNull())).thenReturn(zosBatchJobMock);
+        Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
+
+        Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.COBOL);
+        Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
+
+        Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.C);
+        Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
+
+        Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.PL1);
+        Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
+
+        Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.INVALID);
+        exceptionRule.expect(ZosProgramManagerException.class);
+        exceptionRule.expectMessage("Invalid program language: " + Language.INVALID);
+        zosProgramSpy.compile();
     }
     
     @Test

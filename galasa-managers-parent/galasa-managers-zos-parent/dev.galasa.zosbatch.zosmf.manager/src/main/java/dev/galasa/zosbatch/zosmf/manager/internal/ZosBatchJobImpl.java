@@ -412,10 +412,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         
     @Override
     public String toString() {
-        try {
-            updateJobStatus();
-        } catch (ZosBatchException e) {
-            logger.error(e);
+        if (!isPurged()) {
+            try {
+                updateJobStatus();
+            } catch (ZosBatchException e) {
+                logger.error(e);
+            }
         }
         return jobStatus();        
     }
