@@ -8,16 +8,38 @@ package dev.galasa.zosbatch;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
+import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.ZosBatchJobcard.Typrun;
+import dev.galasa.zosbatch.internal.properties.InputClass;
+import dev.galasa.zosbatch.internal.properties.MsgClass;
+import dev.galasa.zosbatch.internal.properties.MsgLevel;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({InputClass.class, MsgClass.class, MsgLevel.class})
 public class TestZosBatchJobcard {
 
-    private ZosBatchJobcard zosBatchJobcard;
+    private static final String IMAGE = "IMAGE";
+
+	private ZosBatchJobcard zosBatchJobcard;
+
+	private ZosBatchJobcard zosBatchJobcardSpy;
+    
+    @Mock
+    IZosImage imageMock;
     
     @Before
-    public void setup() throws Exception {        
+    public void setup() throws Exception {
+    	Mockito.when(imageMock.getImageID()).thenReturn(IMAGE);
         zosBatchJobcard = new ZosBatchJobcard();
+        zosBatchJobcardSpy = PowerMockito.spy(zosBatchJobcard);
     }
     
     @Test
@@ -90,6 +112,96 @@ public class TestZosBatchJobcard {
     public void testProgrammerName() {
         String value = "programmerName";
         Assert.assertEquals("problem with programmerName value", value, zosBatchJobcard.setProgrammerName(value).getProgrammerName());
+    }
+    
+    @Test
+    public void testJclWithJobcard() throws Exception {
+        String jobname = "jobname";        
+        String account = "account";        
+        String programmerName = "progname";        
+        String inputClass = "inputClass";       
+        String msgClass = "msgClass";     
+        String msgLevel = "msgLevel";        
+        String region = "region";
+        String memlimit = "memlimit";
+        String typrun = "SCAN";
+        String userid = "userid";
+        String password = "password";
+        String cond = "cond";
+        
+        String jobcard = "//" + jobname + " JOB @@@@,\n" + 
+                         "//         CLASS=" + inputClass + ",\n" + 
+                         "//         MSGCLASS=" + msgClass + ",\n" + 
+                         "//         MSGLEVEL=" + msgLevel + "\n";
+        String expectedJobcard = jobcard.replace("@@@@", "");
+
+        Whitebox.setInternalState(zosBatchJobcardSpy, inputClass, inputClass);
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgClass, msgClass);
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgLevel, msgLevel);
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
+        
+        Whitebox.setInternalState(zosBatchJobcardSpy, account, (String) null);
+        Whitebox.setInternalState(zosBatchJobcardSpy, programmerName, programmerName);
+        expectedJobcard = jobcard.replace("@@@@", ",'" + programmerName + "'");
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
+
+        Whitebox.setInternalState(zosBatchJobcardSpy, account, account);
+        Whitebox.setInternalState(zosBatchJobcardSpy, programmerName, (String) null);
+        Whitebox.setInternalState(zosBatchJobcardSpy, inputClass, inputClass);
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgClass, msgClass);
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgLevel, msgLevel);
+        Whitebox.setInternalState(zosBatchJobcardSpy, region, region);
+        Whitebox.setInternalState(zosBatchJobcardSpy, memlimit, memlimit);
+        Whitebox.setInternalState(zosBatchJobcardSpy, "typrun", ZosBatchJobcard.Typrun.SCAN);
+        Whitebox.setInternalState(zosBatchJobcardSpy, userid, userid);
+        Whitebox.setInternalState(zosBatchJobcardSpy, password, password);
+        Whitebox.setInternalState(zosBatchJobcardSpy, cond, cond);
+        expectedJobcard = jobcard.replace("@@@@", "(" + account + "),\n" +
+                "//         REGION=" + region + ",\n" + 
+                "//         MEMLIMIT=" + memlimit + ",\n" + 
+                "//         TYPRUN=" + typrun + ",\n" +
+                "//         USERID=" + userid + ",\n" +
+                "//         PASSWORD=" + password + ",\n" + 
+                "//         COND=" + cond);
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
+
+        Whitebox.setInternalState(zosBatchJobcardSpy, account, "(" + account);
+        expectedJobcard = jobcard.replace("@@@@", "(" + account + "),\n" +
+                "//         REGION=" + region + ",\n" + 
+                "//         MEMLIMIT=" + memlimit + ",\n" + 
+                "//         TYPRUN=" + typrun + ",\n" +
+                "//         USERID=" + userid + ",\n" +
+                "//         PASSWORD=" + password + ",\n" + 
+                "//         COND=" + cond);
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
+
+        Whitebox.setInternalState(zosBatchJobcardSpy, account, account + ")");
+        expectedJobcard = jobcard.replace("@@@@", "(" + account + "),\n" +
+                "//         REGION=" + region + ",\n" + 
+                "//         MEMLIMIT=" + memlimit + ",\n" + 
+                "//         TYPRUN=" + typrun + ",\n" +
+                "//         USERID=" + userid + ",\n" +
+                "//         PASSWORD=" + password + ",\n" + 
+                "//         COND=" + cond);
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
+        
+        PowerMockito.mockStatic(InputClass.class);
+        PowerMockito.doReturn(inputClass).when(InputClass.class, "get", Mockito.any());
+        Whitebox.setInternalState(zosBatchJobcardSpy, inputClass, (String) null);
+        PowerMockito.mockStatic(MsgClass.class);
+        PowerMockito.doReturn(msgClass).when(MsgClass.class, "get", Mockito.any());
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgClass, (String) null);
+        PowerMockito.mockStatic(MsgLevel.class);
+        PowerMockito.doReturn(msgLevel).when(MsgLevel.class, "get", Mockito.any());
+        Whitebox.setInternalState(zosBatchJobcardSpy, msgLevel, (String) null);
+        expectedJobcard = jobcard.replace("@@@@", "(" + account + "),\n" +
+                "//         REGION=" + region + ",\n" + 
+                "//         MEMLIMIT=" + memlimit + ",\n" + 
+                "//         TYPRUN=" + typrun + ",\n" +
+                "//         USERID=" + userid + ",\n" +
+                "//         PASSWORD=" + password + ",\n" + 
+                "//         COND=" + cond);
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
     }
     
     @Test

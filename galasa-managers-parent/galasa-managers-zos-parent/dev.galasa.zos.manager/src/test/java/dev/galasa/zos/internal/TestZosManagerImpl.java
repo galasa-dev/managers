@@ -62,11 +62,18 @@ import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
+import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
+import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
+import dev.galasa.zosbatch.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
+import dev.galasa.zosbatch.internal.properties.UseSysaff;
+import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
                  DseImageIdForTag.class, ImageIdForTag.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
-                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class})
+                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, RestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
+                 JobnamePrefix.class})
 public class TestZosManagerImpl {
 
     private ZosManagerImpl zosManager;
@@ -100,12 +107,13 @@ public class TestZosManagerImpl {
 
     @Mock
     private IZosImage zosImageMock;
-
-    @Mock
-    private ZosPropertiesSingleton zosPropertiesSingleton;
-
+    
     @Mock
     private Log logMock;
+
+    private ZosPropertiesSingleton zosPropertiesSingleton;
+
+    private ZosBatchPropertiesSingleton zosBatchPropertiesSingleton;
     
     private static String logMessage;
 
@@ -164,6 +172,8 @@ public class TestZosManagerImpl {
         
         zosPropertiesSingleton = new ZosPropertiesSingleton();
         zosPropertiesSingleton.activate();
+        zosBatchPropertiesSingleton = new ZosBatchPropertiesSingleton();
+        zosBatchPropertiesSingleton.activate(); 
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -212,14 +222,12 @@ public class TestZosManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        zosManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
-        Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
-    }
-    
-    @Test
-    public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
         zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
+        
+        GalasaTest galasaTestMock = Mockito.mock(GalasaTest.class);
+        Mockito.when(galasaTestMock.isJava()).thenReturn(false);
+        zosManager.initialise(frameworkMock, allManagers, activeManagers, galasaTestMock);
         Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
     }
 
@@ -630,7 +638,42 @@ public class TestZosManagerImpl {
     public void testGetRunDatasetHLQ() throws Exception {
         PowerMockito.mockStatic(RunDatasetHLQ.class);
         PowerMockito.doReturn(RUN_HLQ).when(RunDatasetHLQ.class, "get", Mockito.any());
-        Assert.assertEquals("getUnmanagedImage() should return the expected value", RUN_HLQ, zosManagerSpy.getRunDatasetHLQ(zosImageMock));        
+        Assert.assertEquals("RestrictToImage() should return the expected value", RUN_HLQ, zosManagerSpy.getRunDatasetHLQ(zosImageMock));        
+    }
+    
+    @Test
+    public void testGetZosBatchPropertyRestrictToImage() throws Exception {
+        PowerMockito.mockStatic(RestrictToImage.class);
+        PowerMockito.doReturn(true).when(RestrictToImage.class, "get", Mockito.any());
+        Assert.assertTrue("getZosBatchPropertyRestrictToImage() should return the expected value", zosManagerSpy.getZosBatchPropertyRestrictToImage(IMAGE_ID));        
+    }
+    
+    @Test
+    public void testGetZosBatchPropertyUseSysaff() throws Exception {
+        PowerMockito.mockStatic(UseSysaff.class);
+        PowerMockito.doReturn(true).when(UseSysaff.class, "get", Mockito.any());
+        Assert.assertTrue("getZosBatchPropertyUseSysaff() should return the expected value", zosManagerSpy.getZosBatchPropertyUseSysaff(IMAGE_ID));        
+    }
+    
+    @Test
+    public void testGetZosBatchPropertyJobWaitTimeout() throws Exception {
+        PowerMockito.mockStatic(JobWaitTimeout.class);
+        PowerMockito.doReturn(99).when(JobWaitTimeout.class, "get", Mockito.any());
+        Assert.assertEquals("getZosBatchPropertyJobWaitTimeout() should return the expected value", 99, zosManagerSpy.getZosBatchPropertyJobWaitTimeout(IMAGE_ID));        
+    }
+    
+    @Test
+    public void testGetZosBatchPropertyTruncateJCLRecords() throws Exception {
+        PowerMockito.mockStatic(TruncateJCLRecords.class);
+        PowerMockito.doReturn(true).when(TruncateJCLRecords.class, "get", Mockito.any());
+        Assert.assertEquals("getZosBatchPropertyTruncateJCLRecords() should return the expected value", true, zosManagerSpy.getZosBatchPropertyTruncateJCLRecords(IMAGE_ID));        
+    }
+    
+    @Test
+    public void testGetZosBatchPropertyJobnamePrefix() throws Exception {
+        PowerMockito.mockStatic(JobnamePrefix.class);
+        PowerMockito.doReturn("PFX").when(JobnamePrefix.class, "get", Mockito.any());
+        Assert.assertEquals("getZosBatchPropertyJobnamePrefix() should return the expected value", "PFX", zosManagerSpy.getZosBatchPropertyJobnamePrefix(IMAGE_ID));        
     }
     
     class DummyTestClass {

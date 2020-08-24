@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosbatch.internal.properties;
 
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -35,7 +35,7 @@ public class JobWaitTimeout extends CpsProperties {
 
     public static int get(String imageId) throws ZosBatchManagerException {
         try {
-            String timeoutString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "timeout", imageId);
+            String timeoutString = getStringNulled(ZosBatchPropertiesSingleton.cps(), "batchjob", "timeout", imageId);
 
             if (timeoutString == null) {
                 return DEFAULT_JOB_WAIT_TIMEOUT;

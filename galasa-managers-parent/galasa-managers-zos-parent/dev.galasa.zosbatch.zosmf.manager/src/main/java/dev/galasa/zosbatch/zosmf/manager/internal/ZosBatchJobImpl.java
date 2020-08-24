@@ -37,15 +37,7 @@ import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
-import dev.galasa.zosbatch.ZosBatchJobcard.Typrun;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.MsgLevel;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.MsgClass;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.InputClass;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
@@ -118,20 +110,20 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             this.jcl = parseJcl(jcl);
 
             try {
-                this.useSysaff = UseSysaff.get(this.jobImage.getImageID());
+                this.useSysaff = ZosBatchManagerImpl.zosManager.getZosBatchPropertyUseSysaff(this.jobImage.getImageID());
             } catch (ZosBatchManagerException e) {
                 throw new ZosBatchException("Unable to get use SYSAFF property value", e);
             }
         }
         
         try {
-            this.jobWaitTimeout = JobWaitTimeout.get(this.jobImage.getImageID());
+            this.jobWaitTimeout = ZosBatchManagerImpl.zosManager.getZosBatchPropertyJobWaitTimeout(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get job timeout property value", e);
         }
         
         try {
-            this.zosmfApiProcessor = ZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, RestrictToImage.get(jobImage.getImageID()));
+            this.zosmfApiProcessor = ZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(jobImage.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -559,7 +551,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     protected String parseJcl(String jcl) throws ZosBatchException {
         boolean truncateJCLRecords;
         try {
-            truncateJCLRecords = TruncateJCLRecords.get(this.jobImage.getImageID());
+            truncateJCLRecords = ZosBatchManagerImpl.zosManager.getZosBatchPropertyTruncateJCLRecords(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get trucate JCL records property value", e);
         }
@@ -616,113 +608,21 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected String jclWithJobcard() throws ZosBatchManagerException {
-        StringBuilder jobCard = new StringBuilder();
-        jobCard.append("//");
-        jobCard.append(jobname.getName());
-        jobCard.append(" JOB ");
-        String acct = this.jobcard.getAccount();
-        String prog = this.jobcard.getProgrammerName();
-        if (acct != null || prog != null) {
-            if (acct != null) {
-                if (!acct.startsWith("(")) {
-            		jobCard.append("(");
-            	}
-            	jobCard.append(acct);
-            	if (!acct.endsWith(")")) {
-                   	jobCard.append(")");
-                }
-            }
-            if (prog != null) {
-                jobCard.append(",");
-                jobCard.append("'");
-                jobCard.append(prog);
-                jobCard.append("'");
-            }
-        }
-        jobCard.append(",\n");
-        
-        String inputClass = this.jobcard.getInputClass();
-        String msgClass = this.jobcard.getMsgClass();
-        String msgLevel = this.jobcard.getMsgLevel();
-        
-        if (inputClass == null) {
-            inputClass = InputClass.get(this.jobImage);
-        }
-        
-        if (msgClass == null) {
-            msgClass = MsgClass.get(this.jobImage);
-        }
-        
-        if (msgLevel == null) {
-            msgLevel = MsgLevel.get(this.jobImage);
-        }
-        
-        String region = this.jobcard.getRegion();
-        if (region != null) {
-            jobCard.append("//         REGION=");
-            jobCard.append(region);
-            jobCard.append(",\n");
-        }
-        
-        String memlimit = this.jobcard.getMemlimit();
-        if (memlimit != null) {
-            jobCard.append("//         MEMLIMIT=");
-            jobCard.append(memlimit);
-            jobCard.append(",\n");
-        }
-        
-        Typrun tyrun = this.jobcard.getTyprun();
-        if (tyrun != null) {
-            jobCard.append("//         TYPRUN=");
-            jobCard.append(tyrun.toString());
-            jobCard.append(",\n");
-        }
-        
-        String userid = this.jobcard.getUserid();
-        if (userid != null) {
-            jobCard.append("//         USERID=");
-            jobCard.append(userid);
-            jobCard.append(",\n");
-        }
-        
-        String password = this.jobcard.getPassword();
-        if (password != null) {
-            jobCard.append("//         PASSWORD=");
-            jobCard.append(password);
-            jobCard.append(",\n");
-        }
-        
-        String cond = this.jobcard.getCond();
-        if (cond != null) {
-            jobCard.append("//         COND=");
-            jobCard.append(cond);
-            jobCard.append(",\n");
-        }
-        
-        jobCard.append("//         CLASS=");
-        jobCard.append(inputClass);
-        jobCard.append(",\n");
-        jobCard.append("//         MSGCLASS=");
-        jobCard.append(msgClass);
-        jobCard.append(",\n");
-        jobCard.append("//         MSGLEVEL=");
-        jobCard.append(msgLevel);
-        jobCard.append("\n");
-        
-        
+        StringBuilder jclWithJobcard = new StringBuilder();
+        jclWithJobcard.append(this.jobcard.getJobcard(this.jobname.getName(), this.jobImage));
         
         if (this.useSysaff) {
-            jobCard.append("/*JOBPARM SYSAFF=");
-            jobCard.append(this.jobImage.getImageID());
-            jobCard.append("\n");
+            jclWithJobcard.append("/*JOBPARM SYSAFF=");
+            jclWithJobcard.append(this.jobImage.getImageID());
+            jclWithJobcard.append("\n");
         }
         
-        logger.info("JOBCARD:\n" + jobCard.toString());
-        jobCard.append(jcl);
-        if (!jobCard.toString().endsWith("\n")) {
-            jobCard.append("\n");
+        logger.info("JOBCARD:\n" + jclWithJobcard.toString());
+        jclWithJobcard.append(jcl);
+        if (!jclWithJobcard.toString().endsWith("\n")) {
+            jclWithJobcard.append("\n");
         }
-        return jobCard.toString();
+        return jclWithJobcard.toString();
     }
 
     protected String jsonNull(JsonObject responseBody, String memberName) {

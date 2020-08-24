@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosbatch.ZosBatchManagerException;
 
 public interface IZosManagerSpi extends IZosManager {
     
@@ -57,5 +58,45 @@ public interface IZosManagerSpi extends IZosManager {
      */
     @NotNull
     String getRunDatasetHLQ(IZosImage image) throws ZosManagerException;
+
+    /**
+     * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].restrict.to.image} property
+     * @param imageId
+     * @return
+     * @throws ZosBatchManagerException
+     */
+	boolean getZosBatchPropertyRestrictToImage(String imageId) throws ZosBatchManagerException;
+
+	/**
+	 * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].use.sysaff} property
+	 * @param imageId
+	 * @return
+	 * @throws ZosBatchManagerException
+	 */
+	boolean getZosBatchPropertyUseSysaff(String imageId) throws ZosBatchManagerException;
+	
+	/**
+	 * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].timeout} property
+	 * @param imageId
+	 * @return
+	 * @throws ZosBatchManagerException
+	 */
+	int getZosBatchPropertyJobWaitTimeout(String imageId) throws ZosBatchManagerException;
+
+	/**
+	 * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].truncate.jcl.records} property
+	 * @param imageId
+	 * @return
+	 * @throws ZosBatchManagerException
+	 */
+	boolean getZosBatchPropertyTruncateJCLRecords(String imageId) throws ZosBatchManagerException;
+
+	/**
+	 * Provides other managers to the zOS Batch {@code zosbatch.jobname.[imageid].prefix} property
+	 * @param imageId
+	 * @return
+	 * @throws ZosBatchManagerException
+	 */
+	String getZosBatchPropertyJobnamePrefix(String imageId) throws ZosBatchManagerException;
 
 }
