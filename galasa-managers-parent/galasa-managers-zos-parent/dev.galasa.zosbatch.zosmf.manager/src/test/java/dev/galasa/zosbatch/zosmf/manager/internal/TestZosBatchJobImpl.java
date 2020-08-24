@@ -799,7 +799,7 @@ public class TestZosBatchJobImpl {
 
         Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", false);
         Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(FIXED_JOBCARD_ACCOUNT);
-        jobWithJobcard = jobcard.replace("@@@@", "'" + FIXED_JOBCARD_ACCOUNT + "'") + "\nJCL\n";
+        jobWithJobcard = jobcard.replace("@@@@", "(" + FIXED_JOBCARD_ACCOUNT + ")") + "\nJCL\n";
         Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
 
         Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(null);
