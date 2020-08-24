@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosbatch.internal.properties;
 
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -34,7 +34,7 @@ public class TruncateJCLRecords extends CpsProperties {
 
     public static boolean get(String imageId) throws ZosBatchManagerException {
         try {
-            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "truncate.jcl.records", imageId);
+            String sysaffString = getStringNulled(ZosBatchPropertiesSingleton.cps(), "batchjob", "truncate.jcl.records", imageId);
             if (sysaffString == null || sysaffString.isEmpty()) {
                 return true;
             }

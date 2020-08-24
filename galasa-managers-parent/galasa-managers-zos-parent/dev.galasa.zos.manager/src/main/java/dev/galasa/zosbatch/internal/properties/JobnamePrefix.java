@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosbatch.internal.properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +40,7 @@ public class JobnamePrefix extends CpsProperties {
 
     public static String get(String imageId) throws ZosBatchManagerException {
         try {
-            String jobNamePrefixValue = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "jobname", "prefix", imageId);
+            String jobNamePrefixValue = getStringNulled(ZosBatchPropertiesSingleton.cps(), "jobname", "prefix", imageId);
 
             if (jobNamePrefixValue == null) {
                 return DEFAULT_JOBNAME_PREFIX;

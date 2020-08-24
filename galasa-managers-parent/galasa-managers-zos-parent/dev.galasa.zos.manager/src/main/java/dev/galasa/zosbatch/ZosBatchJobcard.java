@@ -1,5 +1,10 @@
 package dev.galasa.zosbatch;
 
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.internal.properties.InputClass;
+import dev.galasa.zosbatch.internal.properties.MsgClass;
+import dev.galasa.zosbatch.internal.properties.MsgLevel;
+
 /**
  * Provides overrides for the Jobcard for jobs submitted via the Batch Manager.
  * 
@@ -204,17 +209,105 @@ public class ZosBatchJobcard {
         return nulled(progname);
     }
     
-    protected String nulled(String value) {
-        if (value == null) {
-            return null;
+    /**
+     * @return the built job card
+     * @throws ZosBatchManagerException 
+     */
+    public String getJobcard(String jobname, IZosImage image) throws ZosBatchManagerException {
+        StringBuilder jobCard = new StringBuilder();
+        jobCard.append("//");
+        jobCard.append(jobname);
+        jobCard.append(" JOB ");
+        String acct = getAccount();
+        String prog = getProgrammerName();
+        if (acct != null || prog != null) {
+            if (acct != null) {
+            	if (!acct.startsWith("(")) {
+            		jobCard.append("(");
+            	}
+            	jobCard.append(acct);
+            	if (!acct.endsWith(")")) {
+                   	jobCard.append(")");
+                }
+            }
+            if (prog != null) {
+                jobCard.append(",");
+                jobCard.append("'");
+                jobCard.append(prog);
+                jobCard.append("'");
+            }
         }
-        value = value.trim();
-        if (value.isEmpty()) {
-            return null;
+        jobCard.append(",\n");
+        
+        if (inputClass == null) {
+            inputClass = InputClass.get(image);
         }
-        return value;
+        
+        if (msgClass == null) {
+            msgClass = MsgClass.get(image);
+        }
+        
+        if (msgLevel == null) {
+            msgLevel = MsgLevel.get(image);
+        }
+        
+        if (region != null) {
+            jobCard.append("//         REGION=");
+            jobCard.append(region);
+            jobCard.append(",\n");
+        }
+        
+        if (memlimit != null) {
+            jobCard.append("//         MEMLIMIT=");
+            jobCard.append(memlimit);
+            jobCard.append(",\n");
+        }
+        
+        if (typrun != null) {
+            jobCard.append("//         TYPRUN=");
+            jobCard.append(typrun.toString());
+            jobCard.append(",\n");
+        }
+        
+        if (userid != null) {
+            jobCard.append("//         USERID=");
+            jobCard.append(userid);
+            jobCard.append(",\n");
+        }
+        
+        if (password != null) {
+            jobCard.append("//         PASSWORD=");
+            jobCard.append(password);
+            jobCard.append(",\n");
+        }
+        
+        if (cond != null) {
+            jobCard.append("//         COND=");
+            jobCard.append(cond);
+            jobCard.append(",\n");
+        }
+        
+        jobCard.append("//         CLASS=");
+        jobCard.append(inputClass);
+        jobCard.append(",\n");
+        jobCard.append("//         MSGCLASS=");
+        jobCard.append(msgClass);
+        jobCard.append(",\n");
+        jobCard.append("//         MSGLEVEL=");
+        jobCard.append(msgLevel);
+        jobCard.append("\n");
+        
+        return jobCard.toString();
     }
 
-
-
+	protected String nulled(String value) {
+	    if (value == null) {
+	        return null;
+	    }
+	    value = value.trim();
+	    if (value.isEmpty()) {
+	        return null;
+	    }
+	    return value;
+	}
 }

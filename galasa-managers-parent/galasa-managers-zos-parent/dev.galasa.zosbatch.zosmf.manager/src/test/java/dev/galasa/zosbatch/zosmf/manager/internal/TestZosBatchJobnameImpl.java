@@ -11,28 +11,28 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({JobnamePrefix.class})
 public class TestZosBatchJobnameImpl {
     
     private static final String FIXED_JOBNAME = "GAL45678";
+
+    @Mock
+    private ZosManagerImpl zosManagerMock;
     
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     
     @Before
     public void setup() throws ZosBatchManagerException {
-        // Mock JobnamePrefix.get() to return a fixed value
-        PowerMockito.mockStatic(JobnamePrefix.class);
-        Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenReturn(FIXED_JOBNAME);
+    	Mockito.when(zosManagerMock.getZosBatchPropertyJobnamePrefix(Mockito.anyString())).thenReturn(FIXED_JOBNAME);
+        ZosBatchManagerImpl.setZosManager(zosManagerMock);
     }
     
     @Test
@@ -44,7 +44,7 @@ public class TestZosBatchJobnameImpl {
     
     @Test
     public void testException() throws ZosBatchManagerException {
-        Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
+    	Mockito.when(zosManagerMock.getZosBatchPropertyJobnamePrefix(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Problem getting batch jobname prefix");

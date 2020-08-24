@@ -56,11 +56,19 @@ import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
+import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
+import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
+import dev.galasa.zosbatch.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
+import dev.galasa.zosbatch.internal.properties.UseSysaff;
+import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
 
 @Component(service = { IManager.class })
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     protected static final String NAMESPACE = "zos";
-
+    protected static final String ZOSBATCH_NAMESPACE = "zosbatch";
+    
     private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
     private static final String PRIMARY_TAG = "PRIMARY";
@@ -84,6 +92,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     public List<String> extraBundles(@NotNull IFramework framework) throws ZosManagerException {
         try {
             ZosPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            ZosBatchPropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSBATCH_NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosManagerException("Unable to request framework services", e);
         }
@@ -476,4 +485,29 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     public String getRunDatasetHLQ(IZosImage image) throws ZosManagerException {
         return RunDatasetHLQ.get(image);
     }
+    
+    @Override
+    public boolean getZosBatchPropertyRestrictToImage(String imageId) throws ZosBatchManagerException {
+		return RestrictToImage.get(imageId);
+	}
+
+	@Override
+	public boolean getZosBatchPropertyUseSysaff(String imageId) throws ZosBatchManagerException {
+		return UseSysaff.get(imageId);
+	}
+
+	@Override
+	public int getZosBatchPropertyJobWaitTimeout(String imageId) throws ZosBatchManagerException {
+		return JobWaitTimeout.get(imageId);
+	}
+
+	@Override
+	public boolean getZosBatchPropertyTruncateJCLRecords(String imageId) throws ZosBatchManagerException {
+		return TruncateJCLRecords.get(imageId);
+	}
+
+	@Override
+	public String getZosBatchPropertyJobnamePrefix(String imageId) throws ZosBatchManagerException {
+		return JobnamePrefix.get(imageId);
+	}
 }

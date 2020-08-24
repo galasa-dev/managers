@@ -23,7 +23,7 @@ public interface IZosmfRestApiProcessor {
      * @param headers the required HTTP headers (e.g. See {@link ZosmfCustomHeaders} or null
      * @param body the request body or null
      * @param validStatusCodes list HTTP status codes expected from this request. default of HTTP 200 when null 
-     * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
+     * @param convert is a data conversion required. If true, data will be converted between EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the response {@link IZosmfResponse}
      * @throws ZosBatchException
      */

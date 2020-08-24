@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosbatch.internal.properties;
 
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -33,7 +33,7 @@ public class UseSysaff extends CpsProperties {
 
     public static boolean get(String imageId) throws ZosBatchManagerException {
         try {
-            String sysaffString = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
+            String sysaffString = getStringNulled(ZosBatchPropertiesSingleton.cps(), "batchjob", "use.sysaff", imageId);
             if (sysaffString == null || sysaffString.isEmpty()) {
                 return true;
             }
