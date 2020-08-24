@@ -624,9 +624,13 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         String prog = this.jobcard.getProgrammerName();
         if (acct != null || prog != null) {
             if (acct != null) {
-                jobCard.append("'");
-                jobCard.append(acct);
-                jobCard.append("'");
+                if (!acct.startsWith("(")) {
+            		jobCard.append("(");
+            	}
+            	jobCard.append(acct);
+            	if (!acct.endsWith(")")) {
+                   	jobCard.append(")");
+                }
             }
             if (prog != null) {
                 jobCard.append(",");
