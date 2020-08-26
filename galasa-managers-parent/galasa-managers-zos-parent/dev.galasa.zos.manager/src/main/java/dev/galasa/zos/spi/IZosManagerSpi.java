@@ -10,7 +10,10 @@ import javax.validation.constraints.NotNull;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosbatch.IZosBatchJobname;
+import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
 
 public interface IZosManagerSpi extends IZosManager {
     
@@ -92,11 +95,27 @@ public interface IZosManagerSpi extends IZosManager {
 	boolean getZosBatchPropertyTruncateJCLRecords(String imageId) throws ZosBatchManagerException;
 
 	/**
-	 * Provides other managers to the zOS Batch {@code zosbatch.jobname.[imageid].prefix} property
+	 * Provides other managers a {@link IZosBatchJobname} with a prefix defined by the zOS Batch {@code zosbatch.jobname.[imageid].prefix} property
 	 * @param imageId
 	 * @return
-	 * @throws ZosBatchManagerException
+	 * @throws ZosBatchException
 	 */
-	String getZosBatchPropertyJobnamePrefix(String imageId) throws ZosBatchManagerException;
+	IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException;
+
+	/**
+	 * Provides other managers a {@link IZosBatchJobname} with a the supplied name
+	 * @param name
+	 * @return
+	 * @throws ZosBatchException
+	 */
+	IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException;
+
+	/**
+	 * Create a new batch jopb output object
+	 * @param name
+	 * @param jobid
+	 * @return
+	 */
+	IZosBatchJobOutputSpi newZosBatchJobOutput(String name, String jobid);
 
 }

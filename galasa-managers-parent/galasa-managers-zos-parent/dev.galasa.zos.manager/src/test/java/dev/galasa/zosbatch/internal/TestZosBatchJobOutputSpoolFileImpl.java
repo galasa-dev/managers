@@ -3,15 +3,12 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal;
+package dev.galasa.zosbatch.internal;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestZosBatchJobOutputSpoolFileImpl { 
@@ -27,8 +24,6 @@ public class TestZosBatchJobOutputSpoolFileImpl {
     private static final String DDNAME = "ddname";
 
     private static final String RECORDS = "records";
-
-    private static final String DUMMY = "dummy";
     
     @Test
     public void testJclConstructor() {
@@ -43,14 +38,7 @@ public class TestZosBatchJobOutputSpoolFileImpl {
     
     @Test
     public void testJobfileConstructor() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(JOBNAME, JOBNAME);
-        jsonObject.addProperty(JOBID, JOBID);
-        jsonObject.addProperty(STEPNAME, STEPNAME);
-        jsonObject.addProperty(PROCSTEP, PROCSTEP);
-        jsonObject.addProperty(DDNAME, DDNAME);
-        
-        ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(jsonObject, RECORDS);
+        ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, RECORDS);
         Assert.assertEquals("getJobname() should return the supplied value", JOBNAME, zosBatchJobOutputSpoolFile.getJobname());
         Assert.assertEquals("getJobid() should return the supplied value", JOBID, zosBatchJobOutputSpoolFile.getJobid());
         Assert.assertEquals("getStepname() should return the supplied value", STEPNAME, zosBatchJobOutputSpoolFile.getStepname());
@@ -60,19 +48,5 @@ public class TestZosBatchJobOutputSpoolFileImpl {
         
         String expectedString = "JOB=" + JOBNAME + " JOBID=" + JOBID + " STEP=" + STEPNAME +  " PROCSTEP=" + PROCSTEP + " DDNAME=" + DDNAME;
         Assert.assertEquals("toString() should return the values of JOBNAME JOBID STEPNAME PROCSTEP DDNAME", expectedString , zosBatchJobOutputSpoolFile.toString());
-    }
-    
-    @Test
-    public void testJsonNull() {
-        ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(JOBNAME, JOBID, RECORDS);
-        
-        JsonObject jsonObject = new JsonObject();
-        Assert.assertEquals("jsonNull() should return an empty String", "", zosBatchJobOutputSpoolFile.jsonNull(jsonObject, DUMMY));
-        
-        jsonObject.add(DUMMY, JsonNull.INSTANCE);
-        Assert.assertEquals("jsonNull() should return an empty String", "", zosBatchJobOutputSpoolFile.jsonNull(jsonObject, DUMMY));
-        
-        jsonObject.addProperty(JOBNAME, JOBNAME);
-        Assert.assertEquals("jsonNull() should return an empty String", JOBNAME, zosBatchJobOutputSpoolFile.jsonNull(jsonObject, JOBNAME));        
     }
 }

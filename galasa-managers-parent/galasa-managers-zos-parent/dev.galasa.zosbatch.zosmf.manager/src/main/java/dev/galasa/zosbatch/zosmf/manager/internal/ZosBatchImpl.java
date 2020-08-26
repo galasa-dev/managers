@@ -57,7 +57,11 @@ public class ZosBatchImpl implements IZosBatch {
     @Override
     public @NotNull IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, ZosBatchJobcard jobcard) throws ZosBatchException {
         if (jobname == null) {
-            jobname = new ZosBatchJobnameImpl(this.image.getImageID());
+            try {
+				jobname = ZosBatchManagerImpl.newZosBatchJobname(this.image);
+			} catch (ZosBatchManagerException e) {
+				throw new ZosBatchException(e);
+			}
         }
         
         if (jobcard == null) {
@@ -149,8 +153,7 @@ public class ZosBatchImpl implements IZosBatch {
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject responseBody = jsonElement.getAsJsonObject();
                 String jobnameString = responseBody.get("jobname").getAsString();
-                ZosBatchJobnameImpl jobname = new ZosBatchJobnameImpl();
-                jobname.setName(jobnameString);
+                IZosBatchJobname jobname = ZosBatchManagerImpl.newZosBatchJobname(jobnameString);
                 ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, null, null);
                 zosBatchJob.setJobid(responseBody.get("jobid").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());

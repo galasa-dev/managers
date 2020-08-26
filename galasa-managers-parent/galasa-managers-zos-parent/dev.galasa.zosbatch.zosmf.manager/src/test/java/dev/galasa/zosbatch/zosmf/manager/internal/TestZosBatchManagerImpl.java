@@ -78,6 +78,9 @@ public class TestZosBatchManagerImpl {
     @Mock
     private IZosImage zosImageMock;
 
+    @Mock
+    private IZosBatchJobname zosJobnameMock;
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     
@@ -100,7 +103,8 @@ public class TestZosBatchManagerImpl {
         };
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         
-        PowerMockito.doReturn(JOBNAME_PREFIX).when(zosManagerMock).getZosBatchPropertyJobnamePrefix(Mockito.any());
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.anyString())).thenReturn(zosJobnameMock);        
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.any(IZosImage.class))).thenReturn(zosJobnameMock);
         ZosBatchManagerImpl.setZosManager(zosManagerMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
         
@@ -222,7 +226,7 @@ public class TestZosBatchManagerImpl {
 
         Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup();
         zosBatchManagerSpy.endOfTestRun();
-        Assert.assertEquals("testEndOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
+        Assert.assertEquals("endOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
     
     @Test
@@ -263,10 +267,8 @@ public class TestZosBatchManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosbatch.ZosBatchJobname.class);
         annotations.add(annotation);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
-        ZosBatchJobnameImpl zosBatchJobnameMock = Mockito.mock(ZosBatchJobnameImpl.class);
-        PowerMockito.doReturn(zosBatchJobnameMock).when(zosBatchManagerSpy).newZosBatchJobnameImpl(Mockito.anyString());
         
-        Assert.assertEquals("generateZosBatchJobname() should return the mocked ZosBatchJobnameImpl", zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations), zosBatchJobnameMock);
+        Assert.assertEquals("generateZosBatchJobname() should return the mocked ZosBatchJobnameImpl", zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations), zosJobnameMock);
     }
     
     @Test
@@ -283,8 +285,9 @@ public class TestZosBatchManagerImpl {
     }
     
     @Test
-    public void testNewZosBatchJobnameImpl() throws Exception {
-        IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobnameImpl("image");
+    public void testNewZosBatchJobname() throws Exception {
+    	Mockito.when(zosJobnameMock.getName()).thenReturn(JOBNAME_PREFIX);        
+        IZosBatchJobname zosBatchJobname = ZosBatchManagerImpl.newZosBatchJobname("image");
         Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith(JOBNAME_PREFIX));
     }
     

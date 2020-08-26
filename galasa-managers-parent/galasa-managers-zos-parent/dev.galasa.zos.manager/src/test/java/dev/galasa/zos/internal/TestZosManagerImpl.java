@@ -62,6 +62,7 @@ import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
+import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
 import dev.galasa.zosbatch.internal.properties.RestrictToImage;
@@ -518,6 +519,18 @@ public class TestZosManagerImpl {
     }
     
     @Test
+    public void testProvisionImageForTag() throws ZosManagerException {
+    	PowerMockito.doReturn(zosImageMock).when(zosManagerSpy).generateZosImage(Mockito.any(String.class));
+    	Assert.assertEquals("provisionImageForTag() should return the expected value", zosImageMock, zosManagerSpy.provisionImageForTag(TAG));
+
+    	HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
+        ZosBaseImageImpl zosBaseImageMock = Mockito.mock(ZosBaseImageImpl.class);
+        taggedImages.put(TAG, zosBaseImageMock);
+        Whitebox.setInternalState(zosManagerSpy, "taggedImages", taggedImages);
+    	Assert.assertEquals("provisionImageForTag() should return the expected value", zosBaseImageMock, zosManagerSpy.provisionImageForTag(TAG));
+    }
+    
+    @Test
     public void testGetImageForTag() throws ZosManagerException {
         HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
         ZosBaseImageImpl zosBaseImageMock = Mockito.mock(ZosBaseImageImpl.class);
@@ -670,10 +683,23 @@ public class TestZosManagerImpl {
     }
     
     @Test
-    public void testGetZosBatchPropertyJobnamePrefix() throws Exception {
+    public void testNewZosBatchJobnameImage() throws Exception {
+    	String prefix = "PFX";
         PowerMockito.mockStatic(JobnamePrefix.class);
-        PowerMockito.doReturn("PFX").when(JobnamePrefix.class, "get", Mockito.any());
-        Assert.assertEquals("getZosBatchPropertyJobnamePrefix() should return the expected value", "PFX", zosManagerSpy.getZosBatchPropertyJobnamePrefix(IMAGE_ID));        
+        PowerMockito.doReturn(prefix).when(JobnamePrefix.class, "get", Mockito.any());
+    	Assert.assertTrue("newZosBatchJobname() should return the expected value", zosManagerSpy.newZosBatchJobname(zosImageMock).getName().startsWith(prefix));
+    }
+    
+    @Test
+    public void testNewZosBatchJobnameString() throws ZosBatchException {
+    	String jobname = "jobname";
+		Assert.assertEquals("newZosBatchJobname() should return the expected value", jobname.toUpperCase(), zosManagerSpy.newZosBatchJobname(jobname).getName());
+    }
+    
+    @Test
+    public void testNewZosBatchJobOutput() throws ZosBatchException {
+    	String jobname = "JOBNAME";
+    	Assert.assertEquals("newZosBatchJobOutput() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutput(jobname, "jobid").getJobname());
     }
     
     class DummyTestClass {
