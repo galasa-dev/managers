@@ -37,8 +37,8 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
     }
 
     @Override
-    public void addSpoolFile(String jobname, String jobid, String stepname, String procstep, String ddname, String records) {
-        spoolFiles.add(new ZosBatchJobOutputSpoolFileImpl(jobname, jobid, Objects.toString(stepname, ""), Objects.toString(procstep, ""), ddname, records));
+    public void addSpoolFile(String stepname, String procstep, String ddname, String records) {
+        spoolFiles.add(new ZosBatchJobOutputSpoolFileImpl(this.jobname, this.jobid, Objects.toString(stepname, ""), Objects.toString(procstep, ""), ddname, records));
     }
 
     @Override

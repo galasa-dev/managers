@@ -14,14 +14,12 @@ import dev.galasa.zosbatch.IZosBatchJobOutput;
 public interface IZosBatchJobOutputSpi extends IZosBatchJobOutput {	
 	/**
 	 * Add a spool file to the job output
-	 * @param name
-	 * @param jobid
 	 * @param stepname
 	 * @param procstep
 	 * @param ddname
 	 * @param fileOutput
 	 */
-	public void addSpoolFile(String name, String jobid, String stepname, String procstep, String ddname, String fileOutput);
+	public void addSpoolFile(String stepname, String procstep, String ddname, String fileOutput);
 
 	/**
 	 * Add JCL to the job output

@@ -547,7 +547,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             String stepname = jsonNull(responseBody, "stepname");
             String procstep = jsonNull(responseBody, "procstep");
             String ddname = responseBody.get("ddname").getAsString();
-            this.jobOutput.addSpoolFile(jobname.getName(), jobid, stepname, procstep, ddname, fileOutput);
+            this.jobOutput.addSpoolFile(stepname, procstep, ddname, fileOutput);
         } else {
             this.jobOutput.addJcl(fileOutput);
         }
