@@ -38,6 +38,7 @@ import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
@@ -73,7 +74,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     private boolean jobPurged;
     private String jobPath;
     private String jobFilesPath;
-    private ZosBatchJobOutputImpl jobOutput;
+    private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
     private int uniqueId;
     
@@ -254,7 +255,14 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public IZosBatchJobOutputSpoolFile getSpoolFile(@NotNull String ddname) throws ZosBatchException {
-        return ((ZosBatchJobOutputImpl) retrieveOutput()).getSpoolFile(ddname);
+        Iterator<IZosBatchJobOutputSpoolFile> spoolFilesIterator = retrieveOutput().iterator();
+        while (spoolFilesIterator.hasNext()) {
+            IZosBatchJobOutputSpoolFile spoolFile = spoolFilesIterator.next();
+            if (spoolFile.getDdname().equals(ddname)) {
+                return spoolFile;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -298,7 +306,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = new ZosBatchJobOutputImpl(this.jobname.getName(), this.jobid);
+        this.jobOutput = ZosBatchManagerImpl.zosManager.newZosBatchJobOutput(this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
@@ -430,7 +438,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         return this.jobPurged;
     }
 
-    public ZosBatchJobOutputImpl jobOutput() {
+    public IZosBatchJobOutput jobOutput() {
         return this.jobOutput;
     }
 
@@ -536,7 +544,10 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             }
         }
         if (responseBody != null) {
-            this.jobOutput.add(responseBody, fileOutput);
+            String stepname = jsonNull(responseBody, "stepname");
+            String procstep = jsonNull(responseBody, "procstep");
+            String ddname = responseBody.get("ddname").getAsString();
+            this.jobOutput.addSpoolFile(jobname.getName(), jobid, stepname, procstep, ddname, fileOutput);
         } else {
             this.jobOutput.addJcl(fileOutput);
         }

@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal;
+package dev.galasa.zosbatch.internal;
 
 import java.util.Iterator;
 
@@ -14,8 +14,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import com.google.gson.JsonObject;
 
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.ZosBatchException;
@@ -56,13 +54,7 @@ public class TestZosBatchJobOutputImpl {
 
     @Test
     public void testAdd() throws ZosBatchException {
-        JsonObject spoolFile = new JsonObject();
-        spoolFile.addProperty(JOBNAME, JOBNAME);
-        spoolFile.addProperty(JOBID, JOBID);
-        spoolFile.addProperty(STEPNAME, STEPNAME);
-        spoolFile.addProperty(PROCSTEP, PROCSTEP);
-        spoolFile.addProperty(DDNAME, DDNAME);
-        zosBatchJobOutput.add(spoolFile, RECORDS);
+        zosBatchJobOutput.addSpoolFile(JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, RECORDS);
         Assert.assertEquals("getJobname() should return the supplied value", JOBNAME, zosBatchJobOutput.getJobname());
         Assert.assertEquals("getJobid() should return the supplied value", JOBID, zosBatchJobOutput.getJobid());
         Assert.assertEquals("toString() should return the supplied values of JOBNAME_JOBID", JOBNAME + "_" + JOBID, zosBatchJobOutput.toString());
@@ -103,21 +95,5 @@ public class TestZosBatchJobOutputImpl {
     @Test
     public void testIsEmpty() throws ZosBatchException {
         Assert.assertTrue("isEmpty() should return a true", zosBatchJobOutput.isEmpty());
-    }
-    
-    @Test
-    public void testGetSpoolFile() throws ZosBatchException {
-        Assert.assertNull("getSpoolFile() should return the supplied null", zosBatchJobOutput.getSpoolFile(DDNAME));
-        
-        JsonObject spoolFile = new JsonObject();
-        spoolFile.addProperty(JOBNAME, JOBNAME);
-        spoolFile.addProperty(JOBID, JOBID);
-        spoolFile.addProperty(STEPNAME, STEPNAME);
-        spoolFile.addProperty(PROCSTEP, PROCSTEP);
-        spoolFile.addProperty(DDNAME, DDNAME);
-        zosBatchJobOutput.add(spoolFile, RECORDS);
-        Assert.assertEquals("getSpoolFile() should return the supplied value", RECORDS, zosBatchJobOutput.getSpoolFile(DDNAME).getRecords());
-        
-        Assert.assertNull("getSpoolFile() should return the supplied null", zosBatchJobOutput.getSpoolFile("XXXXXXXX"));
     }
 }

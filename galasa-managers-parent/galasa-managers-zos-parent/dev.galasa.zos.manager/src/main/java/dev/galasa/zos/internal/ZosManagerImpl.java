@@ -56,13 +56,17 @@ import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
+import dev.galasa.zosbatch.IZosBatchJobname;
+import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
+import dev.galasa.zosbatch.internal.ZosBatchJobOutputImpl;
+import dev.galasa.zosbatch.internal.ZosBatchJobnameImpl;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
-import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
 import dev.galasa.zosbatch.internal.properties.RestrictToImage;
 import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
+import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
 
 @Component(service = { IManager.class })
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
@@ -507,7 +511,17 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	}
 
 	@Override
-	public String getZosBatchPropertyJobnamePrefix(String imageId) throws ZosBatchManagerException {
-		return JobnamePrefix.get(imageId);
+	public IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+		return new ZosBatchJobnameImpl(image);
+	}
+
+	@Override
+	public IZosBatchJobname newZosBatchJobname(String name) {
+		return new ZosBatchJobnameImpl(name);
+	}
+
+	@Override
+	public IZosBatchJobOutputSpi newZosBatchJobOutput(String jobname, String jobid) {
+		return new ZosBatchJobOutputImpl(jobname, jobid);
 	}
 }

@@ -242,18 +242,21 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
 
         //*** Default the tag to primary
         String tag = defaultString(annotationZosBatchJobname.imageTag(), "primary");
-        String imageid;
+        IZosImage image;
         try {
-            IZosImage image = zosManager.getImageForTag(tag);
-            imageid = image.getImageID();
+            image = zosManager.getImageForTag(tag);
         } catch (ZosManagerException e) {
             throw new ZosBatchManagerException("Unable to get image for tag \"" + tag + "\"", e);
         }
-        return newZosBatchJobnameImpl(imageid);
+        return newZosBatchJobname(image);
     }
 
-    protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
-        return new ZosBatchJobnameImpl(imageid);
+    protected static IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+        return zosManager.newZosBatchJobname(image);
+    }
+
+    protected static IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
+        return zosManager.newZosBatchJobname(name);
     }
 
     @Override
