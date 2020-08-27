@@ -103,6 +103,12 @@ public class TestZosBatchJobcard {
     }
     
     @Test
+    public void testTime() {
+        String value = "time";
+        Assert.assertEquals("problem with time value", value, zosBatchJobcard.setTime(value).getTime());
+    }
+    
+    @Test
     public void testAccount() {
         String value = "account";
         Assert.assertEquals("problem with account value", value, zosBatchJobcard.setAccount(value).getAccount());
@@ -128,6 +134,7 @@ public class TestZosBatchJobcard {
         String userid = "userid";
         String password = "password";
         String cond = "cond";
+        String time = "time";
         
         String jobcard = "//" + jobname + " JOB @@@@,\n" + 
                          "//         CLASS=" + inputClass + ",\n" + 
@@ -156,13 +163,15 @@ public class TestZosBatchJobcard {
         Whitebox.setInternalState(zosBatchJobcardSpy, userid, userid);
         Whitebox.setInternalState(zosBatchJobcardSpy, password, password);
         Whitebox.setInternalState(zosBatchJobcardSpy, cond, cond);
+        Whitebox.setInternalState(zosBatchJobcardSpy, time, time);
         expectedJobcard = jobcard.replace("@@@@", "(" + account + "),\n" +
                 "//         REGION=" + region + ",\n" + 
                 "//         MEMLIMIT=" + memlimit + ",\n" + 
                 "//         TYPRUN=" + typrun + ",\n" +
                 "//         USERID=" + userid + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
-                "//         COND=" + cond);
+                "//         COND=" + cond + ",\n" + 
+                "//         TIME=" + time);
         Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
 
         Whitebox.setInternalState(zosBatchJobcardSpy, account, "(" + account);
@@ -172,7 +181,8 @@ public class TestZosBatchJobcard {
                 "//         TYPRUN=" + typrun + ",\n" +
                 "//         USERID=" + userid + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
-                "//         COND=" + cond);
+                "//         COND=" + cond + ",\n" + 
+                "//         TIME=" + time);
         Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
 
         Whitebox.setInternalState(zosBatchJobcardSpy, account, account + ")");
@@ -182,7 +192,8 @@ public class TestZosBatchJobcard {
                 "//         TYPRUN=" + typrun + ",\n" +
                 "//         USERID=" + userid + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
-                "//         COND=" + cond);
+                "//         COND=" + cond + ",\n" + 
+                "//         TIME=" + time);
         Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
         
         PowerMockito.mockStatic(InputClass.class);
@@ -200,7 +211,8 @@ public class TestZosBatchJobcard {
                 "//         TYPRUN=" + typrun + ",\n" +
                 "//         USERID=" + userid + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
-                "//         COND=" + cond);
+                "//         COND=" + cond + ",\n" + 
+                "//         TIME=" + time);
         Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobcardSpy.getJobcard(jobname, imageMock));
     }
     

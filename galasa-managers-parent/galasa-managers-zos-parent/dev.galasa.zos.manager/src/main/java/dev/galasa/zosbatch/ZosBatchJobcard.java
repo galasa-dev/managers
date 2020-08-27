@@ -28,6 +28,7 @@ public class ZosBatchJobcard {
     private String userid;
     private String password;
     private String cond;
+    private String time;
     private String account;
     private String progname;
 
@@ -115,6 +116,15 @@ public class ZosBatchJobcard {
     }
 
     /**
+     * @param time value for time field on JOB
+     * @return this class for Fluent calls
+     */
+    public ZosBatchJobcard setTime(String time) {
+        this.time = time;
+        return this;
+    }
+
+    /**
      * @param account value for account field on JOB
      * @return this class for Fluent calls
      */
@@ -193,6 +203,13 @@ public class ZosBatchJobcard {
      */
     public String getCond() {
         return nulled(cond);
+    }
+
+    /**
+     * @return TIME= value
+     */
+    public String getTime() {
+        return nulled(time);
     }
 
     /**
@@ -284,6 +301,12 @@ public class ZosBatchJobcard {
         if (cond != null) {
             jobCard.append("//         COND=");
             jobCard.append(cond);
+            jobCard.append(",\n");
+        }
+        
+        if (time != null) {
+            jobCard.append("//         TIME=");
+            jobCard.append(time);
             jobCard.append(",\n");
         }
         
