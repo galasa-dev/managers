@@ -70,12 +70,20 @@ public interface IZosBatchJob {
     public int waitForJob() throws ZosBatchException;
 
     /**
-     * Retrieve all the output of the batch job
+     * Retrieve the batch job output as an {@link IZosBatchJobOutput} object
      * 
-     * @return Lines of output
+     * @return The job output 
      * @throws ZosBatchException
      */
     public IZosBatchJobOutput retrieveOutput() throws ZosBatchException;
+
+    /**
+     * Retrieve the batch job output as an {@link String} object
+     * 
+     * @return The job output
+     * @throws ZosBatchException
+     */
+    public String retrieveOutputAsString() throws ZosBatchException;
     
     /**
      * Convenience method to retrieve the content of a spool file from the batch job given the ddname.<p>

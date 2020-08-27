@@ -238,6 +238,13 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         
         return jobOutput();
     }
+
+	@Override
+	public String retrieveOutputAsString() throws ZosBatchException {
+		StringBuilder output = new StringBuilder();
+		retrieveOutput().getSpoolFiles().forEach(records -> output.append(records.getRecords()));
+        return output.toString();		
+	}
     
     @Override
     public void cancel() throws ZosBatchException {

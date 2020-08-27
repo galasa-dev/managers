@@ -11,7 +11,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -406,6 +408,18 @@ public class TestZosBatchJobImpl {
         
         zosBatchJobSpy.retrieveOutput();
     }
+    
+    @Test
+    public void testRetrieveOutputAsString() throws Exception {
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+        Mockito.doReturn("RECORDS\n").when(zosBatchJobOutputSpoolFileMock).getRecords();
+    	List<IZosBatchJobOutputSpoolFile> spoolFiles = new ArrayList<IZosBatchJobOutputSpoolFile>();
+    	spoolFiles.add(zosBatchJobOutputSpoolFileMock);
+    	spoolFiles.add(zosBatchJobOutputSpoolFileMock);
+		Mockito.doReturn(spoolFiles).when(zosBatchJobOutputMock).getSpoolFiles();
+		String expected = "RECORDS\nRECORDS\n";
+		Assert.assertEquals("retrieveOutputAsString() should return the expected value", expected, zosBatchJobSpy.retrieveOutputAsString());
+    }
 
     @Test
     public void testCancelJob() throws ZosBatchException, ZosmfException {
@@ -511,10 +525,10 @@ public class TestZosBatchJobImpl {
         Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
         Mockito.doReturn(FIXED_DDNAME).when(zosBatchJobOutputSpoolFileMock).getDdname();
         Mockito.doReturn(zosBatchJobOutputSpoolFileMock).when(zosBatchJobOutputSpoolFileIteratorMock).next();
-		Assert.assertEquals("getSpoolFile() should return the the mocked IZosBatchJobOutputSpoolFile", zosBatchJobOutputSpoolFileMock, zosBatchJobSpy.getSpoolFile(FIXED_DDNAME));
+		Assert.assertEquals("getSpoolFile() should return the mocked IZosBatchJobOutputSpoolFile", zosBatchJobOutputSpoolFileMock, zosBatchJobSpy.getSpoolFile(FIXED_DDNAME));
 
         Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
-		Assert.assertNull("getSpoolFile() should return the the mocked IZosBatchJobOutputSpoolFile", zosBatchJobSpy.getSpoolFile("DUMMY"));
+		Assert.assertNull("getSpoolFile() should return the mocked IZosBatchJobOutputSpoolFile", zosBatchJobSpy.getSpoolFile("DUMMY"));
     }
     
     @Test
