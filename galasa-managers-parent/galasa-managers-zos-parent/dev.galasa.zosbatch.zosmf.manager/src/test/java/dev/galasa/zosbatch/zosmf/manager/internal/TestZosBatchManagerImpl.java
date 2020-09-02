@@ -188,6 +188,7 @@ public class TestZosBatchManagerImpl {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
         zosBatchManagerSpy.provisionStart();
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertTrue("getCurrentTestMethodArchiveFolder() should return the correct value", ZosBatchManagerImpl.getCurrentTestMethodArchiveFolder().endsWith("preTest"));
     }
 
     @Test

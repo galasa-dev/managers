@@ -5,8 +5,6 @@
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,8 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
@@ -31,6 +27,7 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobOutput;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
@@ -76,7 +73,6 @@ public class ZosBatchJobImpl implements IZosBatchJob {
     private String jobFilesPath;
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
-    private int uniqueId;
     
     private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
@@ -107,7 +103,12 @@ public class ZosBatchJobImpl implements IZosBatchJob {
             this.jobcard = new ZosBatchJobcard();
         }
         if (jcl != null) {
-            storeArtifact(jcl, this.jobname.getName() + "_" + uniqueId +"_supplied_JCL.txt");
+        	Path artifactPath = ZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
+        	try {
+				ZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(this.jobname.getName() + "_supplied_JCL"), jcl, ResultArchiveStoreContentType.TEXT);
+			} catch (ZosManagerException e) {
+				throw new ZosBatchException(e);
+			}
             this.jcl = parseJcl(jcl);
 
             try {
@@ -277,32 +278,41 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         if (jobOutput() == null) {
             retrieveOutput();
         }
-        String dirName = this.jobname.getName() + "_" + uniqueId + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+        Path artifactPath = ZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
+        String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+        artifactPath = artifactPath.resolve(ZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, folderName));
+        
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
             IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
-            StringBuilder fileName = new StringBuilder();
-            fileName.append(spoolFile.getJobname());
-            fileName.append("_");
-            fileName.append(spoolFile.getJobid());
+            StringBuilder name = new StringBuilder();
+            name.append(spoolFile.getJobname());
+            name.append("_");
+            name.append(spoolFile.getJobid());
             if (!spoolFile.getStepname().isEmpty()){
-                fileName.append("_");
-                fileName.append(spoolFile.getStepname());
+                name.append("_");
+                name.append(spoolFile.getStepname());
             }
             if (!spoolFile.getProcstep().isEmpty()){
-                fileName.append("_");
-                fileName.append(spoolFile.getProcstep());
+                name.append("_");
+                name.append(spoolFile.getProcstep());
             }
-            fileName.append("_");
-            fileName.append(spoolFile.getDdname());
-            fileName.append(".txt");
-            logger.info("        " + fileName.toString());
-            storeArtifact(spoolFile.getRecords(), dirName, fileName.toString());
+            name.append("_");
+            name.append(spoolFile.getDdname());
+            logger.info("        " + name);
+            String fileName = ZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, name.toString());
+            try {
+				ZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
+			} catch (ZosManagerException e) {
+				throw new ZosBatchException(e);
+			}
         }
-        this.jobArchived = true;
+        if (isComplete()) {
+        	this.jobArchived = true;
+        }
     }
 
-    protected void getOutput() throws ZosBatchException {
+	protected void getOutput() throws ZosBatchException {
     
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
@@ -535,7 +545,7 @@ public class ZosBatchJobImpl implements IZosBatchJob {
                 throw new ZosBatchException(e);
             }
         } else {            
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+            // Error case
             JsonObject errorResponseBody;
             try {
                 errorResponseBody = response.getJsonContent();
@@ -708,40 +718,5 @@ public class ZosBatchJobImpl implements IZosBatchJob {
         if (!isArchived() || !this.jobComplete) {
             saveOutputToTestResultsArchive();
         }
-    }
-
-    protected void storeArtifact(String content, String... artifactPathElements) throws ZosBatchException {
-        try {
-            if (ZosBatchManagerImpl.archivePath == null) {
-                throw new ZosBatchException("Unable to get archive path");
-            }
-            Path artifactPath = ZosBatchManagerImpl.archivePath.resolve(ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
-            String lastElement = artifactPathElements[artifactPathElements.length-1];
-            for (String artifactPathElement : artifactPathElements) {
-                if (!lastElement.equals(artifactPathElement)) {
-                    artifactPath = artifactPath.resolve(artifactPathElement.replace("_0_", "_" + Integer.toString(uniqueId) + "_"));
-                }
-            }
-            while (Files.exists(artifactPath.resolve(lastElement))) {
-                uniqueId++;
-                Pattern pattern = Pattern.compile("_" + Integer.toString(uniqueId-1) + "_");
-                Matcher matcher = pattern.matcher(lastElement);
-                if (matcher.find()) {
-                    lastElement = matcher.replaceFirst("_" + Integer.toString(uniqueId) + "_");
-                } else {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append(lastElement);
-                    stringBuilder.append("_");
-                    stringBuilder.append(uniqueId);
-                    stringBuilder.append("_");
-                    lastElement = stringBuilder.toString();
-                }
-            }
-            artifactPath = artifactPath.resolve(lastElement);
-            Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-            Files.write(artifactPath, content.getBytes()); 
-        } catch (IOException e) {
-            throw new ZosBatchException("Unable to store artifact", e);
-        }        
     }
 }
