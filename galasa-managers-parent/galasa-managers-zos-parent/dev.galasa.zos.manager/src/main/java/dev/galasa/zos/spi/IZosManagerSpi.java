@@ -5,8 +5,11 @@
  */
 package dev.galasa.zos.spi;
 
+import java.nio.file.Path;
+
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
@@ -111,11 +114,27 @@ public interface IZosManagerSpi extends IZosManager {
 	IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException;
 
 	/**
-	 * Create a new batch jopb output object
+	 * Create a new batch job output object
 	 * @param name
 	 * @param jobid
 	 * @return
 	 */
 	IZosBatchJobOutputSpi newZosBatchJobOutput(String name, String jobid);
+
+	/**
+	 * Build a unique results archive artifact name 
+	 * @param artifactPath
+	 * @param name
+	 * @return
+	 */
+	String buildUniquePathName(Path artifactPath, String name);
+
+	/**
+	 * Store an artifact in the results archive on behalf of another manager
+	 * @param archivePath
+	 * @param content
+	 * @param type
+	 */
+	void storeArtifact(Path artifactPath, String content, ResultArchiveStoreContentType type) throws ZosManagerException;
 
 }

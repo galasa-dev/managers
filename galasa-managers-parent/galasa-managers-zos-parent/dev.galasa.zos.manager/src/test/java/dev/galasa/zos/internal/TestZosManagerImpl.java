@@ -6,8 +6,14 @@
 package dev.galasa.zos.internal;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.ManagerException;
+import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
@@ -702,6 +709,50 @@ public class TestZosManagerImpl {
     	Assert.assertEquals("newZosBatchJobOutput() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutput(jobname, "jobid").getJobname());
     }
     
+    @Test 
+    public void testStoreArtifact() throws ZosManagerException, IOException {
+    	Path archivePathMock = newMockedPath(true);
+    	zosManagerSpy.storeArtifact(archivePathMock, "content", ResultArchiveStoreContentType.TEXT);
+    	Mockito.verify(archivePathMock, Mockito.times(2)).getFileSystem();
+    }
+    
+    @Test
+    public void testBuildUniquePathName() throws IOException {
+    	Path archivePathMock = newMockedPath(false);
+    	Answer<Path> resolveAnswer = new Answer<Path>() {
+    		@Override
+    		public Path answer(InvocationOnMock invocation) throws Throwable {
+    			String path = invocation.getArgument(0);
+    			if ("XX_1".equals(path) ||
+            		"XX_2".equals(path) ||
+            		"YY".equals(path)) {
+    				return newMockedPath(true);
+    			}
+    			return newMockedPath(false);
+    		}
+    	};
+    	Mockito.when(archivePathMock.resolve(Mockito.anyString())).thenAnswer(resolveAnswer);
+    	Assert.assertEquals("newZosBatchJobname() should return the expected value", "XX", zosManagerSpy.buildUniquePathName(archivePathMock, "XX"));
+    	Assert.assertEquals("newZosBatchJobname() should return the expected value", "XX_3", zosManagerSpy.buildUniquePathName(archivePathMock, "XX_2"));
+    	Assert.assertEquals("newZosBatchJobname() should return the expected value", "YY_1", zosManagerSpy.buildUniquePathName(archivePathMock, "YY"));
+    }
+    
+    private Path newMockedPath(boolean fileExists) throws IOException {
+        Path pathMock = Mockito.mock(Path.class);
+        FileSystem fileSystemMock = Mockito.mock(FileSystem.class);
+        FileSystemProvider fileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(pathMock.resolve(Mockito.anyString())).thenReturn(pathMock);        
+        Mockito.when(pathMock.getFileSystem()).thenReturn(fileSystemMock);
+        Mockito.when(fileSystemMock.provider()).thenReturn(fileSystemProviderMock);
+        SeekableByteChannel seekableByteChannelMock = Mockito.mock(SeekableByteChannel.class);
+        Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(seekableByteChannelMock);
+        Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
+        if (!fileExists) {
+            Mockito.doThrow(new IOException()).when(fileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
+        }
+        return pathMock;
+    }
     class DummyTestClass {
         @dev.galasa.zos.ZosImage(imageTag="TAG")
         public dev.galasa.zos.IZosImage zosImage;

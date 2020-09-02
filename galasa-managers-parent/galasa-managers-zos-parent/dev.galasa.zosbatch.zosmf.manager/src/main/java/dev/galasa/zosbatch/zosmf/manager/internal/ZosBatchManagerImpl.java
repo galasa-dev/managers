@@ -77,6 +77,9 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     public static void setCurrentTestMethodArchiveFolderName(String folderName) {
         ZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
     }
+    public static Path getCurrentTestMethodArchiveFolder() {
+        return archivePath.resolve(currentTestMethodArchiveFolderName);
+    }
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
