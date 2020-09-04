@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
@@ -39,13 +39,13 @@ import dev.galasa.zosmf.ZosmfManagerException;
  * Implementation of {@link IZosBatch} using zOS/MF
  *
  */
-public class ZosBatchImpl implements IZosBatch {
+public class ZosmfZosBatchImpl implements IZosBatch {
     
-    private List<ZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
+    private List<ZosmfZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
     private IZosImage image;
-    private static final Log logger = LogFactory.getLog(ZosBatchImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosBatchImpl.class);
     
-    public ZosBatchImpl(IZosImage image) {
+    public ZosmfZosBatchImpl(IZosImage image) {
         this.image = image;
     }
     
@@ -58,7 +58,7 @@ public class ZosBatchImpl implements IZosBatch {
     public @NotNull IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, ZosBatchJobcard jobcard) throws ZosBatchException {
         if (jobname == null) {
             try {
-				jobname = ZosBatchManagerImpl.newZosBatchJobname(this.image);
+				jobname = ZosmfZosBatchManagerImpl.newZosBatchJobname(this.image);
 			} catch (ZosBatchManagerException e) {
 				throw new ZosBatchException(e);
 			}
@@ -68,7 +68,7 @@ public class ZosBatchImpl implements IZosBatch {
             jobcard = new ZosBatchJobcard();
         }
         
-        ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, jcl, jobcard);
+        ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.image, jobname, jcl, jobcard);
         this.zosBatchJobs.add(zosBatchJob);
         
         return zosBatchJob.submitJob();
@@ -92,23 +92,27 @@ public class ZosBatchImpl implements IZosBatch {
      */
     public void cleanup() throws ZosBatchException {
         
-        Iterator<ZosBatchJobImpl> iterator = zosBatchJobs.iterator();
+        Iterator<ZosmfZosBatchJobImpl> iterator = zosBatchJobs.iterator();
         while (iterator.hasNext()) {
-            ZosBatchJobImpl zosBatchJobImpl = iterator.next();
-            if (zosBatchJobImpl.submitted()) {
-                if (!zosBatchJobImpl.isComplete()) {
-                    zosBatchJobImpl.cancel();
-                    zosBatchJobImpl.archiveJobOutput();
-                    zosBatchJobImpl.purge();
-                } else {
-                    if (!zosBatchJobImpl.isArchived()) {
-                        zosBatchJobImpl.archiveJobOutput();
-                    }
-                    if (!zosBatchJobImpl.isPurged()) {
-                        zosBatchJobImpl.purge();
-                    }
-                }
-            }
+            ZosmfZosBatchJobImpl zosBatchJobImpl = iterator.next();
+            try {
+				if (zosBatchJobImpl.submitted()) {
+				    if (!zosBatchJobImpl.isComplete()) {
+				        zosBatchJobImpl.cancel();
+				        zosBatchJobImpl.archiveJobOutput();
+				        zosBatchJobImpl.purge();
+				    } else {
+				        if (!zosBatchJobImpl.isArchived()) {
+				            zosBatchJobImpl.archiveJobOutput();
+				        }
+				        if (!zosBatchJobImpl.isPurged()) {
+				            zosBatchJobImpl.purge();
+				        }
+				    }
+				}
+			} catch (ZosBatchException e) {
+				logger.error("Problem in cleanup phase", e);
+			}
             iterator.remove();
         }
     }
@@ -116,13 +120,13 @@ public class ZosBatchImpl implements IZosBatch {
     protected List<IZosBatchJob> getBatchJobs(String suppliedJobname, String suppliedOwner) throws ZosBatchException {
         IZosmfRestApiProcessor zosmfApiProcessor;
         try {
-            zosmfApiProcessor = ZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(image, ZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(image.getImageID()));
+            zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(image, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(image.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
         String jobnameQueryString = suppliedJobname == (null) ? "prefix=*" : "prefix=" + suppliedJobname;
         String ownerQueryString = suppliedOwner == (null) ? "" : "owner=" + suppliedOwner;
-        String listJobsPath = ZosBatchJobImpl.RESTJOBS_PATH + "?" + jobnameQueryString + "&" + ownerQueryString;
+        String listJobsPath = ZosmfZosBatchJobImpl.RESTJOBS_PATH + "?" + jobnameQueryString + "&" + ownerQueryString;
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
@@ -153,8 +157,8 @@ public class ZosBatchImpl implements IZosBatch {
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject responseBody = jsonElement.getAsJsonObject();
                 String jobnameString = responseBody.get("jobname").getAsString();
-                IZosBatchJobname jobname = ZosBatchManagerImpl.newZosBatchJobname(jobnameString);
-                ZosBatchJobImpl zosBatchJob = new ZosBatchJobImpl(this.image, jobname, null, null);
+                IZosBatchJobname jobname = ZosmfZosBatchManagerImpl.newZosBatchJobname(jobnameString);
+                ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.image, jobname, null, null);
                 zosBatchJob.setJobid(responseBody.get("jobid").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());
                 zosBatchJob.setType(responseBody.get("type").getAsString());
@@ -164,7 +168,7 @@ public class ZosBatchImpl implements IZosBatch {
             }
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = ZosBatchJobImpl.buildErrorString("List jobs output", (JsonObject) responseBodyObject); 
+            String displayMessage = ZosmfZosBatchJobImpl.buildErrorString("List jobs output", (JsonObject) responseBodyObject); 
             logger.error(displayMessage);
             throw new ZosBatchException(displayMessage);
         }

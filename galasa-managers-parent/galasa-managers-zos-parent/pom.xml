@@ -24,6 +24,8 @@
   	<module>dev.galasa.zos.manager.ivt</module>
   	<module>dev.galasa.zos3270.manager.ivt</module>
     <module>dev.galasa.zos3270.common</module>
+    <module>dev.galasa.rseapi.manager</module>
+    <module>dev.galasa.zosbatch.rseapi.manager</module>
   </modules>
   
 </project>

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
@@ -45,9 +45,9 @@ import dev.galasa.zosmf.spi.IZosmfManagerSpi;
  *
  */
 @Component(service = { IManager.class })
-public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi {
+public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi {
     
-    private static final Log logger = LogFactory.getLog(ZosBatchManagerImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosBatchManagerImpl.class);
 
     private static final String ZOSBATCH_JOBS = "zosBatchJobs";
 
@@ -55,27 +55,27 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
 
     protected static IZosManagerSpi zosManager;
     public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosBatchManagerImpl.zosManager = zosManager;
+        ZosmfZosBatchManagerImpl.zosManager = zosManager;
     }
     
     protected static IZosmfManagerSpi zosmfManager;
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-        ZosBatchManagerImpl.zosmfManager = zosmfManager;
+        ZosmfZosBatchManagerImpl.zosmfManager = zosmfManager;
     }
 
-    private final HashMap<String, ZosBatchImpl> taggedZosBatches = new HashMap<>();
-    private final HashMap<String, ZosBatchImpl> zosBatches = new HashMap<>();
+    private final HashMap<String, ZosmfZosBatchImpl> taggedZosBatches = new HashMap<>();
+    private final HashMap<String, ZosmfZosBatchImpl> zosBatches = new HashMap<>();
 
     private Path artifactsRoot;
     
     protected static Path archivePath;
     public static void setArchivePath(Path archivePath) {
-        ZosBatchManagerImpl.archivePath = archivePath;
+        ZosmfZosBatchManagerImpl.archivePath = archivePath;
     }
     
     protected static String currentTestMethodArchiveFolderName;
     public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        ZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
+        ZosmfZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
     }
     public static Path getCurrentTestMethodArchiveFolder() {
         return archivePath.resolve(currentTestMethodArchiveFolderName);
@@ -212,10 +212,10 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     }
     
     protected void cleanup() throws ZosBatchException {
-        for (Entry<String, ZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
+        for (Entry<String, ZosmfZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
             entry.getValue().cleanup();
         }
-        for (Entry<String, ZosBatchImpl> entry : this.zosBatches.entrySet()) {
+        for (Entry<String, ZosmfZosBatchImpl> entry : this.zosBatches.entrySet()) {
             entry.getValue().cleanup();
         }
     }
@@ -233,8 +233,8 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
         }
 
         IZosImage image = zosManager.getImageForTag(tag);
-        IZosBatch zosBatch = new ZosBatchImpl(image);
-        this.taggedZosBatches.put(tag, (ZosBatchImpl) zosBatch);
+        IZosBatch zosBatch = new ZosmfZosBatchImpl(image);
+        this.taggedZosBatches.put(tag, (ZosmfZosBatchImpl) zosBatch);
         
         return zosBatch;
     }
@@ -267,7 +267,7 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
         if (zosBatches.containsKey(image.getImageID())) {
             return zosBatches.get(image.getImageID());
         } else {
-            ZosBatchImpl zosBatch = new ZosBatchImpl(image);
+            ZosmfZosBatchImpl zosBatch = new ZosmfZosBatchImpl(image);
             zosBatches.put(image.getImageID(), zosBatch);
             return zosBatch;
         }
