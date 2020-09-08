@@ -11,7 +11,12 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
@@ -34,18 +39,16 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
+import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
+import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -53,21 +56,29 @@ import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchManagerImpl.class, JobWaitTimeout.class, UseSysaff.class, RestrictToImage.class, TruncateJCLRecords.class})
+@PrepareForTest({ZosBatchManagerImpl.class, LogFactory.class})
 public class TestZosBatchJobImpl {
     
     private ZosBatchJobImpl zosBatchJob;
     
     private ZosBatchJobImpl zosBatchJobSpy;
+    
+    @Mock
+    private Log logMock;
+    
+    private static String logMessage;
 
     @Mock
     private IZosImage zosImageMock;
 
     @Mock
-    private ZosBatchJobnameImpl zosJobnameMock;
+    private IZosBatchJobname zosJobnameMock;
 
     @Mock
     private ZosBatchJobcard zosBatchJobcardMock;
+
+    @Mock
+    private ZosManagerImpl zosManagerMock;
 
     @Mock
     private ZosmfManagerImpl zosmfManagerMock;
@@ -82,10 +93,13 @@ public class TestZosBatchJobImpl {
     private IZosmfResponse zosmfResponseMockStatus;
     
     @Mock
-    private ZosBatchJobOutputImpl zosBatchJobOutputMock;
+    private IZosBatchJobOutputSpi zosBatchJobOutputMock;
     
     @Mock
     private IZosBatchJobOutputSpoolFile zosBatchJobOutputSpoolFileMock;
+    
+    @Mock
+    private Iterator<IZosBatchJobOutputSpoolFile> zosBatchJobOutputSpoolFileIteratorMock;
     
     @Mock
     private ResultArchiveStorePath resultArchiveStorePathMock;
@@ -98,63 +112,62 @@ public class TestZosBatchJobImpl {
     
     private static final String FIXED_OWNER = "USERID";
     
+    private static final String FIXED_JOBCARD = "//" + FIXED_JOBNAME + " JOB \n";
+    
     private static final String FIXED_TYPE = "TYP";
     
-    private static final String FIXED_JOBCARD_ACCOUNT = "ACCOUNT";
-    
-    private static final String FIXED_JOBCARD_PROGRAMMER_NAME = "PROGRAMMER";
-    
-    private static final String FIXED_JOBCARD_CLASS = "A";
-    
-    private static final String FIXED_JOBCARD_MSGCLASS = "A";
-    
-    private static final String FIXED_JOBCARD_MSGLEVEL = "(1,1)";
-    
-    private static final String FIXED_JOBCARD_REGION = "0M";
-    private static final String FIXED_JOBCARD_MEMLIMIT = "0M";
-    private static final String FIXED_JOBCARD_TYPRUN = "SCAN";
-    private static final String FIXED_JOBCARD_USERID = FIXED_OWNER;
-    private static final String FIXED_JOBCARD_PASSWORD = "PASSWORD";
-    private static final String FIXED_JOBCARD_COND = "(4,LT)";
-
     private static final String FIXED_STATUS_OUTPUT = "OUTPUT";
 
     private static final String FIXED_RETCODE_0000 = "CC 0000";
 
     private static final String FIXED_RETCODE_0020 = "CC 0020";
 
+	private static final String FIXED_DDNAME = "DDNAME";
+
+	private static final Object FIXED_STEPNAME = "STEP";
+
+	private static final Object FIXED_PROCSTEP = "PROCSTEP";
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setup() throws Exception {
-
-        IConfigurationPropertyStoreService cps = Mockito.mock(IConfigurationPropertyStoreService.class);
-        ZosBatchZosmfPropertiesSingleton singleton = new ZosBatchZosmfPropertiesSingleton();
-        singleton.activate();
-        ZosBatchZosmfPropertiesSingleton.setCps(cps);        
-                
+        PowerMockito.mockStatic(LogFactory.class);
+        Mockito.when(LogFactory.getLog(Mockito.any(Class.class))).thenReturn(logMock);
+        Answer<String> answer = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                logMessage = invocation.getArgument(0);
+                System.err.println("Captured Log Message:\n" + logMessage);
+                if (invocation.getArguments().length > 1 && invocation.getArgument(1) instanceof Throwable) {
+                    ((Throwable) invocation.getArgument(1)).printStackTrace();
+                }
+                return null;
+            }
+        };
+        Mockito.doAnswer(answer).when(logMock).info(Mockito.any());
+        
         Mockito.when(zosImageMock.getImageID()).thenReturn(FIXED_IMAGE_ID);
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
         
-        PowerMockito.mockStatic(JobWaitTimeout.class);
-        Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(2);
+        Mockito.when(zosManagerMock.getZosBatchPropertyJobWaitTimeout(Mockito.any())).thenReturn(2);
         
-        PowerMockito.mockStatic(UseSysaff.class);
-        Mockito.when(UseSysaff.get(Mockito.any())).thenReturn(false);
+        Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenReturn(false);
         
-        PowerMockito.mockStatic(RestrictToImage.class);
-        Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenReturn(true);
         
-        PowerMockito.mockStatic(TruncateJCLRecords.class);
-        Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);        
+        Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(true);        
         
         ZosBatchManagerImpl.setArchivePath(newMockedPath(false));
         ZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestZosBatchJobImpl.class.getDeclaredMethod("setup").getName());
 
-        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
+        PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
+        ZosBatchManagerImpl.setZosManager(zosManagerMock);
+        
+        Mockito.when(zosBatchJobcardMock.getJobcard(Mockito.any(), Mockito.any())).thenReturn(FIXED_JOBCARD);
         
         zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", zosBatchJobcardMock);
         zosBatchJobSpy = Mockito.spy(zosBatchJob);
@@ -162,20 +175,20 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testConstructor() throws ZosBatchException {
-        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
         
         zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
-        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
         
         zosBatchJob = new ZosBatchJobImpl(zosImageMock, zosJobnameMock, null, null);
-        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
     }
     
     @Test
     public void testConstructorJobWaitTimeoutException() throws ZosBatchManagerException {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Unable to get job timeout property value");
-        Mockito.when(JobWaitTimeout.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getZosBatchPropertyJobWaitTimeout(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
         new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
@@ -184,7 +197,7 @@ public class TestZosBatchJobImpl {
     public void testConstructorUseSysaffException() throws ZosBatchManagerException {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Unable to get use SYSAFF property value");
-        Mockito.when(UseSysaff.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
         new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
@@ -193,44 +206,54 @@ public class TestZosBatchJobImpl {
     public void testConstructorRestrictToImageException() throws ZosBatchManagerException {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(RestrictToImage.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
+        
+        new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+    }
+    
+    @Test
+    public void testConstructorStoreArtifactException() throws ZosManagerException {
+        exceptionRule.expect(ZosBatchManagerException.class);
+        exceptionRule.expectMessage("exception");
+        PowerMockito.doThrow(new ZosManagerException("exception")).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
         
         new ZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
     
     @Test
     public void testGetJobId() {
-        Assert.assertEquals("getJobId() should return the 'unknown' value", "????????", zosBatchJob.getJobId());
-        zosBatchJob.setJobid(FIXED_JOBID);
-        Assert.assertEquals("getJobId() should return the supplied value", FIXED_JOBID, zosBatchJob.getJobId());
+        Assert.assertEquals("getJobId() should return the 'unknown' value", "????????", zosBatchJobSpy.getJobId());
+        zosBatchJobSpy.setJobid(FIXED_JOBID);
+        Assert.assertEquals("getJobId() should return the supplied value", FIXED_JOBID, zosBatchJobSpy.getJobId());
     }
     
     @Test
     public void testGetOwner() {
-        Assert.assertEquals("getOwner() should return the 'unknown' value", "????????", zosBatchJob.getOwner());
-        zosBatchJob.setOwner(FIXED_OWNER);
-        Assert.assertEquals("getOwner() should return the supplied value", FIXED_OWNER, zosBatchJob.getOwner());
+        Assert.assertEquals("getOwner() should return the 'unknown' value", "????????", zosBatchJobSpy.getOwner());
+        zosBatchJobSpy.setOwner(FIXED_OWNER);
+        Assert.assertEquals("getOwner() should return the supplied value", FIXED_OWNER, zosBatchJobSpy.getOwner());
     }
     
     @Test
     public void testGetType() {
-        Assert.assertEquals("getType() should return the 'unknown' value", "???", zosBatchJob.getType());
-        zosBatchJob.setType(FIXED_TYPE);
-        Assert.assertEquals("getType() should return the supplied value", FIXED_TYPE, zosBatchJob.getType());
+        Assert.assertEquals("getType() should return the 'unknown' value", "???", zosBatchJobSpy.getType());
+        zosBatchJobSpy.setType(FIXED_TYPE);
+        Assert.assertEquals("getType() should return the supplied value", FIXED_TYPE, zosBatchJobSpy.getType());
     }
     
     @Test
     public void testGetStatus() {
-        Assert.assertEquals("getStatus() should return the 'unknown' value", "????????", zosBatchJob.getStatus());
-        Whitebox.setInternalState(zosBatchJob, "status", FIXED_STATUS_OUTPUT);
-        Assert.assertEquals("getStatus() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJob.getStatus());
+        Assert.assertEquals("getStatus() should return the 'unknown' value", "????????", zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus(FIXED_STATUS_OUTPUT);
+        Assert.assertEquals("getStatus() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatus());
     }
     
     @Test
     public void testGetRetcode() {
-        Assert.assertEquals("getRetcode() should return the 'unknown' value", "????", zosBatchJob.getRetcode());
-        Whitebox.setInternalState(zosBatchJob, "retcode", FIXED_RETCODE_0000);
-        Assert.assertEquals("getRetcode() should return the supplied value", FIXED_RETCODE_0000, zosBatchJob.getRetcode());
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
+        Assert.assertEquals("getRetcode() should return the 'unknown' value", "????", zosBatchJobSpy.getRetcode());
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
+        Assert.assertEquals("getRetcode() should return the supplied value", FIXED_RETCODE_0000, zosBatchJobSpy.getRetcode());
     }
     
     @Test
@@ -243,8 +266,8 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
-        zosBatchJob.submitJob();
-        Assert.assertEquals("getJobname().getName() should return the supplied value", FIXED_JOBNAME, zosBatchJob.getJobname().getName());
+        zosBatchJobSpy.submitJob();
+        Assert.assertEquals("getJobname().getName() should return the supplied value", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
     }
     
     @Test
@@ -253,7 +276,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage("exception");
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
-        zosBatchJob.submitJob();
+        zosBatchJobSpy.submitJob();
     }
     
     @Test
@@ -263,7 +286,7 @@ public class TestZosBatchJobImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockSubmit);
         Mockito.when(zosmfResponseMockSubmit.getJsonContent()).thenThrow(new ZosmfException("exception"));
         
-        zosBatchJob.submitJob();
+        zosBatchJobSpy.submitJob();
     }
     
     @Test
@@ -275,7 +298,7 @@ public class TestZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Submit job, category:0, rc:0, reason:0, message:message"));
 
-        zosBatchJob.submitJob();
+        zosBatchJobSpy.submitJob();
     }
     
     @Test
@@ -307,56 +330,31 @@ public class TestZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("waitForJob() should return the Integer.MIN_VALUE", Integer.MIN_VALUE, zosBatchJobSpy.waitForJob());
-
-// Not working in Jenkins build 
-//        Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", false);
-//        Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(1);
-//        Thread.currentThread().interrupt();
-//        exceptionRule.expect(ZosBatchException.class);
-//        exceptionRule.expectMessage("java.lang.InterruptedException");
-//        zosBatchJobSpy.waitForJob();
     }
 
     @Test
     public void testWaitForJobNotSubmittedException() throws ZosBatchException {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Job has not been submitted by manager");
-        zosBatchJob.waitForJob();
+        zosBatchJobSpy.waitForJob();
     }
     
     @Test
-    public void testRetrieveOutput() throws Exception {
-        Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-        Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-        Mockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
-        Mockito.doNothing().when(zosBatchJobSpy).archiveJobOutput();
-        Mockito.doNothing().when(zosBatchJobSpy).purge();
-        Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
-
-        Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
-        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        
-        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
-        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "outputComplete", false);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
-        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
+    public void testRetrieveOutput() throws Exception {        
+    	Mockito.doNothing().when(zosBatchJobSpy).getOutput();
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).jobOutput();
+    	Whitebox.setInternalState(zosBatchJobSpy, "outputComplete", false);
+        Assert.assertEquals("retrieveOutput() should return expected value", zosBatchJobOutputMock, zosBatchJobSpy.retrieveOutput());
         
         Whitebox.setInternalState(zosBatchJobSpy, "outputComplete", true);
-        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
-        
-        Assert.assertEquals("retrieveOutput() should return FIXED_JOBNAME_FIXED_JOBID", FIXED_JOBNAME + "_" + FIXED_JOBID, zosBatchJobSpy.retrieveOutput().toString());
+        Assert.assertEquals("retrieveOutput() should return expected value", zosBatchJobOutputMock, zosBatchJobSpy.retrieveOutput());
     }
     
     @Test
     public void testRetrieveOutputNotSubmittedException() throws ZosBatchException {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Job has not been submitted by manager");
-        zosBatchJob.retrieveOutput();
+        zosBatchJobSpy.retrieveOutput();
     }
 
     @Test
@@ -419,6 +417,18 @@ public class TestZosBatchJobImpl {
         exceptionRule.expectMessage(StringStartsWith.startsWith("Error Retrieve job output, category:0, rc:0, reason:0, message:message"));
         
         zosBatchJobSpy.retrieveOutput();
+    }
+    
+    @Test
+    public void testRetrieveOutputAsString() throws Exception {
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+        Mockito.doReturn("RECORDS\n").when(zosBatchJobOutputSpoolFileMock).getRecords();
+    	List<IZosBatchJobOutputSpoolFile> spoolFiles = new ArrayList<IZosBatchJobOutputSpoolFile>();
+    	spoolFiles.add(zosBatchJobOutputSpoolFileMock);
+    	spoolFiles.add(zosBatchJobOutputSpoolFileMock);
+		Mockito.doReturn(spoolFiles).when(zosBatchJobOutputMock).getSpoolFiles();
+		String expected = "RECORDS\nRECORDS\n";
+		Assert.assertEquals("retrieveOutputAsString() should return the expected value", expected, zosBatchJobSpy.retrieveOutputAsString());
     }
 
     @Test
@@ -519,10 +529,79 @@ public class TestZosBatchJobImpl {
 
     @Test
     public void testGetSpoolFile() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosBatchJobOutputMock.getSpoolFile(Mockito.any())).thenReturn(zosBatchJobOutputSpoolFileMock);
-        PowerMockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
+        Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+        Mockito.doReturn(zosBatchJobOutputSpoolFileIteratorMock).when(zosBatchJobOutputMock).iterator();
+        Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
+        Mockito.doReturn(FIXED_DDNAME).when(zosBatchJobOutputSpoolFileMock).getDdname();
+        Mockito.doReturn(zosBatchJobOutputSpoolFileMock).when(zosBatchJobOutputSpoolFileIteratorMock).next();
+		Assert.assertEquals("getSpoolFile() should return the mocked IZosBatchJobOutputSpoolFile", zosBatchJobOutputSpoolFileMock, zosBatchJobSpy.getSpoolFile(FIXED_DDNAME));
+
+        Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
+		Assert.assertNull("getSpoolFile() should return the mocked IZosBatchJobOutputSpoolFile", zosBatchJobSpy.getSpoolFile("DUMMY"));
+    }
+    
+    @Test
+    public void testSaveOutputToTestResultsArchive() throws ZosManagerException {
+        ZosBatchManagerImpl.setZosManager(zosManagerMock);
+        PowerMockito.doNothing().when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+        PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
+    	Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
+        Mockito.doReturn(zosBatchJobOutputSpoolFileIteratorMock).when(zosBatchJobOutputMock).iterator();
+        Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
+        Mockito.doReturn(zosBatchJobOutputSpoolFileMock).when(zosBatchJobOutputSpoolFileIteratorMock).next();
+        Mockito.doReturn(FIXED_JOBNAME).when(zosBatchJobOutputSpoolFileMock).getJobname();
+        Mockito.doReturn(FIXED_JOBID).when(zosBatchJobOutputSpoolFileMock).getJobid();
+        Mockito.doReturn("").when(zosBatchJobOutputSpoolFileMock).getStepname();
+        Mockito.doReturn("").when(zosBatchJobOutputSpoolFileMock).getProcstep();
+        Mockito.doReturn(FIXED_DDNAME).when(zosBatchJobOutputSpoolFileMock).getDdname();
+        Mockito.doReturn("content").when(zosBatchJobOutputSpoolFileMock).getRecords();
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+
+        String expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_DDNAME;
+    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+        Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
+
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	Mockito.doReturn(null, zosBatchJobOutputMock).when(zosBatchJobSpy).jobOutput();
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
+        Mockito.doReturn(FIXED_STEPNAME).when(zosBatchJobOutputSpoolFileMock).getStepname();
+        Mockito.doReturn(FIXED_PROCSTEP).when(zosBatchJobOutputSpoolFileMock).getProcstep();
+        Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
+		
+        expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_STEPNAME + "_" + FIXED_PROCSTEP + "_" + FIXED_DDNAME;
+    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+        Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
+
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).jobOutput();
+        Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
+        PowerMockito.doThrow(new ZosManagerException("exception")).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("exception");
         
-        Assert.assertEquals("getSpoolFile() should return the the mocked IZosBatchJobOutputSpoolFile", zosBatchJobOutputSpoolFileMock, zosBatchJobSpy.getSpoolFile("DDNAME"));
+    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+    }
+    
+    @Test
+    public void testGetOutput() throws ZosBatchException, ZosmfException {
+    	PowerMockito.doReturn(true).when(zosBatchJobSpy).submitted();
+        PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
+        
+        Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        PowerMockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
+    	zosBatchJobSpy.getOutput();
+    	
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
+    	zosBatchJobSpy.getOutput();
+    	
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", false);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	zosBatchJobSpy.getOutput();
+    	Assert.assertTrue("getOutput() should set outputComplete to true", Whitebox.getInternalState(zosBatchJobSpy, "outputComplete"));
     }
 
     @Test
@@ -649,81 +728,23 @@ public class TestZosBatchJobImpl {
 
         zosBatchJobSpy.updateJobStatus();
     }
-
-    @Test
-    public void testAchiveJobOutput() throws ZosBatchException, ZosmfException {
-        ZosBatchJobOutputImpl zosBatchJobOutput = new ZosBatchJobOutputImpl(FIXED_JOBNAME, FIXED_JOBID);
-        zosBatchJobOutput.addJcl("JCL");
-        zosBatchJobOutput.add(getJsonObject(), "records");       
-        PowerMockito.doReturn(zosBatchJobOutput).when(zosBatchJobSpy).jobOutput();
-        
-        Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobname", zosJobnameMock);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
-        Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);        
-        PowerMockito.doReturn(zosBatchJobOutput).when(zosBatchJobSpy).retrieveOutput();
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
-        zosBatchJobSpy.archiveJobOutput();
-        Assert.assertEquals("isArchived() should return the true", true, zosBatchJobSpy.isArchived());
-
-        Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
-        zosBatchJobSpy.archiveJobOutput();
-        Assert.assertEquals("isArchived() should return the true", true, zosBatchJobSpy.isArchived());
-
-        Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
-        zosBatchJobSpy.archiveJobOutput();
-        Assert.assertEquals("isArchived() should return the true", true, zosBatchJobSpy.isArchived());
-
-        Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
-        zosBatchJobSpy.archiveJobOutput();
-        Assert.assertEquals("isArchived() should return the true", true, zosBatchJobSpy.isArchived());
-
-        PowerMockito.doReturn(null).doReturn(zosBatchJobOutput).when(zosBatchJobSpy).jobOutput();
-        Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
-        zosBatchJobSpy.archiveJobOutput();
-        Assert.assertEquals("isArchived() should return the true", true, zosBatchJobSpy.isArchived());
-        
-        PowerMockito.doReturn(null).when(zosBatchJobSpy).jobOutput();
-    }
     
     @Test
     public void testAddOutputFileContent() throws ZosBatchException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
-        Mockito.when(zosmfResponseMockStatus.getTextContent()).thenReturn("content");
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        ZosBatchJobOutputImpl zosBatchJobOutput = new ZosBatchJobOutputImpl(FIXED_JOBNAME, FIXED_JOBID);
-        zosBatchJobOutput.addJcl("JCL");
-        zosBatchJobOutput.add(getJsonObject(), "records");
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutput);
-        
-        zosBatchJobSpy.addOutputFileContent(null, null);
-        zosBatchJobSpy.addOutputFileContent(getJsonObject(), "path");
-        
-        Assert.assertEquals("Dummy assert", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
-    }
-    
-    @Test
-    public void testAddOutputSpoolFileNotFound() throws ZosBatchException, ZosmfException {
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockStatus);
-        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
-        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);        
-        PowerMockito.doReturn(true).when(zosBatchJobSpy).spoolFileNotFound(Mockito.any());
-        
-        zosBatchJobSpy.addOutputFileContent(null, null);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
 
-        Assert.assertEquals("Dummy assert", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
-    }
-    
-    @Test
-    public void testAddOutputFileContentZosmfException() throws ZosBatchException, ZosmfException {
+        zosBatchJobSpy.addOutputFileContent(null, null);
+        
+        JsonObject jsonObject = getJsonObject();
+        zosBatchJobSpy.addOutputFileContent(jsonObject, null);
+
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+        PowerMockito.doReturn(true).when(zosBatchJobSpy).spoolFileNotFound(Mockito.any());
+        zosBatchJobSpy.addOutputFileContent(jsonObject, null);
+        
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
         
         exceptionRule.expect(ZosBatchException.class);
@@ -790,103 +811,18 @@ public class TestZosBatchJobImpl {
                          "//         CLASS=A,\n" + 
                          "//         MSGCLASS=A,\n" + 
                          "//         MSGLEVEL=(1,1)";
-        String jobWithJobcard = jobcard.replace("@@@@", "") + "\nJCL\n"; 
-        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
+        jobcard.replace("@@@@", "");
+        
+        
+        String expectedJobcard = "//" + FIXED_JOBNAME + " JOB \nJCL\n";
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobSpy.jclWithJobcard());
         
         Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", true);
-        jobWithJobcard = jobcard.replace("@@@@", "") + "\n/*JOBPARM SYSAFF=" + FIXED_IMAGE_ID + "\nJCL\n"; 
-        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
+        expectedJobcard = "//" + FIXED_JOBNAME + " JOB \n/*JOBPARM SYSAFF=" + FIXED_IMAGE_ID + "\nJCL\n";
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobSpy.jclWithJobcard());
 
-        Whitebox.setInternalState(zosBatchJobSpy, "useSysaff", false);
-        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(FIXED_JOBCARD_ACCOUNT);
-        jobWithJobcard = jobcard.replace("@@@@", "'" + FIXED_JOBCARD_ACCOUNT + "'") + "\nJCL\n";
-        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
-
-        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(null);
-        Mockito.when(zosBatchJobcardMock.getProgrammerName()).thenReturn(FIXED_JOBCARD_PROGRAMMER_NAME);
-        jobWithJobcard = jobcard.replace("@@@@", ",'" + FIXED_JOBCARD_PROGRAMMER_NAME + "'") + "\nJCL\n";
-        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
-
-        Mockito.when(zosBatchJobcardMock.getAccount()).thenReturn(null);
-        Mockito.when(zosBatchJobcardMock.getProgrammerName()).thenReturn(null);
-        Mockito.when(zosBatchJobcardMock.getInputClass()).thenReturn(FIXED_JOBCARD_CLASS);
-        Mockito.when(zosBatchJobcardMock.getMsgClass()).thenReturn(FIXED_JOBCARD_MSGCLASS);
-        Mockito.when(zosBatchJobcardMock.getMsgLevel()).thenReturn(FIXED_JOBCARD_MSGLEVEL);
-        Mockito.when(zosBatchJobcardMock.getRegion()).thenReturn(FIXED_JOBCARD_REGION);
-        Mockito.when(zosBatchJobcardMock.getMemlimit()).thenReturn(FIXED_JOBCARD_MEMLIMIT);
-        Mockito.when(zosBatchJobcardMock.getTyprun()).thenReturn(ZosBatchJobcard.Typrun.SCAN);
-        Mockito.when(zosBatchJobcardMock.getUserid()).thenReturn(FIXED_JOBCARD_USERID);
-        Mockito.when(zosBatchJobcardMock.getPassword()).thenReturn(FIXED_JOBCARD_PASSWORD);
-        Mockito.when(zosBatchJobcardMock.getCond()).thenReturn(FIXED_JOBCARD_COND);
-        jobWithJobcard = jobcard.replace("@@@@", ",\n" +
-                "//         REGION=" + FIXED_JOBCARD_REGION + ",\n" + 
-                "//         MEMLIMIT=" + FIXED_JOBCARD_MEMLIMIT + ",\n" + 
-                "//         TYPRUN=" + FIXED_JOBCARD_TYPRUN + ",\n" +
-                "//         USERID=" + FIXED_JOBCARD_USERID + ",\n" +
-                "//         PASSWORD=" + FIXED_JOBCARD_PASSWORD + ",\n" + 
-                "//         COND=" + FIXED_JOBCARD_COND) + "\nJCL\n";
         Whitebox.setInternalState(zosBatchJobSpy, "jcl", "JCL\n");
-        Assert.assertEquals("jclWithJobcard() should a return valid job card", jobWithJobcard, zosBatchJobSpy.jclWithJobcard());
-    }
-    
-    @Test 
-    public void testStoreArtifact() throws ZosBatchException, IOException {
-        Path archivePathMock = newMockedPath(false);
-        Answer<Path> resolveAnswer = new Answer<Path>() {
-            @Override
-            public Path answer(InvocationOnMock invocation) throws Throwable {
-                String path = invocation.getArgument(0);
-                if ("artifactPathElement2".equals(path) ||
-                        ("artifact_0_Path_Element".equals(path) || 
-                         "artifact_1_Path_Element".equals(path)) || 
-                         "artifact_99_Path_Element".equals(path)) {
-                    return newMockedPath(true);
-                }
-                return archivePathMock;
-            }
-        };
-        Mockito.when(archivePathMock.resolve(Mockito.anyString())).thenAnswer(resolveAnswer);
-        ZosBatchManagerImpl.setArchivePath(archivePathMock);
-        
-        zosBatchJobSpy.storeArtifact("content", "artifactPathElement");
-        Assert.assertEquals("", 0, (int) Whitebox.getInternalState(zosBatchJobSpy, "uniqueId"));
-        
-        zosBatchJobSpy.storeArtifact("content", "artifactPathElement1", "artifactPathElement2");
-        Assert.assertEquals("", 1, (int) Whitebox.getInternalState(zosBatchJobSpy, "uniqueId"));
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "uniqueId", 0);
-        zosBatchJobSpy.storeArtifact("content", "artifact_0_Path_Element");
-        Assert.assertEquals("", 2, (int) Whitebox.getInternalState(zosBatchJobSpy, "uniqueId"));
-        
-        Whitebox.setInternalState(zosBatchJobSpy, "uniqueId", 99);
-        zosBatchJobSpy.storeArtifact("content", "artifact_99_Path_Element");
-        Assert.assertEquals("", 100, (int) Whitebox.getInternalState(zosBatchJobSpy, "uniqueId"));
-    }
-    
-    @Test 
-    public void testStoreArtifactNullPointerException() throws ZosBatchException {       
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Unable to get archive path");
-        ZosBatchManagerImpl.setArchivePath(null);
-        
-        zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
-    }
-    
-    @Test 
-    public void testStoreArtifactIOException() throws ZosBatchException, IOException {       
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Unable to store artifact");
-        Path localArchivePathMock = newMockedPath(true);
-        FileSystem localFileSystemMock = Mockito.mock(FileSystem.class);        
-        FileSystemProvider localFileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
-        Mockito.when(localArchivePathMock.resolve(Mockito.anyString())).thenReturn(localArchivePathMock);
-        Mockito.when(localArchivePathMock.getFileSystem()).thenReturn(localFileSystemMock);
-        Mockito.when(localFileSystemMock.provider()).thenReturn(localFileSystemProviderMock);
-        Mockito.when(localFileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new IOException());
-        Mockito.doThrow(new IOException()).when(localFileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
-        ZosBatchManagerImpl.setArchivePath(localArchivePathMock);
-        
-        zosBatchJobSpy.storeArtifact("content", "artifactPathElements");
+        Assert.assertEquals("jclWithJobcard() should a return valid job card", expectedJobcard, zosBatchJobSpy.jclWithJobcard());
     }
     
     @Test
@@ -919,49 +855,78 @@ public class TestZosBatchJobImpl {
                 "stack";
         returnString = ZosBatchJobImpl.buildErrorString("action", jsonObject);
         Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+
+        jsonObject.remove("stack");
+        expectedString = "Error action, category:0, rc:0, reason:0, message:message\n" + 
+                "details:\n" +
+                "details line 1\n" +
+                "details line 2";
+        returnString = ZosBatchJobImpl.buildErrorString("action", jsonObject);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+    }
+    
+    @Test
+    public void testArchiveJobOutput() throws Exception {
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+    	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToTestResultsArchive();
+    	zosBatchJobSpy.archiveJobOutput();
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
+
+    	Mockito.clearInvocations(zosBatchJobSpy);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	zosBatchJobSpy.archiveJobOutput();
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToTestResultsArchive");
+
+    	Mockito.clearInvocations(zosBatchJobSpy);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+    	zosBatchJobSpy.archiveJobOutput();
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
     }
     
     @Test
     public void testJosnNull() {
         JsonObject JsonObject = new JsonObject();
-        Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "none"));
+        Assert.assertNull("jsonNull() should return null", zosBatchJobSpy.jsonNull(JsonObject, "none"));
 
         JsonObject.add("empty", JsonNull.INSTANCE);
-        Assert.assertNull("jsonNull() should return null", zosBatchJob.jsonNull(JsonObject, "empty"));
+        Assert.assertNull("jsonNull() should return null", zosBatchJobSpy.jsonNull(JsonObject, "empty"));
 
         JsonObject.addProperty("property", "value");
-        Assert.assertEquals("jsonNull() should return value", "value", zosBatchJob.jsonNull(JsonObject, "property"));
+        Assert.assertEquals("jsonNull() should return value", "value", zosBatchJobSpy.jsonNull(JsonObject, "property"));
     }
     
     @Test
     public void testSpoolFileNotFound() {
         JsonObject JsonObject = new JsonObject();
-        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJobSpy.spoolFileNotFound(JsonObject));
 
         JsonObject.addProperty("category", 6);
-        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJobSpy.spoolFileNotFound(JsonObject));
 
         JsonObject.addProperty("rc", 4);
-        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJob.spoolFileNotFound(JsonObject));
+        Assert.assertFalse("spoolFileNotFound() should return false", zosBatchJobSpy.spoolFileNotFound(JsonObject));
 
         JsonObject.addProperty("reason", 12);
-        Assert.assertTrue("spoolFileNotFound() should return true", zosBatchJob.spoolFileNotFound(JsonObject));
+        Assert.assertTrue("spoolFileNotFound() should return true", zosBatchJobSpy.spoolFileNotFound(JsonObject));
     }
     
     @Test
     public void testJosnZero() {
         JsonObject JsonObject = new JsonObject();
-        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJob.jsonZero(JsonObject, "none"));
+        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJobSpy.jsonZero(JsonObject, "none"));
 
         JsonObject.add("empty", JsonNull.INSTANCE);
-        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJob.jsonZero(JsonObject, "empty"));
+        Assert.assertEquals("jsonZero() should return 0", 0, zosBatchJobSpy.jsonZero(JsonObject, "empty"));
 
         JsonObject.addProperty("property", 99);
-        Assert.assertEquals("jsonZero() should return 99", 99, zosBatchJob.jsonZero(JsonObject, "property"));
+        Assert.assertEquals("jsonZero() should return 99", 99, zosBatchJobSpy.jsonZero(JsonObject, "property"));
     }
     
     @Test
-    public void testToString() throws ZosBatchException {        
+    public void testToString() throws ZosBatchException {
         PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();        
         PowerMockito.doReturn(true).when(zosBatchJobSpy).isPurged();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", "#JOBID#");
@@ -982,8 +947,7 @@ public class TestZosBatchJobImpl {
     
     @Test
     public void testTruncateJcl() throws ZosBatchManagerException {
-        PowerMockito.mockStatic(TruncateJCLRecords.class);
-        Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(false);
+        Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(false);
         
         String suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
                              "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--";
@@ -1012,8 +976,7 @@ public class TestZosBatchJobImpl {
         Assert.assertEquals("The value of intdrLrecl should be 90", 90, (int) Whitebox.getInternalState(zosBatchJobSpy, "intdrLrecl"));
         Assert.assertEquals("the value of intdrRecfm should be V", "V", Whitebox.getInternalState(zosBatchJobSpy, "intdrRecfm"));
         
-        PowerMockito.mockStatic(TruncateJCLRecords.class);
-        Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(true);
         Whitebox.setInternalState(zosBatchJobSpy, "intdrLrecl", 80);
         Whitebox.setInternalState(zosBatchJobSpy, "intdrRecfm", "F");
         suppliedJcl = "----+----1----+----2----+----3----+----4----+----5----+----6----+----7--\n" +
@@ -1049,7 +1012,7 @@ public class TestZosBatchJobImpl {
 
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("Unable to get trucate JCL records property value");
-        Mockito.when(TruncateJCLRecords.get(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
         zosBatchJobSpy.parseJcl(suppliedJcl);
     }

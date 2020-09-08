@@ -32,18 +32,16 @@ import org.powermock.reflect.Whitebox;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobWaitTimeout;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.JobnamePrefix;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.RestrictToImage;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.TruncateJCLRecords;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.UseSysaff;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
+import dev.galasa.zosbatch.internal.properties.InputClass;
+import dev.galasa.zosbatch.internal.properties.MsgClass;
+import dev.galasa.zosbatch.internal.properties.MsgLevel;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -52,7 +50,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosBatchManagerImpl.class, JobWaitTimeout.class, UseSysaff.class, RestrictToImage.class, TruncateJCLRecords.class, JobnamePrefix.class})
+@PrepareForTest({ZosBatchManagerImpl.class, InputClass.class, MsgClass.class, MsgLevel.class})
 public class TestZosBatchImpl {
     
     private ZosBatchImpl zosBatch;
@@ -63,7 +61,10 @@ public class TestZosBatchImpl {
     private IZosImage zosImageMock;
 
     @Mock
-    private ZosBatchJobnameImpl zosJobnameMock;
+    private ZosManagerImpl zosManagerMock;
+
+    @Mock
+    private IZosBatchJobname zosJobnameMock;
 
     @Mock
     private ZosBatchJobcard zosBatchJobcardMock;
@@ -106,12 +107,6 @@ public class TestZosBatchImpl {
     
     @Before
     public void setup() throws ZosBatchManagerException, IOException, NoSuchMethodException, SecurityException, ZosmfManagerException {
-        
-        IConfigurationPropertyStoreService cps = Mockito.mock(IConfigurationPropertyStoreService.class);
-        ZosBatchZosmfPropertiesSingleton singleton = new ZosBatchZosmfPropertiesSingleton();
-        singleton.activate();
-        ZosBatchZosmfPropertiesSingleton.setCps(cps);        
-        
         Path archivePathMock = Mockito.mock(Path.class);
         FileSystem fileSystemMock = Mockito.mock(FileSystem.class);
         FileSystemProvider fileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
@@ -131,22 +126,28 @@ public class TestZosBatchImpl {
         
         Mockito.when(zosJobnameMock.getName()).thenReturn(FIXED_JOBNAME);
         
-        PowerMockito.mockStatic(JobnamePrefix.class);
-        Mockito.when(JobnamePrefix.get(Mockito.anyString())).thenReturn(FIXED_JOBNAME);
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.anyString())).thenReturn(zosJobnameMock);
         
-        PowerMockito.mockStatic(JobWaitTimeout.class);
-        Mockito.when(JobWaitTimeout.get(Mockito.any())).thenReturn(2);
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.any(IZosImage.class))).thenReturn(zosJobnameMock);
         
-        PowerMockito.mockStatic(UseSysaff.class);
-        Mockito.when(UseSysaff.get(Mockito.any())).thenReturn(false);
+        Mockito.when(zosManagerMock.getZosBatchPropertyJobWaitTimeout(Mockito.any())).thenReturn(2);
         
-        PowerMockito.mockStatic(RestrictToImage.class);
-        Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenReturn(false);
         
-        PowerMockito.mockStatic(TruncateJCLRecords.class);
-        Mockito.when(TruncateJCLRecords.get(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenReturn(true);
+        
+        Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(true);
+        
+        PowerMockito.mockStatic(InputClass.class);
+        Mockito.when(InputClass.get(Mockito.any())).thenReturn("X");
+        
+        PowerMockito.mockStatic(MsgClass.class);
+        Mockito.when(MsgClass.get(Mockito.any())).thenReturn("X");
+        
+        PowerMockito.mockStatic(MsgLevel.class);
+        Mockito.when(MsgLevel.get(Mockito.any())).thenReturn("X");
 
-        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
+        PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
 
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMockSubmit);
@@ -157,6 +158,7 @@ public class TestZosBatchImpl {
         Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
         Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        ZosBatchManagerImpl.setZosManager(zosManagerMock);
         
         zosBatch = new ZosBatchImpl(zosImageMock);
         zosBatchSpy = Mockito.spy(zosBatch);
@@ -172,6 +174,11 @@ public class TestZosBatchImpl {
         
         zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock, null);
         Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
+
+        Mockito.doThrow(new ZosBatchException("exception")).when(zosManagerMock).newZosBatchJobname(Mockito.any(IZosImage.class));      
+        exceptionRule.expect(ZosBatchException.class);
+        exceptionRule.expectMessage("exception");
+        zosBatchSpy.submitJob("JCL", null, null);
     }
     
     @Test
@@ -229,7 +236,7 @@ public class TestZosBatchImpl {
     
     @Test
     public void testGetBatchJobsException1() throws Exception {
-        Mockito.when(RestrictToImage.get(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));      
+    	Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));      
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
         

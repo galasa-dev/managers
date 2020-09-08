@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch;
 
@@ -11,7 +11,7 @@ import java.util.List;
  * Represents a zOS Batch Job output
  *
  */
-public interface IZosBatchJobOutput extends Iterable<IZosBatchJobOutputSpoolFile>{
+public interface IZosBatchJobOutput extends Iterable<IZosBatchJobOutputSpoolFile> {
 
     /**
      * Returns the zOS batch jobname
@@ -58,5 +58,4 @@ public interface IZosBatchJobOutput extends Iterable<IZosBatchJobOutputSpoolFile
      * @return <tt>true</tt> if empty
      */
     public boolean isEmpty();
-
 }

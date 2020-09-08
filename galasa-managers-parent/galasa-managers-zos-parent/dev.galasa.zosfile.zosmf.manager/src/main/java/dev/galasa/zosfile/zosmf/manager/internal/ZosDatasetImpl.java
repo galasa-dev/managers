@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -307,7 +310,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void storeText(String content) throws ZosDatasetException {
+    public void storeText(@NotNull String content) throws ZosDatasetException {
+    	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -315,7 +319,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void storeBinary(byte[] content) throws ZosDatasetException {
+    public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
+    	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -370,7 +375,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberCreate(String memberName) throws ZosDatasetException {
+    public void memberCreate(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -378,7 +384,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberDelete(String memberName) throws ZosDatasetException {
+    public void memberDelete(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -424,7 +431,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public boolean memberExists(String memberName) throws ZosDatasetException {
+    public boolean memberExists(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -470,7 +478,9 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberStoreText(String memberName, String content) throws ZosDatasetException {
+    public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(content, "content must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -478,7 +488,9 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberStoreBinary(String memberName, byte[] content) throws ZosDatasetException {
+    public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(content, "content must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -486,7 +498,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public String memberRetrieveAsText(String memberName) throws ZosDatasetException {
+    public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -494,7 +507,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public byte[] memberRetrieveAsBinary(String memberName) throws ZosDatasetException {
+    public byte[] memberRetrieveAsBinary(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -543,7 +557,8 @@ public class ZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberSaveToTestArchive(String memberName) throws ZosDatasetException {
+    public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }

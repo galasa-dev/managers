@@ -30,12 +30,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.ManagerException;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
-import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
@@ -44,18 +41,15 @@ import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogFactory.class, ZosBatchZosmfPropertiesSingleton.class, CpsProperties.class})
+@PrepareForTest({LogFactory.class})
 public class TestZosBatchManagerImpl {
-    
-    private ZosBatchManagerImpl zosBatchManager; 
+
+	private ZosBatchManagerImpl zosBatchManager; 
     
     private ZosBatchManagerImpl zosBatchManagerSpy;
-    
-    private ZosBatchZosmfPropertiesSingleton zosBatchZosmfPropertiesSingleton;
 
     private List<IManager> allManagers;
     
@@ -84,8 +78,13 @@ public class TestZosBatchManagerImpl {
     @Mock
     private IZosImage zosImageMock;
 
+    @Mock
+    private IZosBatchJobname zosJobnameMock;
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
+    
+    private static final String JOBNAME_PREFIX = "PFX";    
 
     @Before
     public void setup() throws Exception {
@@ -104,10 +103,10 @@ public class TestZosBatchManagerImpl {
         };
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.anyString())).thenReturn(zosJobnameMock);        
+        Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.any(IZosImage.class))).thenReturn(zosJobnameMock);
         ZosBatchManagerImpl.setZosManager(zosManagerMock);
         ZosBatchManagerImpl.setZosmfManager(zosmfManagerMock);
-        zosBatchZosmfPropertiesSingleton = new ZosBatchZosmfPropertiesSingleton();
-        zosBatchZosmfPropertiesSingleton.activate();
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -136,10 +135,10 @@ public class TestZosBatchManagerImpl {
     }
 
     @Test
-    public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
-        Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
+    public void testInitialiseException() throws ManagerException {
+        PowerMockito.doThrow(new ManagerException("exception")).when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        exceptionRule.expect(ManagerException.class);
+        exceptionRule.expectMessage("exception");
         zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
@@ -189,6 +188,7 @@ public class TestZosBatchManagerImpl {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
         zosBatchManagerSpy.provisionStart();
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", ZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertTrue("getCurrentTestMethodArchiveFolder() should return the correct value", ZosBatchManagerImpl.getCurrentTestMethodArchiveFolder().endsWith("preTest"));
     }
 
     @Test
@@ -227,7 +227,7 @@ public class TestZosBatchManagerImpl {
 
         Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup();
         zosBatchManagerSpy.endOfTestRun();
-        Assert.assertEquals("testEndOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
+        Assert.assertEquals("endOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
     
     @Test
@@ -268,10 +268,8 @@ public class TestZosBatchManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosbatch.ZosBatchJobname.class);
         annotations.add(annotation);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
-        ZosBatchJobnameImpl zosBatchJobnameMock = Mockito.mock(ZosBatchJobnameImpl.class);
-        PowerMockito.doReturn(zosBatchJobnameMock).when(zosBatchManagerSpy).newZosBatchJobnameImpl(Mockito.anyString());
         
-        Assert.assertEquals("generateZosBatchJobname() should return the mocked ZosBatchJobnameImpl", zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations), zosBatchJobnameMock);
+        Assert.assertEquals("generateZosBatchJobname() should return the mocked ZosBatchJobnameImpl", zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations), zosJobnameMock);
     }
     
     @Test
@@ -288,15 +286,10 @@ public class TestZosBatchManagerImpl {
     }
     
     @Test
-    public void testNewZosBatchJobnameImpl() throws Exception {
-        IConfigurationPropertyStoreService configurationPropertyStoreServiceMock = PowerMockito.mock(IConfigurationPropertyStoreService.class);
-        PowerMockito.spy(ZosBatchZosmfPropertiesSingleton.class);
-        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosBatchZosmfPropertiesSingleton.class, "cps");
-        PowerMockito.spy(CpsProperties.class);
-        PowerMockito.doReturn("PFX").when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        
-        IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobnameImpl("image");
-        Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith("PFX"));
+    public void testNewZosBatchJobname() throws Exception {
+    	Mockito.when(zosJobnameMock.getName()).thenReturn(JOBNAME_PREFIX);        
+        IZosBatchJobname zosBatchJobname = ZosBatchManagerImpl.newZosBatchJobname("image");
+        Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith(JOBNAME_PREFIX));
     }
     
     @Test

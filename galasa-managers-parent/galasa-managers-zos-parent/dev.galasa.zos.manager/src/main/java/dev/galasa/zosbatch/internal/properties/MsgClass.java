@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosbatch.zosmf.manager.internal.properties;
+package dev.galasa.zosbatch.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
@@ -36,7 +36,7 @@ public class MsgClass extends CpsProperties {
     
     public static String get(IZosImage image) throws ZosBatchManagerException {
         try {
-            String msgClass = getStringNulled(ZosBatchZosmfPropertiesSingleton.cps(), "default", "message.class", image.getImageID());
+            String msgClass = getStringNulled(ZosBatchPropertiesSingleton.cps(), "default", "message.class", image.getImageID());
 
             if (msgClass == null) {
                 return DEFAULT_CLASS;

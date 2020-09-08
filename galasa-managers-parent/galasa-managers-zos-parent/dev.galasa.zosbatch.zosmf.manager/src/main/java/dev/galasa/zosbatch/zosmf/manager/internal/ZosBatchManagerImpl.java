@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -39,7 +38,6 @@ import dev.galasa.zosbatch.ZosBatchField;
 import dev.galasa.zosbatch.ZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
-import dev.galasa.zosbatch.zosmf.manager.internal.properties.ZosBatchZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
 /**
@@ -48,7 +46,6 @@ import dev.galasa.zosmf.spi.IZosmfManagerSpi;
  */
 @Component(service = { IManager.class })
 public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi {
-    protected static final String NAMESPACE = "zosbatch";
     
     private static final Log logger = LogFactory.getLog(ZosBatchManagerImpl.class);
 
@@ -80,6 +77,9 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     public static void setCurrentTestMethodArchiveFolderName(String folderName) {
         ZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
     }
+    public static Path getCurrentTestMethodArchiveFolder() {
+        return archivePath.resolve(currentTestMethodArchiveFolderName);
+    }
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -88,11 +88,6 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-        try {
-            ZosBatchZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosBatchManagerException("Unable to request framework services", e);
-        }
 
         if(galasaTest.isJava()) {
             //*** Check to see if any of our annotations are present in the test class
@@ -250,18 +245,21 @@ public class ZosBatchManagerImpl extends AbstractManager implements IZosBatchSpi
 
         //*** Default the tag to primary
         String tag = defaultString(annotationZosBatchJobname.imageTag(), "primary");
-        String imageid;
+        IZosImage image;
         try {
-            IZosImage image = zosManager.getImageForTag(tag);
-            imageid = image.getImageID();
+            image = zosManager.getImageForTag(tag);
         } catch (ZosManagerException e) {
             throw new ZosBatchManagerException("Unable to get image for tag \"" + tag + "\"", e);
         }
-        return newZosBatchJobnameImpl(imageid);
+        return newZosBatchJobname(image);
     }
 
-    protected IZosBatchJobname newZosBatchJobnameImpl(String imageid) throws ZosBatchException {
-        return new ZosBatchJobnameImpl(imageid);
+    protected static IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+        return zosManager.newZosBatchJobname(image);
+    }
+
+    protected static IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
+        return zosManager.newZosBatchJobname(name);
     }
 
     @Override
