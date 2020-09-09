@@ -103,7 +103,7 @@ public class ConnectTest {
 
         Assert.assertTrue("Network did not connect", network.connectClient());
         Assert.assertTrue("Network did not connect", network.connectClient());
-        Assert.assertEquals("Appears to have reopened a socket", 1, dummySocketImpl.getInputStreamCount);
+        Assert.assertEquals("Appears to have reopened a socket", 2, dummySocketImpl.getInputStreamCount); // plain connect will get it twice
         Assert.assertEquals("Appears to have closed a socket", 0, dummySocketImpl.closeCount);
     }
 
@@ -132,8 +132,8 @@ public class ConnectTest {
         Assert.assertTrue("Network did not connect", network.connectClient());
         dummySocket.connected = false;
         Assert.assertTrue("Network did not connect", network.connectClient());
-        Assert.assertEquals("Appears to have not opened a socket", 1, dummySocketImpl1.getInputStreamCount);
-        Assert.assertEquals("Appears to have not opened a socket", 1, dummySocketImpl2.getInputStreamCount);
+        Assert.assertEquals("Appears to have not opened a socket", 2, dummySocketImpl1.getInputStreamCount);
+        Assert.assertEquals("Appears to have not opened a socket", 2, dummySocketImpl2.getInputStreamCount);
         Assert.assertEquals("Appears to have not closed a socket", 1, dummySocketImpl1.closeCount);
         Assert.assertEquals("Appears to have closed a socket", 0, dummySocketImpl2.closeCount);
     }

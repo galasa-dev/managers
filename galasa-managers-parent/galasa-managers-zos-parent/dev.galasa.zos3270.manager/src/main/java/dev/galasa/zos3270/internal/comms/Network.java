@@ -43,6 +43,7 @@ public class Network {
 
     public static final byte    ASSOCIATE       = 0;
     public static final byte    CONNECT         = 1;
+    public static final byte    FOLLOWS         = 1;
     public static final byte    DEVICE_TYPE     = 2;
     public static final byte    RESPONSES       = 2;
     public static final byte    FUNCTIONS       = 3;
@@ -53,6 +54,7 @@ public class Network {
     public static final byte    REQUEST         = 7;
     public static final byte    SEND            = 8;
     public static final byte    TN3270E         = 40;
+    public static final byte    START_TLS       = 46;
 
     public static final byte    CONN_PARTNER     = 0;
     public static final byte    DEVICE_IN_USE    = 1;
@@ -69,7 +71,7 @@ public class Network {
 
     private final String        host;
     private final int           port;
-    private final boolean       ssl;
+    private boolean             ssl;
 
     private Socket              socket;
     private OutputStream        outputStream;
@@ -103,16 +105,11 @@ public class Network {
             newSocket.setTcpNoDelay(true);
             newSocket.setKeepAlive(true);
 
-            InputStream newInputStream = newSocket.getInputStream();
-            OutputStream newOutputStream = newSocket.getOutputStream();
-
-            negotiate(newInputStream, newOutputStream);
-
-            this.socket = newSocket;
-            this.outputStream = newOutputStream;
-            this.inputStream = newInputStream;
+            this.socket = negotiate(newSocket);
+            this.inputStream = this.socket.getInputStream();
+            this.outputStream = this.socket.getOutputStream();
             newSocket = null;
-            
+
             this.keepAlive = new KeepAlive();
             this.keepAlive.start();
 
@@ -139,7 +136,6 @@ public class Network {
         if (!ssl) {
             newSocket = new Socket(this.host, this.port);
         } else {
-
             boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
             SSLContext sslContext;
             if (ibmJdk) {
@@ -167,7 +163,7 @@ public class Network {
             socket = null;
             inputStream = null;
             outputStream = null;
-            
+
             this.keepAlive.shutdown = true;
             this.keepAlive.interrupt();
         }
@@ -177,18 +173,34 @@ public class Network {
         return this.inputStream;
     }
 
-    public void negotiate(InputStream inputStream, OutputStream outputStream) throws NetworkException {
+    public Socket negotiate(Socket socket) throws NetworkException {
         try {
-            expect(inputStream, IAC, DO, TN3270E);
+            InputStream tempInputStream = socket.getInputStream();
+            OutputStream tempOutputStream = socket.getOutputStream();
+
+            expect(tempInputStream, IAC, DO);
+
+            byte[] received = new byte[1];
+            int length = tempInputStream.read(received);
+            if (length != 1) {
+                throw new NetworkException("Negotiation failed, terminated early after first IAC DO");
+            }
+            if (received[0] == START_TLS) {
+                socket = startTls(socket);
+                tempInputStream = socket.getInputStream();
+                tempOutputStream = socket.getOutputStream();
+            } else if (received[0] != TN3270E) {
+                throw new NetworkException("Negotiation failed, expected IAC DO TN3270E but received " + received[0]);
+            }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(IAC);
             baos.write(WILL);
             baos.write(TN3270E);
-            outputStream.write(baos.toByteArray());
-            outputStream.flush();
+            tempOutputStream.write(baos.toByteArray());
+            tempOutputStream.flush();
 
-            expect(inputStream, IAC, SB, TN3270E, SEND, DEVICE_TYPE, IAC, SE);
+            expect(tempInputStream, IAC, SB, TN3270E, SEND, DEVICE_TYPE, IAC, SE);
 
             byte[] deviceType = "IBM-3278-2-E".getBytes(ascii7);
 
@@ -201,19 +213,19 @@ public class Network {
             baos.write(deviceType);
             baos.write(IAC);
             baos.write(SE);
-            outputStream.write(baos.toByteArray());
-            outputStream.flush();
+            tempOutputStream.write(baos.toByteArray());
+            tempOutputStream.flush();
 
-            expect(inputStream, IAC, SB, TN3270E, DEVICE_TYPE);
+            expect(tempInputStream, IAC, SB, TN3270E, DEVICE_TYPE);
 
-            int byteIs = inputStream.read();
+            int byteIs = tempInputStream.read();
             if (byteIs == -1) {
                 throw new NetworkException("Negotiation terminated early, attempting to get IS");
             }
 
             if (byteIs != IS) {
                 if (byteIs == REJECT) {
-                    rejectedDeviceType(inputStream);
+                    rejectedDeviceType(tempInputStream);
                 } else {
                     throw new NetworkException("Unexpected byte for IAC SB TN3270E DEVICE_TYPE " + byteIs);
                 }
@@ -223,7 +235,7 @@ public class Network {
             baos = new ByteArrayOutputStream();
             byte[] data = new byte[1];
             while (true) {
-                int length = inputStream.read(data);
+                length = tempInputStream.read(data);
                 if (length != 1) {
                     throw new NetworkException("Negotiation terminated early, attempting to extract device type");
                 }
@@ -243,7 +255,7 @@ public class Network {
             baos = new ByteArrayOutputStream();
             data = new byte[1];
             while (true) {
-                int length = inputStream.read(data);
+                length = tempInputStream.read(data);
                 if (length != 1) {
                     throw new NetworkException("Negotiation terminated early, attempting to extract LU Name");
                 }
@@ -254,7 +266,7 @@ public class Network {
 
                 baos.write(data);
             }
-            expect(inputStream, SE);
+            expect(tempInputStream, SE);
 
             new String(baos.toByteArray(), ascii7);
 
@@ -266,14 +278,61 @@ public class Network {
             baos.write(REQUEST);
             baos.write(IAC);
             baos.write(SE);
-            outputStream.write(baos.toByteArray());
-            outputStream.flush();
+            tempOutputStream.write(baos.toByteArray());
+            tempOutputStream.flush();
 
-            expect(inputStream, IAC, SB, TN3270E, FUNCTIONS, IS, IAC, SE);
+            expect(tempInputStream, IAC, SB, TN3270E, FUNCTIONS, IS, IAC, SE);
 
         } catch (IOException e) {
             throw new NetworkException("IOException during terminal negotiation", e);
         }
+
+        return socket;
+    }
+
+    private Socket startTls(Socket plainSocket) throws NetworkException {
+        try {
+            InputStream tempInputStream = plainSocket.getInputStream();
+            OutputStream tempOutputStream = plainSocket.getOutputStream();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            baos.write(IAC);
+            baos.write(WILL);
+            baos.write(START_TLS);
+            baos.write(IAC);
+            baos.write(SB);
+            baos.write(START_TLS);
+            baos.write(FOLLOWS);
+            baos.write(IAC);
+            baos.write(SE);
+            tempOutputStream.write(baos.toByteArray());
+            tempOutputStream.flush();
+
+            expect(tempInputStream, IAC, SB, START_TLS, FOLLOWS, IAC, SE);
+
+            boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
+            SSLContext sslContext;
+            if (ibmJdk) {
+                sslContext = SSLContext.getInstance("SSL_TLSv2");
+            } else {
+                sslContext = SSLContext.getInstance("TLSv1.2");
+            }
+            sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
+            Socket tlsSocket = sslContext.getSocketFactory().createSocket(plainSocket, this.host, this.port, false);
+            ((SSLSocket) tlsSocket).startHandshake();
+            tlsSocket.setTcpNoDelay(true);
+            tlsSocket.setKeepAlive(true);
+
+            tempInputStream = tlsSocket.getInputStream();
+
+            expect(tempInputStream, IAC, DO, TN3270E);
+
+            this.ssl = true;
+            return tlsSocket;
+        } catch(Exception e) {
+            throw new NetworkException("Problem negotiating TLS on plain socket", e);
+        }
+
     }
 
     private void rejectedDeviceType(InputStream inputStream) throws NetworkException, IOException {
@@ -339,19 +398,23 @@ public class Network {
                 baos.write(trailer);
                 outputStream.write(baos.toByteArray());
                 outputStream.flush();
-                
+
                 this.lastSend = Instant.now();
             } catch (IOException e) {
                 throw new NetworkException("Unable to write outbound datastream", e);
             }
         }
     }
+    
+    public boolean isTls() {
+        return this.ssl;
+    }
 
     private void sendKeepAlive() {
         if (this.outputStream == null) {
             return;
         }
-        
+
         if (this.lastSend.plus(10, ChronoUnit.MINUTES).isAfter(Instant.now())) {
             return;
         }
@@ -395,7 +458,7 @@ public class Network {
     }
 
     private class KeepAlive extends Thread {
-        
+
         private boolean shutdown = false;
 
         public KeepAlive() {
@@ -406,7 +469,7 @@ public class Network {
         public void run() {
             while(!shutdown) {
                 sendKeepAlive();
-                
+
                 try {
                     Thread.sleep(5000);
                 } catch(Exception e) {

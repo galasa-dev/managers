@@ -10,7 +10,10 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,7 +48,7 @@ public class NegotiationTest {
 
         Network network = new Network("dummy", 0);
 
-        network.negotiate(fromServer, toServer);
+        network.negotiate(new DummySocket(fromServer, toServer));
 
         Assert.assertArrayEquals("Responses are not correct from client to server",
                 getClientNegotiation().toByteArray(), toServer.toByteArray());
@@ -59,7 +62,7 @@ public class NegotiationTest {
 
         try {
             Network network = new Network("dummy", 0);
-            network.negotiate(fromServer, toServer);
+            network.negotiate(new DummySocket(fromServer, toServer));
             fail("Should have thrown an NetworkException");
         } catch (NetworkException e) {
         }
@@ -166,6 +169,27 @@ public class NegotiationTest {
         prepOutput.write(IAC);
         prepOutput.write(SE);
         return prepOutput;
+    }
+
+    public static class DummySocket extends Socket {
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
+
+        public DummySocket(InputStream inputStream, OutputStream outputStream) {
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return this.inputStream;
+        }
+
+        @Override
+        public OutputStream getOutputStream() throws IOException {
+            return this.outputStream;
+        }
+
     }
 
 }

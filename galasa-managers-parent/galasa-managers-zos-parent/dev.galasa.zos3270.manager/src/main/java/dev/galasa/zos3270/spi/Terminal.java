@@ -466,4 +466,9 @@ public class Terminal implements ITerminal {
         this.screen.unregisterDatastreamListener(listener);
     }
 
+    @Override
+    public boolean isTls() {
+        return this.network.isTls();
+    }
+
 }
