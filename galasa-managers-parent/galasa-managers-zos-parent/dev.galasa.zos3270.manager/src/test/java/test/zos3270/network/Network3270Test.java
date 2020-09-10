@@ -61,6 +61,8 @@ public class Network3270Test {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(0x00);
         baos.write(0x00);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
@@ -69,7 +71,7 @@ public class Network3270Test {
             networkThread.processMessage(bais);
             fail("Should have thrown an error because header < 5");
         } catch (NetworkException e) {
-            Assert.assertEquals("Error message incorrect", "Missing remaining 4 byte of the telnet 3270 header",
+            Assert.assertEquals("Error message incorrect", "Missing 5 bytes of the TN3270E datastream header",
                     e.getMessage());
         }
 
@@ -91,7 +93,7 @@ public class Network3270Test {
             networkThread.processMessage(bais);
             fail("Should have thrown an error because unknown error");
         } catch (NetworkException e) {
-            Assert.assertEquals("Error message incorrect", "In IAC request not supported, Command was: 0 0",
+            Assert.assertEquals("Error message incorrect", "Unrecognised IAC Command - ff00",
                     e.getMessage());
         }
 
@@ -147,7 +149,7 @@ public class Network3270Test {
             networkThread.processMessage(bais);
             fail("Should have thrown an exception due to a short IAC DO COMMAND");
         } catch (NetworkException e) {
-            Assert.assertEquals("Error message incorrect", "Missing remaining 2 bytes of the telnet 3270 IAC header",
+            Assert.assertEquals("Error message incorrect", "Unrecognised IAC DO terminated early - fffd",
                     e.getMessage());
         }
     }

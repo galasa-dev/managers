@@ -209,6 +209,19 @@ public class Network {
         }
     }
     
+    public void sendIac(byte[] outboundIac) throws NetworkException {
+        synchronized(outputStream) {
+            try {
+                outputStream.write(outboundIac);
+                outputStream.flush();
+
+                this.lastSend = Instant.now();
+            } catch (IOException e) {
+                throw new NetworkException("Unable to write outbound iac", e);
+            }
+        }
+    }
+   
     public boolean isTls() {
         return this.ssl;
     }
