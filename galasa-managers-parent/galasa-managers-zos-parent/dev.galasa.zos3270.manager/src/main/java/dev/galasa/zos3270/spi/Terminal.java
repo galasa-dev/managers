@@ -5,6 +5,9 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -56,6 +59,31 @@ public class Terminal implements ITerminal {
         connected = network.connectClient();
         networkThread = new NetworkThread(this, screen, network, network.getInputStream());
         networkThread.start();
+        
+        Instant expire = Instant.now().plus(60, ChronoUnit.SECONDS);
+        boolean started = false;
+        while(Instant.now().isBefore(expire)) {
+            NetworkThread nThread = this.networkThread;
+            if (nThread == null) {
+                this.network.close();
+                throw new NetworkException("The TN3270 network thread failed to start correctly");
+            }
+            if (nThread.isStarted()) {
+                started = true;
+                break;
+            }
+            
+            try {
+                Thread.sleep(50);
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new NetworkException("Wait for TN3270 startup was interrupted", e);
+            }
+        }
+        
+        if (!started) {
+            throw new NetworkException("TN3270 server did not start session in time");
+        }
     }
 
     @Override

@@ -10,62 +10,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos3270.spi.NetworkException;
 
 public class Network {
-
-    public static final byte    IAC             = -1;
-
-    public static final byte    DONT            = -2;
-    public static final byte    DO              = -3;
-    public static final byte    WONT            = -4;
-    public static final byte    WILL            = -5;
-    public static final byte    SB              = -6;
-    public static final byte    SE              = -16;
-    public static final byte    EOR             = -17;
-
-    public static final byte    ASSOCIATE       = 0;
-    public static final byte    CONNECT         = 1;
-    public static final byte    FOLLOWS         = 1;
-    public static final byte    DEVICE_TYPE     = 2;
-    public static final byte    RESPONSES       = 2;
-    public static final byte    FUNCTIONS       = 3;
-    public static final byte    IS              = 4;
-    public static final byte    REASON          = 5;
-    public static final byte    REJECT          = 6;
-    public static final byte    TIMING_MARK     = 6;
-    public static final byte    REQUEST         = 7;
-    public static final byte    SEND            = 8;
-    public static final byte    TN3270E         = 40;
-    public static final byte    START_TLS       = 46;
-
-    public static final byte    CONN_PARTNER     = 0;
-    public static final byte    DEVICE_IN_USE    = 1;
-    public static final byte    INV_ASSOCIATE    = 2;
-    public static final byte    INV_NAME         = 3;
-    public static final byte    INV_DEVICE_TYPE  = 4;
-    public static final byte    TYPE_NAME_ERROR  = 5;
-    public static final byte    UNKNOWN_ERROR    = 6;
-    public static final byte    UNSUPPORTED_REQ  = 7;
-
-    public static final Charset ascii7          = Charset.forName("us-ascii");
 
     private final Log           logger          = LogFactory.getLog(getClass());
 
@@ -79,6 +40,8 @@ public class Network {
 
     private KeepAlive           keepAlive;
     private Instant             lastSend        = Instant.now();
+    
+    private Exception           errorException;
 
     public Network(String host, int port) {
         this(host, port, false);
@@ -105,7 +68,7 @@ public class Network {
             newSocket.setTcpNoDelay(true);
             newSocket.setKeepAlive(true);
 
-            this.socket = negotiate(newSocket);
+            this.socket = newSocket;
             this.inputStream = this.socket.getInputStream();
             this.outputStream = this.socket.getOutputStream();
             newSocket = null;
@@ -173,143 +136,9 @@ public class Network {
         return this.inputStream;
     }
 
-    public Socket negotiate(Socket socket) throws NetworkException {
+
+    public Socket startTls() throws NetworkException {
         try {
-            InputStream tempInputStream = socket.getInputStream();
-            OutputStream tempOutputStream = socket.getOutputStream();
-
-            expect(tempInputStream, IAC, DO);
-
-            byte[] received = new byte[1];
-            int length = tempInputStream.read(received);
-            if (length != 1) {
-                throw new NetworkException("Negotiation failed, terminated early after first IAC DO");
-            }
-            if (received[0] == START_TLS) {
-                socket = startTls(socket);
-                tempInputStream = socket.getInputStream();
-                tempOutputStream = socket.getOutputStream();
-            } else if (received[0] != TN3270E) {
-                throw new NetworkException("Negotiation failed, expected IAC DO TN3270E but received " + received[0]);
-            }
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(IAC);
-            baos.write(WILL);
-            baos.write(TN3270E);
-            tempOutputStream.write(baos.toByteArray());
-            tempOutputStream.flush();
-
-            expect(tempInputStream, IAC, SB, TN3270E, SEND, DEVICE_TYPE, IAC, SE);
-
-            byte[] deviceType = "IBM-3278-2-E".getBytes(ascii7);
-
-            baos = new ByteArrayOutputStream();
-            baos.write(IAC);
-            baos.write(SB);
-            baos.write(TN3270E);
-            baos.write(DEVICE_TYPE);
-            baos.write(REQUEST);
-            baos.write(deviceType);
-            baos.write(IAC);
-            baos.write(SE);
-            tempOutputStream.write(baos.toByteArray());
-            tempOutputStream.flush();
-
-            expect(tempInputStream, IAC, SB, TN3270E, DEVICE_TYPE);
-
-            int byteIs = tempInputStream.read();
-            if (byteIs == -1) {
-                throw new NetworkException("Negotiation terminated early, attempting to get IS");
-            }
-
-            if (byteIs != IS) {
-                if (byteIs == REJECT) {
-                    rejectedDeviceType(tempInputStream);
-                } else {
-                    throw new NetworkException("Unexpected byte for IAC SB TN3270E DEVICE_TYPE " + byteIs);
-                }
-            }
-
-
-            baos = new ByteArrayOutputStream();
-            byte[] data = new byte[1];
-            while (true) {
-                length = tempInputStream.read(data);
-                if (length != 1) {
-                    throw new NetworkException("Negotiation terminated early, attempting to extract device type");
-                }
-
-                if (data[0] == CONNECT) {
-                    break;
-                }
-
-                baos.write(data);
-            }
-
-            String returnedDeviceType = new String(baos.toByteArray(), ascii7);
-            if (!"IBM-3278-2".equals(returnedDeviceType) && !"IBM-3278-2-E".equals(returnedDeviceType)) {
-                throw new NetworkException("Negotiation returned unsupported devicetype '" + returnedDeviceType + "'");
-            }
-
-            baos = new ByteArrayOutputStream();
-            data = new byte[1];
-            while (true) {
-                length = tempInputStream.read(data);
-                if (length != 1) {
-                    throw new NetworkException("Negotiation terminated early, attempting to extract LU Name");
-                }
-
-                if (data[0] == IAC) {
-                    break;
-                }
-
-                baos.write(data);
-            }
-            expect(tempInputStream, SE);
-
-            new String(baos.toByteArray(), ascii7);
-
-            baos = new ByteArrayOutputStream();
-            baos.write(IAC);
-            baos.write(SB);
-            baos.write(TN3270E);
-            baos.write(FUNCTIONS);
-            baos.write(REQUEST);
-            baos.write(IAC);
-            baos.write(SE);
-            tempOutputStream.write(baos.toByteArray());
-            tempOutputStream.flush();
-
-            expect(tempInputStream, IAC, SB, TN3270E, FUNCTIONS, IS, IAC, SE);
-
-        } catch (IOException e) {
-            throw new NetworkException("IOException during terminal negotiation", e);
-        }
-
-        return socket;
-    }
-
-    private Socket startTls(Socket plainSocket) throws NetworkException {
-        try {
-            InputStream tempInputStream = plainSocket.getInputStream();
-            OutputStream tempOutputStream = plainSocket.getOutputStream();
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(IAC);
-            baos.write(WILL);
-            baos.write(START_TLS);
-            baos.write(IAC);
-            baos.write(SB);
-            baos.write(START_TLS);
-            baos.write(FOLLOWS);
-            baos.write(IAC);
-            baos.write(SE);
-            tempOutputStream.write(baos.toByteArray());
-            tempOutputStream.flush();
-
-            expect(tempInputStream, IAC, SB, START_TLS, FOLLOWS, IAC, SE);
-
             boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
             SSLContext sslContext;
             if (ibmJdk) {
@@ -318,15 +147,15 @@ public class Network {
                 sslContext = SSLContext.getInstance("TLSv1.2");
             }
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
-            Socket tlsSocket = sslContext.getSocketFactory().createSocket(plainSocket, this.host, this.port, false);
+            Socket tlsSocket = sslContext.getSocketFactory().createSocket(socket, this.host, this.port, false);
             ((SSLSocket) tlsSocket).startHandshake();
             tlsSocket.setTcpNoDelay(true);
             tlsSocket.setKeepAlive(true);
 
-            tempInputStream = tlsSocket.getInputStream();
-
-            expect(tempInputStream, IAC, DO, TN3270E);
-
+            this.socket = tlsSocket;
+            this.inputStream = tlsSocket.getInputStream(); 
+            this.outputStream = tlsSocket.getOutputStream();
+            
             this.ssl = true;
             return tlsSocket;
         } catch(Exception e) {
@@ -335,54 +164,28 @@ public class Network {
 
     }
 
-    private void rejectedDeviceType(InputStream inputStream) throws NetworkException, IOException {
-        expect(inputStream, REASON);
 
-        int reasonCode = inputStream.read();
-
-        if (reasonCode == -1) {
-            throw new NetworkException("Missing reason code for rejected device type");
-        }
-
-        switch(reasonCode) {
-            case CONN_PARTNER:
-                throw new NetworkException("Device negotiation failed due to CONN_PARTNER");
-            case DEVICE_IN_USE:
-                throw new NetworkException("Device negotiation failed due to DEVICE_IN_USE");
-            case INV_ASSOCIATE:
-                throw new NetworkException("Device negotiation failed due to INV_ASSOCIATE");
-            case INV_NAME:
-                throw new NetworkException("Device negotiation failed due to INV_NAME");
-            case INV_DEVICE_TYPE :
-                throw new NetworkException("Device negotiation failed due to INV_DEVICE_TYPE");
-            case TYPE_NAME_ERROR:
-                throw new NetworkException("Device negotiation failed due to TYPE_NAME_ERROR");
-            case UNKNOWN_ERROR:
-                throw new NetworkException("Device negotiation failed due to UNKNOWN_ERROR");
-            case UNSUPPORTED_REQ:
-                throw new NetworkException("Device negotiation failed due to UNSUPPORTED_REQ");
-            default:
-                throw new NetworkException("Unrecognised reason code for rejected device type =" + reasonCode);
-        }
-    }
-
-    public static void expect(InputStream inputStream, byte... expected) throws IOException, NetworkException {
-        byte[] received = new byte[expected.length];
-
-        int length = inputStream.read(received);
-
-        if (length != expected.length) {
-            throw new NetworkException("Expected " + expected.length + " but received only " + length + " bytes");
-        }
-
-        if (!Arrays.equals(expected, received)) {
-            String expectedString = Hex.encodeHexString(expected);
-            String receivedString = Hex.encodeHexString(received);
-            throw new NetworkException("Expected " + expectedString + " but received " + receivedString);
-        }
-    }
+//    public static void expect(InputStream inputStream, byte... expected) throws IOException, NetworkException {
+//        byte[] received = new byte[expected.length];
+//
+//        int length = inputStream.read(received);
+//
+//        if (length != expected.length) {
+//            throw new NetworkException("Expected " + expected.length + " but received only " + length + " bytes");
+//        }
+//
+//        if (!Arrays.equals(expected, received)) {
+//            String expectedString = Hex.encodeHexString(expected);
+//            String receivedString = Hex.encodeHexString(received);
+//            throw new NetworkException("Expected " + expectedString + " but received " + receivedString);
+//        }
+//    }
 
     public void sendDatastream(byte[] outboundDatastream) throws NetworkException {
+        if (this.errorException != null) {
+            throw new NetworkException("Terminal network connection has gone into error state",this.errorException);
+        }
+        
         sendDatastream(outputStream, outboundDatastream);
     }
 
@@ -422,9 +225,9 @@ public class Network {
         synchronized(this.outputStream) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                baos.write(IAC);
-                baos.write(DO);
-                baos.write(TIMING_MARK);
+                baos.write(NetworkThread.IAC);
+                baos.write(NetworkThread.DO);
+                baos.write(NetworkThread.TIMING_MARK);
                 outputStream.write(baos.toByteArray());
                 outputStream.flush();
                 this.lastSend = Instant.now();

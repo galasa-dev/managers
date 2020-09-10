@@ -29,8 +29,8 @@ public class Message3270Test {
         baos.write(0);
         baos.write(0);
         baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
@@ -52,8 +52,8 @@ public class Message3270Test {
         baos.write(-1);
         baos.write(-1);
         baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
@@ -89,10 +89,10 @@ public class Message3270Test {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(0);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.EOR);
         baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 

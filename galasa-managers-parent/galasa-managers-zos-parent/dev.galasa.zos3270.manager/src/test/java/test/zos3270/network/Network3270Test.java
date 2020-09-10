@@ -45,8 +45,8 @@ public class Network3270Test {
         baos.write(AbstractCommandCode.ERASE_WRITE);
         baos.write(0x00);
         baos.write(OrderInsertCursor.ID);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
