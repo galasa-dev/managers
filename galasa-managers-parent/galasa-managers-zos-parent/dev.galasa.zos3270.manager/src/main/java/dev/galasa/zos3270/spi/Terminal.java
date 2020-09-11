@@ -41,12 +41,16 @@ public class Terminal implements ITerminal {
     private boolean       autoReconnect   = false;
 
     public Terminal(String id, String host, int port) throws TerminalInterruptedException {
-        this(id, host, port, false);
+        this(id, host, port, false, 80, 24, 0, 0);
     }
 
     public Terminal(String id, String host, int port, boolean ssl) throws TerminalInterruptedException {
+        this(id, host, port, ssl, 80, 24, 0, 0);
+    }
+
+    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws TerminalInterruptedException {
         network = new Network(host, port, ssl);
-        screen = new Screen(80, 24, this.network);
+        screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
         this.id = id;
     }
     

@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.internal.datastream.CommandEraseWriteAlternate;
 import dev.galasa.zos3270.spi.DatastreamException;
 
 public class CommandCodeTest {
@@ -20,11 +21,12 @@ public class CommandCodeTest {
     public void testCommandCodeDecipherValid() throws Exception {
         Assert.assertEquals("ERASE_WRITE is not correct", CommandEraseWrite.class,
                 AbstractCommandCode.getCommandCode((byte) 0xf5).getClass());
+        Assert.assertEquals("ERASE_WRITE_ALTERNATE is not correct", CommandEraseWriteAlternate.class,
+                AbstractCommandCode.getCommandCode((byte) 0x7e).getClass());
     }
 
     @Test
     public void testCommandCodeDecipherUnsupported() throws Exception {
-        unsupportedCC((byte) 0x7e);
         unsupportedCC((byte) 0xf6);
         unsupportedCC((byte) 0x6e);
         unsupportedCC((byte) 0x6f);
