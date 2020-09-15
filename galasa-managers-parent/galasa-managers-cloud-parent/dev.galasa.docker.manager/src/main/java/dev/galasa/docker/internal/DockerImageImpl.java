@@ -33,6 +33,7 @@ public class DockerImageImpl implements IDockerImage {
     private String                      tag;
     
     private boolean                     authRequired = false;
+    private boolean                     local = false;
 
     private static final Log            logger = LogFactory.getLog(DockerImageImpl.class);
 
@@ -99,7 +100,8 @@ public class DockerImageImpl implements IDockerImage {
         JsonObject image = dockerEngine.getImage(workingName);
 		if (image != null) {
 			this.fullName = workingName;
-			logger.info("Docker Image located only on the server as name '" + this.fullName + "'");
+            logger.info("Docker Image located only on the server as name '" + this.fullName + "'");
+            this.local = true;
 			return;
 		}
 
@@ -135,6 +137,11 @@ public class DockerImageImpl implements IDockerImage {
         String pull;
         if (this.fullName == null) {
             throw new DockerManagerException("Unable to pull image, full image name not set");
+        }
+
+        if (this.local) {
+            logger.info("No need to pull " + this.fullName + ", image is local");
+            return;
         }
 
         if(authRequired) {
