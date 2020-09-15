@@ -1,14 +1,16 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos3270.internal.comms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +41,44 @@ import dev.galasa.zos3270.spi.Terminal;
 
 public class NetworkThread extends Thread {
 
+    public static final byte    IAC             = -1;
+
+    public static final byte    DONT            = -2;
+    public static final byte    DO              = -3;
+    public static final byte    WONT            = -4;
+    public static final byte    WILL            = -5;
+    public static final byte    SB              = -6;
+    public static final byte    SE              = -16;
+    public static final byte    EOR             = -17;
+
+    public static final byte    ASSOCIATE       = 0;
+    public static final byte    TELNET_BINARY   = 0;
+    public static final byte    CONNECT         = 1;
+    public static final byte    TT_SEND         = 1;
+    public static final byte    FOLLOWS         = 1;
+    public static final byte    DEVICE_TYPE     = 2;
+    public static final byte    RESPONSES       = 2;
+    public static final byte    FUNCTIONS       = 3;
+    public static final byte    IS              = 4;
+    public static final byte    REASON          = 5;
+    public static final byte    REJECT          = 6;
+    public static final byte    TIMING_MARK     = 6;
+    public static final byte    REQUEST         = 7;
+    public static final byte    SEND            = 8;
+    public static final byte    TERMINAL_TYPE   = 24;
+    public static final byte    TELNET_EOR      = 25;
+    public static final byte    TN3270E         = 40;
+    public static final byte    START_TLS       = 46;
+
+    public static final byte    CONN_PARTNER     = 0;
+    public static final byte    DEVICE_IN_USE    = 1;
+    public static final byte    INV_ASSOCIATE    = 2;
+    public static final byte    INV_NAME         = 3;
+    public static final byte    INV_DEVICE_TYPE  = 4;
+    public static final byte    TYPE_NAME_ERROR  = 5;
+    public static final byte    UNKNOWN_ERROR    = 6;
+    public static final byte    UNSUPPORTED_REQ  = 7;
+
     public static final byte  DT_3270_DATA    = 0;
     public static final byte  DT_SCS_DATA     = 1;
     public static final byte  DT_RESPONSE     = 2;
@@ -49,20 +89,33 @@ public class NetworkThread extends Thread {
     public static final byte  DT_SSCP_LU_DATA = 7;
     public static final byte  DT_PRINT_EOJ    = 8;
 
-    private final InputStream inputStream;
+    public static final Charset ascii7          = Charset.forName("us-ascii");
+
+    private InputStream inputStream;
     private final Screen      screen;
     private final Network     network;
     private final Terminal    terminal;
 
+    private boolean telnetSessionStarted      = false;
+    private boolean basicTelnetDatastream     = false;
+
     private boolean           endOfStream     = false;
 
     private static Log               logger          = LogFactory.getLog(NetworkThread.class);
+
+    private final ArrayList<String>  possibleDeviceTypes = new ArrayList<>();
+    private String                   selectedDeviceType;
+
+    private ByteArrayOutputStream    commandSoFar;
 
     public NetworkThread(Terminal terminal, Screen screen, Network network, InputStream inputStream) {
         this.screen = screen;
         this.network = network;
         this.inputStream = inputStream;
         this.terminal = terminal;
+
+        this.possibleDeviceTypes.add("IBM-DYNAMIC");
+        this.possibleDeviceTypes.add("IBM-3278-2");
     }
 
     @Override
@@ -94,51 +147,572 @@ public class NetworkThread extends Thread {
     }
 
     public void processMessage(InputStream messageStream) throws IOException, NetworkException {
-        byte[] header = new byte[1];
-        int length = messageStream.read(header);
-        if (length == -1) {
-            endOfStream = true;
-            return;
-        }
-        if (length != 1) {
-            throw new NetworkException("Missing first byte of the telnet 3270 header");
-        }
+        this.commandSoFar = new ByteArrayOutputStream();
 
-        //In the middle of the DT_3270_DATA stream we can receive IAC DO TIMING_MARK requests
-        if(header[0]  == Network.IAC) {
-            byte[] remainingHeader = new byte[2];
-            if (messageStream.read(remainingHeader) != 2) {
-                throw new NetworkException("Missing remaining 2 bytes of the telnet 3270 IAC header");
-            }
-            //respond with DON'T_TIMING_MARK
-            if (remainingHeader[0] == Network.DO && remainingHeader[1] == Network.TIMING_MARK){
-                byte [] response = new byte[3];
-                response[0] = Network.IAC;
-                response[1] = Network.DONT;    
-                response[2] = Network.TIMING_MARK;
-                network.sendDatastream(response);
-            } else if (remainingHeader[0] == Network.WONT && remainingHeader[1] == Network.TIMING_MARK){
-                //IGNORE
-            } else {
-                throw new NetworkException("In IAC request not supported, Command was: " + remainingHeader[0] + " " + remainingHeader[1]);
-            }
+        Byte header = readByte(messageStream);
+        if (header == null) {
             return;
         }
 
-        if (header[0] == DT_3270_DATA) {
-            byte[] remainingHeader = new byte[4];
-            if (messageStream.read(remainingHeader) != 4) {
-                throw new NetworkException("Missing remaining 4 byte of the telnet 3270 header");
-            }
+        if (header == IAC) {
+            doIac(messageStream);
+            return;
+        }
 
-            ByteBuffer buffer = readTerminatedMessage(messageStream);
+        if (basicTelnetDatastream) {
+            this.telnetSessionStarted = true;  // must be started if receiving 3270
+
+            ByteBuffer buffer = readTerminatedMessage(header, messageStream);
+
 
             Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
             return;
-        } 
+        } else {
+            this.telnetSessionStarted = true;  // must be started if receiving 3270
 
-        throw new NetworkException("TN3270E message Data-Type " + header[0] + " is unsupported");
+            ByteBuffer buffer = readTerminatedMessage(header, messageStream);
+
+            if (buffer.remaining() < 5) {
+                throw new NetworkException("Missing 5 bytes of the TN3270E datastream header");
+            }
+            
+            byte tn3270eHeader = buffer.get();
+            if (tn3270eHeader != 0) {
+                throw new NetworkException("Was expecting a TN3270E datastream header of zeros - " + reportCommandSoFar());
+            }
+
+            buffer.get(new byte[4]);
+
+            Inbound3270Message inbound3270Message = process3270Data(buffer);
+            this.screen.processInboundMessage(inbound3270Message);
+            return;
+        }
+    }
+
+    private void doIac(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == DO) {
+            doIacDo(messageStream);
+            return;
+        }
+        if (iac == DONT) {
+            doIacDont(messageStream);
+            return;
+        }
+        if (iac == SB) {
+            doIacSb(messageStream);
+            return;
+        }
+        if (iac == WILL) {
+            doIacWill(messageStream);
+            return;
+        }
+        if (iac == WONT) {
+            doIacWont(messageStream);
+            return;
+        }
+
+
+        throw new NetworkException("Unrecognised IAC Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSb(InputStream messageStream) throws NetworkException, IOException {
+        // Read the whole SB SE command
+        ByteBuffer remainingSb = readTerminatedSB(messageStream);
+
+        byte sb = remainingSb.get();
+
+        if (sb == TN3270E) {
+            doIacSbTn3270e(remainingSb);
+            return;
+        }
+        if (sb == START_TLS) {
+            doIacSbStartTls(remainingSb);
+            return;
+        }
+        if (sb == TERMINAL_TYPE) {
+            doIacSbTerminalType(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB Command - " + reportCommandSoFar());
+    }
+
+    private void doIacWill(InputStream messageStream) throws NetworkException, IOException {
+        Byte will = readByte(messageStream);
+        if (will == null) {
+            throw new NetworkException("Unrecognised IAC WILL terminated early - " + reportCommandSoFar());
+        }
+
+        throw new NetworkException("Unrecognised IAC WILL Command - " + reportCommandSoFar());
+    }
+
+    private void doIacWont(InputStream messageStream) throws NetworkException, IOException {
+        Byte will = readByte(messageStream);
+        if (will == null) {
+            throw new NetworkException("Unrecognised IAC WONT terminated early - " + reportCommandSoFar());
+        }
+        
+        if (will == TIMING_MARK) {
+            // Ignore
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC WONT Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTn3270e(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == SEND) {
+            doIacSbTn3270eSend(remainingSb);
+            return;
+        }
+        if (sb == DEVICE_TYPE) {
+            doIacSbTn3270eDeviceType(remainingSb);
+            return;
+        }
+        if (sb == FUNCTIONS) {
+            doIacSbTn3270eFunctions(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TN3270E Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbStartTls(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == FOLLOWS) {
+            doIacSbStartTlsFollows(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB START_TLS Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbStartTlsFollows(ByteBuffer remainingSb) throws NetworkException, IOException {
+        logger.trace("TN3270E switching to TLS");
+
+        Socket newSocket = this.network.startTls();
+        this.inputStream = newSocket.getInputStream();
+
+        logger.trace("TN3270E switched to TLS");
+    }
+
+    private void doIacSbTn3270eSend(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == DEVICE_TYPE) {
+            doIacSbTn3270eSendDeviceType(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TN3270E SEND Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTn3270eSendDeviceType(ByteBuffer remainingSb) throws NetworkException, IOException {
+        logger.trace("IAC SB TN3270E SEND DEVICE_TYPE received from server");
+
+        requestDeviceTypeDeviceName();
+    }
+
+
+    private void doIacSbTerminalType(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == TT_SEND) {
+            doIacSbTerminalTypeSend(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TERMINAL-TYPE Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTerminalTypeSend(ByteBuffer remainingSb) throws NetworkException, IOException {
+        logger.trace("IAC SB TERMINAL-TYPE SEND received from server");
+
+        requestTerminalType();
+    }
+
+
+    private void requestDeviceTypeDeviceName() throws NetworkException, IOException {
+        if (this.possibleDeviceTypes.isEmpty()) {
+            throw new NetworkException("Ran out of TN3270E device types to negotiate for");
+        }
+
+        if (this.selectedDeviceType != null) {
+            throw new NetworkException("logic error, nothing new to negotiate device type with");
+        }
+
+        this.selectedDeviceType = this.possibleDeviceTypes.remove(0);
+        logger.trace("Requesting TN3270E device type " + this.selectedDeviceType);
+
+        byte[] deviceType = this.selectedDeviceType.getBytes(ascii7);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(IAC);
+        baos.write(SB);
+        baos.write(TN3270E);
+        baos.write(DEVICE_TYPE);
+        baos.write(REQUEST);
+        baos.write(deviceType);
+        baos.write(IAC);
+        baos.write(SE);
+
+        this.network.sendIac(baos.toByteArray());
+
+        return;
+    }
+
+    private void requestTerminalType() throws NetworkException, IOException {
+        if (this.possibleDeviceTypes.isEmpty()) {
+            throw new NetworkException("Ran out of terminal types to negotiate for");
+        }
+
+        if (this.selectedDeviceType != null) {
+            throw new NetworkException("logic error, nothing new to negotiate device type with");
+        }
+
+        this.selectedDeviceType = this.possibleDeviceTypes.remove(0);
+        logger.trace("Requesting terminal type " + this.selectedDeviceType);
+
+        byte[] deviceType = this.selectedDeviceType.getBytes(ascii7);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(IAC);
+        baos.write(SB);
+        baos.write(TERMINAL_TYPE);
+        baos.write(IS);
+        baos.write(deviceType);
+        baos.write(IAC);
+        baos.write(SE);
+
+        this.network.sendIac(baos.toByteArray());
+
+        return;
+    }
+
+    private void doIacSbTn3270eDeviceType(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == IS) {
+            doIacSbTn3270eDeviceTypeIs(remainingSb);
+            return;
+        }
+        if (sb == REJECT) {
+            doIacSbTn3270eDeviceTypeReject(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TN3270E DEVICE_TYPE Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTn3270eDeviceTypeIs(ByteBuffer remainingSb) throws NetworkException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while (true) {
+            byte b = remainingSb.get();
+
+            if (b == CONNECT) {
+                break;
+            }
+
+            baos.write(b);
+        }
+
+        this.selectedDeviceType = new String(baos.toByteArray(), ascii7);
+
+        baos = new ByteArrayOutputStream();
+        while (remainingSb.hasRemaining()) {
+            byte b = remainingSb.get();
+
+            if (b == IAC) {
+                break;
+            }
+
+            baos.write(b);
+        }
+
+        String luName = new String(baos.toByteArray(), ascii7);
+        logger.trace("TN3270 device type " + this.selectedDeviceType + " with LU " + luName + " was agreed");
+
+        negotiateFunctions();
+    }
+
+    private void doIacSbTn3270eFunctions(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == IS) {
+            doIacSbTn3270eFunctionsIs(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TN3270E FUNCTIONS Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTn3270eFunctionsIs(ByteBuffer remainingSb) throws NetworkException, IOException {
+        if (remainingSb.hasRemaining()) {
+            throw new NetworkException("TN3270E, asked for no functions, but we seem to have got some anyway " + reportCommandSoFar());
+        }
+
+        // At this point we should be fully negotiated, so mark thread ready
+        logger.trace("TN3270E negotiation complete, 3270 datastream should now start");
+        this.telnetSessionStarted = true;
+    }
+
+    private void negotiateFunctions() throws NetworkException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(IAC);
+        baos.write(SB);
+        baos.write(TN3270E);
+        baos.write(FUNCTIONS);
+        baos.write(REQUEST);
+        baos.write(IAC);
+        baos.write(SE);
+        this.network.sendIac(baos.toByteArray());
+    }
+
+    private void doIacSbTn3270eDeviceTypeReject(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte sb = remainingSb.get();
+
+        if (sb == REASON) {
+            doIacSbTn3270eDeviceTypeRejectReason(remainingSb);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC SB TN3270E DEVICE_TYPE REJECT Command - " + reportCommandSoFar());
+    }
+
+    private void doIacSbTn3270eDeviceTypeRejectReason(ByteBuffer remainingSb) throws NetworkException, IOException {
+        byte reasonCode = remainingSb.get();
+
+        switch(reasonCode) {
+            case CONN_PARTNER:
+                throw new NetworkException("Device negotiation failed due to CONN_PARTNER");
+            case DEVICE_IN_USE:
+                throw new NetworkException("Device negotiation failed due to DEVICE_IN_USE");
+            case INV_ASSOCIATE:
+                throw new NetworkException("Device negotiation failed due to INV_ASSOCIATE");
+            case INV_NAME:
+                throw new NetworkException("Device negotiation failed due to INV_NAME");
+            case INV_DEVICE_TYPE :
+                logger.trace("TN3270 device type " + this.selectedDeviceType + " was rejected as invalid INV_DEVICE_TYPE");
+                this.selectedDeviceType = null;
+                requestDeviceTypeDeviceName();
+                return;
+            case TYPE_NAME_ERROR:
+                throw new NetworkException("Device negotiation failed due to TYPE_NAME_ERROR");
+            case UNKNOWN_ERROR:
+                throw new NetworkException("Device negotiation failed due to UNKNOWN_ERROR");
+            case UNSUPPORTED_REQ:
+                throw new NetworkException("Device negotiation failed due to UNSUPPORTED_REQ");
+            default:
+                throw new NetworkException("Unrecognised reason code for rejected device type =" + reasonCode);
+        }
+    }
+
+    private void doIacDo(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == TIMING_MARK) {
+            doIacDoTimingMark(messageStream);
+            return;
+        }
+        if (iac == TN3270E) {
+            doIacDoTn3270e(messageStream);
+            return;
+        }
+        if (iac == START_TLS) {
+            doIacDoStartTls(messageStream);
+            return;
+        }
+        if (iac == TERMINAL_TYPE) {
+            doIacDoTerminalType(messageStream);
+            return;
+        }
+        if (iac == TELNET_EOR) {
+            doIacDoTelnetEor(messageStream);
+            return;
+        }
+        if (iac == TELNET_BINARY) {
+            doIacDoTelnetBinary(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO Command - " + reportCommandSoFar());
+
+    }
+
+    private void doIacDont(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == TN3270E) {
+            logger.trace("Received IAC DONT TN3270E");
+
+            if (this.selectedDeviceType != null) {
+                this.possibleDeviceTypes.add(0, selectedDeviceType);
+                this.selectedDeviceType = null;
+            }
+
+
+            return; // IGNORE
+        }
+
+        throw new NetworkException("Unrecognised IAC DONT Command - " + reportCommandSoFar());
+    }
+
+    private void doIacDoTimingMark(InputStream messageStream) throws NetworkException {
+        logger.trace("timing received");
+        this.network.sendIac(new byte[] {IAC, DONT, TIMING_MARK});
+    }
+
+    private void doIacDoTelnetEor(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO EOR terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == IAC) {
+            doIacDoTelnetEorIac(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO EOR Command - " + reportCommandSoFar());
+    }
+
+
+    private void doIacDoTelnetEorIac(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO EOR IAC terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == WILL) {
+            doIacDoTelnetEorIacWill(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO EOR WILL Command - " + reportCommandSoFar());
+    }
+
+
+    private void doIacDoTelnetEorIacWill(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO EOR IAC WILL terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == TELNET_EOR) {
+            doIacDoTelnetEorIacWillEor(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO EOR WILL Command - " + reportCommandSoFar());
+    }
+
+    private void doIacDoTelnetEorIacWillEor(InputStream messageStream) throws NetworkException, IOException {
+        logger.trace("IAC DO EOR WILL EOR received from server");
+        this.network.sendIac(new byte[] {IAC, WILL, TELNET_EOR, IAC, DO, TELNET_EOR});
+        this.basicTelnetDatastream = true;
+    }
+
+
+    private void doIacDoTelnetBinary(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO BINARY terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == IAC) {
+            doIacDoTelnetBinaryIac(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO BINARY Command - " + reportCommandSoFar());
+    }
+
+
+    private void doIacDoTelnetBinaryIac(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO BINARY IAC terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == WILL) {
+            doIacDoTelnetBinaryWill(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO BINARY WILL Command - " + reportCommandSoFar());
+    }
+
+
+    private void doIacDoTelnetBinaryWill(InputStream messageStream) throws NetworkException, IOException {
+        Byte iac = readByte(messageStream);
+        if (iac == null) {
+            throw new NetworkException("Unrecognised IAC DO BINARY IAC WILL terminated early - " + reportCommandSoFar());
+        }
+
+        if (iac == TELNET_BINARY) {
+            doIacDoTelnetBinaryWillBinary(messageStream);
+            return;
+        }
+
+        throw new NetworkException("Unrecognised IAC DO BINARY WILL Command - " + reportCommandSoFar());
+    }
+
+    private void doIacDoTelnetBinaryWillBinary(InputStream messageStream) throws NetworkException, IOException {
+        logger.trace("IAC DO BINARY WILL BINARY received from server");
+        this.network.sendIac(new byte[] {IAC, WILL, TELNET_BINARY, IAC, DO, TELNET_BINARY});
+    }
+
+
+    private void doIacDoTerminalType(InputStream messageStream) throws NetworkException {
+        logger.trace("IAC DO TERMINAL-TYPE received from server");
+        this.network.sendIac(new byte[] {IAC, WILL, TERMINAL_TYPE});
+    }
+
+    private void doIacDoTn3270e(InputStream messageStream) throws NetworkException {
+        logger.trace("IAC DO TN3270E received from server, responding with IAC WILL TN3270E");
+
+        this.network.sendIac(new byte[] {IAC, WILL, TN3270E});
+    }
+
+    private void doIacDoStartTls(InputStream messageStream) throws NetworkException, IOException {
+        logger.trace("IAC DO START_TLS received from server, agreeing to switch to TLS");
+        this.network.sendIac(new byte[] {IAC, WILL, START_TLS, IAC, SB, START_TLS, FOLLOWS, IAC, SE});
+    }
+
+    private Byte readByte(InputStream messageStream) throws IOException {
+        byte[] b = new byte[1];
+        int length = messageStream.read(b);
+
+        if (length == -1) {
+            endOfStream = true;
+            return null;
+        }
+        if (length == 0) {
+            return null;
+        }
+
+        this.commandSoFar.write(b);
+
+        return b[0];
+    }
+
+    private String reportCommandSoFar() {
+        return Hex.encodeHexString(this.commandSoFar.toByteArray());
     }
 
     public Inbound3270Message process3270Data(ByteBuffer buffer) throws NetworkException {
@@ -244,14 +818,16 @@ public class NetworkThread extends Thread {
         return new Inbound3270Message(commandCode, structuredFields);
     }
 
-    public static ByteBuffer readTerminatedMessage(InputStream messageStream) throws IOException, NetworkException {
+    public static ByteBuffer readTerminatedMessage(byte header, InputStream messageStream) throws IOException, NetworkException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        byteArrayOutputStream.write(header);
 
         byte[] b = new byte[1];
         boolean lastByteFF = false;
         boolean terminated = false;
         while (messageStream.read(b) == 1) {
-            if (b[0] == Network.IAC) {
+            if (b[0] == IAC) {
                 if (lastByteFF) {
                     byteArrayOutputStream.write(b);
                     lastByteFF = false;
@@ -259,7 +835,7 @@ public class NetworkThread extends Thread {
                     lastByteFF = true;
                 }
             } else {
-                if (b[0] == Network.EOR && lastByteFF) {
+                if (b[0] == EOR && lastByteFF) {
                     terminated = true;
                     break;
                 }
@@ -275,6 +851,43 @@ public class NetworkThread extends Thread {
         byte[] bytes = byteArrayOutputStream.toByteArray();
 
         return ByteBuffer.wrap(bytes);
+    }
+
+    public ByteBuffer readTerminatedSB(InputStream messageStream) throws IOException, NetworkException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        boolean lastByteFF = false;
+        boolean terminated = false;
+        Byte b;
+        while ((b = readByte(messageStream)) != null) {
+            if (b == IAC) {
+                if (lastByteFF) {
+                    byteArrayOutputStream.write(b);
+                    lastByteFF = false;
+                } else {
+                    lastByteFF = true;
+                }
+            } else {
+                if (b == SE && lastByteFF) {
+                    terminated = true;
+                    break;
+                }
+
+                byteArrayOutputStream.write(b);
+            }
+        }
+
+        if (!terminated) {
+            throw new NetworkException("IAC SB message did not terminate with IAC SE");
+        }
+
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+
+        return ByteBuffer.wrap(bytes);
+    }
+
+    public boolean isStarted() {
+        return this.telnetSessionStarted;
     }
 
 }
