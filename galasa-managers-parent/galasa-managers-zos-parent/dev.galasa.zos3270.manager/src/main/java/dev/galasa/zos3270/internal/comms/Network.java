@@ -32,7 +32,9 @@ public class Network {
 
     private final String        host;
     private final int           port;
-    private boolean             ssl;
+    private final boolean       ssl;
+    private boolean             switchedSSL     = false;
+    private boolean             doStartTls      = true;    
 
     private Socket              socket;
     private OutputStream        outputStream;
@@ -40,8 +42,10 @@ public class Network {
 
     private KeepAlive           keepAlive;
     private Instant             lastSend        = Instant.now();
-    
+
     private Exception           errorException;
+
+    private boolean             basicTelnet = false;
 
     public Network(String host, int port) {
         this(host, port, false);
@@ -88,6 +92,14 @@ public class Network {
                 }
             }
         }
+    }
+    
+    public void setDoStartTls(boolean doStartTls) {
+        this.doStartTls = doStartTls;
+    }
+    
+    public boolean isDoStartTls() {
+        return this.doStartTls;
     }
 
     public boolean isConnected() {
@@ -155,8 +167,6 @@ public class Network {
             this.socket = tlsSocket;
             this.inputStream = tlsSocket.getInputStream(); 
             this.outputStream = tlsSocket.getOutputStream();
-            
-            this.ssl = true;
             return tlsSocket;
         } catch(Exception e) {
             throw new NetworkException("Problem negotiating TLS on plain socket", e);
@@ -164,28 +174,11 @@ public class Network {
 
     }
 
-
-//    public static void expect(InputStream inputStream, byte... expected) throws IOException, NetworkException {
-//        byte[] received = new byte[expected.length];
-//
-//        int length = inputStream.read(received);
-//
-//        if (length != expected.length) {
-//            throw new NetworkException("Expected " + expected.length + " but received only " + length + " bytes");
-//        }
-//
-//        if (!Arrays.equals(expected, received)) {
-//            String expectedString = Hex.encodeHexString(expected);
-//            String receivedString = Hex.encodeHexString(received);
-//            throw new NetworkException("Expected " + expectedString + " but received " + receivedString);
-//        }
-//    }
-
     public void sendDatastream(byte[] outboundDatastream) throws NetworkException {
         if (this.errorException != null) {
             throw new NetworkException("Terminal network connection has gone into error state",this.errorException);
         }
-        
+
         sendDatastream(outputStream, outboundDatastream);
     }
 
@@ -196,7 +189,9 @@ public class Network {
                 byte[] trailer = new byte[] { (byte) 0xff, (byte) 0xef };
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                baos.write(header);
+                if (!this.basicTelnet) {
+                    baos.write(header);
+                }
                 baos.write(outboundDatastream);
                 baos.write(trailer);
                 outputStream.write(baos.toByteArray());
@@ -208,7 +203,7 @@ public class Network {
             }
         }
     }
-    
+
     public void sendIac(byte[] outboundIac) throws NetworkException {
         synchronized(outputStream) {
             try {
@@ -221,7 +216,7 @@ public class Network {
             }
         }
     }
-   
+
     public boolean isTls() {
         return this.ssl;
     }
@@ -293,6 +288,18 @@ public class Network {
                 }
             }
         }
+    }
+
+    public void setBasicTelnet(boolean basicTelnet) {
+        this.basicTelnet = basicTelnet;
+    }
+
+    public void switchedSSL(boolean switchedSSL) {
+        this.switchedSSL = switchedSSL;
+    }
+    
+    public boolean isSwitchedSSL() {
+        return this.switchedSSL;
     }
 
 }

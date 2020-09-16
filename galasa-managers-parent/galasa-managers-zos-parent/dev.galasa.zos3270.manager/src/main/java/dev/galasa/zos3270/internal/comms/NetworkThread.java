@@ -176,7 +176,7 @@ public class NetworkThread extends Thread {
             if (buffer.remaining() < 5) {
                 throw new NetworkException("Missing 5 bytes of the TN3270E datastream header");
             }
-            
+
             byte tn3270eHeader = buffer.get();
             if (tn3270eHeader != 0) {
                 throw new NetworkException("Was expecting a TN3270E datastream header of zeros - " + reportCommandSoFar());
@@ -257,7 +257,7 @@ public class NetworkThread extends Thread {
         if (will == null) {
             throw new NetworkException("Unrecognised IAC WONT terminated early - " + reportCommandSoFar());
         }
-        
+
         if (will == TIMING_MARK) {
             // Ignore
             return;
@@ -301,6 +301,8 @@ public class NetworkThread extends Thread {
 
         Socket newSocket = this.network.startTls();
         this.inputStream = newSocket.getInputStream();
+        this.network.switchedSSL(true);
+
 
         logger.trace("TN3270E switched to TLS");
     }
@@ -388,7 +390,7 @@ public class NetworkThread extends Thread {
         baos.write(IAC);
         baos.write(SB);
         baos.write(TERMINAL_TYPE);
-        baos.write(IS);
+        baos.write(0);
         baos.write(deviceType);
         baos.write(IAC);
         baos.write(SE);
@@ -625,6 +627,9 @@ public class NetworkThread extends Thread {
         logger.trace("IAC DO EOR WILL EOR received from server");
         this.network.sendIac(new byte[] {IAC, WILL, TELNET_EOR, IAC, DO, TELNET_EOR});
         this.basicTelnetDatastream = true;
+
+        this.network.setBasicTelnet(true);
+
     }
 
 
@@ -687,11 +692,18 @@ public class NetworkThread extends Thread {
         logger.trace("IAC DO TN3270E received from server, responding with IAC WILL TN3270E");
 
         this.network.sendIac(new byte[] {IAC, WILL, TN3270E});
+
+        this.network.setBasicTelnet(false);
     }
 
     private void doIacDoStartTls(InputStream messageStream) throws NetworkException, IOException {
-        logger.trace("IAC DO START_TLS received from server, agreeing to switch to TLS");
-        this.network.sendIac(new byte[] {IAC, WILL, START_TLS, IAC, SB, START_TLS, FOLLOWS, IAC, SE});
+        if (this.network.isDoStartTls()) {
+            logger.trace("IAC DO START_TLS received from server, agreeing to switch to TLS");
+            this.network.sendIac(new byte[] {IAC, WILL, START_TLS, IAC, SB, START_TLS, FOLLOWS, IAC, SE});
+        } else {
+            logger.trace("IAC DO START_TLS received from server, refusing");
+            this.network.sendIac(new byte[] {IAC, WONT, START_TLS});
+        }
     }
 
     private Byte readByte(InputStream messageStream) throws IOException {
@@ -806,8 +818,12 @@ public class NetworkThread extends Thread {
 
         while (buffer.remaining() > 0) {
             int length = buffer.getShort();
-            if (length == 0 && buffer.remaining() != 0) {
-                throw new NetworkException("SF with length of zero was not the last SF in the buffer");
+            if (length == 0) {
+                if (buffer.remaining() == 0) {
+                    break;
+                } else {
+                    length = buffer.remaining() + 2;
+                }
             }
             byte[] sfData = new byte[length - 2];
             buffer.get(sfData);

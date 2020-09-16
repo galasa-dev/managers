@@ -17,7 +17,9 @@ public interface ITerminal {
 
     void disconnect() throws TerminalInterruptedException;
     
-    public boolean isTls();
+    public boolean isSwitchedSSL();
+
+    public void setDoStartTls(boolean doStartTls);
 
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
 

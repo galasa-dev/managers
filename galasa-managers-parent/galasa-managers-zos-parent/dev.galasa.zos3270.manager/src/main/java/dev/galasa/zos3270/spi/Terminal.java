@@ -499,8 +499,13 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public boolean isTls() {
-        return this.network.isTls();
+    public boolean isSwitchedSSL() {
+        return this.network.isSwitchedSSL();
+    }
+    
+    @Override
+    public void setDoStartTls(boolean doStartTls) {
+        this.network.setDoStartTls(doStartTls);
     }
 
 }
