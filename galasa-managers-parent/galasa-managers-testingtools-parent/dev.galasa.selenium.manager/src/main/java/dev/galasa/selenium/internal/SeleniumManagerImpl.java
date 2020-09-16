@@ -10,10 +10,15 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
@@ -27,6 +32,10 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.selenium.IChromeOptions;
+import dev.galasa.selenium.IEdgeOptions;
+import dev.galasa.selenium.IFirefoxOptions;
+import dev.galasa.selenium.IInternetExplorerOptions;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
@@ -41,7 +50,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     public static final String NAMESPACE = "selenium";
 
-    private IConfigurationPropertyStoreService cps; //NOSONAR
+    private IConfigurationPropertyStoreService cps; // NOSONAR
     private IFramework framework;
 
     private List<WebPageImpl> webPages = new ArrayList<>();
@@ -54,7 +63,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
 
-        if(galasaTest.isJava()) {
+        if (galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
             if (ourFields.isEmpty() && !this.required) {
                 return;
@@ -99,10 +108,10 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     @Override
     public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
             Throwable currentException) throws ManagerException {
-        try{
-            if(!currentResult.equals("Passed")) {
-                if(SeleniumScreenshotFailure.get()) {
-                    for(IWebPage page : webPages) {
+        try {
+            if (!currentResult.equals("Passed")) {
+                if (SeleniumScreenshotFailure.get()) {
+                    for (IWebPage page : webPages) {
                         page.takeScreenShot();
                     }
                 }
@@ -115,7 +124,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public void provisionDiscard() {
-        for(WebPageImpl page : webPages) {
+        for (WebPageImpl page : webPages) {
             page.managerQuit();
         }
     }
@@ -134,7 +143,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
             String dseInstance = SeleniumDseInstanceName.get();
             driver = Browser.getWebDriver(dseInstance);
 
-            if(driver == null)
+            if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
         } catch (SeleniumManagerException e) {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
@@ -142,11 +151,125 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
         WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
 
-        if(url != null && !url.trim().isEmpty())
+        if (url != null && !url.trim().isEmpty())
             webPage.get(url);
-        
+
         this.webPages.add(webPage);
         return webPage;
     }
+
+    @Override
+    public IWebPage allocateWebPage(String url, IFirefoxOptions options) throws SeleniumManagerException {
+        WebDriver driver = null;
+
+        try {
+            String dseInstance = SeleniumDseInstanceName.get();
+            driver = Browser.getGeckoDriver(dseInstance, options);
+
+            if (driver == null)
+                throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
+        } catch (SeleniumManagerException e) {
+            throw new SeleniumManagerException("Issue provisioning web driver", e);
+        }
+
+        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
+
+        if (url != null && !url.trim().isEmpty())
+            webPage.get(url);
+
+        this.webPages.add(webPage);
+        return webPage;
+    }
+
+    @Override
+    public IWebPage allocateWebPage(String url, ChromeOptions options) throws SeleniumManagerException {
+        WebDriver driver = null;
+
+        try {
+            String dseInstance = SeleniumDseInstanceName.get();
+            driver = Browser.getChromeDriver(dseInstance, options);
+
+            if (driver == null)
+                throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
+        } catch (SeleniumManagerException e) {
+            throw new SeleniumManagerException("Issue provisioning web driver", e);
+        }
+
+        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
+
+        if (url != null && !url.trim().isEmpty())
+            webPage.get(url);
+
+        this.webPages.add(webPage);
+        return webPage;
+    }
+
+    @Override
+    public IWebPage allocateWebPage(String url, EdgeOptions options) throws SeleniumManagerException {
+        WebDriver driver = null;
+
+        try {
+            String dseInstance = SeleniumDseInstanceName.get();
+            driver = Browser.getEdgeDriver(dseInstance, options);
+
+            if (driver == null)
+                throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
+        } catch (SeleniumManagerException e) {
+            throw new SeleniumManagerException("Issue provisioning web driver", e);
+        }
+
+        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
+
+        if (url != null && !url.trim().isEmpty())
+            webPage.get(url);
+
+        this.webPages.add(webPage);
+        return webPage;
+    }
+
+    @Override
+    public IWebPage allocateWebPage(String url, InternetExplorerOptions options) throws SeleniumManagerException {
+        WebDriver driver = null;
+
+        try {
+            String dseInstance = SeleniumDseInstanceName.get();
+            driver = Browser.getIEDriver(dseInstance, options);
+
+            if (driver == null)
+                throw new SeleniumManagerException("Unsupported driver type for instance: " + dseInstance);
+        } catch (SeleniumManagerException e) {
+            throw new SeleniumManagerException("Issue provisioning web driver", e);
+        }
+
+        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
+
+        if (url != null && !url.trim().isEmpty())
+            webPage.get(url);
+
+        this.webPages.add(webPage);
+        return webPage;
+    }
+
+    @Override
+    public IFirefoxOptions getFirefoxOptions() {
+        return new FirefoxOptionsImpl();
+    }
+
+    @Override
+    public IChromeOptions getChromeOptions() {
+        return new ChromeOptionsImpl();
+    }
+
+    @Override
+    public IEdgeOptions getEdgeOptions() {
+        return new EdgeOptionsImpl();
+    }
+
+    @Override
+    public IInternetExplorerOptions getInternetExplorerOptions() {
+        return new InternetExplorerOptionsImpl();
+    }
+
+    
     
 }

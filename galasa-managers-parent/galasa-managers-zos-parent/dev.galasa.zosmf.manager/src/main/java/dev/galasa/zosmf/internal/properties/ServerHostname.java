@@ -14,7 +14,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zosmf.server.[imageid].https
+ * @galasa.name zosmf.server.[imageid].hostname
  * 
  * @galasa.description The hostname zOSMF server
  * 
