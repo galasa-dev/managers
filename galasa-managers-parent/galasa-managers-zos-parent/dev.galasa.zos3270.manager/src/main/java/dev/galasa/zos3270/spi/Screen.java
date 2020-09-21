@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos3270.spi;
 
@@ -39,6 +39,7 @@ import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
 import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.internal.datastream.CommandEraseWriteAlternate;
 import dev.galasa.zos3270.internal.datastream.CommandReadBuffer;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.IAttribute;
@@ -74,11 +75,18 @@ public class Screen {
     private final Log                               logger          = LogFactory.getLog(getClass());
 
     private final Network                           network;
-
-    private final IBufferHolder[]                   buffer;
-    private final int                               columns;
-    private final int                               rows;
-    private final int                               screenSize;
+    
+    private boolean                                 usingAlternate;
+    private IBufferHolder[]                         buffer;
+    private int                                     screenSize;
+    private int                                     columns;
+    private int                                     rows;
+    
+    private final boolean                           hasAlternate;
+    private final int                               primaryColumns;
+    private final int                               primaryRows;
+    private final int                               alternateColumns;
+    private final int                               alternateRows;
 
     private int                                     workingCursor   = 0;
     private int                                     screenCursor    = 0;
@@ -97,11 +105,25 @@ public class Screen {
     }
 
     public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
+        this(columns, rows, 0, 0, network);
+    }
+
+    public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network) throws TerminalInterruptedException {
         this.network = network;
-        this.columns = columns;
-        this.rows = rows;
-        this.screenSize = this.columns * this.rows;
-        this.buffer = new IBufferHolder[this.screenSize];
+        this.primaryColumns = columns;
+        this.primaryRows = rows;
+        this.usingAlternate = false;
+        if (alternateRows < 1 || alternateColumns < 1) {
+            this.hasAlternate = false;
+            this.alternateColumns = 0;
+            this.alternateRows    = 0;
+        } else {
+            this.hasAlternate = true;
+            this.alternateColumns = alternateColumns;
+            this.alternateRows    = alternateRows;
+        }
+        
+        erase();
         lockKeyboard();
     }
 
@@ -129,7 +151,7 @@ public class Screen {
         }
     }
 
-    public void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
+    public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
         AbstractCommandCode commandCode = inbound.getCommandCode();
         if (commandCode instanceof CommandWriteStructured) {
             processStructuredFields(inbound.getStructuredFields());
@@ -141,6 +163,8 @@ public class Screen {
 
             if (commandCode instanceof CommandEraseWrite) {
                 erase();
+            } else if (commandCode instanceof CommandEraseWriteAlternate) {
+                eraseAlternate();
             }
 
             if (writeControlCharacter.isResetMDT()) {
@@ -334,12 +358,49 @@ public class Screen {
     }
 
     public synchronized void erase() {
+        
+        if (this.usingAlternate || this.buffer == null) {
+            this.columns = primaryColumns;
+            this.rows    = primaryRows;
+            allocateBuffer();
+            
+            this.usingAlternate = false;
+        }
+        
         for (int i = 0; i < buffer.length; i++) {
             buffer[i] = null;
         }
 
         this.screenCursor  = 0;
         this.workingCursor = 0;
+    }
+
+    public synchronized void eraseAlternate() {
+        if (!hasAlternate) {
+            erase();
+            return;
+        }
+        
+        
+        if (!this.usingAlternate || this.buffer == null) {
+            this.columns = alternateColumns;
+            this.rows    = alternateRows;
+            allocateBuffer();
+            
+            this.usingAlternate = true;
+        }
+        
+        for (int i = 0; i < buffer.length; i++) {
+            buffer[i] = null;
+        }
+
+        this.screenCursor  = 0;
+        this.workingCursor = 0;
+    }
+
+    private void allocateBuffer() {
+        this.screenSize = this.columns * this.rows;
+        this.buffer = new IBufferHolder[this.screenSize];        
     }
 
     /**
@@ -367,13 +428,15 @@ public class Screen {
             throw new DatastreamException(
                     "Impossible RA end address " + endOfRepeat + ", screen size is " + screenSize);
         }
-
-        while (this.workingCursor != endOfRepeat) {
+        
+        boolean firstPosition = true;
+        while (firstPosition || this.workingCursor != endOfRepeat) {
             this.buffer[this.workingCursor] = new BufferChar(order.getChar());
             if (endOfRepeat == this.screenSize && this.workingCursor == (this.screenSize - 1)) {
                 endOfRepeat = 0;
                 break;
             }
+            firstPosition = false;
             incrementWorkingCursor();
         }
 
@@ -1431,6 +1494,22 @@ public class Screen {
 
     public List<IDatastreamListener> getDatastreamListeners() {
         return this.datastreamListeners;
+    }
+
+    public int getPrimaryColumns() {
+        return this.primaryColumns;
+    }
+
+    public int getPrimaryRows() {
+        return this.primaryRows;
+    }
+
+    public int getAlternateColumns() {
+        return this.alternateColumns;
+    }
+
+    public int getAlternateRows() {
+        return this.alternateRows;
     }
 
 

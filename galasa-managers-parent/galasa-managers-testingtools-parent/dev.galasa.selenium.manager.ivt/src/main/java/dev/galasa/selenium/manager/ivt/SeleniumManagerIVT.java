@@ -15,6 +15,7 @@ import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.IFirefoxOptions;
 
 @Test
 public class SeleniumManagerIVT {
@@ -63,8 +64,18 @@ public class SeleniumManagerIVT {
         page.sendKeysToElementById(SEARCHID, "galasa dev github")
             .clickElementById("search_button_homepage")
             .clickElementByLinkText("galasa · GitHub")
-            .clickElementByPartialLinkText("People");
-        assertThat(page.findElementsByLinkText("rsomers1998")).isNotEmpty();
+            .clickElementByPartialLinkText("Repositories").takeScreenShot();
+        assertThat(page.findElementsByLinkText("framework")).isNotEmpty();
+        page.quit();
+    }
+
+    @Test
+    public void testOptionsCanBeUsed() throws SeleniumManagerException {
+        IFirefoxOptions options = seleniumManager.getFirefoxOptions();
+        options.setHeadless(true);
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
+        page.maximize();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();
     }
 
