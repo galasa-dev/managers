@@ -7,6 +7,8 @@ package dev.galasa.docker.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,17 +82,16 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
                 youAreRequired(allManagers, activeManagers);
             }
         }
-        if(this.required){
-            try {
-                DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-            } catch (ConfigurationPropertyStoreException e) {
-                throw new DockerManagerException("Failed to set the CPS with the docker namespace", e);
-            }
-
-            this.framework = framework;
-            dockerEnvironment = new DockerEnvironment(framework, this);
-            logger.info("Docker manager intialised");
+        try {
+            DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new DockerManagerException("Failed to set the CPS with the docker namespace", e);
         }
+
+        this.framework = framework;
+        dockerEnvironment = new DockerEnvironment(framework, this);
+        logger.info("Docker manager intialised");
+
     }
     
     /**
@@ -280,5 +281,15 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 	public List<DockerRegistryImpl> getRegistries() {
 		return this.registries;
 	}
+
+    @Override
+    public @NotNull String getEngineHostname(String dockerEngineTag) throws DockerManagerException {
+    	try {
+        URI dockerEngine = dockerEnvironment.getDockerEngineImpl(dockerEngineTag).getURI();
+        return dockerEngine.getScheme() + "://" + dockerEngine.getHost();
+    	} catch (URISyntaxException e) {
+    		throw new DockerManagerException("Failed to parse the found URI", e);
+    	}
+    }
 
 }

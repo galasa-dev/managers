@@ -19,5 +19,8 @@ public interface IDockerManagerSpi extends IDockerManager {
     
     @NotNull
     IDockerContainer provisionContainer(String dockerContainerTag, String image, boolean start, String dockerEngineTag) throws DockerManagerException;
-  
+
+
+    @NotNull
+    String getEngineHostname(String dockerEngineTag) throws DockerManagerException;
 }
