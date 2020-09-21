@@ -460,7 +460,10 @@ public class TestRseapiImpl {
         Assert.assertEquals("toString() should return the expected value", toStringValue, rseapiSpy.toString());
         
         PowerMockito.doReturn(credentialsMock).when(zosImageMock, "getDefaultCredentials");
+        Mockito.when(Https.get(Mockito.any())).thenReturn(false);
         rseapiSpy.initialize();
+        toStringValue = zosImageMock.getImageID() + " http://" + HOSTNAME + ":" + PORT;
+        Assert.assertEquals("toString() should return the expected value", toStringValue, rseapiSpy.toString());
     }
     
     @Test
@@ -503,6 +506,15 @@ public class TestRseapiImpl {
     @Test
     public void testInitializeServerPortException() throws Exception {
         Mockito.when(ServerPort.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
+        exceptionRule.expect(RseapiException.class);
+        exceptionRule.expectMessage(EXCEPTION);
+        
+        rseapiSpy.initialize();
+    }
+    
+    @Test
+    public void testInitializeHttpsException() throws Exception {
+        Mockito.when(Https.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
         exceptionRule.expect(RseapiException.class);
         exceptionRule.expectMessage(EXCEPTION);
         

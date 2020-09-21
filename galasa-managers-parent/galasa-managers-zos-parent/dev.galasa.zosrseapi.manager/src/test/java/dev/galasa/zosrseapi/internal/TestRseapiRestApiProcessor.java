@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -30,7 +29,6 @@ import dev.galasa.zosrseapi.IRseapiResponse;
 import dev.galasa.zosrseapi.RseapiException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({RseapiRequestType.class})
 public class TestRseapiRestApiProcessor {
     
     private RseapiRestApiProcessor rseapiRestApiProcessor;
@@ -108,28 +106,10 @@ public class TestRseapiRestApiProcessor {
         Mockito.when(rseapiMock1.delete(Mockito.anyString(), Mockito.any())).thenReturn(rseapiResponseMock);
         response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.DELETE, PATH, null, null, null, false);
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
-    }
-
-    @Test
-    public void testSendRequestInvalidEnum() throws RseapiException {
-        rseapis.put("image1", rseapiMock1);
-        rseapiRestApiProcessor = new RseapiRestApiProcessor(rseapis);
-        rseapiRestApiProcessorSpy = PowerMockito.spy(rseapiRestApiProcessor);
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiMock1.get(Mockito.anyString(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        Mockito.when(rseapiMock1.getRequestRetry()).thenReturn(1);
-        HashMap<String, String> headers = new HashMap<>();
-        headers.put("key", "value");
-        
-        RseapiRequestType INVALID = Mockito.mock(RseapiRequestType.class);
-        Whitebox.setInternalState(INVALID, "ordinal", 6);
-
-        PowerMockito.mockStatic(RseapiRequestType.class);
-        PowerMockito.when(RseapiRequestType.values()).thenReturn(new RseapiRequestType[]{RseapiRequestType.GET, RseapiRequestType.PUT, RseapiRequestType.PUT_JSON, RseapiRequestType.POST, RseapiRequestType.POST_JSON, RseapiRequestType.DELETE, INVALID});
         
         exceptionRule.expect(RseapiException.class);
         exceptionRule.expectMessage("Unable to get valid response from RSE API server");
-        rseapiRestApiProcessorSpy.sendRequest(INVALID, PATH, null, null, null, false);
+        rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_TEXT, PATH, null, null, null, false);
     }
     
     @Test

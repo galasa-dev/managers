@@ -46,6 +46,7 @@ public class TestEnumsAndExeptions {
         Assert.assertEquals("Problem with ZosmfRequestType", "POST_JSON", RseapiRequestType.POST_JSON.toString());
         Assert.assertEquals("Problem with ZosmfRequestType", "PUT", RseapiRequestType.PUT.toString());
         Assert.assertEquals("Problem with ZosmfRequestType", "PUT_JSON", RseapiRequestType.PUT_JSON.toString());
+        Assert.assertEquals("Problem with ZosmfRequestType", "PUT_TEXT", RseapiRequestType.PUT_TEXT.toString());
     }
     
     @Test

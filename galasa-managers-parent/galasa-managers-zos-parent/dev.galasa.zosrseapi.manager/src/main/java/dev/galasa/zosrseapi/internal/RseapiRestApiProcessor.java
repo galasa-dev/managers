@@ -70,26 +70,26 @@ public class RseapiRestApiProcessor implements IRseapiRestApiProcessor {
                     }
                 }
                 switch (requestType) {
-                case GET:
-                    response = rseapiServer.get(path, validStatusCodes, convert);
-                    break;
-                case PUT:
-                    response = rseapiServer.put(path, validStatusCodes);
-                    break;
-                case PUT_JSON:
-                    response = rseapiServer.putJson(path, (JsonObject) body, validStatusCodes);
-                    break;
-                case POST:
-                    response = rseapiServer.post(path, validStatusCodes);
-                    break;
-                case POST_JSON:
-                    response = rseapiServer.postJson(path, (JsonObject) body, validStatusCodes);
-                    break;
-                case DELETE:
-                    response = rseapiServer.delete(path, validStatusCodes);
-                    break; 
-                default:
-                    throw new RseapiException("Invalid request type");
+	                case GET:
+	                    response = rseapiServer.get(path, validStatusCodes, convert);
+	                    break;
+	                case PUT:
+	                    response = rseapiServer.put(path, validStatusCodes);
+	                    break;
+	                case PUT_JSON:
+	                    response = rseapiServer.putJson(path, (JsonObject) body, validStatusCodes);
+	                    break;
+	                case POST:
+	                    response = rseapiServer.post(path, validStatusCodes);
+	                    break;
+	                case POST_JSON:
+	                    response = rseapiServer.postJson(path, (JsonObject) body, validStatusCodes);
+	                    break;
+	                case DELETE:
+	                    response = rseapiServer.delete(path, validStatusCodes);
+	                    break; 
+	                default:
+	                    throw new RseapiException("Invalid request type");
                 }
     
                 if (validStatusCodes.contains(response.getStatusCode())) {

@@ -23,12 +23,12 @@ public interface IRseapi {
     
     /**
      * Enumeration of RSE API request types:
-     * <li>{@link #POST}</li>
-     * <li>{@link #POST_JSON}</li>
      * <li>{@link #GET}</li>
      * <li>{@link #PUT}</li>
      * <li>{@link #PUT_TEXT}</li>
      * <li>{@link #PUT_JSON}</li>
+     * <li>{@link #POST}</li>
+     * <li>{@link #POST_JSON}</li>
      * <li>{@link #DELETE}</li>
      */
     public enum RseapiRequestType {
@@ -42,6 +42,10 @@ public interface IRseapi {
         PUT,
         /**
          * PUT method with JSON request body
+         */
+        PUT_TEXT,
+        /**
+         * PUT method with TEXT request body
          */
         PUT_JSON,
         /**
