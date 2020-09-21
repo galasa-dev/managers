@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 
 public class OrderText extends AbstractOrder {
 
-    private static final Charset ebcdic = Charset.forName("Cp037");
+    public static final Charset ebcdic = Charset.forName("Cp037");
 
     private StringBuilder        text   = new StringBuilder();
 
