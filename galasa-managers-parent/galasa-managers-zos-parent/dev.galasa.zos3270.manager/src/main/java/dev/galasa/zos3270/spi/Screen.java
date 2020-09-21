@@ -151,7 +151,7 @@ public class Screen {
         }
     }
 
-    public void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
+    public synchronized void processInboundMessage(Inbound3270Message inbound) throws DatastreamException {
         AbstractCommandCode commandCode = inbound.getCommandCode();
         if (commandCode instanceof CommandWriteStructured) {
             processStructuredFields(inbound.getStructuredFields());
@@ -428,13 +428,15 @@ public class Screen {
             throw new DatastreamException(
                     "Impossible RA end address " + endOfRepeat + ", screen size is " + screenSize);
         }
-
-        while (this.workingCursor != endOfRepeat) {
+        
+        boolean firstPosition = true;
+        while (firstPosition || this.workingCursor != endOfRepeat) {
             this.buffer[this.workingCursor] = new BufferChar(order.getChar());
             if (endOfRepeat == this.screenSize && this.workingCursor == (this.screenSize - 1)) {
                 endOfRepeat = 0;
                 break;
             }
+            firstPosition = false;
             incrementWorkingCursor();
         }
 
