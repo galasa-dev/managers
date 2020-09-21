@@ -384,10 +384,14 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         try {
             if (exists()) {
                 String archiveLocation;
-                if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    archiveLocation = storeArtifact(retrieveAsText(), this.name);
+                if (getTotalRecords() == 0) {
+                	archiveLocation = storeArtifact("", this.name);
                 } else {
-                    archiveLocation = storeArtifact(retrieveAsBinary(), this.name);
+	                if (this.dataType.equals(DatasetDataType.TEXT)) {
+	                    archiveLocation = storeArtifact(retrieveAsText(), this.name);
+	                } else {
+	                    archiveLocation = storeArtifact(retrieveAsBinary(), this.name);
+	                }
                 }
                 logger.info(quoted(this.name) + LOG_ARCHIVED_TO + archiveLocation);
             }
@@ -396,7 +400,18 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         }
     }
     
-    @Override
+    private int getTotalRecords() {
+        try {
+			return Integer.valueOf(getValueFromListcat("REC-TOTAL"));
+		} catch (NumberFormatException e) {
+			// NOP
+		} catch (ZosVSAMDatasetException e) {
+			logger.error("Unable to get value of REC-TOTAL from LISTCAT output", e);
+		}
+		return 0;
+	}
+
+	@Override
     public void setDataType(DatasetDataType dataType) {
         logger.info("Data type set to " + dataType.toString());
         this.dataType = dataType;

@@ -361,22 +361,66 @@ public class TestZosVSAMDatasetImpl {
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn(CONTENT).when(zosVSAMDatasetSpy).retrieveAsText();
         PowerMockito.doReturn(PATH).when(zosVSAMDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
+        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
+        
+        zosVSAMDatasetSpy.saveToResultsArchive();        
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).saveToResultsArchive();
+        
+        PowerMockito.doReturn("99").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(2)).saveToResultsArchive();
+        
+        PowerMockito.doReturn("XX").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(3)).saveToResultsArchive();
+        
+        PowerMockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(4)).saveToResultsArchive();
+        
+        PowerMockito.doReturn("99").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
+        Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.BINARY);
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosVSAMDatasetSpy).retrieveAsBinary();
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(5)).saveToResultsArchive();
+        
+        PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(6)).saveToResultsArchive();
+        
+        PowerMockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetSpy).exists();
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(7)).saveToResultsArchive();
+    }
+    
+    @Test
+    public void testSaveToResultsArchiveException() throws ZosFileManagerException {
+        PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
+        Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
+        PowerMockito.doReturn(CONTENT).when(zosVSAMDatasetSpy).retrieveAsText();
+        PowerMockito.doReturn(PATH).when(zosVSAMDatasetSpy).storeArtifact(Mockito.any(), Mockito.any());
+        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         
         zosVSAMDatasetSpy.saveToResultsArchive();
+        
         Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).saveToResultsArchive();
+        PowerMockito.doReturn("99").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
+        
+        zosVSAMDatasetSpy.saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(2)).saveToResultsArchive();
 
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.BINARY);
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosVSAMDatasetSpy).retrieveAsBinary();
         zosVSAMDatasetSpy.saveToResultsArchive();
-        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(2)).saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(3)).saveToResultsArchive();
         
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
         zosVSAMDatasetSpy.saveToResultsArchive();
-        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(3)).saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(4)).saveToResultsArchive();
         
         PowerMockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetSpy).exists();
         zosVSAMDatasetSpy.saveToResultsArchive();
-        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(4)).saveToResultsArchive();
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(5)).saveToResultsArchive();
     }
     
     @Test
