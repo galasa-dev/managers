@@ -44,12 +44,14 @@ public abstract class AbstractCommandCode {
             case NONSNA_WRITE_STRUCTURED:
                 return new CommandWriteStructured();
             case READ_BUFFER:
-                return new CommandReadBuffer();
             case NONSNA_READ_BUFFER:
+                return new CommandReadBuffer();
             case READ_MODIFIED:
             case NONSNA_READ_MODIFIED:
+                return new CommandReadModified();
             case READ_MODIFIED_ALL:
             case NONSNA_READ_MODIFIED_ALL:
+                return new CommandReadModifiedAll();
             case ERASE_ALL_UNPROTECTED:
             case NONSNA_ERASE_ALL_UNPROTECTED:
                 throw new DatastreamException("Unsupported command code=" + commandCode);

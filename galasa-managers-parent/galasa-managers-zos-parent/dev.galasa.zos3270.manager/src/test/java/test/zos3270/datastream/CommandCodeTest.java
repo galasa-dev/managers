@@ -27,8 +27,7 @@ public class CommandCodeTest {
 
     @Test
     public void testCommandCodeDecipherUnsupported() throws Exception {
-        unsupportedCC((byte) 0xf6);
-        unsupportedCC((byte) 0x6e);
+        unsupportedCC((byte) 0x0f);
         unsupportedCC((byte) 0x6f);
         Assert.assertTrue("Dummy assert to make sonarqube happy", true);
     }
