@@ -366,9 +366,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             throw new ZosBatchException(displayMessage);
         }
         
-        // Get the JCLIN
-//        this.jobOutput.addJcl(getOutputFileContent(this.jobFilesPath + "/jcl"));
-        
         if (this.jobComplete) {
             this.outputComplete = true;
         }
@@ -580,12 +577,16 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
     
     protected static String buildErrorString(String action, IRseapiResponse response) {
-    	//TODO: Maybe json content
-    	//{
-    	//  "message": "No job with name 'GALDTCIK' and id 'JOB21509' was found",
-    	//  "status": "NOT_FOUND"
-    	//}
-        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine();
+    	String message = "";
+    	try {
+    		JsonObject content = response.getJsonContent();
+			if (content != null) {
+				message = "\nstatus: " + content.get("status").getAsString() + "\n" + "message: " + content.get("message").getAsString(); 
+			}
+		} catch (RseapiException e) {
+			// NOP
+		}
+        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
     }
 
     protected void archiveJobOutput() throws ZosBatchException {

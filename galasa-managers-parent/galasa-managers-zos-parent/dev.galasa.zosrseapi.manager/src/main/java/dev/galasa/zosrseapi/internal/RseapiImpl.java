@@ -49,14 +49,6 @@ public class RseapiImpl implements IRseapi {
     
     private static final Log logger = LogFactory.getLog(RseapiImpl.class);
 
-//	private static final String AUTH_PATH = "/rseapi/api/v1/auth/login";
-//
-//	private static final String PROP_USERID = "userid";
-//	
-//	private static final String PROP_PASSWORD = "password";
-//	
-//	private static final String ASTERISKS = "***************";
-
     private String imageTag;
     private IZosImage image;
     private IHttpClient httpClient;
@@ -328,35 +320,6 @@ public class RseapiImpl implements IRseapi {
         }
         
     }
-    
-//    protected void authenticate() throws RseapiException {
-//		JsonObject requestBody = new JsonObject();
-//		String userid = ((ICredentialsUsernamePassword) creds).getUsername();
-//		String password = ((ICredentialsUsernamePassword) creds).getPassword();
-//		if (this.creds instanceof ICredentialsUsernamePassword) {
-//			requestBody.addProperty(PROP_USERID, userid);
-//			requestBody.addProperty(PROP_PASSWORD, password);
-//			logger.debug(LOG_BODY + requestBody.toString().replaceAll(":\"" + password, ":\"" + ASTERISKS));
-//        } else {
-//        	throw new RseapiException("Unable to get user name and password for authentication");
-//        }
-//		String method = RseapiRequestType.POST.name();
-//        RseapiResponseImpl rseapiResponse;        
-//		try {
-//            addCommonHeaders();
-//            rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, AUTH_PATH);
-//            logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
-//            
-//            rseapiResponse.setHttpClientresponse(this.httpClient.postJson(validPath(AUTH_PATH), requestBody));
-//            logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
-//            if (rseapiResponse.getStatusCode() != HttpStatus.SC_OK) {
-//                throw new RseapiException("Unable to authenticate user \"" + userid + ". HTTP Status Code " + rseapiResponse.getStatusCode() + " : " + rseapiResponse.getStatusLine());
-//            }
-//        } catch (MalformedURLException | HttpClientException  e) {
-//            logger.error(e);
-//            throw new RseapiException(logBadRequest(method), e);
-//        }
-//    }
 
     protected String logRequest(String method, URL requestUrl) {
         return "Request: " + method + " " + requestUrl;
