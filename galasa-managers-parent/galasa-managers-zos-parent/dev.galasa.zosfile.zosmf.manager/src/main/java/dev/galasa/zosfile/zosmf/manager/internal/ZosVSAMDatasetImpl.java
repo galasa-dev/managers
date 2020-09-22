@@ -748,12 +748,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     
         appendParameter(PARM_NAME, "'" + name + "'", sb, true);
         appendParameter(PARM_VOLUMES, volumes, sb, false);
-        if (spaceUnit == null) {
-            throw new ZosVSAMDatasetException("VSAM space parameters required");
-        }
-        appendParameter(spaceUnit, primaryExtents + " " + secondaryExtents, sb, true);
-    
-    
+        appendParameter(spaceUnit, primaryExtents + " " + secondaryExtents, sb);
         appendParameter(PARM_ACCOUNT, accountInfo, sb);
         appendParameter(PARM_BACKUP_WHILE_OPEN, bwoOption, sb);
         appendParameter(PARM_BUFFERSPACE, ((bufferspace > 0) ? bufferspace : null), sb);
@@ -857,18 +852,10 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             int recordLength = this.maxRecordSize == 0 ? Integer.valueOf(getValueFromListcat("MAXLRECL")) + 4 : this.maxRecordSize + 4;
             reproDataset.setRecordlength(recordLength);
             reproDataset.setBlockSize(0);
-            if (this.spaceUnit != null) {
-                if (this.spaceUnit == VSAMSpaceUnit.TRACKS || this.spaceUnit == VSAMSpaceUnit.CYLINDERS) {
-                    reproDataset.setSpace(SpaceUnit.valueOf(this.spaceUnit.toString()), this.primaryExtents, this.secondaryExtents);
-                } else {
-                    reproDataset.setSpace(SpaceUnit.TRACKS, this.primaryExtents, this.secondaryExtents);
-                }
-            } else {
-                String spaceType = getValueFromListcat("SPACE-TYPE");
-                int spacePri = Integer.parseInt(getValueFromListcat("SPACE-PRI"));
-                int spaceSec = Integer.parseInt(getValueFromListcat("SPACE-SEC"));
-                reproDataset.setSpace(SpaceUnit.valueOf(spaceType), spacePri, spaceSec);
-            }
+            String spaceType = getValueFromListcat("SPACE-TYPE");
+            int spacePri = Integer.parseInt(getValueFromListcat("SPACE-PRI"));
+            int spaceSec = Integer.parseInt(getValueFromListcat("SPACE-SEC"));
+            reproDataset.setSpace(SpaceUnit.valueOf(spaceType + "S"), spacePri, spaceSec);
             reproDataset.createTemporary();
             reproDataset.setDataType(this.dataType);
             if (content != null) {
@@ -995,9 +982,6 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     
         appendParameter(PARM_NAME, "'" + dataName + "'", sb);
         appendParameter(PARM_VOLUMES, dataVolumes, sb);
-        if (spaceUnit == null) {
-            throw new ZosVSAMDatasetException("VSAM DATA space parameters required");
-        }
         appendParameter(dataSpaceUnit, ((dataPrimaryExtents > 0) ? dataPrimaryExtents + " " + dataSecondaryExtents : null), sb);
         appendParameter(PARM_BUFFERSPACE, ((dataBufferspace > 0) ? dataBufferspace : null), sb);
         appendParameter(PARM_CONTROLINTERVALSIZE, dataControlInterval, sb);
@@ -1025,9 +1009,6 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
 
         appendParameter(PARM_NAME, "'" + indexName + "'", sb);
         appendParameter(PARM_VOLUMES, indexVolumes, sb);
-        if (indexSpaceUnit == null) {
-            throw new ZosVSAMDatasetException("VSAM INDEX space parameters required");
-        }
         appendParameter(indexSpaceUnit, ((indexPrimaryExtents > 0) ? indexPrimaryExtents + " " + indexSecondaryExtents : null), sb);
         appendParameter(PARM_CONTROLINTERVALSIZE, indexControlInterval, sb);
         appendParameter(PARM_EXCEPTIONEXIT, indexExceptionExit, sb);

@@ -833,12 +833,7 @@ public class TestZosVSAMDatasetImpl {
         PowerMockito.doNothing().when(zosVSAMDatasetSpy).getDataDefineCommand(Mockito.any());
         PowerMockito.doNothing().when(zosVSAMDatasetSpy).getIndexDefineCommand(Mockito.any());
         defineCommand = defineCommand + "  CAT(CATALOG)";
-        Assert.assertEquals("getDefineCommand() should return the expected value", defineCommand, zosVSAMDatasetSpy.getDefineCommand());        
-
-        Whitebox.setInternalState(zosVSAMDatasetSpy, "spaceUnit", (VSAMSpaceUnit) null);        
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage("VSAM space parameters required");
-        zosVSAMDatasetSpy.getDefineCommand();
+        Assert.assertEquals("getDefineCommand() should return the expected value", defineCommand, zosVSAMDatasetSpy.getDefineCommand());
     }
     
     @Test
@@ -886,7 +881,10 @@ public class TestZosVSAMDatasetImpl {
     @Test
     public void testCreateReproDataset() throws ZosFileManagerException {
         Mockito.when(ZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
-        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
+        PowerMockito.doReturn("CYLINDER").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-TYPE"));
+        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("MAXLRECL"));
+        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-PRI"));
+        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-SEC"));
         Whitebox.setInternalState(zosVSAMDatasetSpy, "maxRecordSize", 0);
         Whitebox.setInternalState(zosVSAMDatasetSpy, "spaceUnit", VSAMSpaceUnit.CYLINDERS);
         Assert.assertEquals("createReproDataset() should return the expected value", zosDatasetMock, zosVSAMDatasetSpy.createReproDataset(null));
@@ -899,7 +897,6 @@ public class TestZosVSAMDatasetImpl {
         Assert.assertEquals("createReproDataset() should return the expected value", zosDatasetMock, zosVSAMDatasetSpy.createReproDataset(CONTENT.getBytes()));
         
         Whitebox.setInternalState(zosVSAMDatasetSpy, "spaceUnit", (VSAMSpaceUnit) null);
-        PowerMockito.doReturn(SpaceUnit.CYLINDERS.name()).when(zosVSAMDatasetSpy).getValueFromListcat("SPACE-TYPE");
         Assert.assertEquals("createReproDataset() should return the expected value", zosDatasetMock, zosVSAMDatasetSpy.createReproDataset(CONTENT));
     }
     
@@ -914,7 +911,7 @@ public class TestZosVSAMDatasetImpl {
     @Test
     public void testCreateReproDatasetException2() throws ZosFileManagerException {
         Mockito.when(ZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
-        PowerMockito.doReturn("0").doReturn(SpaceUnit.CYLINDERS.name()).doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
+        PowerMockito.doReturn("0").doReturn("CYLINDER").doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage("Invalid content type - java.lang.Object");
         zosVSAMDatasetSpy.createReproDataset(new Object());
@@ -1090,12 +1087,6 @@ public class TestZosVSAMDatasetImpl {
                 "  SHR(11 22) -\n" + 
                 "  UNIQUE)";
         Assert.assertEquals("getDefineDataCommand() should return the expected value", returnValue, sb.toString());
-        
-        sb = new StringBuilder();
-        Whitebox.setInternalState(zosVSAMDatasetSpy, "spaceUnit", (VSAMSpaceUnit) null); 
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage("VSAM DATA space parameters required");
-        zosVSAMDatasetSpy.getDataDefineCommand(sb);
     }
     
     @Test
@@ -1122,12 +1113,6 @@ public class TestZosVSAMDatasetImpl {
                 "  SHR(11 22) -\n" + 
                 "  UNIQUE)";
         Assert.assertEquals("getIndexDefineCommand() should return the expected value", returnValue, sb.toString());
-        
-        sb = new StringBuilder();
-        Whitebox.setInternalState(zosVSAMDatasetSpy, "indexSpaceUnit", (VSAMSpaceUnit) null); 
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage("VSAM INDEX space parameters required");
-        zosVSAMDatasetSpy.getIndexDefineCommand(sb);
     }
     
     @Test
