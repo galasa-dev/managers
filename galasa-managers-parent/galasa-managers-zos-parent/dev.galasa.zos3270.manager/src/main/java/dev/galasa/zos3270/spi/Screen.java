@@ -129,7 +129,7 @@ public class Screen {
         lockKeyboard();
     }
 
-    private synchronized void lockKeyboard() throws TerminalInterruptedException {
+    public synchronized void lockKeyboard() throws TerminalInterruptedException {
         if (!keyboardLockSet) {
             logger.trace("Locking keyboard");
             keyboardLockSet = true;
@@ -179,12 +179,8 @@ public class Screen {
 
             this.workingCursor = this.screenCursor;
 
-            processOrders(orders);
+            processOrders(orders, writeControlCharacter);
 
-            if (writeControlCharacter.isKeyboardReset()) {
-                unlockKeyboard();
-                this.workingCursor = 0;
-            }
         }
 
     }
@@ -431,7 +427,7 @@ public class Screen {
         }
     }
 
-    public synchronized void processOrders(List<AbstractOrder> orders) throws DatastreamException {
+    public synchronized void processOrders(List<AbstractOrder> orders, WriteControlCharacter writeControlCharacter) throws DatastreamException {
         logger.trace("Processing orders");
         for (AbstractOrder order : orders) {
             if (order instanceof OrderSetBufferAddress) {
@@ -453,6 +449,12 @@ public class Screen {
             } else {
                 throw new DatastreamException("Unsupported Order - " + order.getClass().getName());
             }
+        }
+        
+
+        if (writeControlCharacter.isKeyboardReset()) {
+            unlockKeyboard();
+            this.workingCursor = 0;
         }
 
         synchronized (updateListeners) {
@@ -680,6 +682,8 @@ public class Screen {
             screenSB.append(screenString.substring(i, i + this.columns));
             screenSB.append('\n');
         }
+        screenSB.append(reportOperator());
+        screenSB.append("\n");
         return screenSB.toString();
     }
 
@@ -715,7 +719,42 @@ public class Screen {
 
             row++;
         }
+        
+
+        screenSB.append("!| ");
+        screenSB.append(reportOperator());
+        screenSB.append("\n");
+        
+        
         return screenSB.toString();
+    }
+    
+    private String reportOperator() {
+        int cursorRow = screenCursor / columns;
+        int cursorCol = screenCursor % columns;
+
+        StringBuilder operator = new StringBuilder();
+        
+        if (network.isConnected()) {
+            operator.append("Connected-");
+        } else {
+            operator.append("Disconnected-");
+        }
+        if (network.isTls() || network.isSwitchedSSL()) {
+            operator.append("SSL ");
+        } else {
+            operator.append("Plain");
+        }
+        operator.append(" Size=" + this.rows + "x" + this.columns);
+        operator.append(" Cursor=" + screenCursor + "," + cursorRow + "x" + cursorCol);
+        
+        if (this.keyboardLockSet) {
+            operator.append(" Keyboard Locked");
+        } else {
+            operator.append(" Keyboard Unlocked");
+        }
+       
+        return operator.toString();
     }
 
     public String retrieveFlatScreen() {

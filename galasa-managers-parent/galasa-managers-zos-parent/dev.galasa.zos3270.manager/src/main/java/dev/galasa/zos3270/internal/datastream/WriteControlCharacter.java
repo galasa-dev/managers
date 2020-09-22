@@ -17,6 +17,9 @@ public class WriteControlCharacter {
     private boolean soundAlarm;
     private boolean keyboardReset;
     private boolean resetMDT;
+    
+    public WriteControlCharacter() {
+    }
 
     public WriteControlCharacter(byte wcc) {
         BitSet bitSet = BitSet.valueOf(new byte[] { wcc });
