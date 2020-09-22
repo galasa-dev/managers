@@ -10,7 +10,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.ZosManagerException;
 
 /**
- * Extra bundle to required to implement the zOS Console Manager
+ * Extra bundle required to implement the zOS Console Manager
  * 
  * @galasa.cps.property
  * 
