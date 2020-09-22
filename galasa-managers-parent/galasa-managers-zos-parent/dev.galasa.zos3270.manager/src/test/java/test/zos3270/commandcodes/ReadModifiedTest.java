@@ -22,6 +22,7 @@ import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
+import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
 import test.zos3270.util.DummySocket;
 import test.zos3270.util.DummySocketImpl;
@@ -44,7 +45,8 @@ public class ReadModifiedTest {
         screen.erase();
         
         NetworkThread networkThread = new NetworkThread(null, screen, network, network.getInputStream());
-
+        WriteControlCharacter writeControlCharacter = new WriteControlCharacter();
+        
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
@@ -58,7 +60,7 @@ public class ReadModifiedTest {
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         orders.add(new OrderText("EFGH"));
-        screen.processOrders(orders);
+        screen.processOrders(orders, writeControlCharacter);
         screen.testingSetLastAid(AttentionIdentification.ENTER);
         screen.setCursorPosition(0, 1);
 
@@ -116,7 +118,8 @@ public class ReadModifiedTest {
         screen.erase();
         
         NetworkThread networkThread = new NetworkThread(null, screen, network, network.getInputStream());
-
+        WriteControlCharacter writeControlCharacter = new WriteControlCharacter();
+        
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderText("12345"));
@@ -129,7 +132,7 @@ public class ReadModifiedTest {
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(true, false, true, false, false, true)); // WRAPPED modified field
         orders.add(new OrderText("EFGH"));
-        screen.processOrders(orders);
+        screen.processOrders(orders, writeControlCharacter);
         screen.testingSetLastAid(AttentionIdentification.ENTER);
         screen.setCursorPosition(0, 1);
 
@@ -184,11 +187,12 @@ public class ReadModifiedTest {
         screen.erase();
         
         NetworkThread networkThread = new NetworkThread(null, screen, network, network.getInputStream());
-
+        WriteControlCharacter writeControlCharacter = new WriteControlCharacter();
+        
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(10))); // make the first line nulls,  should suppress
         orders.add(new OrderText("1234"));
-        screen.processOrders(orders);
+        screen.processOrders(orders, writeControlCharacter);
         screen.testingSetLastAid(AttentionIdentification.ENTER);
         screen.setCursorPosition(0, 1);
 
@@ -236,10 +240,12 @@ public class ReadModifiedTest {
         
         NetworkThread networkThread = new NetworkThread(null, screen, network, network.getInputStream());
 
+        WriteControlCharacter writeControlCharacter = new WriteControlCharacter();
+        
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(10))); // make the first line nulls,  should suppress
         orders.add(new OrderText("1234"));
-        screen.processOrders(orders);
+        screen.processOrders(orders, writeControlCharacter);
         screen.testingSetLastAid(AttentionIdentification.CLEAR);
         screen.setCursorPosition(0, 1);
 
@@ -280,11 +286,12 @@ public class ReadModifiedTest {
         screen.erase();
         
         NetworkThread networkThread = new NetworkThread(null, screen, network, network.getInputStream());
-
+        WriteControlCharacter writeControlCharacter = new WriteControlCharacter();
+        
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(10))); // make the first line nulls,  should suppress
         orders.add(new OrderText("1234"));
-        screen.processOrders(orders);
+        screen.processOrders(orders, writeControlCharacter);
         screen.testingSetLastAid(AttentionIdentification.CLEAR);
         screen.setCursorPosition(0, 1);
 
