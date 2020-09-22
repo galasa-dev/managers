@@ -5,6 +5,9 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -38,12 +41,16 @@ public class Terminal implements ITerminal {
     private boolean       autoReconnect   = false;
 
     public Terminal(String id, String host, int port) throws TerminalInterruptedException {
-        this(id, host, port, false);
+        this(id, host, port, false, 80, 24, 0, 0);
     }
 
     public Terminal(String id, String host, int port, boolean ssl) throws TerminalInterruptedException {
+        this(id, host, port, ssl, 80, 24, 0, 0);
+    }
+
+    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws TerminalInterruptedException {
         network = new Network(host, port, ssl);
-        screen = new Screen(80, 24, this.network);
+        screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
         this.id = id;
     }
     
@@ -56,6 +63,31 @@ public class Terminal implements ITerminal {
         connected = network.connectClient();
         networkThread = new NetworkThread(this, screen, network, network.getInputStream());
         networkThread.start();
+        
+        Instant expire = Instant.now().plus(60, ChronoUnit.SECONDS);
+        boolean started = false;
+        while(Instant.now().isBefore(expire)) {
+            NetworkThread nThread = this.networkThread;
+            if (nThread == null) {
+                this.network.close();
+                throw new NetworkException("The TN3270 network thread failed to start correctly");
+            }
+            if (nThread.isStarted()) {
+                started = true;
+                break;
+            }
+            
+            try {
+                Thread.sleep(50);
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new NetworkException("Wait for TN3270 startup was interrupted", e);
+            }
+        }
+        
+        if (!started) {
+            throw new NetworkException("TN3270 server did not start session in time");
+        }
     }
 
     @Override
@@ -170,6 +202,12 @@ public class Terminal implements ITerminal {
     }
 
     @Override
+    public ITerminal eraseInput() throws KeyboardLockedException, FieldNotFoundException {
+        screen.eraseInput();
+        return this;
+    }
+
+    @Override
     public ITerminal tab() throws KeyboardLockedException, FieldNotFoundException {
         screen.tab();
         return this;
@@ -214,6 +252,12 @@ public class Terminal implements ITerminal {
     @Override
     public ITerminal newLine() throws KeyboardLockedException, FieldNotFoundException {
         screen.newLine();
+        return this;
+    }
+
+    @Override
+    public ITerminal backSpace() throws KeyboardLockedException, FieldNotFoundException {
+        screen.backSpace();
         return this;
     }
 
@@ -452,6 +496,16 @@ public class Terminal implements ITerminal {
     @Override
     public void unregisterDatastreamListener(IDatastreamListener listener) {
         this.screen.unregisterDatastreamListener(listener);
+    }
+
+    @Override
+    public boolean isSwitchedSSL() {
+        return this.network.isSwitchedSSL();
+    }
+    
+    @Override
+    public void setDoStartTls(boolean doStartTls) {
+        this.network.setDoStartTls(doStartTls);
     }
 
 }

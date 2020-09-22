@@ -14,9 +14,11 @@ import java.util.Map;
 
 import dev.galasa.zosprogram.ZosProgramException;
 import dev.galasa.zosprogram.ZosProgramManagerException;
-import dev.galasa.zosprogram.internal.properties.CICSDatasetHlq;
-import dev.galasa.zosprogram.internal.properties.LanguageEnvironmentDatasetHlq;
-import dev.galasa.zosprogram.internal.properties.ProgramLanguageDatasetHlq;
+import dev.galasa.zosprogram.internal.properties.CICSDatasetPrefix;
+import dev.galasa.zosprogram.internal.properties.LanguageEnvironmentDatasetPrefix;
+import dev.galasa.zosprogram.internal.properties.ProgramLanguageCompileSyslibs;
+import dev.galasa.zosprogram.internal.properties.ProgramLanguageDatasetPrefix;
+import dev.galasa.zosprogram.internal.properties.ProgramLanguageLinkSyslibs;
 
 public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
 
@@ -29,22 +31,42 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         HashMap<String, Object> parameters = new HashMap<>();
         try {
             parameters.put("PROGRAM", zosProgram.getName());
-            List<String> languagePrefix = ProgramLanguageDatasetHlq.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
-            List<String> lePrefix = LanguageEnvironmentDatasetHlq.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
-            //TODO: Get these values. Handle copybooks in bundle?  
-            List<String> compileSyslibs = Collections.emptyList();
-            List<String> linkSyslibs = Collections.emptyList();
+            List<String> languagePrefix = ProgramLanguageDatasetPrefix.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
+            List<String> lePrefix = LanguageEnvironmentDatasetPrefix.get(zosProgram.getImage().getImageID());
+            List<String> compileSyslibs = ProgramLanguageCompileSyslibs.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
+            List<String> linkSyslibs = ProgramLanguageLinkSyslibs.get(zosProgram.getImage().getImageID(), zosProgram.getLanguage());
             if (zosProgram.isCics()) {
-                List<String> cicsPrefix = CICSDatasetHlq.get(zosProgram.getImage().getImageID());
+                parameters.put("TYPE", zosProgram.getLanguage().toString() + "/CICS");
+                parameters.put("COBOL.PARM", "'MAP,OFFSET,CICS'");
+                List<String> cicsPrefix = CICSDatasetPrefix.get(zosProgram.getImage().getImageID());
                 parameters.put("COBOL.STEPLIB", buildSteplib(languagePrefix, lePrefix, cicsPrefix));
-                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, cicsPrefix));
+                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, cicsPrefix));
+                parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
                 parameters.put("LKED.SYSLIB", buildLinkSyslib(linkSyslibs, lePrefix, cicsPrefix));
-                parameters.put("LKED.SYSIN", "  NAME " + zosProgram.getName() + "(R)");
+                StringBuilder sb = new StringBuilder();
+                sb.append("*\n");
+                sb.append("  INCLUDE SYSLIB(DFHELII)\n");
+                sb.append(DD);
+                sb.append(SYSLIN);
+                sb.append(NEWLINE);
+                sb.append(DD_ASTERISK);
+                sb.append(NEWLINE);
+                sb.append(LKED_SYSIN_NAME_REPLACE.replace("++NAME++", zosProgram.getName()));
+                parameters.put("LKED.SYSIN", sb.toString());
             } else {
+                parameters.put("TYPE", zosProgram.getLanguage().toString() + "/BATCH");
+                parameters.put("COBOL.PARM", "'MAP,OFFSET'");
                 parameters.put("COBOL.STEPLIB", buildSteplib(languagePrefix, lePrefix, Collections.emptyList()));
-                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, Collections.emptyList()));
+                parameters.put("COBOL.SYSLIB", buildCompileSyslib(compileSyslibs, lePrefix, Collections.emptyList()));
+                parameters.put("LKED.PARM", "'LIST,XREF,RENT,MAP'");
                 parameters.put("LKED.SYSLIB", buildLinkSyslib(linkSyslibs, lePrefix, Collections.emptyList()));
-                parameters.put("LKED.SYSIN", "  NAME " + zosProgram.getName() + "(R)");
+                StringBuilder sb = new StringBuilder();
+                sb.append(SYSLIN);
+                sb.append(NEWLINE);
+                sb.append(DD_ASTERISK);
+                sb.append(NEWLINE);
+                sb.append(LKED_SYSIN_NAME_REPLACE.replace("++NAME++", zosProgram.getName()));
+                parameters.put("LKED.SYSIN", sb.toString());
             }
             parameters.put("SYSLMOD", zosProgram.getLoadlib().getName());
             parameters.put("SOURCE", zosProgram.getProgramSource());
@@ -53,8 +75,8 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         }
         return parameters;        
     }
-    
-    private String buildSteplib(List<String> languagePrefix, List<String> lePrefix, List<String> cicsPrefix) {
+
+    protected String buildSteplib(List<String> languagePrefix, List<String> lePrefix, List<String> cicsPrefix) {
         List<String> datasetList = new LinkedList<>();
         Iterator<String> it = languagePrefix.iterator();
         while (it.hasNext()) {
@@ -74,10 +96,15 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         return formatDatasetConcatenation(datasetList);
     }
 
-    private String buildCompileSyslib(List<String> compileSyslibs, List<String> cicsPrefix) {
+    protected String buildCompileSyslib(List<String> compileSyslibs, List<String> lePrefix, List<String> cicsPrefix) {
         List<String> datasetList = new LinkedList<>();
         datasetList.addAll(compileSyslibs);
-        Iterator<String> it = cicsPrefix.iterator();
+        Iterator<String> it = lePrefix.iterator();
+        while (it.hasNext()) {
+            String pfx = it.next();
+            datasetList.add(pfx + ".SCEESAMP");
+        }
+        it = cicsPrefix.iterator();
         while (it.hasNext()) {
             String pfx = it.next();
             datasetList.add(pfx + ".SDFHCOB");
@@ -87,7 +114,7 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
         return formatDatasetConcatenation(datasetList);
     }
 
-    private String buildLinkSyslib(List<String> linkSyslibs, List<String> lePrefix, List<String> cicsPrefix) {
+    protected String buildLinkSyslib(List<String> linkSyslibs, List<String> lePrefix, List<String> cicsPrefix) {
         List<String> datasetList = new LinkedList<>();
         datasetList.addAll(linkSyslibs);
         Iterator<String> it = cicsPrefix.iterator();
@@ -106,9 +133,6 @@ public class ZosCobolProgramCompiler extends AbstractZosProgramCompiler {
     
     @Override
     protected String getSkelName() {
-        if (zosProgram.isCics()) {
-            return "cobolCICS.skel";
-        }
-        return "cobolBatch.skel";
+        return "cobol.skel";
     }
 }

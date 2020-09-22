@@ -17,12 +17,13 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -34,13 +35,14 @@ import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.Zos3270Terminal;
+import dev.galasa.zos3270.internal.gherkin.Gherkin3270Coordinator;
 import dev.galasa.zos3270.internal.properties.Zos3270PropertiesSingleton;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
-@Component(service = { IManager.class })
-public class Zos3270ManagerImpl extends AbstractManager implements IZos3270ManagerSpi {
+@Component(service = { IManager.class, IGherkinManager.class })
+public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos3270ManagerSpi {
     protected static final String                       NAMESPACE     = "zos3270";
 
     private static final Log                            logger        = LogFactory.getLog(Zos3270ManagerImpl.class);
@@ -53,6 +55,8 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
     private ArrayList<Zos3270TerminalImpl>              terminals     = new ArrayList<>();
 
     private int                                         terminalCount = 0;
+    
+    private Gherkin3270Coordinator                      gherkinCoordinator;
 
     /*
      * (non-Javadoc)
@@ -71,6 +75,11 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(Zos3270ManagerField.class);
             if (!ourFields.isEmpty()) {
+                youAreRequired(allManagers, activeManagers);
+            }
+        } else if (galasaTest.isGherkin()) {
+            this.gherkinCoordinator = new Gherkin3270Coordinator(this, galasaTest.getGherkinTest());
+            if (this.gherkinCoordinator.registerStatements()) {
                 youAreRequired(allManagers, activeManagers);
             }
         }
@@ -109,6 +118,11 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        if (this.gherkinCoordinator != null) {
+            this.gherkinCoordinator.provisionGenerate();
+            return;
+        }
+        
         // *** Auto generate the fields
         generateAnnotatedFields(Zos3270ManagerField.class);
     }
@@ -121,10 +135,14 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
         String tag = defaultString(terminalAnnotation.imageTag(), "PRIMARY").toUpperCase();
         // *** Default the tag to primary
         boolean autoConnect = terminalAnnotation.autoConnect();
-
+        
+        return generateTerminal(tag, autoConnect);
+    }
+    
+    public Zos3270TerminalImpl generateTerminal(String imageTag, boolean autoConnect) throws Zos3270ManagerException {
         // *** Ask the zosManager for the image for the Tag
         try {
-            IZosImage image = this.zosManager.getImageForTag(tag);
+            IZosImage image = this.zosManager.provisionImageForTag(imageTag);
             IIpHost host = image.getIpHost();
 
             terminalCount++;
@@ -134,14 +152,14 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
                     host.isTelnetPortTls(), getFramework(), autoConnect);
 
             this.terminals.add(terminal);
-            logger.info("Generated a terminal for zOS Image tagged " + tag);
+            logger.info("Generated a terminal for zOS Image tagged " + imageTag);
 
             return terminal;
         } catch (Exception e) {
-            throw new Zos3270ManagerException("Unable to generate Terminal for zOS Image tagged " + tag, e);
+            throw new Zos3270ManagerException("Unable to generate Terminal for zOS Image tagged " + imageTag, e);
         }
     }
-
+    
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
         if (terminals.isEmpty()) {
@@ -184,5 +202,9 @@ public class Zos3270ManagerImpl extends AbstractManager implements IZos3270Manag
 
     protected IDynamicStatusStoreService getDss() {
         return this.dss;
+    }
+
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
 }

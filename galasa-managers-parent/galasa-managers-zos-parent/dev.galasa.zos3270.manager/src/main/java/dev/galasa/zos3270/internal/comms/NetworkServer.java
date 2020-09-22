@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos3270.internal.comms;
 
@@ -64,16 +64,16 @@ public class NetworkServer /* extends Thread */ {
     public void negotiate(InputStream inputStream, OutputStream outputStream) throws NetworkException {
         try {
             // *** Send the DO TN3270E initialisation message
-            byte[] doTN3270 = new byte[] { Network.IAC, Network.DO, Network.TN3270E };
+            byte[] doTN3270 = new byte[] { NetworkThread.IAC, NetworkThread.DO, NetworkThread.TN3270E };
             outputStream.write(doTN3270);
             outputStream.flush();
 
             // *** Let see what the client says, we are only going to support TN3270E
             // clients
-            expect(inputStream, Network.IAC, Network.WILL, Network.TN3270E);
+            expect(inputStream, NetworkThread.IAC, NetworkThread.WILL, NetworkThread.TN3270E);
 
-            byte[] sendDeviceType = new byte[] { Network.IAC, Network.SB, Network.TN3270E, Network.SEND,
-                    Network.DEVICE_TYPE, Network.IAC, Network.SE };
+            byte[] sendDeviceType = new byte[] { NetworkThread.IAC, NetworkThread.SB, NetworkThread.TN3270E, NetworkThread.SEND,
+                    NetworkThread.DEVICE_TYPE, NetworkThread.IAC, NetworkThread.SE };
             outputStream.write(sendDeviceType);
             outputStream.flush();
 
@@ -83,14 +83,14 @@ public class NetworkServer /* extends Thread */ {
                 // *** Get the requested device type, only accepting IBM-3278-2 terminals for
                 // the moment
                 ByteBuffer buffer = readSbSeMessage(inputStream);
-                expect(buffer, Network.DEVICE_TYPE, Network.REQUEST);
+                expect(buffer, NetworkThread.DEVICE_TYPE, NetworkThread.REQUEST);
                 deviceType = "";
                 deviceName = "";
                 boolean readingType = true;
                 while (buffer.hasRemaining()) {
                     byte[] b = new byte[1];
                     buffer.get(b);
-                    if (b[0] == Network.CONNECT || b[0] == Network.ASSOCIATE) {
+                    if (b[0] == NetworkThread.CONNECT || b[0] == NetworkThread.ASSOCIATE) {
                         readingType = false;
                     } else {
                         String bs = new String(b, ascii7);
@@ -113,8 +113,8 @@ public class NetworkServer /* extends Thread */ {
                 }
 
                 // *** Reject Device Type
-                byte[] rejectDeviceType = new byte[] { Network.IAC, Network.SB, Network.TN3270E, Network.DEVICE_TYPE,
-                        Network.REJECT, Network.REASON, Network.INV_DEVICE_TYPE, Network.IAC, Network.SE };
+                byte[] rejectDeviceType = new byte[] { NetworkThread.IAC, NetworkThread.SB, NetworkThread.TN3270E, NetworkThread.DEVICE_TYPE,
+                        NetworkThread.REJECT, NetworkThread.REASON, NetworkThread.INV_DEVICE_TYPE, NetworkThread.IAC, NetworkThread.SE };
                 outputStream.write(rejectDeviceType);
                 outputStream.flush();
             }
@@ -124,25 +124,25 @@ public class NetworkServer /* extends Thread */ {
             }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(Network.IAC);
-            baos.write(Network.SB);
-            baos.write(Network.TN3270E);
-            baos.write(Network.DEVICE_TYPE);
-            baos.write(Network.IS);
+            baos.write(NetworkThread.IAC);
+            baos.write(NetworkThread.SB);
+            baos.write(NetworkThread.TN3270E);
+            baos.write(NetworkThread.DEVICE_TYPE);
+            baos.write(NetworkThread.IS);
             baos.write(deviceType.getBytes(ascii7));
-            baos.write(Network.CONNECT);
+            baos.write(NetworkThread.CONNECT);
             baos.write(deviceName.getBytes(ascii7));
-            baos.write(Network.IAC);
-            baos.write(Network.SE);
+            baos.write(NetworkThread.IAC);
+            baos.write(NetworkThread.SE);
             outputStream.write(baos.toByteArray());
             outputStream.flush();
 
             // *** Negotiate functions, we are going to accept any
             ByteBuffer buffer = readSbSeMessage(inputStream);
-            expect(buffer, Network.FUNCTIONS, Network.REQUEST);
+            expect(buffer, NetworkThread.FUNCTIONS, NetworkThread.REQUEST);
 
-            byte[] noFunctions = new byte[] { Network.IAC, Network.SB, Network.TN3270E, Network.FUNCTIONS, Network.IS,
-                    Network.IAC, Network.SE };
+            byte[] noFunctions = new byte[] { NetworkThread.IAC, NetworkThread.SB, NetworkThread.TN3270E, NetworkThread.FUNCTIONS, NetworkThread.IS,
+                    NetworkThread.IAC, NetworkThread.SE };
             outputStream.write(noFunctions);
             outputStream.flush();
         } catch (IOException e) {
@@ -203,13 +203,13 @@ public class NetworkServer /* extends Thread */ {
     public static ByteBuffer readSbSeMessage(InputStream messageStream) throws IOException, NetworkException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        expect(messageStream, Network.IAC, Network.SB, Network.TN3270E);
+        expect(messageStream, NetworkThread.IAC, NetworkThread.SB, NetworkThread.TN3270E);
 
         byte[] b = new byte[1];
         boolean lastByteFF = false;
         boolean terminated = false;
         while (messageStream.read(b) == 1) {
-            if (b[0] == Network.IAC) {
+            if (b[0] == NetworkThread.IAC) {
                 if (lastByteFF) {
                     byteArrayOutputStream.write(b);
                     lastByteFF = false;
@@ -217,7 +217,7 @@ public class NetworkServer /* extends Thread */ {
                     lastByteFF = true;
                 }
             } else {
-                if (b[0] == Network.SE && lastByteFF) {
+                if (b[0] == NetworkThread.SE && lastByteFF) {
                     terminated = true;
                     break;
                 }

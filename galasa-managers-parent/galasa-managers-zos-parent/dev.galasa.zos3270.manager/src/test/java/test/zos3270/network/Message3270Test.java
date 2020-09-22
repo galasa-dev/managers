@@ -28,13 +28,12 @@ public class Message3270Test {
         baos.write(0);
         baos.write(0);
         baos.write(0);
-        baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-        ByteBuffer buffer = NetworkThread.readTerminatedMessage(bais);
+        ByteBuffer buffer = NetworkThread.readTerminatedMessage((byte) 0, bais);
 
         Assert.assertEquals("Should contain 5 zeros", 5, buffer.remaining());
         Assert.assertEquals("Should be all zeros", 0, buffer.get());
@@ -48,16 +47,15 @@ public class Message3270Test {
     public void testEmbeddedFF() throws Exception {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baos.write(0);
         baos.write(-1);
         baos.write(-1);
         baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-        ByteBuffer buffer = NetworkThread.readTerminatedMessage(bais);
+        ByteBuffer buffer = NetworkThread.readTerminatedMessage((byte)0, bais);
 
         Assert.assertEquals("Should contain 3 bytes", 3, buffer.remaining());
         Assert.assertEquals("Should be 00 FF 00", 0, buffer.get());
@@ -75,7 +73,7 @@ public class Message3270Test {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
         try {
-            NetworkThread.readTerminatedMessage(bais);
+            NetworkThread.readTerminatedMessage((byte)0, bais);
             fail("Should have thrown an exception saying terminated early");
         } catch (NetworkException e) {
             Assert.assertEquals("Exception thrown is not correct", "3270 message did not terminate with IAC EOR",
@@ -88,15 +86,14 @@ public class Message3270Test {
     public void testMidSE() throws Exception {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(NetworkThread.EOR);
         baos.write(0);
-        baos.write(Network.EOR);
-        baos.write(0);
-        baos.write(Network.IAC);
-        baos.write(Network.EOR);
+        baos.write(NetworkThread.IAC);
+        baos.write(NetworkThread.EOR);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-        ByteBuffer buffer = NetworkThread.readTerminatedMessage(bais);
+        ByteBuffer buffer = NetworkThread.readTerminatedMessage((byte)0, bais);
 
         Assert.assertEquals("Should contain 3 bytes", 3, buffer.remaining());
         Assert.assertEquals("Should be 00 EF 00", 0, buffer.get());

@@ -34,6 +34,9 @@ public abstract class AbstractCommandCode {
             case ERASE_WRITE:
             case NONSNA_ERASE_WRITE:
                 return new CommandEraseWrite();
+            case ERASE_WRITE_ALTERNATE:
+            case NONSNA_ERASE_WRITE_ALTERNATE:
+                return new CommandEraseWriteAlternate();
             case WRITE:
             case NONSNA_WRITE:
                 return new CommandWrite();
@@ -41,14 +44,14 @@ public abstract class AbstractCommandCode {
             case NONSNA_WRITE_STRUCTURED:
                 return new CommandWriteStructured();
             case READ_BUFFER:
-                return new CommandReadBuffer();
-            case ERASE_WRITE_ALTERNATE:
-            case NONSNA_ERASE_WRITE_ALTERNATE:
             case NONSNA_READ_BUFFER:
+                return new CommandReadBuffer();
             case READ_MODIFIED:
             case NONSNA_READ_MODIFIED:
+                return new CommandReadModified();
             case READ_MODIFIED_ALL:
             case NONSNA_READ_MODIFIED_ALL:
+                return new CommandReadModifiedAll();
             case ERASE_ALL_UNPROTECTED:
             case NONSNA_ERASE_ALL_UNPROTECTED:
                 throw new DatastreamException("Unsupported command code=" + commandCode);

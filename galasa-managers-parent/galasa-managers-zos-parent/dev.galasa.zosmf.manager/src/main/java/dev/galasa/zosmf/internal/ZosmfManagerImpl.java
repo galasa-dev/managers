@@ -157,8 +157,8 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
         try {
             for (String imageId : ServerImages.get(clusterId)) {
                 if (!this.zosmfs.containsKey(imageId)) {
-                    logger.info("Requesting zOS image " + imageId + " for zOSMF server");
-                    IZosImage zosmfImage = zosManager.getImage(imageId);
+                    logger.info("Requesting zOS image " + imageId + " in cluster \"" + clusterId + "\" for zOSMF server");
+                    IZosImage zosmfImage = getImage(imageId, clusterId);
                     this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
                 }
             }
@@ -184,6 +184,17 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
             return new ZosmfRestApiProcessor(zosmfMap);
         }
         return new ZosmfRestApiProcessor(getZosmfs(image.getClusterID()));
+    }
+
+
+    protected IZosImage getImage(String imageId, String clusterId) throws ZosmfManagerException {
+        IZosImage zosmfImage;
+        try {
+            zosmfImage = zosManager.getImage(imageId);
+        } catch (ZosManagerException e) {
+            throw new ZosmfManagerException("Unable to get zOSMF server zOS image \"" + imageId + "\" in cluster \"" + clusterId + "\"", e);
+        }
+        return zosmfImage;
     }
 
 

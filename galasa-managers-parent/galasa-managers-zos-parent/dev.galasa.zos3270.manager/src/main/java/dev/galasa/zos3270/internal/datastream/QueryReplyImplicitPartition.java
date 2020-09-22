@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos3270.internal.datastream;
 
@@ -13,12 +13,25 @@ public class QueryReplyImplicitPartition extends AbstractQueryReply {
 
     private static final byte IMPLICIT_PARTITION = (byte) 0xa6;
 
-    private final int         cellX;
-    private final int         cellY;
+    private final int         primaryX;
+    private final int         primaryY;
+    private final int         alternateX;
+    private final int         alternateY;
 
     public QueryReplyImplicitPartition(Screen screen) {
-        this.cellX = screen.getNoOfColumns();
-        this.cellY = screen.getNoOfRows();
+        this.primaryX = screen.getNoOfColumns();
+        this.primaryY = screen.getNoOfRows();
+        
+        int aX = screen.getAlternateColumns();
+        int aY = screen.getAlternateRows();
+        
+        if (aX < 1 || aY < 1) {
+            this.alternateX = this.primaryX;
+            this.alternateY = this.primaryY;
+        } else {
+            this.alternateX = aX;
+            this.alternateY = aY;
+        }
     }
 
     @Override
@@ -32,10 +45,10 @@ public class QueryReplyImplicitPartition extends AbstractQueryReply {
         buffer.put((byte) 11); // *** Length of self defining parameter
         buffer.put((byte) 1); // *** Implicit Partition Size
         buffer.put((byte) 0); // *** Flags
-        buffer.putShort((short) cellX);
-        buffer.putShort((short) cellY);
-        buffer.putShort((short) cellX);
-        buffer.putShort((short) cellY);
+        buffer.putShort((short) primaryX);
+        buffer.putShort((short) primaryY);
+        buffer.putShort((short) alternateX);
+        buffer.putShort((short) alternateY);
         return buffer.array();
     }
 

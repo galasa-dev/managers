@@ -441,6 +441,10 @@ public class TestCECIImpl {
         setupTestInitialScreen();
         
         PowerMockito.doReturn(true).when(ceciSpy, "isCECIScreen");
+        PowerMockito.doReturn(false).when(ceciSpy, "isHelpScreen", Mockito.any());
+        Assert.assertEquals("Error in initialScreen() method", ceciTerminalMock, ceciSpy.initialScreen());
+
+        PowerMockito.doReturn(true).when(ceciSpy, "isHelpScreen", Mockito.any());
         Assert.assertEquals("Error in initialScreen() method", ceciTerminalMock, ceciSpy.initialScreen());
 
         PowerMockito.when(ceciSpy, "isCECIScreen").thenReturn(false).thenReturn(true);
@@ -702,8 +706,9 @@ public class TestCECIImpl {
         setupTestVariable();
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.length()).when(ceciSpy, "setVariableOnPage", Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "X")).thenReturn(String.format("%-10s", " "));
-        
         Assert.assertEquals("Error in setVariable() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null));
+        
+        Assert.assertEquals("Error in setVariable() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.setVariable(TEXT_VARIABLE_NAME + "X", TEXT_VARIABLE_VALUE, null));
         
         Assert.assertEquals("Error in setVariable() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, "H"));
         
@@ -764,6 +769,9 @@ public class TestCECIImpl {
         
         numberOfLines = 2;
         Assert.assertEquals("Error in setVariableOnPage() method", numberOfLines, ceciSpy.setVariableOnPage(chunks, start, numberOfLines));
+        
+        chunks = new String[] {String.format("%-65s", "X"), TEXT_VARIABLE_VALUE};
+        Assert.assertEquals("Error in setVariableOnPage() method", numberOfLines, ceciSpy.setVariableOnPage(chunks, start, numberOfLines));
     }
 
     @Test
@@ -783,9 +791,10 @@ public class TestCECIImpl {
     public void testSetVariableHex() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.length()).when(ceciSpy, "setVariableHexOnPage", Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "X")).thenReturn(String.format("%-10s", " "));
-        
+        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "X")).thenReturn(String.format("%-10s", " "));        
         Assert.assertEquals("Error in setVariableHex() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray()));
+        
+        Assert.assertEquals("Error in setVariableHex() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.setVariableHex(TEXT_VARIABLE_NAME + "X", TEXT_VARIABLE_VALUE.toCharArray()));
         
         int length = 21;
         char[] value = new String(new char[length]).replace("\0", "X").toCharArray();
@@ -836,7 +845,10 @@ public class TestCECIImpl {
         
         value = new String(new char[32]).replace("\0", "X").toCharArray();
         numberOfLines = 2;
-        Assert.assertEquals("Error in setVariableHexOnPage() method", value.length, ceciSpy.setVariableHexOnPage(value, start, numberOfLines));        
+        Assert.assertEquals("Error in setVariableHexOnPage() method", value.length, ceciSpy.setVariableHexOnPage(value, start, numberOfLines));
+        
+        numberOfLines = -1;
+        Assert.assertEquals("Error in setVariableHexOnPage() method", 0, ceciSpy.setVariableHexOnPage(value, start, numberOfLines));
         
         value = new char[0];
         numberOfLines = -1;
@@ -1042,7 +1054,7 @@ public class TestCECIImpl {
     public void testMoveToVariableException3() throws Exception {
         setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " ");
-        Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException());  
+        Mockito.when(ceciTerminalMock.newLine()).thenThrow(new FieldNotFoundException());  
         exceptionRule.expect(CECIException.class);
         exceptionRule.expectMessage("Problem serching for variable " + TEXT_VARIABLE_NAME);
     

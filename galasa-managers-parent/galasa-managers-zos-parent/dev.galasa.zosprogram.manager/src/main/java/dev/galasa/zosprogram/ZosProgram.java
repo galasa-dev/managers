@@ -56,9 +56,9 @@ public @interface ZosProgram {
     Language language();
     
     /**
-     * Is a CICS program.
+     * Is a CICS program and requires the CICS translator.
      */
-    boolean isCics() default false;
+    boolean cics() default false;
 
     /**
      * The load module data set name
@@ -69,31 +69,36 @@ public @interface ZosProgram {
      * The <code>imageTag</code> is used to identify the z/OS image.
      */
     String imageTag() default "primary";
+    
+    /**
+     * Compile this zOS program.
+     */
+    boolean compile() default true;
 
     /**
      * Enumeration of supported languages
      */
-    public enum Language{
+    public enum Language {
         /**
          * COBOL program with <code>.cbl</code> file extension 
          */
-        COBOL(".cbl");
-//        /**
-//         * C program with <code>.c</code> file extension 
-//         */
-//        C(".c"),
-//        /**
-//         * PL1 program with <code>.pl1</code> file extension 
-//         */
-//        PL1(".pl1"),
-//        /**
-//         * Assembler program with <code>.asm<\code> file extension 
-//         */
-//        ASSEMBLER(".asm"),
-//        /**
-//         * Assembler 64 program with <code>.asm<\code> file extension 
-//         */
-//        ASSEMBLER_64(".asm");
+        COBOL(".cbl"),
+        /**
+         * C program with <code>.c</code> file extension 
+         */
+        C(".c"),
+        /**
+         * PL1 program with <code>.pl1</code> file extension 
+         */
+        PL1(".pl1"),
+        /**
+         * Assembler program with <code>.asm<\code> file extension 
+         */
+        ASSEMBLER(".asm"),
+        /**
+         * Do Not Use 
+         */
+        INVALID("");
         
         private final String extension;
         

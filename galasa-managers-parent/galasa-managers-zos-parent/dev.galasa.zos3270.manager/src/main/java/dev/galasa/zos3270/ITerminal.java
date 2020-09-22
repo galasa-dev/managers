@@ -16,6 +16,10 @@ public interface ITerminal {
     void connect() throws NetworkException;
 
     void disconnect() throws TerminalInterruptedException;
+    
+    public boolean isSwitchedSSL();
+
+    public void setDoStartTls(boolean doStartTls);
 
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
 
@@ -55,6 +59,8 @@ public interface ITerminal {
     
     ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException;
 
+    ITerminal eraseInput() throws KeyboardLockedException, FieldNotFoundException;
+
     ITerminal tab() throws FieldNotFoundException, KeyboardLockedException;
     
     ITerminal backTab() throws FieldNotFoundException, KeyboardLockedException;
@@ -66,6 +72,8 @@ public interface ITerminal {
     ITerminal cursorLeft() throws KeyboardLockedException, FieldNotFoundException;
     
     ITerminal cursorRight() throws KeyboardLockedException, FieldNotFoundException;
+    
+    ITerminal backSpace() throws KeyboardLockedException, FieldNotFoundException;
 
     ITerminal home() throws KeyboardLockedException, FieldNotFoundException;
 

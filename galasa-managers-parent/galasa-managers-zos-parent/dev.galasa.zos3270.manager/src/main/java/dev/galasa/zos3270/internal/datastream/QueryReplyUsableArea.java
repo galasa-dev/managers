@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos3270.internal.datastream;
 
@@ -15,6 +15,7 @@ public class QueryReplyUsableArea extends AbstractQueryReply {
 
     private final int           cellX;
     private final int           cellY;
+    private final int           maxBuffer;
 
     private static final byte   UNITS        = 0x01;
     private static final byte[] XR           = new byte[] { 0x00, 0x0a, 0x02, (byte) 0xe5 };
@@ -25,6 +26,16 @@ public class QueryReplyUsableArea extends AbstractQueryReply {
     public QueryReplyUsableArea(Screen screen) {
         this.cellX = screen.getNoOfColumns();
         this.cellY = screen.getNoOfRows();
+        
+        int primaryBuffer = screen.getPrimaryColumns() * screen.getPrimaryRows();
+        int alternateBuffer = screen.getAlternateColumns() * screen.getAlternateRows();
+        
+        if (primaryBuffer >= alternateBuffer) {
+            this.maxBuffer = primaryBuffer;
+        } else {
+            this.maxBuffer = alternateBuffer;
+        }
+        
     }
 
     @Override
@@ -42,7 +53,7 @@ public class QueryReplyUsableArea extends AbstractQueryReply {
         buffer.put(YR);
         buffer.put(AW);
         buffer.put(AH);
-        buffer.putShort((short) (cellX * cellY));
+        buffer.putShort((short) this.maxBuffer);
         return buffer.array();
     }
 

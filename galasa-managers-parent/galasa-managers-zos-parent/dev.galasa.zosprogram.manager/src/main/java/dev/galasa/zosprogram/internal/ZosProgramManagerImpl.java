@@ -58,14 +58,14 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         ZosProgramManagerImpl.zosManager = zosManager;
     }
 
-    protected static IZosBatchSpi zosBatchManager;
-    protected static void setZosBatchManager(IZosBatchSpi zosBatchManager) {
-        ZosProgramManagerImpl.zosBatchManager = zosBatchManager;
+    protected static IZosBatchSpi zosBatch;
+    protected static void setZosBatch(IZosBatchSpi zosBatchManager) {
+        ZosProgramManagerImpl.zosBatch = zosBatchManager;
     }
 
-    protected static IZosFileSpi zosFileManager;
-    protected static void setZosFileManager(IZosFileSpi zosFileManager) {
-        ZosProgramManagerImpl.zosFileManager = zosFileManager;
+    protected static IZosFileSpi zosFile;
+    protected static void setZosFile(IZosFileSpi zosFileManager) {
+        ZosProgramManagerImpl.zosFile = zosFileManager;
     }
 
     protected static IArtifactManager artifactManager;
@@ -94,7 +94,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         ZosProgramManagerImpl.runId = runId;
     }
 
-    private static IZosDataset runLoadlib;
+    protected static IZosDataset runLoadlib;
 
     private final LinkedHashMap<String, ZosProgramImpl> zosPrograms = new LinkedHashMap<>();
     
@@ -134,12 +134,12 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         if (zosManager == null) {
             throw new ZosProgramManagerException("The zOS Manager is not available");
         }
-        setZosBatchManager(addDependentManager(allManagers, activeManagers, IZosBatchSpi.class));
-        if (zosBatchManager == null) {
+        setZosBatch(addDependentManager(allManagers, activeManagers, IZosBatchSpi.class));
+        if (zosBatch == null) {
             throw new ZosProgramManagerException("The zOS Batch Manager is not available");
         }
-        setZosFileManager(addDependentManager(allManagers, activeManagers, IZosFileSpi.class));
-        if (zosFileManager == null) {
+        setZosFile(addDependentManager(allManagers, activeManagers, IZosFileSpi.class));
+        if (zosFile == null) {
             throw new ZosProgramManagerException("The zOS File Manager is not available");
         }
         setArtifactManager(addDependentManager(allManagers, activeManagers, IArtifactManager.class));
@@ -179,15 +179,10 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         setManagerBundleResources(artifactManager.getBundleResources(this.getClass()));
         setTestBundleResources(artifactManager.getBundleResources(getTestClass()));
         for (Entry<String, ZosProgramImpl> entry : zosPrograms.entrySet()) {
-            ZosProgramImpl zosProgram = entry.getValue();
-            logger.info("Compile " + zosProgram.getLanguage() + " program " + zosProgram.getName() + " for field \"" + zosProgram.getField().getName() + "\"");
-            switch (zosProgram.getLanguage()) {
-            case COBOL:
-                ZosCobolProgramCompiler cobolProgram = new ZosCobolProgramCompiler(zosProgram);
-                cobolProgram.compile();
-                break;
-            default:
-                throw new ZosProgramManagerException("Invalid program language: " + zosProgram.getLanguage());
+            if (entry.getValue().getCompile()) {
+                entry.getValue().compile();
+            } else {
+                logger.warn("WARNING: " + entry.getValue().getLanguage() + " program \"" + entry.getValue().getName() + "\"" + ((ZosProgramImpl) entry.getValue()).logForField() + " is set to \"compile = false\" and has not been compiled");
             }
         }
     }
@@ -200,10 +195,11 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         String location = nulled(annotationZosProgram.location());
         String tag = defaultString(annotationZosProgram.imageTag(), "primary");
         Language language = annotationZosProgram.language();
-        boolean isCics = annotationZosProgram.isCics();
+        boolean cics = annotationZosProgram.cics();
         String loadlib = nulled(annotationZosProgram.loadlib());
+        boolean compile = annotationZosProgram.compile();
         
-        ZosProgramImpl zosProgram = new ZosProgramImpl(field, tag, name, location, language, isCics, loadlib);
+        ZosProgramImpl zosProgram = new ZosProgramImpl(field, tag, name, location, language, cics, loadlib, compile);
         zosPrograms.put(field.getName(), zosProgram);
         
         return zosProgram;
@@ -211,19 +207,19 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
 
 
     @Override
-    public IZosProgram newZosProgram(IZosImage image, String name, String location, Language language, boolean isCics, String loadlib) throws ZosProgramManagerException {
-        return new ZosProgramImpl(image, name, location, language, isCics, loadlib);
+    public IZosProgram newZosProgram(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramManagerException {
+        return new ZosProgramImpl(image, name, programSource, language, cics, loadlib);
     }
 
 
     public static IZosBatch getZosBatch(IZosImage image) {
-        return zosBatchManager.getZosBatch(image);
+        return zosBatch.getZosBatch(image);
     }
     
     public static IZosDataset getRunLoadlib(IZosImage image) throws ZosProgramManagerException {
         if (runLoadlib == null) {
             try {
-                runLoadlib = zosFileManager.getZosFileHandler().newDataset(zosManager.getRunDatasetHLQ(image) + "." + runId + ".LOAD", image);
+                runLoadlib = zosFile.getZosFileHandler().newDataset(zosManager.getRunDatasetHLQ(image) + "." + runId + ".LOAD", image);
                 if (!runLoadlib.exists()) {
                     runLoadlib.setSpace(SpaceUnit.CYLINDERS, 1, 5);
                     runLoadlib.setRecordFormat(RecordFormat.UNDEFINED);
