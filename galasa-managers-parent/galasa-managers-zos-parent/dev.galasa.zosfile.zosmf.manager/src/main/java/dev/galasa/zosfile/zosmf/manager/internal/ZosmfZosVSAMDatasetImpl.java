@@ -5,13 +5,9 @@
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -24,6 +20,7 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.IZosDataset.DatasetDataType;
 import dev.galasa.zosfile.IZosDataset.DatasetOrganization;
@@ -383,17 +380,23 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     public void saveToResultsArchive() throws ZosVSAMDatasetException {
         try {
             if (exists()) {
-                String archiveLocation;
-                if (getTotalRecords() == 0) {
-                	archiveLocation = storeArtifact("", this.name);
-                } else {
-	                if (this.dataType.equals(DatasetDataType.TEXT)) {
-	                    archiveLocation = storeArtifact(retrieveAsText(), this.name);
-	                } else {
-	                    archiveLocation = storeArtifact(retrieveAsBinary(), this.name);
-	                }
-                }
-                logger.info(quoted(this.name) + LOG_ARCHIVED_TO + archiveLocation);
+            	Path artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetCurrentTestMethodArchiveFolder();
+				String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.name);
+                try {
+                    if (getTotalRecords() == 0) {
+                    	ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), this.name, ResultArchiveStoreContentType.TEXT);
+                    } else {
+                    	if (this.dataType.equals(DatasetDataType.TEXT)) {
+                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    	} else  {
+                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    	}
+                    }
+    			} catch (ZosManagerException e) {
+    				throw new ZosDatasetException(e);
+    			}
+                
+                logger.info(quoted(this.name) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
             }
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save VSAM data set to archive", e);
@@ -892,34 +895,34 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
             
     }
 
-    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
-        Path artifactPath;
-        try {
-            artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
-            String lastElement = artifactPathElements[artifactPathElements.length-1];
-            for (String artifactPathElement : artifactPathElements) {
-                if (!lastElement.equals(artifactPathElement)) {
-                    artifactPath = artifactPath.resolve(artifactPathElement);
-                }
-            }
-            String uniqueId = lastElement;
-            if (Files.exists(artifactPath.resolve(lastElement))) {
-                uniqueId = lastElement + "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
-            }
-            artifactPath = artifactPath.resolve(uniqueId);
-            Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-            if (content instanceof String) {
-                Files.write(artifactPath, ((String) content).getBytes()); 
-            } else if (content instanceof byte[]) {
-                Files.write(artifactPath, (byte[]) content);
-            } else {
-                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
-            }
-        } catch (IOException e) {
-            throw new ZosFileManagerException("Unable to store artifact", e);
-        }
-        return artifactPath.toString();
-    }
+//    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
+//        Path artifactPath;
+//        try {
+//            artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
+//            String lastElement = artifactPathElements[artifactPathElements.length-1];
+//            for (String artifactPathElement : artifactPathElements) {
+//                if (!lastElement.equals(artifactPathElement)) {
+//                    artifactPath = artifactPath.resolve(artifactPathElement);
+//                }
+//            }
+//            String uniqueId = lastElement;
+//            if (Files.exists(artifactPath.resolve(lastElement))) {
+//                uniqueId = lastElement + "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
+//            }
+//            artifactPath = artifactPath.resolve(uniqueId);
+//            Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
+//            if (content instanceof String) {
+//                Files.write(artifactPath, ((String) content).getBytes()); 
+//            } else if (content instanceof byte[]) {
+//                Files.write(artifactPath, (byte[]) content);
+//            } else {
+//                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
+//            }
+//        } catch (IOException e) {
+//            throw new ZosFileManagerException("Unable to store artifact", e);
+//        }
+//        return artifactPath.toString();
+//    }
 
     protected void setIdcamsOutput(JsonObject responseBody) {
         StringBuilder sb = new StringBuilder();

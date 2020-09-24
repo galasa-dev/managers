@@ -260,11 +260,11 @@ public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFile
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup(true);
         setDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
         setCurrentTestMethodArchiveFolderName("postTest");
+        cleanup(true);
         
         return null;
     }

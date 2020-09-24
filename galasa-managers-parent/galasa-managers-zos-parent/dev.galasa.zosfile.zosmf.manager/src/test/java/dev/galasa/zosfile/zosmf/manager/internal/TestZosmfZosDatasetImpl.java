@@ -432,38 +432,38 @@ public class TestZosmfZosDatasetImpl {
         logMessage = null;
         String expectedMessage = "\"" + DATASET_NAME + "\"" + " archived to " + PATH_MOCK;
         zosDatasetSpy.saveToResultsArchive();
-		Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
 
         Whitebox.setInternalState(zosDatasetSpy, "dataType", DatasetDataType.BINARY);
         logMessage = null;
         zosDatasetSpy.saveToResultsArchive();
-		Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
 
         Whitebox.setInternalState(zosDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
         logMessage = null;
         expectedMessage = null;
         zosDatasetSpy.saveToResultsArchive();
-		Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
 
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
         logMessage = null;
         expectedMessage = null;
         zosDatasetSpy.saveToResultsArchive();
-        Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+        Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).exists();
         logMessage = null;
         expectedMessage = "Unable to save data set to archive";
         zosDatasetSpy.saveToResultsArchive();
-        Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+        Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
         PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
         zosDatasetSpy.saveToResultsArchive();
-        Assert.assertEquals("testSaveToResultsArchive() should log specified message", expectedMessage, logMessage);
+        Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
     }
     
     @Test
@@ -481,19 +481,19 @@ public class TestZosmfZosDatasetImpl {
         logMessage = null;
         String expectedMessage = null;
         zosDatasetSpy.savePDSToResultsArchive();
-		Assert.assertEquals("testsavePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("savePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
 		
         datasetMembers.add(MEMBER_NAME);
         PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());
         logMessage = null;
         expectedMessage = "\"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" archived to " + PATH_MOCK;
         zosDatasetSpy.savePDSToResultsArchive();
-		Assert.assertEquals("testsavePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("savePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
 		
         Whitebox.setInternalState(zosDatasetSpy, "dataType", DatasetDataType.BINARY);
         logMessage = null;
         zosDatasetSpy.savePDSToResultsArchive();
-		Assert.assertEquals("testsavePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
+		Assert.assertEquals("savePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
 		
 		PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());       
         exceptionRule.expect(ZosDatasetException.class);
