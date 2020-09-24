@@ -38,12 +38,12 @@ import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
 
-public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
+public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     
     private IZosmfRestApiProcessor zosmfApiProcessor;
-    private ZosFileHandlerImpl zosFileHandler;
+    private ZosmfZosFileHandlerImpl zosFileHandler;
 
-    private ZosDatasetImpl zosDataset;
+    private ZosmfZosDatasetImpl zosDataset;
 
     // zOS Image
     private IZosImage image;
@@ -184,16 +184,16 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     private static final String LOG_UNABLE_TO_DELETE_REPRO_DATASET = "Unable to delete IDCAMS REPRO temporary dataset";
     private static final String LOG_UNABLE_TO_RETRIEVE_CONTENT_FROM_REPRO_DATASET = "Unable to retrieve content from IDCAMS REPRO temporary dataset";
 
-    private static final Log logger = LogFactory.getLog(ZosVSAMDatasetImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosVSAMDatasetImpl.class);
 
-    public ZosVSAMDatasetImpl(IZosImage image, String dsname) throws ZosVSAMDatasetException {
-        this.zosFileHandler = (ZosFileHandlerImpl) ZosFileManagerImpl.newZosFileHandler();
+    public ZosmfZosVSAMDatasetImpl(IZosImage image, String dsname) throws ZosVSAMDatasetException {
+        this.zosFileHandler = (ZosmfZosFileHandlerImpl) ZosmfZosFileManagerImpl.newZosFileHandler();
         try {
             this.image = image;
             this.name = dsname;
             this.dataName = name + LLQ_DATA;
             this.indexName = name + LLQ_INDEX;
-            this.zosDataset = (ZosDatasetImpl) this.zosFileHandler.newDataset(this.name, this.image);
+            this.zosDataset = (ZosmfZosDatasetImpl) this.zosFileHandler.newDataset(this.name, this.image);
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException(e);
         }
@@ -272,7 +272,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     @Override
     public void storeText(String content) throws ZosVSAMDatasetException {
-        ZosDatasetImpl fromDataset = createReproDataset(content);
+        ZosmfZosDatasetImpl fromDataset = createReproDataset(content);
         store(fromDataset);
         try {
             fromDataset.delete();
@@ -283,7 +283,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     @Override
     public void storeBinary(byte[] content) throws ZosVSAMDatasetException {
-        ZosDatasetImpl fromDataset = createReproDataset(content);
+        ZosmfZosDatasetImpl fromDataset = createReproDataset(content);
         store(fromDataset);
         try {
             fromDataset.delete();
@@ -322,7 +322,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
 
-        ZosDatasetImpl toDataset = createReproDataset(null);
+        ZosmfZosDatasetImpl toDataset = createReproDataset(null);
         
         JsonArray amsInput = new JsonArray();
         String[] items = getReproToCommand(toDataset.getName()).split("\n");
@@ -354,7 +354,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
 
-        ZosDatasetImpl toDataset = createReproDataset(null);
+        ZosmfZosDatasetImpl toDataset = createReproDataset(null);
         
         JsonArray amsInput = new JsonArray();
         String[] items = getReproToCommand(toDataset.getName()).split("\n");
@@ -836,17 +836,17 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
         return getListcatOutput();
     }
 
-    protected ZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
+    protected ZosmfZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;
         try {
-            reproDsname = ZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
+            reproDsname = ZosmfZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
         } catch (ZosFileManagerException e) {
             throw new ZosVSAMDatasetException(e);
         }
     
-        ZosDatasetImpl reproDataset = null;
+        ZosmfZosDatasetImpl reproDataset = null;
         try {
-            reproDataset = (ZosDatasetImpl) this.zosFileHandler.newDataset(reproDsname, this.image);
+            reproDataset = (ZosmfZosDatasetImpl) this.zosFileHandler.newDataset(reproDsname, this.image);
             reproDataset.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
             reproDataset.setRecordFormat(RecordFormat.VARIABLE_BLOCKED);
             int recordLength = this.maxRecordSize == 0 ? Integer.valueOf(getValueFromListcat("MAXLRECL")) + 4 : this.maxRecordSize + 4;
@@ -874,7 +874,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     protected static String temporaryLLQ() {
-        return ZosFileManagerImpl.getRunId() + ".T" + StringUtils.leftPad(String.valueOf(++temporaryQualifierCounter), 4, "0");
+        return ZosmfZosFileManagerImpl.getRunId() + ".T" + StringUtils.leftPad(String.valueOf(++temporaryQualifierCounter), 4, "0");
     }
 
     protected String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
@@ -895,7 +895,7 @@ public class ZosVSAMDatasetImpl implements IZosVSAMDataset {
     protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
         Path artifactPath;
         try {
-            artifactPath = ZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethodArchiveFolderName);
+            artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

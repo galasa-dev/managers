@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -22,7 +22,6 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -37,7 +36,6 @@ import dev.galasa.zosfile.ZosFileField;
 import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
-import dev.galasa.zosfile.zosmf.manager.internal.properties.ZosFileZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
@@ -46,27 +44,27 @@ import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
  *
  */
 @Component(service = { IManager.class })
-public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
+public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     protected static final String NAMESPACE = "zosfile";
     
-    private static final Log logger = LogFactory.getLog(ZosFileManagerImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosFileManagerImpl.class);
 
     protected static IZosManagerSpi zosManager;
     public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosFileManagerImpl.zosManager = zosManager;
+        ZosmfZosFileManagerImpl.zosManager = zosManager;
     }
     
     protected static IZosmfManagerSpi zosmfManager;
     public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-        ZosFileManagerImpl.zosmfManager = zosmfManager;
+        ZosmfZosFileManagerImpl.zosmfManager = zosmfManager;
     }
 
     protected static IZosUNIXCommandSpi zosUnixCommandManager;
     public static void setZosUnixCommandCommandManager(IZosUNIXCommandSpi zosUnixCommandManager) {
-        ZosFileManagerImpl.zosUnixCommandManager = zosUnixCommandManager;
+        ZosmfZosFileManagerImpl.zosUnixCommandManager = zosUnixCommandManager;
     }
 
-    private static final Map<String, ZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
+    private static final Map<String, ZosmfZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
 
     private static final String ZOS_DATASETS = "zOS_Datasets";
     
@@ -114,7 +112,16 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     
     protected static String currentTestMethodArchiveFolderName;
     public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        ZosFileManagerImpl.currentTestMethodArchiveFolderName = folderName;
+        ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName = folderName;
+    }
+    public static Path getDatasetCurrentTestMethodArchiveFolder() {
+        return datasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    }
+    public static Path getVsamDatasetCurrentTestMethodArchiveFolder() {
+        return vsamDatasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    }
+    public static Path getUnixPathCurrentTestMethodArchiveFolder() {
+        return unixPathArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
     
     /* (non-Javadoc)
@@ -124,11 +131,6 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-        try {
-            ZosFileZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosFileManagerException("Unable to request framework services", e);
-        }
 
         if(galasaTest.isJava()) {
             //*** Check to see if any of our annotations are present in the test class
@@ -296,23 +298,23 @@ public class ZosFileManagerImpl extends AbstractManager implements IZosFileSpi {
     }
     
     protected void cleanup(boolean testComplete) throws ZosFileManagerException {
-        for (Entry<String, ZosFileHandlerImpl> entry : zosFileHandlers.entrySet()) {
+        for (Entry<String, ZosmfZosFileHandlerImpl> entry : zosFileHandlers.entrySet()) {
             entry.getValue().cleanup(testComplete);
         }
     }
     
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
     public IZosFileHandler generateZosFileHandler(Field field, List<Annotation> annotations) {
-        ZosFileHandlerImpl zosFileHandlerImpl = new ZosFileHandlerImpl(field.getName());
-        zosFileHandlers.put(zosFileHandlerImpl.toString(), zosFileHandlerImpl);        
-        return zosFileHandlerImpl;
+        ZosmfZosFileHandlerImpl zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl(field.getName());
+        zosFileHandlers.put(zosmfZosFileHandlerImpl.toString(), zosmfZosFileHandlerImpl);        
+        return zosmfZosFileHandlerImpl;
     }
     
     public static IZosFileHandler newZosFileHandler() {
-        ZosFileHandlerImpl zosFileHandlerImpl;
+        ZosmfZosFileHandlerImpl zosmfZosFileHandlerImpl;
         if (zosFileHandlers.get("INTERNAL") == null) {
-            zosFileHandlerImpl = new ZosFileHandlerImpl();
-            zosFileHandlers.put(zosFileHandlerImpl.toString(), zosFileHandlerImpl);
+            zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl();
+            zosFileHandlers.put(zosmfZosFileHandlerImpl.toString(), zosmfZosFileHandlerImpl);
         }
         return zosFileHandlers.get("INTERNAL");
     }
