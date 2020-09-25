@@ -10,7 +10,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 
 /**
- * Restrict zOS batch processing to the server on the specified image
+ * zOS Batch restrict processing to the server on the specified image
  * 
  * @galasa.cps.property
  * 
@@ -29,7 +29,7 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
  * <code>zosbatch.batchjob.default.restrict.to.image=false</code>
  *
  */
-public class RestrictToImage extends CpsProperties {
+public class BatchRestrictToImage extends CpsProperties {
 
     public static boolean get(String imageId) throws ZosBatchManagerException {
         try {
