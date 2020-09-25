@@ -17,6 +17,7 @@ import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
+import dev.galasa.zosfile.ZosFileManagerException;
 
 public interface IZosManagerSpi extends IZosManager {
     
@@ -71,7 +72,7 @@ public interface IZosManagerSpi extends IZosManager {
      * @return
      * @throws ZosBatchManagerException
      */
-	boolean getZosBatchPropertyRestrictToImage(String imageId) throws ZosBatchManagerException;
+	boolean getZosBatchPropertyBatchRestrictToImage(String imageId) throws ZosBatchManagerException;
 
 	/**
 	 * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].use.sysaff} property
@@ -137,4 +138,34 @@ public interface IZosManagerSpi extends IZosManager {
 	 */
 	void storeArtifact(Path artifactPath, String content, ResultArchiveStoreContentType type) throws ZosManagerException;
 
+	/**
+	 * Create an empty directory in the results archive on behalf of another manager
+	 * @param artifactPath
+	 * @throws ZosManagerException
+	 */
+	void createArtifactDirectory(Path artifactPath) throws ZosManagerException;
+	
+    /**
+     * Provides other managers to the zOS File {@code zosfile.unix.[imageid].directory.list.max.items} property
+     * @param imageId
+     * @return
+     * @throws ZosFileManagerException
+     */
+	int getZosFilePropertyDirectoryListMaxItems(String imageId) throws ZosFileManagerException;
+	
+    /**
+     * Provides other managers to the zOS File {@code zosfile.batchjob.[imageid].restrict.to.image} property
+     * @param imageId
+     * @return
+     * @throws ZosFileManagerException
+     */
+	boolean getZosFilePropertyFileRestrictToImage(String imageId) throws ZosFileManagerException;
+	
+    /**
+     * Provides other managers to the zOS File {@code zosfile.[imageid].unix.file.permission} property
+     * @param imageId
+     * @return
+     * @throws ZosFileManagerException
+     */
+	String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException;
 }

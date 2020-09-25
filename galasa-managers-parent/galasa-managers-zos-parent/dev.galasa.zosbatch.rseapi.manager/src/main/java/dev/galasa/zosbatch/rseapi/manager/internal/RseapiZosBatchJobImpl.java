@@ -129,7 +129,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
         
         try {
-            this.rseapiApiProcessor = RseapiZosBatchManagerImpl.rseapiManager.newRseapiRestApiProcessor(jobImage, RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(jobImage.getImageID()));
+            this.rseapiApiProcessor = RseapiZosBatchManagerImpl.rseapiManager.newRseapiRestApiProcessor(jobImage, RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
         } catch (RseapiManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }

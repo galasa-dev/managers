@@ -33,9 +33,6 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.ZosUNIXFileException;
-import dev.galasa.zosfile.zosmf.manager.internal.properties.DirectoryListMaxItems;
-import dev.galasa.zosfile.zosmf.manager.internal.properties.RestrictZosmfToImage;
-import dev.galasa.zosfile.zosmf.manager.internal.properties.UnixFilePermissions;
 import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
@@ -43,7 +40,7 @@ import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
 
-public class ZosUNIXFileImpl implements IZosUNIXFile {
+public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     
     IZosmfRestApiProcessor zosmfApiProcessor;
 
@@ -104,9 +101,9 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     private static final String LOG_INVALID_REQUETS = "Invalid request, ";
     private static final String LOG_UNABLE_TO_LIST_UNIX_PATH = "Unable to list UNIX path ";
 
-    private static final Log logger = LogFactory.getLog(ZosUNIXFileImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosUNIXFileImpl.class);
 
-    public ZosUNIXFileImpl(IZosImage image, String unixPath) throws ZosUNIXFileException {
+    public ZosmfZosUNIXFileImpl(IZosImage image, String unixPath) throws ZosUNIXFileException {
         if (!unixPath.startsWith(SLASH)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + "must be absolute not be relative");
         }
@@ -116,9 +113,9 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
         splitUnixPath();
         
         try {
-            this.zosmfApiProcessor = ZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, RestrictZosmfToImage.get(image.getImageID()));
-            this.maxItems = DirectoryListMaxItems.get(image.getImageID());
-            this.mode = UnixFilePermissions.get(this.image.getImageID());
+            this.zosmfApiProcessor = ZosmfZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
+            this.maxItems = ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyDirectoryListMaxItems(image.getImageID());
+            this.mode = ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyUnixFilePermissions(this.image.getImageID());
         } catch (ZosFileManagerException | ZosmfManagerException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -638,7 +635,7 @@ public class ZosUNIXFileImpl implements IZosUNIXFile {
     protected String storeArtifact(Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
-            artifactPath = ZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosFileManagerImpl.currentTestMethodArchiveFolderName);
+            artifactPath = ZosmfZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

@@ -125,7 +125,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
         
         try {
-            this.zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(jobImage.getImageID()));
+            this.zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
