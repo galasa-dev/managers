@@ -72,16 +72,20 @@ import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
-import dev.galasa.zosbatch.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
 import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
+import dev.galasa.zosfile.internal.properties.DirectoryListMaxItems;
+import dev.galasa.zosfile.internal.properties.FileRestrictToImage;
+import dev.galasa.zosfile.internal.properties.UnixFilePermissions;
+import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
                  DseImageIdForTag.class, ImageIdForTag.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
-                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, RestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
-                 JobnamePrefix.class})
+                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, BatchRestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
+                 JobnamePrefix.class, DirectoryListMaxItems.class, FileRestrictToImage.class, UnixFilePermissions.class})
 public class TestZosManagerImpl {
 
     private ZosManagerImpl zosManager;
@@ -122,6 +126,8 @@ public class TestZosManagerImpl {
     private ZosPropertiesSingleton zosPropertiesSingleton;
 
     private ZosBatchPropertiesSingleton zosBatchPropertiesSingleton;
+
+    private ZosFilePropertiesSingleton zosFilePropertiesSingleton;
     
     private static String logMessage;
 
@@ -181,7 +187,9 @@ public class TestZosManagerImpl {
         zosPropertiesSingleton = new ZosPropertiesSingleton();
         zosPropertiesSingleton.activate();
         zosBatchPropertiesSingleton = new ZosBatchPropertiesSingleton();
-        zosBatchPropertiesSingleton.activate(); 
+        zosBatchPropertiesSingleton.activate();
+        zosFilePropertiesSingleton = new ZosFilePropertiesSingleton();
+        zosFilePropertiesSingleton.activate(); 
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -658,14 +666,14 @@ public class TestZosManagerImpl {
     public void testGetRunDatasetHLQ() throws Exception {
         PowerMockito.mockStatic(RunDatasetHLQ.class);
         PowerMockito.doReturn(RUN_HLQ).when(RunDatasetHLQ.class, "get", Mockito.any());
-        Assert.assertEquals("RestrictToImage() should return the expected value", RUN_HLQ, zosManagerSpy.getRunDatasetHLQ(zosImageMock));        
+        Assert.assertEquals("RunDatasetHLQ() should return the expected value", RUN_HLQ, zosManagerSpy.getRunDatasetHLQ(zosImageMock));        
     }
     
     @Test
-    public void testGetZosBatchPropertyRestrictToImage() throws Exception {
-        PowerMockito.mockStatic(RestrictToImage.class);
-        PowerMockito.doReturn(true).when(RestrictToImage.class, "get", Mockito.any());
-        Assert.assertTrue("getZosBatchPropertyRestrictToImage() should return the expected value", zosManagerSpy.getZosBatchPropertyRestrictToImage(IMAGE_ID));        
+    public void testGetZosBatchPropertyBatchRestrictToImage() throws Exception {
+        PowerMockito.mockStatic(BatchRestrictToImage.class);
+        PowerMockito.doReturn(true).when(BatchRestrictToImage.class, "get", Mockito.any());
+        Assert.assertTrue("BatchRestrictToImage() should return the expected value", zosManagerSpy.getZosBatchPropertyBatchRestrictToImage(IMAGE_ID));        
     }
     
     @Test
@@ -707,6 +715,27 @@ public class TestZosManagerImpl {
     public void testNewZosBatchJobOutput() throws ZosBatchException {
     	String jobname = "JOBNAME";
     	Assert.assertEquals("newZosBatchJobOutput() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutput(jobname, "jobid").getJobname());
+    }
+
+    @Test
+    public void testGetZosFilePropertyDirectoryListMaxItems() throws Exception {
+        PowerMockito.mockStatic(DirectoryListMaxItems.class);
+        PowerMockito.doReturn(99).when(DirectoryListMaxItems.class, "get", Mockito.any());
+        Assert.assertEquals("DirectoryListMaxItems() should return the expected value", 99, zosManagerSpy.getZosFilePropertyDirectoryListMaxItems(IMAGE_ID));        
+    }
+
+    @Test
+    public void testGetZosFilePropertyFileRestrictToImage() throws Exception {
+        PowerMockito.mockStatic(FileRestrictToImage.class);
+        PowerMockito.doReturn(true).when(FileRestrictToImage.class, "get", Mockito.any());
+        Assert.assertTrue("FileRestrictToImage() should return the expected value", zosManagerSpy.getZosFilePropertyFileRestrictToImage(IMAGE_ID));        
+    }
+
+    @Test
+    public void testGetZosFilePropertyUnixFilePermissions() throws Exception {
+        PowerMockito.mockStatic(UnixFilePermissions.class);
+        PowerMockito.doReturn("---------").when(UnixFilePermissions.class, "get", Mockito.any());
+        Assert.assertEquals("UnixFilePermissions() should return the expected value", "---------", zosManagerSpy.getZosFilePropertyUnixFilePermissions(IMAGE_ID));        
     }
     
     @Test 

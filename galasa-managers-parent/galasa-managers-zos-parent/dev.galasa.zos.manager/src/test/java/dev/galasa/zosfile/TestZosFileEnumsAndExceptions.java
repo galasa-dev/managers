@@ -61,6 +61,15 @@ public class TestZosFileEnumsAndExceptions {
         Assert.assertEquals("Problem with DSType", "BASIC", DSType.BASIC.toString());
         Assert.assertEquals("Problem with DSType", "EXTREQ", DSType.EXTREQ.toString());
         Assert.assertEquals("Problem with DSType", "EXTPREF", DSType.EXTPREF.toString());
+        
+        Assert.assertEquals("Problem with DSType", DSType.HFS, DSType.valueOfLabel("HFS"));
+        Assert.assertEquals("Problem with DSType", DSType.PDS, DSType.valueOfLabel("PDS"));
+        Assert.assertEquals("Problem with DSType", DSType.PDSE, DSType.valueOfLabel("PDSE"));
+        Assert.assertEquals("Problem with DSType", DSType.LARGE, DSType.valueOfLabel("LARGE"));
+        Assert.assertEquals("Problem with DSType", DSType.BASIC, DSType.valueOfLabel("BASIC"));
+        Assert.assertEquals("Problem with DSType", DSType.EXTREQ, DSType.valueOfLabel("EXTREQ"));
+        Assert.assertEquals("Problem with DSType", DSType.EXTPREF, DSType.valueOfLabel("EXTPREF"));
+        Assert.assertNull("Problem with DSType", DSType.valueOfLabel("INVALID"));
     }
     
     @Test
@@ -71,18 +80,34 @@ public class TestZosFileEnumsAndExceptions {
         Assert.assertEquals("Problem with RecordFormat", "V", RecordFormat.VARIABLE.toString());
         Assert.assertEquals("Problem with RecordFormat", "VB", RecordFormat.VARIABLE_BLOCKED.toString());
         Assert.assertEquals("Problem with RecordFormat", "U", RecordFormat.UNDEFINED.toString());
+
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.BLOCK, RecordFormat.valueOfLabel("B"));
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.FIXED, RecordFormat.valueOfLabel("F"));
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.FIXED_BLOCKED, RecordFormat.valueOfLabel("FB"));
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.VARIABLE, RecordFormat.valueOfLabel("V"));
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.VARIABLE_BLOCKED, RecordFormat.valueOfLabel("VB"));
+        Assert.assertEquals("Problem with RecordFormat", RecordFormat.UNDEFINED, RecordFormat.valueOfLabel("U"));
+        Assert.assertNull("Problem with RecordFormat", RecordFormat.valueOfLabel("INVALID"));
     }
     
     @Test
     public void testDatasetOrganization() {
         Assert.assertEquals("Problem with DatasetOrganization", "PO", DatasetOrganization.PARTITIONED.toString());
         Assert.assertEquals("Problem with DatasetOrganization", "PS", DatasetOrganization.SEQUENTIAL.toString());
+
+        Assert.assertEquals("Problem with DatasetOrganization", DatasetOrganization.PARTITIONED, DatasetOrganization.valueOfLabel("PO"));
+        Assert.assertEquals("Problem with DatasetOrganization", DatasetOrganization.SEQUENTIAL, DatasetOrganization.valueOfLabel("PS"));
+        Assert.assertNull("Problem with DatasetOrganization", DatasetOrganization.valueOfLabel("INVALID"));
     }
     
     @Test
     public void testSpaceUnit() {
         Assert.assertEquals("Problem with SpaceUnit", "TRK", SpaceUnit.TRACKS.toString());
         Assert.assertEquals("Problem with SpaceUnit", "CYL", SpaceUnit.CYLINDERS.toString());
+
+        Assert.assertEquals("Problem with SpaceUnit", SpaceUnit.TRACKS, SpaceUnit.valueOfLabel("TRK"));
+        Assert.assertEquals("Problem with SpaceUnit", SpaceUnit.CYLINDERS, SpaceUnit.valueOfLabel("CYL"));
+        Assert.assertNull("Problem with SpaceUnit", SpaceUnit.valueOfLabel("INVALID"));
     }
     
     @Test
@@ -90,6 +115,11 @@ public class TestZosFileEnumsAndExceptions {
         Assert.assertEquals("Problem with DatasetDataType", "text", DatasetDataType.TEXT.toString());
         Assert.assertEquals("Problem with DatasetDataType", "binary", DatasetDataType.BINARY.toString());
         Assert.assertEquals("Problem with DatasetDataType", "record", DatasetDataType.RECORD.toString());
+
+        Assert.assertEquals("Problem with DatasetDataType", DatasetDataType.TEXT, DatasetDataType.valueOfLabel("text"));
+        Assert.assertEquals("Problem with DatasetDataType", DatasetDataType.BINARY, DatasetDataType.valueOfLabel("binary"));
+        Assert.assertEquals("Problem with DatasetDataType", DatasetDataType.RECORD, DatasetDataType.valueOfLabel("record"));
+        Assert.assertNull("Problem with DatasetDataType", DatasetDataType.valueOfLabel("INVALID"));
     }
     
     @Test

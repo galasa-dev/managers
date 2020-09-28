@@ -68,16 +68,22 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.internal.ZosBatchJobOutputImpl;
 import dev.galasa.zosbatch.internal.ZosBatchJobnameImpl;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
-import dev.galasa.zosbatch.internal.properties.RestrictToImage;
+import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
 import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
 import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
+import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.internal.properties.DirectoryListMaxItems;
+import dev.galasa.zosfile.internal.properties.FileRestrictToImage;
+import dev.galasa.zosfile.internal.properties.UnixFilePermissions;
+import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 
 @Component(service = { IManager.class })
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     protected static final String NAMESPACE = "zos";
     protected static final String ZOSBATCH_NAMESPACE = "zosbatch";
+    protected static final String ZOSFILE_NAMESPACE = "zosbatch";
     
     private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
@@ -103,6 +109,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         try {
             ZosPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
             ZosBatchPropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSBATCH_NAMESPACE));
+            ZosFilePropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSFILE_NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosManagerException("Unable to request framework services", e);
         }
@@ -497,8 +504,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     }
     
     @Override
-    public boolean getZosBatchPropertyRestrictToImage(String imageId) throws ZosBatchManagerException {
-		return RestrictToImage.get(imageId);
+    public boolean getZosBatchPropertyBatchRestrictToImage(String imageId) throws ZosBatchManagerException {
+		return BatchRestrictToImage.get(imageId);
 	}
 
 	@Override
@@ -532,6 +539,21 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	}
 
 	@Override
+	public int getZosFilePropertyDirectoryListMaxItems(String imageId) throws ZosFileManagerException {
+		return DirectoryListMaxItems.get(imageId);
+	}
+
+	@Override
+	public boolean getZosFilePropertyFileRestrictToImage(String imageId) throws ZosFileManagerException {
+		return FileRestrictToImage.get(imageId);
+	}
+
+	@Override
+	public String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException {
+		return UnixFilePermissions.get(imageId);
+	}
+
+	@Override
 	public String buildUniquePathName(Path artifactPath, String name) {
     	int uniqueId = 1;
         while (Files.exists(artifactPath.resolve(name))) {
@@ -558,6 +580,15 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 			Files.write(artifactPath, content.getBytes());
 		} catch (IOException e) {
 			throw new ZosManagerException("Unable to store artifact", e);
+		}
+	}
+
+	@Override
+	public void createArtifactDirectory(Path artifactPath) throws ZosManagerException {
+		try {
+			Files.createDirectories(artifactPath);
+		} catch (IOException e) {
+			throw new ZosManagerException("Unable to create artifact directory", e);
 		}
 	}
 }

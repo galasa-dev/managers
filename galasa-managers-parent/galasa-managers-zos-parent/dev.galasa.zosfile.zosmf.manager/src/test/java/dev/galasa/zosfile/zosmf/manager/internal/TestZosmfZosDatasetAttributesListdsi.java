@@ -38,11 +38,11 @@ import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(FrameworkUtil.class)
-public class TestZosDatasetAttributesListdsi {
+public class TestZosmfZosDatasetAttributesListdsi {
     
-    private ZosDatasetAttributesListdsi zosDatasetAttributesListdsi;
+    private ZosmfZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
     
-    private ZosDatasetAttributesListdsi zosDatasetAttributesListdsiSpy;
+    private ZosmfZosDatasetAttributesListdsi zosDatasetAttributesListdsiSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -57,10 +57,10 @@ public class TestZosDatasetAttributesListdsi {
     private IZosUNIXCommand zosUNIXCommandMock;
     
     @Mock
-    private ZosFileHandlerImpl zosFileHandlerMock;
+    private ZosmfZosFileHandlerImpl zosFileHandlerMock;
     
     @Mock
-    private ZosDatasetImpl execDatasetMock;
+    private ZosmfZosDatasetImpl execDatasetMock;
     
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -74,12 +74,12 @@ public class TestZosDatasetAttributesListdsi {
     @Before
     public void setup() throws Exception {
         Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(RUN_HLQ);
-        ZosFileManagerImpl.setZosManager(zosManagerMock);
-        ZosFileManagerImpl.setRunId(RUNID);
-        ZosFileManagerImpl.setZosUnixCommandCommandManager(zosUNIXCommandSpiMock);
+        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
+        ZosmfZosFileManagerImpl.setRunId(RUNID);
+        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(zosUNIXCommandSpiMock);
         
-        zosDatasetAttributesListdsi = new ZosDatasetAttributesListdsi(zosImageMock);
-        zosDatasetAttributesListdsiSpy = Mockito.spy(zosDatasetAttributesListdsi);
+        zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(zosImageMock);
+        zosDatasetAttributesListdsiSpy = Mockito.spy(zosmfZosDatasetAttributesListdsi);
     }
     
     @Test
@@ -91,7 +91,7 @@ public class TestZosDatasetAttributesListdsi {
     
     @Test
     public void testInitialiseException1() throws ZosDatasetException {
-        ZosFileManagerImpl.setZosUnixCommandCommandManager(null);
+        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(null);
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
         zosDatasetAttributesListdsiSpy.initialise();

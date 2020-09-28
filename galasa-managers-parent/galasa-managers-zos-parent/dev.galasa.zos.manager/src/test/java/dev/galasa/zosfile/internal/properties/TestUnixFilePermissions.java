@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosFileZosmfPropertiesSingleton.class, CpsProperties.class})
+@PrepareForTest({ZosFilePropertiesSingleton.class, CpsProperties.class})
 public class TestUnixFilePermissions {
     
     @Mock
@@ -80,8 +80,8 @@ public class TestUnixFilePermissions {
     }
     
     private String getProperty(String value, boolean exception) throws Exception {
-        PowerMockito.spy(ZosFileZosmfPropertiesSingleton.class);
-        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosFileZosmfPropertiesSingleton.class, "cps");
+        PowerMockito.spy(ZosFilePropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosFilePropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {

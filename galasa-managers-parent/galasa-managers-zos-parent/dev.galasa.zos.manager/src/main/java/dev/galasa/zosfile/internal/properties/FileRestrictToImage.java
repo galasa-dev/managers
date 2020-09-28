@@ -1,22 +1,22 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
- * Restrict processing to the zOSMF server on the specified image
+ * zOS File restrict processing to the server on the specified image
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zosfile.zosmf.[imageid].restrict.to.image
+ * @galasa.name zosfile.file.[imageid].restrict.to.image
  * 
- * @galasa.description Use only the zOSMF server running on the image associated with the zOS data set or file
+ * @galasa.description Use only the server (e.g. zOSMF, RSE API, etc) running on the image associated with the zOS data set or file
  * 
  * @galasa.required No
  * 
@@ -25,17 +25,17 @@ import dev.galasa.zosfile.ZosFileManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zosfile.zosmf.restrict.to.image=true</code><br>
- * <cods>zosfile.zosmf.SYSA.restrict.to.image=true</code>
+ * <code>zosfile.file.restrict.to.image=true</code><br>
+ * <cods>zosfile.file.SYSA.restrict.to.image=true</code>
  *
  */
-public class RestrictZosmfToImage extends CpsProperties {
+public class FileRestrictToImage extends CpsProperties {
 
     private static final boolean RESTRICT_TO_IMAGE = false;
 
     public static boolean get(String imageId) throws ZosFileManagerException {
         try {
-            String restrictString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosmf", "restrict.zosmf.to.image", imageId);
+            String restrictString = getStringNulled(ZosFilePropertiesSingleton.cps(), "file", "restrict.to.image", imageId);
 
             if (restrictString == null) {
                 return RESTRICT_TO_IMAGE;
@@ -43,7 +43,7 @@ public class RestrictZosmfToImage extends CpsProperties {
                 return Boolean.parseBoolean(restrictString);
             }
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosFileManagerException("Problem asking the CPS for the restrict zOSMF to image property for zOS image "  + imageId, e);
+            throw new ZosFileManagerException("Problem asking the CPS for the file restrict to image property for zOS image "  + imageId, e);
         }
     }
 

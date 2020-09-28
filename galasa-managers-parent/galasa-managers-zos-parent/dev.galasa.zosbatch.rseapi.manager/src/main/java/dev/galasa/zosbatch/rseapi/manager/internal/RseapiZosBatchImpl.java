@@ -118,7 +118,7 @@ public class RseapiZosBatchImpl implements IZosBatch {
     protected List<IZosBatchJob> getBatchJobs(String suppliedJobname, String suppliedOwner) throws ZosBatchException {
         IRseapiRestApiProcessor rseapiApiProcessor;
         try {
-            rseapiApiProcessor = RseapiZosBatchManagerImpl.rseapiManager.newRseapiRestApiProcessor(image, RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(image.getImageID()));
+            rseapiApiProcessor = RseapiZosBatchManagerImpl.rseapiManager.newRseapiRestApiProcessor(image, RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(image.getImageID()));
         } catch (RseapiManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
