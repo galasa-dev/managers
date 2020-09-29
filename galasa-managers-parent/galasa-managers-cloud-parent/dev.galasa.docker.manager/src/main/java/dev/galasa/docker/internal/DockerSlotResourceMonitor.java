@@ -57,16 +57,12 @@ public class DockerSlotResourceMonitor implements Runnable {
      */
     @Override
     public void run() {
-        logger.info("Docker resource montior starting");
-
+        logger.info("Starting search for run slots.");
         checkForStaleSlots();
-
-        logger.info("All docker resources checked");
+        logger.info("Finished search for run slots.");
     }
 
     public void checkForStaleSlots() {
-        logger.info("Starting search for stale run slots.");
-
         try {
             Map<String, String> slotRuns = dss.getPrefix("slot");
 			
