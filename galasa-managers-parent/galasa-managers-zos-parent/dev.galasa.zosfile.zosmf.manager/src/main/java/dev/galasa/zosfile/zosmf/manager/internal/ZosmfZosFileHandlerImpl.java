@@ -23,41 +23,41 @@ import dev.galasa.zosfile.ZosVSAMDatasetException;
  * Implementation of {@link IZosFileHandler} using zOS/MF
  *
  */
-public class ZosFileHandlerImpl implements IZosFileHandler {
+public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
 
-    private List<ZosDatasetImpl> zosDatasets = new ArrayList<>();
-    private List<ZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
-    private List<ZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();
-    private List<ZosVSAMDatasetImpl> zosVsamDatasetsForCleanup = new ArrayList<>();
-    private List<ZosUNIXFileImpl> zosUnixFiles = new ArrayList<>();
-    private List<ZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();
+    private List<ZosmfZosDatasetImpl> zosDatasets = new ArrayList<>();
+    private List<ZosmfZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
+    private List<ZosmfZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();
+    private List<ZosmfZosVSAMDatasetImpl> zosVsamDatasetsForCleanup = new ArrayList<>();
+    private List<ZosmfZosUNIXFileImpl> zosUnixFiles = new ArrayList<>();
+    private List<ZosmfZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();
     private String fieldName;
 
-    public ZosFileHandlerImpl() {
+    public ZosmfZosFileHandlerImpl() {
         this("INTERNAL");
     }
 
-    public ZosFileHandlerImpl(String fieldName) {
+    public ZosmfZosFileHandlerImpl(String fieldName) {
         this.fieldName = fieldName;
     }
 
     @Override
     public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException {
-        ZosDatasetImpl zosDataset = new ZosDatasetImpl(image, dsname);
+        ZosmfZosDatasetImpl zosDataset = new ZosmfZosDatasetImpl(image, dsname);
         zosDatasets.add(zosDataset);
         return zosDataset;
     }
 
     @Override
     public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image) throws ZosUNIXFileException {
-        ZosUNIXFileImpl zosUnixFile = new ZosUNIXFileImpl(image, fullFilePath);
+        ZosmfZosUNIXFileImpl zosUnixFile = new ZosmfZosUNIXFileImpl(image, fullFilePath);
         zosUnixFiles.add(zosUnixFile);
         return zosUnixFile;
     }
 
     @Override
     public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException {
-        ZosVSAMDatasetImpl zosVsamDataset = new ZosVSAMDatasetImpl(image, dsname);
+        ZosmfZosVSAMDatasetImpl zosVsamDataset = new ZosmfZosVSAMDatasetImpl(image, dsname);
         this.zosVsamDatasets.add(zosVsamDataset);
         return zosVsamDataset;
     }
@@ -69,9 +69,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
     
     public void cleanupDatasets(boolean testComplete) throws ZosFileManagerException {
-        Iterator<ZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
+        Iterator<ZosmfZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
         while (datasetIterator.hasNext()) {
-            ZosDatasetImpl zosDataset = datasetIterator.next();
+            ZosmfZosDatasetImpl zosDataset = datasetIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
                 if (!zosDataset.isTemporary()) {
                     zosDataset.saveToResultsArchive();
@@ -91,9 +91,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
     
     protected void cleanupDatasetsTestComplete() throws ZosDatasetException {
-        Iterator<ZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
+        Iterator<ZosmfZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
         while (datasetForCleanupIterator.hasNext()) {
-            ZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
+            ZosmfZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
                 if (!zosDataset.isTemporary()) {
                     zosDataset.saveToResultsArchive();
@@ -104,9 +104,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
 
     public void cleanupVsamDatasets(boolean testComplete) throws ZosFileManagerException {
-        Iterator<ZosVSAMDatasetImpl> vsamDatasetIterator = this.zosVsamDatasets.iterator();
+        Iterator<ZosmfZosVSAMDatasetImpl> vsamDatasetIterator = this.zosVsamDatasets.iterator();
         while (vsamDatasetIterator.hasNext()) {
-            ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
+            ZosmfZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
             if (zosVsamDataset.created() && zosVsamDataset.exists()) {
                 zosVsamDataset.saveToResultsArchive();
                 if (zosVsamDataset.retainToTestEnd()) {
@@ -124,9 +124,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
         
     protected void cleanupVsamDatasetsTestComplete() throws ZosVSAMDatasetException {
-        Iterator<ZosVSAMDatasetImpl> vsamDatasetForCleanupIterator = this.zosVsamDatasetsForCleanup.iterator();
+        Iterator<ZosmfZosVSAMDatasetImpl> vsamDatasetForCleanupIterator = this.zosVsamDatasetsForCleanup.iterator();
         while (vsamDatasetForCleanupIterator.hasNext()) {
-            ZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
+            ZosmfZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
             if (zosVsamDataset.created() && zosVsamDataset.exists()) {
                 zosVsamDataset.saveToResultsArchive();
                 zosVsamDataset.delete();
@@ -135,9 +135,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
 
     public void cleanupUnixFiles(boolean testComplete) throws ZosFileManagerException {
-        Iterator<ZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
+        Iterator<ZosmfZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
         while (unixFileIterator.hasNext()) {
-            ZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
+            ZosmfZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
             if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
                 zosUnixFile.saveToResultsArchive();
                 if (!zosUnixFile.retainToTestEnd()) {
@@ -154,9 +154,9 @@ public class ZosFileHandlerImpl implements IZosFileHandler {
     }
 
     protected void cleanupUnixFilesTestComplete() {
-        Iterator<ZosUNIXFileImpl> zosUnixFilesForCleanupIterator = this.zosUnixFilesForCleanup.iterator();
+        Iterator<ZosmfZosUNIXFileImpl> zosUnixFilesForCleanupIterator = this.zosUnixFilesForCleanup.iterator();
         while (zosUnixFilesForCleanupIterator.hasNext()) {
-            ZosUNIXFileImpl zosUnixFile = zosUnixFilesForCleanupIterator.next();
+            ZosmfZosUNIXFileImpl zosUnixFile = zosUnixFilesForCleanupIterator.next();
             zosUnixFile.cleanCreatedPath();
         }
     }

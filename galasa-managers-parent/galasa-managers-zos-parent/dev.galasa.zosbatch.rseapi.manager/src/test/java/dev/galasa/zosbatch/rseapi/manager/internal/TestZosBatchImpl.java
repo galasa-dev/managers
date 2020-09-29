@@ -134,7 +134,7 @@ public class TestZosBatchImpl {
         
         Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenReturn(false);
         
-        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenReturn(true);
         
         Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(true);
         
@@ -236,7 +236,7 @@ public class TestZosBatchImpl {
     
     @Test
     public void testGetBatchJobsException1() throws Exception {
-    	Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));      
+    	Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));      
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
         

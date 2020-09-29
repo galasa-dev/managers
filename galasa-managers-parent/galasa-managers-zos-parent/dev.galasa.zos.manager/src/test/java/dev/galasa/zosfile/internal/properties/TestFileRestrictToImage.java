@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -22,8 +22,8 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ZosFileZosmfPropertiesSingleton.class, CpsProperties.class})
-public class TestRestrictZosmfToImage {
+@PrepareForTest({ZosFilePropertiesSingleton.class, CpsProperties.class})
+public class TestFileRestrictToImage {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
@@ -35,36 +35,36 @@ public class TestRestrictZosmfToImage {
     
     @Test
     public void testConstructor() {
-        RestrictZosmfToImage restrictZosmfToImage = new RestrictZosmfToImage();
-        Assert.assertNotNull("Object was not created", restrictZosmfToImage);
+        FileRestrictToImage restrictToImage = new FileRestrictToImage();
+        Assert.assertNotNull("Object was not created", restrictToImage);
     }
     
     @Test
     public void testNull() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty(null));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty(null));
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("true"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("TRUE"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", true, getProperty("TrUe"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("fasle"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("FALSE"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("FaLsE"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("true"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("TRUE"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("TrUe"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("fasle"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("FALSE"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("FaLsE"));
     }
     
     @Test
     public void testInvalid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("XXX"));
-        Assert.assertEquals("Unexpected value returned from RestrictZosmfToImage.get()", false, getProperty("999"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("XXX"));
+        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("999"));
     }
     
     @Test
     public void testException() throws Exception {
         exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the restrict zOSMF to image property for zOS image " + IMAGE_ID);
-
+        exceptionRule.expectMessage("Problem asking the CPS for the file restrict to image property for zOS image " + IMAGE_ID);
+        
         getProperty("ANY", true);
     }
 
@@ -73,8 +73,8 @@ public class TestRestrictZosmfToImage {
     }
     
     private boolean getProperty(String value, boolean exception) throws Exception {
-        PowerMockito.spy(ZosFileZosmfPropertiesSingleton.class);
-        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosFileZosmfPropertiesSingleton.class, "cps");
+        PowerMockito.spy(ZosFilePropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosFilePropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
@@ -83,6 +83,6 @@ public class TestRestrictZosmfToImage {
             PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return RestrictZosmfToImage.get(IMAGE_ID);
+        return FileRestrictToImage.get(IMAGE_ID);
     }
 }

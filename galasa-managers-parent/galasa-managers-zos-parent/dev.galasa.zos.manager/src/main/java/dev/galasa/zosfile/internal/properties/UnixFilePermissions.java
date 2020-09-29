@@ -1,16 +1,16 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
- * UNIX permission bits to be used in creating the file or directory
+ * zOS File UNIX permission bits to be used in creating the file or directory
  * 
  * @galasa.cps.property
  * 
@@ -35,7 +35,7 @@ public class UnixFilePermissions extends CpsProperties {
 
     public static String get(String imageId) throws ZosFileManagerException {
         try {
-            String modeString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "zosfile","unix.file.permissions", imageId);
+            String modeString = getStringNulled(ZosFilePropertiesSingleton.cps(), "zosfile","unix.file.permissions", imageId);
 
             if (modeString == null) {
                 return UNIX_FILE_PERMISSIONS;
