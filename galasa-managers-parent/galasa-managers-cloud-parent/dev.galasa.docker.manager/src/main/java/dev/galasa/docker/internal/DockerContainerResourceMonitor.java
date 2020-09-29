@@ -3,17 +3,16 @@ package dev.galasa.docker.internal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.gson.Gson;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.docker.internal.json.DockerContainerJSON;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.FrameworkException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
@@ -48,14 +47,14 @@ public class DockerContainerResourceMonitor implements Runnable {
         this.cps = cps;
         this.dss = dss;
 
-        dockerEngines = getDockerEngines();
-
         logger.info("Docker container resource monitor intialised");
     }
 
     @Override
     public void run() {
         logger.info("Docker container resouce check started");
+
+        dockerEngines = getDockerEngines();
 
         for (String engine : dockerEngines.keySet()) {
             List<String> containers = getOrphanedContainers(engine, dockerEngines.get(engine));
@@ -79,6 +78,7 @@ public class DockerContainerResourceMonitor implements Runnable {
                 HttpClientResponse<String> resp = client.deleteText("/containers/"+id+"?force=true");
                 if (resp.getStatusCode() != 204) {
                     logger.error("Something went wrong when removing container: " + resp.getStatusLine());
+                    return;
                 }
             }
         } catch (HttpClientException e) {
@@ -98,18 +98,20 @@ public class DockerContainerResourceMonitor implements Runnable {
             HttpClientResponse<String> resp = client.getText("/containers/json");
             if (resp.getStatusCode() != 200) {
                 logger.error("Something went wrong when retrieving containers: " + resp.getStatusLine());
+                return orphanedContainers;
             }
 
             DockerContainerJSON[] activeContainers = gson.fromJson(resp.getContent(), DockerContainerJSON[].class);
             for (DockerContainerJSON container : activeContainers) {
-                String runName = parseRunId(container.getNames());
+                String runName = container.getLabels().getRunId();
+                String slotId = container.getLabels().getSlotId();
                 // Other non Galasa pod
                 if (runName == null) {
                     continue;
                 }
 
-                Collection<String> activeRunNames = dss.getPrefix("engine."+engine+".slot").values();
-                if (!activeRunNames.contains(runName)) {
+                // Check Slot name against runID. If Null or another run then container orphaned
+                if (!runName.equals(dss.get("engine."+engine+".slot."+slotId))) {
                     orphanedContainers.add(container.getId());
                 }
             }
@@ -125,8 +127,9 @@ public class DockerContainerResourceMonitor implements Runnable {
      */
     private Map<String, IHttpClient> getDockerEngines() {
         HashMap<String, IHttpClient> engines = new HashMap<>();
-        try {
-            String[] enginesTags = cps.getPrefixedProperties("engines").get("engines").split(",");
+        try { 
+            // This will have to be changed if we support engine clusters
+            String[] enginesTags = cps.getProperty("default", "engines").split(",");
             for (String engine : enginesTags) {
                 String hostname = cps.getProperty("engine", "hostname", engine);
                 String port = cps.getProperty("engine", "port", engine);
@@ -140,24 +143,6 @@ public class DockerContainerResourceMonitor implements Runnable {
             logger.error("Failed to get docker engines.", e);
         }
         return engines;
-    }
-
-    /**
-     * Locates the Run ID from the container name.
-     * 
-     * Name is always structure like "GASLAS_RUNID_CONTAINERTAG"
-     * @param names
-     * @return
-     */
-    private String parseRunId(String[] names) {
-        for (String name: names) {
-            if (name.contains("GALASA_")) {
-                String[] containerComponents = name.split("_");
-                logger.info("Image found for Run: " + containerComponents[1] + " tagged with: " + containerComponents[2]);
-                return containerComponents[1];
-            }
-        }
-        return null;
     }
     
 }

@@ -1,4 +1,4 @@
-package dev.galasa.docker.internal;
+package dev.galasa.docker.internal.json;
 
 /**
  * A simplified JSON parsing object to parse the docker API containers list for names and ID
@@ -6,6 +6,7 @@ package dev.galasa.docker.internal;
 public class DockerContainerJSON{
     private String Id;
     private String[] Names;
+    private DockerContainerLabels Labels;
 
     public void setId(String Id) {
         this.Id = Id;
@@ -20,5 +21,13 @@ public class DockerContainerJSON{
     public String[] getNames() {
         return this.Names;
     }
-    
+
+    public void setLabels(DockerContainerLabels Labels) {
+        this.Labels = Labels;
+    }
+    public DockerContainerLabels getLabels() {
+        return this.Labels;
+    }
+
 }
+
