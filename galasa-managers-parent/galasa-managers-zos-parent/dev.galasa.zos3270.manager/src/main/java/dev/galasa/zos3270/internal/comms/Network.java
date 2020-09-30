@@ -183,6 +183,10 @@ public class Network {
     }
 
     public void sendDatastream(OutputStream outputStream, byte[] outboundDatastream) throws NetworkException {
+        if (outputStream == null) {
+            throw new NetworkException("Attempt to send data to a disconnected terminal");
+        }
+        
         synchronized(outputStream) {
             try {
                 byte[] header = new byte[] { 0, 0, 0, 0, 0 };
