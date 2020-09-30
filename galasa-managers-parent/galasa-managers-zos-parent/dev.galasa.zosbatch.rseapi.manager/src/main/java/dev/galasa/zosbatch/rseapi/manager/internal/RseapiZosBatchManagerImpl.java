@@ -190,9 +190,9 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup();
         setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
         setCurrentTestMethodArchiveFolderName("postTest");
+        cleanup();
         
         return null;
     }

@@ -1,22 +1,22 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 /**
- * The maximum number of items from a directory list
+ * zOS File the maximum number of items from a UNIX directory list
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosfile.unix.[imageid].directory.list.max.items
  * 
- * @galasa.description The maximum number of items zOSMF returns when listing the content of a directory
+ * @galasa.description The maximum number of items the server (e.g. zOSMF, RSE API, etc) returns when listing the content of a UNIX directory
  * 
  * @galasa.required No
  * 
@@ -34,7 +34,7 @@ public class DirectoryListMaxItems extends CpsProperties {
 
     public static int get(String imageId) throws ZosFileManagerException {
         try {
-            String maxItemsString = getStringNulled(ZosFileZosmfPropertiesSingleton.cps(), "unix", "directory.list.max.items", imageId);
+            String maxItemsString = getStringNulled(ZosFilePropertiesSingleton.cps(), "unix", "directory.list.max.items", imageId);
 
             if (maxItemsString == null) {
                 return MAX_ITEMS;

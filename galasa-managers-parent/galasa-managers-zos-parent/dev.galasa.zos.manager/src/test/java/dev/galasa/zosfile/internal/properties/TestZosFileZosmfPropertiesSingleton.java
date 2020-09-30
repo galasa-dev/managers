@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -19,7 +19,7 @@ import dev.galasa.zosfile.ZosFileManagerException;
 @RunWith(MockitoJUnitRunner.class)
 public class TestZosFileZosmfPropertiesSingleton {
     
-    private ZosFileZosmfPropertiesSingleton singletonInstance;
+    private ZosFilePropertiesSingleton singletonInstance;
 
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
@@ -31,24 +31,24 @@ public class TestZosFileZosmfPropertiesSingleton {
     public void testCpsException() throws ZosFileManagerException {
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, ZosFileZosmfPropertiesSingleton.cps());
+        Assert.assertEquals("Exception", null, ZosFilePropertiesSingleton.cps());
     }
     
     @Test
     public void testSetCpsException() throws ZosFileManagerException {
         exceptionRule.expect(ZosFileManagerException.class);
         exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        ZosFileZosmfPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, ZosFileZosmfPropertiesSingleton.cps());
+        ZosFilePropertiesSingleton.setCps(cpsMock);
+        Assert.assertEquals("Exception", null, ZosFilePropertiesSingleton.cps());
     }
     
     @Test
     public void testZosFileZosmfPropertiesSingleton() throws ZosFileManagerException {
-        singletonInstance = new ZosFileZosmfPropertiesSingleton();
+        singletonInstance = new ZosFilePropertiesSingleton();
         singletonInstance.activate();
-        ZosFileZosmfPropertiesSingleton.setCps(null);
-        ZosFileZosmfPropertiesSingleton.setCps(cpsMock);        
-        Assert.assertEquals("ZosFileZosmfPropertiesSingleton.cps() should return the mocked cps", cpsMock, ZosFileZosmfPropertiesSingleton.cps());
+        ZosFilePropertiesSingleton.setCps(null);
+        ZosFilePropertiesSingleton.setCps(cpsMock);        
+        Assert.assertEquals("ZosFileZosmfPropertiesSingleton.cps() should return the mocked cps", cpsMock, ZosFilePropertiesSingleton.cps());
         singletonInstance.deacivate();
     }
 }

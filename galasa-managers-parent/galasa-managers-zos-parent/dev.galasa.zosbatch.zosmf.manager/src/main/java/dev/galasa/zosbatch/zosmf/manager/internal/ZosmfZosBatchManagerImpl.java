@@ -190,9 +190,9 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup();
         setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
         setCurrentTestMethodArchiveFolderName("postTest");
+        cleanup();
         
         return null;
     }

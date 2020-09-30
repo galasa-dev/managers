@@ -23,7 +23,7 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ZosBatchPropertiesSingleton.class, CpsProperties.class})
-public class TestRestrictToImage {
+public class TestBatchRestrictToImage {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
@@ -35,7 +35,7 @@ public class TestRestrictToImage {
     
     @Test
     public void testConstructor() {
-        RestrictToImage restrictToImage = new RestrictToImage();
+        BatchRestrictToImage restrictToImage = new BatchRestrictToImage();
         Assert.assertNotNull("Object was not created", restrictToImage);
     }
     
@@ -83,6 +83,6 @@ public class TestRestrictToImage {
             PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return RestrictToImage.get(IMAGE_ID);
+        return BatchRestrictToImage.get(IMAGE_ID);
     }
 }

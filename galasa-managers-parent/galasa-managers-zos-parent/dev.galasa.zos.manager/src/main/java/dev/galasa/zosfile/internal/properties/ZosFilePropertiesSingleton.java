@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal.properties;
+package dev.galasa.zosfile.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -12,11 +12,11 @@ import org.osgi.service.component.annotations.Deactivate;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zosfile.ZosFileManagerException;
 
-@Component(service=ZosFileZosmfPropertiesSingleton.class, immediate=true)
-public class ZosFileZosmfPropertiesSingleton {
+@Component(service=ZosFilePropertiesSingleton.class, immediate=true)
+public class ZosFilePropertiesSingleton {
     
-    private static ZosFileZosmfPropertiesSingleton singletonInstance;
-    private static void setInstance(ZosFileZosmfPropertiesSingleton instance) {
+    private static ZosFilePropertiesSingleton singletonInstance;
+    private static void setInstance(ZosFilePropertiesSingleton instance) {
         singletonInstance = instance;
     }
     
