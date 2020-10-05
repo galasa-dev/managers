@@ -10,14 +10,12 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.osgi.service.component.annotations.Component;
 
@@ -51,7 +49,6 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     public static final String NAMESPACE = "selenium";
 
     private IConfigurationPropertyStoreService cps; // NOSONAR
-    private IFramework framework;
 
     private List<WebPageImpl> webPages = new ArrayList<>();
     private Path screenshotRasDirectory;
@@ -65,14 +62,12 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
         if (galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
-            if (ourFields.isEmpty() && !this.required) {
-                return;
+            if (!ourFields.isEmpty() || this.required) {
+                youAreRequired(allManagers, activeManagers);
             }
-            youAreRequired(allManagers, activeManagers);
         }
 
         try {
-            this.framework = framework;
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
             SeleniumPropertiesSingleton.setCps(cps);
         } catch (Exception e) {
@@ -94,7 +89,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        Path storedArtifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
         screenshotRasDirectory = storedArtifactsRoot.resolve("selenium").resolve("screenshots");
 
         generateAnnotatedFields(SeleniumManagerField.class);
