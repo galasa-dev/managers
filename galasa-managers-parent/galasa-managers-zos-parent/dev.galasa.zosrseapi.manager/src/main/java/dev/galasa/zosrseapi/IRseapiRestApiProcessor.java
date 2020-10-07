@@ -19,7 +19,7 @@ public interface IRseapiRestApiProcessor {
      * Send RSE API request
      * @param requestType as defined by {@link RseapiRequestType}
      * @param path the RSE API API path
-     * @param headers the required HTTP headers (e.g. See {@link RseapiCustomHeaders} or null
+     * @param headers the required HTTP headers or null
      * @param body the request body or null
      * @param validStatusCodes list HTTP status codes expected from this request. default of HTTP 200 when null 
      * @param convert is a data conversion required. If true, data will be converted between EBCDIC to ISO8859-1. If false, no data conversion will take place.

@@ -79,10 +79,11 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private static final String PROP_RETCODE = "returnCode";
     private static final String PROP_ID = "id";
     private static final String PROP_CONTENT = "content";
+	private static final String PROP_STATUS = "status";
     
     private static final String SLASH = "/";
     private static final String QUERY = "?";
-    protected static final String RESTJOBS_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" +SLASH + "jobs";
+    protected static final String RESTJOBS_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" + SLASH + "jobs";
     
     private static final String LOG_JOB_NOT_SUBMITTED = "Job has not been submitted by manager";
     
@@ -345,12 +346,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             
             logger.trace(responseBodyObject);
             // Get the spool files
-            JsonArray jsonArray;
-            try {
-                jsonArray = response.getJsonContent().getAsJsonArray("items");
-            } catch (RseapiException e) {
-                throw new ZosBatchException(e);
-            }
+            JsonArray jsonArray = ((JsonObject) responseBodyObject).getAsJsonArray("items");
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject responseBody = jsonElement.getAsJsonObject();
                 String id = jsonNull(responseBody, PROP_ID);
@@ -488,7 +484,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.jobNotFound = false;
             this.owner = jsonNull(responseBody, PROP_OWNER);
             this.type = jsonNull(responseBody, PROP_TYPE);
-            this.status = jsonNull(responseBody, "status");
+            this.status = jsonNull(responseBody, PROP_STATUS);
             if (this.status != null && "COMPLETION".equals(this.status) ||
             	this.status != null && "ABEND".equals(this.status)) {
                 this.jobComplete = true;
@@ -579,9 +575,14 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     protected static String buildErrorString(String action, IRseapiResponse response) {
     	String message = "";
     	try {
-    		JsonObject content = response.getJsonContent();
+    		Object content = response.getContent();
 			if (content != null) {
-				message = "\nstatus: " + content.get("status").getAsString() + "\n" + "message: " + content.get("message").getAsString(); 
+				logger.trace(content);
+				if (content instanceof JsonObject) {
+					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
+				} else if (content instanceof String) {
+					message = " response body:\n" + content;
+				}
 			}
 		} catch (RseapiException e) {
 			// NOP
