@@ -51,7 +51,7 @@ import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RseapiZosBatchManagerImpl.class, InputClass.class, MsgClass.class, MsgLevel.class})
-public class TestZosBatchImpl {
+public class TestRseapiZosBatchImpl {
     
     private RseapiZosBatchImpl zosBatch;
     
@@ -120,7 +120,7 @@ public class TestZosBatchImpl {
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
         Mockito.doThrow(new IOException()).when(fileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
         RseapiZosBatchManagerImpl.setArchivePath(archivePathMock);
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestZosBatchImpl.class.getDeclaredMethod("setup").getName());        
+        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestRseapiZosBatchImpl.class.getDeclaredMethod("setup").getName());        
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
