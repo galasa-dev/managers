@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2019.
  */
-package dev.galasa.zosfile.zosmf.manager.internal;
+package dev.galasa.zosfile.rseapi.manager.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,23 +34,25 @@ import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
-import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
-import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
-import dev.galasa.zosmf.IZosmfResponse;
-import dev.galasa.zosmf.IZosmfRestApiProcessor;
-import dev.galasa.zosmf.ZosmfException;
-import dev.galasa.zosmf.ZosmfManagerException;
+import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
+import dev.galasa.zosrseapi.IRseapiResponse;
+import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
+import dev.galasa.zosrseapi.RseapiManagerException;
 
-public class ZosmfZosDatasetImpl implements IZosDataset {
+public class ResapiZosDatasetImpl implements IZosDataset {
     
-    private IZosmfRestApiProcessor zosmfApiProcessor;
+    private IRseapiRestApiProcessor rseapiApiProcessor;
 
     // zOS Image
     private IZosImage image;
 
     private static final String SLASH = "/";
     private static final String COMMA = ",";
-    private static final String RESTFILES_DATASET_PATH = SLASH + "zosmf" + SLASH + "restfiles" + SLASH + "ds";
+    private static final String RESTFILES_DATASET_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" + SLASH + "datasets";
+    private static final String RESTFILES_DATASET_PATH_CONTENT = SLASH + "content";
+    private static final String RESTFILES_DATASET_PATH_RAW_CONTENT = SLASH + "rawContent";
+    private static final String RESTFILES_DATASET_PATH_MEMBERS = SLASH + "members";
     
     // data set and member names
     private String dsname;
@@ -59,7 +62,6 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     private boolean convert = true;
     
     private Collection<String> datasetMembers;
-    private String memberStart = null;
 
     // parameters
     private String volser = null;
@@ -85,61 +87,66 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     private DatasetDataType dataType = DatasetDataType.TEXT;
 
-    private ZosmfZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
+    private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
-    private static final String PROP_VOLSER = "volser";     
-    private static final String PROP_UNIT = "unit";       
-    private static final String PROP_DSORG = "dsorg";      
-    private static final String PROP_ALCUNIT = "alcunit";    
-    private static final String PROP_PRIMARY = "primary";    
-    private static final String PROP_SECONDARY = "secondary";  
-    private static final String PROP_DIRBLK = "dirblk";     
-    private static final String PROP_AVGBLK = "avgblk";     
-    private static final String PROP_RECFM = "recfm";      
-    private static final String PROP_BLKSIZE = "blksize";    
-    private static final String PROP_LRECL = "lrecl";      
-    private static final String PROP_STORECLASS = "storeclass";
-    private static final String PROP_MGNTCLASS = "mgntclass";
-    private static final String PROP_DATACLASS = "dataclass";
-    private static final String PROP_DSNTYPE = "dsntype";
-    private static final String PROP_DSNAME = "dsname";
-    private static final String PROP_RETURNED_ROWS = "returnedRows";
-    private static final String PROP_MORE_ROWS = "moreRows";
+    private static final String PROP_NAME = "name";
+    private static final String PROP_VOLUME_SERIAL = "volumeSerial";     
+    private static final String PROP_UNIT = "unit";
+    private static final String PROP_DATASET_ORGANIZATION = "dataSetOrganization";
+    private static final String PROP_ALLOCATION_UNIT = "allocationUnit";
+    private static final String PROP_PRIMARY = "primary";
+    private static final String PROP_SECONDARY = "secondary";
+    private static final String PROP_DIRECTORY_BLOCKS = "directoryBlocks";
+    private static final String PROP_AVERAGE_BLOCK = "averageBlock";
+    private static final String PROP_RECORD_FORMAT = "recordFormat";
+    private static final String PROP_BLOCK_SIZE = "blockSize";
+    private static final String PROP_RECORD_LENGTH = "recordLength";
+    private static final String PROP_DSN_TYPE = "dsnType";
+	private static final String PROP_DATA_SET_ORGANIZATION = "dataSetOrganization";     
+    private static final String PROP_STOR_CLASS = "storClass";
+    private static final String PROP_MGMT_CLASS = "mgmtClass";
+    private static final String PROP_DATA_CLASS = "dataClass";
+	private static final String PROP_EXTENTS = "extents";
+	private static final String PROP_CREATION_DATE = "creationDate";
+	private static final String PROP_REFERENCE_DATE = "referenceDate";
+	private static final String PROP_EXPIRY_DATE = "expiryDate";
+	private static final String PROP_USED = "used";
+	
+	private static final String PROP_RECORDS = "records";
     private static final String PROP_ITEMS = "items";
-    private static final String PROP_MEMBER = "member";
     
     private static final String PROP_LISTDSIRC    = "listdsirc";
     private static final String PROP_SYSREASON    = "sysreason";
     private static final String PROP_SYSMSGLVL1   = "sysmsglvl1";  
     private static final String PROP_SYSMSGLVL2   = "sysmsglvl2";
-
-    private static final String PROP_BLKSZ = "blksz";
-    private static final String PROP_EXTX = "extx";
-    private static final String PROP_USED = "used";
-    private static final String PROP_CDATE = "cdate";
-    private static final String PROP_RDATE = "rdate";
-    private static final String PROP_EDATE = "edate";
-    private static final String PROP_VOL = "vol";
     
     private static final String LOG_DATA_SET = "Data set ";
     private static final String LOG_MEMBER = "Member ";
-    private static final String LOG_LISTING = "listing";
-    private static final String LOG_READING_FROM = "reading from";
-    private static final String LOG_WRITING_TO = "writing to";
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_NOT_PDS = " is not a partitioned data data set";
 
-    private static final Log logger = LogFactory.getLog(ZosmfZosDatasetImpl.class);
+    private static final Log logger = LogFactory.getLog(ResapiZosDatasetImpl.class);
 
-    public ZosmfZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {
-        
+    protected static final List<Integer> VALID_STATUS_CODES = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK,
+                                                                                            HttpStatus.SC_CREATED,
+                                                                                            HttpStatus.SC_NO_CONTENT,
+                                                                                            HttpStatus.SC_BAD_REQUEST,
+                                                                                            HttpStatus.SC_UNAUTHORIZED,
+                                                                                            HttpStatus.SC_FORBIDDEN,
+                                                                                            HttpStatus.SC_NOT_FOUND,
+                                                                                            HttpStatus.SC_INTERNAL_SERVER_ERROR
+                                                                                          	));
+
+	private static final String BINARY_HEADER = "binary";
+
+    public ResapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
         this.image = image;
         splitDSN(dsname);
         
         try {
-            this.zosmfApiProcessor = ZosmfZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
-        } catch (ZosFileManagerException | ZosmfManagerException e) {
+            this.rseapiApiProcessor = RseapiZosFileManagerImpl.rseapiManager.newRseapiRestApiProcessor(this.image, RseapiZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
+        } catch (ZosFileManagerException | RseapiManagerException e) {
             throw new ZosDatasetException(e);
         }
     }
@@ -151,43 +158,32 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         }
         
         JsonObject requestBody = new JsonObject();
-        requestBody = addPropertyWhenSet(requestBody, PROP_VOLSER, this.volser);
-        requestBody = addPropertyWhenSet(requestBody, PROP_UNIT, this.unit);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DSORG, this.dsorg);
-        requestBody = addPropertyWhenSet(requestBody, PROP_ALCUNIT, this.alcunit != null? alcunit.toString().replaceFirst("S$",""): null);
+        requestBody = addPropertyWhenSet(requestBody, PROP_NAME, this.dsname);
+        requestBody = addPropertyWhenSet(requestBody, PROP_VOLUME_SERIAL, this.volser);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DATASET_ORGANIZATION, this.dsorg);
+        requestBody = addPropertyWhenSet(requestBody, PROP_ALLOCATION_UNIT, this.alcunit != null? alcunit.name().replaceFirst("S$",""): null);
         requestBody = addPropertyWhenSet(requestBody, PROP_PRIMARY, this.primary);
         requestBody = addPropertyWhenSet(requestBody, PROP_SECONDARY, this.secondary);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DIRBLK, this.dirblk);
-        requestBody = addPropertyWhenSet(requestBody, PROP_AVGBLK, this.avgblk);
-        requestBody = addPropertyWhenSet(requestBody, PROP_RECFM, this.recfm);
-        requestBody = addPropertyWhenSet(requestBody, PROP_BLKSIZE, this.blksize);
-        requestBody = addPropertyWhenSet(requestBody, PROP_LRECL, this.lrecl);
-        requestBody = addPropertyWhenSet(requestBody, PROP_STORECLASS, this.storeclass);
-        requestBody = addPropertyWhenSet(requestBody, PROP_MGNTCLASS, this.mgntclass);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DATACLASS, this.dataclass);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DSNTYPE, this.dstype != null && this.dstype.equals(DSType.PDSE)? DSType.LIBRARY : this.dstype);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DIRECTORY_BLOCKS, this.dirblk);
+        requestBody = addPropertyWhenSet(requestBody, PROP_AVERAGE_BLOCK, this.avgblk);
+        requestBody = addPropertyWhenSet(requestBody, PROP_RECORD_FORMAT, this.recfm);
+        requestBody = addPropertyWhenSet(requestBody, PROP_BLOCK_SIZE, this.blksize);
+        requestBody = addPropertyWhenSet(requestBody, PROP_RECORD_LENGTH, this.lrecl);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DSN_TYPE, this.dstype != null && this.dstype.equals(DSType.PDSE)? DSType.LIBRARY : this.dstype);
+        requestBody = addPropertyWhenSet(requestBody, PROP_STOR_CLASS, this.storeclass);
+        requestBody = addPropertyWhenSet(requestBody, PROP_MGMT_CLASS, this.mgntclass);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DATA_CLASS, this.dataclass);
         
-        String urlPath = RESTFILES_DATASET_PATH + SLASH  + this.dsname;
-        IZosmfResponse response;
+        IRseapiResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.POST_JSON, urlPath, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
-        } catch (ZosmfException e) {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTFILES_DATASET_PATH, null, requestBody, VALID_STATUS_CODES, this.convert);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
 
-        if (response.getStatusCode() != HttpStatus.SC_CREATED) {            
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to create data set " + quoted(this.dsname) + logOnImage(), e);
-            }
-            
-            logger.trace(responseBody);
-            
-            String displayMessage = buildErrorString("creating", responseBody); 
+        if (response.getStatusCode() != HttpStatus.SC_CREATED) {
+        	// Error case
+            String displayMessage = buildErrorString("Create data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -230,29 +226,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         
-        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname;
-        IZosmfResponse response;
-        try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, null, null, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
-        } catch (ZosmfException e) {
-            throw new ZosDatasetException(e);
-        }
-        
-        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to delete data set " + quoted(this.dsname) + logOnImage(), e);
-            }
-            
-            logger.trace(responseBody);
-            String displayMessage = buildErrorString("deleting", responseBody); 
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
-        }
+        delete(this.dsname);
         
         if (exists()) {
             logger.info(LOG_DATA_SET + quoted(this.dsname) + " not deleted" + logOnImage());
@@ -265,41 +239,37 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean exists() throws ZosDatasetException {
-        Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_MAX_ITEMS.toString(), "1");
-        String urlPath = RESTFILES_DATASET_PATH + "?dslevel=" + this.dsname;
-        IZosmfResponse response;
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname;
+        IRseapiResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
-        } catch (ZosmfException e) {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
+        }
+
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = buildErrorString("List data set", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
         }
         
         JsonObject responseBody;
         try {
             responseBody = response.getJsonContent();
-        } catch (ZosmfException e) {
+        } catch (RseapiException e) {
             throw new ZosDatasetException("Unable to list data set " + quoted(this.dsname) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
-            int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
-            if (returnedRowsValue == 1) {
-                JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
-                JsonObject item = items.get(0).getAsJsonObject();
-                String dsnameValue = item.get(PROP_DSNAME).getAsString();
-                if (this.dsname.equals(dsnameValue)) {
-                    logger.trace(LOG_DATA_SET + quoted(this.dsname) + " exists" + logOnImage());
-                    return true;
-                }
-            }
-        } else {            
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString(LOG_LISTING, responseBody); 
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
+        JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
+        if (items.size() > 0) {
+	        JsonObject item = items.get(0).getAsJsonObject();
+	        String dsnameValue = item.get(PROP_NAME).getAsString();
+	        if (this.dsname.equals(dsnameValue)) {
+	            logger.trace(LOG_DATA_SET + quoted(this.dsname) + " exists" + logOnImage());
+	            return true;
+	        }
         }
     
         logger.trace(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
@@ -317,6 +287,8 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
+    	//TODO
+    	unsupportedOperation();
     	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
@@ -340,6 +312,8 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public byte[] retrieveAsBinary() throws ZosDatasetException {
+    	//TODO
+    	unsupportedOperation();
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
@@ -359,13 +333,13 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
                 if (isPDS()) {
                     savePDSToResultsArchive();
                 } else {
-                    Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
-					String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.dsname);
+                    Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
+					String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.dsname);
                     try {
                     	if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
                     	} else  {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
                     	}
         			} catch (ZosManagerException e) {
         				throw new ZosDatasetException(e);
@@ -381,7 +355,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean isPDS() throws ZosDatasetException {
-        return emptyStringWhenNull(getAttibutes(), PROP_DSORG).startsWith("PO");
+        return emptyStringWhenNull(getAttibutes(), PROP_DATA_SET_ORGANIZATION).startsWith("PO");
     }
 
     @Override
@@ -409,29 +383,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             return;
         }
         
-        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-        IZosmfResponse response;
-        try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, null, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
-        } catch (ZosmfException e) {
-            throw new ZosDatasetException(e);
-        }
-        
-        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to delete member " + memberName + " from data set " + quoted(this.dsname) + logOnImage(), e);
-            }
-            
-            logger.trace(responseBody);
-            String displayMessage = buildErrorString("deleting", responseBody); 
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
-        }
+        delete(joinDSN(memberName));
         
         if (memberExists(memberName)) {
             logger.info(LOG_MEMBER + memberName + " not deleted from data set " + quoted(this.dsname) + logOnImage());
@@ -446,41 +398,48 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
-        Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_MAX_ITEMS.toString(), "1");
-        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + "/member?pattern=" + memberName;
-        IZosmfResponse response;
-        try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, null, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), false);
-        } catch (ZosmfException e) {
-            throw new ZosDatasetException(e);
+        memberList();
+        if (datasetMembers.contains(memberName)) {
+        	logger.trace("Data set member " + quoted(joinDSN(memberName)) + " exists" + logOnImage());
+        	return true;
         }
         
-        JsonObject responseBody;
-        try {
-            responseBody = response.getJsonContent();
-        } catch (ZosmfException e) {
-            throw new ZosDatasetException("Unable to list members of data set " + quoted(this.dsname) + logOnImage(), e);
-        }
-        
-        logger.trace(responseBody);
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
-            int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
-            if (returnedRowsValue == 1) {
-                JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
-                JsonObject item = items.get(0).getAsJsonObject();
-                String memberValue = item.get(PROP_MEMBER).getAsString();
-                if (memberName.equals(memberValue)) {
-                    logger.trace("Data set member " + quoted(joinDSN(memberName)) + " exists" + logOnImage());
-                    return true;
-                }
-            }
-        } else {            
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString(LOG_LISTING, responseBody); 
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
+        //TODO
+        if (false) {
+	        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_MEMBERS;
+	        IRseapiResponse response;
+	        try {
+	            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, false);
+	        } catch (RseapiException e) {
+	            throw new ZosDatasetException(e);
+	        }
+	        
+	        if (response.getStatusCode() != HttpStatus.SC_OK) {
+	        	// Error case
+	            String displayMessage = buildErrorString("List data set members", response); 
+	            logger.error(displayMessage);
+	            throw new ZosDatasetException(displayMessage);
+	        }
+	        
+	        JsonObject responseBody;
+	        try {
+	            responseBody = response.getJsonContent();
+	        } catch (RseapiException e) {
+	            throw new ZosDatasetException("Unable to list members of data " + quoted(this.dsname) + logOnImage(), e);
+	        }
+	        
+	        logger.trace(responseBody);
+	        JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
+	        if (items.size() == 1) {
+	        	JsonElement memberElement = items.get(0);
+	        	if (memberElement != null) {
+	        		String member = memberElement.getAsString();
+	        		if (member.equals(memberName)) {
+	        			logger.trace("Data set member " + quoted(joinDSN(memberName)) + " exists" + logOnImage());
+	                    return true;
+	        		}
+	        	}
+	        }
         }
     
         logger.trace("Data set member " + quoted(joinDSN(memberName)) + LOG_DOES_NOT_EXIST + logOnImage());
@@ -499,6 +458,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException {
+    	unsupportedOperation();
     	Objects.requireNonNull(memberName, "memberName must not be null");
     	Objects.requireNonNull(content, "content must not be null");
         if (!isPDS()) {
@@ -524,6 +484,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public byte[] memberRetrieveAsBinary(@NotNull String memberName) throws ZosDatasetException {
+    	unsupportedOperation();
     	Objects.requireNonNull(memberName, "memberName must not be null");
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
@@ -543,36 +504,37 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         this.datasetMembers = new ArrayList<>();
-        this.memberStart = null;
-        boolean moreRows = true;
-
-        while (moreRows) {
-            String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + SLASH + PROP_MEMBER + (this.memberStart != null ? "?start=" + this.memberStart : "");
-            IZosmfResponse response;
-            try {
-                response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, null, null,
-                        new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), false);
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException(e);
-            }
-            
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to retrieve member list of data set " + quoted(this.dsname) + logOnImage(), e);
-            }
-            
-            logger.trace(responseBody);
-            if (response.getStatusCode() == HttpStatus.SC_OK) {
-                moreRows = getMembers(responseBody);
-            } else {
-                // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-                String displayMessage = buildErrorString(LOG_LISTING, responseBody); 
-                logger.error(displayMessage);
-                throw new ZosDatasetException(displayMessage);
-            }
+        
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + RESTFILES_DATASET_PATH_MEMBERS;
+        IRseapiResponse response;
+        try { //TODO: convert here controls if getJson or getFile is used 
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true); //TODO
+        } catch (RseapiException e) {
+            throw new ZosDatasetException(e);
         }
+        
+        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {
+        	// Error case
+            String displayMessage = buildErrorString("List data set members", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {        
+	        JsonObject responseBody;
+	        try {
+	            responseBody = response.getJsonContent();
+	        } catch (RseapiException e) {
+	            throw new ZosDatasetException("Unable to list members of data " + quoted(this.dsname) + logOnImage(), e);
+	        }
+	        
+	        logger.trace(responseBody);
+	        JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
+	        for (JsonElement member : items) {
+	        	datasetMembers.add(member.getAsString());
+	        }
+        }
+        
         logger.trace("List of members of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
 
         return this.datasetMembers;
@@ -585,14 +547,14 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
+            Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
             artifactPath = artifactPath.resolve(this.dsname);
-			String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+			String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
             try {
             	if (this.dataType.equals(DatasetDataType.TEXT)) {
-            		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+            		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
             	} else  {
-            		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+            		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
             	}
 			} catch (ZosManagerException e) {
 				throw new ZosDatasetException(e);
@@ -605,6 +567,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setDataType(DatasetDataType dataType) {
+    	unsupportedOperation();
         String dType = dataType.toString();
         if ("binary".equals(dType)){
             this.convert = false;
@@ -615,7 +578,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setUnit(String unit) {
-        this.unit = unit;        
+        this.unit = unit;       
     }
 
     @Override
@@ -658,16 +621,19 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void setManagementClass(String managementClass) {
+    	unsupportedOperation();
         this.mgntclass = managementClass;
     }
 
     @Override
     public void setStorageClass(String storageClass) {
+    	unsupportedOperation();
         this.storeclass = storageClass;
     }
 
     @Override
     public void setDataClass(String dataClass) {
+    	unsupportedOperation();
         this.dataclass = dataClass;
     }
 
@@ -688,7 +654,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public String getUnit() {
-        return this.unit;        
+        return this.unit;
     }
 
     @Override
@@ -781,12 +747,13 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         return this.createDate;
     }
 
+    //TODO - use RSI API TSO
     @Override
     public void retrieveAttibutes() throws ZosDatasetException {
-        if (this.zosmfZosDatasetAttributesListdsi == null) {
-            this.zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(this.image);
+        if (this.rseapiZosDatasetAttributesListdsi == null) {
+            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image);
         }
-        JsonObject datasteAttributes = zosmfZosDatasetAttributesListdsi.get(this.dsname);
+        JsonObject datasteAttributes = rseapiZosDatasetAttributesListdsi.get(this.dsname);
         
         int listdsiRc = datasteAttributes.get(PROP_LISTDSIRC).getAsInt();
         JsonElement value;
@@ -825,50 +792,50 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         StringBuilder attributes = new StringBuilder();
         JsonObject jsonObject = getAttibutes();
         attributes.append("Data Set Name=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSNAME));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_NAME));
         attributes.append(COMMA);
         attributes.append("Volume serial=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_VOL));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_VOLUME_SERIAL));
         attributes.append(COMMA);
         attributes.append("Organization=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSORG));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DATA_SET_ORGANIZATION));
         attributes.append(COMMA);
         attributes.append("Record format=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_RECFM));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_RECORD_FORMAT));
         attributes.append(COMMA);
         attributes.append("Record length=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_LRECL));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_RECORD_LENGTH));
         attributes.append(COMMA);
         attributes.append("Block size=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_BLKSZ));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_BLOCK_SIZE));
         attributes.append(COMMA);
         attributes.append("Data set type=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSNTYPE));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_DSN_TYPE));
         attributes.append(COMMA);
         attributes.append("Allocated extents=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_EXTX));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_EXTENTS));
         attributes.append(COMMA);
-        attributes.append("% Utilized=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_USED));
-        attributes.append(COMMA);
-        if (emptyStringWhenNull(jsonObject, PROP_DSORG).startsWith("PO")) {
+//        attributes.append("% Utilized=");
+//        attributes.append(emptyStringWhenNull(jsonObject, PROP_USED));
+//        attributes.append(COMMA);
+        if (emptyStringWhenNull(jsonObject, PROP_DATA_SET_ORGANIZATION).startsWith("PO")) {
             attributes.append("PDS=true");
             attributes.append(COMMA);
-            attributes.append("Number of members=");
-            attributes.append(memberList().size());
-            attributes.append(COMMA);
+//            attributes.append("Number of members=");
+//            attributes.append(memberList().size());
+//            attributes.append(COMMA);
         } else {
             attributes.append("PDS=false");
             attributes.append(COMMA);
         }
         attributes.append("Creation date=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_CDATE));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_CREATION_DATE));
         attributes.append(COMMA);
         attributes.append("Referenced date=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_RDATE));
-        attributes.append(COMMA);
-        attributes.append("Expiration date=");
-        attributes.append(emptyStringWhenNull(jsonObject, PROP_EDATE));
+        attributes.append(emptyStringWhenNull(jsonObject, PROP_REFERENCE_DATE));
+//        attributes.append(COMMA);
+//        attributes.append("Expiration date=");
+//        attributes.append(emptyStringWhenNull(jsonObject, PROP_EDATE));
 
         return attributes.toString();
     }
@@ -878,50 +845,45 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         
-        Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_ATTRIBUTES.toString(), "base");
-        headers.put(ZosmfCustomHeaders.X_IBM_MAX_ITEMS.toString(), "1");
-
-        String urlPath = RESTFILES_DATASET_PATH + "?dslevel=" + this.dsname;
-        IZosmfResponse response;
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname;
+        IRseapiResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
-        } catch (ZosmfException e) {
+        	response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
+        }
+
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = buildErrorString("List data set", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
         }
         
         JsonObject responseBody;
         try {
             responseBody = response.getJsonContent();
-        } catch (ZosmfException e) {
+        } catch (RseapiException e) {
             throw new ZosDatasetException("Unable list to attibutes of data set " + quoted(this.dsname) + logOnImage(), e);
         }
         
         logger.trace(responseBody);
         JsonObject attributes;
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
-            int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
-            if (returnedRowsValue == 1) {
-                JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
-                attributes = items.get(0).getAsJsonObject();
-            } else {
-                throw new ZosDatasetException("Unable to retrieve attibutes of data set " + quoted(this.dsname) + logOnImage());                
+        JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
+        if (items.size() > 0) {
+	        attributes = items.get(0).getAsJsonObject();
+	        String dsnameValue = attributes.get(PROP_NAME).getAsString();
+	        if (this.dsname.equals(dsnameValue)) {
+	        	logger.trace("Attibutes of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());	            
+	            return attributes;                
             }
-        } else {            
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString(LOG_LISTING, responseBody); 
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
         }
-        logger.trace("Attibutes of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
-        
-        return attributes;
+        throw new ZosDatasetException("Unable to retrieve attibutes of data set " + quoted(this.dsname) + logOnImage());
     }
     
     protected void setAttributes(JsonObject datasteAttributes) {
         JsonElement value;
-        value = datasteAttributes.get(PROP_VOLSER);
+        value = datasteAttributes.get(PROP_VOLUME_SERIAL);
         if (value != null) {
             setVolumes(value.getAsString());
         }
@@ -931,12 +893,12 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             this.setUnit(value.getAsString());
         }
         
-        value = datasteAttributes.get(PROP_DSORG);
+        value = datasteAttributes.get(PROP_DATA_SET_ORGANIZATION);
         if (value != null) {
             setDatasetOrganization(DatasetOrganization.valueOfLabel(value.getAsString()));
         }
         
-        value = datasteAttributes.get(PROP_ALCUNIT);
+        value = datasteAttributes.get(PROP_ALLOCATION_UNIT);
         if (value != null) {
             this.alcunit = SpaceUnit.valueOf(value.getAsString() + "S");
         }
@@ -951,41 +913,44 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             this.secondary = value.getAsInt();
         }
         
-        value = datasteAttributes.get(PROP_DIRBLK);
+        value = datasteAttributes.get(PROP_DIRECTORY_BLOCKS);
         if (value != null) {
             this.dirblk = value.getAsInt();
         }
-        value = datasteAttributes.get(PROP_BLKSIZE);
+        value = datasteAttributes.get(PROP_BLOCK_SIZE);
         if (value != null) {
             setBlockSize(value.getAsInt());
         }
     
-        value = datasteAttributes.get(PROP_RECFM);
+        value = datasteAttributes.get(PROP_RECORD_FORMAT);
         if (value != null) {
             setRecordFormat(RecordFormat.valueOfLabel(value.getAsString()));
         }
         
-        value = datasteAttributes.get(PROP_LRECL);
+        value = datasteAttributes.get(PROP_RECORD_LENGTH);
         if (value != null) {
             setRecordlength(value.getAsInt());
         }
         
-        value = datasteAttributes.get(PROP_DATACLASS);
+        value = datasteAttributes.get(PROP_DATA_CLASS);
         if (value != null) {
-            setDataClass(value.getAsString());
+        	this.dataclass = value.getAsString();
+            //TODO setDataClass(value.getAsString());
         }
         
-        value = datasteAttributes.get(PROP_STORECLASS);
+        value = datasteAttributes.get(PROP_STOR_CLASS);
         if (value != null) {
-            setStorageClass(value.getAsString());
+        	this.storeclass = value.getAsString();
+            //TODO setStorageClass(value.getAsString());
         }
         
-        value = datasteAttributes.get(PROP_MGNTCLASS);
+        value = datasteAttributes.get(PROP_MGMT_CLASS);
         if (value != null) {
-            setManagementClass(value.getAsString());
+        	this.mgntclass = value.getAsString();
+            //TODO setManagementClass(value.getAsString());
         }
         
-        value = datasteAttributes.get(PROP_DSNTYPE);
+        value = datasteAttributes.get(PROP_DSN_TYPE);
         if (value != null) {
         	if (value.getAsString().contains(DSType.LIBRARY.toString())) {
         		setDatasetType(DSType.LIBRARY);
@@ -999,22 +964,22 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             this.used = value.getAsInt();
         }
         
-        value = datasteAttributes.get(PROP_EXTX);
+        value = datasteAttributes.get(PROP_EXTENTS);
         if (value != null) {
             this.extents = value.getAsInt();
         }
         
-        value = datasteAttributes.get(PROP_CDATE);
+        value = datasteAttributes.get(PROP_CREATION_DATE);
         if (value != null) {
             this.createDate = value.getAsString();
         }
         
-        value = datasteAttributes.get(PROP_RDATE);
+        value = datasteAttributes.get(PROP_REFERENCE_DATE);
         if (value != null) {
             this.referencedDate = value.getAsString();
         }
         
-        value = datasteAttributes.get(PROP_EDATE);
+        value = datasteAttributes.get(PROP_EXPIRY_DATE);
         if (value != null) {
             this.expirationDate = value.getAsString();
         }
@@ -1023,45 +988,60 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     protected Object retrieve(String memberName) throws ZosDatasetException {
       Map<String, String> headers = new HashMap<>();
       String dType = this.dataType.toString();
-      headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), dType);
-      String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-      IZosmfResponse response;
+      String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_CONTENT;
+      //TODO type ->> /datasets/{dsn}/rawContent
+      IRseapiResponse response;
       if ("binary".equals(dType)) {
             this.convert = false;
         }
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_NOT_FOUND, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
-        } catch (ZosmfException e) {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, VALID_STATUS_CODES, this.convert);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
-  
-        Object content;
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
-            try {
-                content = response.getContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to retrieve content of data set " + quoted(joinDSN(memberName)) + logOnImage(), e);
-            }
-        } else {            
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to retrieve content of data set " + quoted(joinDSN(memberName)) + logOnImage(), e);
-            }
-            logger.trace(responseBody);    
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString(LOG_READING_FROM, responseBody); 
+        
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = buildErrorString("Retrieve content of data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
+        }
+        
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (RseapiException e) {
+            throw new ZosDatasetException("Unable list to attibutes of data set " + quoted(this.dsname) + logOnImage(), e);
+        }
+  
+        Object content = "";
+        JsonElement records = responseBody.get(PROP_RECORDS);
+        if (records != null) {
+        	content = records.getAsString();
         }
     
         logger.trace("Content of data set " + quoted(joinDSN(memberName)) + " retrieved from  image " + this.image.getImageID());
         return content;
     }
 
-    protected byte[] inputStreamToByteArray(InputStream in) throws ZosDatasetException {
+    protected void delete(String name) throws ZosDatasetException {
+	    String urlPath = RESTFILES_DATASET_PATH + SLASH + name;
+	    IRseapiResponse response;
+	    try {
+	        response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.DELETE, urlPath, null, null, VALID_STATUS_CODES, this.convert);
+	    } catch (RseapiException e) {
+	        throw new ZosDatasetException(e);
+	    }
+	    
+	    if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
+	    	// Error case
+	        String displayMessage = buildErrorString("Delete " + name, response); 
+	        logger.error(displayMessage);
+	        throw new ZosDatasetException(displayMessage);
+	    }
+	}
+
+	protected byte[] inputStreamToByteArray(InputStream in) throws ZosDatasetException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = new byte[2048];
         int count;
@@ -1081,28 +1061,21 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
-        Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+        
+        JsonObject requestBody = new JsonObject();
+        requestBody = addPropertyWhenSet(requestBody, PROP_RECORDS, content);
     
-        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-        IZosmfResponse response;
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_CONTENT;
+        IRseapiResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_TEXT, urlPath, headers, content, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), convert);
-        } catch (ZosmfException e) {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, urlPath, null, requestBody, VALID_STATUS_CODES, convert);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
         
-        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage(), e);
-            }
-            logger.trace(responseBody);
-            String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody); 
+        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_CREATED) {
+            // Error case
+            String displayMessage = buildErrorString("Write to data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -1111,20 +1084,20 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     }
 
     protected void savePDSToResultsArchive() throws ZosFileManagerException {
-        Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
+        Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
         artifactPath = artifactPath.resolve(this.dsname);
         try {
-        	ZosmfZosFileManagerImpl.zosManager.createArtifactDirectory(artifactPath);
+        	RseapiZosFileManagerImpl.zosManager.createArtifactDirectory(artifactPath);
             Collection<String> memberList = memberList();
             Iterator<String> memberListIterator = memberList.iterator();
         
         	while (memberListIterator.hasNext()) {
         		String memberName = memberListIterator.next();
-        		String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+        		String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
         		if (this.dataType.equals(DatasetDataType.TEXT)) {
-        			ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+        			RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
         		} else {
-        			ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+        			RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
         		}
             	logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
         	}
@@ -1138,27 +1111,19 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         Map<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+        headers.put(BINARY_HEADER, "true");
     
-        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName);
-        IZosmfResponse response;
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_RAW_CONTENT;
+        IRseapiResponse response;
         try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_BINARY, urlPath, headers, content, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), convert);
-        } catch (ZosmfException e) {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT, urlPath, headers, content, VALID_STATUS_CODES, convert);
+        } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
         
-        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosDatasetException("Unable to write to data set " + quoted(joinDSN(memberName)) + logOnImage(), e);
-            }
-            logger.trace(responseBody);
-            String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody); 
+        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_CREATED) {
+            // Error case
+            String displayMessage = buildErrorString("Write to data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -1193,30 +1158,25 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         return requestBody;
     }
 
-    protected boolean getMembers(JsonObject responseBody) {
-        boolean moreRows = false;
-    
-        int returnedRowsValue = responseBody.get(PROP_RETURNED_ROWS).getAsInt();
-        if (returnedRowsValue > 0) {
-            JsonElement moreRowselement = responseBody.get(PROP_MORE_ROWS);
-            if (moreRowselement != null) {
-                moreRows = moreRowselement.getAsBoolean();
-            } else {
-                moreRows = false;
-            }
-            JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);            
-            for (int i = 0; i < returnedRowsValue; i++) {
-                JsonObject item = items.get(i).getAsJsonObject();
-                if (moreRows && i == returnedRowsValue-1) {
-                    this.memberStart = item.get(PROP_MEMBER).getAsString();
-                }
-                this.datasetMembers.add(item.get(PROP_MEMBER).getAsString());
-            }
-        }
-        return moreRows;
+    protected static String buildErrorString(String action, IRseapiResponse response) {
+    	String message = "";
+    	try {
+    		Object content = response.getContent();
+			if (content != null) {
+				logger.trace(content);
+				if (content instanceof JsonObject) {
+					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
+				} else if (content instanceof String) {
+					message = " response body:\n" + content;
+				}
+			}
+		} catch (RseapiException e) {
+			// NOP
+		}
+        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
     }
-
-    protected String buildErrorString(String action, JsonObject responseBody) { 
+    
+    protected String buildErrorStringDELETE_ME(String action, JsonObject responseBody) { 
         if ("{}".equals(responseBody.toString())) {
             return "Error " + action;
         }   
@@ -1312,7 +1272,12 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         return this.temporary;
     }
 
-    public IZosmfRestApiProcessor getZosmfApiProcessor() {
-        return this.zosmfApiProcessor;
+    public IRseapiRestApiProcessor getRseapiApiProcessor() {
+        return this.rseapiApiProcessor;
+    }
+    
+    //TODO
+    public void unsupportedOperation() throws UnsupportedOperationException {
+    	throw new UnsupportedOperationException("The RSE API Managere does not currently support this method");
     }
 }

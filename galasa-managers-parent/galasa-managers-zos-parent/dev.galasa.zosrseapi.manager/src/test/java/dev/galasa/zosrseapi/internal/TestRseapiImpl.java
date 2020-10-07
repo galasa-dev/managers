@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -24,6 +26,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -52,7 +56,7 @@ import dev.galasa.zosrseapi.internal.properties.ServerImages;
 import dev.galasa.zosrseapi.internal.properties.ServerPort;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServerImages.class, ServerHostname.class, ServerPort.class, Https.class, RequestRetry.class})
+@PrepareForTest({LogFactory.class, ServerImages.class, ServerHostname.class, ServerPort.class, Https.class, RequestRetry.class})
 public class TestRseapiImpl {
     
     private RseapiImpl rseapi;
@@ -101,6 +105,11 @@ public class TestRseapiImpl {
     @Mock
     private ICredentialsToken credentialsTokenMock;
     
+    @Mock
+    private Log logMock;
+    
+    private static String logMessage;
+    
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -134,6 +143,21 @@ public class TestRseapiImpl {
     
     @Before
     public void setup() throws Exception {
+        PowerMockito.mockStatic(LogFactory.class);
+        Mockito.when(LogFactory.getLog(Mockito.any(Class.class))).thenReturn(logMock);
+        Answer<String> answer = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                logMessage = invocation.getArgument(0);
+                System.err.println("Captured Log Message:\n" + logMessage);
+                if (invocation.getArguments().length > 1 && invocation.getArgument(1) instanceof Throwable) {
+                    ((Throwable) invocation.getArgument(1)).printStackTrace();
+                }
+                return null;
+            }
+        };
+        Mockito.doAnswer(answer).when(logMock).debug(Mockito.any());
+        
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
         Mockito.when(zosImageMock.getClusterID()).thenReturn(CLUSTER);
         
@@ -549,5 +573,19 @@ public class TestRseapiImpl {
         exceptionRule.expect(RseapiException.class);
         exceptionRule.expectMessage(EXCEPTION);
         rseapiSpy.setImage();
+    }
+    
+    @Test
+    public void testAddCommonHeaders() {
+    	HashMap<String, String> commonHeaders = new HashMap<>();
+    	logMessage = null;
+    	rseapiSpy.addCommonHeaders();
+    	Assert.assertNull("addCommonHeaders() should not log message", logMessage);
+    	
+    	commonHeaders.put("key", "value");
+    	Whitebox.setInternalState(rseapiSpy, "commonHeaders", commonHeaders);
+    	logMessage = null;
+    	rseapiSpy.addCommonHeaders();
+    	Assert.assertEquals("addCommonHeaders() should log the expected value", "Adding HTTP header: key: value", logMessage);
     }
 }
