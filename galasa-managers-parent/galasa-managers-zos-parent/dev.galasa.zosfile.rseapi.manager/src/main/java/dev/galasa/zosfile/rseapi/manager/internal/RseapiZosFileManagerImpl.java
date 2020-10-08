@@ -59,11 +59,6 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         RseapiZosFileManagerImpl.rseapiManager = rseapiManager;
     }
 
-    protected static IZosUNIXCommandSpi zosUnixCommandManager;
-    public static void setZosUnixCommandCommandManager(IZosUNIXCommandSpi zosUnixCommandManager) {
-        RseapiZosFileManagerImpl.zosUnixCommandManager = zosUnixCommandManager;
-    }
-
     private static final Map<String, RseapiZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
 
     private static final String ZOS_DATASETS = "zOS_Datasets";
@@ -178,10 +173,6 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setRseapiManager(addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class));
         if (rseapiManager == null) {
             throw new ZosFileManagerException("The RSE API Manager is not available");
-        }
-        setZosUnixCommandCommandManager(addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class));
-        if (zosUnixCommandManager == null) {
-            throw new ZosFileManagerException("The zOS UNIX Command Manager is not available");
         }
     }
 

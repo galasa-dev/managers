@@ -25,8 +25,8 @@ import dev.galasa.zosfile.ZosVSAMDatasetException;
  */
 public class RseapiZosFileHandlerImpl implements IZosFileHandler {
 
-    private List<ResapiZosDatasetImpl> zosDatasets = new ArrayList<>();
-    private List<ResapiZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
+    private List<RseapiZosDatasetImpl> zosDatasets = new ArrayList<>();
+    private List<RseapiZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
     private List<RseapiZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();
     private List<RseapiZosVSAMDatasetImpl> zosVsamDatasetsForCleanup = new ArrayList<>();
     private List<RseapiZosUNIXFileImpl> zosUnixFiles = new ArrayList<>();
@@ -43,7 +43,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
 
     @Override
     public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException {
-        ResapiZosDatasetImpl zosDataset = new ResapiZosDatasetImpl(image, dsname);
+        RseapiZosDatasetImpl zosDataset = new RseapiZosDatasetImpl(image, dsname);
         zosDatasets.add(zosDataset);
         return zosDataset;
     }
@@ -69,9 +69,9 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
     }
     
     public void cleanupDatasets(boolean testComplete) throws ZosFileManagerException {
-        Iterator<ResapiZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
+        Iterator<RseapiZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
         while (datasetIterator.hasNext()) {
-            ResapiZosDatasetImpl zosDataset = datasetIterator.next();
+            RseapiZosDatasetImpl zosDataset = datasetIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
                 if (!zosDataset.isTemporary()) {
                     zosDataset.saveToResultsArchive();
@@ -91,9 +91,9 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
     }
     
     protected void cleanupDatasetsTestComplete() throws ZosDatasetException {
-        Iterator<ResapiZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
+        Iterator<RseapiZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
         while (datasetForCleanupIterator.hasNext()) {
-            ResapiZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
+            RseapiZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
             if (zosDataset.created() && zosDataset.exists()) {
                 if (!zosDataset.isTemporary()) {
                     zosDataset.saveToResultsArchive();
