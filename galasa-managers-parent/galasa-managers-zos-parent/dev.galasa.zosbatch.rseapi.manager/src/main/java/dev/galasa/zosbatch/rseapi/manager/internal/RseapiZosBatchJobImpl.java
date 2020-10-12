@@ -179,26 +179,59 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getJobId() {
+    	if (this.jobid == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.jobid != null ? this.jobid : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getOwner() {
+    	if (this.owner == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.owner != null ? this.owner : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getType() {
+    	if (this.type == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.type != null ? this.type : StringUtils.repeat(QUERY, 3));
     }
     
     @Override
     public String getStatus() {
+    	try {
+			updateJobStatus();
+		} catch (ZosBatchException e) {
+			logger.error(e);
+		}
         return (this.status != null ? this.status : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getRetcode() {
+    	if (this.retcode == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.retcode != null ? this.retcode : StringUtils.repeat(QUERY, 4));
     }
 
@@ -426,7 +459,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     public boolean submitted() {
-        return this.jobid != null;
+    	return !getJobId().contains("?");
     }
     
     public boolean isComplete() {
@@ -446,12 +479,12 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     private String jobStatus() {
-        return "JOBID=" + getJobId() + 
+        return "JOBID=" + this.jobid + 
               " JOBNAME=" + this.jobname.getName() + 
-              " OWNER=" + getOwner() + 
-              " TYPE=" + getType() +
-              " STATUS=" + getStatus() + 
-              " RETCODE=" + getRetcode();
+              " OWNER=" + this.owner + 
+              " TYPE=" + this.type +
+              " STATUS=" + this.status + 
+              " RETCODE=" + this.retcode;
     }
 
     protected void setJobPathValues() {
@@ -460,9 +493,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void updateJobStatus() throws ZosBatchException {
-        if (!submitted()) {
-            throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
-        }
         HashMap<String, String> headers = new HashMap<>();
         
         IRseapiResponse response;

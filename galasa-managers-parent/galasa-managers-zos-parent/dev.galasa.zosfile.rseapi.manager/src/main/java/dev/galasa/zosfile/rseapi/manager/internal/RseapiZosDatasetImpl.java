@@ -40,7 +40,7 @@ import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.RseapiManagerException;
 
-public class ResapiZosDatasetImpl implements IZosDataset {
+public class RseapiZosDatasetImpl implements IZosDataset {
     
     private IRseapiRestApiProcessor rseapiApiProcessor;
 
@@ -126,7 +126,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_NOT_PDS = " is not a partitioned data data set";
 
-    private static final Log logger = LogFactory.getLog(ResapiZosDatasetImpl.class);
+    private static final Log logger = LogFactory.getLog(RseapiZosDatasetImpl.class);
 
     protected static final List<Integer> VALID_STATUS_CODES = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK,
                                                                                             HttpStatus.SC_CREATED,
@@ -140,7 +140,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
 
 	private static final String BINARY_HEADER = "binary";
 
-    public ResapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
+    public RseapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
         this.image = image;
         splitDSN(dsname);
         
@@ -751,7 +751,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
     @Override
     public void retrieveAttibutes() throws ZosDatasetException {
         if (this.rseapiZosDatasetAttributesListdsi == null) {
-            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image);
+            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image, this.rseapiApiProcessor);
         }
         JsonObject datasteAttributes = rseapiZosDatasetAttributesListdsi.get(this.dsname);
         
