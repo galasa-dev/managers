@@ -6,8 +6,6 @@
 package dev.galasa.zosfile.rseapi.manager.internal;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -956,8 +954,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         logger.trace("Statements for IDCAMS " + this.idcamsCommand + ":" + this.idcamsInput);
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosVSAMDatasetException(e);
         }           
