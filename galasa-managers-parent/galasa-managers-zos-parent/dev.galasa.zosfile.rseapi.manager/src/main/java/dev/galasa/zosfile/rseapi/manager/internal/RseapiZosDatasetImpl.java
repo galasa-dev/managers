@@ -10,11 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -40,7 +38,7 @@ import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.RseapiManagerException;
 
-public class ResapiZosDatasetImpl implements IZosDataset {
+public class RseapiZosDatasetImpl implements IZosDataset {
     
     private IRseapiRestApiProcessor rseapiApiProcessor;
 
@@ -126,21 +124,11 @@ public class ResapiZosDatasetImpl implements IZosDataset {
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_NOT_PDS = " is not a partitioned data data set";
 
-    private static final Log logger = LogFactory.getLog(ResapiZosDatasetImpl.class);
-
-    protected static final List<Integer> VALID_STATUS_CODES = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK,
-                                                                                            HttpStatus.SC_CREATED,
-                                                                                            HttpStatus.SC_NO_CONTENT,
-                                                                                            HttpStatus.SC_BAD_REQUEST,
-                                                                                            HttpStatus.SC_UNAUTHORIZED,
-                                                                                            HttpStatus.SC_FORBIDDEN,
-                                                                                            HttpStatus.SC_NOT_FOUND,
-                                                                                            HttpStatus.SC_INTERNAL_SERVER_ERROR
-                                                                                          	));
+    private static final Log logger = LogFactory.getLog(RseapiZosDatasetImpl.class);
 
 	private static final String BINARY_HEADER = "binary";
 
-    public ResapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
+    public RseapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
         this.image = image;
         splitDSN(dsname);
         
@@ -176,7 +164,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTFILES_DATASET_PATH, null, requestBody, VALID_STATUS_CODES, this.convert);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTFILES_DATASET_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, this.convert);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -242,7 +230,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname;
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -287,7 +275,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
-    	//TODO
+    	//TODO Remove when 3.2.0.12 is available
     	unsupportedOperation();
     	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
@@ -312,7 +300,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public byte[] retrieveAsBinary() throws ZosDatasetException {
-    	//TODO
+    	//TODO Remove when 3.2.0.12 is available
     	unsupportedOperation();
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
@@ -404,12 +392,12 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         	return true;
         }
         
-        //TODO
+        //TODO - use following rather than memberList() when 3.2.0.12 is available
         if (false) {
 	        String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_MEMBERS;
 	        IRseapiResponse response;
 	        try {
-	            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, false);
+	            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
 	        } catch (RseapiException e) {
 	            throw new ZosDatasetException(e);
 	        }
@@ -507,8 +495,8 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         
         String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + RESTFILES_DATASET_PATH_MEMBERS;
         IRseapiResponse response;
-        try { //TODO: convert here controls if getJson or getFile is used 
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true); //TODO
+        try { //TODO: convert here controls if getJson or getFile is used when 3.2.0.12 is available
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -747,11 +735,11 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         return this.createDate;
     }
 
-    //TODO - use RSI API TSO
+    //TODO - use RSI API TSO when 3.2.0.12 is available
     @Override
     public void retrieveAttibutes() throws ZosDatasetException {
         if (this.rseapiZosDatasetAttributesListdsi == null) {
-            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image);
+            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image, this.rseapiApiProcessor);
         }
         JsonObject datasteAttributes = rseapiZosDatasetAttributesListdsi.get(this.dsname);
         
@@ -815,15 +803,9 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         attributes.append("Allocated extents=");
         attributes.append(emptyStringWhenNull(jsonObject, PROP_EXTENTS));
         attributes.append(COMMA);
-//        attributes.append("% Utilized=");
-//        attributes.append(emptyStringWhenNull(jsonObject, PROP_USED));
-//        attributes.append(COMMA);
         if (emptyStringWhenNull(jsonObject, PROP_DATA_SET_ORGANIZATION).startsWith("PO")) {
             attributes.append("PDS=true");
             attributes.append(COMMA);
-//            attributes.append("Number of members=");
-//            attributes.append(memberList().size());
-//            attributes.append(COMMA);
         } else {
             attributes.append("PDS=false");
             attributes.append(COMMA);
@@ -833,9 +815,6 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         attributes.append(COMMA);
         attributes.append("Referenced date=");
         attributes.append(emptyStringWhenNull(jsonObject, PROP_REFERENCE_DATE));
-//        attributes.append(COMMA);
-//        attributes.append("Expiration date=");
-//        attributes.append(emptyStringWhenNull(jsonObject, PROP_EDATE));
 
         return attributes.toString();
     }
@@ -848,7 +827,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname;
         IRseapiResponse response;
         try {
-        	response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, VALID_STATUS_CODES, true);
+        	response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -935,19 +914,19 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         value = datasteAttributes.get(PROP_DATA_CLASS);
         if (value != null) {
         	this.dataclass = value.getAsString();
-            //TODO setDataClass(value.getAsString());
+            //TODO setDataClass(value.getAsString()); when 3.2.0.12 is available
         }
         
         value = datasteAttributes.get(PROP_STOR_CLASS);
         if (value != null) {
         	this.storeclass = value.getAsString();
-            //TODO setStorageClass(value.getAsString());
+            //TODO setStorageClass(value.getAsString()); when 3.2.0.12 is available
         }
         
         value = datasteAttributes.get(PROP_MGMT_CLASS);
         if (value != null) {
         	this.mgntclass = value.getAsString();
-            //TODO setManagementClass(value.getAsString());
+            //TODO setManagementClass(value.getAsString()); when 3.2.0.12 is available
         }
         
         value = datasteAttributes.get(PROP_DSN_TYPE);
@@ -989,13 +968,13 @@ public class ResapiZosDatasetImpl implements IZosDataset {
       Map<String, String> headers = new HashMap<>();
       String dType = this.dataType.toString();
       String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_CONTENT;
-      //TODO type ->> /datasets/{dsn}/rawContent
+      //TODO type ->> /datasets/{dsn}/rawContent when 3.2.0.12 is available
       IRseapiResponse response;
       if ("binary".equals(dType)) {
             this.convert = false;
         }
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, VALID_STATUS_CODES, this.convert);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, this.convert);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -1028,7 +1007,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
 	    String urlPath = RESTFILES_DATASET_PATH + SLASH + name;
 	    IRseapiResponse response;
 	    try {
-	        response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.DELETE, urlPath, null, null, VALID_STATUS_CODES, this.convert);
+	        response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.DELETE, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, this.convert);
 	    } catch (RseapiException e) {
 	        throw new ZosDatasetException(e);
 	    }
@@ -1068,7 +1047,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_CONTENT;
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, urlPath, null, requestBody, VALID_STATUS_CODES, convert);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, urlPath, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, convert);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -1116,7 +1095,7 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_RAW_CONTENT;
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT, urlPath, headers, content, VALID_STATUS_CODES, convert);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT, urlPath, headers, content, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, convert);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
         }
@@ -1176,55 +1155,6 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
     }
     
-    protected String buildErrorStringDELETE_ME(String action, JsonObject responseBody) { 
-        if ("{}".equals(responseBody.toString())) {
-            return "Error " + action;
-        }   
-        int errorCategory = responseBody.get("category").getAsInt();
-        int errorRc = responseBody.get("rc").getAsInt();
-        int errorReason = responseBody.get("reason").getAsInt();
-        String errorMessage = responseBody.get("message").getAsString();
-        String errorDetails = null;
-        JsonElement element = responseBody.get("details");
-        if (element != null) {
-            if (element.isJsonArray()) {
-                JsonArray elementArray = element.getAsJsonArray();
-                StringBuilder sb = new StringBuilder();
-                for (JsonElement item : elementArray) {
-                    sb.append("\n");
-                    sb.append(item.getAsString());
-                }
-                errorDetails = sb.toString();
-            } else {
-                errorDetails = element.getAsString();
-            }
-        }
-        StringBuilder sb = new StringBuilder(); 
-        sb.append("Error "); 
-        sb.append(action); 
-        sb.append(" data set ");
-        sb.append(quoted(this.dsname));
-        sb.append(", category:");
-        sb.append(errorCategory);
-        sb.append(", rc:");
-        sb.append(errorRc);
-        sb.append(", reason:");
-        sb.append(errorReason);
-        sb.append(", message:");
-        sb.append(errorMessage);
-        if (errorDetails != null) {
-            sb.append("\ndetails:");
-            sb.append(errorDetails);
-        }
-        JsonElement stackElement = responseBody.get("stack");
-        if (stackElement != null) {
-            sb.append("\nstack:\n");
-            sb.append(stackElement.getAsString());
-        }
-        
-        return sb.toString();
-    }
-
     /**
      * Infer the data set and member names from the full DSN
      * @param fullName 
@@ -1276,8 +1206,8 @@ public class ResapiZosDatasetImpl implements IZosDataset {
         return this.rseapiApiProcessor;
     }
     
-    //TODO
+    //TODO Remove when 3.2.0.12 is available
     public void unsupportedOperation() throws UnsupportedOperationException {
-    	throw new UnsupportedOperationException("The RSE API Managere does not currently support this method");
+    	throw new UnsupportedOperationException("The RSE API Manager does not currently support this method");
     }
 }

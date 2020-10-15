@@ -6,8 +6,6 @@
 package dev.galasa.zosfile.rseapi.manager.internal;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,7 +38,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
     private IRseapiRestApiProcessor rseapiApiProcessor;
     private RseapiZosFileHandlerImpl zosFileHandler;
 
-    private ResapiZosDatasetImpl zosDataset;
+    private RseapiZosDatasetImpl zosDataset;
 
     // zOS Image
     private IZosImage image;
@@ -191,7 +189,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             this.name = dsname;
             this.dataName = name + LLQ_DATA;
             this.indexName = name + LLQ_INDEX;
-            this.zosDataset = (ResapiZosDatasetImpl) this.zosFileHandler.newDataset(this.name, this.image);
+            this.zosDataset = (RseapiZosDatasetImpl) this.zosFileHandler.newDataset(this.name, this.image);
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException(e);
         }
@@ -270,7 +268,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     @Override
     public void storeText(String content) throws ZosVSAMDatasetException {
-        ResapiZosDatasetImpl fromDataset = createReproDataset(content);
+        RseapiZosDatasetImpl fromDataset = createReproDataset(content);
         store(fromDataset);
         try {
             fromDataset.delete();
@@ -281,7 +279,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     @Override
     public void storeBinary(byte[] content) throws ZosVSAMDatasetException {
-        ResapiZosDatasetImpl fromDataset = createReproDataset(content);
+        RseapiZosDatasetImpl fromDataset = createReproDataset(content);
         store(fromDataset);
         try {
             fromDataset.delete();
@@ -320,7 +318,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
 
-        ResapiZosDatasetImpl toDataset = createReproDataset(null);
+        RseapiZosDatasetImpl toDataset = createReproDataset(null);
         
         JsonArray amsInput = new JsonArray();
         String[] items = getReproToCommand(toDataset.getName()).split("\n");
@@ -352,7 +350,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + LOG_DOES_NOT_EXIST + logOnImage());
         }
 
-        ResapiZosDatasetImpl toDataset = createReproDataset(null);
+        RseapiZosDatasetImpl toDataset = createReproDataset(null);
         
         JsonArray amsInput = new JsonArray();
         String[] items = getReproToCommand(toDataset.getName()).split("\n");
@@ -840,7 +838,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         return getListcatOutput();
     }
 
-    protected ResapiZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
+    protected RseapiZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;
         try {
             reproDsname = RseapiZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
@@ -848,9 +846,9 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             throw new ZosVSAMDatasetException(e);
         }
     
-        ResapiZosDatasetImpl reproDataset = null;
+        RseapiZosDatasetImpl reproDataset = null;
         try {
-            reproDataset = (ResapiZosDatasetImpl) this.zosFileHandler.newDataset(reproDsname, this.image);
+            reproDataset = (RseapiZosDatasetImpl) this.zosFileHandler.newDataset(reproDsname, this.image);
             reproDataset.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
             reproDataset.setRecordFormat(RecordFormat.VARIABLE_BLOCKED);
             int recordLength = this.maxRecordSize == 0 ? Integer.valueOf(getValueFromListcat("MAXLRECL")) + 4 : this.maxRecordSize + 4;
@@ -956,8 +954,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         logger.trace("Statements for IDCAMS " + this.idcamsCommand + ":" + this.idcamsInput);
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody,
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.PUT_JSON, RESTFILES_AMS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosVSAMDatasetException(e);
         }           

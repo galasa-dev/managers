@@ -682,8 +682,6 @@ public class Screen {
             screenSB.append(screenString.substring(i, i + this.columns));
             screenSB.append('\n');
         }
-        screenSB.append(reportOperator());
-        screenSB.append("\n");
         return screenSB.toString();
     }
 

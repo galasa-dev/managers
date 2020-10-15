@@ -385,12 +385,14 @@ public class TestZosmfZosDatasetImpl {
     public void testRetrieveAsText() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
         PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
+        PowerMockito.doReturn(new ByteArrayInputStream(CONTENT.getBytes())).when(zosDatasetSpy).retrieve(Mockito.any());
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).retrieve(Mockito.any());
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
         PowerMockito.doReturn(new ByteArrayInputStream(CONTENT.getBytes())).when(zosDatasetSpy).retrieve(Mockito.any());
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
-        
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
@@ -403,9 +405,14 @@ public class TestZosmfZosDatasetImpl {
     @Test
     public void testRetrieveAsBinary() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
+        PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
+
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
+
         PowerMockito.doReturn(new ByteArrayInputStream(CONTENT.getBytes())).when(zosDatasetSpy).retrieve(Mockito.any());
-        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
-        
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());        
         Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
@@ -754,8 +761,14 @@ public class TestZosmfZosDatasetImpl {
     @Test
     public void testMemberRetrieveAsText() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());
-        
+        PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());        
+        Assert.assertEquals("memberRetrieveText() should return the supplied value", CONTENT, zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
+
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("memberRetrieveText() should return the supplied value", CONTENT, zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
+
+        PowerMockito.doReturn(new ByteArrayInputStream(CONTENT.getBytes())).when(zosDatasetSpy).retrieve(Mockito.any());
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
         Assert.assertEquals("memberRetrieveText() should return the supplied value", CONTENT, zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
@@ -778,9 +791,15 @@ public class TestZosmfZosDatasetImpl {
 
     @Test
     public void testMemberRetrieveAsBinary() throws ZosDatasetException {
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS(); 
+        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
+        PowerMockito.doReturn(CONTENT).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("memberRetrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME)));
+        
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());       
         PowerMockito.doReturn(new ByteArrayInputStream(CONTENT.getBytes())).when(zosDatasetSpy).retrieve(Mockito.any());
+        Assert.assertEquals("memberRetrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME)));
+        
+        PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).retrieve(Mockito.any());
         Assert.assertEquals("memberRetrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME)));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
@@ -1245,6 +1264,9 @@ public class TestZosmfZosDatasetImpl {
         jsonObject.addProperty("cdate", "CDATE");
         jsonObject.addProperty("rdate", "RDATE");
         jsonObject.addProperty("edate", "EDATE");
+        jsonObject.addProperty("dataclass", "DATACLASS");
+        jsonObject.addProperty("storeclass", "STORECLASS");
+        jsonObject.addProperty("mgntclass", "MGNTCLASS");
         zosDatasetSpy.setAttributes(jsonObject);
 
         Assert.assertEquals("setAttributes() should set supplied value", "VOLSER", zosDatasetSpy.getVolumes());
@@ -1263,6 +1285,13 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("setAttributes() should set supplied value", "CDATE", zosDatasetSpy.getCreateDate());
         Assert.assertEquals("setAttributes() should set supplied value", "RDATE", zosDatasetSpy.getReferencedDate());
         Assert.assertEquals("setAttributes() should set supplied value", "EDATE", zosDatasetSpy.getExpirationDate());
+        Assert.assertEquals("setAttributes() should set supplied value", "DATACLASS", zosDatasetSpy.getDataClass());
+        Assert.assertEquals("setAttributes() should set supplied value", "STORECLASS", zosDatasetSpy.getStorageClass());
+        Assert.assertEquals("setAttributes() should set supplied value", "MGNTCLASS", zosDatasetSpy.getManagementClass());
+        
+        jsonObject.addProperty("dsntype", "DATA_LIBRARY");
+        zosDatasetSpy.setAttributes(jsonObject);
+        Assert.assertEquals("setAttributes() should set supplied value", DSType.LIBRARY, zosDatasetSpy.getDatasetType());
     }
     @Test
     public void testInputStreamToByteArray() throws ZosDatasetException, IOException {

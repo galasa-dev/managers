@@ -15,29 +15,30 @@ import java.time.format.DateTimeFormatter;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zosfile.IZosDataset.DSType;
 import dev.galasa.zosfile.IZosDataset.DatasetOrganization;
 import dev.galasa.zosfile.IZosDataset.RecordFormat;
 import dev.galasa.zosfile.IZosDataset.SpaceUnit;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
-import dev.galasa.zosunixcommand.IZosUNIXCommand;
-import dev.galasa.zosunixcommand.ZosUNIXCommandException;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
+import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
+import dev.galasa.zosrseapi.IRseapiResponse;
+import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
 
 public class RseapiZosDatasetAttributesListdsi {
     
     private RseapiZosFileHandlerImpl zosFileHandler;
-    private IZosUNIXCommand unixCommand;
     private IZosImage image;
+	private IRseapiRestApiProcessor rseapiApiProcessor;
     private String execDatasetName;
-    private ResapiZosDatasetImpl execDataset;
+    private RseapiZosDatasetImpl execDataset;
     private boolean initialised;
     
     private static final String LISTDSI_EXEC_NAME = "LISTDSI";
@@ -98,23 +99,27 @@ public class RseapiZosDatasetAttributesListdsi {
     private static final String PROP_REFERENCE_DATE = "referenceDate";
     private static final String PROP_EXPIRY_DATE = "expiryDate";
     
+    private static final String PROP_INVOCATION = "invocation";
+    private static final String PROP_PATH = "path";
+    private static final String PROP_OUTPUT = "output";
+    private static final String PROP_STDOUT = "stdout";
+    
+	private static final String RESTUNIXCOMMANDS_PATH = "/rseapi/api/v1/unixcommands";
+    
     private static final Log logger = LogFactory.getLog(RseapiZosDatasetAttributesListdsi.class);
     
-    public RseapiZosDatasetAttributesListdsi(IZosImage image) {
+    public RseapiZosDatasetAttributesListdsi(IZosImage image, IRseapiRestApiProcessor rseapiApiProcessor) {
         this.image = image;
+        this.rseapiApiProcessor = rseapiApiProcessor;
     }
     
     protected void initialise() throws ZosDatasetException {
         try {
-            if (RseapiZosFileManagerImpl.zosUnixCommandManager == null) {
-                throw new ZosDatasetException("RseapiZosFileManagerImpl.zosUnixCommandManager is null");
-            }
-            this.unixCommand = RseapiZosFileManagerImpl.zosUnixCommandManager.getZosUNIXCommand(image);
             this.zosFileHandler = (RseapiZosFileHandlerImpl) RseapiZosFileManagerImpl.newZosFileHandler();
             this.execDatasetName = RseapiZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + RseapiZosFileManagerImpl.getRunId() + ".EXEC";
             createExecDataset();
             initialised = true;
-        } catch (ZosFileManagerException | ZosUNIXCommandManagerException e) {
+        } catch (ZosFileManagerException e) {
             throw new ZosDatasetException("Unable to create LISTDSI EXEC command", e);
         }
     }
@@ -317,25 +322,57 @@ public class RseapiZosDatasetAttributesListdsi {
 
     protected JsonObject execListdsi(String dsname) throws ZosDatasetException {
         String command = "tsocmd \"EXEC '" + execDatasetName + "(" + LISTDSI_EXEC_NAME + ")' '" + dsname + "'\" 2>/dev/null;echo RC=$?";
-        String tsocmdRc;
+        IRseapiResponse response;
         try {
-            tsocmdRc = this.unixCommand.issueCommand(command);
-        } catch (ZosUNIXCommandException e) {
-            throw new ZosDatasetException("Problem issuing zOS UNIX command", e);
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty(PROP_INVOCATION, command);
+            requestBody.addProperty(PROP_PATH, "/usr/bin");
+			response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTUNIXCOMMANDS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
+        } catch (RseapiException e) {
+            throw new ZosDatasetException(e);
         }
-        if (!tsocmdRc.startsWith("RC=0")) {
-            throw new ZosDatasetException("Unable to get data set attibutes: " + tsocmdRc);
+
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = RseapiZosDatasetImpl.buildErrorString("zOS UNIX command", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (RseapiException e) {
+            throw new ZosDatasetException("Unable to get data set attibutes", e);
+        }
+        
+        logger.trace(responseBody);
+        if (!getExitRc(responseBody).equals("RC=0")) {
+        	String displayMessage = "Unable to get data set attibutes. Response body:\n" + responseBody;
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
         }
         String json = execDataset.memberRetrieveAsText("JSON");
         logger.debug("LISTDSI JSON:\n" + json);
         return new JsonParser().parse(json).getAsJsonObject();
     }
 
-    protected void createExecDataset() throws ZosDatasetException {
-        this.execDataset = (ResapiZosDatasetImpl) this.zosFileHandler.newDataset(this.execDatasetName, this.image);
+    protected String getExitRc(JsonObject responseBody) {
+    	String exitRc = "UNKNOWN";
+    	JsonObject output = responseBody.getAsJsonObject(PROP_OUTPUT);
+    	if (output !=  null ) {
+			if (output.get(PROP_STDOUT) != null) {
+				exitRc = output.get(PROP_STDOUT).getAsString();
+			}
+    	}
+    	return exitRc;
+	}
+
+	protected void createExecDataset() throws ZosDatasetException {
+        this.execDataset = (RseapiZosDatasetImpl) this.zosFileHandler.newDataset(this.execDatasetName, this.image);
         if (!this.execDataset.exists()) {
             execDataset.setDatasetOrganization(DatasetOrganization.PARTITIONED);
-            //TODO
+            //TODO Enabled in when 3.2.0.13
 //          execDataset.setDatasetType(DSType.LIBRARY);
             execDataset.setDirectoryBlocks(1);
             execDataset.setRecordFormat(RecordFormat.VARIABLE_BLOCKED);
