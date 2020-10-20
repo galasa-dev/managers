@@ -320,6 +320,7 @@ public class RseapiZosDatasetAttributesListdsi {
         return date;
     }
 
+    //TODO - use RSI API TSO when 3.2.0.12 is available
     protected JsonObject execListdsi(String dsname) throws ZosDatasetException {
         String command = "tsocmd \"EXEC '" + execDatasetName + "(" + LISTDSI_EXEC_NAME + ")' '" + dsname + "'\" 2>/dev/null;echo RC=$?";
         IRseapiResponse response;

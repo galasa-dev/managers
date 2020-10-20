@@ -27,6 +27,7 @@ import dev.galasa.zosfile.IZosDataset.SpaceUnit;
 import dev.galasa.zosfile.IZosVSAMDataset;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
 import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
 import dev.galasa.zosrseapi.IRseapiResponse;
@@ -894,35 +895,6 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             
     }
 
-//    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
-//        Path artifactPath;
-//        try {
-//            artifactPath = RseapiZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
-//            String lastElement = artifactPathElements[artifactPathElements.length-1];
-//            for (String artifactPathElement : artifactPathElements) {
-//                if (!lastElement.equals(artifactPathElement)) {
-//                    artifactPath = artifactPath.resolve(artifactPathElement);
-//                }
-//            }
-//            String uniqueId = lastElement;
-//            if (Files.exists(artifactPath.resolve(lastElement))) {
-//                uniqueId = lastElement + "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
-//            }
-//            artifactPath = artifactPath.resolve(uniqueId);
-//            Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-//            if (content instanceof String) {
-//                Files.write(artifactPath, ((String) content).getBytes()); 
-//            } else if (content instanceof byte[]) {
-//                Files.write(artifactPath, (byte[]) content);
-//            } else {
-//                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
-//            }
-//        } catch (IOException e) {
-//            throw new ZosFileManagerException("Unable to store artifact", e);
-//        }
-//        return artifactPath.toString();
-//    }
-
     protected void setIdcamsOutput(JsonObject responseBody) {
         StringBuilder sb = new StringBuilder();
         JsonElement outputElement = responseBody.get("output");
@@ -973,7 +945,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
             }
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString(idcamsCommand, responseBody); 
+            String displayMessage = buildErrorString_DELETE_ME(idcamsCommand, responseBody); 
             throw new ZosVSAMDatasetException(displayMessage);
         }
     }
@@ -1079,7 +1051,7 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         return " on image " + this.image.getImageID();
     }
 
-    String buildErrorString(String action, JsonObject responseBody) {    
+    String buildErrorString_DELETE_ME(String action, JsonObject responseBody) {    
         int errorCategory = responseBody.get("category").getAsInt();
         int errorRc = responseBody.get("rc").getAsInt();
         int errorReason = responseBody.get("reason").getAsInt();
@@ -1126,6 +1098,24 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         return sb.toString();
     }
 
+    protected String buildErrorString(String action, IRseapiResponse response) {
+    	String message = "";
+    	try {
+    		Object content = response.getContent();
+			if (content != null) {
+				logger.trace(content);
+				if (content instanceof JsonObject) {
+					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
+				} else if (content instanceof String) {
+					message = " response body:\n" + content;
+				}
+			}
+		} catch (RseapiException e) {
+			// NOP
+		}
+        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
+    }
+
     @Override
     public String toString() {
         return this.name;
@@ -1137,6 +1127,62 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
     
     public boolean retainToTestEnd() {
         return this.retainToTestEnd;
+    }
+    
+    protected String execUnixCommand(String command) throws ZosUNIXFileException {
+		String RESTUNIXCOMMANDS_PATH = "/rseapi/api/v1/unixcommands";
+        String PROP_INVOCATION = "invocation";
+        String PROP_PATH = "path";
+        String PROP_OUTPUT = "output";
+        String PROP_STDOUT = "stdout";
+        String PROP_EXIT_CODE = "exit code";
+        
+        IRseapiResponse response;
+        try {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty(PROP_INVOCATION, command);
+            requestBody.addProperty(PROP_PATH, "/usr/bin");
+			response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTUNIXCOMMANDS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
+        } catch (RseapiException e) {
+            throw new ZosUNIXFileException(e);
+        }
+
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = buildErrorString("zOS UNIX command", response); 
+            logger.error(displayMessage);
+            throw new ZosUNIXFileException(displayMessage);
+        }
+        
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (RseapiException e) {
+            throw new ZosUNIXFileException("Unable to get UNIX command response", e);
+        }
+        
+        logger.trace(responseBody);
+        JsonObject output = null;
+		String stdout = "";
+		int exitCode = Integer.MIN_VALUE;
+    	
+		output = responseBody.getAsJsonObject(PROP_OUTPUT);
+    	if (output !=  null ) {
+			if (output.get(PROP_STDOUT) != null) {
+				stdout = output.get(PROP_STDOUT).getAsString();
+			}
+    	}
+		if (responseBody.get(PROP_EXIT_CODE) != null) {
+			exitCode = responseBody.get(PROP_EXIT_CODE).getAsInt();
+		}
+    	
+    	
+        if (exitCode != 0) {
+        	String displayMessage = "Unix command failed. Response body:\n" + responseBody;
+            logger.error(displayMessage);
+            throw new ZosUNIXFileException(displayMessage);
+        }
+        return stdout;
     }
     
     public void unsupportedOperation() throws UnsupportedOperationException {
