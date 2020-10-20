@@ -37,7 +37,6 @@ import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
 import dev.galasa.zosrseapi.spi.IRseapiManagerSpi;
-import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 /**
  * zOS File Manager implemented using RSE API
@@ -184,8 +183,7 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi ||
-                otherManager instanceof IRseapiManagerSpi ||
-                otherManager instanceof IZosUNIXCommandSpi;
+                otherManager instanceof IRseapiManagerSpi;
     }
 
     /*
