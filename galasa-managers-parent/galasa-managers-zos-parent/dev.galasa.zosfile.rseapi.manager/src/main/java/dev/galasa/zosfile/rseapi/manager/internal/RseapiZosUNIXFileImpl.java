@@ -191,7 +191,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         	requestBody = content;
         	headers.put(HEADER_CONVERT, "false");
         	//TODO Remove when 3.2.0.12 is available
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
+        	throw new ZosUNIXFileException("The RSE API Manager does not currently binary files");
         }        
     
         IRseapiResponse response;
@@ -445,7 +445,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         if (getDataType().equals(UNIXFileDataType.BINARY)) {
         	urlPath = urlPath + RESTFILES_FILE_PATH_RAW_CONTENT;
         	//TODO Remove when 3.2.0.12 is available
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
+        	throw new ZosUNIXFileException("The RSE API Manager does not currently binary files");
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_CONVERT, String.valueOf(getDataType().equals(UNIXFileDataType.TEXT)));

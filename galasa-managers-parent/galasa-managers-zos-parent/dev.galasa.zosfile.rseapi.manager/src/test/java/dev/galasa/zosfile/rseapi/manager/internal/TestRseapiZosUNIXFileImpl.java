@@ -231,7 +231,7 @@ public class TestRseapiZosUNIXFileImpl {
 
         zosUNIXFileSpy.setDataType(UNIXFileDataType.BINARY);
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expect(ZosUNIXFileException.class);
         exceptionRule.expectMessage("The RSE API Manager does not currently binary files");
         zosUNIXFileSpy.store(CONTENT);
 //        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
@@ -597,7 +597,7 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
         
         PowerMockito.doReturn(UNIXFileDataType.BINARY).when(zosUNIXFileSpy).getDataType();
-        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expect(ZosUNIXFileException.class);
         exceptionRule.expectMessage("The RSE API Manager does not currently binary files");        
         zosUNIXFileSpy.retrieve(UNIX_PATH);
     }

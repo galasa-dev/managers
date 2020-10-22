@@ -799,17 +799,17 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     @Override
     public String getDeleteCommand() throws ZosVSAMDatasetException {
-        return "DELETE -\n  " + this.name + " -\n  PURGE";
+        return "DELETE -\n  '" + this.name + "' -\n  PURGE";
     }
 
     @Override
     public String getReproToCommand(String outDatasetName) {
-        return "REPRO -\n  INDATASET(" + this.name + ") -\n  OUTDATASET(" + outDatasetName + ")";
+        return "REPRO -\n  INDATASET('" + this.name + "') -\n  OUTDATASET('" + outDatasetName + "')";
     }
 
     @Override
     public String getReproFromCommand(String inDatasetName) {
-        return "REPRO -\n  INDATASET(" + inDatasetName + ") -\n  OUTDATASET(" + this.name + ")";
+        return "REPRO -\n  INDATASET('" + inDatasetName + "') -\n  OUTDATASET('" + this.name + "')";
     }
 
     @Override
@@ -895,35 +895,6 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
             
     }
 
-//    protected String storeArtifact(Object content, String... artifactPathElements) throws ZosFileManagerException {
-//        Path artifactPath;
-//        try {
-//            artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
-//            String lastElement = artifactPathElements[artifactPathElements.length-1];
-//            for (String artifactPathElement : artifactPathElements) {
-//                if (!lastElement.equals(artifactPathElement)) {
-//                    artifactPath = artifactPath.resolve(artifactPathElement);
-//                }
-//            }
-//            String uniqueId = lastElement;
-//            if (Files.exists(artifactPath.resolve(lastElement))) {
-//                uniqueId = lastElement + "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
-//            }
-//            artifactPath = artifactPath.resolve(uniqueId);
-//            Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
-//            if (content instanceof String) {
-//                Files.write(artifactPath, ((String) content).getBytes()); 
-//            } else if (content instanceof byte[]) {
-//                Files.write(artifactPath, (byte[]) content);
-//            } else {
-//                throw new ZosFileManagerException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
-//            }
-//        } catch (IOException e) {
-//            throw new ZosFileManagerException("Unable to store artifact", e);
-//        }
-//        return artifactPath.toString();
-//    }
-
     protected void setIdcamsOutput(JsonObject responseBody) {
         StringBuilder sb = new StringBuilder();
         JsonElement outputElement = responseBody.get("output");
@@ -970,8 +941,14 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         logger.trace(responseBody);
         setIdcamsOutput(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
-            if (this.idcamsRc != 0) {
-                logger.warn("WARNING: IDCAMS RC=" + this.idcamsRc);
+            if (this.idcamsRc > 0) {
+            	if (this.idcamsRc > 4) {
+            		String displayMessage = "IDCAMS processing failed: RC=" + this.idcamsRc + "\n" + this.idcamsOutput;
+            		logger.error(displayMessage);
+            		throw new ZosVSAMDatasetException(displayMessage);
+            	} else {
+            		logger.warn("WARNING: IDCAMS RC=" + this.idcamsRc);
+            	}
             }
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
@@ -1070,7 +1047,7 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     protected String getListcatCommand() {
-        return "LISTCAT -\n  ENTRY (" + this.name + ") ALL";
+        return "LISTCAT -\n  ENTRY ('" + this.name + "') ALL";
     }
 
     protected String quoted(String name) {

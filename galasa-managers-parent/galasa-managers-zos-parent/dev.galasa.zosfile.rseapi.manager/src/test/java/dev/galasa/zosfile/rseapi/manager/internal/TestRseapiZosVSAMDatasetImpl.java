@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.zosfile.zosmf.manager.internal;
+package dev.galasa.zosfile.rseapi.manager.internal;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +30,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import dev.galasa.zos.IZosImage;
@@ -51,20 +50,20 @@ import dev.galasa.zosfile.IZosVSAMDataset.WriteCheckOption;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
-import dev.galasa.zosmf.IZosmfResponse;
-import dev.galasa.zosmf.IZosmfRestApiProcessor;
-import dev.galasa.zosmf.ZosmfException;
-import dev.galasa.zosmf.ZosmfManagerException;
-import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
-import dev.galasa.zosmf.internal.ZosmfManagerImpl;
+import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
+import dev.galasa.zosrseapi.IRseapiResponse;
+import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
+import dev.galasa.zosrseapi.RseapiManagerException;
+import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class})
-public class TestZosmfZosVSAMDatasetImpl {
+public class TestRseapiZosVSAMDatasetImpl {
     
-    private ZosmfZosVSAMDatasetImpl zosVSAMDataset;
+    private RseapiZosVSAMDatasetImpl zosVSAMDataset;
     
-    private ZosmfZosVSAMDatasetImpl zosVSAMDatasetSpy;
+    private RseapiZosVSAMDatasetImpl zosVSAMDatasetSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -73,22 +72,22 @@ public class TestZosmfZosVSAMDatasetImpl {
     private ZosManagerImpl zosManagerMock;
     
     @Mock
-    private ZosmfManagerImpl zosmfManagerMock;
+    private RseapiManagerImpl rseapiManagerMock;
     
     @Mock
-    private ZosmfZosFileHandlerImpl zosFileHandlerMock;
+    private RseapiZosFileHandlerImpl zosFileHandlerMock;
     
     @Mock
-    private ZosmfZosDatasetImpl zosDatasetMock;
+    private RseapiZosDatasetImpl zosDatasetMock;
     
     @Mock
-    private ZosmfZosDatasetImpl reproDatasetMock;
+    private RseapiZosDatasetImpl reproDatasetMock;
     
     @Mock
-    private IZosmfRestApiProcessor zosmfApiProcessorMock;
+    private IRseapiRestApiProcessor rseapiApiProcessorMock;
     
     @Mock
-    private IZosmfResponse zosmfResponseMock;
+    private IRseapiResponse rseapiResponseMock;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -97,6 +96,8 @@ public class TestZosmfZosVSAMDatasetImpl {
     private Log logMock;
     
     private static String logMessage;
+    
+    private static int idcamsRc;
 
     private static final String VSAM_DATASET_NAME = "VSAM.DATA.SET.NAME";
 
@@ -137,29 +138,29 @@ public class TestZosmfZosVSAMDatasetImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
         
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
+        RseapiZosFileManagerImpl.setZosManager(zosManagerMock);
         
-        PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        ZosmfZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
+        PowerMockito.doReturn(rseapiApiProcessorMock).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
+        RseapiZosFileManagerImpl.setRseapiManager(rseapiManagerMock);
         
-        zosVSAMDataset = new ZosmfZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
+        zosVSAMDataset = new RseapiZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
         zosVSAMDatasetSpy = Mockito.spy(zosVSAMDataset);
     }
     
     @Test
-    @PrepareForTest({LogFactory.class, ZosmfZosFileManagerImpl.class})
-    public void testConstructorException() throws ZosmfManagerException, ZosFileManagerException {
-    	PowerMockito.mockStatic(ZosmfZosFileManagerImpl.class);
-        Mockito.when(ZosmfZosFileManagerImpl.newZosFileHandler()).thenReturn(zosFileHandlerMock);
+    @PrepareForTest({LogFactory.class, RseapiZosFileManagerImpl.class})
+    public void testConstructorException() throws RseapiManagerException, ZosFileManagerException {
+    	PowerMockito.mockStatic(RseapiZosFileManagerImpl.class);
+        Mockito.when(RseapiZosFileManagerImpl.newZosFileHandler()).thenReturn(zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException(EXCEPTION));
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage(EXCEPTION);
-        new ZosmfZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
+        new RseapiZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
     }
     
     @Test
-    public void testCreate() throws ZosVSAMDatasetException, ZosmfException {
+    public void testCreate() throws ZosVSAMDatasetException, RseapiException {
         PowerMockito.doReturn(false).doReturn(true).doReturn(false).doReturn(true).doReturn(false).doReturn(false).when(zosVSAMDatasetSpy).exists();
         PowerMockito.doReturn(IDCAMS_COMMAND).when(zosVSAMDatasetSpy).getDefineCommand();
         PowerMockito.doNothing().when(zosVSAMDatasetSpy).idcamsRequest(Mockito.any());
@@ -185,7 +186,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     }
     
     @Test
-    public void testDelete() throws ZosVSAMDatasetException, ZosmfException {
+    public void testDelete() throws ZosVSAMDatasetException, RseapiException {
         PowerMockito.doReturn(true).doReturn(false).doReturn(true).doReturn(true).doReturn(false).when(zosVSAMDatasetSpy).exists();
         PowerMockito.doReturn(IDCAMS_COMMAND).when(zosVSAMDatasetSpy).getDeleteCommand();
         PowerMockito.doNothing().when(zosVSAMDatasetSpy).idcamsRequest(Mockito.any());
@@ -386,8 +387,8 @@ public class TestZosmfZosVSAMDatasetImpl {
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
-        ZosmfZosFileManagerImpl.setVsamDatasetArtifactRoot(newMockedPath(false));
-        ZosmfZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testMethod");
+        RseapiZosFileManagerImpl.setVsamDatasetArtifactRoot(newMockedPath(false));
+        RseapiZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testMethod");
         PowerMockito.doReturn(CONTENT).when(zosVSAMDatasetSpy).retrieveAsText();
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosVSAMDatasetSpy).retrieveAsBinary();
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
@@ -934,7 +935,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDataset() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(RseapiZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("CYLINDER").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-TYPE"));
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("MAXLRECL"));
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-PRI"));
@@ -958,7 +959,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException1() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));       
+        Mockito.when(RseapiZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));       
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage(EXCEPTION);
         zosVSAMDatasetSpy.createReproDataset(CONTENT);
@@ -966,7 +967,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException2() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(RseapiZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("0").doReturn("CYLINDER").doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         PowerMockito.doReturn(reproDatasetMock).when(zosFileHandlerMock).newDataset(Mockito.any(), Mockito.any());
@@ -977,7 +978,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException3() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(RseapiZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("0").doReturn("CYLINDER").doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException());
@@ -1002,77 +1003,133 @@ public class TestZosmfZosVSAMDatasetImpl {
     }
     
     @Test
-    public void testSetIdcamsOutput() {
+    public void testParseOutput() throws ZosVSAMDatasetException {
+        PowerMockito.doReturn(0).when(zosVSAMDatasetSpy).setIdcamsRc();
         Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", "");        
         JsonObject jsonObject =  new JsonObject();
-        zosVSAMDatasetSpy.setIdcamsOutput(jsonObject);
+        jsonObject.addProperty("exit code", 0);
+        JsonObject output = new JsonObject();
+        output.addProperty("stdout", IDCAMS_COMMAND);
+        jsonObject.add("output", output);
+        zosVSAMDatasetSpy.parseOutput(jsonObject);
         String idcamsOutput = Whitebox.getInternalState(zosVSAMDatasetSpy, "idcamsOutput");
-        Assert.assertEquals("setIdcamsOutput() should return the expected value", "", idcamsOutput);
-        
-        JsonArray jsonArray = new JsonArray();
-        jsonArray.add(IDCAMS_COMMAND);
-        jsonObject.add("output", jsonArray);
-        jsonObject.addProperty("rc", 0);
-        zosVSAMDatasetSpy.setIdcamsOutput(jsonObject);
-        idcamsOutput = Whitebox.getInternalState(zosVSAMDatasetSpy, "idcamsOutput");
         Assert.assertEquals("setIdcamsOutput() should return the expected value", IDCAMS_COMMAND, idcamsOutput);
-    }
 
+        Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", "UNTOUCHED");
+        jsonObject.addProperty("exit code", 4);
+        zosVSAMDatasetSpy.parseOutput(jsonObject);
+        idcamsOutput = Whitebox.getInternalState(zosVSAMDatasetSpy, "idcamsOutput");
+        Assert.assertEquals("setIdcamsOutput() should return the expected value", "UNTOUCHED", idcamsOutput);
+    }
+    
     @Test
-    public void testIdcamsRequest() throws ZosVSAMDatasetException, ZosmfException {
-        JsonObject responseJsonObject = setupIdcamsRequest();
-        
-        Mockito.clearInvocations(zosVSAMDatasetSpy);
-        JsonObject jsonObject = getJsonObject();
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
-        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).idcamsRequest(Mockito.any());
-        
-        Mockito.clearInvocations(zosVSAMDatasetSpy);
-        responseJsonObject.addProperty("idcamsRc", 1);
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
-        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).idcamsRequest(Mockito.any());
-        
-        responseJsonObject.addProperty("idcamsRc", 5);
-        Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
+    public void testParseOutputException1() throws ZosVSAMDatasetException {   
+        JsonObject jsonObject =  new JsonObject();
         exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage("IDCAMS processing failed: RC=5\n" + IDCAMS_COMMAND);
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
+        exceptionRule.expectMessage("Unable to find \"exit code\" member in response body");
+        zosVSAMDatasetSpy.parseOutput(jsonObject);
+    }
+    
+    @Test
+    public void testParseOutputException2() throws ZosVSAMDatasetException {   
+        JsonObject jsonObject =  new JsonObject();
+        jsonObject.addProperty("exit code", 0);
+        exceptionRule.expect(ZosVSAMDatasetException.class);
+        exceptionRule.expectMessage("Unable to find \"output\" member in response body");
+        zosVSAMDatasetSpy.parseOutput(jsonObject);
+    }
+    
+    @Test
+    public void testParseOutputException3() throws ZosVSAMDatasetException {   
+        JsonObject jsonObject =  new JsonObject();
+        jsonObject.addProperty("exit code", 0);
+        JsonObject output = new JsonObject();
+        jsonObject.add("output", output);
+        exceptionRule.expect(ZosVSAMDatasetException.class);
+        exceptionRule.expectMessage("Unable to find \"stdout\" member in response body");
+        zosVSAMDatasetSpy.parseOutput(jsonObject);
+    }
+    
+    @Test
+    public void testSetLastcc() throws ZosVSAMDatasetException {
+    	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
+    	Assert.assertEquals("setLastcc() should return the expected value", 0, zosVSAMDatasetSpy.setIdcamsRc());
+    	
+    	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", "LASTCC=");
+    	Assert.assertEquals("setLastcc() should return the expected value", 0, zosVSAMDatasetSpy.setIdcamsRc());
+    	
+    	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", "LASTCC=99" + IDCAMS_COMMAND + "LASTCC=4");    	
+    	Assert.assertEquals("setLastcc() should return the expected value", 4, zosVSAMDatasetSpy.setIdcamsRc());
+    	
+    	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", (String) null);    	
+        exceptionRule.expect(ZosVSAMDatasetException.class);
+        exceptionRule.expectMessage("Unable to parse IDCAMS output for LASTCC - no output");
+        zosVSAMDatasetSpy.setIdcamsRc();
     }
 
     @Test
-    public void testIdcamsRequestException1() throws ZosVSAMDatasetException, ZosmfException {
-        setupIdcamsRequest();
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
-        
-        JsonObject jsonObject = getJsonObject();
+    public void testIdcamsRequest() throws ZosVSAMDatasetException, RseapiException {
+    	setupTestIdcamsRequest();
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).idcamsRequest(Mockito.any());
+
+        idcamsRc = 4;
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
+        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(2)).idcamsRequest(Mockito.any());
+    }
+
+    @Test
+    public void testIdcamsRequestException1() throws ZosVSAMDatasetException, RseapiException {
+    	setupTestIdcamsRequest();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage(EXCEPTION);
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
     }
 
     @Test
-    public void testIdcamsRequestException2() throws ZosVSAMDatasetException, ZosmfException {
-        setupIdcamsRequest();
-        
-        Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
-        
-        JsonObject jsonObject = getJsonObject();
+    public void testIdcamsRequestException2() throws ZosVSAMDatasetException, RseapiException {
+    	setupTestIdcamsRequest();
+        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage("IDCAMS IDCAMS request failed for VSAM data set \"" + VSAM_DATASET_NAME + "\" on image " + IMAGE);
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
+        exceptionRule.expectMessage("Error zOS UNIX command, HTTP Status Code 404 : NOT_FOUND");
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
     }
 
     @Test
-    public void testIdcamsRequestException3() throws ZosVSAMDatasetException, ZosmfException {
-        setupIdcamsRequest();
-        
-        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        PowerMockito.doReturn(EXCEPTION).when(zosVSAMDatasetSpy).buildErrorString(Mockito.any(), Mockito.any());
-        
-        JsonObject jsonObject = getJsonObject();
+    public void testIdcamsRequestException3() throws ZosVSAMDatasetException, RseapiException {
+    	setupTestIdcamsRequest();
+    	Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
         exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosVSAMDatasetSpy.idcamsRequest(jsonObject);
+        exceptionRule.expectMessage("Unable to execute IDCAMS command");
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
+    }
+
+    @Test
+    public void testIdcamsRequestException4() throws ZosVSAMDatasetException, RseapiException {
+    	setupTestIdcamsRequest();
+        idcamsRc = 20;
+    	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
+        exceptionRule.expect(ZosVSAMDatasetException.class);
+        exceptionRule.expectMessage("IDCAMS processing failed: RC=" + idcamsRc + "\n" + IDCAMS_COMMAND);
+        zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
+    }
+
+    private void setupTestIdcamsRequest() throws ZosVSAMDatasetException, RseapiException {
+        idcamsRc = 0;
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
+        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(new JsonObject());
+        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        Answer<String> setIdcamsRc = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+            	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
+            	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsRc", idcamsRc);
+                return null;
+            }
+        };
+		Mockito.doAnswer(setIdcamsRc).when(zosVSAMDatasetSpy).parseOutput(Mockito.any());    	
     }
 
     @Test
@@ -1178,37 +1235,6 @@ public class TestZosmfZosVSAMDatasetImpl {
     }
 
     @Test
-    public void testBuildErrorString() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("category", 99);
-        jsonObject.addProperty("rc", 99);
-        jsonObject.addProperty("reason", 99);
-        jsonObject.addProperty("message", "MESSAGE");
-        String returnValue = "Error in IDCAMS COMMAND VSAM data set \"VSAM.DATA.SET.NAME\", category:99, rc:99, reason:99, message:MESSAGE";
-        Assert.assertEquals("buildErrorString() should return the expected value", returnValue, zosVSAMDatasetSpy.buildErrorString("COMMAND", jsonObject));
-
-        jsonObject.addProperty("details", "DETAILS");
-        jsonObject.addProperty("stack", "STACK");
-        returnValue = "Error in IDCAMS COMMAND VSAM data set \"VSAM.DATA.SET.NAME\", category:99, rc:99, reason:99, message:MESSAGE\n" +
-                "details:DETAILS\n" +
-                "stack:\n" + 
-                "STACK";
-        Assert.assertEquals("buildErrorString() should return the expected value", returnValue, zosVSAMDatasetSpy.buildErrorString("COMMAND", jsonObject));
-        
-        JsonArray jsonArray = new JsonArray();
-        jsonArray.add("DETAIL 1");
-        jsonArray.add("DETAIL 2");
-        jsonObject.add("details", jsonArray);
-        returnValue = "Error in IDCAMS COMMAND VSAM data set \"VSAM.DATA.SET.NAME\", category:99, rc:99, reason:99, message:MESSAGE\n" +
-                "details:\n" +
-                "DETAIL 1\n" +
-                "DETAIL 2\n" +
-                "stack:\n" + 
-                "STACK";
-        Assert.assertEquals("buildErrorString() should return the expected value", returnValue, zosVSAMDatasetSpy.buildErrorString("COMMAND", jsonObject));
-    }
-
-    @Test
     public void testToString() {
         Assert.assertEquals("toString() should return the expected value", VSAM_DATASET_NAME, zosVSAMDatasetSpy.toString());
     }
@@ -1223,35 +1249,5 @@ public class TestZosmfZosVSAMDatasetImpl {
     public void testRetainToTestEnd() {
         Whitebox.setInternalState(zosVSAMDatasetSpy, "retainToTestEnd", true);
         Assert.assertTrue("retainToTestEnd() should return the expected value", zosVSAMDatasetSpy.retainToTestEnd());
-    }
-
-    private JsonObject setupIdcamsRequest() throws ZosmfException {
-        JsonObject responseJsonObject =  new JsonObject();
-        responseJsonObject.addProperty("idcamsRc", 0);
-        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
-        Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(responseJsonObject);
-        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Answer<?> setIdcamsOutput = new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                JsonObject jsonObject = invocation.getArgument(0);
-                int idcamsRc = jsonObject.get("idcamsRc").getAsInt();
-                Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsRc", idcamsRc);
-                Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
-                return null;
-            }
-        };
-        PowerMockito.doAnswer(setIdcamsOutput).when(zosVSAMDatasetSpy).setIdcamsOutput(Mockito.any());
-        
-        return responseJsonObject;
-    }
-
-    private JsonObject getJsonObject() {        
-        JsonArray jsonArray = new JsonArray();
-        jsonArray.add(IDCAMS_COMMAND);
-        JsonObject jsonObject =  new JsonObject();
-        jsonObject.add("input", jsonArray);
-        jsonObject.addProperty("rc", 0);
-        return jsonObject;
     }
 }

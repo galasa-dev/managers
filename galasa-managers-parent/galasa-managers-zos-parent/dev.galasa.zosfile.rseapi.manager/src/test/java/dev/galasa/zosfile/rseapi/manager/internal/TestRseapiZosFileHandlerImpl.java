@@ -112,7 +112,7 @@ public class TestRseapiZosFileHandlerImpl {
         Assert.assertTrue("Error in newUNIXFile() method", obj instanceof RseapiZosUNIXFileImpl);
     }
     
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNewVSAMDataset() throws ZosVSAMDatasetException {
         Object obj = zosFileHandlerSpy.newVSAMDataset(DATASET_NAME, zosImageMock);
         Assert.assertTrue("Error in newVSAMDataset() method", obj instanceof RseapiZosVSAMDatasetImpl);
