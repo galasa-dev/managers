@@ -231,10 +231,8 @@ public class TestRseapiZosUNIXFileImpl {
 
         zosUNIXFileSpy.setDataType(UNIXFileDataType.BINARY);
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The RSE API Manager does not currently binary files");
         zosUNIXFileSpy.store(CONTENT);
-//        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
+        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
     }
     
     @Test
@@ -597,9 +595,7 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
         
         PowerMockito.doReturn(UNIXFileDataType.BINARY).when(zosUNIXFileSpy).getDataType();
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The RSE API Manager does not currently binary files");        
-        zosUNIXFileSpy.retrieve(UNIX_PATH);
+        Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
     }
     
     @Test
@@ -762,18 +758,29 @@ public class TestRseapiZosUNIXFileImpl {
     public void testGetPaths() throws ZosUNIXFileException {
     	JsonObject requestBody = new JsonObject();
         Map<String, String> expectedResult = new TreeMap<>();        
-        Assert.assertTrue("getPaths() should return expected content", expectedResult.equals(zosUNIXFileSpy.getPaths("/root", requestBody, false)));
+        Assert.assertEquals("getPaths() should return expected content", expectedResult, zosUNIXFileSpy.getPaths("/root", requestBody, false));
         
         JsonArray children = new JsonArray();
-        JsonObject child = new JsonObject();
-        child.addProperty("name", "file");
-        child.addProperty("type", TYPE_FILE);
-        children.add(child);
+        JsonObject fileChild = new JsonObject();
+        fileChild.addProperty("name", "file");
+        fileChild.addProperty("type", TYPE_FILE);
+        children.add(fileChild);
         requestBody.add("children", children);
-        expectedResult.put("/root/file", TYPE_FILE);
-        
+        expectedResult.put("/root/file", TYPE_FILE);        
         Map<String, String> result = zosUNIXFileSpy.getPaths("/root/", requestBody, false);
-        Assert.assertTrue("getPaths() should return expected content", expectedResult.equals(result));
+        Assert.assertEquals("getPaths() should return expected content", expectedResult, result);
+
+        JsonObject fileDirectory = new JsonObject();
+        fileDirectory.addProperty("name", "directory");
+        fileDirectory.addProperty("type", TYPE_DIRECTORY);
+        children.add(fileDirectory);
+        expectedResult.put("/root/directory", TYPE_DIRECTORY);
+        PowerMockito.doReturn(new TreeMap<>()).when(zosUNIXFileSpy).listDirectory(Mockito.any(), Mockito.anyBoolean());
+        result = zosUNIXFileSpy.getPaths("/root/", requestBody, false);
+        Assert.assertEquals("getPaths() should return expected content", expectedResult, result);
+
+        result = zosUNIXFileSpy.getPaths("/root/", requestBody, true);
+        Assert.assertEquals("getPaths() should return expected content", expectedResult, result);
     }
     
     @Test

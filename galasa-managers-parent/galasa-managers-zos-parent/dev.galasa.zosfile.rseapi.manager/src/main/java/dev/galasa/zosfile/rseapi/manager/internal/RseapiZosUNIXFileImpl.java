@@ -190,8 +190,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         	requestType = RseapiRequestType.PUT;
         	requestBody = content;
         	headers.put(HEADER_CONVERT, "false");
-        	//TODO Remove when 3.2.0.12 is available
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
         }        
     
         IRseapiResponse response;
@@ -240,7 +238,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public Map<String, String> directoryListRecursive() throws ZosUNIXFileException {
-        return listDirectory(this.unixPath, false);
+        return listDirectory(this.unixPath, true);
     }
 
 
@@ -314,10 +312,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             attributes.append(path);
             attributes.append(COMMA);
             attributes.append("Type=");
-            String type = emptyStringWhenNull(responseBody, PROP_TYPE);
-            attributes.append(type);
+            String typeValue = emptyStringWhenNull(responseBody, PROP_TYPE);
+            attributes.append(typeValue);
             attributes.append(COMMA);
-            if (type.equals(TYPE_DIRECTORY)) {
+            if (typeValue.equals(TYPE_DIRECTORY)) {
                 attributes.append("IsEmpty=");
                 JsonArray children = responseBody.getAsJsonArray(PROP_CHILDREN);
                 attributes.append(children == null? "true" : "false");
@@ -444,8 +442,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     	String urlPath = RESTFILES_FILE_PATH + path;
         if (getDataType().equals(UNIXFileDataType.BINARY)) {
         	urlPath = urlPath + RESTFILES_FILE_PATH_RAW_CONTENT;
-        	//TODO Remove when 3.2.0.12 is available
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_CONVERT, String.valueOf(getDataType().equals(UNIXFileDataType.TEXT)));
@@ -549,7 +545,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
-
     protected Map<String, String> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
     	if (!root.endsWith(SLASH)) {
     		root = root + SLASH;
@@ -559,9 +554,12 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		if (children != null) {
 			for (JsonElement childElement : children) {
 				JsonObject child = childElement.getAsJsonObject();
-				String name = root + child.get(PROP_NAME).getAsString();
-				String type = child.get(PROP_TYPE).getAsString();
-				paths.put(name, type);
+				String nameValue = root + child.get(PROP_NAME).getAsString();
+				String typeValue = child.get(PROP_TYPE).getAsString();
+				paths.put(nameValue, typeValue);
+				if (recursive && typeValue.equals(TYPE_DIRECTORY)) {
+					paths.putAll(listDirectory(nameValue, recursive));
+				}
 			}
 		}
         return paths;
