@@ -828,9 +828,6 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertEquals("testDataType() should return the supplied value", value, zosDatasetSpy.getDataType());
         value = DatasetDataType.BINARY;
         
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
         zosDatasetSpy.setDataType(value);
         Assert.assertEquals("testDataType() should return the supplied value", value, zosDatasetSpy.getDataType());
     }
@@ -910,9 +907,6 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertNull("getManagementClass() should return null", zosDatasetSpy.getManagementClass());
         String value = "MANAGEMENTCLASS";
         
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
         zosDatasetSpy.setManagementClass(value);        
         Assert.assertEquals("getManagementClass() should return the supplied value", value, zosDatasetSpy.getManagementClass());
     }
@@ -921,9 +915,6 @@ public class TestRseapiZosDatasetImpl {
     public void testStorageClass() {
         Assert.assertNull("getStorageClass() should return null", zosDatasetSpy.getStorageClass());
         String value = "STORAGECLASS";
-        
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
         
         zosDatasetSpy.setStorageClass(value);
         Assert.assertEquals("getStorageClass() should return the supplied value", value, zosDatasetSpy.getStorageClass());
@@ -934,9 +925,6 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertNull("getDataClass() should return null", zosDatasetSpy.getDataClass());
         String value = "DATACLASS";
         
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
         zosDatasetSpy.setDataClass(value);
         Assert.assertEquals("getDataClass() should return the supplied value", value, zosDatasetSpy.getDataClass());
     }
@@ -944,9 +932,6 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testDatasetType() {
         Assert.assertNull("getDatasetType() should return null", zosDatasetSpy.getDatasetType());
-        
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
         
         zosDatasetSpy.setDatasetType(DSType.BASIC);
         Assert.assertEquals("getDatasetType() should return DSType.BASIC", DSType.BASIC, zosDatasetSpy.getDatasetType());
@@ -1264,11 +1249,7 @@ public class TestRseapiZosDatasetImpl {
 
         responseBody.addProperty("records", CONTENT);
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieve(null));
-
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        Whitebox.setInternalState(zosDatasetSpy, "dataType", DatasetDataType.BINARY);        
-//        zosDatasetSpy.setDataType(DatasetDataType.BINARY);
+        zosDatasetSpy.setDataType(DatasetDataType.BINARY);
         
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieve(null));
     }
@@ -1394,10 +1375,7 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
-    public void testInternalStoreBinary() throws ZosDatasetException, RseapiException {       
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
+    public void testInternalStoreBinary() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -1412,10 +1390,7 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
-    public void testInternalStoreBinaryNotExist() throws ZosDatasetException, RseapiException {        
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
+    public void testInternalStoreBinaryNotExist() throws ZosDatasetException, RseapiException {  
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
 
         exceptionRule.expect(ZosDatasetException.class);
@@ -1425,10 +1400,7 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
-    public void testInternalStoreBinaryRseapiException() throws ZosDatasetException, RseapiException {       
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
+    public void testInternalStoreBinaryRseapiException() throws ZosDatasetException, RseapiException { 
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
 
@@ -1439,10 +1411,7 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
-    public void testInternalStoreBinaryBadHttpResponseException() throws ZosDatasetException, RseapiException {       
-        //TODO
-        PowerMockito.doNothing().when(zosDatasetSpy).unsupportedOperation(Mockito.any());
-        
+    public void testInternalStoreBinaryBadHttpResponseException() throws ZosDatasetException, RseapiException { 
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
@@ -1565,19 +1534,5 @@ public class TestRseapiZosDatasetImpl {
         public String toString() {
             throw new NotImplementedException("Not Implemented");
         }
-    }
-    
-    @Test
-    public void testUnsupportedOperation1() {
-    	exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The RSE API Manager does not currently support MY TEXT");
-        zosDatasetSpy.unsupportedOperation("MY TEXT");
-    }
-    
-    @Test
-    public void testUnsupportedOperation2() {
-    	exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("The RSE API Manager does not currently support this method");
-        zosDatasetSpy.unsupportedOperation(null);
     }
 }

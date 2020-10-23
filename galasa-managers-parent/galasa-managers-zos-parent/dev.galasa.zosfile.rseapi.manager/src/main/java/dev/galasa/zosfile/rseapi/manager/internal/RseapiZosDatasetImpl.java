@@ -123,6 +123,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_NOT_PDS = " is not a partitioned data data set";
+    private static final String LOG_CONTENT_MUST_NOT_BE_NULL = "content must not be null";
+    private static final String LOG_MEMBER_NAME_MUST_NOT_BE_NULL = "member name must not be null";
 
     private static final Log logger = LogFactory.getLog(RseapiZosDatasetImpl.class);
 
@@ -266,7 +268,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeText(@NotNull String content) throws ZosDatasetException {
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -275,7 +277,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -344,7 +346,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberCreate(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -353,7 +355,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberDelete(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -378,7 +380,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean memberExists(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -430,8 +432,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -440,8 +442,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -450,7 +452,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -465,7 +467,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public byte[] memberRetrieveAsBinary(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -487,7 +489,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + RESTFILES_DATASET_PATH_MEMBERS;
         IRseapiResponse response;
-        try { //TODO: convert here controls if getJson or getFile is used when 3.2.0.12 is available
+        try { //TODO: "convert" here controls if getJson or getFile is used when 3.2.0.12 is available
             response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
         } catch (RseapiException e) {
             throw new ZosDatasetException(e);
@@ -522,7 +524,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -548,9 +550,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     @Override
     public void setDataType(DatasetDataType dataType) {
         String dType = dataType.toString();
-        if ("binary".equals(dType)){
+        if (BINARY_HEADER.equals(dType)){
             this.convert = false;
-        	unsupportedOperation("binary data");
         }
         logger.info("Data type set to " + dType);
         this.dataType = dataType;
@@ -602,25 +603,21 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     @Override
     public void setManagementClass(String managementClass) {
         this.mgntclass = managementClass;
-    	unsupportedOperation(null);
     }
 
     @Override
     public void setStorageClass(String storageClass) {
         this.storeclass = storageClass;
-    	unsupportedOperation(null);
     }
 
     @Override
     public void setDataClass(String dataClass) {
         this.dataclass = dataClass;
-    	unsupportedOperation(null);
     }
 
     @Override
     public void setDatasetType(DSType dsType) {
         this.dstype = dsType;
-    	unsupportedOperation(null);
     }
 
     @Override
@@ -905,30 +902,25 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         value = datasteAttributes.get(PROP_DATA_CLASS);
         if (value != null) {
-        	this.dataclass = value.getAsString();
-            //TODO setDataClass(value.getAsString()); when 3.2.0.12 is available
+        	setDataClass(value.getAsString());
         }
         
         value = datasteAttributes.get(PROP_STOR_CLASS);
         if (value != null) {
-        	this.storeclass = value.getAsString();
-            //TODO setStorageClass(value.getAsString()); when 3.2.0.12 is available
+        	setStorageClass(value.getAsString());
         }
         
         value = datasteAttributes.get(PROP_MGMT_CLASS);
         if (value != null) {
-        	this.mgntclass = value.getAsString();
-            //TODO setManagementClass(value.getAsString()); when 3.2.0.12 is available
+        	setManagementClass(value.getAsString());
         }
         
         value = datasteAttributes.get(PROP_DSN_TYPE);
         if (value != null) {
         	if (value.getAsString().contains(DSType.LIBRARY.toString())) {
-        		this.dstype = DSType.LIBRARY;
-        		//TODO setDatasetType(DSType.LIBRARY); when 3.2.0.12 is available
+        		setDatasetType(DSType.LIBRARY);
         	} else {
-        		this.dstype = DSType.valueOfLabel(value.getAsString());
-        		//TODO setDatasetType(DSType.valueOfLabel(value.getAsString())); when 3.2.0.12 is available
+        		setDatasetType(DSType.valueOfLabel(value.getAsString()));
         	}
         }
         
@@ -964,10 +956,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     	String urlPath = RESTFILES_DATASET_PATH + SLASH + joinDSN(memberName) + RESTFILES_DATASET_PATH_CONTENT;
     	//TODO type ->> /datasets/{dsn}/rawContent when 3.2.0.12 is available
     	IRseapiResponse response;
-    	if ("binary".equals(dType)) {
+    	if (BINARY_HEADER.equals(dType)) {
             this.convert = false;
-        	//TODO Remove when 3.2.0.12 is available
-        	unsupportedOperation("binary data");
         }
         try {
             response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, this.convert);
@@ -1082,8 +1072,6 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     }
 
     protected void storeBinary(byte[] content, String memberName, boolean convert) throws ZosDatasetException {
-    	//TODO Remove when 3.2.0.12 is available
-    	unsupportedOperation(null);
         if (!exists()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -1202,13 +1190,5 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     public IRseapiRestApiProcessor getRseapiApiProcessor() {
         return this.rseapiApiProcessor;
-    }
-    
-    //TODO Remove when 3.2.0.12 is available
-    public void unsupportedOperation(String text) throws UnsupportedOperationException {
-    	if (text == null) {
-    		text = "this method";
-    	}    		
-    	throw new UnsupportedOperationException("The RSE API Manager does not currently support " + text);
     }
 }
