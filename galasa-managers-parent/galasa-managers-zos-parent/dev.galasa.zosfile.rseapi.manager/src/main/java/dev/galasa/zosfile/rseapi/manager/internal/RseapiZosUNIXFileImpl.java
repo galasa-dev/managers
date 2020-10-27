@@ -83,7 +83,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     private static final String TYPE_DIRECTORY = "DIRECTORY";
 
     private static final String LOG_UNIX_PATH = "UNIX path ";
-    private static final String LOG_LISTING = "listing";
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_INVALID_REQUETS = "Invalid request, ";
@@ -191,7 +190,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         	requestType = RseapiRequestType.PUT;
         	requestBody = content;
         	headers.put(HEADER_CONVERT, "false");
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
         }        
     
         IRseapiResponse response;
@@ -203,7 +201,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         
         if (response.getStatusCode() != HttpStatus.SC_OK) {
             // Error case
-        	String displayMessage = buildErrorString("writing to" + this.unixPath, response); 
+        	String displayMessage = buildErrorString("writing to " + quoted(this.unixPath), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -240,7 +238,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public Map<String, String> directoryListRecursive() throws ZosUNIXFileException {
-        return listDirectory(this.unixPath, false);
+        return listDirectory(this.unixPath, true);
     }
 
 
@@ -314,10 +312,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             attributes.append(path);
             attributes.append(COMMA);
             attributes.append("Type=");
-            String type = emptyStringWhenNull(responseBody, PROP_TYPE);
-            attributes.append(type);
+            String typeValue = emptyStringWhenNull(responseBody, PROP_TYPE);
+            attributes.append(typeValue);
             attributes.append(COMMA);
-            if (type.equals(TYPE_DIRECTORY)) {
+            if (typeValue.equals(TYPE_DIRECTORY)) {
                 attributes.append("IsEmpty=");
                 JsonArray children = responseBody.getAsJsonArray(PROP_CHILDREN);
                 attributes.append(children == null? "true" : "false");
@@ -339,11 +337,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             attributes.append(emptyStringWhenNull(responseBody, PROP_LAST_MODIFIED));
             attributes.append(COMMA);
             attributes.append("Encoding=");
-            attributes.append(emptyStringWhenNull(responseBody, PROP_ENCODING));
-            
+            attributes.append(emptyStringWhenNull(responseBody, PROP_ENCODING));            
         } else {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString_DELETE_ME(LOG_LISTING, responseBody, path);
+            // Error case
+            String displayMessage = buildErrorString("creating path " + quoted(path), response);
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -366,7 +363,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
         if (response.getStatusCode() != HttpStatus.SC_CREATED) {            
             // Error case
-            String displayMessage = buildErrorString("creating path " + this.unixPath, response); 
+            String displayMessage = buildErrorString("creating path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -386,8 +383,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
                 throw new ZosUNIXFileException(LOG_INVALID_REQUETS + LOG_UNIX_PATH + quoted(path) + " is not a directory");
             }
         } else {
-        	boolean isEmpty = attributes.contains("IsEmpty=false");
-            if (isDirectory && !isEmpty) {
+        	if (isDirectory && attributes.contains("IsEmpty=false")) {
                 throw new ZosUNIXFileException(LOG_INVALID_REQUETS + LOG_UNIX_PATH + quoted(path) + " is a directory and is not empty. Use the directoryDeleteNonEmpty() method");
             }
         }
@@ -401,7 +397,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
         if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {            
             // Error case
-            String displayMessage = buildErrorString("creating path " + this.unixPath, response); 
+            String displayMessage = buildErrorString("creating path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -435,7 +431,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             logger.trace(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
             return false;
         } else {
-        	String displayMessage = buildErrorString("listing path " + this.unixPath, response); 
+        	String displayMessage = buildErrorString("listing path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -446,7 +442,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     	String urlPath = RESTFILES_FILE_PATH + path;
         if (getDataType().equals(UNIXFileDataType.BINARY)) {
         	urlPath = urlPath + RESTFILES_FILE_PATH_RAW_CONTENT;
-        	throw new UnsupportedOperationException("The RSE API Manager does not currently binary files");
         }
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_CONVERT, String.valueOf(getDataType().equals(UNIXFileDataType.TEXT)));
@@ -543,13 +538,12 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             return getPaths(path, responseBody, recursive);
         } else {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = buildErrorString_DELETE_ME(LOG_LISTING, responseBody, path); 
+            // Error case
+        	String displayMessage = buildErrorString("listing path " + quoted(path), response);
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
     }
-
 
     protected Map<String, String> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
     	if (!root.endsWith(SLASH)) {
@@ -560,9 +554,12 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		if (children != null) {
 			for (JsonElement childElement : children) {
 				JsonObject child = childElement.getAsJsonObject();
-				String name = root + child.get(PROP_NAME).getAsString();
-				String type = child.get(PROP_TYPE).getAsString();
-				paths.put(name, type);
+				String nameValue = root + child.get(PROP_NAME).getAsString();
+				String typeValue = child.get(PROP_TYPE).getAsString();
+				paths.put(nameValue, typeValue);
+				if (recursive && typeValue.equals(TYPE_DIRECTORY)) {
+					paths.putAll(listDirectory(nameValue, recursive));
+				}
 			}
 		}
         return paths;
@@ -623,14 +620,14 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     }
 
     protected String quoted(String name) {
-        return "\"" + name + "\"";
+        return "'" + name + "'";
     }
 
     protected String logOnImage() {
         return " on image " + this.image.getImageID();
     }
 
-    protected static String buildErrorString(String action, IRseapiResponse response) {
+    protected String buildErrorString(String action, IRseapiResponse response) {
     	String message = "";
     	try {
     		Object content = response.getContent();
@@ -648,60 +645,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
     }
     
-    protected String buildErrorString_DELETE_ME(String action, JsonObject responseBody, String path) {
-        if ("{}".equals(responseBody.toString())) {
-            return "Error " + action;
-        }
-        int errorCategory = responseBody.get("category").getAsInt();
-        int errorRc = responseBody.get("rc").getAsInt();
-        int errorReason = responseBody.get("reason").getAsInt();
-        String errorMessage = responseBody.get("message").getAsString();
-        String errorDetails = null;
-        JsonElement element = responseBody.get("details");
-        if (element != null) {
-            if (element.isJsonArray()) {
-                JsonArray elementArray = element.getAsJsonArray();
-                StringBuilder sb = new StringBuilder();
-                for (JsonElement item : elementArray) {
-                    sb.append("\n");
-                    sb.append(item.getAsString());
-                }
-                errorDetails = sb.toString();
-            } else {
-                errorDetails = element.getAsString();
-            }
-        }
-        StringBuilder sb = new StringBuilder(); 
-        sb.append("Error "); 
-        sb.append(action);
-        sb.append(" UNIX path ");
-        sb.append(quoted(this.unixPath));
-        sb.append(", category:");
-        sb.append(errorCategory);
-        sb.append(", rc:");
-        sb.append(errorRc);
-        sb.append(", reason:");
-        sb.append(errorReason);
-        sb.append(", message:");
-        sb.append(errorMessage);
-        if (errorDetails != null) {
-            sb.append("\ndetails:");
-            sb.append(errorDetails);
-        }
-        JsonElement stackElement = responseBody.get("stack");
-        if (stackElement != null) {
-            sb.append("\nstack:\n");
-            sb.append(stackElement.getAsString());
-        }
-        
-        return sb.toString();
-    }
-
     @Override
     public String toString() {
         return this.unixPath;
     }
-
 
     public boolean created() {
         return this.pathCreated;
@@ -740,61 +687,5 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     public boolean deleted() {
         return this.deleted;
-    }
-    
-    protected String execUnixCommand(String command) throws ZosUNIXFileException {
-		String RESTUNIXCOMMANDS_PATH = "/rseapi/api/v1/unixcommands";
-        String PROP_INVOCATION = "invocation";
-        String PROP_PATH = "path";
-        String PROP_OUTPUT = "output";
-        String PROP_STDOUT = "stdout";
-        String PROP_EXIT_CODE = "exit code";
-        
-        IRseapiResponse response;
-        try {
-            JsonObject requestBody = new JsonObject();
-            requestBody.addProperty(PROP_INVOCATION, command);
-            requestBody.addProperty(PROP_PATH, "/usr/bin");
-			response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTUNIXCOMMANDS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
-        } catch (RseapiException e) {
-            throw new ZosUNIXFileException(e);
-        }
-
-        if (response.getStatusCode() != HttpStatus.SC_OK) {
-        	// Error case
-            String displayMessage = buildErrorString("zOS UNIX command", response); 
-            logger.error(displayMessage);
-            throw new ZosUNIXFileException(displayMessage);
-        }
-        
-        JsonObject responseBody;
-        try {
-            responseBody = response.getJsonContent();
-        } catch (RseapiException e) {
-            throw new ZosUNIXFileException("Unable to get UNIX command response", e);
-        }
-        
-        logger.trace(responseBody);
-        JsonObject output = null;
-		String stdout = null;
-		int exitCode = Integer.MIN_VALUE;
-    	
-		output = responseBody.getAsJsonObject(PROP_OUTPUT);
-    	if (output !=  null ) {
-			if (output.get(PROP_STDOUT) != null) {
-				stdout = output.get(PROP_STDOUT).getAsString();
-			}
-    	}
-		if (responseBody.get(PROP_EXIT_CODE) != null) {
-			exitCode = responseBody.get(PROP_EXIT_CODE).getAsInt();
-		}
-    	
-    	
-        if (exitCode != 0) {
-        	String displayMessage = "Unix command failed. Response body:\n" + responseBody;
-            logger.error(displayMessage);
-            throw new ZosUNIXFileException(displayMessage);
-        }
-        return stdout;
     }
 }
