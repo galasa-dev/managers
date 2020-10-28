@@ -24,8 +24,12 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
+import dev.galasa.zos3270.internal.datastream.OrderCarrageReturn;
+import dev.galasa.zos3270.internal.datastream.OrderEndOfMedium;
 import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
+import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
@@ -794,6 +798,18 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderEraseUnprotectedToAddress.ID:
                         order = new OrderEraseUnprotectedToAddress(buffer);
+                        break;
+                    case OrderNewLine.ID:
+                        order = new OrderNewLine();
+                        break;
+                    case OrderFormFeed.ID:
+                        order = new OrderFormFeed();
+                        break;
+                    case OrderCarrageReturn.ID:
+                        order = new OrderCarrageReturn();
+                        break;
+                    case OrderEndOfMedium.ID:
+                        order = new OrderEndOfMedium();
                         break;
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });

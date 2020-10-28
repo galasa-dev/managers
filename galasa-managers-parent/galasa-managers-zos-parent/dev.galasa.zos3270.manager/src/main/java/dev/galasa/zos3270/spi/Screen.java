@@ -45,8 +45,12 @@ import dev.galasa.zos3270.internal.datastream.CommandReadModified;
 import dev.galasa.zos3270.internal.datastream.CommandReadModifiedAll;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.IAttribute;
+import dev.galasa.zos3270.internal.datastream.OrderCarrageReturn;
+import dev.galasa.zos3270.internal.datastream.OrderEndOfMedium;
 import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
+import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
@@ -446,6 +450,14 @@ public class Screen {
                 this.screenCursor = this.workingCursor;
             } else if (order instanceof OrderEraseUnprotectedToAddress) {
                 processEUA((OrderEraseUnprotectedToAddress)order);
+            } else if (order instanceof OrderNewLine) {
+                processNewLine();
+            } else if (order instanceof OrderFormFeed) {
+                processFormFeed();
+            } else if (order instanceof OrderCarrageReturn) {
+                processCarrageReturn();
+            } else if (order instanceof OrderEndOfMedium) {
+                processEndOfMedium();
             } else {
                 throw new DatastreamException("Unsupported Order - " + order.getClass().getName());
             }
@@ -655,6 +667,26 @@ public class Screen {
 
     private void processSA(OrderSetAttribute order) {
         // TODO add processing for character attributes
+    }
+    
+    private void processNewLine() {
+        this.buffer[this.workingCursor] = new BufferNewLine();
+        incrementWorkingCursor();
+    }
+
+    private void processFormFeed() {
+        this.buffer[this.workingCursor] = new BufferFormFeed();
+        incrementWorkingCursor();
+    }
+
+    private void processCarrageReturn() {
+        this.buffer[this.workingCursor] = new BufferCarrageReturn();
+        incrementWorkingCursor();
+    }
+
+    private void processEndOfMedium() {
+        this.buffer[this.workingCursor] = new BufferEndOfMedium();
+        incrementWorkingCursor();
     }
 
     private void processText(OrderText order) {
