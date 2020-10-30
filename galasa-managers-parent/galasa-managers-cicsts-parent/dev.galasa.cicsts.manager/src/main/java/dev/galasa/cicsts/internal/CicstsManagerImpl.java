@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
@@ -119,6 +120,13 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        // First, give the provisioners the opportunity to provision CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionGenerate();
+        }
+
+        // Now provision all the individual annotations 
+        
         List<AnnotatedField> annotatedFields = findAnnotatedFields(CicstsManagerField.class);
 
         for (AnnotatedField annotatedField : annotatedFields) {
@@ -235,6 +243,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @NotNull
     public List<ICicsRegionLogonProvider> getLogonProviders() {
         return new ArrayList<>(this.logonProviders);
+    }
+
+    @Override
+    public @NotNull ProductVersion getDefaultVersion() {
+        return ProductVersion.v(5).r(6).m(0); // TODO Parameterise
     }
 
 }
