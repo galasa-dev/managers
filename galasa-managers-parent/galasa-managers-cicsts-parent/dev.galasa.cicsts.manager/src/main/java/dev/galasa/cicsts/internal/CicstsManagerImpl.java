@@ -27,6 +27,7 @@ import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.internal.dse.DseProvisioningImpl;
 import dev.galasa.cicsts.internal.properties.CicstsPropertiesSingleton;
+import dev.galasa.cicsts.internal.properties.DefaultVersion;
 import dev.galasa.cicsts.internal.properties.ExtraBundles;
 import dev.galasa.cicsts.internal.properties.ProvisionType;
 import dev.galasa.cicsts.spi.CicsTerminalImpl;
@@ -75,9 +76,6 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             }
 
             youAreRequired(allManagers, activeManagers);
-
-            this.provisionType = ProvisionType.get();
-            this.provisioners.add(new DseProvisioningImpl(this));
         }
     }
 
@@ -95,6 +93,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         if (this.zosManager == null) {
             throw new CicstsManagerException("Unable to locate the zOS Manager, required for the CICS TS Manager");
         }
+
+        this.provisionType = ProvisionType.get();
+        this.provisioners.add(new DseProvisioningImpl(this));
     }
 
     @Override
@@ -126,7 +127,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         // Now provision all the individual annotations 
-        
+
         List<AnnotatedField> annotatedFields = findAnnotatedFields(CicstsManagerField.class);
 
         for (AnnotatedField annotatedField : annotatedFields) {
@@ -180,7 +181,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
             throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
-                    + ", tagged region " + tag + " was not provisioned");
+            + ", tagged region " + tag + " was not provisioned");
         }
 
         try {
@@ -247,7 +248,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public @NotNull ProductVersion getDefaultVersion() {
-        return ProductVersion.v(5).r(6).m(0); // TODO Parameterise
+        return DefaultVersion.get();
     }
 
 }
