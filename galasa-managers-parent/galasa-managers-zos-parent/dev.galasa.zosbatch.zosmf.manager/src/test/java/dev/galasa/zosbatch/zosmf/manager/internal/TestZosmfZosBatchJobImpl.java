@@ -67,6 +67,8 @@ public class TestZosmfZosBatchJobImpl {
     private Log logMock;
     
     private static String logMessage;
+    
+    private static Throwable logException;
 
     @Mock
     private IZosImage zosImageMock;
@@ -138,8 +140,16 @@ public class TestZosmfZosBatchJobImpl {
         Answer<String> answer = new Answer<String>() {
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                logMessage = invocation.getArgument(0);
-                System.err.println("Captured Log Message:\n" + logMessage);
+            	logMessage = null;
+            	logException = null;
+            	if (invocation.getArgument(0) instanceof Throwable) {
+            		logException = invocation.getArgument(0);
+            		System.err.println("Captured Log Exception:");
+            		logException.printStackTrace();
+            	} else {
+            		logMessage = invocation.getArgument(0);
+            		System.err.println("Captured Log Message:\n" + logMessage);
+            	}
                 if (invocation.getArguments().length > 1 && invocation.getArgument(1) instanceof Throwable) {
                     ((Throwable) invocation.getArgument(1)).printStackTrace();
                 }
@@ -147,6 +157,7 @@ public class TestZosmfZosBatchJobImpl {
             }
         };
         Mockito.doAnswer(answer).when(logMock).info(Mockito.any());
+        Mockito.doAnswer(answer).when(logMock).error(Mockito.any());
         
         Mockito.when(zosImageMock.getImageID()).thenReturn(FIXED_IMAGE_ID);
         
@@ -156,7 +167,7 @@ public class TestZosmfZosBatchJobImpl {
         
         Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenReturn(false);
         
-        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenReturn(true);
+        Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenReturn(true);
         
         Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.any())).thenReturn(true);        
         
@@ -206,7 +217,7 @@ public class TestZosmfZosBatchJobImpl {
     public void testConstructorRestrictToImageException() throws ZosBatchManagerException {
         exceptionRule.expect(ZosBatchManagerException.class);
         exceptionRule.expectMessage("exception");
-        Mockito.when(zosManagerMock.getZosBatchPropertyRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
         
         new ZosmfZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
     }
@@ -221,39 +232,74 @@ public class TestZosmfZosBatchJobImpl {
     }
     
     @Test
-    public void testGetJobId() {
+    public void testGetJobId() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("getJobId() should return the 'unknown' value", "????????", zosBatchJobSpy.getJobId());
         zosBatchJobSpy.setJobid(FIXED_JOBID);
         Assert.assertEquals("getJobId() should return the supplied value", FIXED_JOBID, zosBatchJobSpy.getJobId());
+
+    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        zosBatchJobSpy.setJobid(null);
+        zosBatchJobSpy.getJobId();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
     }
     
     @Test
-    public void testGetOwner() {
+    public void testGetOwner() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("getOwner() should return the 'unknown' value", "????????", zosBatchJobSpy.getOwner());
         zosBatchJobSpy.setOwner(FIXED_OWNER);
         Assert.assertEquals("getOwner() should return the supplied value", FIXED_OWNER, zosBatchJobSpy.getOwner());
+
+    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        zosBatchJobSpy.setOwner(null);
+        zosBatchJobSpy.getOwner();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
     }
     
     @Test
-    public void testGetType() {
+    public void testGetType() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("getType() should return the 'unknown' value", "???", zosBatchJobSpy.getType());
         zosBatchJobSpy.setType(FIXED_TYPE);
         Assert.assertEquals("getType() should return the supplied value", FIXED_TYPE, zosBatchJobSpy.getType());
+
+    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        zosBatchJobSpy.setType(null);
+        zosBatchJobSpy.getType();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
     }
     
     @Test
-    public void testGetStatus() {
+    public void testGetStatus() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Assert.assertEquals("getStatus() should return the 'unknown' value", "????????", zosBatchJobSpy.getStatus());
         zosBatchJobSpy.setStatus(FIXED_STATUS_OUTPUT);
         Assert.assertEquals("getStatus() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatus());
+
+    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        zosBatchJobSpy.setStatus(null);
+        zosBatchJobSpy.getStatus();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
     }
     
     @Test
-    public void testGetRetcode() {
+    public void testGetRetcode() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
         Assert.assertEquals("getRetcode() should return the 'unknown' value", "????", zosBatchJobSpy.getRetcode());
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
         Assert.assertEquals("getRetcode() should return the supplied value", FIXED_RETCODE_0000, zosBatchJobSpy.getRetcode());
+
+    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
+        zosBatchJobSpy.getRetcode();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
     }
     
     @Test
@@ -334,6 +380,7 @@ public class TestZosmfZosBatchJobImpl {
 
     @Test
     public void testWaitForJobNotSubmittedException() throws ZosBatchException {
+    	Mockito.doReturn("????????").when(zosBatchJobSpy).getJobId();
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Job has not been submitted by manager");
         zosBatchJobSpy.waitForJob();
@@ -352,6 +399,7 @@ public class TestZosmfZosBatchJobImpl {
     
     @Test
     public void testRetrieveOutputNotSubmittedException() throws ZosBatchException {
+    	Mockito.doReturn("????????").when(zosBatchJobSpy).getJobId();
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("Job has not been submitted by manager");
         zosBatchJobSpy.retrieveOutput();
@@ -649,14 +697,6 @@ public class TestZosmfZosBatchJobImpl {
         zosBatchJobSpy.updateJobStatus();
         Assert.assertTrue("jobNotFound should be true", Whitebox.getInternalState(zosBatchJobSpy, "jobNotFound"));
 
-    }
-
-    @Test
-    public void testUpdateJobStatusJobNotSubmitted() throws ZosBatchException, ZosmfException {
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Job has not been submitted by manager");
-
-        zosBatchJobSpy.updateJobStatus();
     }
 
     @Test
@@ -1015,6 +1055,14 @@ public class TestZosmfZosBatchJobImpl {
         Mockito.when(zosManagerMock.getZosBatchPropertyTruncateJCLRecords(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
         
         zosBatchJobSpy.parseJcl(suppliedJcl);
+    }
+    
+    @Test
+    public void testSubmitted() {
+    	Mockito.doReturn("????????").when(zosBatchJobSpy).getJobId();
+    	Assert.assertFalse("submitted() should return false", zosBatchJobSpy.submitted());
+    	Mockito.doReturn(FIXED_JOBID).when(zosBatchJobSpy).getJobId();
+    	Assert.assertTrue("submitted() should return true", zosBatchJobSpy.submitted());
     }
                  
     private Path newMockedPath(boolean fileExists) throws IOException {

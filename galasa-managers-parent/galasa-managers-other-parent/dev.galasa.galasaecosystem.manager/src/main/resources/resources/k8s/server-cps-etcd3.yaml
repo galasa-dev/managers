@@ -184,7 +184,7 @@ spec:
       resources:
         requests:
           # upstream recommended max is 700M
-          storage: 100M
+          storage: 700M
 ---
 apiVersion: v1
 kind: Service

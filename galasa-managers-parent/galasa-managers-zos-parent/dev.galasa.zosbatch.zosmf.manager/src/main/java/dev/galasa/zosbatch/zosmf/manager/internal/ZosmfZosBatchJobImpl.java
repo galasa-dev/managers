@@ -125,7 +125,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
         
         try {
-            this.zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyRestrictToImage(jobImage.getImageID()));
+            this.zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -176,26 +176,59 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getJobId() {
+    	if (this.jobid == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}    		
+    	}
         return (this.jobid != null ? this.jobid : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getOwner() {
+    	if (this.owner == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}    		
+    	}
         return (this.owner != null ? this.owner : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getType() {
+    	if (this.type == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}    		
+    	}
         return (this.type != null ? this.type : StringUtils.repeat(QUERY, 3));
     }
     
     @Override
     public String getStatus() {
+    	try {
+			updateJobStatus();
+		} catch (ZosBatchException e) {
+			logger.error(e);
+		}
         return (this.status != null ? this.status : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getRetcode() {
+    	if (this.retcode == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}    		
+    	}
         return (this.retcode != null ? this.retcode : StringUtils.repeat(QUERY, 4));
     }
 
@@ -440,7 +473,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     public boolean submitted() {
-        return this.jobid != null;
+    	return !getJobId().contains("?");
     }
     
     public boolean isComplete() {
@@ -460,12 +493,12 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     private String jobStatus() {
-        return "JOBID=" + getJobId() + 
+        return "JOBID=" + this.jobid + 
               " JOBNAME=" + this.jobname.getName() + 
-              " OWNER=" + getOwner() + 
-              " TYPE=" + getType() +
-              " STATUS=" + getStatus() + 
-              " RETCODE=" + getRetcode();
+              " OWNER=" + this.owner + 
+              " TYPE=" + this.type +
+              " STATUS=" + this.status + 
+              " RETCODE=" + this.retcode;
     }
 
     protected void setJobPathValues() {
@@ -474,9 +507,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void updateJobStatus() throws ZosBatchException {
-        if (!submitted()) {
-            throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
-        }
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         
@@ -514,7 +544,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             if (response.getStatusCode() == HttpStatus.SC_BAD_REQUEST &&
                     jsonZero(responseBody, PROP_RC) == 4 &&
                     jsonZero(responseBody, PROP_REASON) == 10) {
-                logger.warn("JOBID=" + getJobId() + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
+                logger.warn("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
                 this.status = null;
             } else {

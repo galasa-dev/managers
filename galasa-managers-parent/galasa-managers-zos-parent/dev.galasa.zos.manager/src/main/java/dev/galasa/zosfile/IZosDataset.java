@@ -580,7 +580,8 @@ public interface IZosDataset {
     public void retrieveAttibutes() throws ZosDatasetException;
 
     /**
-     * Return the attributes of the data set as a {@link String} 
+     * Return the attributes of the data set as a {@link String}<br> 
+     * The format of the String is defined by the implementation
      * @return
      * @throws @ZosDatasetException
      */

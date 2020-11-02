@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
@@ -26,6 +27,7 @@ import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.internal.dse.DseProvisioningImpl;
 import dev.galasa.cicsts.internal.properties.CicstsPropertiesSingleton;
+import dev.galasa.cicsts.internal.properties.DefaultVersion;
 import dev.galasa.cicsts.internal.properties.ExtraBundles;
 import dev.galasa.cicsts.internal.properties.ProvisionType;
 import dev.galasa.cicsts.spi.CicsTerminalImpl;
@@ -74,9 +76,6 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             }
 
             youAreRequired(allManagers, activeManagers);
-
-            this.provisionType = ProvisionType.get();
-            this.provisioners.add(new DseProvisioningImpl(this));
         }
     }
 
@@ -94,6 +93,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         if (this.zosManager == null) {
             throw new CicstsManagerException("Unable to locate the zOS Manager, required for the CICS TS Manager");
         }
+
+        this.provisionType = ProvisionType.get();
+        this.provisioners.add(new DseProvisioningImpl(this));
     }
 
     @Override
@@ -119,6 +121,13 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+        // First, give the provisioners the opportunity to provision CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionGenerate();
+        }
+
+        // Now provision all the individual annotations 
+
         List<AnnotatedField> annotatedFields = findAnnotatedFields(CicstsManagerField.class);
 
         for (AnnotatedField annotatedField : annotatedFields) {
@@ -172,7 +181,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
             throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
-                    + ", tagged region " + tag + " was not provisioned");
+            + ", tagged region " + tag + " was not provisioned");
         }
 
         try {
@@ -235,6 +244,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @NotNull
     public List<ICicsRegionLogonProvider> getLogonProviders() {
         return new ArrayList<>(this.logonProviders);
+    }
+
+    @Override
+    public @NotNull ProductVersion getDefaultVersion() {
+        return DefaultVersion.get();
     }
 
 }
