@@ -79,10 +79,11 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private static final String PROP_RETCODE = "returnCode";
     private static final String PROP_ID = "id";
     private static final String PROP_CONTENT = "content";
+	private static final String PROP_STATUS = "status";
     
     private static final String SLASH = "/";
     private static final String QUERY = "?";
-    protected static final String RESTJOBS_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" +SLASH + "jobs";
+    protected static final String RESTJOBS_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" + SLASH + "jobs";
     
     private static final String LOG_JOB_NOT_SUBMITTED = "Job has not been submitted by manager";
     
@@ -178,26 +179,59 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getJobId() {
+    	if (this.jobid == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.jobid != null ? this.jobid : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getOwner() {
+    	if (this.owner == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.owner != null ? this.owner : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getType() {
+    	if (this.type == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.type != null ? this.type : StringUtils.repeat(QUERY, 3));
     }
     
     @Override
     public String getStatus() {
+    	try {
+			updateJobStatus();
+		} catch (ZosBatchException e) {
+			logger.error(e);
+		}
         return (this.status != null ? this.status : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
     public String getRetcode() {
+    	if (this.retcode == null) {
+        	try {
+    			updateJobStatus();
+    		} catch (ZosBatchException e) {
+    			logger.error(e);
+    		}
+    	}
         return (this.retcode != null ? this.retcode : StringUtils.repeat(QUERY, 4));
     }
 
@@ -345,12 +379,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             
             logger.trace(responseBodyObject);
             // Get the spool files
-            JsonArray jsonArray;
-            try {
-                jsonArray = response.getJsonContent().getAsJsonArray("items");
-            } catch (RseapiException e) {
-                throw new ZosBatchException(e);
-            }
+            JsonArray jsonArray = ((JsonObject) responseBodyObject).getAsJsonArray("items");
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject responseBody = jsonElement.getAsJsonObject();
                 String id = jsonNull(responseBody, PROP_ID);
@@ -430,7 +459,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     public boolean submitted() {
-        return this.jobid != null;
+    	return !getJobId().contains("?");
     }
     
     public boolean isComplete() {
@@ -450,12 +479,12 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     private String jobStatus() {
-        return "JOBID=" + getJobId() + 
+        return "JOBID=" + this.jobid + 
               " JOBNAME=" + this.jobname.getName() + 
-              " OWNER=" + getOwner() + 
-              " TYPE=" + getType() +
-              " STATUS=" + getStatus() + 
-              " RETCODE=" + getRetcode();
+              " OWNER=" + this.owner + 
+              " TYPE=" + this.type +
+              " STATUS=" + this.status + 
+              " RETCODE=" + this.retcode;
     }
 
     protected void setJobPathValues() {
@@ -464,9 +493,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void updateJobStatus() throws ZosBatchException {
-        if (!submitted()) {
-            throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
-        }
         HashMap<String, String> headers = new HashMap<>();
         
         IRseapiResponse response;
@@ -488,7 +514,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.jobNotFound = false;
             this.owner = jsonNull(responseBody, PROP_OWNER);
             this.type = jsonNull(responseBody, PROP_TYPE);
-            this.status = jsonNull(responseBody, "status");
+            this.status = jsonNull(responseBody, PROP_STATUS);
             if (this.status != null && "COMPLETION".equals(this.status) ||
             	this.status != null && "ABEND".equals(this.status)) {
                 this.jobComplete = true;
@@ -579,9 +605,14 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     protected static String buildErrorString(String action, IRseapiResponse response) {
     	String message = "";
     	try {
-    		JsonObject content = response.getJsonContent();
+    		Object content = response.getContent();
 			if (content != null) {
-				message = "\nstatus: " + content.get("status").getAsString() + "\n" + "message: " + content.get("message").getAsString(); 
+				logger.trace(content);
+				if (content instanceof JsonObject) {
+					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
+				} else if (content instanceof String) {
+					message = " response body:\n" + content;
+				}
 			}
 		} catch (RseapiException e) {
 			// NOP

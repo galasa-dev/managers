@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zos3270.spi;
 
@@ -34,6 +34,7 @@ public class BufferChar implements IBufferHolder {
         return "" + this.character;
     }
 
+    @Override
     public char getChar() {
         return this.character;
     }

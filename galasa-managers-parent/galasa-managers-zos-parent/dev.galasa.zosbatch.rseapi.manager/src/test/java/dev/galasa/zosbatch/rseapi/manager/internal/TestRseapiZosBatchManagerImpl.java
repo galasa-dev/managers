@@ -45,7 +45,7 @@ import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class})
-public class TestZosBatchManagerImpl {
+public class TestRseapiZosBatchManagerImpl {
 
 	private RseapiZosBatchManagerImpl zosBatchManager; 
     
@@ -123,7 +123,7 @@ public class TestZosBatchManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosBatchManagerImpl.class));
+        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestRseapiZosBatchManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosBatchManagerSpy.getFramework(), frameworkMock);
     }
     

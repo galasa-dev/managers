@@ -18,7 +18,7 @@ import dev.galasa.zos.ZosManagerException;
  * 
  * @galasa.name zos.cluster.[clusterId].images
  * 
- * @galasa.description The zOS Images for the specifies Cluster
+ * @galasa.description The zOS Images for the specified cluster
  * 
  * @galasa.required No
  * 

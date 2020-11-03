@@ -330,7 +330,9 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
         Object content = retrieve(null);
-        if (content instanceof InputStream) {
+        if (content instanceof byte[]) {
+            return new String((byte[]) content);
+        } else if (content instanceof InputStream) {
             return new String(inputStreamToByteArray((InputStream) content));
         }
         return (String) content;
@@ -341,7 +343,13 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
         }
-        return inputStreamToByteArray((InputStream) retrieve(null));
+        Object content = retrieve(null);
+        if (content instanceof String) {
+            return ((String) content).getBytes();
+        } else if (content instanceof InputStream) {
+            return inputStreamToByteArray((InputStream) content);
+        }
+        return (byte[]) content;
     }
     
     @Override
@@ -505,7 +513,13 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
-        return (String) retrieve(memberName);
+        Object content = retrieve(memberName);
+        if (content instanceof byte[]) {
+            return new String((byte[]) content);
+        } else if (content instanceof InputStream) {
+            return new String(inputStreamToByteArray((InputStream) content));
+        }
+        return (String) content;
     }
 
     @Override
@@ -514,7 +528,13 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
-        return inputStreamToByteArray((InputStream) retrieve(memberName));
+        Object content = retrieve(memberName);
+        if (content instanceof String) {
+            return ((String) content).getBytes();
+        } else if (content instanceof InputStream) {
+            return inputStreamToByteArray((InputStream) content);
+        }
+        return (byte[]) content;
     }
 
     @Override
@@ -553,7 +573,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
                 throw new ZosDatasetException(displayMessage);
             }
         }
-        logger.trace("Content of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
+        logger.trace("List of members of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
 
         return this.datasetMembers;
     }
@@ -950,9 +970,28 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             setRecordlength(value.getAsInt());
         }
         
+        value = datasteAttributes.get(PROP_DATACLASS);
+        if (value != null) {
+            setDataClass(value.getAsString());
+        }
+        
+        value = datasteAttributes.get(PROP_STORECLASS);
+        if (value != null) {
+            setStorageClass(value.getAsString());
+        }
+        
+        value = datasteAttributes.get(PROP_MGNTCLASS);
+        if (value != null) {
+            setManagementClass(value.getAsString());
+        }
+        
         value = datasteAttributes.get(PROP_DSNTYPE);
         if (value != null) {
-            setDatasetType(DSType.valueOfLabel(value.getAsString()));
+        	if (value.getAsString().contains(DSType.LIBRARY.toString())) {
+        		setDatasetType(DSType.LIBRARY);
+        	} else {
+        		setDatasetType(DSType.valueOfLabel(value.getAsString()));
+        	}
         }
         
         value = datasteAttributes.get(PROP_USED);

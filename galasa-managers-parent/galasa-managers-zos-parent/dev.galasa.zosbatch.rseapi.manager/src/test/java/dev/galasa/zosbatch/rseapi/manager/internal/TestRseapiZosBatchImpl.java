@@ -51,7 +51,7 @@ import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RseapiZosBatchManagerImpl.class, InputClass.class, MsgClass.class, MsgLevel.class})
-public class TestZosBatchImpl {
+public class TestRseapiZosBatchImpl {
     
     private RseapiZosBatchImpl zosBatch;
     
@@ -120,7 +120,7 @@ public class TestZosBatchImpl {
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
         Mockito.doThrow(new IOException()).when(fileSystemProviderMock).checkAccess(Mockito.any(), Mockito.any());
         RseapiZosBatchManagerImpl.setArchivePath(archivePathMock);
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestZosBatchImpl.class.getDeclaredMethod("setup").getName());        
+        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestRseapiZosBatchImpl.class.getDeclaredMethod("setup").getName());        
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -164,10 +164,10 @@ public class TestZosBatchImpl {
         zosBatchSpy = Mockito.spy(zosBatch);
     }
     
-//    @Test
+    @Test
     public void testSubmitJob() throws Exception {
         IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
-        Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
+        Assert.assertEquals("getJobId() should return FIXED_JOBID", "????????", zosBatchJob.getJobId());
         
         zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock, zosBatchJobcardMock);
         Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
@@ -221,7 +221,7 @@ public class TestZosBatchImpl {
         zosBatchSpy.getJobs(null, "123456789");
     }
     
-//    @Test
+    @Test
     public void testGetBatchJobs() throws Exception {
         List<IZosBatchJob> zosBatchJobs = zosBatchSpy.getBatchJobs(FIXED_JOBNAME, FIXED_JOBID);
         Assert.assertEquals("List returned by getBatchJobs() should contain FIXED_JOBID", 1, zosBatchJobs.size());
@@ -270,12 +270,13 @@ public class TestZosBatchImpl {
         zosBatchSpy.getJobs(null, null);
     }
     
-//    @Test
+    @Test
     public void testGetBatchJobsException5() throws Exception {
         Mockito.when(rseapiResponseMockStatus.getContent()).thenReturn(getJsonObject());
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
         exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Error List jobs output, category:0, rc:0, reason:0, message:message"));
+        exceptionRule.expectMessage("Error List jobs output, HTTP Status Code 404 : NOT_FOUND\nstatus: " + FIXED_STATUS_OUTPUT + "\nmessage: message");
                 
         zosBatchSpy.getJobs(null, null);
     }
@@ -333,12 +334,21 @@ public class TestZosBatchImpl {
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
         zosBatchSpy.cleanup();
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
+
+        zosBatchJobs = new ArrayList<>();
+        Mockito.when(zosBatchJobMock.submitted()).thenReturn(true);
+        Mockito.when(zosBatchJobMock.isComplete()).thenReturn(false);
+        Mockito.doThrow(new ZosBatchException()).when(zosBatchJobMock).cancel();
+        zosBatchJobs.add(zosBatchJobMock);
+        Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
+        zosBatchSpy.cleanup();
+        Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
     }
    
     private JsonObject getJsonObject() {
         JsonObject responseBody = new JsonObject();
-        responseBody.addProperty("jobname", FIXED_JOBNAME);
-        responseBody.addProperty("jobid", FIXED_JOBID);
+        responseBody.addProperty("jobName", FIXED_JOBNAME);
+        responseBody.addProperty("jobID", FIXED_JOBID);
         responseBody.addProperty("owner", FIXED_OWNER);
         responseBody.addProperty("type", FIXED_TYPE);
         responseBody.addProperty("retcode", FIXED_RETCODE_0000);

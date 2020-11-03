@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-zos-parent</artifactId>
-		<version>0.11.0-SNAPSHOT</version>
+		<version>0.12.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.zos.manager</artifactId>
-	<version>0.11.0-SNAPSHOT</version>
+	<version>0.12.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa zOS Manager</name>
@@ -18,31 +18,33 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
-			<version>0.11.0-SNAPSHOT</version>
+			<version>0.12.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
-			<version>0.11.0-SNAPSHOT</version>
+			<version>0.12.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.ipnetwork.manager</artifactId>
-			<version>0.11.0-SNAPSHOT</version>
+			<version>0.12.0-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient</artifactId>
 			<version>0.6.0</version>
+			<scope>provided</scope>
 		</dependency>
 		
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
+			<scope>provided</scope>
         </dependency>
 	</dependencies>
 
