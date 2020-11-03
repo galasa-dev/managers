@@ -16,10 +16,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ManagerException;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.internal.CicstsManagerImpl;
 import dev.galasa.cicsts.internal.properties.DseApplid;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioner;
+import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 
 public class DseProvisioningImpl implements ICicsRegionProvisioner {
     private static final Log logger = LogFactory.getLog(DseProvisioningImpl.class);
@@ -43,6 +47,11 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
                 this.enabled = false;
         }
     }
+    
+    @Override
+    public void cicsProvisionGenerate() throws ManagerException, ResourceUnavailableException {
+    }
+
 
     @Override
     public ICicsRegionProvisioned provision(@NotNull String cicsTag, @NotNull String imageTag,
@@ -55,8 +64,16 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
         if (applid == null) {
             return null;
         }
+        
+        IZosImage zosImage = null;
+        try {
+            zosImage = cicstsManager.getZosManager().getImageForTag(imageTag);
+        } catch (ZosManagerException e) {
+            throw new CicstsManagerException("Unable to locate zOS Image tagged " + imageTag, e);
+        }
 
-        DseCicsImpl cicsRegion = new DseCicsImpl(this.cicstsManager, cicsTag, imageTag, applid);
+
+        DseCicsImpl cicsRegion = new DseCicsImpl(this.cicstsManager, cicsTag, zosImage, applid);
 
         logger.info("Provisioned DSE " + cicsRegion.toString() + " on zOS Image " + cicsRegion.getZosImage().getImageID() + " for tag '" + cicsRegion.getTag());
 
@@ -79,5 +96,6 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
 
         return region;
     }
+
 
 }
