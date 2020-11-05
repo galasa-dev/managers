@@ -15,8 +15,17 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 
 public interface ICicsRegionProvisioner {
 
+    void cicsProvisionGenerate() throws ManagerException, ResourceUnavailableException;
+    
+    void cicsProvisionBuild() throws ManagerException, ResourceUnavailableException;
+    
     ICicsRegionProvisioned provision(@NotNull String cicsTag, @NotNull String imageTag, @NotNull List<Annotation> annotations) throws ManagerException;
 
-    void cicsProvisionGenerate() throws ManagerException, ResourceUnavailableException;
-
+    void provisionStart() throws ManagerException, ResourceUnavailableException;
+    
+    void provisionStop();
+    
+    void provisionDiscard();
+    
+    void shutdown();
 }
