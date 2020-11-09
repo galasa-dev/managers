@@ -5,11 +5,11 @@
     <parent>
         <groupId>dev.galasa</groupId>
         <artifactId>galasa-managers-zos-parent</artifactId>
-        <version>0.12.0-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>dev.galasa.zosfile.rseapi.manager</artifactId>
-    <version>0.12.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Galasa zOS File Manager - RSE API Implementation</name>
@@ -18,22 +18,22 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.framework</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zos.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosrseapi.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

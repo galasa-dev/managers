@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-parent</artifactId>
-		<version>0.12.0-SNAPSHOT</version>
+		<version>0.13.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.managers.obr</artifactId>
-	<version>0.12.0-SNAPSHOT</version>
+	<version>0.13.0-SNAPSHOT</version>
 	<!-- If updating version, reflect change in build/docker/testcatalogs/pom.xml -->
 	<packaging>galasa-obr</packaging>
 
@@ -19,218 +19,218 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.core.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.core.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos3270.common</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos3270.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos3270.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosmf.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosbatch.zosmf.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosconsole.zosmf.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosfile.zosmf.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosprogram.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zostsocommand.ssh.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosunixcommand.ssh.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosrseapi.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosbatch.rseapi.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosfile.rseapi.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.ceci.manager</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
+            <version>0.13.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.ipnetwork.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.linux.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.linux.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.openstack.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.docker.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.docker.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.elasticlog.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.elasticlog.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.kubernetes.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.kubernetes.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.galasaecosystem.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.jmeter.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.jmeter.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.selenium.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.selenium.manager.ivt</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
