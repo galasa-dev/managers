@@ -27,7 +27,7 @@ public interface ICEMT {
                            @NotNull String resourceName,
                            @NotNull String action
                            )throws CEMTException;
-   
+
    public void discardResource(@NotNull ITerminal cemtTerminal,
                               @NotNull String resourceType,
                               @NotNull String resourceName,

@@ -122,7 +122,7 @@ public class CEMTImpl implements ICEMT {
       return returnMap;
       
    }
-   
+
 
    @Override
    public void setResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType, String resourceName,
@@ -239,7 +239,7 @@ public class CEMTImpl implements ICEMT {
          throw new CEMTException(e);
       }
       
-      
+
      
    }
 
