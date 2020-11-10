@@ -1,5 +1,9 @@
 package dev.galasa.cicsts.cemt.internal;
 
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.cicsts.cemt.CEMTException;
@@ -10,91 +14,128 @@ public class CEMTImpl implements ICEMT {
 
    private ITerminal terminal;
    
+   protected HashMap<String, String> getAttributes(String string, String resourceName, HashMap<String, String> map) throws Exception {
+	      Pattern pattern = Pattern.compile("\\w*\\(\\s*[a-zA-z0-9]*\\s*\\)");
+	      Matcher matcher = pattern.matcher(string);
+	      try {
+	         while(matcher.find()) {
+	            String matchedString = matcher.group();
+	            if(!matchedString.contains("INQUIRE")) {
+	               String newString = matchedString.substring(0, matchedString.length() -1);
+	               String[] parts = newString.split("\\(");
+	               if(parts.length < 2 && !map.containsKey(parts[0])) {
+	                  map.put(parts[0], "");
+	               }else if(map.containsKey(parts[0]) && parts.length == 2) {
+	                  if(!map.get(parts[0]).equals(parts[1].trim())) {
+	                     String value = map.get(parts[0]);
+	                     map.put(parts[0], (value + parts[1]).trim());
+	                  }
+	               }else if(parts.length == 2){
+	                  map.put(parts[0], parts[1].trim());
+	               }
+	            }
+	         }
+	      }catch(Exception e) {
+	         throw new Exception("Error creating map", e);
+	      }
+	      return map;
+	   }
+   
    @Override
-   public boolean inquireResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType,
-         @NotNull String resourceName, @NotNull String searchText) throws CEMTException {
+   public HashMap<String, String> inquireResource(@NotNull ITerminal cemtTerminal,
+                                              @NotNull String resourceType,
+                                              @NotNull String resourceName) throws CEMTException{
       
-      return inquireResource(cemtTerminal, resourceType, resourceName, searchText, 0);
+      this.terminal = cemtTerminal;
+      HashMap<String, String> returnMap = new HashMap<String, String>();
+      
+      try {
+         this.terminal.clear();
+         this.terminal.waitForKeyboard();
+      }catch(Exception e) {
+         throw new CEMTException("Problem starting transaction", e);
+      }
+      
+      try {
+         terminal.type("CEMT INQUIRE " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
+         terminal.waitForTextInField("STATUS:");
+      }catch(Exception e) {
+         throw new CEMTException("Problem with starting CEMT transaction");
+      }
+      
+      try {
+//    	  Thread.sleep(1000);
+         if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
+            terminal.pf9();
+            terminal.waitForKeyboard();
+            terminal.pf3();
+            terminal.clear();
+            terminal.waitForKeyboard();
+            return null;  
+         }
+      }catch(Exception e){
+         throw new CEMTException("Problem determining the result of the CEMT command", e);
+      }
+      
+      try {
+         terminal.tab().enter().waitForKeyboard();
+         if(!terminal.retrieveScreen().contains("Program(" + resourceName.toUpperCase() + ")")) {
+            throw new CEMTException("Problem finding properties");
+         }
+      }catch(Exception e) {
+         throw new CEMTException("Problem retrieving properties for resource", e);
+      }
+      
+      try {
+        
+         String terminalString = terminal.retrieveScreen();
+         
+         returnMap = getAttributes(terminalString, resourceName, returnMap);
+         
+         boolean pageDown = terminalString.contains("+");
+         
+         while(pageDown) {
+            
+            terminal.pf8().waitForKeyboard();
+            terminalString = terminal.retrieveScreen();
+            returnMap = getAttributes(terminalString, resourceName, returnMap);
+            
+            if(terminalString.indexOf("+") == terminalString.lastIndexOf("+")) {
+               pageDown = false;
+            }
+            
+         }
+        
+      }catch(Exception e) {
+         throw new CEMTException("Problem whilst adding resource properties", e);
+      }
+      
+      
+      try {
+         terminal.pf3();
+         terminal.clear();
+         terminal.waitForKeyboard();
+      }catch(Exception e) {
+         throw new CEMTException("Unable to return terminal back into reset state", e);
+      }
+      
+      return returnMap;
+      
    }
-
-   @Override
-   public boolean inquireResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType,
-         @NotNull String resourceName, @NotNull String searchText, @NotNull long milliSecondTimeout) throws CEMTException {
-      
-     this.terminal = cemtTerminal;
-      
-     if(milliSecondTimeout > 0) {
-        try {
-           Thread.sleep(milliSecondTimeout);
-        }catch(InterruptedException e) {
-           throw new CEMTException("Unable to prepare for the CEMT inquire resource",e);
-        }
-     }
-     
-     try {
-        terminal.type("CEMT INQUIRE " + resourceType + "(" + resourceName + ")").enter();
-        terminal.waitForKeyboard();
-     }catch(Exception e) {
-        throw new CEMTException("Problem with starting the CEMT transaction",e);
-     }
-      
-     try {
-        if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
-           terminal.pf9();
-           terminal.waitForKeyboard();
-           throw new CEMTException("Errors detected whilst inquiring resource");
-        }
-     }catch(Exception e) {
-        throw new CEMTException("Problem determining the result from the CEMT command", e);
-     }
-     
-     boolean found = false;
-     
-     try {
-     
-        if(searchText == null) {
-           found = true;
-        }
-        
-        terminal.tab();
-        terminal.waitForKeyboard();
-        terminal.enter();
-        
-        found = terminal.retrieveScreen().contains(searchText);
-        
-        boolean pageDown = terminal.retrieveScreen().contains("+ ");
-        
-        while(!found && pageDown) {
-           terminal.pf8();
-           found = terminal.retrieveScreen().contains(searchText);
-           pageDown = terminal.retrieveScreen().contains("+ ");
-        }
-        
-        if(!found) {
-           throw new CEMTException("Unable to locate search string: " + searchText);
-        }
-        
-     }catch(Exception e) {
-        throw new CEMTException("An error occured whilst trying to seach for string", e);
-     }
-     
-     try {
-        this.terminal.pf3();
-        this.terminal.clear();
-        this.terminal.waitForKeyboard();
-        this.terminal.type("CEDA").enter().waitForKeyboard();
-     }catch(Exception e) {
-        throw new CEMTException("Unable to return terminal back into reset state", e);
-     }
-     
-     return found;
-   }
+   
 
    @Override
    public void setResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType, String resourceName,
          @NotNull String action, @NotNull String searchText) throws CEMTException {
       
       this.terminal = cemtTerminal;
+      
+      try {
+         this.terminal.clear();
+         this.terminal.waitForKeyboard();
+      }catch(Exception e) {
+         throw new CEMTException("Problem starting transaction", e);
+      }
       
       try {
          if(resourceName == null) {
@@ -121,7 +162,6 @@ public class CEMTImpl implements ICEMT {
          terminal.pf3();
          terminal.clear();
          terminal.waitForKeyboard();
-         terminal.type("CEDA").enter().waitForKeyboard();
       }catch(Exception e) {
          throw new CEMTException("Unable to return terminal back into reset state", e);
       }
@@ -139,22 +179,25 @@ public class CEMTImpl implements ICEMT {
    }
 
    @Override
-   public void discardResouce(@NotNull ITerminal cemtTerminal, @NotNull String resourceType,
+   public void discardResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType,
          @NotNull String resourceName, @NotNull String searchText) throws CEMTException {
-   
+      this.terminal = cemtTerminal;
+         try {
+            this.terminal.clear();
+            this.terminal.waitForKeyboard();
+         }catch(Exception e) {
+            throw new CEMTException("Problem starting transaction", e);
+         }
          try {
             if(resourceName == null) {
-               terminal.type("CEMT DISCARD " + resourceType);
+               terminal.type("CEMT DISCARD " + resourceType).enter().waitForKeyboard();
             }else {
-               terminal.type("CEMT DISCARD " + resourceType + "(" + resourceName + ")");
+               terminal.type("CEMT DISCARD " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
             }
-            
-            terminal.enter();
-            terminal.waitForKeyboard();
+            terminal.waitForTextInField("STATUS:");
          }catch(Exception e) {
             throw new CEMTException("Problem with starting the CEMT transaction", e);
          }
-         
          try {
             if(!terminal.retrieveScreen().contains(searchText)) {
                terminal.pf9();
@@ -164,16 +207,14 @@ public class CEMTImpl implements ICEMT {
          }catch(Exception e) {
             throw new CEMTException("Problem determining the result from the CEMT command");
          }
-         
          try {
             terminal.pf3();
             terminal.clear();
             terminal.waitForKeyboard();
-            terminal.type("CEDA").enter().waitForKeyboard();
          }catch(Exception e) {
             throw new CEMTException("Unable to return terminal back into reset state", e);
          }
-      
+
    }
 
    @Override
@@ -197,6 +238,8 @@ public class CEMTImpl implements ICEMT {
       }catch(Exception e) {
          throw new CEMTException(e);
       }
+      
+      
      
    }
 

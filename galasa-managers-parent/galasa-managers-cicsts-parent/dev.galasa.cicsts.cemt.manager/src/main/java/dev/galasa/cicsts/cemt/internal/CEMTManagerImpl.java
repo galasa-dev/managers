@@ -48,6 +48,11 @@ public class CEMTManagerImpl extends AbstractManager implements ICEMTManagerSpi 
    }
    
    @Override
+   public void provisionGenerate() throws ManagerException {
+      generateAnnotatedFields(CEMTManagerField.class);
+   }
+   
+   @Override
    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException{
       if(activeManagers.contains(this)) {
          return;
