@@ -57,6 +57,7 @@ import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
+import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
@@ -500,7 +501,14 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     @Override
     public String getRunDatasetHLQ(IZosImage image) throws ZosManagerException {
+        Objects.nonNull(image);
         return RunDatasetHLQ.get(image);
+    }
+
+    @Override
+    public String getRunUNIXPathPrefix(IZosImage image) throws ZosManagerException {
+        Objects.nonNull(image);
+        return RunUNIXPathPrefix.get(image);
     }
     
     @Override

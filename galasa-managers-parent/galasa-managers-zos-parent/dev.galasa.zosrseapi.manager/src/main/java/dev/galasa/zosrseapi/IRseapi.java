@@ -24,7 +24,6 @@ public interface IRseapi {
     /**
      * Enumeration of RSE API request types:
      * <li>{@link #GET}</li>
-     * <li>{@link #PUT}</li>
      * <li>{@link #PUT_TEXT}</li>
      * <li>{@link #PUT_JSON}</li>
      * <li>{@link #POST}</li>
@@ -35,31 +34,33 @@ public interface IRseapi {
         /**
          * GET method with no request body
          */
-        GET,
+        GET("GET"),
         /**
          * PUT method with no request body
          */
-        PUT,
-        /**
-         * PUT method with JSON request body
-         */
-        PUT_TEXT,
+        PUT_TEXT("PUT"),
         /**
          * PUT method with TEXT request body
          */
-        PUT_JSON,
-        /**
-         * POST method with no request body
-         */
-        POST,
+        PUT_JSON("PUT"),
         /**
          * POST method with JSON request body
          */
-        POST_JSON,
+        POST_JSON("POST"),
         /**
          * DELETE method with no request body
          */
-        DELETE;
+        DELETE("DELETE");
+        
+        private String type;
+        
+        RseapiRequestType(String type) {
+            this.type = type;
+        }
+        
+        public String getRequestType() {
+            return type;
+        }
     }
     
     /**
@@ -88,14 +89,15 @@ public interface IRseapi {
     public @NotNull IRseapiResponse get(String path, List<Integer> validStatusCodes, boolean convert) throws RseapiException;
 
     /**
-	 * Issue an HTTP PUT request to the RSE API server with no request body {@code application/json}
+	 * Issue an HTTP PUT request to the RSE API server with text request body {@code text/plain}
 	 * 
 	 * @param path identifies the RSE API REST API
+	 * @param body the request body
 	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
 	 * @return the RSE API server response
 	 * @throws RseapiException
 	 */
-	public @NotNull IRseapiResponse put(String path, List<Integer> validStatusCodes) throws RseapiException;
+	public @NotNull IRseapiResponse putText(String path, String body, List<Integer> validStatusCodes) throws RseapiException;
 
 	/**
 	 * Issue an HTTP PUT request to the RSE API server with a request body of content type of {@code application/json}
@@ -139,6 +141,14 @@ public interface IRseapi {
      * @throws RseapiException
      */
     public @NotNull IRseapiResponse delete(String path, List<Integer> validStatusCodes) throws RseapiException;
+    
+    /**
+     * Return the JSON response from the RSE API server Server Information request
+     * 
+	 * @return the RSE API server JSON response
+     * @throws RseapiException
+     */
+    public @NotNull JsonObject serverInfo() throws RseapiException;
     
     /**
      * Get the zOS image associated with the RSE API server

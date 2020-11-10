@@ -24,9 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -66,13 +64,14 @@ import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.ImageMaxSlots;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
+import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.JobnamePrefix;
-import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
 import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
@@ -84,7 +83,7 @@ import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
                  DseImageIdForTag.class, ImageIdForTag.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
-                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, BatchRestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
+                 ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, RunUNIXPathPrefix.class, BatchRestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
                  JobnamePrefix.class, DirectoryListMaxItems.class, FileRestrictToImage.class, UnixFilePermissions.class})
 public class TestZosManagerImpl {
 
@@ -130,9 +129,6 @@ public class TestZosManagerImpl {
     private ZosFilePropertiesSingleton zosFilePropertiesSingleton;
     
     private static String logMessage;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String BATCH_BUNDLE = "batch.bundle";
 
@@ -165,6 +161,8 @@ public class TestZosManagerImpl {
     private static final String SLOT_NAME = "SLOT-NAME";
 
     private static final String RUN_HLQ = "RUNHLQ";
+
+    private static final String RUN_UNIX_PATH_PREFIX = "/run/path/prefix";
 
     @Before
     public void setup() throws Exception {
@@ -223,16 +221,16 @@ public class TestZosManagerImpl {
         bundles.add(TSO_COMMAND_BUNDLE);
         bundles.add(UNIX_COMMAND_BUNDLE);
         
-        Assert.assertTrue("extraBundles() should return the expected value", bundles.equals(zosManagerSpy.extraBundles(frameworkMock)));
+        Assert.assertEquals("extraBundles() should return the expected value", bundles, zosManagerSpy.extraBundles(frameworkMock));
     }
     
     @Test
     public void testExtraBundlesExceptions() throws Exception {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
-        
-        zosManagerSpy.extraBundles(frameworkMock);
+        String expectedMessage = "Unable to request framework services";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.extraBundles(frameworkMock);
+        });
     }
     
     @Test
@@ -250,9 +248,10 @@ public class TestZosManagerImpl {
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
-        zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
+        String expectedMessage = "Unable to request framework services";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
+        });
     }
     
     @Test
@@ -269,9 +268,10 @@ public class TestZosManagerImpl {
     
     @Test
     public void testYouAreRequiredException() throws ManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("The IP Network Manager is not available");
-        zosManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The IP Network Manager is not available";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
     }
     
     @Test
@@ -294,6 +294,8 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "testClass", (Object) DummyTestClass1.class);
         zosManagerSpy.provisionGenerate();
         PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(1)).invoke("generateAnnotatedFields", Mockito.any());
+        
+        zosManagerSpy.provisionGenerate();
     }
     
     @Test
@@ -361,9 +363,10 @@ public class TestZosManagerImpl {
         PowerMockito.doReturn(0).when(ImageMaxSlots.class, "get", Mockito.anyString());
         PowerMockito.mockStatic(DssUtils.class);
         
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to provision zOS Image tagged " + TAG + " on " + IMAGE_ID + " as there is insufficient capacity");
-        zosManagerSpy.generateZosImage(field);
+        String expectedMessage = "Unable to provision zOS Image tagged " + TAG + " on " + IMAGE_ID + " as there is insufficient capacity";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.generateZosImage(field);
+        });
     }
     
     private void setupZosImage() throws Exception {
@@ -398,9 +401,10 @@ public class TestZosManagerImpl {
         taggedImages.clear();
         Whitebox.setInternalState(zosManagerSpy, "taggedImages", taggedImages);
 
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present");
-        zosManagerSpy.generateIpHost(field, annotations);
+        String expectedMessage = "Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.generateIpHost(field, annotations);
+        });
     }
     
     @Test
@@ -419,9 +423,10 @@ public class TestZosManagerImpl {
         Assert.assertEquals("generateIpPort() should return the expected value", ipPortMock, zosManagerSpy.generateIpPort(field, annotations));
         
         PowerMockito.when(zosIpHostMock.provisionPort(Mockito.anyString())).thenThrow(new IpNetworkManagerException());
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to provision a port for zOS Image " + IMAGE_ID + ", type=standard");
-        zosManagerSpy.generateIpPort(field, annotations);
+        String expectedMessage = "Unable to provision a port for zOS Image " + IMAGE_ID + ", type=standard";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.generateIpPort(field, annotations);
+        });
     }
     
     @Test
@@ -429,9 +434,10 @@ public class TestZosManagerImpl {
         Field field = DummyTestClass.class.getField("zosPort");
         List<Annotation> annotations = Arrays.asList(DummyTestClass.class.getAnnotations());
         
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present");
-        zosManagerSpy.generateIpPort(field, annotations);
+        String expectedMessage = "Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.generateIpPort(field, annotations);
+        });
     }
     
     @Test
@@ -456,9 +462,10 @@ public class TestZosManagerImpl {
         PowerMockito.doReturn(clusters).when(ClusterImages.class, "get", Mockito.anyString());
         PowerMockito.when(dssMock.get(ArgumentMatchers.contains(".current.slots"))).thenReturn("0");
         PowerMockito.mockStatic(DssUtils.class);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Insufficent capacity for images in cluster DEFAULT");
-        zosManagerSpy.selectNewImage(TAG);
+        String expectedMessage = "Insufficent capacity for images in cluster DEFAULT";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.selectNewImage(TAG);
+        });
     }
     
     @Test
@@ -469,9 +476,10 @@ public class TestZosManagerImpl {
         List<String> clusters = Arrays.asList(new String[] {});
         PowerMockito.doReturn(clusters).when(ClusterImages.class, "get", Mockito.anyString());
         PowerMockito.mockStatic(DssUtils.class);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase());
-        zosManagerSpy.selectNewImage(TAG);
+        String expectedMessage = "Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase();
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.selectNewImage(TAG);
+        });
     }
     
     @Test
@@ -485,9 +493,10 @@ public class TestZosManagerImpl {
         PowerMockito.mockStatic(ImageMaxSlots.class);
         PowerMockito.doReturn(-1).when(ImageMaxSlots.class, "get", Mockito.anyString());         
         PowerMockito.mockStatic(DssUtils.class);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase());
-        zosManagerSpy.selectNewImage(TAG);
+        String expectedMessage = "Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase();
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.selectNewImage(TAG);
+        });
     }
     
     @Test
@@ -509,22 +518,22 @@ public class TestZosManagerImpl {
         ZosManagerImpl.ImageUsage imageUsage = new ZosManagerImpl.ImageUsage(zosProvisionedImageMock);
         ZosManagerImpl.ImageUsage imageUsage1 = new ZosManagerImpl.ImageUsage(zosProvisionedImageMock);
         
-        Assert.assertEquals("ImageUsage.compareTo() should return the expected value", 0, imageUsage.compareTo(imageUsage1));
+        Assert.assertEquals("imageUsage.compareTo() should return the expected value", 0, imageUsage.compareTo(imageUsage1));
         
-        Assert.assertTrue("ImageUsage.equals() should return true", imageUsage.equals(imageUsage1));
+        Assert.assertEquals("imageUsage should be equal", imageUsage, imageUsage1);
         
-        Assert.assertTrue("ImageUsage.equals() should return true", imageUsage.equals(imageUsage1));
+        Assert.assertEquals("imageUsage should be equal", imageUsage, imageUsage1);
         
-        Assert.assertFalse("ImageUsage.equals() should false", imageUsage.equals(null));
+        Assert.assertNotNull("imageUsage should not be null", imageUsage);
         
-        Assert.assertFalse("ImageUsage.equals() should false", imageUsage.equals((Object) new String()));
+        Assert.assertNotEquals("imageUsage should not be a String", imageUsage, ((Object) new String()));
 
         Mockito.doReturn(99.9f).when(zosProvisionedImageMock).getCurrentUsage();
-        Assert.assertFalse("ImageUsage.equals() should false", imageUsage.equals(new ZosManagerImpl.ImageUsage(zosProvisionedImageMock)));
+        Assert.assertNotEquals("imageUsage should equal value", imageUsage, new ZosManagerImpl.ImageUsage(zosProvisionedImageMock));
 
-        Assert.assertEquals("ImageUsage.hashCode() should return the correct value", imageUsage.hashCode(), imageUsage1.hashCode());
+        Assert.assertEquals("imageUsage.hashCode() should return the correct value", imageUsage.hashCode(), imageUsage1.hashCode());
 
-        Assert.assertEquals("ImageUsage.toString() should return the correct value", IMAGE_ID, imageUsage.toString());
+        Assert.assertEquals("imageUsage.toString() should return the correct value", IMAGE_ID, imageUsage.toString());
     }
     
     @Test
@@ -555,9 +564,10 @@ public class TestZosManagerImpl {
         
         taggedImages.clear();
         Whitebox.setInternalState(zosManagerSpy, "taggedImages", taggedImages);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to locate zOS Image for tag " + TAG + "1");
-        zosManagerSpy.getImageForTag(TAG + "1");
+        String expectedMessage = "Unable to locate zOS Image for tag " + TAG + "1";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.getImageForTag(TAG + "1");
+        });
     }
     
     @Test
@@ -621,9 +631,10 @@ public class TestZosManagerImpl {
         images.put(IMAGE_ID_1, zosProvisionedImageMock);
         Whitebox.setInternalState(zosManagerSpy, "images", images);
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("zOS image \"" + IMAGE_ID + "\" not defined");
-        zosManagerSpy.getImage(IMAGE_ID);
+        String expectedMessage = "zOS image \"" + IMAGE_ID + "\" not defined";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.getImage(IMAGE_ID);
+        });
     }
     
     @Test
@@ -640,9 +651,10 @@ public class TestZosManagerImpl {
         definedImages.add(new ImageUsage(zosProvisionedImageMock));
         Whitebox.setInternalState(zosManagerSpy, "images", images);
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("zOS image \"" + IMAGE_ID + "\" not defined");
-        zosManagerSpy.getImage(IMAGE_ID);
+        String expectedMessage = "zOS image \"" + IMAGE_ID + "\" not defined";
+        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        	zosManagerSpy.getImage(IMAGE_ID);
+        });
     }
     
     @Test
@@ -667,6 +679,13 @@ public class TestZosManagerImpl {
         PowerMockito.mockStatic(RunDatasetHLQ.class);
         PowerMockito.doReturn(RUN_HLQ).when(RunDatasetHLQ.class, "get", Mockito.any());
         Assert.assertEquals("RunDatasetHLQ() should return the expected value", RUN_HLQ, zosManagerSpy.getRunDatasetHLQ(zosImageMock));        
+    }
+    
+    @Test
+    public void testGetRunUNIXPathPrefix() throws Exception {
+        PowerMockito.mockStatic(RunUNIXPathPrefix.class);
+        PowerMockito.doReturn(RUN_UNIX_PATH_PREFIX).when(RunUNIXPathPrefix.class, "get", Mockito.any());
+        Assert.assertEquals("RunUNIXPathPrefix() should return the expected value", RUN_UNIX_PATH_PREFIX, zosManagerSpy.getRunUNIXPathPrefix(zosImageMock));        
     }
     
     @Test
@@ -743,6 +762,13 @@ public class TestZosManagerImpl {
     	Path archivePathMock = newMockedPath(true);
     	zosManagerSpy.storeArtifact(archivePathMock, "content", ResultArchiveStoreContentType.TEXT);
     	Mockito.verify(archivePathMock, Mockito.times(2)).getFileSystem();
+    }
+    
+    @Test 
+    public void testCreateArtifactDirectory() throws IOException, ZosManagerException {
+    	Path archivePathMock = newMockedPath(true);
+    	zosManagerSpy.createArtifactDirectory(archivePathMock);
+    	Mockito.verify(archivePathMock, Mockito.times(1)).getFileSystem();
     }
     
     @Test
