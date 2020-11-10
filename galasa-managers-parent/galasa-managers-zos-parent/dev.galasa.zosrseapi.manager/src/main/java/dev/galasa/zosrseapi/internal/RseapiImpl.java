@@ -57,7 +57,7 @@ public class RseapiImpl implements IRseapi {
 
     private HashMap<String, String> commonHeaders = new HashMap<>();
 
-	private ICredentials creds;
+	private static final String PATH_SERVERDETAILS = "/rseapi/api/v1/info/serverdetails";
 
     public RseapiImpl(IZosImage image) throws RseapiException {
         this.image = image;
@@ -93,7 +93,6 @@ public class RseapiImpl implements IRseapi {
             rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
             logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
             if (convert) {
-//                rseapiResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
                 rseapiResponse.setHttpClientresponse(this.httpClient.getJson(validPath(path)));
             } else {
                 rseapiResponse.setHttpClientresponse(this.httpClient.getFile(validPath(path)));
@@ -111,33 +110,9 @@ public class RseapiImpl implements IRseapi {
         return rseapiResponse;
     }
 
-    @Override
-	public @NotNull IRseapiResponse put(String path, List<Integer> validStatusCodes) throws RseapiException {
-	    String method = RseapiRequestType.PUT.name();
-	    if (validStatusCodes == null) {
-	        validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
-	    }
-	    RseapiResponseImpl rseapiResponse;
-	    try {
-	        addCommonHeaders();
-	        rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-	        logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
-	        rseapiResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), ""));
-	        logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
-	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
-	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
-	        }
-	    } catch (MalformedURLException | HttpClientException  e) {
-	        logger.error(e);
-	        throw new RseapiException(logBadRequest(method), e);
-	    }
-	    
-	    return rseapiResponse;
-	}
-
 	@Override
 	public @NotNull IRseapiResponse putJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws RseapiException {
-	    String method = RseapiRequestType.PUT.name();
+	    String method = RseapiRequestType.PUT_JSON.getRequestType();
 	    if (validStatusCodes == null) {
 	        validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
 	    }
@@ -160,9 +135,34 @@ public class RseapiImpl implements IRseapi {
 	    return rseapiResponse;
 	}
 
+    @Override
+	public @NotNull IRseapiResponse putText(String path, String requestBody, List<Integer> validStatusCodes) throws RseapiException {
+	    String method = RseapiRequestType.PUT_TEXT.getRequestType();
+	    if (validStatusCodes == null) {
+	        validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+	    }
+	    RseapiResponseImpl rseapiResponse;
+	    try {
+	        addCommonHeaders();
+	        rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
+	        logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
+	        logger.debug(LOG_BODY + requestBody);
+	        rseapiResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), requestBody));
+	        logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
+	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
+	        }
+	    } catch (MalformedURLException | HttpClientException  e) {
+	        logger.error(e);
+	        throw new RseapiException(logBadRequest(method), e);
+	    }
+	    
+	    return rseapiResponse;
+	}
+
 	@Override
     public @NotNull IRseapiResponse postJson(String path, JsonObject requestBody, List<Integer> validStatusCodes) throws RseapiException {
-        String method = RseapiRequestType.POST.name();
+        String method = RseapiRequestType.POST_JSON.getRequestType();
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }
@@ -187,7 +187,7 @@ public class RseapiImpl implements IRseapi {
 
 	@Override
     public @NotNull IRseapiResponse post(String path, List<Integer> validStatusCodes) throws RseapiException {
-        String method = RseapiRequestType.POST.name();
+        String method = RseapiRequestType.POST_JSON.getRequestType();
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }
@@ -233,6 +233,11 @@ public class RseapiImpl implements IRseapi {
     }
 
     @Override
+	public @NotNull JsonObject serverInfo() throws RseapiException {
+        return get(PATH_SERVERDETAILS, null, true).getJsonContent();
+	}
+
+	@Override
     public IZosImage getImage() {
         return this.image;
     }
@@ -285,9 +290,9 @@ public class RseapiImpl implements IRseapi {
         this.httpClient = RseapiManagerImpl.httpManager.newHttpClient();
         
         try {
-            this.creds = image.getDefaultCredentials();
+			ICredentials creds = image.getDefaultCredentials();
             this.httpClient.setURI(new URI(this.rseapiUrl));
-            if (this.creds instanceof ICredentialsUsernamePassword) {
+            if (creds instanceof ICredentialsUsernamePassword) {
                 this.httpClient.setAuthorisation(((ICredentialsUsernamePassword) creds).getUsername(), ((ICredentialsUsernamePassword) creds).getPassword());
             }
             this.httpClient.setTrustingSSLContext();

@@ -1,0 +1,71 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019.
+ */
+package dev.galasa.zosfile.rseapi.manager.internal;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import dev.galasa.zosfile.ZosDatasetException;
+import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
+import dev.galasa.zosrseapi.IRseapiResponse;
+import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
+
+public class RseapiZosUnixCommand {
+	private static final String PROP_INVOCATION = "invocation";
+	private static final String PROP_PATH = "path";
+	private static final String PROP_EXIT_CODE = "exit code";
+	
+	private static final String SLASH = "/";
+    
+	private static final String RESTUNIXCOMMANDS_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" + SLASH + "unixcommands";
+    
+    private static final Log logger = LogFactory.getLog(RseapiZosUnixCommand.class);
+	
+    private RseapiZosUnixCommand() {
+    	//NOP
+    }
+    
+    public static JsonObject execute(IRseapiRestApiProcessor rseapiApiProcessor, String command) throws ZosDatasetException {
+        IRseapiResponse response;
+        try {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty(PROP_INVOCATION, command);
+            requestBody.addProperty(PROP_PATH, "/usr/bin");
+			response = rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTUNIXCOMMANDS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
+        } catch (RseapiException e) {
+            throw new ZosDatasetException(e);
+        }
+
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+        	// Error case
+            String displayMessage = RseapiZosDatasetImpl.buildErrorString("zOS UNIX command", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        JsonObject responseBody;
+        try {
+            responseBody = response.getJsonContent();
+        } catch (RseapiException e) {
+            throw new ZosDatasetException("Issue command failed", e);
+        }
+        
+        logger.trace(responseBody);
+        JsonElement exitCode = responseBody.get(PROP_EXIT_CODE);
+        if (exitCode == null || exitCode.getAsInt() != 0) {
+        	String displayMessage = "Command failed. Response body:\n" + responseBody;
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        return responseBody;
+    }
+}

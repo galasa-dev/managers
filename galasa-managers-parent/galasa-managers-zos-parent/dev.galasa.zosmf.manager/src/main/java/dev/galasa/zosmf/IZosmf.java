@@ -211,6 +211,14 @@ public interface IZosmf {
     public @NotNull IZosmfResponse delete(String path, List<Integer> validStatusCodes) throws ZosmfException;
     
     /**
+     * Return the JSON response from the zOSMF Server Information request
+     * 
+	 * @return the RSE API server JSON response
+     * @throws RseapiException
+     */
+    public @NotNull JsonObject serverInfo() throws ZosmfException;
+    
+    /**
      * Get the zOS image associated with the zOSMF server
      * @return the zOS image
      */

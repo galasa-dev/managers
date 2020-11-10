@@ -14,9 +14,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -84,9 +82,6 @@ public class TestRseapiManagerImpl {
     @Mock
     private RseapiImpl rseapiMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private static final String IMAGE = "image";
 
     private static final String IMAGE_TAG = "tag";
@@ -133,9 +128,10 @@ public class TestRseapiManagerImpl {
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
-        rseapiManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        String expectedMessage = "Unable to request framework services";
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        });
     }
     
     @Test
@@ -159,17 +155,19 @@ public class TestRseapiManagerImpl {
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("The HTTP Manager is not available");
-        rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The HTTP Manager is not available";
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
     }
     
     @Test
@@ -229,10 +227,10 @@ public class TestRseapiManagerImpl {
 
         Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", new HashMap<>());
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Unable to get RSE API servers for cluster \"" + CLUSTER + "\"");
-        
-        rseapiManagerSpy.getRseapis(CLUSTER);
+        String expectedMessage = "Unable to get RSE API servers for cluster \"" + CLUSTER + "\"";
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.getRseapis(CLUSTER);
+        });
     }
     
     @Test
@@ -244,10 +242,10 @@ public class TestRseapiManagerImpl {
 
         Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", new HashMap<>());
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("No RSE API servers defined for cluster \"" + CLUSTER + "\"");
-        
-        rseapiManagerSpy.getRseapis(CLUSTER);
+        String expectedMessage = "No RSE API servers defined for cluster \"" + CLUSTER + "\"";
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.getRseapis(CLUSTER);
+        });
     }
     
     @Test
@@ -265,9 +263,10 @@ public class TestRseapiManagerImpl {
         
         rseapis.clear();
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", rseapis);
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("No RSE API sever configured on " + IMAGE);
-        rseapiManagerSpy.newRseapiRestApiProcessor(zosImageMock, true);
+        String expectedMessage = "No RSE API sever configured on " + IMAGE;
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	rseapiManagerSpy.newRseapiRestApiProcessor(zosImageMock, true);
+        });
     }
 
     private void setupRseapiImplInitialize() throws RseapiManagerException {        

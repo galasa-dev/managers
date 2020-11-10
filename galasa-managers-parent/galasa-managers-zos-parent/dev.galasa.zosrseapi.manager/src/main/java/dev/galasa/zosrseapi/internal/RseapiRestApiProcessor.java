@@ -69,18 +69,16 @@ public class RseapiRestApiProcessor implements IRseapiRestApiProcessor {
                         rseapiServer.setHeader(entry.getKey(), entry.getValue());
                     }
                 }
+            	rseapiServer.setHeader("accept", "*/*");
                 switch (requestType) {
 	                case GET:
 	                    response = rseapiServer.get(path, validStatusCodes, convert);
 	                    break;
-	                case PUT:
-	                    response = rseapiServer.put(path, validStatusCodes);
-	                    break;
 	                case PUT_JSON:
 	                    response = rseapiServer.putJson(path, (JsonObject) body, validStatusCodes);
 	                    break;
-	                case POST:
-	                    response = rseapiServer.post(path, validStatusCodes);
+	                case PUT_TEXT:
+	                    response = rseapiServer.putText(path, (String) body, validStatusCodes);
 	                    break;
 	                case POST_JSON:
 	                    response = rseapiServer.postJson(path, (JsonObject) body, validStatusCodes);
