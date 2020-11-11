@@ -64,8 +64,17 @@ public interface IZosManagerSpi extends IZosManager {
      * @throws ZosManagerException
      */
     @NotNull
-    String getRunDatasetHLQ(IZosImage image) throws ZosManagerException;
+    String getRunDatasetHLQ(@NotNull IZosImage image) throws ZosManagerException;
 
+    /**
+     * Returns the zOS UNIX path prefix for temporary file for the specified image
+     * @param the image
+     * @return the image, never null
+     * @throws ZosManagerException
+     */
+    @NotNull
+    String getRunUNIXPathPrefix(@NotNull IZosImage image) throws ZosManagerException;
+    
     /**
      * Provides other managers to the zOS Batch {@code zosbatch.batchjob.[imageid].restrict.to.image} property
      * @param imageId

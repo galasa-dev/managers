@@ -19,9 +19,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -109,9 +107,6 @@ public class TestRseapiImpl {
     private Log logMock;
     
     private static String logMessage;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String IMAGE = "image";
 
@@ -228,19 +223,20 @@ public class TestRseapiImpl {
         setupGet();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.get(PATH, null, true);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.get(PATH, null, true);
+        });
     }
     
     @Test
     public void testGetHttpException() throws RseapiException, HttpClientException {
         setupGet();
-        Mockito.when(httpClientMock.getText(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         Mockito.when(httpClientMock.getJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with GET to RSE API server");
-        rseapiSpy.get(PATH, null, true);
+        String expectedMessage =  "Problem with GET to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.get(PATH, null, true);
+        });
     }
     
     private void setupGet() {
@@ -279,18 +275,20 @@ public class TestRseapiImpl {
     public void testPostBadHttpResponseException() throws RseapiException {
         setupPost();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.post(PATH, null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.post(PATH, null);
+        });
     }
     
     @Test
     public void testPostHttpException() throws RseapiException, HttpClientException {
         setupPost();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with POST to RSE API server");
-        rseapiSpy.post(PATH, null);
+        String expectedMessage =  "Problem with POST to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.post(PATH, null);
+        });
     }
 
     private void setupPost() {
@@ -318,18 +316,20 @@ public class TestRseapiImpl {
     public void testPostJsonBadHttpResponseException() throws RseapiException {
         setupPostJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.postJson(PATH, new JsonObject(), null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.postJson(PATH, new JsonObject(), null);
+        });
     }
     
     @Test
     public void testPostJsonHttpException() throws RseapiException, HttpClientException {
         setupPostJson();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with POST to RSE API server");
-        rseapiSpy.postJson(PATH, new JsonObject(), null);
+        String expectedMessage =  "Problem with POST to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.postJson(PATH, new JsonObject(), null);
+        });
     }
 
     private void setupPostJson() {
@@ -344,34 +344,36 @@ public class TestRseapiImpl {
     }
 
     @Test
-    public void testPut() throws RseapiException {
-        setupPut();
-        IRseapiResponse rseapiResponse = rseapiSpy.put(PATH, null);
+    public void testPutText() throws RseapiException {
+        setupPutText();
+        IRseapiResponse rseapiResponse = rseapiSpy.putText(PATH, "", null);
         Assert.assertEquals("get() should return the expected value", HttpStatus.SC_OK, rseapiResponse.getStatusCode());
 
-        rseapiResponse = rseapiSpy.put(PATH, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+        rseapiResponse = rseapiSpy.putText(PATH, "", new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
         Assert.assertEquals("get() should return the expected value", HttpStatus.SC_OK, rseapiResponse.getStatusCode());
     }
     
     @Test
     public void testPutBadHttpResponseException() throws RseapiException {
-        setupPut();
+        setupPutText();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.put(PATH, null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.putText(PATH, "", null);
+        });
     }
     
     @Test
     public void testPutHttpException() throws RseapiException, HttpClientException {
-        setupPut();
+        setupPutText();
         Mockito.when(httpClientMock.putText(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with PUT to RSE API server");
-        rseapiSpy.put(PATH, null);
+        String expectedMessage =  "Problem with PUT to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.putText(PATH, "", null);
+        });
     }
 
-    private void setupPut() {
+    private void setupPutText() {
         try {
             Mockito.when(httpClientMock.putText(Mockito.anyString(), Mockito.anyString())).thenReturn(httpClientResponseStringMock); 
             Mockito.when(httpClientResponseStringMock.getContent()).thenReturn(CONTENT);
@@ -396,18 +398,20 @@ public class TestRseapiImpl {
     public void testPutJsonBadHttpResponseException() throws RseapiException {
         setupPutJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.putJson(PATH, new JsonObject(), null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.putJson(PATH, new JsonObject(), null);
+        });
     }
     
     @Test
     public void testPutJsonHttpException() throws RseapiException, HttpClientException {
         setupPutJson();
         Mockito.when(httpClientMock.putJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with PUT to RSE API server");
-        rseapiSpy.putJson(PATH, new JsonObject(), null);
+        String expectedMessage =  "Problem with PUT to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.putJson(PATH, new JsonObject(), null);
+        });
     }
 
     private void setupPutJson() {
@@ -435,18 +439,20 @@ public class TestRseapiImpl {
     public void testDeleteBadHttpResponseException() throws RseapiException {
         setupDelete();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        rseapiSpy.delete(PATH, null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.delete(PATH, null);
+        });
     }
     
     @Test
     public void testDeleteHttpException() throws RseapiException, HttpClientException {
         setupDelete();
         Mockito.when(httpClientMock.deleteJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage( "Problem with DELETE to RSE API server");
-        rseapiSpy.delete(PATH, null);
+        String expectedMessage =  "Problem with DELETE to RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.delete(PATH, null);
+        });
     }
 
     private void setupDelete() {
@@ -458,6 +464,16 @@ public class TestRseapiImpl {
         } catch (HttpClientException | UnsupportedOperationException e) {
             throw new MockitoException("Problem in setupDelete() method ", e);
         }
+    }
+
+    @Test
+    public void testServerInfo() throws HttpClientException, RseapiException {
+    	setupGet(); 
+    	JsonObject jsonObject = new JsonObject();
+    	jsonObject.addProperty("rseapi_version", "version");
+    	Mockito.when(httpClientMock.getJson(Mockito.anyString())).thenReturn(httpClientResponseJsonMock); 
+        Mockito.when(httpClientResponseJsonMock.getContent()).thenReturn(jsonObject);
+        Assert.assertEquals("serverInfo() should return the expected value", jsonObject, rseapi.serverInfo());
     }
     
     @Test
@@ -493,74 +509,69 @@ public class TestRseapiImpl {
     @Test
     public void testInitializeServerImagesException() throws Exception {
         Mockito.when(ServerImages.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        rseapiSpy.initialize();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeImageNoConfiguredException() throws Exception {
         Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "'");
-        
-        rseapiSpy.initialize();
+        String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "'";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeImageNoConfiguredTagException() throws Exception {
         Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
         Whitebox.setInternalState(rseapiSpy, "imageTag", IMAGE_TAG);
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "' tag '" + IMAGE_TAG + "'");
-        
-        rseapiSpy.initialize();
+        String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "' tag '" + IMAGE_TAG + "'";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeServerHostnameException() throws Exception {
         Mockito.when(ServerHostname.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        rseapiSpy.initialize();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeServerPortException() throws Exception {
         Mockito.when(ServerPort.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        rseapiSpy.initialize();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeHttpsException() throws Exception {
         Mockito.when(Https.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        rseapiSpy.initialize();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeHttpClientException() throws Exception {
         Mockito.when(zosImageMock.getDefaultCredentials()).thenThrow(new ZosManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unable to create HTTP Client");
-        
-        rseapiSpy.initialize();
+        String expectedMessage = "Unable to create HTTP Client";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
     public void testInitializeRequestRetryException() throws Exception {
         Mockito.when(RequestRetry.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        rseapiSpy.initialize();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.initialize();
+        });
     }
     
     @Test
@@ -570,9 +581,9 @@ public class TestRseapiImpl {
         
         Whitebox.setInternalState(rseapiSpy, "image", (String) null);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        rseapiSpy.setImage();
+        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        	rseapiSpy.setImage();
+        });
     }
     
     @Test
