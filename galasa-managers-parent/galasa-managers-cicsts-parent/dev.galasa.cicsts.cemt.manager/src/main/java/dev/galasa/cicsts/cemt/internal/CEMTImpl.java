@@ -74,16 +74,17 @@ public class CEMTImpl implements ICEMT {
       
       try {
          terminal.type("CEMT INQUIRE " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
+         terminal.waitForTextInField("STATUS: ");
       }catch(Exception e) {
          throw new CEMTException("Problem with starting CEMT transaction");
       }
       
       try {
-         Thread.sleep(1000);
          if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
             terminal.pf9();
             terminal.waitForKeyboard();
             terminal.pf3();
+            terminal.waitForKeyboard();
             terminal.clear();
             terminal.waitForKeyboard();
             return null;  
@@ -128,6 +129,7 @@ public class CEMTImpl implements ICEMT {
       
       try {
          terminal.pf3();
+         terminal.waitForKeyboard();
          terminal.clear();
          terminal.waitForKeyboard();
       }catch(Exception e) {
@@ -155,17 +157,20 @@ public class CEMTImpl implements ICEMT {
       try {
          if(resourceName == null) {
             terminal.type("CEMT SET " + resourceType + " " + action);
+            terminal.enter();
+            terminal.waitForKeyboard();
          }else {
             terminal.type("CEMT SET " + resourceType + "(" + resourceName + ") " + action);
             terminal.enter();
             terminal.waitForKeyboard();
          }
+         
+         terminal.waitForTextInField("STATUS: ");
       }catch(Exception e) {
          throw new CEMTException("Problem with starting the CEMT transaction", e);
       }
       
       try {
-         Thread.sleep(1000);
          if(!terminal.retrieveScreen().contains(searchText)) {
             terminal.pf9().waitForKeyboard();
             throw new CEMTException("Errors detected whilst setting resource");
@@ -176,6 +181,7 @@ public class CEMTImpl implements ICEMT {
       
       try {
          terminal.pf3();
+         terminal.waitForKeyboard();
          terminal.clear();
          terminal.waitForKeyboard();
       }catch(Exception e) {
@@ -214,8 +220,7 @@ public class CEMTImpl implements ICEMT {
                terminal.type("CEMT DISCARD " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
             }
             
-            
-            terminal.waitForKeyboard().waitForTextInField("STATUS: ");
+            terminal.waitForTextInField("STATUS: ");
          }catch(Exception e) {
             throw new CEMTException("Problem with starting the CEMT transaction", e);
          }
@@ -225,6 +230,7 @@ public class CEMTImpl implements ICEMT {
             if(!terminal.retrieveScreen().contains(searchText)) {
                terminal.pf9();
                terminal.pf3();
+               terminal.waitForKeyboard();
                terminal.clear();
                terminal.waitForKeyboard();
                throw new CEMTException("Errors detected whilst setting resource");
@@ -235,6 +241,7 @@ public class CEMTImpl implements ICEMT {
          
          try {
             terminal.pf3();
+            terminal.waitForKeyboard();
             terminal.clear();
             terminal.waitForKeyboard();
          }catch(Exception e) {
@@ -266,10 +273,10 @@ public class CEMTImpl implements ICEMT {
             throw new CEMTException("Expected Response from CEMT PERFORM not found. Expected: "
          + expectedResponse);
          }else { 
-            terminal.reportScreen();
 
             try {
                terminal.pf3();
+               terminal.waitForKeyboard();
                terminal.clear();
                terminal.waitForKeyboard();
             }catch(Exception e) {
@@ -278,9 +285,7 @@ public class CEMTImpl implements ICEMT {
             
             return success;
             
-            
          }
-        
          
       }catch(Exception e) {
          throw new CEMTException(e);

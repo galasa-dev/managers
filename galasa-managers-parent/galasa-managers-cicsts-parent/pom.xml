@@ -18,6 +18,9 @@
 		<module>dev.galasa.cicsts.ceci.manager</module>
 		<module>dev.galasa.cicsts.ceda.manager</module>
 		<module>dev.galasa.cicsts.cemt.manager</module>
+		<module>dev.galasa.cicsts.cemt.manager.ivt</module>
+		<module>dev.galasa.cicsts.ceda.manager.ivt</module>
+		
 	</modules>
 
 </project>
