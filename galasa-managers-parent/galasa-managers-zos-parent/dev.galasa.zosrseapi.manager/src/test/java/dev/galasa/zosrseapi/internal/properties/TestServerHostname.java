@@ -6,9 +6,7 @@
 package dev.galasa.zosrseapi.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestServerHostname {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String IMAGE_ID = "IMAGE";
     
     private static final String HOSTNAME = "hostname";
@@ -43,10 +38,10 @@ public class TestServerHostname {
     
     @Test
     public void testNull() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Value for RSE API server hostname not configured for zOS image "  + IMAGE_ID);
-        
-        getProperty(null);
+        String expectedMessage = "Value for RSE API server hostname not configured for zOS image "  + IMAGE_ID;
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	getProperty(null);
+        });
     }
     
     @Test
@@ -56,10 +51,10 @@ public class TestServerHostname {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the RSE API server hostname property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the RSE API server hostname property for zOS image " + IMAGE_ID;
+        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
     }
 
     private String getProperty(String value) throws Exception {

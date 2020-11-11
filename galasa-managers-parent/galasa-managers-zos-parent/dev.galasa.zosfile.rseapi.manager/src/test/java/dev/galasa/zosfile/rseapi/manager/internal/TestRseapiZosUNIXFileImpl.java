@@ -21,9 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -76,9 +74,6 @@ public class TestRseapiZosUNIXFileImpl {
     private Log logMock;
     
     private static String logMessage;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String UNIX_DIRECTORY = "/path1/path2/path3/path4";
 
@@ -144,17 +139,19 @@ public class TestRseapiZosUNIXFileImpl {
     
     @Test
     public void testConstructorException1() throws RseapiManagerException, ZosFileManagerException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path must be absolute not be relative");
-        new RseapiZosUNIXFileImpl(zosImageMock, "PATH");
+        String expectedMessage = "UNIX path must be absolute not be relative";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	new RseapiZosUNIXFileImpl(zosImageMock, "PATH");
+        });
     }
     
     @Test
     public void testConstructorException2() throws RseapiManagerException, ZosFileManagerException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
+        String expectedMessage = EXCEPTION;
         Mockito.doThrow(new RseapiManagerException(EXCEPTION)).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        new RseapiZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	new RseapiZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        });
     }
     
     @Test
@@ -180,10 +177,11 @@ public class TestRseapiZosUNIXFileImpl {
         zosUNIXFileSpy.create();
         Assert.assertTrue("created() should return false", zosUNIXFileSpy.created());
         
-        PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists();      
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' already exists on image " + IMAGE);
-        zosUNIXFileSpy.create();
+        PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(); 
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' already exists on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.create();
+        });
     }
     
     @Test
@@ -230,7 +228,7 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
 
         zosUNIXFileSpy.setDataType(UNIXFileDataType.BINARY);
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         zosUNIXFileSpy.store(CONTENT);
         Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
     }
@@ -243,28 +241,29 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Error writing to '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND");
-        zosUNIXFileSpy.store(CONTENT);
+        String expectedMessage = "Error writing to '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.store(CONTENT);
+        });
     }
     
     @Test
     public void testStoreNotExistException() throws ZosUNIXFileException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists();
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE);
-       
-        zosUNIXFileSpy.store(CONTENT);
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.store(CONTENT);
+        });
     }
     
     @Test
     public void testStoreIsDirectoryException() throws ZosUNIXFileException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists();
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory();
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Invalid request, '" + UNIX_PATH + "' is a directory");
-       
-        zosUNIXFileSpy.store(CONTENT);
+        String expectedMessage = "Invalid request, '" + UNIX_PATH + "' is a directory";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.store(CONTENT);
+        });
     }
     
     @Test
@@ -274,10 +273,9 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(true).doReturn(false).doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
 
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-       
-        zosUNIXFileSpy.store(CONTENT);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.store(CONTENT);
+        });
     }
     
     @Test
@@ -291,10 +289,9 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-       
-        zosUNIXFileSpy.store(CONTENT);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.store(CONTENT);
+        });
     }
     
     @Test
@@ -308,18 +305,20 @@ public class TestRseapiZosUNIXFileImpl {
     @Test
     public void testRetrieveException1() throws ZosUNIXFileException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists();
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE);        
-        zosUNIXFileSpy.retrieve();
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve();
+        });
     }
     
     @Test
     public void testRetrieveException2() throws ZosUNIXFileException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists();
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory();
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Invalid request, '" + UNIX_PATH + "' is a directory");        
-        zosUNIXFileSpy.retrieve();
+        String expectedMessage = "Invalid request, '" + UNIX_PATH + "' is a directory";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve();
+        });
     }
     
     @Test
@@ -410,9 +409,10 @@ public class TestRseapiZosUNIXFileImpl {
     public void testGetAttributesAsStringNotExistException() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE);
-        zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        });
     }
     
     @Test
@@ -420,9 +420,9 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
         
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        });
     }
     
     @Test
@@ -432,9 +432,10 @@ public class TestRseapiZosUNIXFileImpl {
 
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
         
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Unable to list UNIX path '" + UNIX_PATH + "' on image " + IMAGE);
-        zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        String expectedMessage = "Unable to list UNIX path '" + UNIX_PATH + "' on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        });
     }
     
     @Test
@@ -445,10 +446,9 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        });
     }
     
     @Test
@@ -459,10 +459,9 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertTrue("createPath() should return true", zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE));
       
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        });
     }
     
     @Test
@@ -473,9 +472,9 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        });
     }
     
     @Test
@@ -499,27 +498,30 @@ public class TestRseapiZosUNIXFileImpl {
     @Test
     public void testInternalDeletenotExistException() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE);
-        zosUNIXFileSpy.delete(UNIX_PATH, false);
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.delete(UNIX_PATH, false);
+        });
     }
     
     @Test
     public void testInternalDeleteNotDirectory() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn("Type=FILE").when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Invalid request, UNIX path '" + UNIX_FILE + "' is not a directory");
-        zosUNIXFileSpy.delete(UNIX_FILE, true);
+        String expectedMessage = "Invalid request, UNIX path '" + UNIX_FILE + "' is not a directory";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.delete(UNIX_FILE, true);
+        });
     }
     
     @Test
     public void testInternalDeleteNotEmptyDirectory() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn("Type=DIRECTORY,IsEmpty=false").when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Invalid request, UNIX path '" + UNIX_FILE + "' is a directory and is not empty. Use the directoryDeleteNonEmpty() method");
-        zosUNIXFileSpy.delete(UNIX_FILE, false);
+        String expectedMessage = "Invalid request, UNIX path '" + UNIX_FILE + "' is a directory and is not empty. Use the directoryDeleteNonEmpty() method";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.delete(UNIX_FILE, false);
+        });
     }
     
     @Test
@@ -527,9 +529,9 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn("Type=FILE").when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosUNIXFileSpy.delete(UNIX_FILE, false);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.delete(UNIX_FILE, false);
+        });
     }
     
     @Test
@@ -542,10 +544,9 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosUNIXFileSpy.delete(UNIX_FILE, false);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.delete(UNIX_FILE, false);
+        });
     }
     
     @Test
@@ -561,10 +562,9 @@ public class TestRseapiZosUNIXFileImpl {
     @Test
     public void testInternalRseapiExistsException() throws ZosUNIXFileException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosUNIXFileSpy.exists(UNIX_PATH);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.exists(UNIX_PATH);
+        });
     }
     
     @Test
@@ -574,10 +574,9 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_ACCEPTABLE);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosUNIXFileSpy.exists(UNIX_PATH);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.exists(UNIX_PATH);
+        });
     }
     
     @Test
@@ -594,6 +593,7 @@ public class TestRseapiZosUNIXFileImpl {
         responseBody.addProperty(CONTENT, CONTENT);
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
         
+        Mockito.when(rseapiResponseMock.getTextContent()).thenReturn(CONTENT);
         PowerMockito.doReturn(UNIXFileDataType.BINARY).when(zosUNIXFileSpy).getDataType();
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
     }
@@ -602,10 +602,9 @@ public class TestRseapiZosUNIXFileImpl {
     public void testInternalRetrieveRseapiException() throws ZosUNIXFileException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosUNIXFileSpy.retrieve(UNIX_PATH);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve(UNIX_PATH);
+        });
     }
     
     @Test
@@ -615,10 +614,10 @@ public class TestRseapiZosUNIXFileImpl {
 
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Unable to retrieve content of '" + UNIX_PATH + "' on image " + IMAGE);
-        
-        zosUNIXFileSpy.retrieve(UNIX_PATH);
+        String expectedMessage = "Unable to retrieve content of '" + UNIX_PATH + "' on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve(UNIX_PATH);
+        });
     }
     
     @Test
@@ -629,10 +628,9 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosUNIXFileSpy.retrieve(UNIX_PATH);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve(UNIX_PATH);
+        });
     }
     
     @Test
@@ -642,10 +640,10 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
 
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Error retrieve content '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND");
-        
-        zosUNIXFileSpy.retrieve(UNIX_PATH);
+        String expectedMessage = "Error retrieve content '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.retrieve(UNIX_PATH);
+        });
     }
     
     @Test
@@ -667,9 +665,10 @@ public class TestRseapiZosUNIXFileImpl {
         zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
 
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE);
-        zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
+        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
+        });
     }
     
     @Test
@@ -700,33 +699,32 @@ public class TestRseapiZosUNIXFileImpl {
         paths.put("path1", TYPE_DIRECTORY);
         PowerMockito.doReturn(paths).when(zosUNIXFileSpy).getPaths(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
-        Assert.assertTrue("listDirectory() should return expected content", paths.equals(zosUNIXFileSpy.listDirectory("path1/", false)));
+        Assert.assertEquals("listDirectory() should return expected content", paths, zosUNIXFileSpy.listDirectory("path1/", false));
         
         
         paths.put("path2", TYPE_DIRECTORY);
         paths.put("path3", TYPE_DIRECTORY);
         paths.put("path4", TYPE_DIRECTORY);
         
-        Assert.assertTrue("listDirectory() should return expected content", paths.equals(zosUNIXFileSpy.listDirectory(UNIX_DIRECTORY, true)));
+        Assert.assertEquals("listDirectory() should return expected content", paths, zosUNIXFileSpy.listDirectory(UNIX_DIRECTORY, true));
     }
     
     @Test
     public void testListDirectoryNotDirectory() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Invalid request, 'path1' is not a directory");
-
-        zosUNIXFileSpy.listDirectory("path1", false);
+        String expectedMessage = "Invalid request, 'path1' is not a directory";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.listDirectory("path1", false);
+        });
     }
     
     @Test
     public void testListDirectoryRseapiException() throws ZosUNIXFileException, RseapiException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-
-        zosUNIXFileSpy.listDirectory("path1", false);
+        Assert.assertThrows(EXCEPTION, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.listDirectory("path1", false);
+        });
     }
     
     @Test
@@ -734,10 +732,10 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage("Unable to list UNIX path 'path1' on image " + IMAGE);
-
-        zosUNIXFileSpy.listDirectory("path1", false);
+        String expectedMessage = "Unable to list UNIX path 'path1' on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.listDirectory("path1", false);
+        });
     }
     
     @Test
@@ -748,10 +746,9 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosUNIXFileSpy.listDirectory("path1", false);
+        Assert.assertThrows(ERROR, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.listDirectory("path1", false);
+        });
     }
     
     @Test
@@ -797,18 +794,20 @@ public class TestRseapiZosUNIXFileImpl {
     @Test
     public void testStoreArtifactException1() throws ZosFileManagerException, IOException {
         setupTestStoreArtifact();
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Unable to store artifact");
-        zosUNIXFileSpy.storeArtifact(new Object(), false, "pathElement", "output.file");
+        String expectedMessage = "Unable to store artifact";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.storeArtifact(new Object(), false, "pathElement", "output.file");
+        });
     }
     
     @Test
     public void testStoreArtifactException2() throws ZosFileManagerException, IOException {
         FileSystemProvider fileSystemProviderMock = setupTestStoreArtifact();
         Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new IOException());
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Unable to store artifact");
-        zosUNIXFileSpy.storeArtifact(CONTENT, false, "pathElement", "output.file");
+        String expectedMessage = "Unable to store artifact";
+        Assert.assertThrows(expectedMessage, ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.storeArtifact(CONTENT, false, "pathElement", "output.file");
+        });
     }
  
     private FileSystemProvider setupTestStoreArtifact() throws IOException {

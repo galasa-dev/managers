@@ -21,9 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -45,8 +43,10 @@ import dev.galasa.zosfile.IZosDataset.DatasetDataType;
 import dev.galasa.zosfile.IZosDataset.DatasetOrganization;
 import dev.galasa.zosfile.IZosDataset.RecordFormat;
 import dev.galasa.zosfile.IZosDataset.SpaceUnit;
+import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
 import dev.galasa.zosrseapi.IRseapiResponse;
 import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
@@ -55,7 +55,7 @@ import dev.galasa.zosrseapi.RseapiManagerException;
 import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogFactory.class})
+@PrepareForTest({LogFactory.class, RseapiZosUnixCommand.class, RseapiZosFileManagerImpl.class})
 public class TestRseapiZosDatasetImpl {
     
     private RseapiZosDatasetImpl zosDataset;
@@ -72,6 +72,12 @@ public class TestRseapiZosDatasetImpl {
     private RseapiManagerImpl rseapiManagerMock;
     
     @Mock
+    private RseapiZosFileHandlerImpl zosFileHandlerMock;
+    
+    @Mock
+    private IZosUNIXFile zosUNIXFileMock;
+    
+    @Mock
     private IRseapiRestApiProcessor rseapiApiProcessorMock;
     
     @Mock
@@ -84,10 +90,7 @@ public class TestRseapiZosDatasetImpl {
     private Log logMock;
     
     private static String logMessage;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
+    
     private static final String DATASET_NAME = "DATA.SET.NAME";
     
     private static final String MEMBER_NAME = "MEMBER";
@@ -133,10 +136,10 @@ public class TestRseapiZosDatasetImpl {
     
     @Test
     public void testConstructorException() throws RseapiManagerException, ZosFileManagerException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        Mockito.doThrow(new RseapiManagerException(EXCEPTION)).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        new RseapiZosDatasetImpl(zosImageMock, DATASET_NAME);
+    	Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+    		Mockito.doThrow(new RseapiManagerException(EXCEPTION)).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
+    		new RseapiZosDatasetImpl(zosImageMock, DATASET_NAME);
+    	});
     }
     
     @Test
@@ -185,10 +188,10 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testCreateExists() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" already exists on image " + IMAGE);
-        
-        zosDatasetSpy.create();
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" already exists on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
     }
     
     @Test
@@ -196,11 +199,9 @@ public class TestRseapiZosDatasetImpl {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-
-        zosDatasetSpy.create();
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
     }
     
     @Test
@@ -211,11 +212,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error Create data set, HTTP Status Code 404 : NOT_FOUND");
-        
-        zosDatasetSpy.create();
+        String expectedMessage = "Error Create data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
     }
 
     @Test
@@ -233,10 +233,10 @@ public class TestRseapiZosDatasetImpl {
     public void testDeleteNotExists() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.delete();        
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete();        
+        });
     }
     
     @Test
@@ -263,11 +263,9 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testExistsRseapiException() throws ZosDatasetException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-    
-        zosDatasetSpy.exists();
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
     }
 
     @Test
@@ -275,11 +273,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error List data set, HTTP Status Code 404 : NOT_FOUND");
-    
-        zosDatasetSpy.exists();
+        String expectedMessage = "Error List data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
     }
 
     @Test
@@ -287,11 +284,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to list data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    
-        zosDatasetSpy.exists();
+        String expectedMessage = "Unable to list data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
     }
 
     @Test
@@ -302,10 +298,10 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.storeText(CONTENT);
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set");
-        
-        zosDatasetSpy.storeText(CONTENT);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT);
+        });
     }
 
     @Test
@@ -315,9 +311,10 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.storeBinary(CONTENT.getBytes());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set");
-        zosDatasetSpy.storeBinary(CONTENT.getBytes());
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes());
+        });
     }
 
     @Test
@@ -334,11 +331,11 @@ public class TestRseapiZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
-        
-        zosDatasetSpy.retrieveAsText();
+        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAsText();
+        });
     }
 
     @Test
@@ -354,11 +351,11 @@ public class TestRseapiZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());        
         Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
         
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
-        
-        zosDatasetSpy.retrieveAsBinary();
+        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS(); 
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAsBinary();
+        });
     }
     
     @Test
@@ -441,10 +438,10 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.savePDSToResultsArchive();
 		Assert.assertEquals("savePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
 		
-		PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());       
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosDatasetSpy.savePDSToResultsArchive();
+		PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.savePDSToResultsArchive();
+        });
     }
     
     private Path newMockedPath(boolean fileExists) throws IOException {
@@ -478,18 +475,41 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
-    public void testMemberCreate() throws ZosDatasetException {
+    public void testMemberCreate() throws ZosFileManagerException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
         PowerMockito.doNothing().when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
+        PowerMockito.mockStatic(RseapiZosUnixCommand.class);
+        Mockito.when(RseapiZosUnixCommand.execute(Mockito.any(), Mockito.any())).thenReturn(null);
+        PowerMockito.mockStatic(RseapiZosFileManagerImpl.class);
+        Mockito.when(RseapiZosFileManagerImpl.getRunUNIXPathPrefix(Mockito.any())).thenReturn("/prefix");
+        Mockito.when(RseapiZosFileManagerImpl.getRunId()).thenReturn("runid");
+        Mockito.when(RseapiZosFileManagerImpl.newZosFileHandler()).thenReturn(zosFileHandlerMock);
+        PowerMockito.doReturn(zosUNIXFileMock).when(zosFileHandlerMock).newUNIXFile(Mockito.any(), Mockito.any());
+        PowerMockito.doReturn(false).doReturn(true).when(zosUNIXFileMock).exists();
+        PowerMockito.doReturn(zosUNIXFileMock).when(zosUNIXFileMock).createRetain();
+        PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());        
         zosDatasetSpy.memberCreate(MEMBER_NAME);
-        Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
-        PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
+        String expectedMessage = "Member " + MEMBER_NAME + " created in Data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
+
+        PowerMockito.doReturn(false).when(zosDatasetSpy).memberExists(Mockito.any());        
         zosDatasetSpy.memberCreate(MEMBER_NAME);
+        expectedMessage = "Member " + MEMBER_NAME + " not created in Data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
+        
+        PowerMockito.doThrow(new ZosUNIXFileException(EXCEPTION)).doReturn(true).when(zosUNIXFileMock).exists();
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberCreate(MEMBER_NAME);
+        });
+    }
+    
+    @Test
+    public void testMemberCreateException1() throws ZosFileManagerException {
+    	PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberCreate(MEMBER_NAME);
+        });
     }
     
     @Test
@@ -521,11 +541,10 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testMemberDeleteNoPDS() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-
-        zosDatasetSpy.memberDelete(MEMBER_NAME);
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberDelete(MEMBER_NAME);
+        });
     }
 
     @Test
@@ -539,74 +558,16 @@ public class TestRseapiZosDatasetImpl {
 
         datasetMembers.add(MEMBER_NAME);
         Assert.assertTrue("memberExists() should return true", zosDatasetSpy.memberExists(MEMBER_NAME));
-        
-//        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-//        JsonObject jsonObject =  responseBody;
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-//        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);        
-//        Assert.assertTrue("memberExists() should return true", zosDatasetSpy.memberExists(MEMBER_NAME));        
-//        
-//        jsonObject.add("items", getJsonArray("", "REBMEM", 1, 0));
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);        
-//        Assert.assertFalse("memberExists() should return false", zosDatasetSpy.memberExists(MEMBER_NAME));
-//        
-//        
-//        jsonObject = getJsonObject(2);
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);        
-//        Assert.assertFalse("memberExists() should return false", zosDatasetSpy.memberExists(MEMBER_NAME));
     }
     
     @Test
     public void testMemberExistsNotPDS() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberExists(MEMBER_NAME);
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberExists(MEMBER_NAME);
+        });
     }
-    
-//    @Test
-//    public void testMemberExistsRseapiException() throws ZosDatasetException, RseapiException {
-//        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-//        PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-//        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-//
-//        exceptionRule.expect(ZosDatasetException.class);
-//        exceptionRule.expectMessage(EXCEPTION);
-//        
-//        zosDatasetSpy.memberExists(MEMBER_NAME);
-//    }
-    
-//    @Test
-//    public void testMemberExistsBadHttpResponseException() throws ZosDatasetException, RseapiException {
-//        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-//        PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-//        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-//        JsonObject jsonObject =  responseBody;
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-//        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-//        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-//    
-//        exceptionRule.expect(ZosDatasetException.class);
-//        exceptionRule.expectMessage(ERROR);
-//        
-//        zosDatasetSpy.memberExists(MEMBER_NAME);
-//    }
-
-//    @Test
-//    public void testMemberExistsRseapiResponseException() throws ZosDatasetException, RseapiException {
-//        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-//        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
-//        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-//        Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-//    
-//        exceptionRule.expect(ZosDatasetException.class);
-//        exceptionRule.expectMessage("Unable to list members of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-//        
-//        zosDatasetSpy.memberExists(MEMBER_NAME);
-//    }
 
     @Test
     public void testMemberStoreText() throws ZosDatasetException {
@@ -616,21 +577,19 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        });
     }
 
     @Test
     public void testMemberStoreTextNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        });
     }
 
     @Test
@@ -641,21 +600,18 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).storeBinary(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        });
     }
 
     @Test
     public void testMemberStoreBinaryNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        });
     }
 
     @Test
@@ -672,21 +628,18 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertEquals("memberRetrieveText() should return the supplied value", CONTENT, zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        });
     }
 
     @Test
     public void testMemberRetrieveAsTextNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        });
     }
 
     @Test
@@ -703,21 +656,18 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertEquals("memberRetrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME)));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        });
     }
 
     @Test
     public void testMemberRetrieveAsBinaryNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        });
     }     
     
     @Test
@@ -746,21 +696,19 @@ public class TestRseapiZosDatasetImpl {
     public void testMemberListNoPDSException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-
-        zosDatasetSpy.memberList();
+        String expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
     }
     
     @Test
     public void testMemberListRseapiException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-
-        zosDatasetSpy.memberList();
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
     }
 
     @Test
@@ -771,10 +719,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("BAD_REQUEST");
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error List data set members, HTTP Status Code 400 : BAD_REQUEST");
-        zosDatasetSpy.memberList();
+        String expectedMessage = "Error List data set members, HTTP Status Code 400 : BAD_REQUEST";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
     }
 
     @Test
@@ -783,10 +731,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve member list of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        zosDatasetSpy.memberList();
+        String expectedMessage = "Unable to retrieve member list of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
     }
 
     @Test
@@ -816,9 +764,10 @@ public class TestRseapiZosDatasetImpl {
         Assert.assertEquals("memberSaveToTestArchive() should log specified message", expectedMessage, logMessage);
 
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        zosDatasetSpy.memberSaveToTestArchive(MEMBER_NAME);
+        expectedMessage = "\"" + DATASET_NAME + "\" is not a partitioned data data set";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberSaveToTestArchive(MEMBER_NAME);
+        });
     }
     
     @Test
@@ -1016,11 +965,10 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringNotExist() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.getAttibutesAsString();        
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();        
+        });
     }
     
     @Test
@@ -1041,18 +989,19 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testGetAttibutesNotExistException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
     public void testGetAttibutesRseapiException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-    	zosDatasetSpy.getAttibutes();
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1061,9 +1010,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error list data set, HTTP Status Code 404 : NOT_FOUND");
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Error list data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1072,9 +1022,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException());
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable list to attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Unable list to attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1084,9 +1035,10 @@ public class TestRseapiZosDatasetImpl {
         JsonObject responseBody = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1098,9 +1050,10 @@ public class TestRseapiZosDatasetImpl {
         responseBody.add("items", items);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1115,9 +1068,10 @@ public class TestRseapiZosDatasetImpl {
         responseBody.add("items", items);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
     
     @Test
@@ -1132,13 +1086,11 @@ public class TestRseapiZosDatasetImpl {
         responseBody.add("items", items);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    	zosDatasetSpy.getAttibutes();
+        String expectedMessage = "Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();
+        });
     }
-    
-    
-    
     
     @Test
     public void testRetrieveAttibutes() throws ZosDatasetException {
@@ -1168,9 +1120,9 @@ public class TestRseapiZosDatasetImpl {
                 "SYSREASON=12\n" + 
                 "SYSMSGLVL1: MESSAGE\n" + 
                 "SYSMSGLVL2: MESSAGE";
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(expectedMessage);
-        zosDatasetSpy.retrieveAttibutes();
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAttibutes();
+        });
     }
     
     @Test
@@ -1231,11 +1183,10 @@ public class TestRseapiZosDatasetImpl {
         
         ByteArrayInputStream contentIsSpy = Mockito.spy(contentIs);
         PowerMockito.doThrow(new IOException(EXCEPTION)).when(contentIsSpy).read(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Failed to collect binary");
-        
-        zosDatasetSpy.inputStreamToByteArray(contentIsSpy);
+        String expectedMessage = "Failed to collect binary";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.inputStreamToByteArray(contentIsSpy);
+        });
     }
     
     @Test
@@ -1258,11 +1209,9 @@ public class TestRseapiZosDatasetImpl {
     public void testInternalRetrieveRseapiException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.retrieve(null);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
     }
     
     @Test
@@ -1272,11 +1221,11 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         JsonObject responseBody = new JsonObject();
-        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error retrieve content of data set, HTTP Status Code 404 : NOT_FOUND");
-        
-        zosDatasetSpy.retrieve(null);
+        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
+        String expectedMessage = "Error retrieve content of data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
     }
 
     @Test
@@ -1285,10 +1234,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.retrieve(null);
+        String expectedMessage = "Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
         Mockito.verify(rseapiResponseMock, Mockito.times(1)).getStatusCode();
     }
     
@@ -1305,9 +1254,9 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testInternalDeleteResponseException() throws ZosDatasetException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosDatasetSpy.delete(DATASET_NAME);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete(DATASET_NAME);
+        });
     }
     
     @Test
@@ -1317,9 +1266,10 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error delete DATA.SET.NAME, HTTP Status Code 404 : NOT_FOUND");
-        zosDatasetSpy.delete(DATASET_NAME);
+        String expectedMessage = "Error delete DATA.SET.NAME, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete(DATASET_NAME);
+        });
     }
     
     @Test
@@ -1341,22 +1291,19 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testInternalStoreTextNotExist() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
     }
     
     @Test
     public void testInternalStoreTextRseapiException() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
     }
     
     @Test
@@ -1367,17 +1314,16 @@ public class TestRseapiZosDatasetImpl {
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         JsonObject responseBody = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error writing to data set, HTTP Status Code 404 : NOT_FOUND");
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        String expectedMessage = "Error writing to data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
     }
     
     @Test
     public void testInternalStoreBinary() throws ZosDatasetException, RseapiException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
         Mockito.verify(rseapiResponseMock, Mockito.times(1)).getStatusCode();
@@ -1392,37 +1338,33 @@ public class TestRseapiZosDatasetImpl {
     @Test
     public void testInternalStoreBinaryNotExist() throws ZosDatasetException, RseapiException {  
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
     }
     
     @Test
     public void testInternalStoreBinaryRseapiException() throws ZosDatasetException, RseapiException { 
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        Assert.assertThrows(EXCEPTION, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
     }
     
     @Test
     public void testInternalStoreBinaryBadHttpResponseException() throws ZosDatasetException, RseapiException { 
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         JsonObject responseBody = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(responseBody);
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error write to data set, HTTP Status Code 404 : NOT_FOUND");
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        String expectedMessage = "Error write to data set, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
     }
 
     @Test
@@ -1443,30 +1385,10 @@ public class TestRseapiZosDatasetImpl {
         returnedJsonObject = zosDatasetSpy.addPropertyWhenSet(responseBody, "property", 99);
         Assert.assertEquals("testAddPropertyWhenSet() should return the correct int property value", 99, returnedJsonObject.get("property").getAsInt());
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Invlaid type of \"" + DummyClass.class.getName() + "\" for property \"property\" on image " + IMAGE);
-        responseBody = new JsonObject();
-        zosDatasetSpy.addPropertyWhenSet(responseBody, "property", new DummyClass());
-    }
-    
-    //TODO    @Test
-    public void testGetMembers() {
-        Whitebox.setInternalState(zosDatasetSpy, "datasetMembers", new ArrayList<>());
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("returnedRows", 0);
-        //TODO        Assert.assertFalse("getMembers() should return false", zosDatasetSpy.getMembers(jsonObject));
-        Assert.assertEquals("datasetMembers should return a list with 0 members", listOfMembers(0), Whitebox.getInternalState(zosDatasetSpy,"datasetMembers"));
-        
-        Whitebox.setInternalState(zosDatasetSpy, "datasetMembers", new ArrayList<>());
-        jsonObject = new JsonObject();
-        //TODO        Assert.assertFalse("getMembers() should return false", zosDatasetSpy.getMembers(jsonObject));
-        Assert.assertEquals("datasetMembers should return a list with 1 member", listOfMembers(1), Whitebox.getInternalState(zosDatasetSpy,"datasetMembers"));
-        
-        Whitebox.setInternalState(zosDatasetSpy, "datasetMembers", new ArrayList<>());
-        jsonObject = new JsonObject();
-        jsonObject.addProperty("moreRows", true);
-        //TODO        Assert.assertTrue("getMembers() should return true", zosDatasetSpy.getMembers(jsonObject));
-        Assert.assertEquals("datasetMembers should return a list with 2 members", listOfMembers(2), Whitebox.getInternalState(zosDatasetSpy,"datasetMembers"));
+        String expectedMessage = "Invlaid type of \"" + DummyClass.class.getName() + "\" for property \"property\" on image " + IMAGE;
+        Assert.assertThrows(expectedMessage, ZosDatasetException.class, ()->{
+        	zosDatasetSpy.addPropertyWhenSet(new JsonObject(), "property", new DummyClass());
+        });
     }
     
     @Test

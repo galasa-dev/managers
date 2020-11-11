@@ -12,13 +12,12 @@ import java.util.LinkedHashMap;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -29,6 +28,7 @@ import dev.galasa.zosrseapi.IRseapiResponse;
 import dev.galasa.zosrseapi.RseapiException;
 
 @RunWith(PowerMockRunner.class)
+@PrepareForTest(RseapiRequestType.class)
 public class TestRseapiRestApiProcessor {
     
     private RseapiRestApiProcessor rseapiRestApiProcessor;
@@ -51,9 +51,6 @@ public class TestRseapiRestApiProcessor {
     private IRseapiResponse rseapiResponseMock;
     
     private HashMap<String, IRseapi> rseapis = new LinkedHashMap<>();
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String PATH = "request-path";
 
@@ -83,20 +80,15 @@ public class TestRseapiRestApiProcessor {
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
 
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiMock1.put(Mockito.anyString(), Mockito.any())).thenReturn(rseapiResponseMock);
-        response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT, PATH, null, null, null, false);
+        Mockito.when(rseapiMock1.putText(Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(rseapiResponseMock);
+        response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_TEXT, PATH, null, null, null, false);
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
 
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiMock1.putJson(Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(rseapiResponseMock);
         response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_JSON, PATH, null, null, null, false);
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
-
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiMock1.post(Mockito.anyString(), Mockito.any())).thenReturn(rseapiResponseMock);
-        response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.POST, PATH, null, null, null, false);
-        Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
-
+        
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiMock1.postJson(Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(rseapiResponseMock);
         response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.POST_JSON, PATH, null, null, null, false);
@@ -107,11 +99,13 @@ public class TestRseapiRestApiProcessor {
         response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.DELETE, PATH, null, null, null, false);
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
         
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Unable to get valid response from RSE API server");
-        rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_TEXT, PATH, null, null, null, false);
+        Mockito.when(rseapiMock1.get(Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException());
+        String expectedMessage = "Unable to get valid response from RSE API server";
+        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        	rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.GET, PATH, null, null, null, false);
+        });
     }
-    
+  
     @Test
     public void testGetCurrentRseapiServer() throws RseapiException {
         rseapis.put("image1", rseapiMock1);

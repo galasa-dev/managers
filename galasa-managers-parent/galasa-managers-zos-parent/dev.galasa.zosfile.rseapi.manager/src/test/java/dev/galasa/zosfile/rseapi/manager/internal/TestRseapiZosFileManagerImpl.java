@@ -17,9 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -79,11 +77,10 @@ public class TestRseapiZosFileManagerImpl {
 
     @Mock
     private IZosImage zosImageMock;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final Path ARTIFACT_ROOT = new File(".").toPath();
+
+	private static final String EXCEPTION = "exception";
 
     @Before
     public void setup() throws Exception {
@@ -158,18 +155,20 @@ public class TestRseapiZosFileManagerImpl {
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         allManagers.add(rseapiManagerMock);
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        Assert.assertThrows(expectedMessage, ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The RSE API Manager is not available");
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The RSE API Manager is not available";
+        Assert.assertThrows(expectedMessage, ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
     }
     
     @Test
@@ -313,23 +312,36 @@ public class TestRseapiZosFileManagerImpl {
     }
     
     @Test
-    public void testGetRunDatasetHLQ() throws ZosManagerException {
-        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
-        
-        Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock));
-    }
-    
-    @Test
+	public void testGetRunDatasetHLQ() throws ZosManagerException {
+	    Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
+	    
+	    Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock));
+	}
+
+	@Test
     public void testGetRunDatasetHLQException() throws ZosManagerException {
-        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException("exception"));
-        
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("exception");
-        
-        RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
+        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        Assert.assertThrows(EXCEPTION, ZosFileManagerException.class, ()->{
+        	RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
+        });
     }
     
     @Test
+	public void testGetRunUNIXPathPrefix() throws ZosManagerException {
+	    Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunUNIXPathPrefix(Mockito.any())).thenReturn("prefix");
+	    
+	    Assert.assertEquals("getRunZosUNIXPathPrefix() should return the supplied value", "prefix", RseapiZosFileManagerImpl.getRunUNIXPathPrefix(zosImageMock));
+	}
+
+	@Test
+    public void testGetRunUNIXPathPrefixException() throws ZosManagerException {
+        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunUNIXPathPrefix(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        Assert.assertThrows(EXCEPTION, ZosFileManagerException.class, ()->{
+        	RseapiZosFileManagerImpl.getRunUNIXPathPrefix(zosImageMock);
+        });
+    }
+
+	@Test
     public void testGetZosFileHandler() throws ZosFileManagerException {
         Assert.assertEquals("getZosFileHandler() should return the same IZosFileHandler", zosFileManagerSpy.getZosFileHandler(), zosFileManagerSpy.getZosFileHandler());
     }

@@ -316,6 +316,14 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         }
     }
     
+    public static String getRunUNIXPathPrefix(IZosImage image) throws ZosFileManagerException {
+        try {
+            return zosManager.getRunUNIXPathPrefix(image);
+        } catch (ZosManagerException e) {
+            throw new ZosFileManagerException(e);
+        }
+    }
+    
     @Override
     public @NotNull IZosFileHandler getZosFileHandler() throws ZosFileManagerException {
         return newZosFileHandler();
