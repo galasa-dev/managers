@@ -19,10 +19,12 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.framework.spi.creds.ICredentialsService;
+import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AbstractManager.class})
+@PrepareForTest({AbstractManager.class, ZosPropertiesSingleton.class, CpsProperties.class})
 public class TestZosDseImageImpl {
 
     @Mock
@@ -39,6 +41,9 @@ public class TestZosDseImageImpl {
     
     @Mock
     private ICredentialsService credentialsServiceMock;
+    
+    @Mock
+    private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
     private static final String IMAGE_ID = "image";
 
@@ -70,6 +75,11 @@ public class TestZosDseImageImpl {
         PowerMockito.doReturn(DEFAULT_CREDENTIALS_ID).when(AbstractManager.class, "defaultString", ArgumentMatchers.contains(DEFAULT_CREDENTIALS_ID), Mockito.anyString());
         PowerMockito.doReturn(IPV4_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV4_HOSTNAME));
         PowerMockito.doReturn(IPV6_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV6_HOSTNAME));
+
+        PowerMockito.spy(ZosPropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosPropertiesSingleton.class, "cps");
+        PowerMockito.spy(CpsProperties.class);
+        PowerMockito.doReturn(IMAGE_ID).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
 
         Object zosDseImage = new ZosDseImageImpl(zosManagerMock, IMAGE_ID, CLUSTER_ID);
         Assert.assertTrue("ZosDseImageImpl should instantiate ZosBaseImageImpl", zosDseImage instanceof ZosDseImageImpl);

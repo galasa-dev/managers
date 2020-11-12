@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zos;
 
@@ -27,6 +27,14 @@ public interface IZosImage {
      */
     @NotNull
     String getImageID();
+
+    /**
+     * Get the name of the SYSNAME zOS Image. Defaults to image id
+     * 
+     * @return The SYSNAME, never null
+     */
+    @NotNull
+    String getSysname();
     
     /**
      * Get the name of the Sysplex this Image belongs to

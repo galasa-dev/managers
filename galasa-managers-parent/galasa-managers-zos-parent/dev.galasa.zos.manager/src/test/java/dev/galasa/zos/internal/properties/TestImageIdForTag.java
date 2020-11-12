@@ -35,8 +35,8 @@ public class TestImageIdForTag {
     
     @Test
     public void testConstructor() {
-        ImageIdForTag iageIdForTag = new ImageIdForTag();
-        Assert.assertNotNull("Object was not created", iageIdForTag);
+        ImageIdForTag imageIdForTag = new ImageIdForTag();
+        Assert.assertNotNull("Object was not created", imageIdForTag);
     }
     
     @Test

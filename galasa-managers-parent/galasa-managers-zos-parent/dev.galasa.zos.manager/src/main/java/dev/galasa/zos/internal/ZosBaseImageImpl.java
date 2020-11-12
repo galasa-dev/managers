@@ -14,6 +14,7 @@ import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.internal.properties.ImageSysname;
 
 public abstract class ZosBaseImageImpl implements IZosImage {
 
@@ -21,6 +22,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     private final IConfigurationPropertyStoreService cps;
 
     private final String        imageId;
+    private final String        sysname;
     private final String        clusterId;
     private final String        sysplexID;
     private final String        defaultCredentialsId;
@@ -35,6 +37,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         this.clusterId  = clusterId;
 
         try {
+        	this.sysname = ImageSysname.get(this.imageId);
             this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
             this.defaultCredentialsId = AbstractManager.defaultString(this.cps.getProperty("image", "credentials", this.imageId), "ZOS");
         } catch(Exception e) {
@@ -59,6 +62,11 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     @Override
     public @NotNull String getImageID() {
         return this.imageId;
+    }
+
+    @Override
+    public @NotNull String getSysname() {
+        return this.sysname;
     }
 
     @Override

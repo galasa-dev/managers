@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -85,6 +85,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     private String expirationDate = null;
 
     private DatasetDataType dataType = DatasetDataType.TEXT;
+
+    private boolean shouldArchive = true;
 
     private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
@@ -315,6 +317,9 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     
     @Override
     public void saveToResultsArchive() throws ZosDatasetException {
+    	if (!shouldArchive()) {
+    		throw new ZosDatasetException("shouldArchive flag is false");
+    	}
         try {
             if (exists()) {
                 if (isPDS()) {
@@ -356,6 +361,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 		try {
 			emptyFileName = RseapiZosFileManagerImpl.getRunUNIXPathPrefix(image) + SLASH + RseapiZosFileManagerImpl.getRunId() + "/emptyFile";
 			emptyFile = RseapiZosFileManagerImpl.newZosFileHandler().newUNIXFile(emptyFileName, image);
+			emptyFile.setShouldArchive(false);
 			if (!emptyFile.exists()) {
 				emptyFile.createRetain();
 			}			
@@ -505,7 +511,10 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException {
+    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException {
+    	if (!shouldArchive()) {
+    		throw new ZosDatasetException("shouldArchive flag is false");
+    	}
     	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
@@ -789,6 +798,16 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
         return attributes.toString();
     }
+
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}
 
     protected JsonObject getAttibutes() throws ZosDatasetException {
         if (!exists()) {

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -64,6 +64,8 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     private String mode;
 
     private UNIXFileDataType dataType;
+
+    private boolean shouldArchive = true;
     
 	private static final String PROP_PERMISSIONS_SYMBOLIC = "permissionsSymbolic";
 	private static final String PROP_SIZE = "size";
@@ -223,6 +225,9 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public void saveToResultsArchive() throws ZosUNIXFileException {
+    	if (!shouldArchive()) {
+    		throw new ZosUNIXFileException("shouldArchive flag is false");
+    	}
         saveToResultsArchive(this.unixPath);
     }
     
@@ -278,7 +283,16 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     public String getAttributesAsString() throws ZosUNIXFileException {
         return getAttributesAsString(this.unixPath);
     }
-    
+
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}    
     
     protected String getAttributesAsString(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
@@ -666,7 +680,9 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     public void cleanCreatedPath() {
         try {
             if (this.createdPath != null && exists(this.createdPath)) {
-                cleanCreatedPathStore();
+            	if (this.shouldArchive()) {
+            		cleanCreatedPathStore();
+            	}
                 cleanCreatedDelete();
             }
         } catch (ZosUNIXFileException e) {
