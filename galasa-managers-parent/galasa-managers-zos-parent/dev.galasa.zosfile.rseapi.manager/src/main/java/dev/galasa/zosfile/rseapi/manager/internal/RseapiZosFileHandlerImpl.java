@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -90,7 +90,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
             RseapiZosDatasetImpl zosDataset = datasetIterator.next();
             try {
 	            if (zosDataset.created() && zosDataset.exists()) {
-	                if (!zosDataset.isTemporary()) {
+	                if (!zosDataset.isTemporary() && zosDataset.shouldArchive()) {
 	                    zosDataset.saveToResultsArchive();
 	                }
 	                if (zosDataset.retainToTestEnd()) {
@@ -116,7 +116,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
             RseapiZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
             try {
 	            if (zosDataset.created() && zosDataset.exists()) {
-	                if (!zosDataset.isTemporary()) {
+	                if (!zosDataset.isTemporary() && zosDataset.shouldArchive()) {
 	                    zosDataset.saveToResultsArchive();
 	                }
 	                zosDataset.delete();
@@ -132,7 +132,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
         while (vsamDatasetIterator.hasNext()) {
             RseapiZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
             try {
-	            if (zosVsamDataset.created() && zosVsamDataset.exists()) {
+	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
 	                zosVsamDataset.saveToResultsArchive();
 	                if (zosVsamDataset.retainToTestEnd()) {
 	                    this.zosVsamDatasetsForCleanup.add(zosVsamDataset);
@@ -156,7 +156,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
         while (vsamDatasetForCleanupIterator.hasNext()) {
         	RseapiZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
             try {
-	            if (zosVsamDataset.created() && zosVsamDataset.exists()) {
+	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
 	                zosVsamDataset.saveToResultsArchive();
 	                zosVsamDataset.delete();
 	            }
@@ -171,7 +171,7 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
         while (unixFileIterator.hasNext()) {
             RseapiZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
             try {
-				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
+				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists() && zosUnixFile.shouldArchive()) {
 	                zosUnixFile.saveToResultsArchive();
 	                if (!zosUnixFile.retainToTestEnd()) {
 	                	if (zosUnixFile.isDirectory()) {

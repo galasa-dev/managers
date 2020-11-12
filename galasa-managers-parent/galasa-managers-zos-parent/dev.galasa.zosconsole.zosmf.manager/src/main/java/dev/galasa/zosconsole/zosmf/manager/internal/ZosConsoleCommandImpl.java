@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosconsole.zosmf.manager.internal;
 
@@ -63,7 +63,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("cmd", this.command);
         if (!isRouteCommand()) {
-            requestBody.addProperty("system", this.image.getImageID());
+            requestBody.addProperty("system", this.image.getSysname());
         }
         
         IZosmfResponse response;
@@ -137,10 +137,7 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     }
 
     protected boolean isRouteCommand() {
-        if (this.command.startsWith("RO ") || this.command.startsWith("ROUTE ")) {
-            return true;
-        }
-        return false;
+        return this.command.startsWith("RO ") || this.command.startsWith("ROUTE ");
     }
 
     @Override

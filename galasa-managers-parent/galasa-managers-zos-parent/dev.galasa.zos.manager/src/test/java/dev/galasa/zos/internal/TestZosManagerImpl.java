@@ -63,6 +63,7 @@ import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.ImageMaxSlots;
+import dev.galasa.zos.internal.properties.ImageSysname;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
@@ -82,7 +83,7 @@ import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
-                 DseImageIdForTag.class, ImageIdForTag.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
+                 DseImageIdForTag.class, ImageIdForTag.class, ImageSysname.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
                  ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, RunUNIXPathPrefix.class, BatchRestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
                  JobnamePrefix.class, DirectoryListMaxItems.class, FileRestrictToImage.class, UnixFilePermissions.class})
 public class TestZosManagerImpl {
@@ -187,7 +188,9 @@ public class TestZosManagerImpl {
         zosBatchPropertiesSingleton = new ZosBatchPropertiesSingleton();
         zosBatchPropertiesSingleton.activate();
         zosFilePropertiesSingleton = new ZosFilePropertiesSingleton();
-        zosFilePropertiesSingleton.activate(); 
+        zosFilePropertiesSingleton.activate();
+        PowerMockito.mockStatic(ImageSysname.class);
+        PowerMockito.doReturn(IMAGE_ID).when(ImageSysname.class, "get", Mockito.anyString());
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
@@ -534,6 +537,8 @@ public class TestZosManagerImpl {
         Assert.assertEquals("imageUsage.hashCode() should return the correct value", imageUsage.hashCode(), imageUsage1.hashCode());
 
         Assert.assertEquals("imageUsage.toString() should return the correct value", IMAGE_ID, imageUsage.toString());
+        
+        Assert.assertFalse("imageUsage.equals() should return false", imageUsage.equals(null));
     }
     
     @Test

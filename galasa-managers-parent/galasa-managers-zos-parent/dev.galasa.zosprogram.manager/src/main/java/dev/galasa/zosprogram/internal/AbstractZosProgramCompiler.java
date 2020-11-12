@@ -74,7 +74,7 @@ public class AbstractZosProgramCompiler {
             throw new ZosProgramException("Problem waiting for compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
         }
         try {
-            compileJob.saveOutputToTestResultsArchive();
+            compileJob.saveOutputToResultsArchive();
             compileJob.purge();
         } catch (ZosBatchException e) {
             throw new ZosProgramException("Problem saving compile job output for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);

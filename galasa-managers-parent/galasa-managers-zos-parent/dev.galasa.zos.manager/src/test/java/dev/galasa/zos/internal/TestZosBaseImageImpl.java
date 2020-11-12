@@ -25,12 +25,14 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AbstractManager.class, ZosIpHostImpl.class})
+@PrepareForTest({AbstractManager.class, ZosIpHostImpl.class, ZosPropertiesSingleton.class, CpsProperties.class})
 public class TestZosBaseImageImpl {
 
     private ZosBaseImageImpl zosBaseImage;
@@ -51,6 +53,9 @@ public class TestZosBaseImageImpl {
     
     @Mock
     private ICredentialsService credentialsServiceMock;
+    
+    @Mock
+    private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -74,7 +79,11 @@ public class TestZosBaseImageImpl {
         PowerMockito.when(cpsMock.getProperty(Mockito.anyString(), ArgumentMatchers.contains(DEFAULT_CREDENTIALS_ID), Mockito.anyString())).thenReturn(DEFAULT_CREDENTIALS_ID);
         PowerMockito.when(cpsMock.getProperty(Mockito.anyString(), ArgumentMatchers.contains(IPV4_HOSTNAME))).thenReturn(IPV4_HOSTNAME);
         PowerMockito.when(cpsMock.getProperty(Mockito.anyString(), ArgumentMatchers.contains(IPV6_HOSTNAME))).thenReturn(IPV6_HOSTNAME);
-        
+
+        PowerMockito.spy(ZosPropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosPropertiesSingleton.class, "cps");
+        PowerMockito.spy(CpsProperties.class);
+        PowerMockito.doReturn(IMAGE_ID).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         PowerMockito.when(zosManagerMock.getDSS()).thenReturn(dssMock);
         PowerMockito.when(zosManagerMock.getFramework()).thenReturn(frameworkMock);
@@ -120,6 +129,11 @@ public class TestZosBaseImageImpl {
     @Test
     public void testGetImageID() throws Exception {
         Assert.assertEquals("getImageID() should return the expected value", IMAGE_ID, zosBaseImageSpy.getImageID());
+    }
+    
+    @Test
+    public void testGetSysname() throws Exception {
+        Assert.assertEquals("getSysname() should return the expected value", IMAGE_ID, zosBaseImageSpy.getSysname());
     }
     
     @Test
