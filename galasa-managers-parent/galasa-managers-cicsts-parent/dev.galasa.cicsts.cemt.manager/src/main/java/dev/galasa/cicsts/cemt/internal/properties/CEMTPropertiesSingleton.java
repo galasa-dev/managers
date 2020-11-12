@@ -1,3 +1,9 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
+
 package dev.galasa.cicsts.cemt.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
