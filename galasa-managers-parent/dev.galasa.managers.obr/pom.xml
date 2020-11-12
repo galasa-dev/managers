@@ -130,6 +130,24 @@
         </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.cicsts.ceda.manager</artifactId>
+			<version>0.13.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.cicsts.cemt.manager</artifactId>
+			<version>0.13.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.cicsts.ceda.manager.ivt</artifactId>
+			<version>0.13.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.ipnetwork.manager</artifactId>
 			<version>0.13.0-SNAPSHOT</version>
 			<scope>compile</scope>
