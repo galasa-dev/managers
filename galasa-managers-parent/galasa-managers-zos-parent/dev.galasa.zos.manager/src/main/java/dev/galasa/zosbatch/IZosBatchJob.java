@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch;
 
@@ -115,6 +115,15 @@ public interface IZosBatchJob {
      * 
      * @throws ZosBatchException
      */
-    public void saveOutputToTestResultsArchive() throws ZosBatchException;
+    public void saveOutputToResultsArchive() throws ZosBatchException;
 
+    /**
+     * Set flag to control if the job output should be stored to the test output. Defaults to true
+     */    
+    public void setShouldArchive(boolean shouldArchive);
+
+    /**
+     * Return flag that controls if the job output should be stored to the test output
+     */    
+    public boolean shouldArchive();
 }

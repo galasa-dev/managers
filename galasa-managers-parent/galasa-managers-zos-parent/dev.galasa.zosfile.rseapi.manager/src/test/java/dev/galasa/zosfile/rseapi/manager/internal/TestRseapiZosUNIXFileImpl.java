@@ -323,6 +323,13 @@ public class TestRseapiZosUNIXFileImpl {
     
     @Test
     public void testOneLineMethods() throws ZosUNIXFileException {
+    	zosUNIXFileSpy.setShouldArchive(false);
+    	String expectedMessage = "shouldArchive flag is false";
+		Assert.assertThrows(expectedMessage , ZosUNIXFileException.class, ()->{
+			zosUNIXFileSpy.saveToResultsArchive();
+    	});
+		zosUNIXFileSpy.setShouldArchive(true);
+
         PowerMockito.doNothing().when(zosUNIXFileSpy).saveToResultsArchive(Mockito.any());
         zosUNIXFileSpy.saveToResultsArchive();
 
@@ -647,7 +654,7 @@ public class TestRseapiZosUNIXFileImpl {
     }
     
     @Test
-    public void testSaveToResultsArchive() throws ZosUNIXFileException {
+    public void testSaveToResultsArchive() throws ZosUNIXFileException {  	
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         PowerMockito.doReturn(CONTENT).when(zosUNIXFileSpy).retrieve(Mockito.any());
