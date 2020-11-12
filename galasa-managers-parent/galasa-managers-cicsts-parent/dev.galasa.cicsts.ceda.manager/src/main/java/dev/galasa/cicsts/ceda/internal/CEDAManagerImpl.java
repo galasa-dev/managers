@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.cicsts.ceda.internal;
 
 import java.lang.annotation.Annotation;
@@ -11,6 +16,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.cicsts.ceda.CEDA;
 import dev.galasa.cicsts.ceda.CEDAManagerException;
+import dev.galasa.cicsts.ceda.CEDAManagerField;
 import dev.galasa.cicsts.ceda.ICEDA;
 import dev.galasa.cicsts.ceda.internal.properties.CEDAPropertiesSingleton;
 import dev.galasa.cicsts.ceda.spi.ICEDAManagerSpi;
