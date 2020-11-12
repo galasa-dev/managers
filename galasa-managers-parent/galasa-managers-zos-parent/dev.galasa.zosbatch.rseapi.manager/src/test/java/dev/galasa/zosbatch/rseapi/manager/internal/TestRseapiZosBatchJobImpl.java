@@ -537,6 +537,12 @@ public class TestRseapiZosBatchJobImpl {
     
     @Test
     public void testSaveOutputToTestResultsArchive() throws ZosManagerException {
+    	zosBatchJobSpy.setShouldArchive(false);
+    	String expectedMessage = "shouldArchive flag is false";
+		Assert.assertThrows(expectedMessage , ZosBatchException.class, ()->{
+			zosBatchJobSpy.saveOutputToResultsArchive();
+    	});
+    	zosBatchJobSpy.setShouldArchive(true);
         RseapiZosBatchManagerImpl.setZosManager(zosManagerMock);
         PowerMockito.doNothing().when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
@@ -554,8 +560,8 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn("content").when(zosBatchJobOutputSpoolFileMock).getRecords();
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
 
-        String expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_DDNAME;
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+        expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_DDNAME;
+    	zosBatchJobSpy.saveOutputToResultsArchive();
         Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
 
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
@@ -566,7 +572,7 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
 		
         expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_STEPNAME + "_" + FIXED_PROCSTEP + "_" + FIXED_DDNAME;
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+    	zosBatchJobSpy.saveOutputToResultsArchive();
         Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
 
     	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).jobOutput();
@@ -575,7 +581,7 @@ public class TestRseapiZosBatchJobImpl {
         exceptionRule.expect(ZosBatchException.class);
         exceptionRule.expectMessage("exception");
         
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+    	zosBatchJobSpy.saveOutputToResultsArchive();
     }
     
     @Test
@@ -801,21 +807,21 @@ public class TestRseapiZosBatchJobImpl {
     public void testArchiveJobOutput() throws Exception {
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
-    	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToTestResultsArchive();
+    	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToResultsArchive();
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive");
 
     	Mockito.clearInvocations(zosBatchJobSpy);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive");
 
     	Mockito.clearInvocations(zosBatchJobSpy);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive");
     }
     
     @Test

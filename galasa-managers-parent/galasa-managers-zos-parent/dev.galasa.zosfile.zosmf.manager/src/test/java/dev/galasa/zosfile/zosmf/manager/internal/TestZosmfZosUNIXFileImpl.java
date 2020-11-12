@@ -306,6 +306,12 @@ public class TestZosmfZosUNIXFileImpl {
     
     @Test
     public void testOneLineMethods() throws ZosUNIXFileException {
+    	zosUNIXFileSpy.setShouldArchive(false);
+    	String expectedMessage = "shouldArchive flag is false";
+		Assert.assertThrows(expectedMessage , ZosUNIXFileException.class, ()->{
+			zosUNIXFileSpy.saveToResultsArchive();
+    	});
+		zosUNIXFileSpy.setShouldArchive(true);
         PowerMockito.doNothing().when(zosUNIXFileSpy).saveToResultsArchive(Mockito.any());
         zosUNIXFileSpy.saveToResultsArchive();
 

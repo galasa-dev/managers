@@ -390,6 +390,12 @@ public class TestRseapiZosVSAMDatasetImpl {
     
     @Test
     public void testSaveToResultsArchive() throws IOException, ZosManagerException {
+    	zosVSAMDatasetSpy.setShouldArchive(false);
+    	String expectedMessage = "shouldArchive flag is false";
+		Assert.assertThrows(expectedMessage , ZosManagerException.class, ()->{
+			zosVSAMDatasetSpy.saveToResultsArchive();
+    	});
+		zosVSAMDatasetSpy.setShouldArchive(true);
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
@@ -400,7 +406,7 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         
         logMessage = null;
-        String expectedMessage = "\"" + VSAM_DATASET_NAME + "\"" + " archived to " + PATH_MOCK;
+        expectedMessage = "\"" + VSAM_DATASET_NAME + "\"" + " archived to " + PATH_MOCK;
         zosVSAMDatasetSpy.saveToResultsArchive(); 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         

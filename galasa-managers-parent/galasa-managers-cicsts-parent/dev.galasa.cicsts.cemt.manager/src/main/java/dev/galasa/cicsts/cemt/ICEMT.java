@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+=======
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
 package dev.galasa.cicsts.cemt;
 
 import java.util.HashMap;
@@ -8,6 +16,7 @@ import dev.galasa.zos3270.ITerminal;
 
 public interface ICEMT {
 
+<<<<<<< HEAD
    /** 
     * Inquire a CEMT resource using the resource type and name.
     * This does not support inquiries of multiple resources at once. 
@@ -20,11 +29,15 @@ public interface ICEMT {
     * @return a {@link HashMap} object containing all of the properties of the resource.
     * @throws CEMTException if resource not found.
     */
+=======
+   
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
    public HashMap<String, String> inquireResource(@NotNull ITerminal cemtTerminal,
                                                   @NotNull String resourceType,
                                                   @NotNull String resourceName
                                                   ) throws CEMTException;
    
+<<<<<<< HEAD
    /** 
     * Set the state of a CEMT resource using the resource type and name. If the searchText is not found on the terminal screen then
     * an exception will be thrown.
@@ -37,6 +50,9 @@ public interface ICEMT {
     * @param searchText a {@link String} of the text you want to search for on the terminal screen.
     * @throws CEMTException
     */
+=======
+   
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
    public void setResource(@NotNull ITerminal cemtTerminal,
                            @NotNull String resourceType,
                                     String resourceName,
@@ -44,6 +60,7 @@ public interface ICEMT {
                            @NotNull String searchText
                            )throws CEMTException;
    
+<<<<<<< HEAD
    
    /** 
     * Set the state of a CEMT resource using the resource type and name. If 'RESPONSE: NORMAL' is not found on the terminal screen then
@@ -56,11 +73,14 @@ public interface ICEMT {
     * @param action a {@link String} of the action you want to perform.
     * @throws CEMTException
     */
+=======
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
    public void setResource(@NotNull ITerminal cemtTerminal,
                            @NotNull String resourceType,
                            @NotNull String resourceName,
                            @NotNull String action
                            )throws CEMTException;
+<<<<<<< HEAD
    
    
    /**
@@ -73,11 +93,15 @@ public interface ICEMT {
     * @param searchText a {@link String} of the text you want to search for on the terminal screen.
     * @throws CEMTException
     */
+=======
+
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
    public void discardResource(@NotNull ITerminal cemtTerminal,
                               @NotNull String resourceType,
                               @NotNull String resourceName,
                               @NotNull String searchText)throws CEMTException;
    
+<<<<<<< HEAD
    
    /**
     * 
@@ -90,6 +114,8 @@ public interface ICEMT {
     * @return boolean
     * @throws CEMTException
     */
+=======
+>>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
    public boolean performSystemProperty(@NotNull ITerminal cemtTerminal,
                                         @NotNull String systemArea,
                                         @NotNull String setRequest,

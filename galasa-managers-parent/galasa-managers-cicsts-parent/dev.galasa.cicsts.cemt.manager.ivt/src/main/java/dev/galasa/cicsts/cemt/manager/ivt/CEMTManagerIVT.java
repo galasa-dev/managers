@@ -175,7 +175,7 @@ public class CEMTManagerIVT {
    public void testDiscardResourceThatDoesntExist() throws CEMTException, InterruptedException {
       
       assertThatThrownBy(() -> {
-         cemt.discardResource(cemtTerminal, "PROGRAM", "Jam", "RESPONSE: NORMAL");
+         cemt.discardResource(cemtTerminal, "PROGRAM", "EXAMPLE", "RESPONSE: NORMAL");
       }).isInstanceOf(CEMTException.class).hasMessageContaining("Problem determining the result from the CEMT command");
  
    }

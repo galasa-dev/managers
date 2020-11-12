@@ -73,6 +73,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     private String jobFilesPath;
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
+    private boolean shouldArchive = true;
     
     private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
@@ -307,7 +308,10 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     @Override
-    public void saveOutputToTestResultsArchive() throws ZosBatchException {
+    public void saveOutputToResultsArchive() throws ZosBatchException {
+    	if (!shouldArchive()) {
+    		throw new ZosBatchException("shouldArchive flag is false");
+    	}
         if (jobOutput() == null) {
             retrieveOutput();
         }
@@ -344,6 +348,16 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         	this.jobArchived = true;
         }
     }
+
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}
 
 	protected void getOutput() throws ZosBatchException {
     
@@ -745,8 +759,8 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void archiveJobOutput() throws ZosBatchException {
-        if (!isArchived() || !this.jobComplete) {
-            saveOutputToTestResultsArchive();
+    	if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
+            saveOutputToResultsArchive();
         }
     }
 }
