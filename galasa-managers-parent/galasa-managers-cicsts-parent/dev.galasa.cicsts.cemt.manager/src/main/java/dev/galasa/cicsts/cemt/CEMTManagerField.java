@@ -10,8 +10,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import dev.galasa.framework.spi.ValidAnnotatedFields;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
+@CEMTManagerField
+@ValidAnnotatedFields({ ICEMT.class })
 public @interface CEMTManagerField {
 
 }

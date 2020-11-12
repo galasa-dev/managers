@@ -1,11 +1,10 @@
-<<<<<<< HEAD
-=======
+
 /*
  * Licensed Materials - Property of IBM
  * 
  * (c) Copyright IBM Corp. 2020.
  */
->>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
+
 package dev.galasa.cicsts.ceda.internal;
 
 import java.lang.annotation.Annotation;
@@ -19,10 +18,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.cicsts.ceda.CEDA;
 import dev.galasa.cicsts.ceda.CEDAManagerException;
-<<<<<<< HEAD
-=======
 import dev.galasa.cicsts.ceda.CEDAManagerField;
->>>>>>> 0fa6c3b7872389baee9ca409ab206d077fbe612a
 import dev.galasa.cicsts.ceda.ICEDA;
 import dev.galasa.cicsts.ceda.internal.properties.CEDAPropertiesSingleton;
 import dev.galasa.cicsts.ceda.spi.ICEDAManagerSpi;

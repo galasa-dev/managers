@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.cicsts.cemt.CEMT;
 import dev.galasa.cicsts.cemt.CEMTManagerException;
+import dev.galasa.cicsts.cemt.CEMTManagerField;
 import dev.galasa.cicsts.cemt.ICEMT;
 import dev.galasa.cicsts.cemt.internal.properties.CEMTPropertiesSingleton;
 import dev.galasa.cicsts.cemt.spi.spi.ICEMTManagerSpi;
