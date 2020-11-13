@@ -126,16 +126,6 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.galasa</groupId>
-				<artifactId>dev.galasa.cicsts.cemt.manager.ivt</artifactId>
-				<version>0.13.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>dev.galasa</groupId>
-				<artifactId>dev.galasa.cicsts.ceda.manager.ivt</artifactId>
-				<version>0.13.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>dev.galasa</groupId>
 				<artifactId>dev.galasa.linux.manager</artifactId>
 				<version>0.13.0-SNAPSHOT</version>
 			</dependency>

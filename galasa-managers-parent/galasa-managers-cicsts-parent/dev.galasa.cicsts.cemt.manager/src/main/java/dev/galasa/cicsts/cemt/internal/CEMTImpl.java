@@ -162,7 +162,7 @@ public class CEMTImpl implements ICEMT {
       
       try {
          if(resourceName == null) {
-            terminal.type("CEMT SET " + resourceType + " " + action);
+            terminal.type("CEMT SET ALL " + resourceType + " " + action);
             terminal.enter();
             terminal.waitForKeyboard();
          }else {
