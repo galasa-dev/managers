@@ -59,9 +59,10 @@ public class TestHttps {
     @Test
     public void testException() throws Exception {
         String expectedMessage = "Problem asking the CPS for the RSE API server use https property for zOS image " + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("ANY", true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private boolean getProperty(String value) throws Exception {

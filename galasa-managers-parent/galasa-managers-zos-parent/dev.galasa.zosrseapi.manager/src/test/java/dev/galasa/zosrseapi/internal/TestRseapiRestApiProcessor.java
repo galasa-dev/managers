@@ -101,9 +101,10 @@ public class TestRseapiRestApiProcessor {
         
         Mockito.when(rseapiMock1.get(Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException());
         String expectedMessage = "Unable to get valid response from RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.GET, PATH, null, null, null, false);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
   
     @Test

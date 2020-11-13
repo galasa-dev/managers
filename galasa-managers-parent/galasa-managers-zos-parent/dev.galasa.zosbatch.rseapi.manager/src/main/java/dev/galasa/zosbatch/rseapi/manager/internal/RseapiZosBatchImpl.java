@@ -160,7 +160,7 @@ public class RseapiZosBatchImpl implements IZosBatch {
                 zosBatchJob.setJobid(responseBody.get("jobID").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());
                 zosBatchJob.setType(responseBody.get("type").getAsString());
-                zosBatchJob.setStatus(responseBody.get("status").getAsString());
+                zosBatchJob.setStatusString(responseBody.get("status").getAsString());
                 zosBatchJob.setJobPathValues();
                 zosBatchJobList.add(zosBatchJob);
             }

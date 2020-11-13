@@ -28,42 +28,48 @@ public class TestEnumsAndExeptions {
     
     @Test
     public void testRseapiException1() throws RseapiException {
-        Assert.assertThrows(RseapiManagerException.class, ()->{
+    	Assert.assertThrows(RseapiManagerException.class, ()->{
         	throw new RseapiException();
         });
     }
     
     @Test
     public void testRseapiException2() throws RseapiException {
-        Assert.assertThrows(EXCEPTION_MESSAGE, RseapiManagerException.class, ()->{
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
         	throw new RseapiException(EXCEPTION_MESSAGE);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
     public void testRseapiException3() throws RseapiException {
-        Assert.assertThrows(EXCEPTION_MESSAGE, RseapiManagerException.class, ()->{
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
         	throw new RseapiException(new Exception(EXCEPTION_CAUSE));
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testRseapiException4() throws RseapiException {
-        Assert.assertThrows(EXCEPTION_MESSAGE, RseapiManagerException.class, ()->{
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
         	throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testRseapiException5() throws RseapiException {
-        Assert.assertThrows(EXCEPTION_MESSAGE, RseapiManagerException.class, ()->{
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
         	throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosManagerException1() throws ZosManagerException {
-        Assert.assertThrows(ZosManagerException.class, ()->{
+    	Assert.assertThrows(ZosManagerException.class, ()->{
         	throw new ZosManagerException();
         });
     }

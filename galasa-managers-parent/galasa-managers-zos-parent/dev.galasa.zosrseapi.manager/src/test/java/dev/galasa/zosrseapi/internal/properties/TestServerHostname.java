@@ -39,9 +39,10 @@ public class TestServerHostname {
     @Test
     public void testNull() throws Exception {
         String expectedMessage = "Value for RSE API server hostname not configured for zOS image "  + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty(null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -52,9 +53,10 @@ public class TestServerHostname {
     @Test
     public void testException() throws Exception {
         String expectedMessage = "Problem asking the CPS for the RSE API server hostname property for zOS image " + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("ANY", true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

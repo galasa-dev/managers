@@ -149,9 +149,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Mockito.when(RseapiZosFileManagerImpl.newZosFileHandler()).thenReturn(zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException(EXCEPTION));
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
-        Assert.assertThrows(EXCEPTION, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	new RseapiZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -165,9 +166,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Assert.assertEquals("create() should return the IZosVSAMDataset instance", zosVSAMDatasetSpy, zosVSAMDatasetSpy.createRetain());
         
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" not created on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.create();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -175,9 +177,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
 
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" already exists on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.create();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -191,9 +194,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Assert.assertFalse("delete() should return false", zosVSAMDatasetSpy.delete());
         
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.delete();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -203,9 +207,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Assert.assertTrue("exists() should return true", zosVSAMDatasetSpy.exists());
 
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetMock).exists();
-        Assert.assertThrows(EXCEPTION, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.exists();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -218,9 +223,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).delete();  
         String expectedMessage = "Unable to delete IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.storeText(CONTENT);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -233,9 +239,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).delete(); 
         String expectedMessage = "Unable to delete IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.storeBinary(CONTENT.getBytes());
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -248,9 +255,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).store(Mockito.any());
 
         PowerMockito.doThrow(new ZosVSAMDatasetException(EXCEPTION)).when(zosVSAMDatasetSpy).idcamsRequest(Mockito.any()); 
-        Assert.assertThrows(EXCEPTION, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.store(reproDatasetMock);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getMessage());
     }
     
     @Test
@@ -258,9 +266,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
         
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.store(reproDatasetMock);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -270,9 +279,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Mockito.doReturn(REPRO_DATASET_NAME).when(reproDatasetMock).getName();
         
         String expectedMessage = "From data set \"" + REPRO_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.store(reproDatasetMock);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -281,9 +291,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(reproDatasetMock).exists();       
         
         String expectedMessage = ZosDatasetException.class.getName() + ": " + EXCEPTION;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.store(reproDatasetMock);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -303,9 +314,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
         
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsText();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -317,9 +329,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).retrieveAsText();
         
         String expectedMessage = "Unable to retrieve content from IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsText();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -332,9 +345,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).delete();
         
         String expectedMessage = "Unable to delete IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsText();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -354,9 +368,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
         
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsBinary();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -368,9 +383,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).retrieveAsBinary();
         
         String expectedMessage = "Unable to retrieve content from IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsBinary();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -383,19 +399,22 @@ public class TestRseapiZosVSAMDatasetImpl {
         PowerMockito.doThrow(new ZosDatasetException()).when(reproDatasetMock).delete();
         
         String expectedMessage = "Unable to delete IDCAMS REPRO temporary dataset";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.retrieveAsBinary();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSaveToResultsArchive() throws IOException, ZosManagerException {
     	zosVSAMDatasetSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
-		Assert.assertThrows(expectedMessage , ZosManagerException.class, ()->{
+		ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
 			zosVSAMDatasetSpy.saveToResultsArchive();
     	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosVSAMDatasetSpy.setShouldArchive(true);
+		
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
@@ -899,9 +918,10 @@ public class TestRseapiZosVSAMDatasetImpl {
 
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
         String expectedMessage = "VSAM data set \"" + VSAM_DATASET_NAME + "\" does not exist on image " + IMAGE;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.getListcatOutput();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -942,9 +962,10 @@ public class TestRseapiZosVSAMDatasetImpl {
     @Test
     public void testCreateReproDatasetException1() throws ZosFileManagerException {
         Mockito.when(RseapiZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.createReproDataset(CONTENT);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getCause().getMessage());
     }
     
     @Test
@@ -954,9 +975,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         PowerMockito.doReturn(reproDatasetMock).when(zosFileHandlerMock).newDataset(Mockito.any(), Mockito.any());
         String expectedMessage = "Invalid content type - java.lang.Object";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.createReproDataset(new Object());
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -966,9 +988,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException());
         String expectedMessage = "Unable to create temporary dataset for IDCAMS REPRO";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.createReproDataset(CONTENT);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -982,9 +1005,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         
         String findString = "XXXX";
         String expectedMessage = "Unable to find \"" + findString  + "\" in LISTCAT output";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.getValueFromListcat(findString);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1011,9 +1035,10 @@ public class TestRseapiZosVSAMDatasetImpl {
     public void testParseOutputException1() throws ZosVSAMDatasetException {   
         JsonObject jsonObject =  new JsonObject();
         String expectedMessage = "Unable to find \"exit code\" member in response body";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.parseOutput(jsonObject);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1021,9 +1046,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         JsonObject jsonObject =  new JsonObject();
         jsonObject.addProperty("exit code", 0);
         String expectedMessage = "Unable to find \"output\" member in response body";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.parseOutput(jsonObject);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1033,9 +1059,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         JsonObject output = new JsonObject();
         jsonObject.add("output", output);
         String expectedMessage = "Unable to find \"stdout\" member in response body";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.parseOutput(jsonObject);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1051,9 +1078,10 @@ public class TestRseapiZosVSAMDatasetImpl {
     	
     	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", (String) null); 
         String expectedMessage = "Unable to parse IDCAMS output for LASTCC - no output";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.setIdcamsRc();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1071,9 +1099,10 @@ public class TestRseapiZosVSAMDatasetImpl {
     public void testIdcamsRequestException1() throws ZosVSAMDatasetException, RseapiException {
     	setupTestIdcamsRequest();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -1082,9 +1111,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         String expectedMessage = "Error zOS UNIX command, HTTP Status Code 404 : NOT_FOUND";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1092,9 +1122,10 @@ public class TestRseapiZosVSAMDatasetImpl {
     	setupTestIdcamsRequest();
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
         String expectedMessage = "Unable to execute IDCAMS command";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1103,9 +1134,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         idcamsRc = 20;
     	Whitebox.setInternalState(zosVSAMDatasetSpy, "idcamsOutput", IDCAMS_COMMAND);
         String expectedMessage = "IDCAMS processing failed: RC=" + idcamsRc + "\n" + IDCAMS_COMMAND;
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.idcamsRequest(IDCAMS_COMMAND);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupTestIdcamsRequest() throws ZosVSAMDatasetException, RseapiException {
@@ -1222,9 +1254,10 @@ public class TestRseapiZosVSAMDatasetImpl {
         StringBuilder sb = new StringBuilder();
         String parameter = "PARAMETER";
         String expectedMessage = "Required parameter '" + parameter + "' has not been set";
-        Assert.assertThrows(expectedMessage, ZosVSAMDatasetException.class, ()->{
+        ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
         	zosVSAMDatasetSpy.appendParameter(parameter, null, sb, true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
