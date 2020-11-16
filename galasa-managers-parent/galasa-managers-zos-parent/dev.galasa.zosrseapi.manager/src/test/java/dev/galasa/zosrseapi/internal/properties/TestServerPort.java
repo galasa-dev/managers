@@ -43,33 +43,37 @@ public class TestServerPort {
     @Test
     public void testInvalidString() throws Exception {
         String expectedMessage = "For input string: \"XXX\"";
-        Assert.assertThrows(expectedMessage, NumberFormatException.class, ()->{
+        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
         	getProperty("XXX");
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInvalidTooSmall() throws Exception {
         String expectedMessage = "Invalid value (-1) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("-1");
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInvalidTooBig() throws Exception {
         String expectedMessage = "Invalid value (65536) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("65536");
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
         String expectedMessage = "Problem asking the CPS for the RSE API server port property for zOS image " + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("ANY", true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

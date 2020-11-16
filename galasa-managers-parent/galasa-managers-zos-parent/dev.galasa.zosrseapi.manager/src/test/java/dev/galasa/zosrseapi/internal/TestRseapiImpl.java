@@ -224,9 +224,10 @@ public class TestRseapiImpl {
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.get(PATH, null, true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -234,9 +235,10 @@ public class TestRseapiImpl {
         setupGet();
         Mockito.when(httpClientMock.getJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with GET to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.get(PATH, null, true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     private void setupGet() {
@@ -276,9 +278,10 @@ public class TestRseapiImpl {
         setupPost();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.post(PATH, null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -286,9 +289,10 @@ public class TestRseapiImpl {
         setupPost();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with POST to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.post(PATH, null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPost() {
@@ -317,9 +321,10 @@ public class TestRseapiImpl {
         setupPostJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.postJson(PATH, new JsonObject(), null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -327,9 +332,10 @@ public class TestRseapiImpl {
         setupPostJson();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with POST to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.postJson(PATH, new JsonObject(), null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPostJson() {
@@ -358,9 +364,10 @@ public class TestRseapiImpl {
         setupPutText();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.putText(PATH, "", null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -368,9 +375,10 @@ public class TestRseapiImpl {
         setupPutText();
         Mockito.when(httpClientMock.putText(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with PUT to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.putText(PATH, "", null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPutText() {
@@ -399,9 +407,10 @@ public class TestRseapiImpl {
         setupPutJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.putJson(PATH, new JsonObject(), null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -409,9 +418,10 @@ public class TestRseapiImpl {
         setupPutJson();
         Mockito.when(httpClientMock.putJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with PUT to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.putJson(PATH, new JsonObject(), null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPutJson() {
@@ -440,9 +450,10 @@ public class TestRseapiImpl {
         setupDelete();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.delete(PATH, null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -450,9 +461,10 @@ public class TestRseapiImpl {
         setupDelete();
         Mockito.when(httpClientMock.deleteJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with DELETE to RSE API server";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.delete(PATH, null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupDelete() {
@@ -509,18 +521,20 @@ public class TestRseapiImpl {
     @Test
     public void testInitializeServerImagesException() throws Exception {
         Mockito.when(ServerImages.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeImageNoConfiguredException() throws Exception {
         Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
         String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "'";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -528,50 +542,56 @@ public class TestRseapiImpl {
         Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
         Whitebox.setInternalState(rseapiSpy, "imageTag", IMAGE_TAG);
         String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "' tag '" + IMAGE_TAG + "'";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitializeServerHostnameException() throws Exception {
         Mockito.when(ServerHostname.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeServerPortException() throws Exception {
         Mockito.when(ServerPort.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeHttpsException() throws Exception {
         Mockito.when(Https.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeHttpClientException() throws Exception {
         Mockito.when(zosImageMock.getDefaultCredentials()).thenThrow(new ZosManagerException(EXCEPTION));
         String expectedMessage = "Unable to create HTTP Client";
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitializeRequestRetryException() throws Exception {
         Mockito.when(RequestRetry.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -581,9 +601,10 @@ public class TestRseapiImpl {
         
         Whitebox.setInternalState(rseapiSpy, "image", (String) null);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.setImage();
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test

@@ -25,17 +25,19 @@ public class TestZosmfPropertiesSingleton {
     @Test
     public void testCpsException() throws RseapiManagerException {
         String expectedMessage = "Attempt to access manager CPS before it has been initialised";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	Assert.assertEquals("Exception", null, RseapiPropertiesSingleton.cps());
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws RseapiManagerException {
         String expectedMessage = "Attempt to set manager CPS before instance created";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	RseapiPropertiesSingleton.setCps(cpsMock);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

@@ -129,9 +129,10 @@ public class TestRseapiManagerImpl {
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         String expectedMessage = "Unable to request framework services";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -156,18 +157,20 @@ public class TestRseapiManagerImpl {
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         String expectedMessage = "The zOS Manager is not available";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The HTTP Manager is not available";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -228,9 +231,10 @@ public class TestRseapiManagerImpl {
         Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", new HashMap<>());
         String expectedMessage = "Unable to get RSE API servers for cluster \"" + CLUSTER + "\"";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.getRseapis(CLUSTER);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -243,9 +247,10 @@ public class TestRseapiManagerImpl {
         Mockito.when(zosManagerMock.getImage(Mockito.anyString())).thenThrow(new ZosManagerException());
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", new HashMap<>());
         String expectedMessage = "No RSE API servers defined for cluster \"" + CLUSTER + "\"";
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.getRseapis(CLUSTER);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -264,9 +269,10 @@ public class TestRseapiManagerImpl {
         rseapis.clear();
         Whitebox.setInternalState(rseapiManagerSpy, "rseapis", rseapis);
         String expectedMessage = "No RSE API sever configured on " + IMAGE;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	rseapiManagerSpy.newRseapiRestApiProcessor(zosImageMock, true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupRseapiImplInitialize() throws RseapiManagerException {        

@@ -107,9 +107,10 @@ public class TestRseapiResponseImpl {
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
         String expectedMessage = "Content not a JsonObject - " + Integer.class.getName();
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiResponseSpy.getJsonContent();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -125,9 +126,10 @@ public class TestRseapiResponseImpl {
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
         String expectedMessage = "Content not a JsonArray Object - " + Integer.class.getName();
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiResponseSpy.getJsonArrayContent();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -140,9 +142,10 @@ public class TestRseapiResponseImpl {
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
         String expectedMessage = "Content not a String or InputStream Object - " + Integer.class.getName();
-        Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiResponseSpy.getTextContent();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -160,22 +163,23 @@ public class TestRseapiResponseImpl {
     
     @Test
     public void testSetHttpClientresponseCloseableHttpResponse() throws UnsupportedOperationException, IOException, RseapiException {
-      Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
-      Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
-      Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-      Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-      Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
-      
-      rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
-      Assert.assertEquals("getContent() should return the expected value", CONTENT_STRING, IOUtils.toString((InputStream) rseapiResponseSpy.getContent(), StandardCharsets.UTF_8));
-      Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, rseapiResponseSpy.getStatusCode());
-      Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, rseapiResponseSpy.getStatusLine());
-      
-      Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
-      String expectedMessage = "Could not retrieve response";
-      Assert.assertThrows(expectedMessage, RseapiException.class, ()->{
-    	  rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
-      });
+    	Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
+    	Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
+    	Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+    	Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+    	Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
+    	
+    	rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	Assert.assertEquals("getContent() should return the expected value", CONTENT_STRING, IOUtils.toString((InputStream) rseapiResponseSpy.getContent(), StandardCharsets.UTF_8));
+    	Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, rseapiResponseSpy.getStatusCode());
+    	Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, rseapiResponseSpy.getStatusLine());
+    	
+    	Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
+    	String expectedMessage = "Could not retrieve response";
+    	RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+    		rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+		});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

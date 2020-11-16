@@ -40,9 +40,10 @@ public class TestServerImages {
     @Test
     public void testNull() throws Exception {
         String expectedMessage = "Value for RSE API server images property not configured for zOS cluster "  + CLUSTER_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty(null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -59,9 +60,10 @@ public class TestServerImages {
     @Test
     public void testException() throws Exception {
         String expectedMessage = "Problem asking the CPS for the RSE API server images property for zOS cluster " + CLUSTER_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("ANY", true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private List<String> getProperty(String value) throws Exception {

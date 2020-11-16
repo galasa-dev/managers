@@ -21,9 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -87,9 +85,6 @@ public class TestZosmfZosDatasetImpl {
     
     private static String logMessage;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private static final String DATASET_NAME = "DATA.SET.NAME";
     
     private static final String MEMBER_NAME = "MEMBER";
@@ -137,10 +132,11 @@ public class TestZosmfZosDatasetImpl {
     
     @Test
     public void testConstructorException() throws ZosmfManagerException, ZosFileManagerException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
         Mockito.doThrow(new ZosmfManagerException(EXCEPTION)).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        new ZosmfZosDatasetImpl(zosImageMock, DATASET_NAME);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	new ZosmfZosDatasetImpl(zosImageMock, DATASET_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -188,10 +184,11 @@ public class TestZosmfZosDatasetImpl {
     @Test
     public void testCreateExists() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" already exists on image " + IMAGE);
-        
-        zosDatasetSpy.create();
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" already exists on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -199,11 +196,11 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
 
-        zosDatasetSpy.create();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -213,11 +210,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.create();
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+    		zosDatasetSpy.create();
+    	});
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -228,10 +225,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to create data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.create();
+        String expectedMessage = "Unable to create data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.create();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -253,10 +251,11 @@ public class TestZosmfZosDatasetImpl {
     public void testDeleteNotExists() throws ZosDatasetException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).created();
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.delete();        
+        String expectedMessage = "\"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete();        
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -265,10 +264,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.delete();        
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete();        
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -279,10 +278,10 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.delete();        
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete();        
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -292,10 +291,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to delete data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.delete();        
+        String expectedMessage = "Unable to delete data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.delete();        
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -322,10 +322,10 @@ public class TestZosmfZosDatasetImpl {
     public void testExistsZosmfException() throws ZosDatasetException, ZosmfException {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-    
-        zosDatasetSpy.exists();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -334,10 +334,10 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-    
-        zosDatasetSpy.exists();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -345,10 +345,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to list data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-    
-        zosDatasetSpy.exists();
+        String expectedMessage = "Unable to list data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.exists();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -359,10 +360,11 @@ public class TestZosmfZosDatasetImpl {
         zosDatasetSpy.storeText(CONTENT);
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set");
-        
-        zosDatasetSpy.storeText(CONTENT);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStore(String memberName, String content) method instead";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -375,10 +377,11 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set");
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes());
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStore(String memberName, String content) method instead";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -395,11 +398,12 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
-        
-        zosDatasetSpy.retrieveAsText();
+        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS(); 
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use retrieve(String memberName) method instead";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAsText();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -415,20 +419,22 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());        
         Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
         
-        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Data set \"" + DATASET_NAME + "\" is a partitioned data data set. Use retrieve(String memberName) method instead");
-        
-        zosDatasetSpy.retrieveAsBinary();
+        PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use retrieve(String memberName) method instead";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAsBinary();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSaveToResultsArchive() throws IOException, ZosManagerException {
     	zosDatasetSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
-		Assert.assertThrows(expectedMessage , ZosDatasetException.class, ()->{
+		ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
 			zosDatasetSpy.saveToResultsArchive();
     	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosDatasetSpy.setShouldArchive(true);
 		
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
@@ -509,10 +515,11 @@ public class TestZosmfZosDatasetImpl {
         zosDatasetSpy.savePDSToResultsArchive();
 		Assert.assertEquals("savePDSToResultsArchive() should log specified message", expectedMessage, logMessage);
 		
-		PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());       
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        zosDatasetSpy.savePDSToResultsArchive();
+		PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	zosDatasetSpy.savePDSToResultsArchive();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     private Path newMockedPath(boolean fileExists) throws IOException {
@@ -554,10 +561,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.verify(zosDatasetSpy, Mockito.times(1)).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
         
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberCreate(MEMBER_NAME);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberCreate(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -592,10 +600,11 @@ public class TestZosmfZosDatasetImpl {
     public void testMemberDeleteNoPDS() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-
-        zosDatasetSpy.memberDelete(MEMBER_NAME);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberDelete(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -605,10 +614,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).memberExists(Mockito.any());
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-
-        zosDatasetSpy.memberDelete(MEMBER_NAME);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberDelete(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -621,10 +630,10 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);  
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.memberDelete(MEMBER_NAME);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberDelete(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -637,10 +646,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to delete member " + MEMBER_NAME + " from data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.memberDelete(MEMBER_NAME);
+        String expectedMessage = "Unable to delete member " + MEMBER_NAME + " from data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberDelete(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -667,10 +677,11 @@ public class TestZosmfZosDatasetImpl {
     public void testMemberExistsNotPDS() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberExists(MEMBER_NAME);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberExists(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -679,10 +690,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberExists(MEMBER_NAME);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberExists(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -695,10 +706,10 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
     
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.memberExists(MEMBER_NAME);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberExists(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -708,11 +719,12 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to list members of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.memberExists(MEMBER_NAME);
+
+        String expectedMessage = "Unable to list members of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberExists(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -723,21 +735,22 @@ public class TestZosmfZosDatasetImpl {
         zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).storeText(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getMessage());
     }
 
     @Test
     public void testMemberStoreTextNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreText(MEMBER_NAME, CONTENT);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -748,21 +761,22 @@ public class TestZosmfZosDatasetImpl {
         zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).storeBinary(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getMessage());
     }
 
     @Test
     public void testMemberStoreBinaryNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberStoreBinary(MEMBER_NAME, CONTENT.getBytes());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -779,21 +793,22 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("memberRetrieveText() should return the supplied value", CONTENT, zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getMessage());
     }
 
     @Test
     public void testMemberRetrieveAsTextNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsText(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -810,21 +825,22 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("memberRetrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME)));
         
         PowerMockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetSpy).retrieve(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getMessage());
     }
 
     @Test
     public void testMemberRetrieveAsBinaryNotPDS() throws ZosDatasetException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        
-        zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberRetrieveAsBinary(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }     
     
     @Test
@@ -857,10 +873,11 @@ public class TestZosmfZosDatasetImpl {
     public void testMemberListNoPDSException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-
-        zosDatasetSpy.memberList();
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -868,10 +885,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-
-        zosDatasetSpy.memberList();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -882,9 +899,10 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);  
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
         
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        zosDatasetSpy.memberList();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -892,19 +910,22 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve member list of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        zosDatasetSpy.memberList();
+
+        String expectedMessage = "Unable to retrieve member list of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberList();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testMemberSaveToResultsArchive() throws IOException, ZosManagerException {
     	zosDatasetSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
-		Assert.assertThrows(expectedMessage , ZosDatasetException.class, ()->{
+		ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
 			zosDatasetSpy.memberSaveToResultsArchive(MEMBER_NAME);
     	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosDatasetSpy.setShouldArchive(true);
     	
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
@@ -932,9 +953,11 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("memberSaveToTestArchive() should log specified message", expectedMessage, logMessage);
 
         PowerMockito.doReturn(false).when(zosDatasetSpy).isPDS();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" is not a partitioned data data set");
-        zosDatasetSpy.memberSaveToResultsArchive(MEMBER_NAME);
+        expectedMessage = "Data set \"" + DATASET_NAME + "\" is not a partitioned data set";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+    		zosDatasetSpy.memberSaveToResultsArchive(MEMBER_NAME);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1146,11 +1169,12 @@ public class TestZosmfZosDatasetImpl {
     @Test
     public void testGetAttibutesAsStringNotExist() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.getAttibutesAsString();        
+
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();        
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1161,11 +1185,12 @@ public class TestZosmfZosDatasetImpl {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("returnedRows", 0);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.getAttibutesAsString();
+
+        String expectedMessage = "Unable to retrieve attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
         
     }
     
@@ -1173,11 +1198,11 @@ public class TestZosmfZosDatasetImpl {
     public void testGetAttibutesAsStringZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
 
-        zosDatasetSpy.getAttibutesAsString();
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -1188,11 +1213,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-    
-        zosDatasetSpy.getAttibutesAsString();
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -1200,21 +1225,23 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable list to attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
 
-        zosDatasetSpy.getAttibutesAsString();
+        String expectedMessage = "Unable list to attibutes of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutesAsString();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetAttibutesNotExist() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.getAttibutes();        
+
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.getAttibutes();        
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1245,16 +1272,20 @@ public class TestZosmfZosDatasetImpl {
                 "SYSREASON=12\n" + 
                 "SYSMSGLVL1: MESSAGE\n" + 
                 "SYSMSGLVL2: MESSAGE";
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(expectedMessage);
-        zosDatasetSpy.retrieveAttibutes();
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+    		zosDatasetSpy.retrieveAttibutes();
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testRetrieveAttibutesException() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
-        zosDatasetSpy.retrieveAttibutes();
+        String expectedMessage = "Unable to create LISTDSI EXEC command";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieveAttibutes();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1314,11 +1345,12 @@ public class TestZosmfZosDatasetImpl {
         
         ByteArrayInputStream contentIsSpy = Mockito.spy(contentIs);
         PowerMockito.doThrow(new IOException(EXCEPTION)).when(contentIsSpy).read(Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Failed to collect binary");
-        
-        zosDatasetSpy.inputStreamToByteArray(contentIsSpy);
+
+        String expectedMessage = "Failed to collect binary";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.inputStreamToByteArray(contentIsSpy);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1338,11 +1370,11 @@ public class TestZosmfZosDatasetImpl {
     public void testInternalRetrieveZosmfException() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
-    
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.retrieve(null);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -1352,11 +1384,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.retrieve(null);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -1365,11 +1397,12 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.retrieve(null);
+
+        String expectedMessage = "Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1381,10 +1414,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE);
-        
-        zosDatasetSpy.retrieve(null);
+        String expectedMessage = "Unable to retrieve content of data set \"" + DATASET_NAME + "\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.retrieve(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1407,10 +1441,11 @@ public class TestZosmfZosDatasetImpl {
     public void testInternalStoreTextNotExist() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1418,10 +1453,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -1431,11 +1466,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -1444,11 +1479,12 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to write to data set \"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" on image " + IMAGE);
-        
-        zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+
+        String expectedMessage = "Unable to write to data set \"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeText(CONTENT, MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1471,10 +1507,11 @@ public class TestZosmfZosDatasetImpl {
     public void testInternalStoreBinaryNotExist() throws ZosDatasetException, ZosmfException {
         PowerMockito.doReturn(false).when(zosDatasetSpy).exists();
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("\"" + DATASET_NAME + "\" does not exist on image " + IMAGE);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" does not exist on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1482,10 +1519,10 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(true).when(zosDatasetSpy).exists();
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_BINARY), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -1495,11 +1532,11 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(ERROR);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
     }
 
     @Test
@@ -1508,11 +1545,12 @@ public class TestZosmfZosDatasetImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_BINARY), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         PowerMockito.doReturn(ERROR).when(zosDatasetSpy).buildErrorString(Mockito.anyString(), Mockito.any());
-        
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to write to data set \"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" on image " + IMAGE);
-        
-        zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+
+        String expectedMessage = "Unable to write to data set \"" + DATASET_NAME + "(" + MEMBER_NAME + ")\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.storeBinary(CONTENT.getBytes(), MEMBER_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -1533,10 +1571,11 @@ public class TestZosmfZosDatasetImpl {
         returnedJsonObject = zosDatasetSpy.addPropertyWhenSet(jsonObject, "property", 99);
         Assert.assertEquals("testAddPropertyWhenSet() should return the correct int property value", 99, returnedJsonObject.get("property").getAsInt());
 
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Invlaid type of \"" + DummyClass.class.getName() + "\" for property \"property\" on image " + IMAGE);
-        jsonObject = getJsonObject();
-        zosDatasetSpy.addPropertyWhenSet(jsonObject, "property", new DummyClass());
+        String expectedMessage = "Invlaid type of \"" + DummyClass.class.getName() + "\" for property \"property\" on image " + IMAGE;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.addPropertyWhenSet(getJsonObject(), "property", new DummyClass());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

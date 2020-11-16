@@ -72,17 +72,19 @@ public class TestRunUNIXPathPrefix {
         ICredentials credentialsMock = Mockito.mock(ICredentials.class);
         Mockito.doReturn(credentialsMock).when(zosProvisionedImageMock).getDefaultCredentials();
         String expectedMessage = "Unable to get the run username for image " + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
             getProperty(zosProvisionedImageMock, null);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException2() throws Exception {
         String expectedMessage = "Problem asking the CPS for the zOS run UNIX path prefix for image "  + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	getProperty(zosProvisionedImageMock, null, true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(ZosProvisionedImageImpl arg, String value) throws Exception {
