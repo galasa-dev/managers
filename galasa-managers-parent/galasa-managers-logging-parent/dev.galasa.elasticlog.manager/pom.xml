@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-logging-parent</artifactId>
-		<version>0.12.0-SNAPSHOT</version>
+		<version>0.13.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dev.galasa.elasticlog.manager</artifactId>
-	<version>0.12.0-SNAPSHOT</version>
+	<version>0.13.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa ElasticLog Manager</name>
@@ -18,21 +18,21 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.http.manager</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>

@@ -6,16 +6,21 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-parent</artifactId>
-		<version>0.12.0-SNAPSHOT</version>
+		<version>0.13.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>galasa-managers-cicsts-parent</artifactId>
-	<version>0.12.0-SNAPSHOT</version>
+	<version>0.13.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>dev.galasa.cicsts.manager</module>
 		<module>dev.galasa.cicsts.ceci.manager</module>
+		<module>dev.galasa.cicsts.ceda.manager</module>
+		<module>dev.galasa.cicsts.cemt.manager</module>
+		<module>dev.galasa.cicsts.cemt.manager.ivt</module>
+		<module>dev.galasa.cicsts.ceda.manager.ivt</module>
+		
 	</modules>
 
 </project>

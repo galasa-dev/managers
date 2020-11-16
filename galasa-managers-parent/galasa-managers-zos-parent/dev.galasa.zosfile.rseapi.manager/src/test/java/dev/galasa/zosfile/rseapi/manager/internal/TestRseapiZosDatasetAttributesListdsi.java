@@ -14,9 +14,7 @@ import java.nio.file.Paths;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -38,7 +36,7 @@ import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 import dev.galasa.zosrseapi.RseapiException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(FrameworkUtil.class)
+@PrepareForTest({FrameworkUtil.class, RseapiZosUnixCommand.class})
 public class TestRseapiZosDatasetAttributesListdsi {
     
     private RseapiZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
@@ -62,9 +60,6 @@ public class TestRseapiZosDatasetAttributesListdsi {
     
     @Mock
     private RseapiZosDatasetImpl execDatasetMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String DATASET_NAME = "DATA.SET.NAME";    
     private static final String RUN_HLQ = "RUNHLQ";    
@@ -76,6 +71,8 @@ public class TestRseapiZosDatasetAttributesListdsi {
     private static final String PROP_STDOUT = "stdout";
     private static final String PROP_STDERR = "stderr";
     private static final String PROP_EXIT_CODE = "exit code";
+    
+    private static final String EXCEPTION = "exception";
     
     @Before
     public void setup() throws Exception {
@@ -96,10 +93,12 @@ public class TestRseapiZosDatasetAttributesListdsi {
     
     @Test
     public void testInitialiseException1() throws ZosDatasetException {
-    	Mockito.doThrow(new ZosDatasetException("exception")).when(zosDatasetAttributesListdsiSpy).createExecDataset();
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
-        zosDatasetAttributesListdsiSpy.initialise();
+    	Mockito.doThrow(new ZosDatasetException(EXCEPTION)).when(zosDatasetAttributesListdsiSpy).createExecDataset();
+        String expectedMessage = "Unable to create LISTDSI EXEC command";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.initialise();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -131,9 +130,11 @@ public class TestRseapiZosDatasetAttributesListdsi {
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "initialised", true);
         JsonObject jsonObject = new JsonObject();
         PowerMockito.doReturn(jsonObject ).when(zosDatasetAttributesListdsiSpy).execListdsi(Mockito.anyString());
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Invalid JSON object returend from LISTDSI:\n" + jsonObject);
-        zosDatasetAttributesListdsiSpy.get(DATASET_NAME);
+        String expectedMessage = "Invalid JSON object returend from LISTDSI:\n" + jsonObject;
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.get(DATASET_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -146,22 +147,28 @@ public class TestRseapiZosDatasetAttributesListdsi {
 
     @Test
     public void testExecListdsi() throws ZosDatasetException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(0));
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("OK");
+    	PowerMockito.mockStatic(RseapiZosUnixCommand.class);
+    	Mockito.when(RseapiZosUnixCommand.execute(Mockito.any(), Mockito.any())).thenReturn(getCommandJsonObject(0));
         JsonObject jsonObject = buildListdsiJsonObject(false);
         Mockito.when(execDatasetMock.memberRetrieveAsText(Mockito.any())).thenReturn(jsonObject.toString());
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "execDataset", execDatasetMock );
         Assert.assertEquals("get() should return the expected object", jsonObject, zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME));
+        
+        Mockito.when(RseapiZosUnixCommand.execute(Mockito.any(), Mockito.any())).thenReturn(getCommandJsonObject(99));
+        String expectedMessage = "Unable to get data set attibutes. Response body:\n" + getCommandJsonObject(99);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testExecListdsiException1() throws ZosDatasetException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("exception");
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -169,19 +176,11 @@ public class TestRseapiZosDatasetAttributesListdsi {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Error zOS UNIX command, HTTP Status Code 404 : NOT_FOUND");
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
-    }
-
-    @Test
-    public void testExecListdsiException3() throws ZosDatasetException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException());
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to get data set attibutes");
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        String expectedMessage = "Error zOS UNIX command, HTTP Status Code 404 : NOT_FOUND";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -198,19 +197,6 @@ public class TestRseapiZosDatasetAttributesListdsi {
 		output.addProperty(PROP_STDERR, "");
 		responseBody.add(PROP_OUTPUT, output);
         Assert.assertEquals("getExitRc() should return the expected object", "UNKNOWN", zosDatasetAttributesListdsiSpy.getExitRc(responseBody));
-    }
-
-    @Test
-    public void testExecListdsiException6() throws ZosDatasetException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
-        JsonObject commandJsonObject = new JsonObject();
-        commandJsonObject.addProperty("property", "value");
-		Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(commandJsonObject);
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("OK");
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to get data set attibutes. Response body:\n" + commandJsonObject.toString());
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
     }
     
     @Test
@@ -247,9 +233,11 @@ public class TestRseapiZosDatasetAttributesListdsi {
         Assert.assertEquals("getExecResource() should return the expected value", execSource, zosDatasetAttributesListdsiSpy.getExecResource());
         
         Mockito.when(bundleMock.getResource(Mockito.any())).thenReturn(new URL("file://DUMMY"));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to get LISTDSI EXEC resource from Manager Bundle");
-        zosDatasetAttributesListdsiSpy.getExecResource();
+        String expectedMessage = "Unable to get LISTDSI EXEC resource from Manager Bundle";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.getExecResource();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     private JsonObject getCommandJsonObject(int rc) {

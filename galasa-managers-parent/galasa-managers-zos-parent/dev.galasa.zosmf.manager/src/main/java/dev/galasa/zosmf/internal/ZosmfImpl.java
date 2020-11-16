@@ -57,6 +57,8 @@ public class ZosmfImpl implements IZosmf {
 
     private HashMap<String, String> commonHeaders = new HashMap<>();
 
+	private static final String PATH_SERVERDETAILS = "/zosmf/info";
+
     public ZosmfImpl(IZosImage image) throws ZosmfException {
         this.image = image;
         initialize();
@@ -239,6 +241,11 @@ public class ZosmfImpl implements IZosmf {
     }
 
     @Override
+	public @NotNull JsonObject serverInfo() throws ZosmfException {
+        return get(PATH_SERVERDETAILS, null, false).getJsonContent();
+	}
+
+	@Override
     public IZosImage getImage() {
         return this.image;
     }

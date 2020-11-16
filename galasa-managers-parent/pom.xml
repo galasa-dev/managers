@@ -7,11 +7,11 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-parent</artifactId>
-		<version>0.12.0-SNAPSHOT</version>
+		<version>0.13.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>galasa-managers-parent</artifactId>
-	<version>0.12.0-SNAPSHOT</version>
+	<version>0.13.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Galasa Managers</name>
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>galasa-testharness</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.13.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -59,7 +59,7 @@
 				<plugin>
 					<groupId>dev.galasa</groupId>
 					<artifactId>galasa-maven-plugin</artifactId>
-					<version>0.12.0-SNAPSHOT</version>
+					<version>0.13.0-SNAPSHOT</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -104,7 +104,7 @@
 									<docletArtifact>
 										<groupId>dev.galasa</groupId>
 										<artifactId>galasautils-maven-plugin</artifactId>
-										<version>0.12.0-SNAPSHOT</version>
+										<version>0.13.0-SNAPSHOT</version>
 									</docletArtifact>
 									<useStandardDocletOptions>false</useStandardDocletOptions>
 									<reportOutputDirectory>${project.build.directory}/managerdocs</reportOutputDirectory>

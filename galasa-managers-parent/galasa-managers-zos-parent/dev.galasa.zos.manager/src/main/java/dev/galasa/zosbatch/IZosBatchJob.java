@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosbatch;
 
@@ -12,6 +12,35 @@ package dev.galasa.zosbatch;
  *
  */
 public interface IZosBatchJob {
+    
+    /**
+     * Enumeration of Job Status:
+     * <li>{@link #INPUT}</li>
+     * <li>{@link #ACTIVE}</li>
+     * <li>{@link #OUTPUT}</li>
+     * <li>{@link #UNKNOWN}</li>
+     */
+    public enum JobStatus {
+    	INPUT("INPUT"),
+    	ACTIVE("ACTIVE"),
+    	OUTPUT("OUTPUT"),
+    	UNKNOWN("UNKNOWN");
+    	
+    	private String value;
+    	
+    	private JobStatus(String value) {
+			this.value = value;
+		}
+    	
+    	public static JobStatus valueOfLabel(String jobStatus) {
+    		for (JobStatus element : values()) {
+                if (element.value.equals(jobStatus)) {
+                    return element;
+                }
+            }
+            return JobStatus.UNKNOWN;
+		}
+    }
     
     /**
      * The {@link IZosBatchJobname} associated with this job
@@ -42,13 +71,22 @@ public interface IZosBatchJob {
     public String getType();
 
     /**
-     * The batch job status, e.g.<br>
+     * The batch job value
+     * 
+     * @return batch job value
+     */
+    public JobStatus getStatus();
+
+    /**
+     * The batch job value as a {@link String}, e.g.<br>
      * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
      * Returns "????????" if the job has not been submitted
+     * <p>
+     * N.B. Values are implementation dependent
      * 
-     * @return batch job status
+     * @return batch job value
      */
-    public String getStatus();
+    public String getStatusString();
     
     /**
      * The batch job completion return code, e.g.<br>
@@ -115,6 +153,15 @@ public interface IZosBatchJob {
      * 
      * @throws ZosBatchException
      */
-    public void saveOutputToTestResultsArchive() throws ZosBatchException;
+    public void saveOutputToResultsArchive() throws ZosBatchException;
 
+    /**
+     * Set flag to control if the job output should be stored to the test output. Defaults to true
+     */    
+    public void setShouldArchive(boolean shouldArchive);
+
+    /**
+     * Return flag that controls if the job output should be stored to the test output
+     */    
+    public boolean shouldArchive();
 }

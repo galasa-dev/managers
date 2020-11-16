@@ -58,7 +58,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private String jobid;         
     private String owner;         
     private String type;         
-    private String status;
+    private JobStatus status;         
+    private String statusString;
     private boolean jobNotFound;
     private String retcode;
     private boolean jobComplete;
@@ -69,6 +70,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private String jobFilesPath;
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
+    private boolean shouldArchive = true;
     
     private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
@@ -214,13 +216,27 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
     
     @Override
-    public String getStatus() {
-    	try {
-			updateJobStatus();
-		} catch (ZosBatchException e) {
-			logger.error(e);
-		}
-        return (this.status != null ? this.status : StringUtils.repeat(QUERY, 8));
+    public JobStatus getStatus() {
+    	if (this.status != JobStatus.OUTPUT) {
+	    	try {
+				updateJobStatus();
+			} catch (ZosBatchException e) {
+				logger.error(e);
+			}
+    	}
+    	return (this.status != null ? this.status : JobStatus.UNKNOWN);
+    }
+    
+    @Override
+    public String getStatusString() {
+    	if (this.status != JobStatus.OUTPUT) {
+	    	try {
+				updateJobStatus();
+			} catch (ZosBatchException e) {
+				logger.error(e);
+			}
+    	}
+        return (this.statusString != null ? this.statusString : StringUtils.repeat(QUERY, 8));
     }
     
     @Override
@@ -310,7 +326,10 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     @Override
-    public void saveOutputToTestResultsArchive() throws ZosBatchException {
+    public void saveOutputToResultsArchive() throws ZosBatchException {
+    	if (!shouldArchive()) {
+    		throw new ZosBatchException("shouldArchive flag is false");
+    	}
         if (jobOutput() == null) {
             retrieveOutput();
         }
@@ -348,7 +367,17 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
     }
 
-    protected void getOutput() throws ZosBatchException {
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}
+
+	protected void getOutput() throws ZosBatchException {
     
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
@@ -412,8 +441,22 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         this.type = type;
     }
     
-    protected void setStatus(String status) {
-        this.status = status;
+    protected void setStatusString(String statusString) {
+        this.statusString = statusString;
+        setStatus(statusString);
+    }
+    
+    protected void setStatus(String statusString) {
+    	//RSE API Status: HOLD | ACTIVE | ABEND | COMPLETED | COMPLETION 
+    	if (statusString == null || statusString.equals(StringUtils.repeat(QUERY, 8))) {
+    		this.status = JobStatus.UNKNOWN;
+    	} else if (statusString.equals("HOLD")) {
+    		this.status = JobStatus.INPUT;
+    	} else if (statusString.equals("ACTIVE")) {
+    		this.status = JobStatus.ACTIVE;
+    	} else if (statusString.equals("COMPLETION") || statusString.equals("COMPLETED") || statusString.equals("ABEND")) {
+    		this.status = JobStatus.OUTPUT;
+    	}
     }
 
     protected void cancel(boolean purge) throws ZosBatchException {
@@ -514,11 +557,12 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.jobNotFound = false;
             this.owner = jsonNull(responseBody, PROP_OWNER);
             this.type = jsonNull(responseBody, PROP_TYPE);
-            this.status = jsonNull(responseBody, PROP_STATUS);
-            if (this.status != null && "COMPLETION".equals(this.status) ||
-            	this.status != null && "ABEND".equals(this.status)) {
+            this.statusString = jsonNull(responseBody, PROP_STATUS);
+            if (this.statusString != null && "COMPLETION".equals(this.statusString) ||
+            	this.statusString != null && "ABEND".equals(this.statusString)) {
                 this.jobComplete = true;
             }
+            setStatus(this.statusString);
             String retcodeProperty = jsonNull(responseBody, PROP_RETCODE);
             if (retcodeProperty != null) {
                 this.retcode = retcodeProperty;
@@ -621,8 +665,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void archiveJobOutput() throws ZosBatchException {
-        if (!isArchived() || !this.jobComplete) {
-            saveOutputToTestResultsArchive();
+        if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
+            saveOutputToResultsArchive();
         }
     }
 }
