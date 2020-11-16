@@ -161,7 +161,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             this.type = jsonNull(responseBody, PROP_TYPE);
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
-            logger.info("JOB " + this + " Submitted");
+            logger.info("JOB " + jobname + "(" + jobid + ") Submitted");
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString("Submit job", responseBody); 
@@ -334,6 +334,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         Path artifactPath = ZosmfZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
         String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
         artifactPath = artifactPath.resolve(ZosmfZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, folderName));
+        logger.info("Archiving batch job " + jobname + "(" + jobid + ") to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
@@ -352,7 +353,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             }
             name.append("_");
             name.append(spoolFile.getDdname());
-            logger.info("        " + name);
             String fileName = ZosmfZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, name.toString());
             try {
 				ZosmfZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
@@ -576,12 +576,12 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             } else {
                 this.retcode = StringUtils.repeat(QUERY, 4);
             }
-            logger.debug(jobStatus());
+            logger.trace(jobStatus());
         } else {
             if (response.getStatusCode() == HttpStatus.SC_BAD_REQUEST &&
                     jsonZero(responseBody, PROP_RC) == 4 &&
                     jsonZero(responseBody, PROP_REASON) == 10) {
-                logger.warn("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
+                logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
                 this.statusString = null;
             } else {
@@ -712,7 +712,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             jclWithJobcard.append("\n");
         }
         
-        logger.info("JOBCARD:\n" + jclWithJobcard.toString());
         jclWithJobcard.append(jcl);
         if (!jclWithJobcard.toString().endsWith("\n")) {
             jclWithJobcard.append("\n");

@@ -99,6 +99,8 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         }
         
         artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
+        setCurrentTestMethodArchiveFolderName("preTest");
     }
     
 
@@ -142,18 +144,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         return otherManager instanceof IZosManagerSpi ||
                otherManager instanceof IZosmfManagerSpi;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#provisionStart()
-     */
-    @Override
-    public void provisionStart() throws ManagerException, ResourceUnavailableException {
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("preTest");
-    }
-
+    
     /*
      * (non-Javadoc)
      * 
