@@ -90,17 +90,18 @@ public class ZosmfZosBatchImpl implements IZosBatch {
      * Clean up any existing batch jobs
      * @throws ZosBatchException
      */
-    public void cleanup() throws ZosBatchException {
-        
+    public void cleanup(boolean endOfTest) throws ZosBatchException {        
         Iterator<ZosmfZosBatchJobImpl> iterator = zosBatchJobs.iterator();
         while (iterator.hasNext()) {
             ZosmfZosBatchJobImpl zosBatchJobImpl = iterator.next();
             try {
 				if (zosBatchJobImpl.submitted()) {
 				    if (!zosBatchJobImpl.isComplete()) {
-				        zosBatchJobImpl.cancel();
-				        zosBatchJobImpl.archiveJobOutput();
-				        zosBatchJobImpl.purge();
+				    	if (endOfTest) {
+				    		zosBatchJobImpl.cancel();
+					        zosBatchJobImpl.archiveJobOutput();
+					        zosBatchJobImpl.purge();
+				    	}
 				    } else {
 				        if (!zosBatchJobImpl.isArchived()) {
 				            zosBatchJobImpl.archiveJobOutput();
@@ -113,7 +114,9 @@ public class ZosmfZosBatchImpl implements IZosBatch {
 			} catch (ZosBatchException e) {
 				logger.error("Problem in cleanup phase", e);
 			}
-            iterator.remove();
+            if (endOfTest) {
+            	iterator.remove();
+            }
         }
     }
 
