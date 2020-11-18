@@ -35,4 +35,11 @@ public interface ICicsRegion {
      * @return the zOS Image the CICS TS region resides on
      */
     IZosImage getZosImage();
+
+    /**
+     * Describes the type of CICS region
+     * 
+     * @return The type of CICS Region
+     */
+    MasType getMasType();
 }
