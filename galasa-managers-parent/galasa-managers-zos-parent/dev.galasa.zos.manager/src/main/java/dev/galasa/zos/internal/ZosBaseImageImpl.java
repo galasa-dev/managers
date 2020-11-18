@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zos.internal;
 
@@ -37,7 +37,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         this.clusterId  = clusterId;
 
         try {
-        	this.sysname = ImageSysname.get(this.imageId);
+            this.sysname = ImageSysname.get(this.imageId);
             this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
             this.defaultCredentialsId = AbstractManager.defaultString(this.cps.getProperty("image", "credentials", this.imageId), "ZOS");
         } catch(Exception e) {
@@ -71,11 +71,14 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 
     @Override
     public String getSysplexID() {
+        if (this.sysplexID == null) {
+            return this.getImageID();
+        }
         return this.sysplexID;
     }
 
     @Override
-    public @NotNull String getClusterID() {
+    public String getClusterID() {
         return this.clusterId;
     }
 
@@ -111,7 +114,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     public ZosIpHostImpl getIpHost() {
         return this.ipHost;
     }
-    
+
     @Override
     public String toString() {
         return this.imageId;

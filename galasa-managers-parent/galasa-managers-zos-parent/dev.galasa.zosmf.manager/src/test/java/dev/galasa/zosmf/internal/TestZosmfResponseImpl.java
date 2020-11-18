@@ -39,12 +39,11 @@ import dev.galasa.http.IHttpClient;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.internal.properties.Https;
 import dev.galasa.zosmf.internal.properties.RequestRetry;
-import dev.galasa.zosmf.internal.properties.ServerHostname;
-import dev.galasa.zosmf.internal.properties.ServerImages;
+import dev.galasa.zosmf.internal.properties.SysplexServers;
 import dev.galasa.zosmf.internal.properties.ServerPort;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServerImages.class, ServerHostname.class, ServerPort.class, Https.class, RequestRetry.class})
+@PrepareForTest({SysplexServers.class, ServerPort.class, Https.class, RequestRetry.class})
 public class TestZosmfResponseImpl {
     
     private ZosmfResponseImpl zosmfResponse;

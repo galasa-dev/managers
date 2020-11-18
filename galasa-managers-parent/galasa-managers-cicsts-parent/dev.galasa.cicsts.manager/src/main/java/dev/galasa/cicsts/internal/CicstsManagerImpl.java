@@ -193,9 +193,22 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
                     "Unable to setup CICS Terminal for field " + field.getName() + ", tagged region " + tag, e);
         }
     }
+    
+    @Override
+    public void provisionBuild() throws ManagerException, ResourceUnavailableException {
+        // First, give the provisioners the opportunity to build CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionBuild();
+        }
+
+    }
 
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
+        // First, give the provisioners the opportunity to start CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionStart();
+        }
 
         // Add the default Logon Provider incase one isn't supplied
         this.logonProviders.add(new CicstsDefaultLogonProvider());
@@ -220,6 +233,20 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
                 terminal.disconnect();
             } catch (TerminalInterruptedException e) { // NOSONAR - wish to hide disconnect errors
             }
+        }
+        
+        // Give the provisioners the opportunity to stop CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionStop();
+        }
+
+    }
+    
+    @Override
+    public void provisionDiscard() {
+        // Give the provisioners the opportunity to discard CICS regions
+        for (ICicsRegionProvisioner provisioner : provisioners) {
+            provisioner.cicsProvisionDiscard();
         }
     }
 

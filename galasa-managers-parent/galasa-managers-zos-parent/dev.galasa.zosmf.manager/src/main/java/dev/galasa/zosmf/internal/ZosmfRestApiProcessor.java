@@ -107,7 +107,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
     }
     
     protected IZosmf getCurrentZosmfServer() {
-        logger.debug("Using zOSMF on " + this.currentZosmf);
+        logger.trace("Using zOSMF on " + this.currentZosmf);
         this.currentZosmf.clearHeaders();
         return this.currentZosmf;
     }
