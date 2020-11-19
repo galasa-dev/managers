@@ -40,16 +40,16 @@ public class CEMTImpl implements ICEMT {
                
                if(parts.length < 2 && !map.containsKey(parts[0])) {
                
-                  map.put(parts[0].toLowerCase(), "");
+                  map.put(parts[0], "");
                
-               }else if(map.containsKey(parts[0].toLowerCase()) && parts.length == 2) {
-                  if(!map.get(parts[0].toLowerCase()).equals(parts[1].trim())) {
-                     String value = map.get(parts[0].toLowerCase());
-                     map.put(parts[0].toLowerCase(), (value + parts[1]).trim());
+               }else if(map.containsKey(parts[0]) && parts.length == 2) {
+                  if(!map.get(parts[0]).equals(parts[1].trim())) {
+                     String value = map.get(parts[0]);
+                     map.put(parts[0], (value + parts[1]).trim());
                   }
                   
                }else if(parts.length == 2){
-                  map.put(parts[0].toLowerCase(), parts[1].trim());
+                  map.put(parts[0], parts[1].trim());
                }
               
             }
