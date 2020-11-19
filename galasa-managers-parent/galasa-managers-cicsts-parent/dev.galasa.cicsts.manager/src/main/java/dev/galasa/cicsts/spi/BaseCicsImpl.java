@@ -5,6 +5,10 @@
  */
 package dev.galasa.cicsts.spi;
 
+import dev.galasa.cicsts.CicstsManagerException;
+import dev.galasa.cicsts.ICeci;
+import dev.galasa.cicsts.ICeda;
+import dev.galasa.cicsts.ICemt;
 import dev.galasa.cicsts.MasType;
 import dev.galasa.zos.IZosImage;
 
@@ -55,5 +59,38 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     public MasType getMasType() {
         return this.masType;
     }
+    
+    
+    @Override
+    public ICemt cemt() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
+//        return null;
+    }
+
+    @Override
+    public ICeda ceda() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
+//      return null;
+    }
+
+    @Override
+    public ICeci ceci() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
+//      return null;
+    }
+
+    @Override
+    public void startup() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
+    }
+
+    @Override
+    public void shutdown() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
+    }
+
+
+
+
 
 }

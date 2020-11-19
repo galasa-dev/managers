@@ -169,6 +169,13 @@ public class Terminal implements ITerminal {
     public boolean isTextInField(String text) {
         return screen.isTextInField(text);
     }
+    
+    @Override
+    public boolean isTextInField(String string, long timeoutInMilliseconds) throws TerminalInterruptedException {
+        throw new UnsupportedOperationException("PLACEHOLDER"); //TODO
+//        return false;
+    }
+
 
     @Override
     public ITerminal waitForTextInField(String text) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
@@ -507,5 +514,6 @@ public class Terminal implements ITerminal {
     public void setDoStartTls(boolean doStartTls) {
         this.network.setDoStartTls(doStartTls);
     }
+
 
 }
