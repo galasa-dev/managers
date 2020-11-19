@@ -231,9 +231,10 @@ public class TestZosManagerImpl {
     public void testExtraBundlesExceptions() throws Exception {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         String expectedMessage = "Unable to request framework services";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.extraBundles(frameworkMock);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -252,9 +253,10 @@ public class TestZosManagerImpl {
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
         String expectedMessage = "Unable to request framework services";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosManagerImpl.class));
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -272,9 +274,10 @@ public class TestZosManagerImpl {
     @Test
     public void testYouAreRequiredException() throws ManagerException {
         String expectedMessage = "The IP Network Manager is not available";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.youAreRequired(allManagers, activeManagers);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -367,9 +370,10 @@ public class TestZosManagerImpl {
         PowerMockito.mockStatic(DssUtils.class);
         
         String expectedMessage = "Unable to provision zOS Image tagged " + TAG + " on " + IMAGE_ID + " as there is insufficient capacity";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.generateZosImage(field);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     private void setupZosImage() throws Exception {
@@ -405,9 +409,10 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "taggedImages", taggedImages);
 
         String expectedMessage = "Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.generateIpHost(field, annotations);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -427,9 +432,10 @@ public class TestZosManagerImpl {
         
         PowerMockito.when(zosIpHostMock.provisionPort(Mockito.anyString())).thenThrow(new IpNetworkManagerException());
         String expectedMessage = "Unable to provision a port for zOS Image " + IMAGE_ID + ", type=standard";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.generateIpPort(field, annotations);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -438,9 +444,10 @@ public class TestZosManagerImpl {
         List<Annotation> annotations = Arrays.asList(DummyTestClass.class.getAnnotations());
         
         String expectedMessage = "Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + TAG + "' was present";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.generateIpPort(field, annotations);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -466,9 +473,10 @@ public class TestZosManagerImpl {
         PowerMockito.when(dssMock.get(ArgumentMatchers.contains(".current.slots"))).thenReturn("0");
         PowerMockito.mockStatic(DssUtils.class);
         String expectedMessage = "Insufficent capacity for images in cluster DEFAULT";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.selectNewImage(TAG);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -480,9 +488,10 @@ public class TestZosManagerImpl {
         PowerMockito.doReturn(clusters).when(ClusterImages.class, "get", Mockito.anyString());
         PowerMockito.mockStatic(DssUtils.class);
         String expectedMessage = "Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase();
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.selectNewImage(TAG);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -497,9 +506,10 @@ public class TestZosManagerImpl {
         PowerMockito.doReturn(-1).when(ImageMaxSlots.class, "get", Mockito.anyString());         
         PowerMockito.mockStatic(DssUtils.class);
         String expectedMessage = "Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase();
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.selectNewImage(TAG);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -570,9 +580,10 @@ public class TestZosManagerImpl {
         taggedImages.clear();
         Whitebox.setInternalState(zosManagerSpy, "taggedImages", taggedImages);
         String expectedMessage = "Unable to locate zOS Image for tag " + TAG + "1";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.getImageForTag(TAG + "1");
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -637,9 +648,10 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "images", images);
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
         String expectedMessage = "zOS image \"" + IMAGE_ID + "\" not defined";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.getImage(IMAGE_ID);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -657,9 +669,10 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "images", images);
         Whitebox.setInternalState(zosManagerSpy, "definedImages", definedImages);
         String expectedMessage = "zOS image \"" + IMAGE_ID + "\" not defined";
-        Assert.assertThrows(expectedMessage, ZosManagerException.class, ()->{
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.getImage(IMAGE_ID);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

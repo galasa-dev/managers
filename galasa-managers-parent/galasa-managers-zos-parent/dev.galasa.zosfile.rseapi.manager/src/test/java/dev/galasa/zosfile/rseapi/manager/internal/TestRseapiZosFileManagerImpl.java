@@ -156,9 +156,10 @@ public class TestRseapiZosFileManagerImpl {
     public void testYouAreRequiredException1() throws ManagerException {
         allManagers.add(rseapiManagerMock);
         String expectedMessage = "The zOS Manager is not available";
-        Assert.assertThrows(expectedMessage, ZosFileManagerException.class, ()->{
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
         	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -166,9 +167,10 @@ public class TestRseapiZosFileManagerImpl {
         allManagers.add(zosManagerMock);
         allManagers.add(zosManagerMock);
         String expectedMessage = "The RSE API Manager is not available";
-        Assert.assertThrows(expectedMessage, ZosFileManagerException.class, ()->{
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
         	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -321,9 +323,10 @@ public class TestRseapiZosFileManagerImpl {
 	@Test
     public void testGetRunDatasetHLQException() throws ZosManagerException {
         Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, ZosFileManagerException.class, ()->{
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
         	RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -336,9 +339,10 @@ public class TestRseapiZosFileManagerImpl {
 	@Test
     public void testGetRunUNIXPathPrefixException() throws ZosManagerException {
         Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunUNIXPathPrefix(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
-        Assert.assertThrows(EXCEPTION, ZosFileManagerException.class, ()->{
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
         	RseapiZosFileManagerImpl.getRunUNIXPathPrefix(zosImageMock);
         });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
 	@Test

@@ -22,20 +22,20 @@ import dev.galasa.zosmf.ZosmfManagerException;
 public interface IZosmfManagerSpi extends IZosmfManager {
     
     /**
-     * Returns a zOSMF server for a single image
-     * @param image requested image
+     * Returns a zOSMF server 
+     * @param serverId the server ID
      * @return the zOSMF server
      * @throws ZosmfManagerException
      */
-    public IZosmf newZosmf(IZosImage image) throws ZosmfManagerException;
+    public IZosmf newZosmf(String serverId) throws ZosmfManagerException;
     
     /**
-     * Returns a map of zOSMF servers for a cluster
-     * @param clusterId the cluster id
+     * Returns a map of zOSMF servers available for use with a z/OS Image
+     * @param zosImage the z/OS Image you want the zOS/MF servers for
      * @return the zOSMF servers
      * @throws ZosmfManagerException
      */
-    public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException;
+    public Map<String, IZosmf> getZosmfs(@NotNull IZosImage zosImage) throws ZosmfManagerException;
 
     /**
      * Returns a {@link IZosmfRestApiProcessor} for a single image

@@ -42,6 +42,6 @@ public @interface Zosmf {
     /**
      * The tag of the zOS Image this variable is to be populated with
      */
-    String imageTag() default "primary";
+    String imageTag() default "PRIMARY";
 
 }

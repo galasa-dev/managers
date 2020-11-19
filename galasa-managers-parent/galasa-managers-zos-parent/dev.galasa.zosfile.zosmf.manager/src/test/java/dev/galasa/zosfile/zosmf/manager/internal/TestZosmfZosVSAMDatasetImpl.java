@@ -385,9 +385,10 @@ public class TestZosmfZosVSAMDatasetImpl {
     public void testSaveToResultsArchive() throws IOException, ZosManagerException {
     	zosVSAMDatasetSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
-		Assert.assertThrows(expectedMessage , ZosVSAMDatasetException.class, ()->{
+    	ZosVSAMDatasetException expectedException = Assert.assertThrows(expectedMessage , ZosVSAMDatasetException.class, ()->{
 			zosVSAMDatasetSpy.saveToResultsArchive();
     	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosVSAMDatasetSpy.setShouldArchive(true);
     	
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();

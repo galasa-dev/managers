@@ -308,14 +308,14 @@ public class TestZosmfZosBatchImpl {
     public void testCleanup() throws Exception {
         List<ZosmfZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
         zosBatchJobs = new ArrayList<>();
         Mockito.when(zosBatchJobMock.submitted()).thenReturn(false);
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
         
         zosBatchJobs = new ArrayList<>();
@@ -325,7 +325,7 @@ public class TestZosmfZosBatchImpl {
         Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
         zosBatchJobs = new ArrayList<>();
@@ -335,7 +335,7 @@ public class TestZosmfZosBatchImpl {
         Mockito.when(zosBatchJobMock.isPurged()).thenReturn(false);
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
         zosBatchJobs = new ArrayList<>();
@@ -345,7 +345,7 @@ public class TestZosmfZosBatchImpl {
         Mockito.when(zosBatchJobMock.isPurged()).thenReturn(true);
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
 
         zosBatchJobs = new ArrayList<>();
@@ -355,7 +355,7 @@ public class TestZosmfZosBatchImpl {
         Mockito.when(zosBatchJobMock.isPurged()).thenReturn(false);
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         Assert.assertEquals("zosBatchJobs should have 0 entries", new ArrayList<>(), Whitebox.getInternalState(zosBatchSpy, "zosBatchJobs"));
         
         zosBatchJobs = new ArrayList<>();
@@ -364,9 +364,9 @@ public class TestZosmfZosBatchImpl {
         Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobMock).cancel();
         zosBatchJobs.add(zosBatchJobMock);
         Whitebox.setInternalState(zosBatchSpy, "zosBatchJobs", zosBatchJobs);
-        zosBatchSpy.cleanup();
+        zosBatchSpy.cleanup(true);
         String expectedMessage = "Problem in cleanup phase";
-		Assert.assertEquals("cleanup() should log expected message", expectedMessage, logMessage);
+		Assert.assertEquals("cleanup(true) should log expected message", expectedMessage, logMessage);
     }
    
     private JsonObject getJsonObject() {

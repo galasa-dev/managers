@@ -130,7 +130,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     private static final String LOG_WRITING_TO = "writing to";
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_ARCHIVED_TO = " archived to ";
-    private static final String LOG_NOT_PDS = " is not a partitioned data data set";
+    private static final String LOG_NOT_PDS = " is not a partitioned data set";
 
     private static final Log logger = LogFactory.getLog(ZosmfZosDatasetImpl.class);
 
@@ -312,7 +312,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     public void storeText(@NotNull String content) throws ZosDatasetException {
     	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
         }
         storeText(content, null, this.convert);
     }
@@ -321,7 +321,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
     	Objects.requireNonNull(content, "content must not be null");
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use memberStore(String memberName, String content) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
         }
         storeBinary(content, null, this.convert);
     }
@@ -329,7 +329,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     @Override
     public String retrieveAsText() throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use retrieve(String memberName) method instead");
         }
         Object content = retrieve(null);
         if (content instanceof byte[]) {
@@ -343,7 +343,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     @Override
     public byte[] retrieveAsBinary() throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data data set. Use retrieve(String memberName) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use retrieve(String memberName) method instead");
         }
         Object content = retrieve(null);
         if (content instanceof String) {

@@ -99,6 +99,8 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         }
         
         artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
+        setCurrentTestMethodArchiveFolderName("preTest");
     }
     
 
@@ -142,18 +144,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         return otherManager instanceof IZosManagerSpi ||
                otherManager instanceof IZosmfManagerSpi;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#provisionStart()
-     */
-    @Override
-    public void provisionStart() throws ManagerException, ResourceUnavailableException {
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("preTest");
-    }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -161,7 +152,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      */
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
-        cleanup();
+        cleanup(false);
         setArchivePath(artifactsRoot.resolve(ZOSBATCH_JOBS));
         if (galasaMethod.getJavaTestMethod() != null) {
             setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
@@ -177,7 +168,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      */
     @Override
     public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup();
+        cleanup(false);
         
         return null;
     }
@@ -192,7 +183,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
         setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
         setCurrentTestMethodArchiveFolderName("postTest");
-        cleanup();
+        cleanup(false);
         
         return null;
     }
@@ -205,18 +196,18 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
     @Override
     public void endOfTestRun() {
         try {
-            cleanup();
+            cleanup(true);
         } catch (ZosBatchException e) {
             logger.error("Problem in endOfTestRun()", e);
         }
     }
     
-    protected void cleanup() throws ZosBatchException {
+    protected void cleanup(boolean endOfTest) throws ZosBatchException {
         for (Entry<String, ZosmfZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
-            entry.getValue().cleanup();
+            entry.getValue().cleanup(endOfTest);
         }
         for (Entry<String, ZosmfZosBatchImpl> entry : this.zosBatches.entrySet()) {
-            entry.getValue().cleanup();
+            entry.getValue().cleanup(endOfTest);
         }
     }
     

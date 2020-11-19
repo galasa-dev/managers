@@ -1,12 +1,13 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosmf.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,30 +36,24 @@ import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.Zosmf;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
-import dev.galasa.zosmf.internal.properties.ServerImages;
+import dev.galasa.zosmf.internal.properties.ImageServers;
+import dev.galasa.zosmf.internal.properties.SysplexServers;
 import dev.galasa.zosmf.internal.properties.ZosmfPropertiesSingleton;
 import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
 @Component(service = { IManager.class })
 public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSpi {
-    
-    private static final Log logger = LogFactory.getLog(ZosmfManagerImpl.class);
-    
-    protected static final String NAMESPACE = "zosmf";
-    
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosmfManagerImpl.zosManager = zosManager;
-    }
 
-    protected static IHttpManagerSpi httpManager;    
-    public static void setHttpManager(IHttpManagerSpi httpManager) {
-        ZosmfManagerImpl.httpManager = httpManager;
-    }
+    private static final Log logger = LogFactory.getLog(ZosmfManagerImpl.class);
+
+    protected static final String NAMESPACE = "zosmf";
+
+    private IZosManagerSpi  zosManager;
+    private IHttpManagerSpi httpManager;    
 
     private final HashMap<String, IZosmf> taggedZosmfs = new HashMap<>();
     private final HashMap<String, IZosmf> zosmfs = new HashMap<>();
-    
+
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
      */
@@ -81,7 +76,7 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
             }
         }
     }
-    
+
 
     @Override
     public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
@@ -91,11 +86,11 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosmfManagerException("The zOS Manager is not available");
         }
-        setHttpManager(addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class));
+        this.httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
         if (httpManager == null) {
             throw new ZosmfManagerException("The HTTP Manager is not available");
         }
@@ -110,10 +105,10 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi ||
-               otherManager instanceof IHttpManagerSpi;
+                otherManager instanceof IHttpManagerSpi;
     }
-    
-    
+
+
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#provisionGenerate()
      */
@@ -121,80 +116,117 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
         generateAnnotatedFields(ZosmfManagerField.class);
     }
-    
+
     @GenerateAnnotatedField(annotation=Zosmf.class)
     public IZosmf generateZosmf(Field field, List<Annotation> annotations) throws ZosmfManagerException {
         Zosmf annotationZosmf = field.getAnnotation(Zosmf.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosmf.imageTag(), "primary");
+        String tag = defaultString(annotationZosmf.imageTag(), "PRIMARY").toUpperCase();
 
         //*** Have we already generated this tag
         if (taggedZosmfs.containsKey(tag)) {
             return taggedZosmfs.get(tag);
         }
 
-        ZosmfImpl zosmf = new ZosmfImpl(tag);
-        taggedZosmfs.put(tag, zosmf);
-        zosmfs.put(zosmf.getImage().getImageID(), zosmf);
-        
-        return zosmf;
+        // TODO this needs to be proper DSEd
+        IZosImage zosImage = null;
+        try {
+            zosImage = getZosManager().getImageForTag(tag);
+        } catch(Exception e) {
+            throw new ZosmfManagerException("Unable to locate z/OS image for tag '" + tag + "'", e);
+        }
+
+        // TODO should be the DSE server id or provision one
+
+        Map<String, IZosmf> possibleZosmfs = getZosmfs(zosImage);
+        if (possibleZosmfs.isEmpty()) {
+            throw new ZosmfManagerException("Unable to provision zOS/MF, no zOS/MF defined for image tag '" + tag + "'");
+        }
+
+        IZosmf selected = possibleZosmfs.values().iterator().next();  // TODO do we want to randomise this?
+        taggedZosmfs.put(tag, selected);
+
+        return selected;
     }
 
 
     @Override
-    public IZosmf newZosmf(IZosImage image) throws ZosmfException {
-        if (zosmfs.containsKey(image.getImageID())) {
-            return this.zosmfs.get(image.getImageID());
+    public IZosmf newZosmf(String serverId) throws ZosmfException {
+        if (zosmfs.containsKey(serverId)) {
+            return this.zosmfs.get(serverId);
         }
-        IZosmf zosmf = new ZosmfImpl(image);
-        this.zosmfs.put(image.getImageID(), zosmf);
+        IZosmf zosmf = new ZosmfImpl(this, serverId);
+        this.zosmfs.put(serverId, zosmf);
         return zosmf;
     }
 
 
-    public Map<String, IZosmf> getZosmfs(@NotNull String clusterId) throws ZosmfManagerException {
+    public Map<String, IZosmf> getZosmfs(@NotNull IZosImage zosImage) throws ZosmfManagerException {
+        HashMap<String, IZosmf> possibleZosmfs = new HashMap<>();
+
         try {
-            for (String imageId : ServerImages.get(clusterId)) {
-                if (!this.zosmfs.containsKey(imageId)) {
-                    logger.info("Requesting zOS image " + imageId + " in cluster \"" + clusterId + "\" for zOSMF server");
-                    IZosImage zosmfImage = getImage(imageId, clusterId);
-                    this.zosmfs.put(zosmfImage.getImageID(), newZosmf(zosmfImage));
+            List<String> possibleServers = ImageServers.get(zosImage);
+            if (possibleServers.isEmpty()) {
+                possibleServers = SysplexServers.get(zosImage);
+                if (possibleServers.isEmpty()) {
+                    // Default to assume there is a zOS/MF server running on the same image on port 443
+                    possibleServers = new ArrayList<String>(1);
+                    possibleServers.add(zosImage.getImageID());
                 }
             }
+
+
+            for (String serverId : possibleServers) {
+                IZosmf actualZosmf = this.zosmfs.get(serverId);
+
+                if (actualZosmf == null) {
+                    logger.trace("Retreiving zOS server " + serverId);
+                    actualZosmf = newZosmf(serverId);
+                    this.zosmfs.put(serverId, actualZosmf);
+                }
+                possibleZosmfs.put(serverId, actualZosmf);
+            }
         } catch (ZosManagerException e) {
-            throw new ZosmfManagerException("Unable to get zOSMF servers for cluster \"" + clusterId + "\"", e);
+            throw new ZosmfManagerException("Unable to get zOSMF servers for image \"" + zosImage.getImageID() + "\"", e);
         }
-        if (zosmfs.isEmpty()) {
-            throw new ZosmfManagerException("No zOSMF servers defined for cluster \"" + clusterId + "\"");
-        }
-        return zosmfs;
+        return possibleZosmfs;
     }
 
 
     @Override
     public IZosmfRestApiProcessor newZosmfRestApiProcessor(IZosImage image, boolean restrictToImage) throws ZosmfManagerException {
         if (restrictToImage) {
-            HashMap<String, IZosmf> zosmfMap = new HashMap<>();
-            IZosmf zosmf = this.zosmfs.get(image.getImageID());
-            if (zosmf == null) {
-                throw new ZosmfManagerException("No zOSMF sever configured on " + image.getImageID());
+            Map<String, IZosmf> zosmfMap = getZosmfs(image);
+            for(IZosmf zosmf : zosmfMap.values()) {
+                if (zosmf.getImage().getImageID().equals(image.getImageID())) {
+                    return new ZosmfRestApiProcessor(zosmfMap);
+                }
             }
-            zosmfMap.put(image.getImageID(), zosmf);
-            return new ZosmfRestApiProcessor(zosmfMap);
+            throw new ZosmfManagerException("No zOSMF server configured on " + image.getImageID());
         }
-        return new ZosmfRestApiProcessor(getZosmfs(image.getClusterID()));
+        return new ZosmfRestApiProcessor(getZosmfs(image));
     }
 
 
-    protected IZosImage getImage(String imageId, String clusterId) throws ZosmfManagerException {
+    protected IZosImage getImage(String imageId) throws ZosmfManagerException {
         IZosImage zosmfImage;
         try {
-            zosmfImage = zosManager.getImage(imageId);
+            zosmfImage = zosManager.getUnmanagedImage(imageId);
         } catch (ZosManagerException e) {
-            throw new ZosmfManagerException("Unable to get zOSMF server zOS image \"" + imageId + "\" in cluster \"" + clusterId + "\"", e);
+            throw new ZosmfManagerException("Unable to get zOSMF server for zOS image \"" + imageId + "\"", e);
         }
         return zosmfImage;
+    }
+
+
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
+    }
+
+
+    public IHttpManagerSpi getHttpManager() {
+        return this.httpManager;
     }
 
 

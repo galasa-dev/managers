@@ -51,17 +51,19 @@ public class TestRequestRetry {
     @Test
     public void testInvalid() throws Exception {
         String expectedMessage = "For input string: \"XXX\"";
-        Assert.assertThrows(expectedMessage, NumberFormatException.class, ()->{
+        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
         	getProperty("XXX");
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
         String expectedMessage = "Problem asking the CPS for the RSE API request retry property for zOS image " + IMAGE_ID;
-        Assert.assertThrows(expectedMessage, RseapiManagerException.class, ()->{
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("ANY", true);
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private int getProperty(String value) throws Exception {

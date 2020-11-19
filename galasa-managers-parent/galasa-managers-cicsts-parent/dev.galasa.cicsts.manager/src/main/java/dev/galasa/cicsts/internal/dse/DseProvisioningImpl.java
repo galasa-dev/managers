@@ -97,5 +97,21 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
         return region;
     }
 
+    @Override
+    public void cicsProvisionBuild() throws ManagerException, ResourceUnavailableException {
+    }
+
+    @Override
+    public void cicsProvisionStart() throws ManagerException, ResourceUnavailableException {
+    }
+
+    @Override
+    public void cicsProvisionStop() {
+    }
+
+    @Override
+    public void cicsProvisionDiscard() {
+    }
+
 
 }
