@@ -55,6 +55,8 @@ public interface ITerminal {
 
     boolean isTextInField(String string);
 
+    boolean isTextInField(String string, long timeoutInMilliseconds) throws TerminalInterruptedException;
+
     ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
     
     ITerminal eraseEof() throws KeyboardLockedException, FieldNotFoundException;
