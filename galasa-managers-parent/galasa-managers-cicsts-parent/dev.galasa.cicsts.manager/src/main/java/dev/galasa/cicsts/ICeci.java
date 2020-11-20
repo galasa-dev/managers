@@ -24,7 +24,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response and output values.
      * @throws CeciException 
      */
-    public ICeciResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command) throws CeciException;
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command) throws CeciException;
     
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
@@ -41,7 +41,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
      */
-    public ICeciResponse issueCommand(@NotNull ITerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CeciException;
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CeciException;
 
     /**
      * Define a CECI text variable.
@@ -53,7 +53,7 @@ public interface ICeci {
      * @return the length of the defined variable
      * @throws CeciException
      */
-    public int defineVariableText(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull String value) throws CeciException;
+    public int defineVariableText(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull String value) throws CeciException;
 
     /**
      * Define a CECI binary variable.
@@ -65,7 +65,7 @@ public interface ICeci {
      * @return the length of the defined variable
      * @throws CeciException
      */
-    public int defineVariableBinary(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull char[] value) throws CeciException;
+    public int defineVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull char[] value) throws CeciException;
     
     /**
      * Define a double word CECI variable. 
@@ -75,7 +75,7 @@ public interface ICeci {
      * @return the length of the defined variable
      * @throws CeciException
      */
-    public int defineVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException;
+    public int defineVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException;
     
     /**
      * Define a full word CECI variable.
@@ -85,7 +85,7 @@ public interface ICeci {
      * @return the length of the defined variable 
      * @throws CeciException
      */
-    public int defineVariableFullWord(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
+    public int defineVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
     
     /**
      * Define a half word CECI variable.
@@ -95,7 +95,7 @@ public interface ICeci {
      * @return the length of the defined variable 
      * @throws CeciException
      */
-    public int defineVariableHalfWord(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
+    public int defineVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
     
     /**
      * Define a packed decimal CECI variable.
@@ -105,7 +105,7 @@ public interface ICeci {
      * @return the length of the defined variable 
      * @throws CeciException
      */
-    public int defineVariablePacked(@NotNull ITerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
+    public int defineVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
 
     /**
      * Retrieve a CECI text variable.
@@ -114,7 +114,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public String retrieveVariableText(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public String retrieveVariableText(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Retrieve a CECI binary variable.
@@ -123,7 +123,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public char[] retrieveVariableBinary(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public char[] retrieveVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Retrieve a double word CECI variable.
@@ -132,7 +132,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public long retrieveVariableDoubleWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public long retrieveVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Retrieve a full word CECI variable.
@@ -141,7 +141,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public int retrieveVariableFullWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public int retrieveVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Retrieve a half word CECI variable.
@@ -150,7 +150,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public int retrieveVariableHalfWord(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public int retrieveVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Retrieve a packed decimal CECI variable.
@@ -159,7 +159,7 @@ public interface ICeci {
      * @return variable value
      * @throws CeciException
      */
-    public int retrieveVariablePacked(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public int retrieveVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
     
     /**
      * Delete a single CECI variable.
@@ -169,14 +169,14 @@ public interface ICeci {
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @throws CeciException
      */
-    public void deleteVariable(@NotNull ITerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public void deleteVariable(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
      * Delete all variables in this CECI session.
      * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
      * @throws CeciException
      */
-    public void deleteAllVariables(@NotNull ITerminal ceciTerminal) throws CeciException;
+    public void deleteAllVariables(@NotNull ICicsTerminal ceciTerminal) throws CeciException;
 
     /**
      * Retrieve the content of the current EXEC Interface Block (EIB)
@@ -184,7 +184,7 @@ public interface ICeci {
      * @return the {@link IExecInterfaceBlock} 
      * @throws CeciException
      */
-    public IExecInterfaceBlock getEIB(@NotNull ITerminal ceciTerminal) throws CeciException;
+    public IExecInterfaceBlock getEIB(@NotNull ICicsTerminal ceciTerminal) throws CeciException;
 
     /**
      * EXEC CICS LINK to a PROGRAM.
@@ -201,7 +201,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException
      */
-    public ICeciResponse linkProgram(@NotNull ITerminal ceciTerminal, @NotNull String programName, String commarea, String sysid, String transid, boolean synconreturn) throws CeciException;
+    public ICeciResponse linkProgram(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, String commarea, String sysid, String transid, boolean synconreturn) throws CeciException;
 
     /**
      * EXEC CICS LINK to a PROGRAM with a CHANNEL. Use {@link #putContainer(ITerminal, String, String, String)} to create the container(s) on the CHANNEL 
@@ -213,7 +213,7 @@ public interface ICeci {
      * @param channelName the name of the CHANNEL.
      * @throws CeciExceptionan an {@link ICeciResponse} object containing the command's response.
      */
-    public ICeciResponse linkProgramWithChannel(@NotNull ITerminal ceciTerminal, @NotNull String programName, @NotNull String channelName, String sysid, String transid, boolean synconreturn) throws CeciException;
+    public ICeciResponse linkProgramWithChannel(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, @NotNull String channelName, String sysid, String transid, boolean synconreturn) throws CeciException;
     
     /**
      * Puts data in a CONTAINER with an associated CHANNEL.
@@ -228,7 +228,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException
      */
-    public ICeciResponse putContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String content, String dataType, String fromCcsid, String fromCodepage) throws CeciException;
+    public ICeciResponse putContainer(@NotNull ICicsTerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String content, String dataType, String fromCcsid, String fromCodepage) throws CeciException;
     
     /**
      * Gets the data in a CONTAINER with an associated CHANNEL into a CECI variable.
@@ -244,7 +244,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException
      */
-    public ICeciResponse getContainer(@NotNull ITerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CeciException;
+    public ICeciResponse getContainer(@NotNull ICicsTerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CeciException;
 
 }
 
