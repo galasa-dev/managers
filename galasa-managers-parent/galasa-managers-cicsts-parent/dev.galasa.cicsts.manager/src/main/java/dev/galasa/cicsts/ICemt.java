@@ -30,7 +30,7 @@ public interface ICemt {
 
     
 
-    public HashMap<String, String> inquireResource(@NotNull ITerminal cemtTerminal,
+    public HashMap<String, String> inquireResource(@NotNull ICicsTerminal cemtTerminal,
                                                    @NotNull String resourceType,
                                                    @NotNull String resourceName
                                                    ) throws CemtException;
@@ -49,7 +49,7 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public void setResource(@NotNull ITerminal cemtTerminal,
+    public void setResource(@NotNull ICicsTerminal cemtTerminal,
                             @NotNull String resourceType,
                                      String resourceName,
                             @NotNull String action,
@@ -69,7 +69,7 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public void setResource(@NotNull ITerminal cemtTerminal,
+    public void setResource(@NotNull ICicsTerminal cemtTerminal,
                             @NotNull String resourceType,
                             @NotNull String resourceName,
                             @NotNull String action
@@ -88,7 +88,7 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public void discardResource(@NotNull ITerminal cemtTerminal,
+    public void discardResource(@NotNull ICicsTerminal cemtTerminal,
                                @NotNull String resourceType,
                                @NotNull String resourceName,
                                @NotNull String searchText)throws CemtException;
@@ -107,7 +107,7 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public boolean performSystemProperty(@NotNull ITerminal cemtTerminal,
+    public boolean performSystemProperty(@NotNull ICicsTerminal cemtTerminal,
                                          @NotNull String systemArea,
                                          @NotNull String setRequest,
                                          @NotNull String expectedResponse)throws CemtException;
