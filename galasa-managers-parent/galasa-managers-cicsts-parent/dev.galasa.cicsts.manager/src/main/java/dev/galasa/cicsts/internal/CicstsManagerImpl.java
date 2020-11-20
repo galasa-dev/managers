@@ -31,6 +31,9 @@ import dev.galasa.cicsts.internal.properties.DefaultVersion;
 import dev.galasa.cicsts.internal.properties.ExtraBundles;
 import dev.galasa.cicsts.internal.properties.ProvisionType;
 import dev.galasa.cicsts.spi.CicsTerminalImpl;
+import dev.galasa.cicsts.spi.ICeciProvider;
+import dev.galasa.cicsts.spi.ICedaProvider;
+import dev.galasa.cicsts.spi.ICemtProvider;
 import dev.galasa.cicsts.spi.ICicsRegionLogonProvider;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioner;
@@ -62,6 +65,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private final ArrayList<ICicsRegionLogonProvider> logonProviders = new ArrayList<>();
 
     private String provisionType;
+    
+    private ICeciProvider ceciProvider;
+    private ICedaProvider cedaProvider;
+    private ICemtProvider cemtProvider;
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
@@ -276,6 +283,51 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @Override
     public @NotNull ProductVersion getDefaultVersion() {
         return DefaultVersion.get();
+    }
+
+    @Override
+    public void registerCeciProvider(@NotNull ICeciProvider ceciProvider) {
+        this.ceciProvider = ceciProvider;
+    }
+
+    @Override
+    public void registerCedaProvider(@NotNull ICedaProvider cedaProvider) {
+        this.cedaProvider = cedaProvider;
+    }
+
+    @Override
+    public void registerCemtProvider(@NotNull ICemtProvider cemtProvider) {
+        this.cemtProvider = cemtProvider;
+    }
+    
+    @Override
+    @NotNull
+    public ICeciProvider getCeciProvider() throws CicstsManagerException {
+        if (this.ceciProvider == null) {
+            throw new CicstsManagerException("No CECI provider has been registered");
+        }
+        
+        return this.ceciProvider;
+    }
+
+    @Override
+    @NotNull
+    public ICedaProvider getCedaProvider() throws CicstsManagerException {
+        if (this.cedaProvider == null) {
+            throw new CicstsManagerException("No CEDA provider has been registered");
+        }
+        
+        return this.cedaProvider;
+    }
+
+    @Override
+    @NotNull
+    public ICemtProvider getCemtProvider() throws CicstsManagerException {
+        if (this.cemtProvider == null) {
+            throw new CicstsManagerException("No CEMT provider has been registered");
+        }
+        
+        return this.cemtProvider;
     }
 
 }
