@@ -23,6 +23,8 @@ public interface ITerminal {
 
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
 
+    ITerminal wfk() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
+
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
             throws TextNotFoundException, KeyboardLockedException;
 

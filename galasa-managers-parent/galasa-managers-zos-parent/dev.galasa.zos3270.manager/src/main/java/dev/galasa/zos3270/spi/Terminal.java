@@ -148,6 +148,11 @@ public class Terminal implements ITerminal {
         return this;
     }
 
+    @Override
+    public ITerminal wfk() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException {
+        return waitForKeyboard();
+    }
+
     public Screen getScreen() {
         return this.screen;
     }
