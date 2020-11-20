@@ -14,6 +14,7 @@ import dev.galasa.zos.IZosImage;
 
 public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
 
+    private final ICicstsManagerSpi cicstsManager;
     private final String cicsTag;
     private final String applid;
     private final IZosImage zosImage;
@@ -21,8 +22,12 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
 
     private int lastTerminalId;
     
+    private ICeci ceci;
+    private ICeda ceda;
+    private ICemt cemt;
 
     public BaseCicsImpl(ICicstsManagerSpi cicstsManager, String cicsTag, IZosImage zosImage, String applid, MasType masType) {
+        this.cicstsManager = cicstsManager;
         this.cicsTag = cicsTag;
         this.applid = applid;
         this.zosImage = zosImage;
@@ -62,21 +67,27 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     
     
     @Override
-    public ICemt cemt() throws CicstsManagerException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
-//        return null;
+    public ICeci ceci() throws CicstsManagerException {
+        if (this.ceci == null) {
+            this.ceci = this.cicstsManager.getCeciProvider().getCeci(this);
+        }
+        return this.ceci;
     }
 
     @Override
     public ICeda ceda() throws CicstsManagerException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
-//      return null;
+        if (this.ceda == null) {
+            this.ceda = this.cicstsManager.getCedaProvider().getCeda(this);
+        }
+        return this.ceda;
     }
 
     @Override
-    public ICeci ceci() throws CicstsManagerException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
-//      return null;
+    public ICemt cemt() throws CicstsManagerException {
+        if (this.cemt == null) {
+            this.cemt = this.cicstsManager.getCemtProvider().getCemt(this);
+        }
+        return this.cemt;
     }
 
     @Override
