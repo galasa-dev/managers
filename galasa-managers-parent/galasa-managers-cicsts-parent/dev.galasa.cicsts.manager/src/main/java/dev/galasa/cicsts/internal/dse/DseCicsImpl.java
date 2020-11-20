@@ -43,6 +43,4 @@ public class DseCicsImpl extends BaseCicsImpl {
         return this.version;
     }
 
-
-
 }
