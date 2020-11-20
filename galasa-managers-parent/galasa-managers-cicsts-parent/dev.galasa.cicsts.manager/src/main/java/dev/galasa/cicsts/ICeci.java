@@ -5,6 +5,8 @@
  */
 package dev.galasa.cicsts;
 
+import java.util.HashMap;
+
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.zos3270.ITerminal;
@@ -42,6 +44,36 @@ public interface ICeci {
      * @throws CeciException 
      */
     public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CeciException;
+
+    /**
+     * Issue a CECI command. The command will be stored and executed from a CECI variable. 
+     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * If mixed case is required, the terminal should be presented with no upper case translate status. 
+     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * @param command a {@link String} containing the CECI command
+     * @Param options options of the command, eg QUEUE=A would result in QUEUE(A) being appended to the command
+     * @return an {@link ICeciResponse} object containing the command's response and output values.
+     * @throws CeciException 
+     */
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, String> options) throws CeciException;
+    
+    /**
+     * Issue a CECI command. The command will be stored and executed from a CECI variable. 
+     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * If mixed case is required, the terminal should be presented with no upper case translate status. 
+     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * @param command a {@link String} containing the CECI command
+     * @Param options options of the command, eg QUEUE=A would result in QUEUE(A) being appended to the command
+     * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
+     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
+     * The following examples shows how to retrieve a specific returned value:<br><code>
+     * issueCommand(ITerminal, "ASSIGN USERID(&VAR)", false)<br>
+     * retrieveVariableText(ITerminal, "ASSIGN USERID(&VAR)", false)
+     * </code>
+     * @return an {@link ICeciResponse} object containing the command's response.
+     * @throws CeciException 
+     */
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, String> options, boolean parseOutput) throws CeciException;
 
     /**
      * Define a CECI text variable.

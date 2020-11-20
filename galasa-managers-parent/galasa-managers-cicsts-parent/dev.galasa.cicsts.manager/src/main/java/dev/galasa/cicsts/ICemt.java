@@ -91,7 +91,21 @@ public interface ICemt {
     public void discardResource(@NotNull ICicsTerminal cemtTerminal,
                                @NotNull String resourceType,
                                @NotNull String resourceName,
-                               @NotNull String searchText)throws CemtException;
+                               @NotNull String searchText) throws CemtException;
+    
+    /**
+     * Discards a specified resource and throws an exception if the specified search text is not found on the terminal.
+     * @param cemtTerminal an {@link ITerminal} object logged on to the CICS region and in an active CEMT session.
+     * If mixed case is required, the terminal should be presented with no upper case translate status. 
+     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * @param resourceType a {@link String} of the type of resource you want to discard.
+     * @param resourceName a {@link String} of the name of the resource you want to discard.
+     * @throws CemtException
+     */
+
+    public void discardResource(@NotNull ICicsTerminal cemtTerminal,
+                               @NotNull String resourceType,
+                               @NotNull String resourceName) throws CemtException;
     
 
     
