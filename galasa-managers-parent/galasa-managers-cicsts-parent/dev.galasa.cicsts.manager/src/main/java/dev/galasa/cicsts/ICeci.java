@@ -55,7 +55,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response and output values.
      * @throws CeciException 
      */
-    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, String> options) throws CeciException;
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, Object> options) throws CeciException;
     
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
@@ -73,7 +73,7 @@ public interface ICeci {
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
      */
-    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, String> options, boolean parseOutput) throws CeciException;
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, Object> options, boolean parseOutput) throws CeciException;
 
     /**
      * Define a CECI text variable.
