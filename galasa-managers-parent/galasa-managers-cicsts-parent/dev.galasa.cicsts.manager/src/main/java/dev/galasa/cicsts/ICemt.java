@@ -30,7 +30,7 @@ public interface ICemt {
 
     
 
-    public HashMap<String, String> inquireResource(@NotNull ICicsTerminal cemtTerminal,
+    public CicstsHashMap inquireResource(@NotNull ICicsTerminal cemtTerminal,
                                                    @NotNull String resourceType,
                                                    @NotNull String resourceName
                                                    ) throws CemtException;
@@ -49,32 +49,10 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public void setResource(@NotNull ICicsTerminal cemtTerminal,
+    public CicstsHashMap setResource(@NotNull ICicsTerminal cemtTerminal,
                             @NotNull String resourceType,
                                      String resourceName,
-                            @NotNull String action,
-                            @NotNull String searchText
-                            )throws CemtException;
-    
-    
-    /** 
-     * Set the state of a CEMT resource using the resource type and name. If 'RESPONSE: NORMAL' is not found on the terminal screen then
-     * an exception will be thrown.
-     * @param cemtTerminal an {@link ITerminal} object logged on to the CICS region and in an active CEMT session.
-     * If mixed case is required, the terminal should be presented with no upper case translate status. 
-     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
-     * @param resourceType a {@link String} of the type of resource you want to set.
-     * @param resourceName a {@link String} of the name of the resource you want to set.
-     * @param action a {@link String} of the action you want to perform.
-     * @throws CemtException
-     */
-
-    public void setResource(@NotNull ICicsTerminal cemtTerminal,
-                            @NotNull String resourceType,
-                            @NotNull String resourceName,
-                            @NotNull String action
-                            )throws CemtException;
-
+                            @NotNull String action)throws CemtException;
     
     
     /**
@@ -84,26 +62,10 @@ public interface ICemt {
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param resourceType a {@link String} of the type of resource you want to discard.
      * @param resourceName a {@link String} of the name of the resource you want to discard.
-     * @param searchText a {@link String} of the text you want to search for on the terminal screen.
      * @throws CemtException
      */
 
-    public void discardResource(@NotNull ICicsTerminal cemtTerminal,
-                               @NotNull String resourceType,
-                               @NotNull String resourceName,
-                               @NotNull String searchText) throws CemtException;
-    
-    /**
-     * Discards a specified resource and throws an exception if the specified search text is not found on the terminal.
-     * @param cemtTerminal an {@link ITerminal} object logged on to the CICS region and in an active CEMT session.
-     * If mixed case is required, the terminal should be presented with no upper case translate status. 
-     * For example, the test could first issue <code>CEOT TRANIDONLY</code>
-     * @param resourceType a {@link String} of the type of resource you want to discard.
-     * @param resourceName a {@link String} of the name of the resource you want to discard.
-     * @throws CemtException
-     */
-
-    public void discardResource(@NotNull ICicsTerminal cemtTerminal,
+    public CicstsHashMap discardResource(@NotNull ICicsTerminal cemtTerminal,
                                @NotNull String resourceType,
                                @NotNull String resourceName) throws CemtException;
     
