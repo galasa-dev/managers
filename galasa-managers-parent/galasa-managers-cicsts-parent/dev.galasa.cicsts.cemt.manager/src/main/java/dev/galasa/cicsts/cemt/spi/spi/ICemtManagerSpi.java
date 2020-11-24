@@ -1,8 +1,12 @@
-
 /*
  * Licensed Materials - Property of IBM
  * 
  * (c) Copyright IBM Corp. 2020.
  */
 
-package dev.galasa.cicsts.cemt;
+package dev.galasa.cicsts.cemt.spi.spi;
+
+
+public interface ICemtManagerSpi  {
+
+}
