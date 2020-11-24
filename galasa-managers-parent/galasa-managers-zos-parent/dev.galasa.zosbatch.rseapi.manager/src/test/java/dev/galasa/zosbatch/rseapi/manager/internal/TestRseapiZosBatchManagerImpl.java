@@ -7,18 +7,16 @@ package dev.galasa.zosbatch.rseapi.manager.internal;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -80,11 +78,10 @@ public class TestRseapiZosBatchManagerImpl {
 
     @Mock
     private IZosBatchJobname zosJobnameMock;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
-    private static final String JOBNAME_PREFIX = "PFX";    
+    private static final String JOBNAME_PREFIX = "PFX";
+
+	private static final String EXCEPTION = "exception";    
 
     @Before
     public void setup() throws Exception {
@@ -105,19 +102,37 @@ public class TestRseapiZosBatchManagerImpl {
         
         Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.anyString())).thenReturn(zosJobnameMock);        
         Mockito.when(zosManagerMock.newZosBatchJobname(Mockito.any(IZosImage.class))).thenReturn(zosJobnameMock);
-        RseapiZosBatchManagerImpl.setZosManager(zosManagerMock);
-        RseapiZosBatchManagerImpl.setRseapiManager(rseapiManagerMock);
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         zosBatchManager = new RseapiZosBatchManagerImpl();
         zosBatchManagerSpy = Mockito.spy(zosBatchManager);
+        Whitebox.setInternalState(zosBatchManagerSpy, "zosManager", zosManagerMock);
+        Whitebox.setInternalState(zosBatchManagerSpy, "rseapiManager", rseapiManagerMock);
         Mockito.when(zosBatchManagerSpy.getFramework()).thenReturn(frameworkMock);
         Mockito.when(frameworkMock.getResultArchiveStore()).thenReturn(resultArchiveStoreMock);
         Mockito.when(resultArchiveStoreMock.getStoredArtifactsRoot()).thenReturn(new File("/").toPath());
         
         allManagers = new ArrayList<>();
         activeManagers = new ArrayList<>();
+    }
+    
+    @Test
+    public void testGetters( ) {
+    	Assert.assertEquals("Error in getZosManager() method", zosManagerMock, zosBatchManagerSpy.getZosManager());
+    	Assert.assertEquals("Error in getRsiapiManager() method", rseapiManagerMock, zosBatchManagerSpy.getRseapiManager());
+    	Path artifactsRootMock = Mockito.mock(Path.class);
+    	Mockito.when(artifactsRootMock.toString()).thenReturn("artifactsRootMock");
+    	Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", artifactsRootMock);
+    	Path archivePathMock = Mockito.mock(Path.class);
+    	Mockito.when(archivePathMock.toString()).thenReturn("archivePathMock");
+    	Whitebox.setInternalState(zosBatchManagerSpy, "archivePath", archivePathMock);
+    	Assert.assertEquals("Error in getArchivePath() method", archivePathMock, zosBatchManagerSpy.getArchivePath());
+    	Whitebox.setInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName", "currentTestMethodArchiveFolderName");
+    	Path currentTestMethodArchiveFolderMock = Mockito.mock(Path.class);
+    	Mockito.when(currentTestMethodArchiveFolderMock.toString()).thenReturn("currentTestMethodArchiveFolderMock");
+    	Mockito.when(archivePathMock.resolve(Mockito.anyString())).thenReturn(currentTestMethodArchiveFolderMock);
+    	Assert.assertEquals("Error in getCurrentTestMethodArchiveFolder() method", currentTestMethodArchiveFolderMock, zosBatchManagerSpy.getCurrentTestMethodArchiveFolder());
     }
     
     @Test
@@ -136,10 +151,11 @@ public class TestRseapiZosBatchManagerImpl {
 
     @Test
     public void testInitialiseException() throws ManagerException {
-        PowerMockito.doThrow(new ManagerException("exception")).when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
-        exceptionRule.expect(ManagerException.class);
-        exceptionRule.expectMessage("exception");
-        zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        PowerMockito.doThrow(new ManagerException(EXCEPTION)).when(zosBatchManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        ManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ManagerException.class, ()->{
+			zosBatchManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+		});
+    	Assert.assertEquals("exception should contain expected cause", EXCEPTION, expectedException.getMessage());
     }
     
     @Test
@@ -163,17 +179,21 @@ public class TestRseapiZosBatchManagerImpl {
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+			zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
+		});
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("The RSE API Manager is not available");
-        zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The RSE API Manager is not available";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+			zosBatchManagerSpy.youAreRequired(allManagers, activeManagers);
+		});
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -183,65 +203,57 @@ public class TestRseapiZosBatchManagerImpl {
         Assert.assertFalse("Should not be dependent on IManager" , zosBatchManagerSpy.areYouProvisionalDependentOn(managerMock));
     }
 
-    @Test
-    public void testProvisionStart() throws Exception {
-        Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
-        zosBatchManagerSpy.provisionStart();
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
-        Assert.assertTrue("getCurrentTestMethodArchiveFolder() should return the correct value", RseapiZosBatchManagerImpl.getCurrentTestMethodArchiveFolder().endsWith("preTest"));
-    }
-
+    
     @Test
     public void testStartOfTestMethod() throws Exception {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
         zosBatchManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethod"), null));
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), Whitebox.getInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName"));
         zosBatchManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethod")));
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), Whitebox.getInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName"));
     }
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup(true);
+        Whitebox.setInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
         zosBatchManagerSpy.endOfTestMethod(new GalasaMethod(null, DummyTestClass.class.getDeclaredMethod("dummyTestMethod")), "pass", null);
-        Assert.assertEquals("currentTestMethodArchiveFolderName should be expected value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expected value", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName(), Whitebox.getInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName"));
     }
     
     @Test
     public void testEndOfTestClass() throws NoSuchMethodException, SecurityException, ManagerException {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
-        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup(true);
         zosBatchManagerSpy.endOfTestClass(null, null);
-        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "postTest", RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "postTest", Whitebox.getInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName"));
     }
     
     @Test
     public void testEndOfTestRun() throws NoSuchMethodException, SecurityException, ManagerException {
         Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", new File("/").toPath());
-        Mockito.doNothing().when(zosBatchManagerSpy).cleanup();
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
+        Mockito.doNothing().when(zosBatchManagerSpy).cleanup(true);
+        Whitebox.setInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName", DummyTestClass.class.getDeclaredMethod("dummyTestMethod").getName());
         zosBatchManagerSpy.endOfTestRun();
-        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "dummyTestMethod", RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", "dummyTestMethod", Whitebox.getInternalState(zosBatchManagerSpy, "currentTestMethodArchiveFolderName"));
 
-        Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup();
+        Mockito.doThrow(new ZosBatchException()).when(zosBatchManagerSpy).cleanup(true);
         zosBatchManagerSpy.endOfTestRun();
         Assert.assertEquals("endOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
     
     @Test
     public void testCleanup() throws Exception {
-        zosBatchManagerSpy.cleanup();
+        zosBatchManagerSpy.cleanup(true);
         
         HashMap<String, RseapiZosBatchImpl> taggedZosBatches = new HashMap<>();
         RseapiZosBatchImpl zosBatchImpl = Mockito.mock(RseapiZosBatchImpl.class);
-        Mockito.doNothing().when(zosBatchImpl).cleanup();
+        Mockito.doNothing().when(zosBatchImpl).cleanup(true);
         taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
         Whitebox.setInternalState(zosBatchManagerSpy, "zosBatches", taggedZosBatches);
-        zosBatchManagerSpy.cleanup();
-        PowerMockito.verifyPrivate(zosBatchImpl, Mockito.times(2)).invoke("cleanup");        
+        zosBatchManagerSpy.cleanup(true);
+        PowerMockito.verifyPrivate(zosBatchImpl, Mockito.times(2)).invoke("cleanup", Mockito.anyBoolean());
     }
     
     @Test
@@ -277,19 +289,20 @@ public class TestRseapiZosBatchManagerImpl {
         List<Annotation> annotations = new ArrayList<>();
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosbatch.ZosBatchJobname.class);
         annotations.add(annotation);
-        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
+        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new ZosBatchManagerException(EXCEPTION));
 
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Unable to get image for tag"));
-        
-        zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations);
+        String expectedMessage = "Unable to get image for tag \"tag\"";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+			zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations);
+		});
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testNewZosBatchJobname() throws Exception {
     	Mockito.when(zosJobnameMock.getName()).thenReturn(JOBNAME_PREFIX);        
-        IZosBatchJobname zosBatchJobname = RseapiZosBatchManagerImpl.newZosBatchJobname("image");
-        Assert.assertThat("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName(), StringStartsWith.startsWith(JOBNAME_PREFIX));
+    	IZosBatchJobname zosBatchJobname = zosBatchManagerSpy.newZosBatchJobname("image");
+        Assert.assertTrue("IZosBatchJobname getName() should start with the supplied value", zosBatchJobname.getName().startsWith(JOBNAME_PREFIX));
     }
     
     @Test
