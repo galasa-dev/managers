@@ -68,4 +68,9 @@ public class ZosConsoleImpl implements IZosConsole {
         }
         return consoleName;
     }
+    
+    @Override
+    public String toString() {
+    	return this.image.getImageID();
+    }
 }

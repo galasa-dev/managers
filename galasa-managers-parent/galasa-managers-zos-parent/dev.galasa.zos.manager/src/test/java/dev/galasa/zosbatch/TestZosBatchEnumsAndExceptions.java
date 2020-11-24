@@ -21,11 +21,13 @@ public class TestZosBatchEnumsAndExceptions {
         Assert.assertEquals("Problem with JobStatus", "INPUT", JobStatus.INPUT.toString());
         Assert.assertEquals("Problem with JobStatus", "ACTIVE", JobStatus.ACTIVE.toString());
         Assert.assertEquals("Problem with JobStatus", "OUTPUT", JobStatus.OUTPUT.toString()); 
+        Assert.assertEquals("Problem with JobStatus", "NOTFOUND", JobStatus.NOTFOUND.toString()); 
         Assert.assertEquals("Problem with JobStatus", "UNKNOWN", JobStatus.UNKNOWN.toString());
 
         Assert.assertEquals("Problem with JobStatus", JobStatus.INPUT, JobStatus.valueOfLabel("INPUT"));
         Assert.assertEquals("Problem with JobStatus", JobStatus.ACTIVE, JobStatus.valueOfLabel("ACTIVE"));
         Assert.assertEquals("Problem with JobStatus", JobStatus.OUTPUT, JobStatus.valueOfLabel("OUTPUT"));
+        Assert.assertEquals("Problem with JobStatus", JobStatus.NOTFOUND, JobStatus.valueOfLabel("NOTFOUND"));
         Assert.assertEquals("Problem with JobStatus", JobStatus.UNKNOWN, JobStatus.valueOfLabel("UNKNOWN"));
         Assert.assertEquals("Problem with JobStatus", JobStatus.UNKNOWN, JobStatus.valueOfLabel("INVALID"));
     }
