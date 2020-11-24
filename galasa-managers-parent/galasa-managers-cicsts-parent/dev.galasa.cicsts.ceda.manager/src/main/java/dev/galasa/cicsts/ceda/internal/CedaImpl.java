@@ -7,24 +7,36 @@ package dev.galasa.cicsts.ceda.internal;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.cicsts.ceda.CEDAException;
-import dev.galasa.cicsts.ceda.ICEDA;
+import dev.galasa.cicsts.CedaException;
+import dev.galasa.cicsts.ICeda;
+import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.zos3270.FieldNotFoundException;
-import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
-public class CEDAImpl implements ICEDA{
+public class CedaImpl implements ICeda{
 
-	private ITerminal terminal;
+	private ICicsRegion cicsRegion;
+	
+	private ICicsTerminal terminal;
+	
+	public CedaImpl(ICicsRegion cicsRegion) {
+		this.cicsRegion = cicsRegion;
+	}
+	
 
 	@Override
-	public void createResource(@NotNull ITerminal cedaTerminal, @NotNull String resourceType,
-			@NotNull String resourceName, @NotNull String groupName, String resourceParameters) throws CEDAException{
+	public void createResource(@NotNull ICicsTerminal terminal, @NotNull String resourceType, 
+            @NotNull String resourceName, @NotNull String groupName, String resourceParameters) throws CedaException{
+		
+		if(cicsRegion != terminal.getCicsRegion()) {
+			 throw new CedaException("Version collition");
+		}
 
-		this.terminal = cedaTerminal;
+		this.terminal = terminal;
 
 		try {
 			this.terminal.clear();
@@ -32,7 +44,7 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem starting transaction", e);
+			throw new CedaException("Problem starting transaction", e);
 		}
 
 		try {
@@ -46,7 +58,7 @@ public class CEDAImpl implements ICEDA{
 						") GROUP(" + groupName + ") " + resourceParameters).enter().waitForKeyboard();
 			}
 		}catch(TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
-			throw new CEDAException("Problem with starting the CEDA transaction", e);
+			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
 
 		try {
@@ -56,7 +68,7 @@ public class CEDAImpl implements ICEDA{
 				}
 			}
 		}catch (Exception e) {
-			throw new CEDAException("Problem determining the result from the CEDA command", e);
+			throw new CedaException("Problem determining the result from the CEDA command", e);
 		}
 
 		try {
@@ -65,19 +77,23 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Unable to return terminal back into reset state", e);
+			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 
 	}
 
 	@Override
-	public void installGroup(@NotNull ITerminal cedaTerminal, @NotNull String groupName) throws CEDAException {
-		this.terminal = cedaTerminal;
+	public void installGroup(@NotNull ICicsTerminal terminal, @NotNull String groupName) throws CedaException {
+		if(cicsRegion != terminal.getCicsRegion()) {
+			 throw new CedaException("Version collition");
+		}
+
+		this.terminal = terminal;
 		try{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e){
-			throw new CEDAException(
+			throw new CedaException(
 					"Unable to prepare for the CEDA install group", e);
 		}
 
@@ -85,7 +101,7 @@ public class CEDAImpl implements ICEDA{
 			terminal.type("CEDA INSTALL GROUP(" + groupName + ")").enter().waitForKeyboard();
 
 		}catch(Exception e) {
-			throw new CEDAException("Problem with starting the CEDA transaction");
+			throw new CedaException("Problem with starting the CEDA transaction");
 		}
 
 		try {
@@ -94,10 +110,10 @@ public class CEDAImpl implements ICEDA{
 				this.terminal.pf3();
 				this.terminal.clear();
 				this.terminal.waitForKeyboard();
-				throw new CEDAException("Errors detected whilst installing group");
+				throw new CedaException("Errors detected whilst installing group");
 			}
 		}catch(Exception e) {
-			throw new CEDAException("Problem determining the result from the CEDA command", e);
+			throw new CedaException("Problem determining the result from the CEDA command", e);
 		}
 
 		try {
@@ -106,20 +122,25 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Unable to return terminal back into reset state", e);
+			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 	}
 
 	@Override
-	public void installResource(@NotNull ITerminal cedaTerminal, @NotNull String resourceType, @NotNull String resourceName, @NotNull String cedaGroup)
-			throws CEDAException {
+	public void installResource(@NotNull ICicsTerminal terminal, @NotNull String resourceType, 
+            @NotNull String resourceName, @NotNull String cedaGroup)
+			throws CedaException {
 
-		this.terminal = cedaTerminal;
+		if(cicsRegion != terminal.getCicsRegion()) {
+			 throw new CedaException("Version collition");
+		}
+
+		this.terminal = terminal;
 		try {
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem starting transaction", e);
+			throw new CedaException("Problem starting transaction", e);
 		}
 
 		try {
@@ -128,7 +149,7 @@ public class CEDAImpl implements ICEDA{
 					cedaGroup + ")").enter().waitForKeyboard();
 
 		}catch(Exception e) {
-			throw new CEDAException("Problem with starting the CEDA transaction", e);
+			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
 
 		try {
@@ -146,13 +167,13 @@ public class CEDAImpl implements ICEDA{
 				if(error) {
 					this.terminal.pf9();
 					this.terminal.waitForKeyboard();
-					throw new CEDAException("Errors detected whilst installing group");
+					throw new CedaException("Errors detected whilst installing group");
 				}
 			}catch(Exception e) {
 				error = true;
 			}
 		}catch(Exception e) {
-			throw new CEDAException("Problem determining the result from the CEDA command");
+			throw new CedaException("Problem determining the result from the CEDA command");
 		}
 
 		try {
@@ -161,26 +182,30 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Unable to return terminal back into reset state", e);
+			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 
 	}
 
 	@Override
-	public void deleteGroup(@NotNull ITerminal cedaTerminal, @NotNull String groupName) throws CEDAException {
-		this.terminal = cedaTerminal;
+	public void deleteGroup(@NotNull ICicsTerminal terminal, @NotNull String groupName) throws CedaException {
+		if(cicsRegion != terminal.getCicsRegion()) {
+			 throw new CedaException("Version collition");
+		}
+
+		this.terminal = terminal;
 
 		try {
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem starting transaction", e);
+			throw new CedaException("Problem starting transaction", e);
 		}
 
 		try {
 			this.terminal.type("CEDA DELETE GROUP(" + groupName + ") ALL").enter().waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem with starting the CEDA transaction");
+			throw new CedaException("Problem with starting the CEDA transaction");
 		}
 
 		try {
@@ -190,10 +215,10 @@ public class CEDAImpl implements ICEDA{
 				this.terminal.clear();
 				this.terminal.waitForKeyboard();
 
-				throw new CEDAException("Errors detected whilst discarding group");
+				throw new CedaException("Errors detected whilst discarding group");
 			}
 		}catch(Exception e) {
-			throw new CEDAException("Problem determining the result from the CEDA command", e);
+			throw new CedaException("Problem determining the result from the CEDA command", e);
 		}
 
 		try {
@@ -202,20 +227,25 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Unable to return terminal back into reset state", e);
+			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 	}
 
 	@Override
-	public void deleteResource(@NotNull ITerminal cedaTerminal, @NotNull String resourceType, @NotNull String resourceName, @NotNull String groupName)
-			throws CEDAException {
+	public void deleteResource(@NotNull ICicsTerminal terminal, @NotNull String resourceType, 
+            @NotNull String resourceName, @NotNull String groupName)
+			throws CedaException {
 
-		this.terminal = cedaTerminal;
+		if(cicsRegion != terminal.getCicsRegion()) {
+			 throw new CedaException("Version collition");
+		}
+
+		this.terminal = terminal;
 		try {
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem starting transaction", e);
+			throw new CedaException("Problem starting transaction", e);
 		}
 
 		try {
@@ -225,7 +255,7 @@ public class CEDAImpl implements ICEDA{
 					+ resourceName + ") GROUP(" + groupName + ")").enter();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Problem with starting the CEDA transaction", e);
+			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
 
 		try {
@@ -233,10 +263,10 @@ public class CEDAImpl implements ICEDA{
 				this.terminal.pf9()
 				.pf3().clear()
 				.waitForKeyboard();
-				throw new CEDAException("Errors detected whilst discarding group");
+				throw new CedaException("Errors detected whilst discarding group");
 			}
 		}catch(Exception e) {
-			throw new CEDAException("Problem determinign the result from the CEDA command)", e);
+			throw new CedaException("Problem determinign the result from the CEDA command)", e);
 
 		}
 		try {
@@ -245,7 +275,7 @@ public class CEDAImpl implements ICEDA{
 			this.terminal.clear();
 			this.terminal.waitForKeyboard();
 		}catch(Exception e) {
-			throw new CEDAException("Unable to return terminal back into reset state", e);
+			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 
 	}
