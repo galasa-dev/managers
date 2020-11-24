@@ -7,15 +7,20 @@ package dev.galasa.zosprogram.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosprogram.ZosProgramException;
@@ -34,11 +39,13 @@ public class AbstractZosProgramCompiler {
     protected static final String LKED_SYSIN_ENTRY = "  ENTRY ++NAME++";
     protected static final String LKED_SYSIN_NAME_REPLACE = "  NAME ++NAME++(R)";
 
+	private static final String PROGRAM = " program ";
+
     public AbstractZosProgramCompiler(ZosProgramImpl zosProgram) throws ZosProgramException {
         this.zosProgram = zosProgram;
         if (zosProgram.getLoadlib() == null) {
             try {
-                zosProgram.setLoadlib(ZosProgramManagerImpl.getRunLoadlib(zosProgram.getImage()));
+                this.zosProgram.setLoadlib(this.zosProgram.getZosProgramManager().getRunLoadlib(zosProgram.getImage()));
             } catch (ZosProgramManagerException e) {
                 throw new ZosProgramException(e);
             }
@@ -50,7 +57,7 @@ public class AbstractZosProgramCompiler {
     }
 
     protected String buildCompileJcl() throws ZosProgramException {
-        IBundleResources managerBundleResources = ZosProgramManagerImpl.getManagerBundleResources();
+        IBundleResources managerBundleResources = this.zosProgram.getZosProgramManager().getManagerBundleResources();
         try {
             InputStream inputStream = managerBundleResources.retrieveSkeletonFile("resources/" + getSkelName(), buildParameters());
             return managerBundleResources.streamAsString(inputStream);
@@ -62,29 +69,33 @@ public class AbstractZosProgramCompiler {
     protected void submitCompileJob(String compileJcl) throws ZosProgramException {
         IZosBatchJob compileJob;
         try {
-            compileJob = ZosProgramManagerImpl.getZosBatch(zosProgram.getImage()).submitJob(compileJcl, null);
-            zosProgram.setCompileJob(compileJob);
+            compileJob = this.zosProgram.getZosProgramManager().getZosBatchForImage(zosProgram.getImage()).submitJob(compileJcl, null);
+            this.zosProgram.setCompileJob(compileJob);
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem submitting compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField(), e);
+            throw new ZosProgramException("Problem submitting compile job for " + this.zosProgram.getLanguage() + PROGRAM + this.zosProgram.getName() + this.zosProgram.logForField(), e);
         }
         int maxCc;
         try {
             maxCc = compileJob.waitForJob();
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem waiting for compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
+            throw new ZosProgramException("Problem waiting for compile job for " + this.zosProgram.getLanguage() + PROGRAM + this.zosProgram.getName() + this.zosProgram.logForField() + ". " + compileJob.toString(), e);
         }
         try {
-            compileJob.saveOutputToResultsArchive();
+        	String folderName = compileJob.getJobname() + "_" + compileJob.getJobId() + "_" + compileJob.getRetcode().replace(" ", "-").replace("????", "UNKNOWN");
+        	Path archivePath = this.zosProgram.getZosProgramManager().getArchivePath();
+        	String uniquePathName = this.zosProgram.getZosProgramManager().getZosManager().buildUniquePathName(archivePath, folderName);
+        	Path rasPath = archivePath.resolve(uniquePathName);
+        	compileJob.saveOutputToResultsArchive(rasPath.toString());
             compileJob.purge();
         } catch (ZosBatchException e) {
-            throw new ZosProgramException("Problem saving compile job output for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId(), e);
+            throw new ZosProgramException("Problem saving compile job output for " + this.zosProgram.getLanguage() + PROGRAM + this.zosProgram.getName() + this.zosProgram.logForField() + ". " + compileJob.toString(), e);
         }
         if (maxCc < 0 || maxCc > 4) {
-            String message = "Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + " failed: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId();
+            String message = "Compile job for " + this.zosProgram.getLanguage() + PROGRAM + this.zosProgram.getName() + this.zosProgram.logForField() + " failed: " + compileJob.getRetcode() + ". " + compileJob.toString();
             logger.error(message);
             throw new ZosProgramException(message);
         } else {
-            logger.info("Compile job for " + zosProgram.getLanguage() + " program " + zosProgram.getName() + zosProgram.logForField() + " complete: " + compileJob.getRetcode() + ". Jobname=" + compileJob.getJobname().getName() + " Jobid=" + compileJob.getJobId());
+            logger.info("Compile job for " + this.zosProgram.getLanguage() + PROGRAM + this.zosProgram.getName() + this.zosProgram.logForField() + " complete: " + compileJob.getRetcode() + ". " + compileJob.toString());
         }
     }
     
