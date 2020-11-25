@@ -53,31 +53,31 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
 
     private static final String PROVISIONING = "provisioning";
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosmfZosBatchManagerImpl.zosManager = zosManager;
+    private IZosManagerSpi zosManager;
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
     
-    protected static IZosmfManagerSpi zosmfManager;
-    public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-        ZosmfZosBatchManagerImpl.zosmfManager = zosmfManager;
+    private IZosmfManagerSpi zosmfManager;
+    public IZosmfManagerSpi getZosmfManager() {
+        return this.zosmfManager;
     }
 
     private final HashMap<String, ZosmfZosBatchImpl> taggedZosBatches = new HashMap<>();
     private final HashMap<String, ZosmfZosBatchImpl> zosBatches = new HashMap<>();
 
     private Path artifactsRoot;
-    
-    protected static Path archivePath;
-    public static void setArchivePath(Path archivePath) {
-        ZosmfZosBatchManagerImpl.archivePath = archivePath;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
     }
     
-    protected static String currentTestMethodArchiveFolderName;
-    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        ZosmfZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
+    private Path archivePath;
+    public Path getArchivePath() {
+        return this.archivePath;
     }
-    public static Path getCurrentTestMethodArchiveFolder() {
+    
+    private String currentTestMethodArchiveFolderName;
+    public Path getCurrentTestMethodArchiveFolder() {
         return archivePath.resolve(currentTestMethodArchiveFolderName);
     }
     
@@ -98,9 +98,9 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
             }
         }
         
-        artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("preTest");
+        this.artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
     
 
@@ -124,11 +124,11 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosBatchManagerException("The zOS Manager is not available");
         }
-        setZosmfManager(addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class));
+        this.zosmfManager = addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class);
         if (zosmfManager == null) {
             throw new ZosBatchManagerException("The zOSMF Manager is not available");
         }
@@ -153,11 +153,11 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
         cleanup(false);
-        setArchivePath(artifactsRoot.resolve(ZOSBATCH_JOBS));
+        this.archivePath = artifactsRoot.resolve(ZOSBATCH_JOBS);
         if (galasaMethod.getJavaTestMethod() != null) {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaExecutionMethod().getName());
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
     }
 
@@ -181,8 +181,8 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("postTest");
+        this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
+        this.currentTestMethodArchiveFolderName = "postTest";
         cleanup(false);
         
         return null;
@@ -224,7 +224,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         }
 
         IZosImage image = zosManager.getImageForTag(tag);
-        IZosBatch zosBatch = new ZosmfZosBatchImpl(image);
+        IZosBatch zosBatch = new ZosmfZosBatchImpl(this, image);
         this.taggedZosBatches.put(tag, (ZosmfZosBatchImpl) zosBatch);
         
         return zosBatch;
@@ -245,11 +245,11 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         return newZosBatchJobname(image);
     }
 
-    protected static IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+    protected IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
         return zosManager.newZosBatchJobname(image);
     }
 
-    protected static IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
+    protected IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
         return zosManager.newZosBatchJobname(name);
     }
 
@@ -258,7 +258,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         if (zosBatches.containsKey(image.getImageID())) {
             return zosBatches.get(image.getImageID());
         } else {
-            ZosmfZosBatchImpl zosBatch = new ZosmfZosBatchImpl(image);
+            ZosmfZosBatchImpl zosBatch = new ZosmfZosBatchImpl(this, image);
             zosBatches.put(image.getImageID(), zosBatch);
             return zosBatch;
         }

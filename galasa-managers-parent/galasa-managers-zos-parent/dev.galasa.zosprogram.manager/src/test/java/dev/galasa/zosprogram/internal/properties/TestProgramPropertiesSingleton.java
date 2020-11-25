@@ -6,9 +6,7 @@
 package dev.galasa.zosprogram.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -17,29 +15,29 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestZosmfPropertiesSingleton {
+public class TestProgramPropertiesSingleton {
     
     private ZosProgramPropertiesSingleton singletonInstance;
 
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testCpsException() throws ZosProgramManagerException {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, ZosProgramPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to access manager CPS before it has been initialised";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	Assert.assertEquals("Exception", null, ZosProgramPropertiesSingleton.cps());
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws ZosProgramManagerException {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        ZosProgramPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, ZosProgramPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to set manager CPS before instance created";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+            ZosProgramPropertiesSingleton.setCps(cpsMock);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
