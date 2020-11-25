@@ -7,6 +7,7 @@ package dev.galasa.zosprogram.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -51,50 +52,55 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
     
     private static final Log logger = LogFactory.getLog(ZosProgramManagerImpl.class);
     
-    protected static final String NAMESPACE = "zosprogram";
+    private static final String NAMESPACE = "zosprogram";
+
+    private static final String ZOSBATCH_JOBS = "zosBatchJobs";
+
+    private static final String PROVISIONING = "provisioning";
+
+	private static final String PRE_TEST = "preTest";
     
-    protected static IZosManagerSpi zosManager;
-    protected static void setZosManager(IZosManagerSpi zosManager) {
-        ZosProgramManagerImpl.zosManager = zosManager;
+    private IZosManagerSpi zosManager;
+    protected IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
 
-    protected static IZosBatchSpi zosBatch;
-    protected static void setZosBatch(IZosBatchSpi zosBatchManager) {
-        ZosProgramManagerImpl.zosBatch = zosBatchManager;
+    private IZosBatchSpi zosBatch;
+    protected IZosBatchSpi getZosBatch() {
+    	return this.zosBatch;
     }
 
-    protected static IZosFileSpi zosFile;
-    protected static void setZosFile(IZosFileSpi zosFileManager) {
-        ZosProgramManagerImpl.zosFile = zosFileManager;
+    private IZosFileSpi zosFile;
+    protected IZosFileSpi getZosFile() {
+        return this.zosFile;
     }
 
-    protected static IArtifactManager artifactManager;
-    protected static void setArtifactManager(IArtifactManager artifactManager) {
-        ZosProgramManagerImpl.artifactManager = artifactManager;
+    private IArtifactManager artifactManager;
+    protected IArtifactManager getArtifactManager() {
+        return this.artifactManager;
     }
 
-    protected static IBundleResources testBundleResources;
-    protected static void setTestBundleResources(IBundleResources testBundleResources) {
-        ZosProgramManagerImpl.testBundleResources = testBundleResources;
-    }
-    protected static IBundleResources getTestBundleResources() {
-        return ZosProgramManagerImpl.testBundleResources;
+    private IBundleResources testBundleResources;
+    protected IBundleResources getTestBundleResources() {
+        return this.testBundleResources;
     }
 
-    protected static IBundleResources managerBundleResources;
-    protected static void setManagerBundleResources(IBundleResources managerBundleResources) {
-        ZosProgramManagerImpl.managerBundleResources = managerBundleResources;
-    }
-    protected static IBundleResources getManagerBundleResources() {
-        return ZosProgramManagerImpl.managerBundleResources;
+    protected IBundleResources managerBundleResources;
+    protected IBundleResources getManagerBundleResources() {
+        return this.managerBundleResources;
     }
 
-    private static String runId;    
-    public static void setRunId(String runId) {
-        ZosProgramManagerImpl.runId = runId;
+	private Path archivePath;
+	protected Path getArchivePath() {
+		return archivePath;
+	}
+
+    private String runId;    
+    public String getRunId() {
+        return this.runId;
     }
 
-    protected static IZosDataset runLoadlib;
+    protected IZosDataset runLoadlib;
 
     private final LinkedHashMap<String, ZosProgramImpl> zosPrograms = new LinkedHashMap<>();
     
@@ -118,7 +124,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
                 youAreRequired(allManagers, activeManagers);
             }
         }
-        setRunId(getFramework().getTestRunName());
+        this.runId = getFramework().getTestRunName();
     }
     
 
@@ -130,20 +136,20 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
 
         activeManagers.add(this);
         
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
-        if (zosManager == null) {
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        if (this.zosManager == null) {
             throw new ZosProgramManagerException("The zOS Manager is not available");
         }
-        setZosBatch(addDependentManager(allManagers, activeManagers, IZosBatchSpi.class));
-        if (zosBatch == null) {
+        this.zosBatch = addDependentManager(allManagers, activeManagers, IZosBatchSpi.class);
+        if (this.zosBatch == null) {
             throw new ZosProgramManagerException("The zOS Batch Manager is not available");
         }
-        setZosFile(addDependentManager(allManagers, activeManagers, IZosFileSpi.class));
-        if (zosFile == null) {
+        this.zosFile = addDependentManager(allManagers, activeManagers, IZosFileSpi.class);
+        if (this.zosFile == null) {
             throw new ZosProgramManagerException("The zOS File Manager is not available");
         }
-        setArtifactManager(addDependentManager(allManagers, activeManagers, IArtifactManager.class));
-        if (artifactManager == null) {
+        this.artifactManager = addDependentManager(allManagers, activeManagers, IArtifactManager.class);
+        if (this.artifactManager == null) {
             throw new ZosProgramManagerException("The Artifact Manager is not available");
         }
         
@@ -176,8 +182,9 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
      */
     @Override
     public void startOfTestClass() throws ManagerException {
-        setManagerBundleResources(artifactManager.getBundleResources(this.getClass()));
-        setTestBundleResources(artifactManager.getBundleResources(getTestClass()));
+    	this.archivePath = getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve(PROVISIONING).resolve(ZOSBATCH_JOBS).resolve(PRE_TEST);
+        this.managerBundleResources = artifactManager.getBundleResources(this.getClass());
+        this.testBundleResources = artifactManager.getBundleResources(getTestClass());
         for (Entry<String, ZosProgramImpl> entry : zosPrograms.entrySet()) {
             if (entry.getValue().getCompile()) {
                 entry.getValue().compile();
@@ -199,7 +206,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
         String loadlib = nulled(annotationZosProgram.loadlib());
         boolean compile = annotationZosProgram.compile();
         
-        ZosProgramImpl zosProgram = new ZosProgramImpl(field, tag, name, location, language, cics, loadlib, compile);
+        ZosProgramImpl zosProgram = new ZosProgramImpl(this, field, tag, name, location, language, cics, loadlib, compile);
         zosPrograms.put(field.getName(), zosProgram);
         
         return zosProgram;
@@ -208,15 +215,15 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
 
     @Override
     public IZosProgram newZosProgram(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramManagerException {
-        return new ZosProgramImpl(image, name, programSource, language, cics, loadlib);
+        return new ZosProgramImpl(this, image, name, programSource, language, cics, loadlib);
     }
 
 
-    public static IZosBatch getZosBatch(IZosImage image) {
+    public IZosBatch getZosBatchForImage(IZosImage image) {
         return zosBatch.getZosBatch(image);
     }
     
-    public static IZosDataset getRunLoadlib(IZosImage image) throws ZosProgramManagerException {
+    public IZosDataset getRunLoadlib(IZosImage image) throws ZosProgramManagerException {
         if (runLoadlib == null) {
             try {
                 runLoadlib = zosFile.getZosFileHandler().newDataset(zosManager.getRunDatasetHLQ(image) + "." + runId + ".LOAD", image);

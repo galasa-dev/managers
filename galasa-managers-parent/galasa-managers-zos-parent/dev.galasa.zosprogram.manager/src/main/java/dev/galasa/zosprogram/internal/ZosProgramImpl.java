@@ -31,7 +31,12 @@ public class ZosProgramImpl implements IZosProgram {
     
     private static final Log logger = LogFactory.getLog(ZosProgramImpl.class);
     
-    private Field field;
+    private ZosProgramManagerImpl zosProgramManager;
+    public ZosProgramManagerImpl getZosProgramManager() {
+		return zosProgramManager;
+	}
+
+	private Field field;
     private IZosImage image;
     private String name;
     private String location;
@@ -42,17 +47,19 @@ public class ZosProgramImpl implements IZosProgram {
     private IZosBatchJob compileJob;
     private boolean compile;
 
-    public ZosProgramImpl(Field field, String imageTag, String name, String location, Language language, boolean cics, String loadlib, boolean compile) throws ZosProgramException {
+    public ZosProgramImpl(ZosProgramManagerImpl zosProgramManager, Field field, String imageTag, String name, String location, Language language, boolean cics, String loadlib, boolean compile) throws ZosProgramException {
+    	this.zosProgramManager = zosProgramManager;
         this.field = field;
         try {
-            initalise(ZosProgramManagerImpl.zosManager.getImageForTag(imageTag), name, location, language, cics, loadlib, compile);
+            initalise(zosProgramManager.getZosManager().getImageForTag(imageTag), name, location, language, cics, loadlib, compile);
         } catch (ZosManagerException e) {
             throw new ZosProgramException(e);
         }
     }
 
-    public ZosProgramImpl(IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramException {
-        this.programSource = programSource;
+    public ZosProgramImpl(ZosProgramManagerImpl zosProgramManager, IZosImage image, String name, String programSource, Language language, boolean cics, String loadlib) throws ZosProgramException {
+    	this.zosProgramManager = zosProgramManager;
+    	this.programSource = programSource;
         initalise(image, name, null, language, cics, loadlib, false);
     }
     
@@ -125,7 +132,7 @@ public class ZosProgramImpl implements IZosProgram {
                 this.loadlib = (IZosDataset) loadlib;
             } else {
                 try {
-                    this.loadlib = ZosProgramManagerImpl.zosFile.getZosFileHandler().newDataset((String) loadlib, image);
+                    this.loadlib = zosProgramManager.getZosFile().getZosFileHandler().newDataset((String) loadlib, image);
                 } catch (ZosFileManagerException e) {
                     throw new ZosProgramException("Unable to instantiate loadlib data set object", e); 
                 }
@@ -138,7 +145,7 @@ public class ZosProgramImpl implements IZosProgram {
     }
 
     protected void loadProgramSource() throws ZosProgramException {
-        IBundleResources testBundleResources = ZosProgramManagerImpl.getTestBundleResources();
+        IBundleResources testBundleResources = zosProgramManager.getTestBundleResources();
         String sourcePath;
         if (getLocation() == null) {
             sourcePath = getName() + "." + getLanguage().getFileExtension();

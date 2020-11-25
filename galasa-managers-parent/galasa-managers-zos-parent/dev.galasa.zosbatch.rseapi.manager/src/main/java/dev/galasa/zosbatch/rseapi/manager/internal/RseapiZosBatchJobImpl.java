@@ -47,9 +47,10 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  */
 public class RseapiZosBatchJobImpl implements IZosBatchJob {
     
-    private IRseapiRestApiProcessor rseapiApiProcessor;
-    
-    private IZosImage jobImage;
+    private IRseapiRestApiProcessor rseapiApiProcessor;    
+    private RseapiZosBatchManagerImpl zosBatchManager;
+
+	private IZosImage jobImage;
     private IZosBatchJobname jobname;
     private final ZosBatchJobcard jobcard;
     private String jcl;
@@ -71,8 +72,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
     private boolean shouldArchive = true;
-    
-    private static final String PROP_REASON = "reason";
+
+	private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
     private static final String PROP_CATEGORY = "category";
     private static final String PROP_JOBID = "jobId";
@@ -101,7 +102,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
                                                                                           HttpStatus.SC_INTERNAL_SERVER_ERROR
                                                                                           ));
 
-    public RseapiZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
+    public RseapiZosBatchJobImpl(RseapiZosBatchManagerImpl zosBatchManager, IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
+    	this.zosBatchManager = zosBatchManager;
         this.jobImage = jobImage;
         this.jobname = jobname;
         if (jobcard != null) {
@@ -110,29 +112,29 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.jobcard = new ZosBatchJobcard();
         }
         if (jcl != null) {
-        	Path artifactPath = RseapiZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
+        	Path artifactPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
         	try {
-				RseapiZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(RseapiZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, this.jobname.getName() + "_supplied_JCL")), jcl, ResultArchiveStoreContentType.TEXT);
+				this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, this.jobname.getName() + "_supplied_JCL")), jcl, ResultArchiveStoreContentType.TEXT);
 			} catch (ZosManagerException e) {
 				throw new ZosBatchException(e);
 			}
             this.jcl = jcl;
 
             try {
-                this.useSysaff = RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyUseSysaff(this.jobImage.getImageID());
+                this.useSysaff = this.zosBatchManager.getZosManager().getZosBatchPropertyUseSysaff(this.jobImage.getImageID());
             } catch (ZosBatchManagerException e) {
                 throw new ZosBatchException("Unable to get use SYSAFF property value", e);
             }
         }
         
         try {
-            this.jobWaitTimeout = RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyJobWaitTimeout(this.jobImage.getImageID());
+            this.jobWaitTimeout = this.zosBatchManager.getZosManager().getZosBatchPropertyJobWaitTimeout(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get job timeout property value", e);
         }
         
         try {
-            this.rseapiApiProcessor = RseapiZosBatchManagerImpl.rseapiManager.newRseapiRestApiProcessor(jobImage, RseapiZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
+            this.rseapiApiProcessor = this.zosBatchManager.getRseapiManager().newRseapiRestApiProcessor(jobImage, this.zosBatchManager.getZosManager().getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
         } catch (RseapiManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -163,7 +165,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.type = jsonNull(responseBody, PROP_TYPE);
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
-            logger.info("JOB " + this + " Submitted");
+            logger.info("JOB " + this.toString() + " Submitted");
         } else {            
             // Error case
             String displayMessage = buildErrorString("Submit job", response); 
@@ -326,16 +328,14 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     @Override
-    public void saveOutputToResultsArchive() throws ZosBatchException {
-    	if (!shouldArchive()) {
-    		throw new ZosBatchException("shouldArchive flag is false");
-    	}
+    public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException {
         if (jobOutput() == null) {
             retrieveOutput();
         }
-        Path artifactPath = RseapiZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
+        Path artifactPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
         String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
-        artifactPath = artifactPath.resolve(RseapiZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, folderName));
+        artifactPath = artifactPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, folderName));
+        logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
@@ -354,10 +354,9 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             }
             name.append("_");
             name.append(spoolFile.getDdname());
-            logger.info("        " + name);
-            String fileName = RseapiZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, name.toString());
+            String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
             try {
-				RseapiZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
+            	this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
 			} catch (ZosManagerException e) {
 				throw new ZosBatchException(e);
 			}
@@ -388,7 +387,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = RseapiZosBatchManagerImpl.zosManager.newZosBatchJobOutput(this.jobname.getName(), this.jobid);
+        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         IRseapiResponse response;
@@ -447,7 +446,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
     
     protected void setStatus(String statusString) {
-    	//RSE API Status: HOLD | ACTIVE | ABEND | COMPLETED | COMPLETION 
+    	//RSE API Status: HOLD | ACTIVE | ABEND | COMPLETED | COMPLETION | NOT_FOUND
     	if (statusString == null || statusString.equals(StringUtils.repeat(QUERY, 8))) {
     		this.status = JobStatus.UNKNOWN;
     	} else if (statusString.equals("HOLD")) {
@@ -456,6 +455,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     		this.status = JobStatus.ACTIVE;
     	} else if (statusString.equals("COMPLETION") || statusString.equals("COMPLETED") || statusString.equals("ABEND")) {
     		this.status = JobStatus.OUTPUT;
+    	} else if (statusString.equals("NOT_FOUND")) {
+    		this.status = JobStatus.NOTFOUND;
     	}
     }
 
@@ -491,14 +492,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         
     @Override
     public String toString() {
-        if (!isPurged()) {
-            try {
-                updateJobStatus();
-            } catch (ZosBatchException e) {
-                logger.error(e);
-            }
-        }
-        return jobStatus();        
+    	return this.jobname.getName() + "(" + this.getJobId() + ")";
     }
 
     public boolean submitted() {
@@ -545,7 +539,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             throw new ZosBatchException(e);
         }
         
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
+        if (response.getStatusCode() == HttpStatus.SC_OK || response.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
             JsonObject responseBody;
             try {
                 responseBody = response.getJsonContent();
@@ -561,6 +555,9 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             if (this.statusString != null && "COMPLETION".equals(this.statusString) ||
             	this.statusString != null && "ABEND".equals(this.statusString)) {
                 this.jobComplete = true;
+            } else if (this.statusString != null && "NOT_FOUND".equals(this.statusString)) {
+        		logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
+                this.jobNotFound = true;
             }
             setStatus(this.statusString);
             String retcodeProperty = jsonNull(responseBody, PROP_RETCODE);
@@ -569,8 +566,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             } else {
                 this.retcode = StringUtils.repeat(QUERY, 4);
             }
-            logger.debug(jobStatus());
-        } else {        
+            logger.trace(jobStatus());
+        } else {
             // Error case
             String displayMessage = buildErrorString("Update job status", response); 
             logger.error(displayMessage);
@@ -578,8 +575,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }            
     }
 
-    protected String getOutputFileContent(String path) throws ZosBatchException {
-    
+    protected String getOutputFileContent(String path) throws ZosBatchException {    
         HashMap<String, String> headers = new HashMap<>();
         IRseapiResponse response;
         try {
@@ -624,7 +620,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             jclWithJobcard.append("\n");
         }
         
-        logger.info("JOBCARD:\n" + jclWithJobcard.toString());
         jclWithJobcard.append(jcl);
         if (!jclWithJobcard.toString().endsWith("\n")) {
             jclWithJobcard.append("\n");
@@ -666,7 +661,10 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 
     protected void archiveJobOutput() throws ZosBatchException {
         if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
-            saveOutputToResultsArchive();
+            Path rasPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
+            String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+            rasPath = rasPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(rasPath, folderName));
+            saveOutputToResultsArchive(rasPath.toString());
         }
     }
 }
