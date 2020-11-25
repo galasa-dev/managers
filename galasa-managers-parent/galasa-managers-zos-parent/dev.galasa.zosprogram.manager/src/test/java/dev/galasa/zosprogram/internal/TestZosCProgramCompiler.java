@@ -13,9 +13,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -63,10 +61,10 @@ public class TestZosCProgramCompiler {
     private ZosProgramImpl zosProgramMock;
 
     @Mock
-    private IZosDataset loadlibMock;
+    private ZosProgramManagerImpl zosProgramManagerMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+    @Mock
+    private IZosDataset loadlibMock;
 
     private static final String NAME = "NAME";
 
@@ -85,6 +83,8 @@ public class TestZosCProgramCompiler {
         Mockito.when(zosProgramMock.getProgramSource()).thenReturn(SOURCE);
         Mockito.when(loadlibMock.getName()).thenReturn(LOADLIB);
         Mockito.when(zosProgramMock.getLoadlib()).thenReturn(loadlibMock);
+        Mockito.when(zosProgramMock.getZosProgramManager()).thenReturn(zosProgramManagerMock);
+        Mockito.when(zosProgramManagerMock.getManagerBundleResources()).thenReturn(bundleResourcesMock);
         PowerMockito.mockStatic(ProgramLanguageDatasetPrefix.class);
         Mockito.when(ProgramLanguageDatasetPrefix.get(Mockito.any(), Mockito.any())).thenReturn(Arrays.asList());
         PowerMockito.mockStatic(LanguageEnvironmentDatasetPrefix.class);
@@ -140,9 +140,11 @@ public class TestZosCProgramCompiler {
         Assert.assertEquals("Error in buildParameters() method", parameters, zosCProgramCompilerSpy.buildParameters());
         
         Mockito.when(ProgramLanguageDatasetPrefix.get(Mockito.any(), Mockito.any())).thenThrow(new ZosProgramManagerException());
-        exceptionRule.expect(ZosProgramException.class);
-        exceptionRule.expectMessage("Problem building compile JCL for " + LANGUAGE + " program " + NAME);
-        zosCProgramCompilerSpy.compile();
+        String expectedMessage = "Problem building compile JCL for " + LANGUAGE + " program " + NAME;
+        ZosProgramException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramException.class, ()->{
+        	zosCProgramCompilerSpy.buildParameters();
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test

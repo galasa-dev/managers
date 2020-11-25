@@ -7,6 +7,7 @@ package dev.galasa.zosprogram.internal;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,9 +16,7 @@ import javax.validation.constraints.NotNull;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -84,10 +83,10 @@ public class TestZosProgramManagerImpl {
     private ZosManagerImpl zosManagerMock;
     
     @Mock
-    private IZosBatchSpi zosBatchManagerMock;
+    private IZosBatchSpi zosBatchSpiMock;
     
     @Mock
-    private IZosFileSpi zosFileManagerMock;
+    private IZosFileSpi zosFileSpiMock;
     
     @Mock
     private ArtifactManagerImpl artifactManagerMock;
@@ -110,9 +109,6 @@ public class TestZosProgramManagerImpl {
     @Mock
     private IZosDataset loadlibMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private static final String IMAGE = "image";
 
     private static final String NAME = "NAME";
@@ -121,10 +117,8 @@ public class TestZosProgramManagerImpl {
 
     @Before
     public void setup() throws Exception {
-        ZosProgramManagerImpl.setArtifactManager(artifactManagerMock);
         PowerMockito.doReturn(bundleResourcesMock).when(artifactManagerMock).getBundleResources(Mockito.any());
         
-        ZosProgramManagerImpl.setZosManager(zosManagerMock);
         zosProgramZosProgramPropertiesSingleton = new ZosProgramPropertiesSingleton();
         zosProgramZosProgramPropertiesSingleton.activate();
         
@@ -132,12 +126,33 @@ public class TestZosProgramManagerImpl {
         
         zosProgramManager = new ZosProgramManagerImpl();
         zosProgramManagerSpy = Mockito.spy(zosProgramManager);
+        Whitebox.setInternalState(zosProgramManagerSpy, "artifactManager", artifactManagerMock);
+        Whitebox.setInternalState(zosProgramManagerSpy, "zosFile", zosFileSpiMock);
+        Whitebox.setInternalState(zosProgramManagerSpy, "zosManager", zosManagerMock);
+        Mockito.when(zosProgramManagerSpy.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
+        Mockito.when(zosProgramManagerSpy.getFramework()).thenReturn(frameworkMock);
         Mockito.when(zosProgramManagerSpy.getFramework()).thenReturn(frameworkMock);
         Mockito.when(frameworkMock.getResultArchiveStore()).thenReturn(resultArchiveStoreMock);
         Mockito.when(resultArchiveStoreMock.getStoredArtifactsRoot()).thenReturn(new File("/").toPath());
         
         allManagers = new ArrayList<>();
         activeManagers = new ArrayList<>();
+    }
+    
+    @Test
+    public void testGetters() {
+    	Path archivePathMock = Mockito.mock(Path.class);
+    	Whitebox.setInternalState(zosProgramManagerSpy, "archivePath", archivePathMock);
+    	Assert.assertEquals("Method should return expected object", zosProgramManagerSpy.getArchivePath(), archivePathMock);
+    	Whitebox.setInternalState(zosProgramManagerSpy, "artifactManager", artifactManagerMock);
+    	Assert.assertEquals("Method should return expected object", zosProgramManagerSpy.getArtifactManager(), artifactManagerMock);
+    	Whitebox.setInternalState(zosProgramManagerSpy, "runId", "runid");
+    	Assert.assertEquals("Method should return expected object", zosProgramManagerSpy.getRunId(), "runid");
+    	Whitebox.setInternalState(zosProgramManagerSpy, "zosBatch", zosBatchSpiMock);
+    	Assert.assertEquals("Method should return expected object", zosProgramManagerSpy.getZosBatch(), zosBatchSpiMock);
+    	Whitebox.setInternalState(zosProgramManagerSpy, "zosFile", zosFileSpiMock);
+    	Assert.assertEquals("Method should return expected object", zosProgramManagerSpy.getZosFile(), zosFileSpiMock);
     }
     
     @Test
@@ -161,9 +176,11 @@ public class TestZosProgramManagerImpl {
     @Test
     public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
         Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
-        zosProgramManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        String expectedMessage = "Unable to request framework services";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -210,26 +227,32 @@ public class TestZosProgramManagerImpl {
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("The zOS Batch Manager is not available");
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Batch Manager is not available";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException3() throws ManagerException {
         allManagers.add(zosManagerMock);
         allManagers.add(new DummyBatch());
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("The zOS File Manager is not available");
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS File Manager is not available";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -237,15 +260,17 @@ public class TestZosProgramManagerImpl {
         allManagers.add(zosManagerMock);
         allManagers.add(new DummyBatch());
         allManagers.add(new DummyFile());
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("The Artifact Manager is not available");
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The Artifact Manager is not available";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testAreYouProvisionalDependentOn() {
-        Assert.assertTrue("Should be dependent on IZosManagerSpi" , zosProgramManager.areYouProvisionalDependentOn(zosManagerMock));
-        Assert.assertFalse("Should not be dependent on IManager" , zosProgramManager.areYouProvisionalDependentOn(managerMock));
+        Assert.assertTrue("Should be dependent on IZosManagerSpi" , zosProgramManagerSpy.areYouProvisionalDependentOn(zosManagerMock));
+        Assert.assertFalse("Should not be dependent on IManager" , zosProgramManagerSpy.areYouProvisionalDependentOn(managerMock));
     }
     
     @Test
@@ -256,7 +281,7 @@ public class TestZosProgramManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosprogram.ZosProgram.class);
         annotations.add(annotation);
         
-        Object zosProgramImplObject = zosProgramManager.generateZosProgram(DummyTestClass.class.getDeclaredField("zosProgram"), annotations);
+        Object zosProgramImplObject = zosProgramManagerSpy.generateZosProgram(DummyTestClass.class.getDeclaredField("zosProgram"), annotations);
         Assert.assertTrue("Error in generateZosProgram() method", zosProgramImplObject instanceof ZosProgramImpl);
     }
     
@@ -270,42 +295,43 @@ public class TestZosProgramManagerImpl {
     public void testGetZosBatch() {
         IZosBatchSpi zosBatchSpiMock = Mockito.mock(IZosBatchSpi.class);
         Mockito.when(zosBatchSpiMock.getZosBatch(Mockito.any())).thenReturn(zosBatchMock);
-        ZosProgramManagerImpl.setZosBatch(zosBatchSpiMock);
-        Assert.assertEquals("Error in getZosBatch() method", zosBatchMock, ZosProgramManagerImpl.getZosBatch(zosImageMock));
+        Whitebox.setInternalState(zosProgramManagerSpy, "zosBatch", zosBatchSpiMock);
+        Assert.assertEquals("Error in getZosBatch() method", zosBatchMock, zosProgramManagerSpy.getZosBatchForImage(zosImageMock));
     }
     
     @Test
     public void testGetTestBundleResources() {
-        ZosProgramManagerImpl.setTestBundleResources(bundleResourcesMock);
-        Assert.assertEquals("Error in getTestBundleResources() method", bundleResourcesMock, ZosProgramManagerImpl.getTestBundleResources());
+    	Mockito.when(zosProgramManagerSpy.getTestBundleResources()).thenReturn(bundleResourcesMock);
+        Assert.assertEquals("Error in getTestBundleResources() method", bundleResourcesMock, zosProgramManagerSpy.getTestBundleResources());
     }
     
     @Test
     public void testGetManagerBundleResources() {
-        ZosProgramManagerImpl.setManagerBundleResources(bundleResourcesMock);
-        Assert.assertEquals("Error in getManagerBundleResources() method", bundleResourcesMock, ZosProgramManagerImpl.getManagerBundleResources());
+    	Mockito.when(zosProgramManagerSpy.getManagerBundleResources()).thenReturn(bundleResourcesMock);
+        Assert.assertEquals("Error in getManagerBundleResources() method", bundleResourcesMock, zosProgramManagerSpy.getManagerBundleResources());
     }
     
     @Test
     public void testGetRunLoadlib() throws ZosManagerException {
-        ZosProgramManagerImpl.setZosFile(zosFileManagerMock);
         IZosFileHandler zOSFileHandlerMock = Mockito.mock(IZosFileHandler.class);
         Mockito.when(zOSFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenReturn(loadlibMock);
-        Mockito.when(zosFileManagerMock.getZosFileHandler()).thenReturn(zOSFileHandlerMock);
+        Mockito.when(zosFileSpiMock.getZosFileHandler()).thenReturn(zOSFileHandlerMock);
         Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
-        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, ZosProgramManagerImpl.getRunLoadlib(zosImageMock));
+        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, zosProgramManagerSpy.getRunLoadlib(zosImageMock));
 
-        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, ZosProgramManagerImpl.getRunLoadlib(zosImageMock));
+        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, zosProgramManagerSpy.getRunLoadlib(zosImageMock));
 
-        Whitebox.setInternalState(ZosProgramManagerImpl.class, "runLoadlib", (IZosDataset) null);
+        Whitebox.setInternalState(zosProgramManagerSpy, "runLoadlib", (IZosDataset) null);
         Mockito.when(loadlibMock.exists()).thenReturn(true);
-        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, ZosProgramManagerImpl.getRunLoadlib(zosImageMock));
+        Assert.assertEquals("Error in getRunLoadlib() method", loadlibMock, zosProgramManagerSpy.getRunLoadlib(zosImageMock));
 
-        Whitebox.setInternalState(ZosProgramManagerImpl.class, "runLoadlib", (IZosDataset) null);
+        Whitebox.setInternalState(zosProgramManagerSpy, "runLoadlib", (IZosDataset) null);
         Mockito.when(loadlibMock.exists()).thenThrow(new ZosDatasetException("EXCEPTION"));
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("EXCEPTION");
-        ZosProgramManagerImpl.getRunLoadlib(zosImageMock);
+        String expectedMessage = "EXCEPTION";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramManagerSpy.getRunLoadlib(zosImageMock);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
 
     class DummyTestClass {
