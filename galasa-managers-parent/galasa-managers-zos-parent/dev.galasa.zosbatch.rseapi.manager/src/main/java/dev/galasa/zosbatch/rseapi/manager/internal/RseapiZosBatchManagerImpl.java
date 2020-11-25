@@ -67,6 +67,9 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
     private final HashMap<String, RseapiZosBatchImpl> zosBatches = new HashMap<>();
 
     private Path artifactsRoot;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
+    }
     
     private Path archivePath;
     public Path getArchivePath() {
