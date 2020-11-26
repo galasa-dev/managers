@@ -183,6 +183,7 @@ public class TestRseapiZosBatchJobImpl {
         
         Path archivePathMock = newMockedPath(false);
         Mockito.when(zosBatchManagerMock.getArchivePath()).thenReturn(archivePathMock);
+        Mockito.when(zosBatchManagerMock.getArtifactsRoot()).thenReturn(archivePathMock);
         Path currentTestMethodArchiveFolderMock = newMockedPath(false);
         Mockito.when(zosBatchManagerMock.getCurrentTestMethodArchiveFolder()).thenReturn(currentTestMethodArchiveFolderMock);
 
