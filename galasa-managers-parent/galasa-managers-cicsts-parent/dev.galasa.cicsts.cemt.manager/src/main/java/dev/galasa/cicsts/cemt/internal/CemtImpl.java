@@ -6,21 +6,27 @@
 
 package dev.galasa.cicsts.cemt.internal;
 
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.cicsts.cemt.CEMTException;
-import dev.galasa.cicsts.cemt.ICEMT;
-import dev.galasa.zos3270.ITerminal;
+import dev.galasa.cicsts.CemtException;
+import dev.galasa.cicsts.CicstsHashMap;
+import dev.galasa.cicsts.ICemt;
+import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.ICicsTerminal;
 
-public class CEMTImpl implements ICEMT {
+public class CemtImpl implements ICemt {
 
-   private ITerminal terminal;
+   private ICicsTerminal terminal;
+   private ICicsRegion cicsRegion;
    
-   protected HashMap<String, String> getAttributes(String string, String resourceName, HashMap<String, String> map) throws Exception {
+   public CemtImpl(ICicsRegion cicsRegion) {
+      this.cicsRegion = cicsRegion;
+   }
+   
+   protected CicstsHashMap getAttributes(String string, String resourceName, CicstsHashMap map) throws Exception {
      
       Pattern pattern = Pattern.compile("\\w*\\(\\s*[a-zA-z0-9]*\\s*\\)");
       
@@ -64,25 +70,29 @@ public class CEMTImpl implements ICEMT {
    }
    
    @Override
-   public HashMap<String, String> inquireResource(@NotNull ITerminal cemtTerminal,
+   public CicstsHashMap inquireResource(@NotNull ICicsTerminal cemtTerminal,
                                               @NotNull String resourceType,
-                                              @NotNull String resourceName) throws CEMTException{
+                                              @NotNull String resourceName) throws CemtException{
+      
+      if(cicsRegion != this.terminal.getCicsRegion()) {
+         throw new CemtException("CICS Version Mismatch");
+      }
       
       this.terminal = cemtTerminal;
-      HashMap<String, String> returnMap = new HashMap<String, String>();
+      CicstsHashMap returnMap = new CicstsHashMap();
       
       try {
          this.terminal.clear();
          this.terminal.waitForKeyboard();
       }catch(Exception e) {
-         throw new CEMTException("Problem starting transaction", e);
+         throw new CemtException("Problem starting transaction", e);
       }
       
       try {
          terminal.type("CEMT INQUIRE " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
          terminal.waitForTextInField("STATUS: ");
       }catch(Exception e) {
-         throw new CEMTException("Problem with starting CEMT transaction");
+         throw new CemtException("Problem with starting CEMT transaction");
       }
       
       try {
@@ -96,17 +106,17 @@ public class CEMTImpl implements ICEMT {
             return null;  
          }
       }catch(Exception e){
-         throw new CEMTException("Problem determining the result of the CEMT command", e);
+         throw new CemtException("Problem determining the result of the CEMT command", e);
       }
       
       try {
          terminal.tab().waitForKeyboard().enter().waitForKeyboard();
          
          if(!terminal.retrieveScreen().contains("+")) {
-            throw new CEMTException("Problem finding properties");
+            throw new CemtException("Problem finding properties");
          }
       }catch(Exception e) {
-         throw new CEMTException("Problem retrieving properties for resource", e);
+         throw new CemtException("Problem retrieving properties for resource", e);
       }
       
       try {
@@ -130,7 +140,7 @@ public class CEMTImpl implements ICEMT {
          }
         
       }catch(Exception e) {
-         throw new CEMTException("Problem whilst adding resource properties", e);
+         throw new CemtException("Problem whilst adding resource properties", e);
       }
       
       
@@ -140,25 +150,30 @@ public class CEMTImpl implements ICEMT {
          terminal.clear();
          terminal.waitForKeyboard();
       }catch(Exception e) {
-         throw new CEMTException("Unable to return terminal back into reset state", e);
+         throw new CemtException("Unable to return terminal back into reset state", e);
       }
       
-      return returnMap;
+      return null;
       
    }
    
 
    @Override
-   public void setResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType, String resourceName,
-         @NotNull String action, @NotNull String searchText) throws CEMTException {
+   public CicstsHashMap setResource(@NotNull ICicsTerminal cemtTerminal, @NotNull String resourceType, String resourceName,
+         @NotNull String action) throws CemtException {
+      
+      if(cicsRegion != this.terminal.getCicsRegion()) {
+         throw new CemtException("CICS Version Mismatch");
+      }
       
       this.terminal = cemtTerminal;
+      CicstsHashMap returnMap = new CicstsHashMap();
       
       try {
          this.terminal.clear();
          this.terminal.waitForKeyboard();
       }catch(Exception e) {
-         throw new CEMTException("Problem starting transaction", e);
+         throw new CemtException("Problem starting transaction", e);
       }
       
       try {
@@ -174,16 +189,50 @@ public class CEMTImpl implements ICEMT {
          
          terminal.waitForTextInField("STATUS: ");
       }catch(Exception e) {
-         throw new CEMTException("Problem with starting the CEMT transaction", e);
+         throw new CemtException("Problem with starting the CEMT transaction", e);
       }
       
       try {
-         if(!terminal.retrieveScreen().contains(searchText)) {
+         if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
             terminal.pf9().waitForKeyboard();
-            throw new CEMTException("Errors detected whilst setting resource");
+            throw new CemtException("Errors detected whilst setting resource");
          }
       }catch(Exception e) {
-         throw new CEMTException("Problem determining the result from the CEMT command", e);
+         throw new CemtException("Problem determining the result from the CEMT command", e);
+      }
+      
+      try {
+         terminal.tab().waitForKeyboard().enter().waitForKeyboard();
+         
+         if(!terminal.retrieveScreen().contains("+")) {
+            throw new CemtException("Problem finding properties");
+         }
+      }catch(Exception e) {
+         throw new CemtException("Problem retrieving properties for resource", e);
+      }
+      
+      try {
+        
+         String terminalString = terminal.retrieveScreen();
+         
+         returnMap = getAttributes(terminalString, resourceName, returnMap);
+         
+         boolean pageDown = terminalString.contains("+");
+         
+         while(pageDown) {
+            
+            terminal.pf8().waitForKeyboard();
+            terminalString = terminal.retrieveScreen();
+            returnMap = getAttributes(terminalString, resourceName, returnMap);
+            
+            if(terminalString.indexOf("+") == terminalString.lastIndexOf("+")) {
+               pageDown = false;
+            }
+            
+         }
+        
+      }catch(Exception e) {
+         throw new CemtException("Problem whilst adding resource properties", e);
       }
       
       try {
@@ -192,24 +241,21 @@ public class CEMTImpl implements ICEMT {
          terminal.clear();
          terminal.waitForKeyboard();
       }catch(Exception e) {
-         throw new CEMTException("Unable to return terminal back into reset state", e);
+         throw new CemtException("Unable to return terminal back into reset state", e);
       }
       
+      return null;
       
    }
 
-   @Override
-   public void setResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType, @NotNull String resourceName,
-         @NotNull String action) throws CEMTException {
-      this.terminal = cemtTerminal;
-      
-      setResource(cemtTerminal, resourceType, resourceName, action, "RESPONSE: NORMAL");
-      
-   }
 
    @Override
-   public void discardResource(@NotNull ITerminal cemtTerminal, @NotNull String resourceType,
-         @NotNull String resourceName, @NotNull String searchText) throws CEMTException {
+   public void discardResource(@NotNull ICicsTerminal cemtTerminal, @NotNull String resourceType,
+         @NotNull String resourceName) throws CemtException {
+      
+      if(cicsRegion != this.terminal.getCicsRegion()) {
+         throw new CemtException("CICS Version Mismatch");
+      }
       
       this.terminal = cemtTerminal;
       
@@ -217,7 +263,7 @@ public class CEMTImpl implements ICEMT {
             this.terminal.clear();
             this.terminal.waitForKeyboard();
          }catch(Exception e) {
-            throw new CEMTException("Problem starting transaction", e);
+            throw new CemtException("Problem starting transaction", e);
          }
          
          try {
@@ -229,21 +275,21 @@ public class CEMTImpl implements ICEMT {
             
             terminal.waitForTextInField("STATUS: ");
          }catch(Exception e) {
-            throw new CEMTException("Problem with starting the CEMT transaction", e);
+            throw new CemtException("Problem with starting the CEMT transaction", e);
          }
          
          try {
             
-            if(!terminal.retrieveScreen().contains(searchText)) {
+            if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
                terminal.pf9();
                terminal.pf3();
                terminal.waitForKeyboard();
                terminal.clear();
                terminal.waitForKeyboard();
-               throw new CEMTException("Errors detected whilst setting resource");
+               throw new CemtException("Errors detected whilst setting resource");
             }
          }catch(Exception e) {
-            throw new CEMTException("Problem determining the result from the CEMT command");
+            throw new CemtException("Problem determining the result from the CEMT command");
          }
          
          try {
@@ -252,14 +298,19 @@ public class CEMTImpl implements ICEMT {
             terminal.clear();
             terminal.waitForKeyboard();
          }catch(Exception e) {
-            throw new CEMTException("Unable to return terminal back into reset state", e);
+            throw new CemtException("Unable to return terminal back into reset state", e);
          }
+         
       
    }
 
    @Override
-   public boolean performSystemProperty(@NotNull ITerminal cemtTerminal, @NotNull String systemArea,
-         @NotNull String setRequest, @NotNull String expectedResponse) throws CEMTException {
+   public boolean performSystemProperty(@NotNull ICicsTerminal cemtTerminal, @NotNull String systemArea,
+         @NotNull String setRequest, @NotNull String expectedResponse) throws CemtException {
+      
+      if(cicsRegion != this.terminal.getCicsRegion()) {
+         throw new CemtException("CICS Version Mismatch");
+      }
       
       this.terminal = cemtTerminal;
       
@@ -267,7 +318,7 @@ public class CEMTImpl implements ICEMT {
          this.terminal.clear();
          this.terminal.waitForKeyboard();
       }catch(Exception e) {
-         throw new CEMTException("Problem starting transaction", e);
+         throw new CemtException("Problem starting transaction", e);
       }
       
       String cemtCmd = "CEMT PERFORM " + systemArea + " ";
@@ -277,7 +328,7 @@ public class CEMTImpl implements ICEMT {
          terminal.type(cemtCmd).enter().waitForKeyboard();
          boolean success = terminal.retrieveScreen().contains(expectedResponse);
          if(!success) {
-            throw new CEMTException("Expected Response from CEMT PERFORM not found. Expected: "
+            throw new CemtException("Expected Response from CEMT PERFORM not found. Expected: "
          + expectedResponse);
          }else { 
 
@@ -287,7 +338,7 @@ public class CEMTImpl implements ICEMT {
                terminal.clear();
                terminal.waitForKeyboard();
             }catch(Exception e) {
-               throw new CEMTException("Unable to return terminal back into reset state", e);
+               throw new CemtException("Unable to return terminal back into reset state", e);
             }
             
             return success;
@@ -295,11 +346,15 @@ public class CEMTImpl implements ICEMT {
          }
          
       }catch(Exception e) {
-         throw new CEMTException(e);
+         throw new CemtException(e);
       }
       
      
    }
+
+
+
+
 
    
    
