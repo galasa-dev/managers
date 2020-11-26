@@ -65,6 +65,7 @@ public class CEDAManagerIVT {
 		cedaTerminal.waitForKeyboard();
 		cemtTerminal.clear();
 		cemtTerminal.waitForKeyboard();
+	
 	}
 	@Before
 	public void before() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
