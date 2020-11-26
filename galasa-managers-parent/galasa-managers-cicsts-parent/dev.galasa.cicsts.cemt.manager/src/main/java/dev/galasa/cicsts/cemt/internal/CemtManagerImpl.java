@@ -37,6 +37,10 @@ public class CemtManagerImpl extends AbstractManager implements ICemtManagerSpi,
    @Override
    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
        super.initialise(framework, allManagers, activeManagers, galasaTest);
+       
+       if(galasaTest.isJava()) {
+          youAreRequired(allManagers, activeManagers);
+       }
    }
    
    
