@@ -33,7 +33,7 @@ public class CedaImpl implements ICeda{
             @NotNull String resourceName, @NotNull String groupName, String resourceParameters) throws CedaException{
 		
 		if(cicsRegion != terminal.getCicsRegion()) {
-			 throw new CedaException("Version collition");
+			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
 		this.terminal = terminal;
@@ -85,7 +85,7 @@ public class CedaImpl implements ICeda{
 	@Override
 	public void installGroup(@NotNull ICicsTerminal terminal, @NotNull String groupName) throws CedaException {
 		if(cicsRegion != terminal.getCicsRegion()) {
-			 throw new CedaException("Version collition");
+			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
 		this.terminal = terminal;
@@ -132,7 +132,7 @@ public class CedaImpl implements ICeda{
 			throws CedaException {
 
 		if(cicsRegion != terminal.getCicsRegion()) {
-			 throw new CedaException("Version collition");
+			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
 		this.terminal = terminal;
@@ -190,7 +190,7 @@ public class CedaImpl implements ICeda{
 	@Override
 	public void deleteGroup(@NotNull ICicsTerminal terminal, @NotNull String groupName) throws CedaException {
 		if(cicsRegion != terminal.getCicsRegion()) {
-			 throw new CedaException("Version collition");
+			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
 		this.terminal = terminal;
@@ -237,7 +237,7 @@ public class CedaImpl implements ICeda{
 			throws CedaException {
 
 		if(cicsRegion != terminal.getCicsRegion()) {
-			 throw new CedaException("Version collition");
+			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
 		this.terminal = terminal;
