@@ -177,6 +177,7 @@ public class TestZosmfZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchManagerMock, "archivePath", archivePathMock);
         Mockito.when(zosBatchManagerMock.getCurrentTestMethodArchiveFolder()).thenReturn(archivePathMock);
         Mockito.when(zosBatchManagerMock.getArchivePath()).thenReturn(archivePathMock);
+        Mockito.when(zosBatchManagerMock.getArtifactsRoot()).thenReturn(archivePathMock);
 
         PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
         Mockito.when(zosBatchManagerMock.getZosmfManager()).thenReturn(zosmfManagerMock);

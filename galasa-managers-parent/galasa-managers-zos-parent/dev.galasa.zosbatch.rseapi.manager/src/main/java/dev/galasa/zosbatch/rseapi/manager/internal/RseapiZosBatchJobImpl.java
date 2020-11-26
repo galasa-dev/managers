@@ -332,10 +332,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         if (jobOutput() == null) {
             retrieveOutput();
         }
-        Path artifactPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
-        String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
-        artifactPath = artifactPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, folderName));
-        logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {

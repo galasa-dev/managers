@@ -124,6 +124,7 @@ public class TestRseapiZosBatchManagerImpl {
     	Path artifactsRootMock = Mockito.mock(Path.class);
     	Mockito.when(artifactsRootMock.toString()).thenReturn("artifactsRootMock");
     	Whitebox.setInternalState(zosBatchManagerSpy, "artifactsRoot", artifactsRootMock);
+    	Assert.assertEquals("Error in getArtifactsRoot() method", artifactsRootMock, zosBatchManagerSpy.getArtifactsRoot());
     	Path archivePathMock = Mockito.mock(Path.class);
     	Mockito.when(archivePathMock.toString()).thenReturn("archivePathMock");
     	Whitebox.setInternalState(zosBatchManagerSpy, "archivePath", archivePathMock);
