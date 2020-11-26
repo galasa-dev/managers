@@ -17,14 +17,13 @@ import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.ceda.CEDA;
 import dev.galasa.cicsts.ceda.CEDAException;
 import dev.galasa.cicsts.ceda.ICEDA;
-import dev.galasa.cicsts.cemt.CEMT;
-import dev.galasa.cicsts.cemt.CEMTException;
-import dev.galasa.cicsts.cemt.ICEMT;
+import dev.galasa.cicsts.CemtException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -46,9 +45,6 @@ public class CEMTManagerIVT {
    
    @CicsTerminal
    public ICicsTerminal beforeTerminal;
-   
-   @CEMT
-   public ICEMT cemt;
    
    @CEDA
    public ICEDA ceda;
@@ -90,7 +86,7 @@ public class CEMTManagerIVT {
    
    
    @Test
-   public void testInquireResource() throws CEMTException, CEDAException, InterruptedException{
+   public void testInquireResource() throws CemtException, CEDAException, InterruptedException{
       
       if(cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
          ceda.createResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup", null);
@@ -103,7 +99,7 @@ public class CEMTManagerIVT {
    }
    
    @Test
-   public void testInquireResourceThatDoesntExist() throws CEMTException, InterruptedException, CEDAException {
+   public void testInquireResourceThatDoesntExist() throws CemtException, InterruptedException, CEDAException {
       
       if(cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
          ceda.createResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup", null);
@@ -120,7 +116,7 @@ public class CEMTManagerIVT {
   
                           
    @Test
-   public void testResourceIsRetrievingProperties() throws CEMTException, CEDAException{
+   public void testResourceIsRetrievingProperties() throws CemtException, CEDAException{
             
       if(cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
          ceda.createResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup", null);
@@ -140,9 +136,9 @@ public class CEMTManagerIVT {
    }
    
    @Test
-   public void testDiscardResource() throws CEMTException, CEDAException, InterruptedException {
+   public void testDiscardResource() throws CemtException, CEDAException, InterruptedException {
       
-      if(cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
+      if(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
          ceda.createResource(cedaTerminal, "PROGRAM","EXAMPLE", "exGroup", null);
          ceda.installResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup");
       }else {
@@ -157,20 +153,20 @@ public class CEMTManagerIVT {
    }
    
    @Test
-   public void testSetResource() throws CEMTException, CEDAException{
+   public void testSetResource() throws CemtException, CEDAException{
       
       if(cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE") == null) {
          ceda.createResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup", null);
          ceda.installResource(cedaTerminal, "PROGRAM", "EXAMPLE", "exGroup");
       }
       
-      HashMap<String, String> resource = cemt.inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
+      HashMap<String, String> resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
       
       if(!resource.get("Status").equals("Disabled")) {
-         cemt.setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "DISABLED");
+         cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "DISABLED");
          assertThat(resource.get("Status").equals("Disabled"));
       }else {
-         cemt.setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "ENABLED");
+         cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "ENABLED");
          assertThat(resource.get("Status").equals("Enabled"));
       }
    
@@ -179,18 +175,18 @@ public class CEMTManagerIVT {
    
    
    @Test
-   public void testDiscardResourceThatDoesntExist() throws CEMTException, InterruptedException {
+   public void testDiscardResourceThatDoesntExist() throws CemtException, InterruptedException {
       
       assertThatThrownBy(() -> {
-         cemt.discardResource(cemtTerminal, "PROGRAM", "EXAMPLE", "RESPONSE: NORMAL");
-      }).isInstanceOf(CEMTException.class).hasMessageContaining("Problem determining the result from the CEMT command");
+         cics.cemt().discardResource(cemtTerminal, "PROGRAM", "EXAMPLE");
+      }).isInstanceOf(CemtException.class).hasMessageContaining("Problem determining the result from the CEMT command");
  
    }
    
    @Test
-   public void testPerformSystemProperty() throws CEMTException, InterruptedException {
+   public void testPerformSystemProperty() throws InterruptedException, CicstsManagerException {
 
-      assertThat(cemt.performSystemProperty(cemtTerminal, "DUMP", "DUMPCODE(TEST) TITLE(TESTING)", "RESPONSE: NORMAL"));
+      assertThat(cics.cemt().performSystemProperty(cemtTerminal, "DUMP", "DUMPCODE(TEST) TITLE(TESTING)", "RESPONSE: NORMAL"));
       
    }
    

@@ -14,6 +14,7 @@ import dev.galasa.zos3270.ITerminal;
 
 public interface ICemt {
 
+   
 
     /** 
      * Inquire a CEMT resource using the resource type and name.
@@ -28,7 +29,7 @@ public interface ICemt {
      * @throws CemtException if resource not found.
      */
 
-    
+
 
     public CicstsHashMap inquireResource(@NotNull ICicsTerminal cemtTerminal,
                                                    @NotNull String resourceType,
@@ -65,7 +66,7 @@ public interface ICemt {
      * @throws CemtException
      */
 
-    public CicstsHashMap discardResource(@NotNull ICicsTerminal cemtTerminal,
+    public void discardResource(@NotNull ICicsTerminal cemtTerminal,
                                @NotNull String resourceType,
                                @NotNull String resourceName) throws CemtException;
     
