@@ -5,6 +5,7 @@
  */
 package dev.galasa.cicsts.internal.properties;
 
+import java.util.Iterator;
 import java.util.List;
 
 import dev.galasa.cicsts.CicstsManagerException;
@@ -23,7 +24,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.required No
  * 
- * @galasa.default None
+ * @galasa.default dev.galasa.cicsts.ceci.manager,dev.galasa.cicsts.ceda.manager,dev.galasa.cicsts.cemt.manager
  * 
  * @galasa.valid_values bundle symbolic names comma separated
  * 
@@ -34,7 +35,23 @@ public class ExtraBundles extends CpsProperties {
 
     public static List<String> get() throws CicstsManagerException {
         try {
-            return getStringList(CicstsPropertiesSingleton.cps(), "extra", "bundles");
+            List<String> list = getStringList(CicstsPropertiesSingleton.cps(), "extra", "bundles");
+
+            if (list.isEmpty()) {
+                list.add("dev.galasa.cicsts.ceci.manager");
+                list.add("dev.galasa.cicsts.ceda.manager");
+                list.add("dev.galasa.cicsts.cemt.manager");
+            } else {
+                Iterator<String> i = list.iterator();
+                while(i.hasNext()) {
+                    String bundle = i.next();
+                    if (bundle.equalsIgnoreCase("none")) {
+                        i.remove();
+                    }
+                }
+            }
+            
+            return list;
         } catch (ConfigurationPropertyStoreException e) {
             throw new CicstsManagerException("Problem asking CPS for the CICS TS extra bundles", e); 
         }
