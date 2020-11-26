@@ -18,12 +18,14 @@ public interface IZosBatchJob {
      * <li>{@link #INPUT}</li>
      * <li>{@link #ACTIVE}</li>
      * <li>{@link #OUTPUT}</li>
+     * <li>{@link #NOTFOUND}</li>
      * <li>{@link #UNKNOWN}</li>
      */
     public enum JobStatus {
     	INPUT("INPUT"),
     	ACTIVE("ACTIVE"),
     	OUTPUT("OUTPUT"),
+    	NOTFOUND("NOTFOUND"),
     	UNKNOWN("UNKNOWN");
     	
     	private String value;
@@ -149,11 +151,12 @@ public interface IZosBatchJob {
     public void purge() throws ZosBatchException;
 
     /**
-     * Save the job output to the Test Results Archive.<br><b>NOTE: This is done automatically if the test submitted the job.
+     * Save the job output to the Results Archive Store
      * 
+     * @param rasPath path in Results Archive Store  
      * @throws ZosBatchException
      */
-    public void saveOutputToResultsArchive() throws ZosBatchException;
+    public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException;
 
     /**
      * Set flag to control if the job output should be stored to the test output. Defaults to true

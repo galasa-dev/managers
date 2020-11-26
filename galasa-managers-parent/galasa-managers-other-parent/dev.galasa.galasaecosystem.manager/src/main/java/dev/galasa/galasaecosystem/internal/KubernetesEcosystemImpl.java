@@ -370,9 +370,10 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
             storeCpsProperty("zos.image.SIMBANK.telnet.tls", "false");
             storeCpsProperty("zos.image.SIMBANK.credentials", "SIMBANK");
 
-            storeCpsProperty("zosmf.server.SIMBANK.images", "SIMBANK");
-            storeCpsProperty("zosmf.server.SIMBANK.hostname", this.simbankManagementFacilityUrl.getHost());
-            storeCpsProperty("zosmf.server.SIMBANK.port", Integer.toString(this.simbankManagementFacilityUrl.getPort()));
+            storeCpsProperty("zosmf.image.SIMBANK.servers", "MFSIMBANK");
+            storeCpsProperty("zosmf.server.MFSIMBANK.port", Integer.toString(this.simbankManagementFacilityUrl.getPort()));
+            storeCpsProperty("zosmf.server.MFSIMBANK.https", "false");
+            storeCpsProperty("zosmf.server.MFSIMBANK.image", "SIMBANK");
 
             storeCpsProperty("simbank.dse.instance.name","SIMBANK");
             storeCpsProperty("simbank.instance.SIMBANK.zos.image","SIMBANK");

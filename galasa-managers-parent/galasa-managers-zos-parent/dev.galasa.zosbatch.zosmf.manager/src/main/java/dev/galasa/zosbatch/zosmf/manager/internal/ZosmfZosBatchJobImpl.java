@@ -50,6 +50,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
 public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     private IZosmfRestApiProcessor zosmfApiProcessor;
+	private ZosmfZosBatchManagerImpl zosBatchManager;
     
     private IZosImage jobImage;
     private IZosBatchJobname jobname;
@@ -75,6 +76,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
     private boolean shouldArchive = true;
+	private Path testMethodArchiveFolder;
     
     private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
@@ -97,7 +99,8 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     private static final Log logger = LogFactory.getLog(ZosmfZosBatchJobImpl.class);
 
-    public ZosmfZosBatchJobImpl(IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
+    public ZosmfZosBatchJobImpl(ZosmfZosBatchManagerImpl zosBatchManager, IZosImage jobImage, IZosBatchJobname jobname, String jcl, ZosBatchJobcard jobcard) throws ZosBatchException {
+    	this.zosBatchManager = zosBatchManager;
         this.jobImage = jobImage;
         this.jobname = jobname;
         if (jobcard != null) {
@@ -105,30 +108,29 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         } else {
             this.jobcard = new ZosBatchJobcard();
         }
+        this.testMethodArchiveFolder = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
         if (jcl != null) {
-        	Path artifactPath = ZosmfZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
         	try {
-				ZosmfZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(ZosmfZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, this.jobname.getName() + "_supplied_JCL")), jcl, ResultArchiveStoreContentType.TEXT);
+        		this.zosBatchManager.getZosManager().storeArtifact(testMethodArchiveFolder.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(testMethodArchiveFolder, this.jobname.getName() + "_supplied_JCL")), jcl, ResultArchiveStoreContentType.TEXT);
 			} catch (ZosManagerException e) {
 				throw new ZosBatchException(e);
 			}
             this.jcl = parseJcl(jcl);
 
             try {
-                this.useSysaff = ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyUseSysaff(this.jobImage.getImageID());
+                this.useSysaff = this.zosBatchManager.getZosManager().getZosBatchPropertyUseSysaff(this.jobImage.getImageID());
             } catch (ZosBatchManagerException e) {
                 throw new ZosBatchException("Unable to get use SYSAFF property value", e);
             }
         }
-        
         try {
-            this.jobWaitTimeout = ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyJobWaitTimeout(this.jobImage.getImageID());
+            this.jobWaitTimeout = this.zosBatchManager.getZosManager().getZosBatchPropertyJobWaitTimeout(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get job timeout property value", e);
         }
         
         try {
-            this.zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(jobImage, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
+            this.zosmfApiProcessor = this.zosBatchManager.getZosmfManager().newZosmfRestApiProcessor(jobImage, this.zosBatchManager.getZosManager().getZosBatchPropertyBatchRestrictToImage(jobImage.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -161,7 +163,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             this.type = jsonNull(responseBody, PROP_TYPE);
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
-            logger.info("JOB " + this + " Submitted");
+            logger.info("JOB " + this.toString() + " Submitted");
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString("Submit job", responseBody); 
@@ -324,16 +326,12 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     @Override
-    public void saveOutputToResultsArchive() throws ZosBatchException {
-    	if (!shouldArchive()) {
-    		throw new ZosBatchException("shouldArchive flag is false");
-    	}
+    public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException {
         if (jobOutput() == null) {
             retrieveOutput();
         }
-        Path artifactPath = ZosmfZosBatchManagerImpl.getCurrentTestMethodArchiveFolder();
-        String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
-        artifactPath = artifactPath.resolve(ZosmfZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, folderName));
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
@@ -352,10 +350,9 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             }
             name.append("_");
             name.append(spoolFile.getDdname());
-            logger.info("        " + name);
-            String fileName = ZosmfZosBatchManagerImpl.zosManager.buildUniquePathName(artifactPath, name.toString());
+            String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
             try {
-				ZosmfZosBatchManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
+				this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
 			} catch (ZosManagerException e) {
 				throw new ZosBatchException(e);
 			}
@@ -386,7 +383,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = ZosmfZosBatchManagerImpl.zosManager.newZosBatchJobOutput(this.jobname.getName(), this.jobid);
+        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
@@ -498,14 +495,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         
     @Override
     public String toString() {
-        if (!isPurged()) {
-            try {
-                updateJobStatus();
-            } catch (ZosBatchException e) {
-                logger.error(e);
-            }
-        }
-        return jobStatus();        
+    	return this.jobname.getName() + "(" + this.getJobId() + ")";
     }
 
     public boolean submitted() {
@@ -576,14 +566,14 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             } else {
                 this.retcode = StringUtils.repeat(QUERY, 4);
             }
-            logger.debug(jobStatus());
+            logger.trace(jobStatus());
         } else {
             if (response.getStatusCode() == HttpStatus.SC_BAD_REQUEST &&
                     jsonZero(responseBody, PROP_RC) == 4 &&
                     jsonZero(responseBody, PROP_REASON) == 10) {
-                logger.warn("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
+                logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
-                this.statusString = null;
+                this.statusString = JobStatus.NOTFOUND.toString();
             } else {
                 // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
                 String displayMessage = buildErrorString("Update job status", responseBody); 
@@ -646,7 +636,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     protected String parseJcl(String jcl) throws ZosBatchException {
         boolean truncateJCLRecords;
         try {
-            truncateJCLRecords = ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyTruncateJCLRecords(this.jobImage.getImageID());
+            truncateJCLRecords = this.zosBatchManager.getZosManager().getZosBatchPropertyTruncateJCLRecords(this.jobImage.getImageID());
         } catch (ZosBatchManagerException e) {
             throw new ZosBatchException("Unable to get trucate JCL records property value", e);
         }
@@ -712,7 +702,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             jclWithJobcard.append("\n");
         }
         
-        logger.info("JOBCARD:\n" + jclWithJobcard.toString());
         jclWithJobcard.append(jcl);
         if (!jclWithJobcard.toString().endsWith("\n")) {
             jclWithJobcard.append("\n");
@@ -783,7 +772,9 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
     protected void archiveJobOutput() throws ZosBatchException {
     	if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
-            saveOutputToResultsArchive();
+            String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+            Path rasPath = this.testMethodArchiveFolder.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(testMethodArchiveFolder, folderName));
+            saveOutputToResultsArchive(rasPath.toString());
         }
     }
 }

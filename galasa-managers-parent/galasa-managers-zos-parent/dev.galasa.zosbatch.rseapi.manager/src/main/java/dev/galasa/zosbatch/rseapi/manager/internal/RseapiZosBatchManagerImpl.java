@@ -53,32 +53,32 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
 
     private static final String PROVISIONING = "provisioning";
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        RseapiZosBatchManagerImpl.zosManager = zosManager;
+    private IZosManagerSpi zosManager;
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
     
-    protected static IRseapiManagerSpi rseapiManager;
-    public static void setRseapiManager(IRseapiManagerSpi rseapiManager) {
-        RseapiZosBatchManagerImpl.rseapiManager = rseapiManager;
+    private IRseapiManagerSpi rseapiManager;
+    public IRseapiManagerSpi getRseapiManager() {
+        return this.rseapiManager;
     }
 
     private final HashMap<String, RseapiZosBatchImpl> taggedZosBatches = new HashMap<>();
     private final HashMap<String, RseapiZosBatchImpl> zosBatches = new HashMap<>();
 
     private Path artifactsRoot;
-    
-    protected static Path archivePath;
-    public static void setArchivePath(Path archivePath) {
-        RseapiZosBatchManagerImpl.archivePath = archivePath;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
     }
     
-    protected static String currentTestMethodArchiveFolderName;
-    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        RseapiZosBatchManagerImpl.currentTestMethodArchiveFolderName = folderName;
+    private Path archivePath;
+    public Path getArchivePath() {
+        return this.archivePath;
     }
-    public static Path getCurrentTestMethodArchiveFolder() {
-        return archivePath.resolve(currentTestMethodArchiveFolderName);
+    
+    private String currentTestMethodArchiveFolderName;
+    public Path getCurrentTestMethodArchiveFolder() {
+        return this.archivePath.resolve(this.currentTestMethodArchiveFolderName);
     }
     
     /* (non-Javadoc)
@@ -98,7 +98,9 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
             }
         }
         
-        artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        this.artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
     
 
@@ -122,11 +124,11 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosBatchManagerException("The zOS Manager is not available");
         }
-        setRseapiManager(addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class));
+        this.rseapiManager = addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class);
         if (rseapiManager == null) {
             throw new ZosBatchManagerException("The RSE API Manager is not available");
         }
@@ -146,27 +148,16 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
     /*
      * (non-Javadoc)
      * 
-     * @see dev.galasa.framework.spi.IManager#provisionStart()
-     */
-    @Override
-    public void provisionStart() throws ManagerException, ResourceUnavailableException {
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("preTest");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
-        cleanup();
-        setArchivePath(artifactsRoot.resolve(ZOSBATCH_JOBS));
+        cleanup(false);
+        this.archivePath = artifactsRoot.resolve(ZOSBATCH_JOBS);
         if (galasaMethod.getJavaTestMethod() != null) {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaExecutionMethod().getName());
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
     }
 
@@ -177,7 +168,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      */
     @Override
     public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup();
+        cleanup(false);
         
         return null;
     }
@@ -190,9 +181,9 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      */
     @Override
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
-        setArchivePath(artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS));
-        setCurrentTestMethodArchiveFolderName("postTest");
-        cleanup();
+        this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
+        this.currentTestMethodArchiveFolderName = "postTest";
+        cleanup(false);
         
         return null;
     }
@@ -205,18 +196,18 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
     @Override
     public void endOfTestRun() {
         try {
-            cleanup();
+            cleanup(true);
         } catch (ZosBatchException e) {
             logger.error("Problem in endOfTestRun()", e);
         }
     }
     
-    protected void cleanup() throws ZosBatchException {
+    protected void cleanup(boolean endOfTest) throws ZosBatchException {
         for (Entry<String, RseapiZosBatchImpl> entry : this.taggedZosBatches.entrySet()) {
-            entry.getValue().cleanup();
+            entry.getValue().cleanup(endOfTest);
         }
         for (Entry<String, RseapiZosBatchImpl> entry : this.zosBatches.entrySet()) {
-            entry.getValue().cleanup();
+            entry.getValue().cleanup(endOfTest);
         }
     }
     
@@ -233,7 +224,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
         }
 
         IZosImage image = zosManager.getImageForTag(tag);
-        IZosBatch zosBatch = new RseapiZosBatchImpl(image);
+        IZosBatch zosBatch = new RseapiZosBatchImpl(this, image);
         this.taggedZosBatches.put(tag, (RseapiZosBatchImpl) zosBatch);
         
         return zosBatch;
@@ -254,11 +245,11 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
         return newZosBatchJobname(image);
     }
 
-    protected static IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+    protected IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
         return zosManager.newZosBatchJobname(image);
     }
 
-    protected static IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
+    protected IZosBatchJobname newZosBatchJobname(String name) throws ZosBatchException {
         return zosManager.newZosBatchJobname(name);
     }
 
@@ -267,7 +258,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
         if (zosBatches.containsKey(image.getImageID())) {
             return zosBatches.get(image.getImageID());
         } else {
-            RseapiZosBatchImpl zosBatch = new RseapiZosBatchImpl(image);
+            RseapiZosBatchImpl zosBatch = new RseapiZosBatchImpl(this, image);
             zosBatches.put(image.getImageID(), zosBatch);
             return zosBatch;
         }

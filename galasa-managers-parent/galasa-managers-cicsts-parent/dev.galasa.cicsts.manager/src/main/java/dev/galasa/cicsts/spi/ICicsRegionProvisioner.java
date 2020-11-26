@@ -19,4 +19,12 @@ public interface ICicsRegionProvisioner {
 
     void cicsProvisionGenerate() throws ManagerException, ResourceUnavailableException;
 
+    void cicsProvisionBuild() throws ManagerException, ResourceUnavailableException;
+
+    void cicsProvisionStart() throws ManagerException, ResourceUnavailableException;
+
+    void cicsProvisionStop();
+
+    void cicsProvisionDiscard();
+
 }

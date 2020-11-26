@@ -42,10 +42,12 @@ import dev.galasa.zosmf.ZosmfManagerException;
 public class ZosmfZosBatchImpl implements IZosBatch {
     
     private List<ZosmfZosBatchJobImpl> zosBatchJobs = new ArrayList<>();
+	private ZosmfZosBatchManagerImpl zosBatchManager;
     private IZosImage image;
     private static final Log logger = LogFactory.getLog(ZosmfZosBatchImpl.class);
     
-    public ZosmfZosBatchImpl(IZosImage image) {
+    public ZosmfZosBatchImpl(ZosmfZosBatchManagerImpl zosBatchManager, IZosImage image) {
+    	this.zosBatchManager = zosBatchManager;
         this.image = image;
     }
     
@@ -58,7 +60,7 @@ public class ZosmfZosBatchImpl implements IZosBatch {
     public @NotNull IZosBatchJob submitJob(@NotNull String jcl, IZosBatchJobname jobname, ZosBatchJobcard jobcard) throws ZosBatchException {
         if (jobname == null) {
             try {
-				jobname = ZosmfZosBatchManagerImpl.newZosBatchJobname(this.image);
+				jobname = this.zosBatchManager.newZosBatchJobname(this.image);
 			} catch (ZosBatchManagerException e) {
 				throw new ZosBatchException(e);
 			}
@@ -68,7 +70,7 @@ public class ZosmfZosBatchImpl implements IZosBatch {
             jobcard = new ZosBatchJobcard();
         }
         
-        ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.image, jobname, jcl, jobcard);
+        ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.zosBatchManager, this.image, jobname, jcl, jobcard);
         this.zosBatchJobs.add(zosBatchJob);
         
         return zosBatchJob.submitJob();
@@ -90,17 +92,19 @@ public class ZosmfZosBatchImpl implements IZosBatch {
      * Clean up any existing batch jobs
      * @throws ZosBatchException
      */
-    public void cleanup() throws ZosBatchException {
-        
+    public void cleanup(boolean endOfTest) throws ZosBatchException {        
         Iterator<ZosmfZosBatchJobImpl> iterator = zosBatchJobs.iterator();
         while (iterator.hasNext()) {
             ZosmfZosBatchJobImpl zosBatchJobImpl = iterator.next();
             try {
 				if (zosBatchJobImpl.submitted()) {
 				    if (!zosBatchJobImpl.isComplete()) {
-				        zosBatchJobImpl.cancel();
-				        zosBatchJobImpl.archiveJobOutput();
-				        zosBatchJobImpl.purge();
+				    	if (endOfTest) {
+				    		zosBatchJobImpl.cancel();
+				    		zosBatchJobImpl.archiveJobOutput();
+				    		zosBatchJobImpl.purge();
+				            iterator.remove();
+				    	}
 				    } else {
 				        if (!zosBatchJobImpl.isArchived()) {
 				            zosBatchJobImpl.archiveJobOutput();
@@ -108,19 +112,19 @@ public class ZosmfZosBatchImpl implements IZosBatch {
 				        if (!zosBatchJobImpl.isPurged()) {
 				            zosBatchJobImpl.purge();
 				        }
+			            iterator.remove();
 				    }
 				}
 			} catch (ZosBatchException e) {
 				logger.error("Problem in cleanup phase", e);
 			}
-            iterator.remove();
         }
     }
 
     protected List<IZosBatchJob> getBatchJobs(String suppliedJobname, String suppliedOwner) throws ZosBatchException {
         IZosmfRestApiProcessor zosmfApiProcessor;
         try {
-            zosmfApiProcessor = ZosmfZosBatchManagerImpl.zosmfManager.newZosmfRestApiProcessor(image, ZosmfZosBatchManagerImpl.zosManager.getZosBatchPropertyBatchRestrictToImage(image.getImageID()));
+            zosmfApiProcessor = this.zosBatchManager.getZosmfManager().newZosmfRestApiProcessor(image, this.zosBatchManager.getZosManager().getZosBatchPropertyBatchRestrictToImage(image.getImageID()));
         } catch (ZosmfManagerException | ZosBatchManagerException e) {
             throw new ZosBatchException(e);
         }
@@ -157,8 +161,8 @@ public class ZosmfZosBatchImpl implements IZosBatch {
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject responseBody = jsonElement.getAsJsonObject();
                 String jobnameString = responseBody.get("jobname").getAsString();
-                IZosBatchJobname jobname = ZosmfZosBatchManagerImpl.newZosBatchJobname(jobnameString);
-                ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.image, jobname, null, null);
+                IZosBatchJobname jobname = this.zosBatchManager.newZosBatchJobname(jobnameString);
+                ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.zosBatchManager, this.image, jobname, null, null);
                 zosBatchJob.setJobid(responseBody.get("jobid").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());
                 zosBatchJob.setType(responseBody.get("type").getAsString());

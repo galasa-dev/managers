@@ -28,6 +28,7 @@ import dev.galasa.zos3270.internal.datastream.OrderCarrageReturn;
 import dev.galasa.zos3270.internal.datastream.OrderEndOfMedium;
 import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
+import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
@@ -810,6 +811,9 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderEndOfMedium.ID:
                         order = new OrderEndOfMedium();
+                        break;
+                    case OrderGraphicsEscape.ID:
+                        order = new OrderGraphicsEscape(buffer);
                         break;
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });

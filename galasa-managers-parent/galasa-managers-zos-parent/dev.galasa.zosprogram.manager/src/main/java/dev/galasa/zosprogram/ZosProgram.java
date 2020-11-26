@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
-import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.internal.ZosProgramManagerField;
 
 /**

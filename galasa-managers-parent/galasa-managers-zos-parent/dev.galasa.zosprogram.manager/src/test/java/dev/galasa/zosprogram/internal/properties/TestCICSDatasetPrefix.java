@@ -10,9 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,9 +30,6 @@ public class TestCICSDatasetPrefix {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String IMAGE_ID = "IMAGE";
     private static final String PREFIX = "PREFIX";
     private static final List<String> PREFIX_LIST = Arrays.asList(PREFIX);
@@ -47,10 +42,11 @@ public class TestCICSDatasetPrefix {
     
     @Test
     public void testEmpty() throws Exception {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Required property zosprogram.cics.[imageid].dataset.prefix not supplied");
-        
-        getProperty(Collections.emptyList());
+        String expectedMessage = "Required property zosprogram.cics.[imageid].dataset.prefix not supplied";
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	getProperty(Collections.emptyList());
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -60,10 +56,11 @@ public class TestCICSDatasetPrefix {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOS program CICS dataset prefix for zOS image " + IMAGE_ID);
-        
-        getProperty(Arrays.asList("ANY"), true);
+        String expectedMessage = "Problem asking the CPS for the zOS program CICS dataset prefix for zOS image " + IMAGE_ID;
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	getProperty(Arrays.asList("ANY"), true);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private List<String> getProperty(List<String> prefixList) throws Exception {

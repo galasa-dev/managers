@@ -100,8 +100,9 @@ public class CEMTImpl implements ICEMT {
       }
       
       try {
-         terminal.tab().enter().waitForKeyboard();
-         if(!terminal.retrieveScreen().contains("Program(" + resourceName.toUpperCase() + ")")) {
+         terminal.tab().waitForKeyboard().enter().waitForKeyboard();
+         
+         if(!terminal.retrieveScreen().contains("+")) {
             throw new CEMTException("Problem finding properties");
          }
       }catch(Exception e) {

@@ -23,6 +23,8 @@ public interface ITerminal {
 
     ITerminal waitForKeyboard() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
 
+    ITerminal wfk() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException;
+
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
             throws TextNotFoundException, KeyboardLockedException;
 
@@ -54,6 +56,8 @@ public interface ITerminal {
     ITerminal verifyTextInField(String string) throws TextNotFoundException;
 
     boolean isTextInField(String string);
+
+    boolean isTextInField(String string, long timeoutInMilliseconds) throws TerminalInterruptedException;
 
     ITerminal type(String typeText) throws FieldNotFoundException, KeyboardLockedException;
     
