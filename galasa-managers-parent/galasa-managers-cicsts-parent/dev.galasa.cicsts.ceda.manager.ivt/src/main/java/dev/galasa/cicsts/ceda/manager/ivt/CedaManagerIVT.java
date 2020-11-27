@@ -107,7 +107,7 @@ public class CedaManagerIVT {
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 			if (response) {
 				response=false;
-				assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName).get("response")=="RESPONSE: NORMAL");
+				cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
 
 				if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 
@@ -155,7 +155,7 @@ public class CedaManagerIVT {
 
 			if (response) {
 				response=false;
-				assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName).get("response")=="RESPONSE: NORMAL");
+				cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
 
 				if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 
@@ -203,7 +203,7 @@ public class CedaManagerIVT {
 
 			if (response) {
 				response=false;
-				assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName).get("response")=="RESPONSE: NORMAL");
+				cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
 
 				if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 
@@ -255,9 +255,9 @@ public class CedaManagerIVT {
 		if(result) {
 			result=false;
 			cics.ceda().deleteGroup(cedaTerminal, groupName);
-			assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName).get("response")=="RESPONSE: NORMAL");
-			assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName2).get("response")=="RESPONSE: NORMAL");
-			assertThat(cics.cemt().discardResource(cemtTerminal, resourceType, resourceName3).get("response")=="RESPONSE: NORMAL");
+			cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
+			cics.cemt().discardResource(cemtTerminal, resourceType, resourceName2);
+			cics.cemt().discardResource(cemtTerminal, resourceType, resourceName3);
 			assertThatThrownBy(() ->{
 				cics.ceda().installGroup(cedaTerminal, groupName);
 			}).isInstanceOf(CedaException.class).hasMessageContaining("Problem determining the result from the CEDA command");
