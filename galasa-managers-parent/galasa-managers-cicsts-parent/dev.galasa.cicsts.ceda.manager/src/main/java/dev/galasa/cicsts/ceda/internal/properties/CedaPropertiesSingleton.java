@@ -9,13 +9,13 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import dev.galasa.cicsts.ceda.CEDAManagerException;
+import dev.galasa.cicsts.CedaManagerException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 
-@Component(service=CEDAPropertiesSingleton.class, immediate=true)
-public class CEDAPropertiesSingleton {
-    private static CEDAPropertiesSingleton singletonInstance;
-    private static void setInstance(CEDAPropertiesSingleton instance) {
+@Component(service=CedaPropertiesSingleton.class, immediate=true)
+public class CedaPropertiesSingleton {
+    private static CedaPropertiesSingleton singletonInstance;
+    private static void setInstance(CedaPropertiesSingleton instance) {
         singletonInstance = instance;
     }
     
@@ -31,21 +31,21 @@ public class CEDAPropertiesSingleton {
         setInstance(null);
     }
     
-    public static IConfigurationPropertyStoreService cps() throws CEDAManagerException {
+    public static IConfigurationPropertyStoreService cps() throws CedaManagerException {
         if (singletonInstance != null) {
             return singletonInstance.cps;
         }
         
-        throw new CEDAManagerException("Attempt to access manager CPS before it has been initialised");
+        throw new CedaManagerException("Attempt to access manager CPS before it has been initialised");
     }
     
-    public static void setCps(IConfigurationPropertyStoreService cps) throws CEDAManagerException {
+    public static void setCps(IConfigurationPropertyStoreService cps) throws CedaManagerException {
         if (singletonInstance != null) {
             singletonInstance.cps = cps;
             return;
         }
         
-        throw new CEDAManagerException("Attempt to set manager CPS before instance created");
+        throw new CedaManagerException("Attempt to set manager CPS before instance created");
     }
     
 }

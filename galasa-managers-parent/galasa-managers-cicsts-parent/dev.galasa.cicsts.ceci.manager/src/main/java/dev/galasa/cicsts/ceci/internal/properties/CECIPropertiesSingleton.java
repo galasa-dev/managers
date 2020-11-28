@@ -9,7 +9,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import dev.galasa.cicsts.ceci.CECIManagerException;
+import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 
 @Component(service=CECIPropertiesSingleton.class, immediate=true)
@@ -32,20 +32,20 @@ public class CECIPropertiesSingleton {
         setInstance(null);
     }
     
-    public static IConfigurationPropertyStoreService cps() throws CECIManagerException {
+    public static IConfigurationPropertyStoreService cps() throws CeciManagerException {
         if (singletonInstance != null) {
             return singletonInstance.cps;
         }
         
-        throw new CECIManagerException("Attempt to access manager CPS before it has been initialised");
+        throw new CeciManagerException("Attempt to access manager CPS before it has been initialised");
     }
     
-    public static void setCps(IConfigurationPropertyStoreService cps) throws CECIManagerException {
+    public static void setCps(IConfigurationPropertyStoreService cps) throws CeciManagerException {
         if (singletonInstance != null) {
             singletonInstance.cps = cps;
             return;
         }
         
-        throw new CECIManagerException("Attempt to set manager CPS before instance created");
+        throw new CeciManagerException("Attempt to set manager CPS before instance created");
     }
 }

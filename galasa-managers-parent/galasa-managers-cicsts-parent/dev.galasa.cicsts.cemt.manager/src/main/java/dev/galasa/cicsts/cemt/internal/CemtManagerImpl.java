@@ -7,7 +7,7 @@
 package dev.galasa.cicsts.cemt.internal;
 
 import dev.galasa.framework.spi.AbstractManager;
-
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -20,9 +20,11 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.cicsts.CemtManagerException;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICemt;
 import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.cemt.internal.properties.CemtPropertiesSingleton;
 import dev.galasa.cicsts.cemt.spi.spi.ICemtManagerSpi;
 import dev.galasa.cicsts.spi.ICemtProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
@@ -37,6 +39,12 @@ public class CemtManagerImpl extends AbstractManager implements ICemtManagerSpi,
    @Override
    public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
        super.initialise(framework, allManagers, activeManagers, galasaTest);
+       
+       try {
+          CemtPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+      } catch (ConfigurationPropertyStoreException e) {
+          throw new CemtManagerException("Unable to request framework services", e);
+      }
        
        if(galasaTest.isJava()) {
           youAreRequired(allManagers, activeManagers);
