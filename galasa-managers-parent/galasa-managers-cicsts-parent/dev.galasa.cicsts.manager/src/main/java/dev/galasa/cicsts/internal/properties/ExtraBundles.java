@@ -5,6 +5,7 @@
  */
 package dev.galasa.cicsts.internal.properties;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,16 +39,13 @@ public class ExtraBundles extends CpsProperties {
             List<String> list = getStringList(CicstsPropertiesSingleton.cps(), "extra", "bundles");
 
             if (list.isEmpty()) {
+                list = new ArrayList<>(3);
                 list.add("dev.galasa.cicsts.ceci.manager");
                 list.add("dev.galasa.cicsts.ceda.manager");
                 list.add("dev.galasa.cicsts.cemt.manager");
-            } else {
-                Iterator<String> i = list.iterator();
-                while(i.hasNext()) {
-                    String bundle = i.next();
-                    if (bundle.equalsIgnoreCase("none")) {
-                        i.remove();
-                    }
+            } else if (list.size() == 1) {
+                if (list.get(0).equalsIgnoreCase("none")) {
+                    return new ArrayList<>(0);
                 }
             }
             
