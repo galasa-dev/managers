@@ -5,10 +5,10 @@
  */
 package dev.galasa.cicsts.ceci.internal;
 
-import dev.galasa.cicsts.ceci.CECIException;
-import dev.galasa.cicsts.ceci.IResponseOutputValue;
+import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.ICeciResponseOutputValue;
 
-public class ResponseOutputValueImpl implements IResponseOutputValue {
+public class ResponseOutputValueImpl implements ICeciResponseOutputValue {
 
     private Object value;
     public ResponseOutputValueImpl(Object value) {
@@ -34,17 +34,17 @@ public class ResponseOutputValueImpl implements IResponseOutputValue {
     }
 
     @Override
-    public int getIntValue() throws CECIException {
+    public int getIntValue() throws CeciException {
         if (!(value instanceof Integer)) {
-            throw new CECIException("Value is " + value.getClass().getName() + " type");
+            throw new CeciException("Value is " + value.getClass().getName() + " type");
         }
         return (int) value;
     }
 
     @Override
-    public long getLongValue() throws CECIException {
+    public long getLongValue() throws CeciException {
         if (!(value instanceof Long)) {
-            throw new CECIException("Value is " + value.getClass().getName() + " type");
+            throw new CeciException("Value is " + value.getClass().getName() + " type");
         }
         return (long) value;
     }
