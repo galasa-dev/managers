@@ -51,7 +51,7 @@ public @interface ZosProgram {
     String location() default "resources";
     
     /**
-     * The programming language. See {@link ZosProgram.Language}
+     * The programming language. See <a href="https://javadoc-snapshot.galasa.dev/dev/galasa/zosprogram/ZosProgram.Language.html" target="_blank" rel="noopener noreferrer">ZosProgram.Language</a>. <br><br> 
      */
     Language language();
     

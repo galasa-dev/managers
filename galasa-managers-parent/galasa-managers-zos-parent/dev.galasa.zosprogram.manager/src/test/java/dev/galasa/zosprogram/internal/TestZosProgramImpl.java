@@ -7,13 +7,12 @@ package dev.galasa.zosprogram.internal;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,7 +30,6 @@ import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
-import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
@@ -60,6 +58,9 @@ public class TestZosProgramImpl {
     private IZosManagerSpi zosManagerMock;
     
     @Mock
+    private ZosProgramManagerImpl zosProgramManagerMock;
+    
+    @Mock
     private IZosFileSpi zosFileManagerMock;
     
     @Mock
@@ -81,13 +82,7 @@ public class TestZosProgramImpl {
     private IBundleResources bundleResourcesMock;
 
     @Mock
-    private ZosProgramManagerImpl zosBatchManagerMock;
-
-    @Mock
     private IZosBatch zosBatchMock;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_TAG = "TAG";
 
@@ -109,14 +104,14 @@ public class TestZosProgramImpl {
 
     @Before
     public void setup() throws Exception {
-        ZosProgramManagerImpl.setZosManager(zosManagerMock);
+    	Mockito.when(zosProgramManagerMock.getZosManager()).thenReturn(zosManagerMock);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
-        ZosProgramManagerImpl.setZosFile(zosFileManagerMock);
+    	Mockito.when(zosProgramManagerMock.getZosFile()).thenReturn(zosFileManagerMock);
         Mockito.when(zosFileManagerMock.getZosFileHandler()).thenReturn(zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenReturn(loadlibMock);
         Mockito.when(loadlibMock.toString()).thenReturn(LOADLIB_NAME);
         
-        zosProgram = new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
+        zosProgram = new ZosProgramImpl(zosProgramManagerMock, fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
         zosProgramSpy = Mockito.spy(zosProgram);
     }
     
@@ -124,13 +119,14 @@ public class TestZosProgramImpl {
     public void testConstructors() throws ZosManagerException {
         Assert.assertEquals("Error in constructor", loadlibMock, zosProgramSpy.getLoadlib());
         
-        ZosProgramImpl zosProgram2 = new ZosProgramImpl(zosImageMock, NAME, SOURCE, LANGUAGE, CICS, LOADLIB_NAME);
+        ZosProgramImpl zosProgram2 = new ZosProgramImpl(zosProgramManagerMock, zosImageMock, NAME, SOURCE, LANGUAGE, CICS, LOADLIB_NAME);
         Assert.assertEquals("Error in constructor", loadlibMock, zosProgram2.getLoadlib());
 
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
-        exceptionRule.expect(ZosProgramException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        new ZosProgramImpl(fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
+        ZosProgramException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramException.class, ()->{
+        	new ZosProgramImpl(zosProgramManagerMock, fieldMock, IMAGE_TAG, NAME, LOCATION, LANGUAGE, CICS, LOADLIB_NAME, true);
+        });
+    	Assert.assertEquals("exception should contain expected cause", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -175,14 +171,16 @@ public class TestZosProgramImpl {
         Assert.assertEquals("Error in setLoadlib()", loadlibMock, zosProgramSpy.getLoadlib());
         
         Mockito.when(zosFileManagerMock.getZosFileHandler()).thenThrow(new ZosFileManagerException());
-        exceptionRule.expect(ZosProgramException.class);
-        exceptionRule.expectMessage("Unable to instantiate loadlib data set object");
-        zosProgramSpy.setLoadlib(LOADLIB_NAME);
+        String expectedMessage = "Unable to instantiate loadlib data set object";
+        ZosProgramException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramException.class, ()->{
+        	zosProgramSpy.setLoadlib(LOADLIB_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testLoadProgramSource() throws ZosProgramException, TestBundleResourceException, IOException {
-        ZosProgramManagerImpl.setTestBundleResources(testBundleResourcesMock);
+    	Mockito.when(zosProgramManagerMock.getTestBundleResources()).thenReturn(testBundleResourcesMock);
         Mockito.when(testBundleResourcesMock.retrieveFileAsString(Mockito.any())).thenReturn(SOURCE);
         zosProgramSpy.loadProgramSource();
         Assert.assertEquals("Error in loadProgramSource()", SOURCE, zosProgramSpy.getProgramSource());
@@ -196,9 +194,11 @@ public class TestZosProgramImpl {
         Assert.assertEquals("Error in loadProgramSource()", SOURCE, zosProgramSpy.getProgramSource());
 
         Mockito.when(testBundleResourcesMock.retrieveFileAsString(Mockito.any())).thenThrow(new IOException());
-        exceptionRule.expect(ZosProgramException.class);
-        exceptionRule.expectMessage("Problem loading program source");
-        zosProgramSpy.loadProgramSource();
+        String expectedMessage = "Problem loading program source";
+        ZosProgramException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramException.class, ()->{
+        	zosProgramSpy.loadProgramSource();
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -218,17 +218,19 @@ public class TestZosProgramImpl {
         PowerMockito.mockStatic(CICSDatasetPrefix.class);
         Mockito.when(CICSDatasetPrefix.get(Mockito.any())).thenReturn(Arrays.asList());
         Mockito.when(bundleResourcesMock.streamAsString(Mockito.any())).thenReturn(JCL);
-        ZosProgramManagerImpl.setManagerBundleResources(bundleResourcesMock);
-        ZosProgramManagerImpl.setTestBundleResources(bundleResourcesMock);
-        IZosBatchSpi zosBatchSpiMock = Mockito.mock(IZosBatchSpi.class);
-        ZosProgramManagerImpl.setZosBatch(zosBatchSpiMock);
-        Mockito.when(ZosProgramManagerImpl.getZosBatch(Mockito.any())).thenReturn(zosBatchMock);
+        Mockito.when(zosProgramManagerMock.getManagerBundleResources()).thenReturn(bundleResourcesMock);
+        Mockito.when(zosProgramManagerMock.getZosBatchForImage(Mockito.any())).thenReturn(zosBatchMock);
         Mockito.when(zosBatchJobMock.getRetcode()).thenReturn("CC 0000");
         IZosBatchJobname zosJobnameMock = Mockito.mock(IZosBatchJobname.class);
         Mockito.when(zosJobnameMock.getName()).thenReturn("JOBNAME");
         Mockito.when(zosBatchJobMock.getJobname()).thenReturn(zosJobnameMock);
         Mockito.when(zosBatchJobMock.getJobId()).thenReturn("JOBID");
         Mockito.when(zosBatchMock.submitJob(Mockito.any(), Mockito.isNull())).thenReturn(zosBatchJobMock);
+        Mockito.when(zosProgramManagerMock.getTestBundleResources()).thenReturn(bundleResourcesMock);
+        Mockito.when(zosManagerMock.buildUniquePathName(Mockito.any(), Mockito.any())).thenReturn("path/name");
+        Path archivePathMock = Mockito.mock(Path.class);
+        Mockito.when(zosProgramManagerMock.getArchivePath()).thenReturn(archivePathMock);
+        Mockito.when(archivePathMock.resolve(Mockito.anyString())).thenReturn(archivePathMock);
         Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
 
         Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.COBOL);
@@ -241,9 +243,11 @@ public class TestZosProgramImpl {
         Assert.assertEquals("Error in compile() method", zosProgramSpy, zosProgramSpy.compile());
 
         Mockito.when(zosProgramSpy.getLanguage()).thenReturn(Language.INVALID);
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Invalid program language: " + Language.INVALID);
-        zosProgramSpy.compile();
+        String expectedMessage = "Invalid program language: " + Language.INVALID;
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	zosProgramSpy.compile();
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -141,6 +141,8 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
     private int idcamsRc;
     
     private DatasetDataType dataType = DatasetDataType.TEXT;
+
+    private boolean shouldArchive = true;
 
     private static int temporaryQualifierCounter = 0;
 
@@ -341,6 +343,9 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
     }
 
     public void saveToResultsArchive() throws ZosVSAMDatasetException {
+    	if (!shouldArchive()) {
+    		throw new ZosVSAMDatasetException("shouldArchive flag is false");
+    	}
         try {
             if (exists()) {
             	Path artifactPath = RseapiZosFileManagerImpl.getVsamDatasetCurrentTestMethodArchiveFolder();
@@ -793,6 +798,16 @@ public class RseapiZosVSAMDatasetImpl implements IZosVSAMDataset {
         }
         return getListcatOutput();
     }
+
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}
 
     protected RseapiZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;

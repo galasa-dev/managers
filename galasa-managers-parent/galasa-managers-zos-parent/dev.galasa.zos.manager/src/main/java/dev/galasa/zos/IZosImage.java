@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zos;
 
@@ -27,20 +27,28 @@ public interface IZosImage {
      */
     @NotNull
     String getImageID();
+
+    /**
+     * Get the name of the SYSNAME zOS Image. Defaults to image id
+     * 
+     * @return The SYSNAME, never null
+     */
+    @NotNull
+    String getSysname();
     
     /**
      * Get the name of the Sysplex this Image belongs to
      * 
-     * @return the sysplex id, can be null if the image is not in a sysplex (defined by the presence of an attached Coupling Facility)
+     * @return the sysplex id, if the sysplexid has not been defined, the imageid will be returned
      */
+    @NotNull
     String getSysplexID();
     
     /**
      * Get the name of the Cluster this Image belongs to
      * 
-     *  @return a non-null String representing the cluster the image was allocated from 
+     *  @return a String representing the cluster the image was allocated from, if it was provisioned from a cluster
      */
-    @NotNull
     String getClusterID();
 
     /**

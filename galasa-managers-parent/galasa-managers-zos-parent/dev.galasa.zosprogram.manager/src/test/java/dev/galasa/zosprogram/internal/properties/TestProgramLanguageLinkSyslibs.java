@@ -10,9 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,9 +30,6 @@ public class TestProgramLanguageLinkSyslibs {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     private static final String PREFIX = "PREFIX";
@@ -58,10 +53,11 @@ public class TestProgramLanguageLinkSyslibs {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosProgramManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOS program COBOL custom link syslibs for zOS image " + IMAGE_ID);
-        
-        getProperty(Arrays.asList("ANY"), Language.COBOL, true);
+        String expectedMessage = "Problem asking the CPS for the zOS program COBOL custom link syslibs for zOS image " + IMAGE_ID;
+        ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
+        	getProperty(Arrays.asList("ANY"), Language.COBOL, true);
+        });
+    	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private List<String> getProperty(List<String> prefixList, Language language) throws Exception {

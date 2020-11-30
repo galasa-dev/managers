@@ -5,13 +5,8 @@
  */
 package dev.galasa.zosrseapi;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
@@ -22,102 +17,60 @@ public class TestEnumsAndExeptions {
     
     private static final String EXCEPTION_CAUSE = "exception-cause";
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
-    private Matcher<? extends Throwable> cause = new BaseMatcher<Throwable>() {
-
-        @Override
-        public boolean matches(Object item) {
-            return item.getClass().equals(Exception.class);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("\"" + EXCEPTION_CAUSE + "\"");
-        }
-    };
-    
     @Test
-    public void testZosmfRequestType() {
-        Assert.assertEquals("Problem with ZosmfRequestType", "DELETE", RseapiRequestType.DELETE.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "GET", RseapiRequestType.GET.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "POST", RseapiRequestType.POST.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "POST_JSON", RseapiRequestType.POST_JSON.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "PUT", RseapiRequestType.PUT.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "PUT_JSON", RseapiRequestType.PUT_JSON.toString());
-        Assert.assertEquals("Problem with ZosmfRequestType", "PUT_TEXT", RseapiRequestType.PUT_TEXT.toString());
+    public void testRseapiRequestType() {
+        Assert.assertEquals("Problem with RseapiRequestType", "DELETE", RseapiRequestType.DELETE.getRequestType());
+        Assert.assertEquals("Problem with RseapiRequestType", "GET", RseapiRequestType.GET.getRequestType());
+        Assert.assertEquals("Problem with RseapiRequestType", "POST", RseapiRequestType.POST_JSON.getRequestType());
+        Assert.assertEquals("Problem with RseapiRequestType", "PUT", RseapiRequestType.PUT_TEXT.getRequestType());
+        Assert.assertEquals("Problem with RseapiRequestType", "PUT", RseapiRequestType.PUT_JSON.getRequestType());
     }
     
     @Test
-    public void testZosmfException1() throws RseapiException {
-        exceptionRule.expect(RseapiException.class);
-        throw new RseapiException();
+    public void testRseapiException1() throws RseapiException {
+    	Assert.assertThrows(RseapiManagerException.class, ()->{
+        	throw new RseapiException();
+        });
     }
     
     @Test
-    public void testZosmfException2() throws RseapiException {
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new RseapiException(EXCEPTION_MESSAGE);
+    public void testRseapiException2() throws RseapiException {
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
+        	throw new RseapiException(EXCEPTION_MESSAGE);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
-    public void testZosmfException3() throws RseapiException {
-        exceptionRule.expect(RseapiException.class);        
-        exceptionRule.expectCause(cause);
-        throw new RseapiException(new Exception(EXCEPTION_CAUSE));
+    public void testRseapiException3() throws RseapiException {
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
+        	throw new RseapiException(new Exception(EXCEPTION_CAUSE));
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
-    public void testZosmfException4() throws RseapiException {
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    public void testRseapiException4() throws RseapiException {
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
+        	throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
-    public void testZosmfException5() throws RseapiException {
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    public void testRseapiException5() throws RseapiException {
+    	RseapiManagerException expectedException = Assert.assertThrows(RseapiManagerException.class, ()->{
+        	throw new RseapiException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosManagerException1() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        throw new ZosManagerException();
-    }
-    
-    @Test
-    public void testZosManagerException2() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new ZosManagerException(EXCEPTION_MESSAGE);
-    }
-    
-    @Test
-    public void testZosManagerException3() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);        
-        exceptionRule.expectCause(cause);
-        throw new ZosManagerException(new Exception(EXCEPTION_CAUSE));
-    }
-    
-    @Test
-    public void testZosManagerException4() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
-    }
-    
-    @Test
-    public void testZosManagerException5() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	Assert.assertThrows(ZosManagerException.class, ()->{
+        	throw new ZosManagerException();
+        });
     }
 }

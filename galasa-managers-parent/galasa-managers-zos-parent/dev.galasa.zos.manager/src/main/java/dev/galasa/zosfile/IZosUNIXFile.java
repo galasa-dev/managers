@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile;
 
@@ -149,4 +149,14 @@ public interface IZosUNIXFile {
      * @throws ZosUNIXFileException
      */
     public String getAttributesAsString() throws ZosUNIXFileException;
+
+    /**
+     * Set flag to control if the content of the zOS UNIX path should be stored to the test output. Defaults to true
+     */    
+    public void setShouldArchive(boolean shouldArchive);
+
+    /**
+     * Return flag that controls if the content of the zOS UNIX path should be stored to the test output
+     */    
+    public boolean shouldArchive();
 }

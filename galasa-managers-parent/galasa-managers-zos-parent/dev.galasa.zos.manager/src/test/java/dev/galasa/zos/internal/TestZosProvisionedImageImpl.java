@@ -29,12 +29,14 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicResource;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.internal.properties.ImageMaxSlots;
+import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AbstractManager.class, ZosIpHostImpl.class, ImageMaxSlots.class, LogFactory.class})
+@PrepareForTest({AbstractManager.class, ZosIpHostImpl.class, ImageMaxSlots.class, LogFactory.class, ZosPropertiesSingleton.class, CpsProperties.class})
 public class TestZosProvisionedImageImpl {
 
     private ZosProvisionedImageImpl zosProvisionedImage;
@@ -58,6 +60,9 @@ public class TestZosProvisionedImageImpl {
 
     @Mock
     private IDynamicResource dynamicResourceMock;
+    
+    @Mock
+    private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
 
     @Mock
     private Log logMock;
@@ -121,6 +126,10 @@ public class TestZosProvisionedImageImpl {
         PowerMockito.doReturn(DEFAULT_CREDENTIALS_ID).when(AbstractManager.class, "defaultString", ArgumentMatchers.contains(DEFAULT_CREDENTIALS_ID), Mockito.anyString());
         PowerMockito.doReturn(IPV4_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV4_HOSTNAME));
         PowerMockito.doReturn(IPV6_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV6_HOSTNAME));
+        PowerMockito.spy(ZosPropertiesSingleton.class);
+        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosPropertiesSingleton.class, "cps");
+        PowerMockito.spy(CpsProperties.class);
+        PowerMockito.doReturn(IMAGE_ID).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         PowerMockito.mockStatic(ImageMaxSlots.class);
         

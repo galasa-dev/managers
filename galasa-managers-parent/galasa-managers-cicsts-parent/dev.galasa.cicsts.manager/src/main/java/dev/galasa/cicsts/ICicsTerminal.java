@@ -12,5 +12,7 @@ public interface ICicsTerminal extends ITerminal {
     ICicsRegion getCicsRegion();
 
     boolean connectToCicsRegion() throws CicstsManagerException;
+    
+    ICicsTerminal resetAndClear() throws CicstsManagerException;
 
 }

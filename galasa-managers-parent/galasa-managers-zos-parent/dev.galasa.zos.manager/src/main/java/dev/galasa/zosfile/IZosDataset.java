@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile;
 
@@ -358,7 +358,7 @@ public interface IZosDataset {
      * Store the content of the partitioned data set member with the test output
      * @throws ZosDatasetException
      */
-    public void memberSaveToTestArchive(@NotNull String memberName) throws ZosDatasetException;
+    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException;
     
     /**
      * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content
@@ -586,4 +586,14 @@ public interface IZosDataset {
      * @throws @ZosDatasetException
      */
     public String getAttibutesAsString() throws ZosDatasetException;
+
+    /**
+     * Set flag to control if the content of the data set should be stored to the test output. Defaults to true
+     */    
+    public void setShouldArchive(boolean shouldArchive);
+
+    /**
+     * Return flag that controls if the content of the data set should be stored to the test output
+     */    
+    public boolean shouldArchive();
 }

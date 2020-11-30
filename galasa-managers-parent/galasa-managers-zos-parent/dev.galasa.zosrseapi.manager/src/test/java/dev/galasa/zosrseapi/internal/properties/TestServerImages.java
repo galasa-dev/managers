@@ -9,9 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,9 +29,6 @@ public class TestServerImages {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String CLUSTER_ID = "CLUSTER";
     
     @Test
@@ -44,9 +39,11 @@ public class TestServerImages {
     
     @Test
     public void testNull() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Value for RSE API server images property not configured for zOS cluster "  + CLUSTER_ID);
-        getProperty(null);
+        String expectedMessage = "Value for RSE API server images property not configured for zOS cluster "  + CLUSTER_ID;
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -62,10 +59,11 @@ public class TestServerImages {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the RSE API server images property for zOS cluster " + CLUSTER_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the RSE API server images property for zOS cluster " + CLUSTER_ID;
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private List<String> getProperty(String value) throws Exception {

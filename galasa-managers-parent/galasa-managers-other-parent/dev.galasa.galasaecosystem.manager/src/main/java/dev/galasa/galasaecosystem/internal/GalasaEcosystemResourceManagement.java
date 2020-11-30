@@ -54,7 +54,7 @@ public class GalasaEcosystemResourceManagement implements IResourceManagementPro
 	public void start() {
 		this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(runResourceMonitor, 
 				this.framework.getRandom().nextInt(20),
-				1, 
+				60, 
 				TimeUnit.SECONDS);
 	}
 

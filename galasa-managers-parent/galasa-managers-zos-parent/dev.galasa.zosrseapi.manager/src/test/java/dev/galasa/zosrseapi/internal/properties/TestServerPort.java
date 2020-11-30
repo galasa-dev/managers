@@ -6,9 +6,7 @@
 package dev.galasa.zosrseapi.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestServerPort {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String IMAGE_ID = "IMAGE";
     
     @Test
@@ -47,32 +42,38 @@ public class TestServerPort {
     
     @Test
     public void testInvalidString() throws Exception {
-        exceptionRule.expect(NumberFormatException.class);
-        exceptionRule.expectMessage("For input string: \"XXX\"");
-        
-        getProperty("XXX");
+        String expectedMessage = "For input string: \"XXX\"";
+        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
+        	getProperty("XXX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInvalidTooSmall() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Invalid value (-1) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535");
-        getProperty("-1");
+        String expectedMessage = "Invalid value (-1) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty("-1");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInvalidTooBig() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Invalid value (65536) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535");
-        getProperty("65536");
+        String expectedMessage = "Invalid value (65536) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty("65536");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the RSE API server port property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the RSE API server port property for zOS image " + IMAGE_ID;
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

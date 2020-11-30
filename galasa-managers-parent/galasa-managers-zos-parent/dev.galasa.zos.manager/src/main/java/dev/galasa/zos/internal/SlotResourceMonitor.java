@@ -93,7 +93,7 @@ public class SlotResourceMonitor implements Runnable {
                 }
             }
         } catch(Exception e) {
-            logger.error("Failed to delete ports for run " + runName);
+            logger.error("Failed to delete slots for run " + runName);
         }
     }
 

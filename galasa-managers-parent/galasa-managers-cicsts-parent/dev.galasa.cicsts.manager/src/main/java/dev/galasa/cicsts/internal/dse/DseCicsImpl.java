@@ -7,6 +7,7 @@ package dev.galasa.cicsts.internal.dse;
 
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
+import dev.galasa.cicsts.MasType;
 import dev.galasa.cicsts.internal.CicstsManagerImpl;
 import dev.galasa.cicsts.internal.properties.DseVersion;
 import dev.galasa.cicsts.spi.BaseCicsImpl;
@@ -18,7 +19,7 @@ public class DseCicsImpl extends BaseCicsImpl {
 
     public DseCicsImpl(CicstsManagerImpl cicstsManager, String cicsTag, IZosImage image, String applid)
             throws CicstsManagerException {
-        super(cicstsManager, cicsTag, image, applid);
+        super(cicstsManager, cicsTag, image, applid, MasType.NONE);
     }
 
     @Override
@@ -41,7 +42,5 @@ public class DseCicsImpl extends BaseCicsImpl {
 
         return this.version;
     }
-
-
 
 }

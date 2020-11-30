@@ -5,8 +5,7 @@
  */
 package dev.galasa.cicsts.ceci.internal;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -14,24 +13,28 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.cicsts.ceci.CECI;
-import dev.galasa.cicsts.ceci.CECIManagerException;
-import dev.galasa.cicsts.ceci.ICECI;
+import dev.galasa.cicsts.CeciManagerException;
+import dev.galasa.cicsts.CicstsManagerException;
+import dev.galasa.cicsts.ICeci;
+import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ceci.internal.properties.CECIPropertiesSingleton;
 import dev.galasa.cicsts.ceci.spi.spi.ICECIManagerSpi;
+import dev.galasa.cicsts.spi.ICeciProvider;
+import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
-import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class })
-public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi {
+public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi, ICeciProvider {
     
-    protected static final String NAMESPACE = "cicsts";
+    protected static final String NAMESPACE = "ceci";
+    private ICicstsManagerSpi cicstsManager;
+    
+    private HashMap<ICicsRegion, ICeci> regionCecis = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -42,16 +45,11 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi 
         try {
             CECIPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
-            throw new CECIManagerException("Unable to request framework services", e);
+            throw new CeciManagerException("Unable to request framework services", e);
         }
 
         if(galasaTest.isJava()) {
-            //*** Check to see if any of our annotations are present in the test class
-            //*** If there is,  we need to activate
-            List<AnnotatedField> ourFields = findAnnotatedFields(CECIManagerField.class);
-            if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
-            }
+            youAreRequired(allManagers, activeManagers);
         }
     }
 
@@ -74,10 +72,23 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi 
         }
 
         activeManagers.add(this);
+        
+        cicstsManager = addDependentManager(allManagers, activeManagers, ICicstsManagerSpi.class);
+        if(cicstsManager == null) {
+           throw new CicstsManagerException("CICS Manager is not available");
+        }
+        
+        cicstsManager.registerCeciProvider(this);
+
     }
     
-    @GenerateAnnotatedField(annotation=CECI.class)
-    public ICECI generateCECI(Field field, List<Annotation> annotations) {
-        return new CECIImpl();
+    @Override
+    public @NotNull ICeci getCeci(ICicsRegion cicsRegion) {
+        ICeci ceci = this.regionCecis.get(cicsRegion);
+        if (ceci == null) {
+            ceci = new CECIImpl(this, cicsRegion);
+            this.regionCecis.put(cicsRegion, ceci);
+        }
+        return ceci;
     }
 }

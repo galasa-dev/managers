@@ -18,12 +18,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
-import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -42,6 +39,7 @@ import dev.galasa.framework.spi.ras.ResultArchiveStorePath;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosbatch.IZosBatchJob.JobStatus;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
@@ -55,7 +53,7 @@ import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({RseapiZosBatchManagerImpl.class, LogFactory.class})
+@PrepareForTest({LogFactory.class})
 public class TestRseapiZosBatchJobImpl {
     
     private RseapiZosBatchJobImpl zosBatchJob;
@@ -85,6 +83,9 @@ public class TestRseapiZosBatchJobImpl {
     private RseapiManagerImpl rseapiManagerMock;
     
     @Mock
+    private RseapiZosBatchManagerImpl zosBatchManagerMock;
+    
+    @Mock
     private IRseapiRestApiProcessor rseapiApiProcessorMock;
     
     @Mock
@@ -108,6 +109,8 @@ public class TestRseapiZosBatchJobImpl {
     @Mock
     private ResultArchiveStorePath resultArchiveStorePathMock;
 
+    private static final String FIXED_PATH_NAME = "PATH/NAME";
+
     private static final String FIXED_IMAGE_ID = "IMAGE";
 
     private static final String FIXED_JOBNAME = "GAL45678";
@@ -128,7 +131,7 @@ public class TestRseapiZosBatchJobImpl {
 
 	private static final String FIXED_DDNAME = "DDNAME";
 
-	private static final Object FIXED_STEPNAME = "STEP";
+	private static final String FIXED_STEPNAME = "STEP";
 
 	private static final String FIXED_PROCSTEP = "PROCSTEP";
 
@@ -136,8 +139,7 @@ public class TestRseapiZosBatchJobImpl {
 
 	private static final String FIXED_PATH = "PATH";
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+	private static final String EXCEPTION = "exception";
 
     @Before
     public void setup() throws Exception {
@@ -179,64 +181,70 @@ public class TestRseapiZosBatchJobImpl {
         
         Mockito.when(zosManagerMock.newZosBatchJobOutput(Mockito.any(), Mockito.any())).thenReturn(zosBatchJobOutputMock);        
         
-        RseapiZosBatchManagerImpl.setArchivePath(newMockedPath(false));
-        RseapiZosBatchManagerImpl.setCurrentTestMethodArchiveFolderName(TestRseapiZosBatchJobImpl.class.getDeclaredMethod("setup").getName());
+        Path archivePathMock = newMockedPath(false);
+        Mockito.when(zosBatchManagerMock.getArchivePath()).thenReturn(archivePathMock);
+        Mockito.when(zosBatchManagerMock.getArtifactsRoot()).thenReturn(archivePathMock);
+        Path currentTestMethodArchiveFolderMock = newMockedPath(false);
+        Mockito.when(zosBatchManagerMock.getCurrentTestMethodArchiveFolder()).thenReturn(currentTestMethodArchiveFolderMock);
 
         PowerMockito.doReturn(rseapiApiProcessorMock).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        RseapiZosBatchManagerImpl.setRseapiManager(rseapiManagerMock);
-        RseapiZosBatchManagerImpl.setZosManager(zosManagerMock);
+        Mockito.when(zosBatchManagerMock.getRseapiManager()).thenReturn(rseapiManagerMock);
+        Mockito.when(zosBatchManagerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosManagerMock.buildUniquePathName(Mockito.any(), Mockito.any())).thenReturn(FIXED_PATH_NAME);
         
         Mockito.when(zosBatchJobcardMock.getJobcard(Mockito.any(), Mockito.any())).thenReturn(FIXED_JOBCARD);
         
-        zosBatchJob = new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", zosBatchJobcardMock);
+        zosBatchJob = new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", zosBatchJobcardMock);
         zosBatchJobSpy = Mockito.spy(zosBatchJob);
     }
-    
+
     @Test
     public void testConstructor() throws ZosBatchException {
         Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
         
-        zosBatchJob = new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        zosBatchJob = new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", null);
         Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
         
-        zosBatchJob = new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, null, null);
+        zosBatchJob = new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, null, null);
         Assert.assertEquals("getJobname() should return the supplied job name", FIXED_JOBNAME, zosBatchJobSpy.getJobname().getName());
     }
     
     @Test
     public void testConstructorJobWaitTimeoutException() throws ZosBatchManagerException {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Unable to get job timeout property value");
-        Mockito.when(zosManagerMock.getZosBatchPropertyJobWaitTimeout(Mockito.anyString())).thenThrow(new ZosBatchManagerException("exception"));
-        
-        new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        String expectedMessage = "Unable to get job timeout property value";
+        Mockito.when(zosManagerMock.getZosBatchPropertyJobWaitTimeout(Mockito.anyString())).thenThrow(new ZosBatchManagerException(EXCEPTION));
+    	ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+    		new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", null);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testConstructorUseSysaffException() throws ZosBatchManagerException {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Unable to get use SYSAFF property value");
-        Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
-        
-        new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        String expectedMessage = "Unable to get use SYSAFF property value";
+        Mockito.when(zosManagerMock.getZosBatchPropertyUseSysaff(Mockito.any())).thenThrow(new ZosBatchManagerException(EXCEPTION));
+    	ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+    		new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", null);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testConstructorRestrictToImageException() throws ZosBatchManagerException {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("exception");
-        Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException("exception"));
-        
-        new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        Mockito.when(zosManagerMock.getZosBatchPropertyBatchRestrictToImage(Mockito.any())).thenThrow(new ZosBatchManagerException(EXCEPTION));
+    	ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+    		new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", null);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testConstructorStoreArtifactException() throws ZosManagerException {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("exception");
-        PowerMockito.doThrow(new ZosManagerException("exception")).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
-        
-        new RseapiZosBatchJobImpl(zosImageMock, zosJobnameMock, "JCL", null);
+        PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+    	ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+    		new RseapiZosBatchJobImpl(zosBatchManagerMock, zosImageMock, zosJobnameMock, "JCL", null);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -246,11 +254,11 @@ public class TestRseapiZosBatchJobImpl {
         zosBatchJobSpy.setJobid(FIXED_JOBID);
         Assert.assertEquals("getJobId() should return the supplied value", FIXED_JOBID, zosBatchJobSpy.getJobId());
 
-    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.setJobid(null);
         zosBatchJobSpy.getJobId();
         Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
-        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
     }
     
     @Test
@@ -260,11 +268,11 @@ public class TestRseapiZosBatchJobImpl {
         zosBatchJobSpy.setOwner(FIXED_OWNER);
         Assert.assertEquals("getOwner() should return the supplied value", FIXED_OWNER, zosBatchJobSpy.getOwner());
 
-    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.setOwner(null);
         zosBatchJobSpy.getOwner();
         Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
-        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
     }
     
     @Test
@@ -274,25 +282,49 @@ public class TestRseapiZosBatchJobImpl {
         zosBatchJobSpy.setType(FIXED_TYPE);
         Assert.assertEquals("getType() should return the supplied value", FIXED_TYPE, zosBatchJobSpy.getType());
 
-    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.setType(null);
         zosBatchJobSpy.getType();
         Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
-        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
     }
     
     @Test
     public void testGetStatus() throws ZosBatchException {
     	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-        Assert.assertEquals("getStatus() should return the 'unknown' value", "????????", zosBatchJobSpy.getStatus());
-        zosBatchJobSpy.setStatus(FIXED_STATUS_OUTPUT);
-        Assert.assertEquals("getStatus() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatus());
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.UNKNOWN, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("????????");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.UNKNOWN, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("HOLD");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.INPUT, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("ACTIVE");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.ACTIVE, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("ABEND");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.OUTPUT, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("COMPLETED");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.OUTPUT, zosBatchJobSpy.getStatus());
+        zosBatchJobSpy.setStatus("COMPLETION");
+        Assert.assertEquals("getStatus() should return the expected value", JobStatus.OUTPUT, zosBatchJobSpy.getStatus());
 
-    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.setStatus(null);
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.getStatus();
         Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
-        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
+    }
+    
+    @Test
+    public void testGetStatusString() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
+        Assert.assertEquals("getStatusString() should return the 'unknown' value", "????????", zosBatchJobSpy.getStatusString());
+        zosBatchJobSpy.setStatusString(FIXED_STATUS_OUTPUT);
+        Assert.assertEquals("getStatusString() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatusString());
+
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
+        zosBatchJobSpy.setStatusString(null);
+        zosBatchJobSpy.getStatusString();
+        Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
     }
     
     @Test
@@ -303,11 +335,11 @@ public class TestRseapiZosBatchJobImpl {
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
         Assert.assertEquals("getRetcode() should return the supplied value", FIXED_RETCODE_0000, zosBatchJobSpy.getRetcode());
 
-    	Mockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+    	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", (String) null);
         zosBatchJobSpy.getRetcode();
         Assert.assertTrue("method should log expected exception", logException instanceof ZosBatchException);
-        Assert.assertTrue("method should log expected exception message", logException.getMessage().equals("exception"));
+        Assert.assertEquals("method should log expected exception message", EXCEPTION, logException.getMessage());
     }
     
     @Test
@@ -326,22 +358,22 @@ public class TestRseapiZosBatchJobImpl {
     
     @Test
     public void testSubmitJobIRseapiRestApiProcessorSendRequestException() throws ZosBatchException, RseapiException {
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        
-        zosBatchJobSpy.submitJob();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.submitJob();
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testSubmitIRseapiResponseGetJsonContentException() throws ZosBatchException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockSubmit);
         Mockito.when(rseapiResponseMockSubmit.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);
-        Mockito.when(rseapiResponseMockSubmit.getJsonContent()).thenThrow(new RseapiException("exception"));
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");        
-        zosBatchJobSpy.submitJob();
+        Mockito.when(rseapiResponseMockSubmit.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.submitJob();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -350,10 +382,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiResponseMockSubmit.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMockSubmit.getStatusLine()).thenReturn("NOT_FOUND");
         Mockito.when(rseapiResponseMockSubmit.getJsonContent()).thenReturn(getJsonObject());
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Error Submit job, HTTP Status Code 404 : NOT_FOUND"));
-        zosBatchJobSpy.submitJob();
+        String expectedMessage = "Error Submit job, HTTP Status Code 404 : NOT_FOUND";
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+        	zosBatchJobSpy.submitJob();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -391,9 +424,11 @@ public class TestRseapiZosBatchJobImpl {
     @Test
     public void testWaitForJobNotSubmittedException() throws ZosBatchException {
     	Mockito.doReturn("????????").when(zosBatchJobSpy).getJobId();
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Job has not been submitted by manager");
-        zosBatchJobSpy.waitForJob();
+        String expectedMessage = "Job has not been submitted by manager";
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.waitForJob();
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -410,9 +445,11 @@ public class TestRseapiZosBatchJobImpl {
     @Test
     public void testRetrieveOutputNotSubmittedException() throws ZosBatchException {
     	Mockito.doReturn("????????").when(zosBatchJobSpy).getJobId();
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Job has not been submitted by manager");
-        zosBatchJobSpy.retrieveOutput();
+        String expectedMessage = "Job has not been submitted by manager";
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.retrieveOutput();
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -420,12 +457,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
         Mockito.doReturn(FIXED_CONTENT).when(zosBatchJobSpy).getOutputFileContent(Mockito.any());
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-        
-        zosBatchJobSpy.retrieveOutput();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.retrieveOutput();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -462,12 +498,11 @@ public class TestRseapiZosBatchJobImpl {
 
     @Test
     public void testCancelRseapiException() throws ZosBatchException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-
-        zosBatchJobSpy.cancel();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.cancel();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -477,11 +512,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Error Cancel job, HTTP Status Code 404 : NOT_FOUND"));
-
-        zosBatchJobSpy.cancel();
+        String expectedMessage = "Error Cancel job, HTTP Status Code 404 : NOT_FOUND";
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+        	zosBatchJobSpy.cancel();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -499,12 +534,11 @@ public class TestRseapiZosBatchJobImpl {
 
     @Test
     public void testPurgeRseapiException() throws ZosBatchException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-
-        zosBatchJobSpy.purge();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.purge();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -514,11 +548,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage(StringStartsWith.startsWith("Error Purge job, HTTP Status Code 404 : NOT_FOUND"));
-
-        zosBatchJobSpy.purge();
+        String expectedMessage = "Error Purge job, HTTP Status Code 404 : NOT_FOUND";
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+        	zosBatchJobSpy.purge();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -537,9 +571,9 @@ public class TestRseapiZosBatchJobImpl {
     
     @Test
     public void testSaveOutputToTestResultsArchive() throws ZosManagerException {
-        RseapiZosBatchManagerImpl.setZosManager(zosManagerMock);
+    	Mockito.when(zosBatchManagerMock.getZosManager()).thenReturn(zosManagerMock);
         PowerMockito.doNothing().when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
-        PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
+        PowerMockito.doReturn(FIXED_PATH_NAME).when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
     	Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
     	Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
@@ -554,8 +588,8 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn("content").when(zosBatchJobOutputSpoolFileMock).getRecords();
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
 
-        String expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_DDNAME;
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+        String expectedMessage = "Archiving batch job " + FIXED_JOBNAME + "(" + FIXED_JOBID + ") to "+ FIXED_PATH_NAME;
+    	zosBatchJobSpy.saveOutputToResultsArchive(FIXED_PATH_NAME);
         Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
 
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
@@ -565,17 +599,16 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn(FIXED_PROCSTEP).when(zosBatchJobOutputSpoolFileMock).getProcstep();
         Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
 		
-        expectedMessage = "        " + FIXED_JOBNAME + "_" + FIXED_JOBID + "_" + FIXED_STEPNAME + "_" + FIXED_PROCSTEP + "_" + FIXED_DDNAME;
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+    	zosBatchJobSpy.saveOutputToResultsArchive(FIXED_PATH_NAME);
         Assert.assertEquals("saveOutputToTestResultsArchive() should log expected message", expectedMessage, logMessage);
 
     	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).jobOutput();
         Mockito.doReturn(true, false).when(zosBatchJobOutputSpoolFileIteratorMock).hasNext();
-        PowerMockito.doThrow(new ZosManagerException("exception")).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-        
-    	zosBatchJobSpy.saveOutputToTestResultsArchive();
+        PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.saveOutputToResultsArchive(FIXED_PATH_NAME);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -606,9 +639,11 @@ public class TestRseapiZosBatchJobImpl {
         
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND");
-    	zosBatchJobSpy.getOutput();
+        String expectedMessage = "Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND";
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutput();
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -618,10 +653,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
 
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiResponseMockStatus.getContent()).thenThrow(new RseapiException("exception"));
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-    	zosBatchJobSpy.getOutput();
+        Mockito.when(rseapiResponseMockStatus.getContent()).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutput();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
@@ -668,11 +704,19 @@ public class TestRseapiZosBatchJobImpl {
         zosBatchJobSpy.updateJobStatus();
         Assert.assertEquals("retcode should be ????", "????", zosBatchJobSpy.getRetcode());
 
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        jsonObject.addProperty("status", "NOT_FOUND");
+        zosBatchJobSpy.updateJobStatus();
+        Assert.assertEquals("status should be NOTFOUND", JobStatus.NOTFOUND, zosBatchJobSpy.getStatus());
+        
+
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
         Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("BAD_REQUEST");
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Error Update job status, HTTP Status Code 400 : BAD_REQUEST");
-        zosBatchJobSpy.updateJobStatus();
+        String expectedMessage = "Error Update job status, HTTP Status Code 400 : BAD_REQUEST";
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.updateJobStatus();
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -683,23 +727,21 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenThrow(new RseapiException("exception"));
-
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-
-        zosBatchJobSpy.updateJobStatus();
+        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.updateJobStatus();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
 
     @Test
     public void testUpdateJobStatusRseapiException() throws ZosBatchException, RseapiException {
         Mockito.doReturn(true).when(zosBatchJobSpy).submitted();
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-
-        zosBatchJobSpy.updateJobStatus();
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.updateJobStatus();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -715,10 +757,11 @@ public class TestRseapiZosBatchJobImpl {
 
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND");
-        zosBatchJobSpy.getOutputFileContent(FIXED_PATH);
+        String expectedMessage = "Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND";
+    	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutputFileContent(FIXED_PATH);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -726,21 +769,20 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
-        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenThrow(new RseapiException("exception"));
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-        
-        zosBatchJobSpy.getOutputFileContent(null);
+        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutputFileContent(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testGetOutputFileContentException2() throws ZosBatchException, RseapiException {
-        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException("exception"));
-        
-        exceptionRule.expect(ZosBatchException.class);
-        exceptionRule.expectMessage("exception");
-        
-        zosBatchJobSpy.getOutputFileContent(null);
+        Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
+        ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutputFileContent(null);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
@@ -799,23 +841,36 @@ public class TestRseapiZosBatchJobImpl {
     
     @Test
     public void testArchiveJobOutput() throws Exception {
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
+    	Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
+    	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToResultsArchive(Mockito.any());
+    	
+    	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
-    	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToTestResultsArchive();
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive", Mockito.any());
 
     	Mockito.clearInvocations(zosBatchJobSpy);
+    	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive", Mockito.any());
 
     	Mockito.clearInvocations(zosBatchJobSpy);
+    	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
     	zosBatchJobSpy.archiveJobOutput();
-    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToTestResultsArchive");
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive", Mockito.any());
+
+    	Mockito.clearInvocations(zosBatchJobSpy);
+    	zosBatchJobSpy.setShouldArchive(false);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	zosBatchJobSpy.archiveJobOutput();
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive", Mockito.any());
     }
     
     @Test
@@ -862,17 +917,17 @@ public class TestRseapiZosBatchJobImpl {
         PowerMockito.doNothing().when(zosBatchJobSpy).updateJobStatus();        
         PowerMockito.doReturn(true).when(zosBatchJobSpy).isPurged();
         Whitebox.setInternalState(zosBatchJobSpy, "jobid", "#JOBID#");
-        Whitebox.setInternalState(zosBatchJobSpy, "status", "#STATUS#");
+        Whitebox.setInternalState(zosBatchJobSpy, "status", JobStatus.UNKNOWN);
         Whitebox.setInternalState(zosBatchJobSpy, "owner", "#OWNER#");
         Whitebox.setInternalState(zosBatchJobSpy, "type", "#TYPE#");
         Whitebox.setInternalState(zosBatchJobSpy, "retcode", "#RETCODE#");
-        String expectedString = "JOBID=#JOBID# JOBNAME=" + FIXED_JOBNAME + " OWNER=#OWNER# TYPE=#TYPE# STATUS=#STATUS# RETCODE=#RETCODE#";
+        String expectedString = FIXED_JOBNAME + "(#JOBID#)";
         Assert.assertEquals("toString() should return supplied value", expectedString, zosBatchJobSpy.toString());
         
         PowerMockito.doReturn(false).when(zosBatchJobSpy).isPurged();
         Assert.assertEquals("toString() should return supplied value", expectedString, zosBatchJobSpy.toString());
         
-        PowerMockito.doThrow(new ZosBatchException("exception")).when(zosBatchJobSpy).updateJobStatus();
+        PowerMockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.toString();
     }
     
@@ -889,6 +944,7 @@ public class TestRseapiZosBatchJobImpl {
         FileSystem fileSystemMock = Mockito.mock(FileSystem.class);
         FileSystemProvider fileSystemProviderMock = Mockito.mock(FileSystemProvider.class);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(pathMock.toString()).thenReturn(FIXED_PATH_NAME);
         Mockito.when(pathMock.resolve(Mockito.anyString())).thenReturn(pathMock);        
         Mockito.when(pathMock.getFileSystem()).thenReturn(fileSystemMock);
         Mockito.when(fileSystemMock.provider()).thenReturn(fileSystemProviderMock);

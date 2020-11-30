@@ -6,13 +6,13 @@
 package dev.galasa.zosmf.internal.properties;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -25,77 +25,73 @@ import dev.galasa.zosmf.ZosmfManagerException;
 @PrepareForTest({ZosmfPropertiesSingleton.class, CpsProperties.class})
 public class TestServerPort {
     
+    private ZosmfPropertiesSingleton properties;
+    
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
     
-    private static final String IMAGE_ID = "IMAGE";
+    private static final String SERVERID = "MFSYSA";
     
-    @Test
-    public void testConstructor() {
-        ServerPort serverPort = new ServerPort();
-        Assert.assertNotNull("Object was not created", serverPort);
-    }
+    private static final String TEST_PORT = "5000";
     
-    @Test
-    public void testNull() throws Exception {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Value for zOSMF server port not configured for zOS image " + IMAGE_ID);
-        getProperty(null);
+    @Before
+    public void setup() throws ConfigurationPropertyStoreException, ZosmfManagerException {
+        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(TEST_PORT);
+        properties = new ZosmfPropertiesSingleton();
+        properties.activate();
+        ZosmfPropertiesSingleton.setCps(configurationPropertyStoreServiceMock);       
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from ServerPort.get()", "1024", getProperty("1024"));
+        int port = ServerPort.get(SERVERID);
+        
+        Assert.assertEquals("Unexpected value returned from ServerPort.get()", Integer.parseInt(TEST_PORT), port);
+    }
+    
+    @Test
+    public void testDefault() throws Exception {
+        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(null);
+
+        int port = ServerPort.get(SERVERID);
+        
+        Assert.assertEquals("Unexpected value returned from ServerPort.get()", 443, port);
     }
     
     @Test
     public void testInvalidString() throws Exception {
-        exceptionRule.expect(NumberFormatException.class);
-        exceptionRule.expectMessage("For input string: \"XXX\"");
+        String invalidPort = "BOB";
+        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
         
-        getProperty("XXX");
+        exceptionRule.expect(ZosmfManagerException.class);
+        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
+        
+        ServerPort.get(SERVERID);
     }
     
     @Test
     public void testInvalidTooSmall() throws Exception {
+        String invalidPort = "-1";
+        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
+
         exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value (-1) for zOSMF server port property for zOS image "  + IMAGE_ID + ". Range  0-65535");
-        getProperty("-1");
+        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
+        
+        ServerPort.get(SERVERID);
     }
     
     @Test
     public void testInvalidTooBig() throws Exception {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value (65536) for zOSMF server port property for zOS image "  + IMAGE_ID + ". Range  0-65535");
-        getProperty("65536");
-    }
-    
-    @Test
-    public void testException() throws Exception {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOSMF server port property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
-    }
+        String invalidPort = "70000";
+        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
 
-    private String getProperty(String value) throws Exception {
-        return getProperty(value, false);
+        exceptionRule.expect(ZosmfManagerException.class);
+        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
+        
+        ServerPort.get(SERVERID);
     }
     
-    private String getProperty(String value, boolean exception) throws Exception {
-        PowerMockito.spy(ZosmfPropertiesSingleton.class);
-        PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(ZosmfPropertiesSingleton.class, "cps");
-        PowerMockito.spy(CpsProperties.class);
-        
-        if (!exception) {
-            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
-        } else {
-            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        }
-        
-        return ServerPort.get(IMAGE_ID);
-    }
 }

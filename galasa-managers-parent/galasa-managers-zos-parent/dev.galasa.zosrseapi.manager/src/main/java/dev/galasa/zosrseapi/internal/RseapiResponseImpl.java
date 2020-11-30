@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import dev.galasa.http.HttpClientResponse;
@@ -62,8 +63,14 @@ public class RseapiResponseImpl implements IRseapiResponse {
 
     @Override
     public String getTextContent() throws RseapiException {
-        if (!(this.content instanceof String)) {
-            throw new RseapiException("Content not a String Object - " + content.getClass().getName());
+    	if (this.content instanceof InputStream) {
+    		try {
+				return IOUtils.toString(new InputStreamReader((InputStream) this.content));
+			} catch (IOException e) {
+				throw new RseapiException("Unable to convert content to String Object", e);
+			}
+    	} else if (!(this.content instanceof String)) {
+            throw new RseapiException("Content not a String or InputStream Object - " + content.getClass().getName());
         }
         return (String) content;
     }
