@@ -51,7 +51,7 @@ public @interface ZosProgram {
     String location() default "resources";
     
     /**
-     * The programming language. See {@link ZosProgram.Language}
+     * The programming language. See {@link ZosProgram.Language} 
      */
     Language language();
     

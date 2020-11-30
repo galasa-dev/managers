@@ -59,5 +59,10 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
         
         return false;
     }
+
+    @Override
+    public ICicsTerminal resetAndClear() throws CicstsManagerException {
+        throw new UnsupportedOperationException("PLACEHOLDER");
+    }
     
 }

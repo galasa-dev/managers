@@ -6,9 +6,7 @@
 package dev.galasa.zosrseapi.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestRequestRetry {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     
@@ -55,18 +50,20 @@ public class TestRequestRetry {
     
     @Test
     public void testInvalid() throws Exception {
-        exceptionRule.expect(NumberFormatException.class);
-        exceptionRule.expectMessage("For input string: \"XXX\"");
-
-        getProperty("XXX");
+        String expectedMessage = "For input string: \"XXX\"";
+        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
+        	getProperty("XXX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the RSE API request retry property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the RSE API request retry property for zOS image " + IMAGE_ID;
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private int getProperty(String value) throws Exception {

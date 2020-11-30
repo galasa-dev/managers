@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosmf.internal;
 
@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
+import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.zos.IZosImage;
@@ -35,8 +36,8 @@ import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.properties.Https;
 import dev.galasa.zosmf.internal.properties.RequestRetry;
-import dev.galasa.zosmf.internal.properties.ServerHostname;
-import dev.galasa.zosmf.internal.properties.ServerImages;
+import dev.galasa.zosmf.internal.properties.ServerCreds;
+import dev.galasa.zosmf.internal.properties.ServerImage;
 import dev.galasa.zosmf.internal.properties.ServerPort;
 
 /**
@@ -49,7 +50,8 @@ public class ZosmfImpl implements IZosmf {
     
     private static final Log logger = LogFactory.getLog(ZosmfImpl.class);
 
-    private String imageTag;
+    private final ZosmfManagerImpl zosmfManager;
+    private final String serverId;
     private IZosImage image;
     private IHttpClient httpClient;
     private String zosmfUrl;
@@ -57,14 +59,23 @@ public class ZosmfImpl implements IZosmf {
 
     private HashMap<String, String> commonHeaders = new HashMap<>();
 
-    public ZosmfImpl(IZosImage image) throws ZosmfException {
-        this.image = image;
-        initialize();
-    }
+	private static final String PATH_SERVERDETAILS = "/zosmf/info";
 
-    public ZosmfImpl(String imageTag) throws ZosmfException {
-        this.imageTag = imageTag;
-        setImage();        
+    public ZosmfImpl(ZosmfManagerImpl zosmfManager, String serverId) throws ZosmfException {
+        this.zosmfManager = zosmfManager;
+        this.serverId     = serverId;
+        
+        String imageId = null;
+        try {
+            imageId = ServerImage.get(this.serverId);
+            this.image = zosmfManager.getZosManager().getUnmanagedImage(imageId);
+        
+        } catch(ZosmfManagerException e) {
+            throw new ZosmfException("Unable to initialise zOS/MF server " + serverId, e);
+        } catch (ZosManagerException e) {
+            throw new ZosmfException("Unable to initalise zOS/MF server " + serverId + " as z/OS image '" + imageId + "' is not defined", e);
+        }
+
         initialize();
     }
 
@@ -90,14 +101,14 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
             if (convert) {
                 zosmfResponse.setHttpClientresponse(this.httpClient.getText(validPath(path)));
             } else {
                 zosmfResponse.setHttpClientresponse(this.httpClient.getFile(validPath(path)));
             }
             
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -120,10 +131,10 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            logger.debug(LOG_BODY + requestBody);
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(LOG_BODY + requestBody);
             zosmfResponse.setHttpClientresponse(this.httpClient.postJson(validPath(path), requestBody));
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -146,10 +157,10 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            logger.debug(LOG_BODY + requestBody);
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(LOG_BODY + requestBody);
             zosmfResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), requestBody));
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -172,10 +183,10 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            logger.debug(LOG_BODY + requestBody);
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(LOG_BODY + requestBody);
             zosmfResponse.setHttpClientresponse(this.httpClient.putJson(validPath(path), requestBody));
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -199,10 +210,10 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
-            logger.debug(LOG_BODY + requestBody);
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(LOG_BODY + requestBody);
             zosmfResponse.setHttpClientresponse(this.httpClient.putBinary(path, requestBody));
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -225,9 +236,9 @@ public class ZosmfImpl implements IZosmf {
             setHeader(ZosmfCustomHeaders.X_IBM_REQUESTED_METHOD.toString(), method);
             addCommonHeaders();
             zosmfResponse = new ZosmfResponseImpl(this.zosmfUrl, validPath(path));
-            logger.debug(logRequest(method, zosmfResponse.getRequestUrl()));
+            logger.trace(logRequest(method, zosmfResponse.getRequestUrl()));
             zosmfResponse.setHttpClientresponse(this.httpClient.deleteJson(validPath(path)));
-            logger.debug(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
+            logger.trace(logResponse(zosmfResponse.getStatusLine(), method, zosmfResponse.getRequestUrl()));
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
@@ -239,6 +250,11 @@ public class ZosmfImpl implements IZosmf {
     }
 
     @Override
+	public @NotNull JsonObject serverInfo() throws ZosmfException {
+        return get(PATH_SERVERDETAILS, null, false).getJsonContent();
+	}
+
+	@Override
     public IZosImage getImage() {
         return this.image;
     }
@@ -254,25 +270,13 @@ public class ZosmfImpl implements IZosmf {
 
     protected void initialize() throws ZosmfException {
         
-        String imageId = image.getImageID();
-        String clusterId = image.getClusterID();
-        List<String> configuredZosmfs;
-        try {
-            configuredZosmfs = ServerImages.get(clusterId);
-        } catch (ZosmfManagerException e) {
-            throw new ZosmfException(e);
-        }        
-        if (!configuredZosmfs.contains(imageId)) {
-            throw new ZosmfException("zOSMF server not configured for image '" + imageId + "' on cluster '" + clusterId + "'" + (imageTag != null ? " tag '" + imageTag + "'" : ""));
-        }
-        
         String zosmfHostname;
         try {
-            zosmfHostname = ServerHostname.get(image.getImageID());
+            zosmfHostname = image.getDefaultHostname();
         } catch (ZosManagerException e) {
             throw new ZosmfException(e);
         }
-        String zosmfPort;
+        int zosmfPort;
         try {
             zosmfPort = ServerPort.get(image.getImageID());
         } catch (ZosmfManagerException e) {
@@ -289,10 +293,23 @@ public class ZosmfImpl implements IZosmf {
         
         this.zosmfUrl = scheme + "://" + zosmfHostname + ":" + zosmfPort;
 
-        this.httpClient = ZosmfManagerImpl.httpManager.newHttpClient();
+        this.httpClient = this.zosmfManager.getHttpManager().newHttpClient();
         
         try {
-            ICredentials creds = image.getDefaultCredentials();
+            ICredentials creds = null;
+            String credsId = ServerCreds.get(this.serverId);
+            if (credsId != null) {
+                try {
+                    creds = this.zosmfManager.getFramework().getCredentialsService().getCredentials(credsId);
+                } catch (CredentialsException e) {
+                    throw new ZosmfException("Problem accessing credentials store", e);
+                }
+            }
+            
+            if (creds == null) {
+                creds = image.getDefaultCredentials();
+            }
+
             this.httpClient.setURI(new URI(this.zosmfUrl));
             if (creds instanceof ICredentialsUsernamePassword) {
                 this.httpClient.setAuthorisation(((ICredentialsUsernamePassword) creds).getUsername(), ((ICredentialsUsernamePassword) creds).getPassword());
@@ -306,25 +323,15 @@ public class ZosmfImpl implements IZosmf {
         }
         
         try {
-            this.requestRetry = RequestRetry.get(image.getImageID());
+            this.requestRetry = RequestRetry.get(this.serverId);
         } catch (ZosManagerException e) {
             throw new ZosmfException(e);
         }
     }
 
-    protected void setImage() throws ZosmfException {
-        if (this.image == null) {
-            try {
-                this.image = ZosmfManagerImpl.zosManager.getImageForTag(this.imageTag);
-            } catch (ZosManagerException e) {
-                throw new ZosmfException(e);
-            }
-        }
-    }
-
     protected void addCommonHeaders() {
         for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
-            logger.debug("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
+            logger.trace("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
             this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
         }
         

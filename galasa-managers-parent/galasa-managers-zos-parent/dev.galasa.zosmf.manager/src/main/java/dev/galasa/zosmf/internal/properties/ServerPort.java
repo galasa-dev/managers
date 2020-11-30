@@ -5,7 +5,8 @@
  */
 package dev.galasa.zosmf.internal.properties;
 
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosmf.ZosmfManagerException;
 
@@ -14,37 +15,34 @@ import dev.galasa.zosmf.ZosmfManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zosmf.server.[imageid].https
+ * @galasa.name zosmf.server.[imageid].port
  * 
- * @galasa.description The hostname zOSMF server 
+ * @galasa.description The port number of the zOS/MF server
  * 
- * @galasa.required Yes
+ * @galasa.required No
  * 
- * @galasa.default None
+ * @galasa.default 443
  * 
- * @galasa.valid_values 
+ * @galasa.valid_values A valid IP port number 
  * 
  * @galasa.examples 
  * <code>zosmf.server.port=443</code><br>
- * <code>zosmf.server.SYSA.port=443</code>
+ * <code>zosmf.server.MFSYSA.port=443</code>
  *
  */
 public class ServerPort extends CpsProperties {
 
-    public static String get(String imageId) throws ZosmfManagerException {
-        try {
-            String serverPort = getStringNulled(ZosmfPropertiesSingleton.cps(), "server", "port", imageId);
+    public static int get(@NotNull String serverId) throws ZosmfManagerException {
+        String serverPort = getStringWithDefault(ZosmfPropertiesSingleton.cps(), "443", "server", "port", serverId);
 
-            if (serverPort == null) {
-                throw new ZosmfManagerException("Value for zOSMF server port not configured for zOS image "  + imageId);
-            }
+        try {
             int serverPortInt = Integer.parseInt(serverPort);
             if (serverPortInt < 0 || serverPortInt > 65535) {
-                throw new ZosmfManagerException("Invalid value (" + serverPort + ") for zOSMF server port property for zOS image "  + imageId + ". Range  0-65535");
+                throw new ZosmfManagerException("Invalid value '" + serverPort + "' for zOSMF server port property for zOS server "  + serverId + ". Range  0-65535");
             }
-            return serverPort;
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosmfManagerException("Problem asking the CPS for the zOSMF server port property for zOS image "  + imageId, e);
+            return serverPortInt;
+        } catch(NumberFormatException e) {
+            throw new ZosmfManagerException("Invalid value '" + serverPort + "' for zOSMF server port property for zOS server "  + serverId + ". Range  0-65535",e);
         }
     }
 

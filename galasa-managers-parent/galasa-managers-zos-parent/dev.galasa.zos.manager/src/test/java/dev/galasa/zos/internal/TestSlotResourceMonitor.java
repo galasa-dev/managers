@@ -151,6 +151,6 @@ public class TestSlotResourceMonitor {
         
         Mockito.when(dssMock.getPrefix(Mockito.any())).thenThrow(new RuntimeException());
         slotResourceMonitorSpy.runFinishedOrDeleted("RUN2");
-        Assert.assertEquals("run() should log specified message", "Failed to delete ports for run RUN2", logMessage);
+        Assert.assertEquals("run() should log specified message", "Failed to delete slots for run RUN2", logMessage);
     }
 }

@@ -19,9 +19,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -70,9 +68,6 @@ public class TestRseapiResponseImpl {
     
     @Mock
     private StatusLine statusLineMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String URL = "http://domain/";
 
@@ -99,49 +94,58 @@ public class TestRseapiResponseImpl {
     @Test
     public void testGetJsonContent() throws RseapiException {
         Whitebox.setInternalState(rseapiResponseSpy, "content", JSONOBJECT_CONTENT_STRING);
-        Assert.assertTrue("getJsonContent() should return the expected value", JSONOBJECT_CONTENT.equals(rseapiResponseSpy.getJsonContent()));
+        Assert.assertEquals("getJsonContent() should return the expected value", JSONOBJECT_CONTENT, rseapiResponseSpy.getJsonContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", JSONOBJECT_CONTENT_STRING.getBytes());
-        Assert.assertTrue("getJsonContent() should return the expected value", JSONOBJECT_CONTENT.equals(rseapiResponseSpy.getJsonContent()));
+        Assert.assertEquals("getJsonContent() should return the expected value", JSONOBJECT_CONTENT, rseapiResponseSpy.getJsonContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new ByteArrayInputStream(JSONOBJECT_CONTENT_STRING.getBytes()));
-        Assert.assertTrue("getJsonContent() should return the expected value", JSONOBJECT_CONTENT.equals(rseapiResponseSpy.getJsonContent()));
+        Assert.assertEquals("getJsonContent() should return the expected value", JSONOBJECT_CONTENT, rseapiResponseSpy.getJsonContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", JSONOBJECT_CONTENT);
-        Assert.assertTrue("getJsonContent() should return the expected value", JSONOBJECT_CONTENT.equals(rseapiResponseSpy.getJsonContent()));
+        Assert.assertEquals("getJsonContent() should return the expected value", JSONOBJECT_CONTENT, rseapiResponseSpy.getJsonContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Content not a JsonObject - " + Integer.class.getName());
-        rseapiResponseSpy.getJsonContent();
+        String expectedMessage = "Content not a JsonObject - " + Integer.class.getName();
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiResponseSpy.getJsonContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetJsonArrayContent() throws RseapiException {
         Whitebox.setInternalState(rseapiResponseSpy, "content", JSONARRAY_CONTENT_STRING);
-        Assert.assertTrue("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT.equals(rseapiResponseSpy.getJsonArrayContent()));
+        Assert.assertEquals("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT, rseapiResponseSpy.getJsonArrayContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", JSONARRAY_CONTENT_STRING.getBytes());
-        Assert.assertTrue("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT.equals(rseapiResponseSpy.getJsonArrayContent()));
+        Assert.assertEquals("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT, rseapiResponseSpy.getJsonArrayContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new ByteArrayInputStream(JSONARRAY_CONTENT_STRING.getBytes()));
-        Assert.assertTrue("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT.equals(rseapiResponseSpy.getJsonArrayContent()));
+        Assert.assertEquals("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT, rseapiResponseSpy.getJsonArrayContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Content not a JsonArray Object - " + Integer.class.getName());
-        rseapiResponseSpy.getJsonArrayContent();
+        String expectedMessage = "Content not a JsonArray Object - " + Integer.class.getName();
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiResponseSpy.getJsonArrayContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testTextContent() throws RseapiException {
         Whitebox.setInternalState(rseapiResponseSpy, "content", CONTENT_STRING);
-        Assert.assertTrue("getTextContent() should return the expected value", CONTENT_STRING.equals(rseapiResponseSpy.getTextContent()));
+        Assert.assertEquals("getTextContent() should return the expected value", CONTENT_STRING, rseapiResponseSpy.getTextContent());
+
+        Whitebox.setInternalState(rseapiResponseSpy, "content", new ByteArrayInputStream(CONTENT_STRING.getBytes()));
+        Assert.assertEquals("getTextContent() should return the expected value", CONTENT_STRING, rseapiResponseSpy.getTextContent());
         
         Whitebox.setInternalState(rseapiResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(RseapiException.class);
-        exceptionRule.expectMessage("Content not a String Object - " + Integer.class.getName());
-        rseapiResponseSpy.getTextContent();
+        String expectedMessage = "Content not a String or InputStream Object - " + Integer.class.getName();
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiResponseSpy.getTextContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -159,26 +163,27 @@ public class TestRseapiResponseImpl {
     
     @Test
     public void testSetHttpClientresponseCloseableHttpResponse() throws UnsupportedOperationException, IOException, RseapiException {
-      Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
-      Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
-      Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-      Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-      Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
-      
-      rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
-      Assert.assertTrue("getContent() should return the expected value", CONTENT_STRING.equals(IOUtils.toString((InputStream) rseapiResponseSpy.getContent(), StandardCharsets.UTF_8)));
-      Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, rseapiResponseSpy.getStatusCode());
-      Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, rseapiResponseSpy.getStatusLine());
-      
-      Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
-      exceptionRule.expect(RseapiException.class);
-      exceptionRule.expectMessage("Could not retrieve response");
-      
-      rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
+    	Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
+    	Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+    	Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+    	Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
+    	
+    	rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	Assert.assertEquals("getContent() should return the expected value", CONTENT_STRING, IOUtils.toString((InputStream) rseapiResponseSpy.getContent(), StandardCharsets.UTF_8));
+    	Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, rseapiResponseSpy.getStatusCode());
+    	Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, rseapiResponseSpy.getStatusLine());
+    	
+    	Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
+    	String expectedMessage = "Could not retrieve response";
+    	RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+    		rseapiResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+		});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetRequestUrl() throws RseapiException, MalformedURLException {
-        Assert.assertTrue("getRequestUrl() should return the expected value", new URL(URL + PATH).equals(rseapiResponseSpy.getRequestUrl()));
+        Assert.assertEquals("getRequestUrl() should return the expected value", new URL(URL + PATH), rseapiResponseSpy.getRequestUrl());
     }
 }

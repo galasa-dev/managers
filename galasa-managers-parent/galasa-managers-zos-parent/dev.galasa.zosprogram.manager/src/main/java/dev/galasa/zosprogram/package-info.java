@@ -27,7 +27,7 @@
  * The Simbank tutorial <a href="/docs/running-simbank-tests/batch-accounts-open-test">BatchAccountsOpenTest</a>BatchAccountsOpenTest 
  * contains an example of running a simulated z/OS program called SIMBANK by using the <code>EXEC PGM=SIMBANK</code> command. <br><br>
  * <br><br>
- * You can view the <a href="https://javadoc.galasa.dev/" target="_blank" rel="noopener noreferrer">Javadoc documentation for the Manager here</a>. <br><br>
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zosprogram/package-summary.html" target="_blank" rel="noopener noreferrer">Javadoc documentation for the Manager here</a>. <br><br>
  * 
  */
 package dev.galasa.zosprogram;

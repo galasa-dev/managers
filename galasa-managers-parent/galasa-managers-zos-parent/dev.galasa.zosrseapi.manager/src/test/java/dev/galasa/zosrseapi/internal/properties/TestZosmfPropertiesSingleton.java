@@ -6,9 +6,7 @@
 package dev.galasa.zosrseapi.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,22 +22,22 @@ public class TestZosmfPropertiesSingleton {
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testCpsException() throws RseapiManagerException {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, RseapiPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to access manager CPS before it has been initialised";
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	Assert.assertEquals("Exception", null, RseapiPropertiesSingleton.cps());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws RseapiManagerException {
-        exceptionRule.expect(RseapiManagerException.class);
-        exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        RseapiPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, RseapiPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to set manager CPS before instance created";
+        RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
+        	RseapiPropertiesSingleton.setCps(cpsMock);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

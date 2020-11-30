@@ -7,15 +7,15 @@ package dev.galasa.cicsts.ceci.internal;
 
 import java.util.Map;
 
-import dev.galasa.cicsts.ceci.ICECIResponse;
-import dev.galasa.cicsts.ceci.IResponseOutputValue;
+import dev.galasa.cicsts.ICeciResponse;
+import dev.galasa.cicsts.ICeciResponseOutputValue;
 
-public class CECIResponseImpl implements ICECIResponse {
+public class CECIResponseImpl implements ICeciResponse {
     
     private String response;
     private int eibresp;
     private int eibresp2;
-    private Map<String, IResponseOutputValue> responseOutput;
+    private Map<String, ICeciResponseOutputValue> responseOutput;
 
     public CECIResponseImpl(String response, int eibresp, int eibresp2) {
         this.response = response;
@@ -23,7 +23,7 @@ public class CECIResponseImpl implements ICECIResponse {
         this.eibresp2 = eibresp2;
     }
 
-    protected void setResponseOutput(Map<String, IResponseOutputValue> responseOutput) {
+    protected void setResponseOutput(Map<String, ICeciResponseOutputValue> responseOutput) {
         this.responseOutput = responseOutput;
     }
 
@@ -48,7 +48,7 @@ public class CECIResponseImpl implements ICECIResponse {
     }
 
     @Override
-    public Map<String, IResponseOutputValue> getResponseOutputValues() {
+    public Map<String, ICeciResponseOutputValue> getResponseOutputValues() {
         return responseOutput;
     }
     

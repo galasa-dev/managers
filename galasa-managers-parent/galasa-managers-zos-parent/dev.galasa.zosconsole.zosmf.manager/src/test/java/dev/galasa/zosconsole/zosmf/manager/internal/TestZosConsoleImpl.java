@@ -67,10 +67,12 @@ public class TestZosConsoleImpl {
     private static final String CONSOLE_COMMAND = "ZOS CONSOLE_COMMAND";
 
     private static final String CONSOLE_NAME = "CNAME";
+
+    private static final String IMAGE_NAME = "image";
     
     @Before
     public void setup() throws Exception {
-        Mockito.when(zosImageMock.getImageID()).thenReturn("image");
+        Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE_NAME);
         
         PowerMockito.mockStatic(RestrictToImage.class);
         Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
@@ -150,13 +152,17 @@ public class TestZosConsoleImpl {
         zosConsole.consoleName(consoleName);
     }
 
-
     @Test
-    public void testConsoleNameExceptionToLong() throws ZosConsoleException {
+    public void testConsoleNameExceptionTooLong() throws ZosConsoleException {
         exceptionRule.expect(ZosConsoleException.class);        
         String consoleName = "123456789";
         exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
          
         zosConsole.consoleName(consoleName);
+    }
+    
+    @Test
+    public void testToString() {
+    	Assert.assertEquals("setConsoleName() should return the default console name", IMAGE_NAME, zosConsoleSpy.toString());
     }
 }

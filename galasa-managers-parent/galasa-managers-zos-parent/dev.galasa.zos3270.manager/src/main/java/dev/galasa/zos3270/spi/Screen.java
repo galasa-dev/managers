@@ -49,6 +49,7 @@ import dev.galasa.zos3270.internal.datastream.OrderCarrageReturn;
 import dev.galasa.zos3270.internal.datastream.OrderEndOfMedium;
 import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
+import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
@@ -211,6 +212,10 @@ public class Screen {
             for(IBufferHolder bh : this.buffer) {
                 if (bh == null) {
                     outboundBuffer.write(0);
+                } else if (bh instanceof BufferGraphicsEscape) {
+                    BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
+                    outboundBuffer.write(OrderGraphicsEscape.ID);
+                    outboundBuffer.write(bc.getFieldEbcdic());
                 } else if (bh instanceof BufferChar) {
                     BufferChar bc = (BufferChar) bh;
                     outboundBuffer.write(bc.getFieldEbcdic());
@@ -306,6 +311,13 @@ public class Screen {
                 if (fieldModified) { // Send whether unprotected or not
                     OrderSetBufferAddress sba = new OrderSetBufferAddress(new BufferAddress(pos + 1));
                     outboundBuffer.write(sba.getCharRepresentation());
+                }
+            } else if (bh instanceof BufferGraphicsEscape) {
+                BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
+                if (fieldModified) {
+                    outboundBuffer.write(OrderGraphicsEscape.ID);
+                    byte value = bc.getFieldEbcdic();
+                    outboundBuffer.write(value);
                 }
             } else if (bh instanceof BufferChar) {
                 BufferChar bc = (BufferChar) bh;
@@ -458,6 +470,8 @@ public class Screen {
                 processCarrageReturn();
             } else if (order instanceof OrderEndOfMedium) {
                 processEndOfMedium();
+            } else if (order instanceof OrderGraphicsEscape) {
+                processGraphicsEscape((OrderGraphicsEscape) order);
             } else {
                 throw new DatastreamException("Unsupported Order - " + order.getClass().getName());
             }
@@ -686,6 +700,11 @@ public class Screen {
 
     private void processEndOfMedium() {
         this.buffer[this.workingCursor] = new BufferEndOfMedium();
+        incrementWorkingCursor();
+    }
+
+    private void processGraphicsEscape(OrderGraphicsEscape order) {
+        this.buffer[this.workingCursor] = new BufferGraphicsEscape(order.getByte());
         incrementWorkingCursor();
     }
 

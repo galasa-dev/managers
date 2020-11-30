@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -64,6 +64,8 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     private String mode;
 
     private UNIXFileDataType dataType;
+
+    private boolean shouldArchive = true;
     
 	private static final String PROP_PERMISSIONS_SYMBOLIC = "permissionsSymbolic";
 	private static final String PROP_SIZE = "size";
@@ -187,7 +189,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	        ((JsonObject) requestBody).addProperty(PROP_CONTENT, content);
         } else {        	
         	urlPath = RESTFILES_FILE_PATH + this.unixPath + RESTFILES_FILE_PATH_RAW_CONTENT;
-        	requestType = RseapiRequestType.PUT;
+        	requestType = RseapiRequestType.PUT_TEXT;
         	requestBody = content;
         	headers.put(HEADER_CONVERT, "false");
         }        
@@ -223,6 +225,9 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public void saveToResultsArchive() throws ZosUNIXFileException {
+    	if (!shouldArchive()) {
+    		throw new ZosUNIXFileException("shouldArchive flag is false");
+    	}
         saveToResultsArchive(this.unixPath);
     }
     
@@ -278,7 +283,16 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     public String getAttributesAsString() throws ZosUNIXFileException {
         return getAttributesAsString(this.unixPath);
     }
-    
+
+    @Override
+	public void setShouldArchive(boolean shouldArchive) {
+		this.shouldArchive = shouldArchive;
+	}
+
+	@Override
+	public boolean shouldArchive() {
+		return this.shouldArchive;
+	}    
     
     protected String getAttributesAsString(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
@@ -439,17 +453,22 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
 
     protected String retrieve(String path) throws ZosUNIXFileException {
-    	String urlPath = RESTFILES_FILE_PATH + path;
-        if (getDataType().equals(UNIXFileDataType.BINARY)) {
-        	urlPath = urlPath + RESTFILES_FILE_PATH_RAW_CONTENT;
-        }
+    	String urlPath;
         Map<String, String> headers = new HashMap<>();
-        headers.put(HEADER_CONVERT, String.valueOf(getDataType().equals(UNIXFileDataType.TEXT)));
+        boolean convert;
+        if (getDataType().equals(UNIXFileDataType.TEXT)) {
+        	urlPath = RESTFILES_FILE_PATH + this.unixPath;
+        	convert = true;
+        } else {        	
+        	urlPath = RESTFILES_FILE_PATH + this.unixPath + RESTFILES_FILE_PATH_RAW_CONTENT;
+        	convert = false;
+        }
+    	headers.put(HEADER_CONVERT, String.valueOf(convert));
         
         
         IRseapiResponse response;
         try {
-            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
+			response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, headers, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, convert);
         } catch (RseapiException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -462,13 +481,17 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
 
         String content = "";
-        JsonObject responseBody;
+        Object responseBody;
         try {
-        	responseBody = response.getJsonContent();            
-            logger.trace(responseBody);
-            if (responseBody.get(PROP_CONTENT) != null) {
-            	content = responseBody.get(PROP_CONTENT).getAsString();
-            }
+        	if (getDataType().equals(UNIXFileDataType.TEXT)) {
+        		responseBody = response.getJsonContent();            
+        		logger.trace(responseBody);
+        		if (((JsonObject) responseBody).get(PROP_CONTENT) != null) {
+        			content = ((JsonObject) responseBody).get(PROP_CONTENT).getAsString();
+        		}
+        	} else {
+        		content = response.getTextContent();
+        	}
         } catch (RseapiException e) {
         	throw new ZosUNIXFileException("Unable to retrieve content of " + quoted(path) + logOnImage(), e);
         }
@@ -657,7 +680,9 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     public void cleanCreatedPath() {
         try {
             if (this.createdPath != null && exists(this.createdPath)) {
-                cleanCreatedPathStore();
+            	if (this.shouldArchive()) {
+            		cleanCreatedPathStore();
+            	}
                 cleanCreatedDelete();
             }
         } catch (ZosUNIXFileException e) {
