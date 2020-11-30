@@ -80,8 +80,9 @@ public class CedaManagerIVT {
 
 	@Test
 	public void checkCECINotNull() throws CicstsManagerException {
-		assertThat(cics.ceda()).isNotNull();
+		
 		assertThat(cics).isNotNull();
+		assertThat(cics.ceda()).isNotNull();
 		assertThat(cics.cemt()).isNotNull();
 		assertThat(cemtTerminal).isNotNull();
 		assertThat(cedaTerminal).isNotNull();
@@ -104,7 +105,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 			if (response) {
 				response=false;
@@ -119,7 +120,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -150,7 +151,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 
@@ -167,7 +168,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -198,7 +199,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 			
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 
@@ -215,7 +216,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -250,7 +251,7 @@ public class CedaManagerIVT {
 		if (cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName).containsValue(resourceName.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName2).containsValue(resourceName2.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName3).containsValue(resourceName3.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName4)==null) {
 			result =true;
 		}
-		assertThat(result);
+		assertThat(result).isEqualTo(true);
 
 		//Checking if group delete works by discarding elements from CEMT and deleting group from CEDA, checking by installing group
 		if(result) {
