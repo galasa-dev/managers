@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import dev.galasa.cicsts.ceci.CECIManagerException;
+import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,22 +28,22 @@ public class TestCECIPropertiesSingleton {
     public ExpectedException exceptionRule = ExpectedException.none();
     
     @Test
-    public void testCpsException() throws CECIManagerException {
-        exceptionRule.expect(CECIManagerException.class);
+    public void testCpsException() throws CeciManagerException {
+        exceptionRule.expect(CeciManagerException.class);
         exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
         Assert.assertEquals("Exception", null, CECIPropertiesSingleton.cps());
     }
     
     @Test
-    public void testSetCpsException() throws CECIManagerException {
-        exceptionRule.expect(CECIManagerException.class);
+    public void testSetCpsException() throws CeciManagerException {
+        exceptionRule.expect(CeciManagerException.class);
         exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
         CECIPropertiesSingleton.setCps(cpsMock);
         Assert.assertEquals("Exception", null, CECIPropertiesSingleton.cps());
     }
     
     @Test
-    public void testCECIPropertiesSingleton() throws CECIManagerException {
+    public void testCECIPropertiesSingleton() throws CeciManagerException {
         singletonInstance = new CECIPropertiesSingleton();
         singletonInstance.activate();
         CECIPropertiesSingleton.setCps(null);
