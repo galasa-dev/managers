@@ -147,7 +147,7 @@ public class TestZosConsoleImpl {
     public void testConsoleNameExceptionTooShort() throws ZosConsoleException {
         exceptionRule.expect(ZosConsoleException.class);        
         String consoleName = "1";
-        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 characters long");
          
         zosConsole.consoleName(consoleName);
     }
@@ -156,7 +156,7 @@ public class TestZosConsoleImpl {
     public void testConsoleNameExceptionTooLong() throws ZosConsoleException {
         exceptionRule.expect(ZosConsoleException.class);        
         String consoleName = "123456789";
-        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+        exceptionRule.expectMessage("Invalid console name \"" + consoleName + "\" must be between 2 and 8 characters long");
          
         zosConsole.consoleName(consoleName);
     }
