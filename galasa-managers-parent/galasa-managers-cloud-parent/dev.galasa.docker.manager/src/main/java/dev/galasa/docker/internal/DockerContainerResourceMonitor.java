@@ -54,13 +54,13 @@ public class DockerContainerResourceMonitor implements Runnable {
     public void run() {
         logger.info("Docker container resouce check started");
 
-        dockerEngines = getDockerEngines();
+        updateDockerEngines();
 
-        for (String engine : dockerEngines.keySet()) {
-            List<String> containers = getOrphanedContainers(engine, dockerEngines.get(engine));
+        for (String engine : this.dockerEngines.keySet()) {
+            List<String> containers = getOrphanedContainers(engine, this.dockerEngines.get(engine));
             logger.info("Engine " + engine + " has " + containers.size() + " orphaned containers found");
             if (containers.size() > 0) {
-                killContainers(containers, dockerEngines.get(engine));
+                killContainers(containers, this.dockerEngines.get(engine));
             }
         }
         logger.info("Docker container resouce check Finished");
@@ -125,24 +125,23 @@ public class DockerContainerResourceMonitor implements Runnable {
      * Looks at CPS for the docker Engines available
      * @return
      */
-    private Map<String, IHttpClient> getDockerEngines() {
-        HashMap<String, IHttpClient> engines = new HashMap<>();
+    private void updateDockerEngines() {
         try { 
             // This will have to be changed if we support engine clusters
             String[] enginesTags = cps.getProperty("default", "engines").split(",");
             for (String engine : enginesTags) {
-                String hostname = cps.getProperty("engine", "hostname", engine);
-                String port = cps.getProperty("engine", "port", engine);
-
-                IHttpClient client = StandAloneHttpClient.getHttpClient(3600, logger);
-                client.setURI(new URI(hostname+":"+port));
-
-                engines.put(engine, client);
+                if (this.dockerEngines.get(engine) == null) {
+                    String hostname = cps.getProperty("engine", "hostname", engine);
+                    String port = cps.getProperty("engine", "port", engine);
+    
+                    IHttpClient client = StandAloneHttpClient.getHttpClient(3600, logger);
+                    client.setURI(new URI(hostname+":"+port));
+                    this.dockerEngines.put(engine, client);
+                }
             }
         } catch (ConfigurationPropertyStoreException | URISyntaxException e) {
             logger.error("Failed to get docker engines.", e);
         }
-        return engines;
     }
     
 }
