@@ -7,7 +7,6 @@ package dev.galasa.cicsts.ceda.manager.ivt;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.commons.logging.Log;
 import org.assertj.core.api.Fail;
 
 import dev.galasa.Before;
@@ -20,7 +19,6 @@ import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
-import dev.galasa.core.manager.Logger;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
@@ -44,10 +42,6 @@ public class CedaManagerIVT {
 
 	@CicsTerminal()
 	public ICicsTerminal terminal;
-
-
-	@Logger
-	public Log logger;
 
 	@BeforeClass
 	public void login() throws InterruptedException, Zos3270Exception {
