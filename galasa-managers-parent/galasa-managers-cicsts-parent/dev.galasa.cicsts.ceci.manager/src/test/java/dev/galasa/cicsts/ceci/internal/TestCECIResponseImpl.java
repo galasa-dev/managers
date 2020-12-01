@@ -8,12 +8,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import dev.galasa.cicsts.ceci.IResponseOutputValue;
+import dev.galasa.cicsts.ICeciResponseOutputValue;
 
 public class TestCECIResponseImpl {
     
     @Mock
-    IResponseOutputValue responseOutputValueMock;
+    ICeciResponseOutputValue responseOutputValueMock;
 
     private static CECIResponseImpl ceciResponseImpl;
     
@@ -44,7 +44,7 @@ public class TestCECIResponseImpl {
 
     @Test
     public void testResponseOutputValues() {
-        Map<String, IResponseOutputValue> responseOutput = new LinkedHashMap<>();
+        Map<String, ICeciResponseOutputValue> responseOutput = new LinkedHashMap<>();
         responseOutput.put("KEY", responseOutputValueMock);
         ceciResponseImpl.setResponseOutput(responseOutput);
         Assert.assertTrue("Unxpected result", responseOutput.equals(ceciResponseImpl.getResponseOutputValues()));

@@ -23,13 +23,14 @@ import dev.galasa.framework.spi.IResourceManagement;
  * 
  * @author James Davies
  */
-public class DockerResourceMonitor implements Runnable {
-    private final IFramework                    framework;
-    private final IResourceManagement           resourceManagement;
-    private final IDynamicStatusStoreService    dss;
-    private final Log                           logger = LogFactory.getLog(DockerResourceMonitor.class);
+public class DockerSlotResourceMonitor implements Runnable {
+    private final IFramework                            framework;
+    private final IResourceManagement                   resourceManagement;
+    private final IDynamicStatusStoreService            dss;
+    private final IConfigurationPropertyStoreService    cps;
+    private final Log                                   logger = LogFactory.getLog(DockerSlotResourceMonitor.class);
                                                                     //dss.docker.slot.default.run.L7.SLOT_L7_0=free
-    private final Pattern                       slotRunPattern = Pattern.compile("^slot\\.(\\w+)\\.run\\.(\\w+)\\.(\\w+)");
+    private final Pattern                               slotRunPattern = Pattern.compile("^slot\\.(\\w+)\\.run\\.(\\w+)\\.(\\w+)");
 
 
    /**
@@ -41,11 +42,12 @@ public class DockerResourceMonitor implements Runnable {
     * @param dockerResourceManagement
     * @param cps
     */
-    public DockerResourceMonitor(IFramework framework, IResourceManagement resourceManagement, IDynamicStatusStoreService dss, 
+    public DockerSlotResourceMonitor(IFramework framework, IResourceManagement resourceManagement, IDynamicStatusStoreService dss, 
             DockerResourceManagement dockerResourceManagement, IConfigurationPropertyStoreService cps) {
-        this.framework          = framework;
-        this.dss                = dss;
-        this.resourceManagement = resourceManagement;
+        this.framework =            framework;
+        this.dss =                  dss;
+        this.cps =                  cps;
+        this.resourceManagement =   resourceManagement;
 
         this.logger.info("Docker slot resource monitor intialised");
     }
@@ -56,7 +58,11 @@ public class DockerResourceMonitor implements Runnable {
     @Override
     public void run() {
         logger.info("Starting search for run slots.");
+        checkForStaleSlots();
+        logger.info("Finished search for run slots.");
+    }
 
+    public void checkForStaleSlots() {
         try {
             Map<String, String> slotRuns = dss.getPrefix("slot");
 			
@@ -84,6 +90,7 @@ public class DockerResourceMonitor implements Runnable {
         } catch (Exception e) {
             logger.error("Problem when trying run the docker resource monitor.", e);
         }
+        logger.info("Stale slot search finished");
     }
 
     /**

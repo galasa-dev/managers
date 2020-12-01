@@ -7,7 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import dev.galasa.cicsts.ceci.CECIException;
+import dev.galasa.cicsts.CeciException;
 
 public class TestResponseOutputValueImpl {
     
@@ -33,11 +33,11 @@ public class TestResponseOutputValueImpl {
     }
 
     @Test
-    public void testGetIntValue() throws CECIException {
+    public void testGetIntValue() throws CeciException {
         ResponseOutputValueImpl responseOutputValue = new ResponseOutputValueImpl(99);
         Assert.assertEquals("Unxpected result", 99, responseOutputValue.getIntValue());
         
-        exceptionRule.expect(CECIException.class);
+        exceptionRule.expect(CeciException.class);
         exceptionRule.expectMessage("Value is " + String.class.getName() + " type");
         
         responseOutputValue = new ResponseOutputValueImpl("TEXT");
@@ -45,11 +45,11 @@ public class TestResponseOutputValueImpl {
     }
 
     @Test
-    public void testGetLongValue() throws CECIException {
+    public void testGetLongValue() throws CeciException {
         ResponseOutputValueImpl responseOutputValue = new ResponseOutputValueImpl(99L);
         Assert.assertEquals("Unxpected result", 99L, responseOutputValue.getLongValue());
         
-        exceptionRule.expect(CECIException.class);
+        exceptionRule.expect(CeciException.class);
         exceptionRule.expectMessage("Value is " + String.class.getName() + " type");
         
         responseOutputValue = new ResponseOutputValueImpl("TEXT");
