@@ -93,6 +93,11 @@ public class DockerEngineImpl implements IDockerEngine {
 		String engine = DockerEngine.get(this);
 		String port = DockerEnginePort.get(this);
 
+		if (!engine.startsWith("http://") && !engine.startsWith("https://")) {
+			// If no scheme, default to http
+			engine = "http://" + engine;
+		}
+
 		this.uri = new URI(engine + ":" + port);
 		this.dockerEngineClient.setURI(this.uri);
 		logger.info("Docker DSE Engine is set to " + this.dockerEngineId);
@@ -110,6 +115,11 @@ public class DockerEngineImpl implements IDockerEngine {
 			String engine = DockerEngine.get(this);
 			String port = DockerEnginePort.get(this);
 			int slotLimit = Integer.parseInt(DockerSlots.get(this));
+
+			if (!engine.startsWith("http://") && !engine.startsWith("https://")) {
+				// If no scheme, default to http
+				engine = "http://" + engine;
+			}
 
 			// Quick check to see if there is an engine with a free slot. This does not allocate slot
 			String currentSlots = dss.get("engine." + engineId + ".current.slots");
