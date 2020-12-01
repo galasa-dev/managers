@@ -74,7 +74,7 @@ public class CemtImpl implements ICemt {
                                               @NotNull String resourceType,
                                               @NotNull String resourceName) throws CemtException{
       
-      if(cicsRegion != this.terminal.getCicsRegion()) {
+      if(cicsRegion != cemtTerminal.getCicsRegion()) {
          throw new CemtException("CICS Version Mismatch");
       }
       
@@ -153,7 +153,7 @@ public class CemtImpl implements ICemt {
          throw new CemtException("Unable to return terminal back into reset state", e);
       }
       
-      return null;
+      return returnMap;
       
    }
    
@@ -162,7 +162,7 @@ public class CemtImpl implements ICemt {
    public CicstsHashMap setResource(@NotNull ICicsTerminal cemtTerminal, @NotNull String resourceType, String resourceName,
          @NotNull String action) throws CemtException {
       
-      if(cicsRegion != this.terminal.getCicsRegion()) {
+      if(cicsRegion != cemtTerminal.getCicsRegion()) {
          throw new CemtException("CICS Version Mismatch");
       }
       
@@ -244,7 +244,7 @@ public class CemtImpl implements ICemt {
          throw new CemtException("Unable to return terminal back into reset state", e);
       }
       
-      return null;
+      return returnMap;
       
    }
 
@@ -253,7 +253,7 @@ public class CemtImpl implements ICemt {
    public void discardResource(@NotNull ICicsTerminal cemtTerminal, @NotNull String resourceType,
          @NotNull String resourceName) throws CemtException {
       
-      if(cicsRegion != this.terminal.getCicsRegion()) {
+      if(cicsRegion != cemtTerminal.getCicsRegion()) {
          throw new CemtException("CICS Version Mismatch");
       }
       
@@ -308,7 +308,7 @@ public class CemtImpl implements ICemt {
    public boolean performSystemProperty(@NotNull ICicsTerminal cemtTerminal, @NotNull String systemArea,
          @NotNull String setRequest, @NotNull String expectedResponse) throws CemtException {
       
-      if(cicsRegion != this.terminal.getCicsRegion()) {
+      if(cicsRegion != cemtTerminal.getCicsRegion()) {
          throw new CemtException("CICS Version Mismatch");
       }
       
