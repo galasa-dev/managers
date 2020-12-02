@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: couchdb
-        image: couchdb:2.3.1
+        image: ${dockerRegistry}/couchdb:2.3.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5984

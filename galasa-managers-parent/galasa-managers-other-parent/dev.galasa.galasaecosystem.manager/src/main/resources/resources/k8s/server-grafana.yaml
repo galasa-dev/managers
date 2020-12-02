@@ -17,7 +17,7 @@ spec:
         platform: hdc
       initContainers:
         - name: init-chown-data
-          image: busybox:latest
+          image: ${dockerRegistry}/busybox:1.32.0
           imagePullPolicy: IfNotPresent
           command: ["chown", "472:472", "/var/lib/grafana"]
           volumeMounts:
@@ -26,7 +26,8 @@ spec:
             subPath: ""
       containers:
         - name: grafana
-          image: grafana/grafana
+          image: ${dockerRegistry}/grafana:7.3.4
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           volumeMounts:
