@@ -31,7 +31,8 @@ public class DockerResourceManagement implements IResourceManagementProvider {
     private IDynamicStatusStoreService              dss;
     private IConfigurationPropertyStoreService      cps;
 
-    private DockerResourceMonitor                   slotResourceMonitor;
+    private DockerSlotResourceMonitor               slotResourceMonitor;
+    private DockerContainerResourceMonitor          containerResourceMonitor;
 
     /**
      * Initialses the resource management of the docker slots.
@@ -54,7 +55,8 @@ public class DockerResourceManagement implements IResourceManagementProvider {
         } catch(ConfigurationPropertyStoreException e) {
             throw new ResourceManagerException("Could not initialise docker resource monitor, due to the DSS:  ", e);
         }
-        slotResourceMonitor = new DockerResourceMonitor(framework, resourceManagement, dss, this, cps);
+        slotResourceMonitor = new DockerSlotResourceMonitor(framework, resourceManagement, dss, this, cps);
+        containerResourceMonitor = new DockerContainerResourceMonitor(framework, resourceManagement, cps, dss);
         return true;
 
     }
@@ -64,9 +66,13 @@ public class DockerResourceManagement implements IResourceManagementProvider {
      */
     @Override
     public void start() {
-       this.resourceManagement.
-       getScheduledExecutorService().
-       scheduleWithFixedDelay(slotResourceMonitor, this.framework.getRandom().nextInt(20), 20, TimeUnit.SECONDS);
+        this.resourceManagement.
+        getScheduledExecutorService().
+        scheduleWithFixedDelay(slotResourceMonitor, this.framework.getRandom().nextInt(20), 20, TimeUnit.SECONDS);
+        
+        this.resourceManagement.
+        getScheduledExecutorService().
+        scheduleWithFixedDelay(containerResourceMonitor, this.framework.getRandom().nextInt(10), 10, TimeUnit.MINUTES);
     }
 
     /**

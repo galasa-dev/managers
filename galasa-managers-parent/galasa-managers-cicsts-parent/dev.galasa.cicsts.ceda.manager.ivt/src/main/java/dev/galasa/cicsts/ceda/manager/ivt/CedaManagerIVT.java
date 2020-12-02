@@ -7,7 +7,6 @@ package dev.galasa.cicsts.ceda.manager.ivt;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.commons.logging.Log;
 import org.assertj.core.api.Fail;
 
 import dev.galasa.Before;
@@ -20,7 +19,6 @@ import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
-import dev.galasa.core.manager.Logger;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
@@ -44,10 +42,6 @@ public class CedaManagerIVT {
 
 	@CicsTerminal()
 	public ICicsTerminal terminal;
-
-
-	@Logger
-	public Log logger;
 
 	@BeforeClass
 	public void login() throws InterruptedException, Zos3270Exception {
@@ -80,8 +74,9 @@ public class CedaManagerIVT {
 
 	@Test
 	public void checkCECINotNull() throws CicstsManagerException {
-		assertThat(cics.ceda()).isNotNull();
+		
 		assertThat(cics).isNotNull();
+		assertThat(cics.ceda()).isNotNull();
 		assertThat(cics.cemt()).isNotNull();
 		assertThat(cemtTerminal).isNotNull();
 		assertThat(cedaTerminal).isNotNull();
@@ -104,7 +99,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 			if (response) {
 				response=false;
@@ -119,7 +114,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -150,7 +145,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 
@@ -167,7 +162,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -198,7 +193,7 @@ public class CedaManagerIVT {
 			if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)!=null) {
 				response = true;
 			}
-			assertThat(response);
+			assertThat(response).isEqualTo(true);
 			
 			// if resource was installed successfully, then tests the delete method by discarding resource from CEMT, deleting and then trying to install and checking if the resource appeared on CEMT
 
@@ -215,7 +210,7 @@ public class CedaManagerIVT {
 					if(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName)==null) {
 						response = true;
 					}
-					assertThat(response);
+					assertThat(response).isEqualTo(true);
 
 				}else Fail.fail("Failed to discard resource");
 
@@ -250,7 +245,7 @@ public class CedaManagerIVT {
 		if (cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName).containsValue(resourceName.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName2).containsValue(resourceName2.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName3).containsValue(resourceName3.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName4)==null) {
 			result =true;
 		}
-		assertThat(result);
+		assertThat(result).isEqualTo(true);
 
 		//Checking if group delete works by discarding elements from CEMT and deleting group from CEDA, checking by installing group
 		if(result) {
