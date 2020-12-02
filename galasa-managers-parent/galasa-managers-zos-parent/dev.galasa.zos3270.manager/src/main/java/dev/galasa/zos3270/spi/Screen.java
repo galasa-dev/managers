@@ -479,6 +479,7 @@ public class Screen {
         
 
         if (writeControlCharacter.isKeyboardReset()) {
+            this.lastAid = AttentionIdentification.NONE;
             unlockKeyboard();
             this.workingCursor = 0;
         }
