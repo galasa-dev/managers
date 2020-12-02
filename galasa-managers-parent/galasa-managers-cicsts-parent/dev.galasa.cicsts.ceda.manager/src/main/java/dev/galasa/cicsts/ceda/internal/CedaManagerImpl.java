@@ -33,7 +33,7 @@ public class CedaManagerImpl extends AbstractManager implements ICedaManagerSpi,
 	private ICicstsManagerSpi cicstsManager;
 	HashMap<ICicsRegion, ICeda> regionCeda = new HashMap<>();
 
-	protected static final String NAMESPACE = "cicsts";
+	protected static final String NAMESPACE = "ceda";
 
 	/* (non-Javadoc)
 	 * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)

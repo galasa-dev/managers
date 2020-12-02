@@ -32,7 +32,7 @@ import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 @Component(service = { IManager.class })
 public class CemtManagerImpl extends AbstractManager implements ICemtManagerSpi, ICemtProvider {
    
-   protected static final String NAMESPACE = "cicsts";
+   protected static final String NAMESPACE = "cemt";
    private ICicstsManagerSpi cicstsManager;
    private HashMap<ICicsRegion, ICemt> regionCemt = new HashMap<>();
    
