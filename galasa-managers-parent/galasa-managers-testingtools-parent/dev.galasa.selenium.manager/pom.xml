@@ -3,10 +3,10 @@
     <parent>
         <groupId>dev.galasa</groupId>
         <artifactId>galasa-managers-testingtools-parent</artifactId>
-        <version>0.13.0-SNAPSHOT</version>
+        <version>0.13.0</version>
     </parent>
     <artifactId>dev.galasa.selenium.manager</artifactId>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.13.0</version>
     <packaging>bundle</packaging>
     <name>Galasa Selenium Manager</name>
     <dependencies>
@@ -84,13 +84,13 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.framework</artifactId>
-            <version>0.13.0-SNAPSHOT</version>
+            <version>0.13.0</version>
 			<scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa</artifactId>
-            <version>0.13.0-SNAPSHOT</version>
+            <version>0.13.0</version>
 			<scope>provided</scope>
         </dependency>
     </dependencies>
