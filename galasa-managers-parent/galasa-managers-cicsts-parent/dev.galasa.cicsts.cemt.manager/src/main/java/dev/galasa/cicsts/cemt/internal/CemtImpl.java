@@ -44,24 +44,32 @@ public class CemtImpl implements ICemt {
    
                String[] parts = newString.split("\\(");
                
-               if(parts.length < 2 && !map.containsKey(parts[0])) {
+               String key = parts[0].toLowerCase();
                
-                  map.put(parts[0], "");
+               String value = null;
                
-               }else if(map.containsKey(parts[0]) && parts.length == 2) {
-                  if(!map.get(parts[0]).equals(parts[1].trim())) {
-                     String value = map.get(parts[0]);
-                     map.put(parts[0], (value + parts[1]).trim());
+               if(parts.length == 2) {
+                  value = parts[1].trim();
+               }
+              
+               if(value == null && !map.containsKey(key)) {
+               
+                  map.put(key, "");
+               
+               }else if(map.containsKey(key) && value != null) {
+                  if(!map.get(key).equals(value)) {
+                     String mapValue = map.get(key);
+                     map.put(key, (mapValue + value));
                   }
                   
-               }else if(parts.length == 2){
-                  map.put(parts[0], parts[1].trim());
+               }else if(value != null){
+                  map.put(key, value);
                }
               
             }
                
+         
          }
-      
       }catch(Exception e) {
          throw new Exception("Error creating map", e);
       }
@@ -90,10 +98,17 @@ public class CemtImpl implements ICemt {
       
       try {
          terminal.type("CEMT INQUIRE " + resourceType + "(" + resourceName + ")").enter().waitForKeyboard();
-         terminal.waitForTextInField("STATUS: ");
+         
+         if(!terminal.retrieveScreen().contains("E " + "'" + resourceType + "' is not valid and is ignored.")) {
+            terminal.waitForTextInField("STATUS: ");
+          }else {
+             throw new CemtException();
+          }
+         
       }catch(Exception e) {
          throw new CemtException("Problem with starting CEMT transaction");
       }
+      
       
       try {
          if(!terminal.retrieveScreen().contains("RESPONSE: NORMAL")) {
@@ -351,11 +366,6 @@ public class CemtImpl implements ICemt {
       
      
    }
-
-
-
-
-
    
    
 }
