@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import dev.galasa.textscan.FailTextFoundException;
-import dev.galasa.textscan.IScannable;
+import dev.galasa.textscan.ITextScannable;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.IncorrectOccurancesException;
 import dev.galasa.textscan.MissingTextException;
@@ -57,42 +57,42 @@ public class TextScannerImpl implements ITextScanner {
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, Pattern searchPattern, Pattern failPattern, int count)
+    public ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int count)
             throws FailTextFoundException, MissingTextException, IncorrectOccurancesException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, Pattern searchPattern, Pattern failPattern)
+    public ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern)
             throws FailTextFoundException, MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, Pattern searchPattern)
+    public ITextScanner scan(ITextScannable scannable, Pattern searchPattern)
             throws FailTextFoundException, MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, String searchString, String failString, int count)
+    public ITextScanner scan(ITextScannable scannable, String searchString, String failString, int count)
             throws FailTextFoundException, MissingTextException, IncorrectOccurancesException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, String searchString, String failString)
+    public ITextScanner scan(ITextScannable scannable, String searchString, String failString)
             throws FailTextFoundException, MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ITextScanner scan(IScannable scannable, String searchString) throws MissingTextException {
+    public ITextScanner scan(ITextScannable scannable, String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -166,27 +166,27 @@ public class TextScannerImpl implements ITextScanner {
     }
 
     @Override
-    public String scanForMatch(IScannable scannable, Pattern searchPattern, int occurrence)
+    public String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence)
             throws MissingTextException, IncorrectOccurancesException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String scanForMatch(IScannable scannable, Pattern searchPattern) throws MissingTextException {
+    public String scanForMatch(ITextScannable scannable, Pattern searchPattern) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String scanForMatch(IScannable scannable, String searchString, int occurrence)
+    public String scanForMatch(ITextScannable scannable, String searchString, int occurrence)
             throws MissingTextException, IncorrectOccurancesException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String scanForMatch(IScannable scannable, String searchString) throws MissingTextException {
+    public String scanForMatch(ITextScannable scannable, String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }

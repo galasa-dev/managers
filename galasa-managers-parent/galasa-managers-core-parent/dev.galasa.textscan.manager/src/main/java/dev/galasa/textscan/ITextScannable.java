@@ -17,7 +17,7 @@ import dev.galasa.ManagerException;
  * @author Michael Baylis
  *
  */
-public interface IScannable {
+public interface ITextScannable {
     
     /**
      * Is the scannable object fetched by inputstream, used when the text file can be so large that it may 
@@ -48,7 +48,7 @@ public interface IScannable {
      * @return this scannable for fluent use
      * @throws ManagerException - If the update fails
      */
-    IScannable update() throws ManagerException;
+    ITextScannable update() throws ManagerException;
     
     /**
      * Fetch the InputStream for the scannable

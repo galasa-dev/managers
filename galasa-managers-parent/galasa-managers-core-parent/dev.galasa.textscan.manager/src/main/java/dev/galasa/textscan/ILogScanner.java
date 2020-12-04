@@ -27,7 +27,7 @@ public interface ILogScanner {
      * @return this interface for fluent use
      * @throws TextScanManagerException If a scannable has already been set, updateText called or is null, or the first update fails
      */
-    ILogScanner setScannable(IScannable scannable) throws TextScanManagerException;
+    ILogScanner setScannable(ITextScannable scannable) throws TextScanManagerException;
     
     /**
      * Update the scannable.

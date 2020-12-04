@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ILogScanner;
-import dev.galasa.textscan.IScannable;
+import dev.galasa.textscan.ITextScannable;
 import dev.galasa.textscan.IncorrectOccurancesException;
 import dev.galasa.textscan.MissingTextException;
 import dev.galasa.textscan.TextScanManagerException;
@@ -17,7 +17,7 @@ import dev.galasa.textscan.TextScanManagerException;
 public class LogScannerImpl implements ILogScanner {
 
     @Override
-    public ILogScanner setScannable(IScannable scannable) throws TextScanManagerException {
+    public ILogScanner setScannable(ITextScannable scannable) throws TextScanManagerException {
         // TODO Auto-generated method stub
         return null;
     }

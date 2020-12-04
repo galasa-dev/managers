@@ -116,7 +116,7 @@ public interface ITextScanner {
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
      * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
      */
-    ITextScanner scan(IScannable scannable, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
+    ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
     
     /**
      * Convenience method for scan(text, searchPattern, failPattern, 1)
@@ -128,7 +128,7 @@ public interface ITextScanner {
      * @throws FailTextFoundException - If the failurePattern was found
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
      */
-    ITextScanner scan(IScannable scannable, Pattern searchPattern, Pattern failPattern) throws FailTextFoundException, MissingTextException;
+    ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern) throws FailTextFoundException, MissingTextException;
     
     /**
      * Convenience method for scan(text, searchPattern, null, 1)
@@ -139,7 +139,7 @@ public interface ITextScanner {
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
      * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
      */
-    ITextScanner scan(IScannable scannable, Pattern searchPattern) throws FailTextFoundException, MissingTextException;
+    ITextScanner scan(ITextScannable scannable, Pattern searchPattern) throws FailTextFoundException, MissingTextException;
     
     /**
      * Convenience method for scan(scannable, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
@@ -153,7 +153,7 @@ public interface ITextScanner {
      * @throws MissingTextException - If no occurrences of the searchText was found 
      * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
      */
-    ITextScanner scan(IScannable scannable, String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
+    ITextScanner scan(ITextScannable scannable, String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
     
     /**
      * Convenience method for scan(scannable, searchString, failString, 1)
@@ -165,7 +165,7 @@ public interface ITextScanner {
      * @throws FailTextFoundException - If the failureText was found
      * @throws MissingTextException - If no occurrences of the searchText was found 
      */
-    ITextScanner scan(IScannable scannable, String searchString, String failString) throws FailTextFoundException, MissingTextException;
+    ITextScanner scan(ITextScannable scannable, String searchString, String failString) throws FailTextFoundException, MissingTextException;
     
     /**
      * Convenience method for scan(scannable, searchString, null, 1)
@@ -175,7 +175,7 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws MissingTextException - If no occurrences of the searchText was found 
      */
-    ITextScanner scan(IScannable scannable, String searchString) throws MissingTextException;
+    ITextScanner scan(ITextScannable scannable, String searchString) throws MissingTextException;
     
     
     
@@ -329,7 +329,7 @@ public interface ITextScanner {
      * @throws MissingTextException - The searchPattern was not found at all
      * @throws IncorrectOccurancesException - The searchPattern was found, but not the x occurrence
      */
-    String scanForMatch(IScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurancesException;
+    String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurancesException;
     
     /**
      * Convenience method for scanForMatch(scannable, searchText, 1)
@@ -340,7 +340,7 @@ public interface ITextScanner {
      * @return The text of the searchPattern found
      * @throws MissingTextException - The searchPattern was not found at all
      */
-    String scanForMatch(IScannable scannable, Pattern searchPattern) throws MissingTextException;
+    String scanForMatch(ITextScannable scannable, Pattern searchPattern) throws MissingTextException;
     
     /**
      * Convenience method for scanForMatch(scannable, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
@@ -352,7 +352,7 @@ public interface ITextScanner {
      * @throws MissingTextException - The searchPattern was not found at all
      * @throws IncorrectOccurancesException - The searchPattern was found, but not the x occurrence
      */
-    String scanForMatch(IScannable scannable, String searchString, int occurrence) throws MissingTextException, IncorrectOccurancesException;
+    String scanForMatch(ITextScannable scannable, String searchString, int occurrence) throws MissingTextException, IncorrectOccurancesException;
     
     /**
      * Convenience method for scanForMatch(scannable, searchPattern, 1)
@@ -363,7 +363,7 @@ public interface ITextScanner {
      * @return The text of the searchPattern found
      * @throws MissingTextException - The searchPattern was not found at all
      */
-    String scanForMatch(IScannable scannable, String searchString) throws MissingTextException;
+    String scanForMatch(ITextScannable scannable, String searchString) throws MissingTextException;
     
     
     
