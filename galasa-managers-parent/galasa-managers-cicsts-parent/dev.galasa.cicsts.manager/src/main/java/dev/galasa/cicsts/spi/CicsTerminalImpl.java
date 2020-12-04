@@ -19,25 +19,28 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 
     public final ICicsRegionProvisioned cicsRegion;
     public final ICicstsManagerSpi cicstsManager;
+    
+    public final boolean connectAtStartup;
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup)
             throws TerminalInterruptedException, Zos3270ManagerException {
         super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false);
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;
+        this.connectAtStartup = connectAtStartup;
         
-        setAutoReconnect(true);
+        setAutoReconnect(connectAtStartup);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup)
             throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException {
-        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls());
+        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion) throws TerminalInterruptedException, IpNetworkManagerException,
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup) throws TerminalInterruptedException, IpNetworkManagerException,
             Zos3270ManagerException {
-        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost());
+        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup);
     }
 
     @Override
@@ -63,6 +66,10 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     @Override
     public ICicsTerminal resetAndClear() throws CicstsManagerException {
         throw new UnsupportedOperationException("PLACEHOLDER");
+    }
+    
+    public boolean isConnectAtStartup() {
+        return this.connectAtStartup;
     }
     
 }
