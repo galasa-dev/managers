@@ -25,14 +25,14 @@ public interface ITextScannable {
      * 
      * @return true if is an inputstream
      */
-    boolean isInputStream();
+    boolean isScannableInputStream();
     
     /**
      * Used for normal logs that fit easily in a standard String
      * 
      * @return true if it is a simple String object
      */
-    boolean isString();
+    boolean isScannableString();
     
     
     /**
@@ -40,7 +40,7 @@ public interface ITextScannable {
      * 
      * @return a string to uniquely identify the scannable
      */
-    String getName();
+    String getScannableName();
     
     /**
      * Update/Refresh the scannable text,  likely to be a no-op if this is an inputstream scannable. 
@@ -48,7 +48,7 @@ public interface ITextScannable {
      * @return this scannable for fluent use
      * @throws ManagerException - If the update fails
      */
-    ITextScannable update() throws ManagerException;
+    ITextScannable updateScannable() throws ManagerException;
     
     /**
      * Fetch the InputStream for the scannable
@@ -56,7 +56,7 @@ public interface ITextScannable {
      * @return The latest inputstream
      * @throws ManagerException - If there is an error fetching the inputstream or it is not an inputstream
      */
-    InputStream getInputStream() throws ManagerException;
+    InputStream getScannableInputStream() throws ManagerException;
     
     /**
      * Fetch the latest scannable text
@@ -64,6 +64,6 @@ public interface ITextScannable {
      * @return The latest scannable text
      * @throws ManagerException if there is an error retrieving the text
      */
-    String getString() throws ManagerException;
+    String getScannableString() throws ManagerException;
 
 }
