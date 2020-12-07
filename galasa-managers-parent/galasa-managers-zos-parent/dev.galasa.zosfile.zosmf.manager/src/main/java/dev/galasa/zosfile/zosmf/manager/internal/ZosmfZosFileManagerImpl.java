@@ -49,22 +49,22 @@ public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFile
     
     private static final Log logger = LogFactory.getLog(ZosmfZosFileManagerImpl.class);
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosmfZosFileManagerImpl.zosManager = zosManager;
+    protected IZosManagerSpi zosManager;
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
     
-    protected static IZosmfManagerSpi zosmfManager;
-    public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-        ZosmfZosFileManagerImpl.zosmfManager = zosmfManager;
+    protected IZosmfManagerSpi zosmfManager;
+    public IZosmfManagerSpi getZosmfManager() {
+        return this.zosmfManager;
     }
 
-    protected static IZosUNIXCommandSpi zosUnixCommandManager;
-    public static void setZosUnixCommandCommandManager(IZosUNIXCommandSpi zosUnixCommandManager) {
-        ZosmfZosFileManagerImpl.zosUnixCommandManager = zosUnixCommandManager;
+    protected IZosUNIXCommandSpi zosUnixCommandManager;
+    public IZosUNIXCommandSpi getZosUnixCommandManager() {
+        return this.zosUnixCommandManager;
     }
 
-    private static final Map<String, ZosmfZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
+    private final Map<String, ZosmfZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
 
     private static final String ZOS_DATASETS = "zOS_Datasets";
     
@@ -74,54 +74,54 @@ public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFile
 
     private static final String PROVISIONING = "provisioning";
 
-    private static String runId;
-    protected static void setRunId(String id) {
-        runId = id;
+    private String runId;
+    protected void setRunId(String id) {
+        this.runId = id;
     }
-    protected static String getRunId() {
-        return runId;
+    protected String getRunId() {
+        return this.runId;
     }
 
     private Path artifactsRoot;
 
     private boolean provisionCleanupComplete;
 
-    protected static Path datasetArtifactRoot;
-    protected static void setDatasetArtifactRoot(Path path) {
-        datasetArtifactRoot = path;
+    protected Path datasetArtifactRoot;
+    protected void setDatasetArtifactRoot(Path path) {
+        this.datasetArtifactRoot = path;
     }
-    protected static Path getDatasetArtifactRoot() {
-        return datasetArtifactRoot;
-    }
-
-    protected static Path vsamDatasetArtifactRoot;
-    protected static void setVsamDatasetArtifactRoot(Path path) {
-        vsamDatasetArtifactRoot = path;
-    }
-    protected static Path getVsamDatasetArtifactRoot() {
-        return vsamDatasetArtifactRoot;
+    protected Path getDatasetArtifactRoot() {
+        return this.datasetArtifactRoot;
     }
 
-    protected static Path unixPathArtifactRoot;
-    protected static void setUnixPathArtifactRoot(Path path) {
-        unixPathArtifactRoot = path;
+    protected Path vsamDatasetArtifactRoot;
+    protected void setVsamDatasetArtifactRoot(Path path) {
+        this.vsamDatasetArtifactRoot = path;
     }
-    protected static Path getUnixPathArtifactRoot() {
-        return unixPathArtifactRoot;
+    protected Path getVsamDatasetArtifactRoot() {
+        return this.vsamDatasetArtifactRoot;
+    }
+
+    protected Path unixPathArtifactRoot;
+    protected void setUnixPathArtifactRoot(Path path) {
+        this.unixPathArtifactRoot = path;
+    }
+    protected Path getUnixPathArtifactRoot() {
+        return this.unixPathArtifactRoot;
     }
     
-    protected static String currentTestMethodArchiveFolderName;
-    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName = folderName;
+    protected String currentTestMethodArchiveFolderName;
+    public void setCurrentTestMethodArchiveFolderName(String folderName) {
+        this.currentTestMethodArchiveFolderName = folderName;
     }
-    public static Path getDatasetCurrentTestMethodArchiveFolder() {
-        return datasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getDatasetCurrentTestMethodArchiveFolder() {
+        return this.datasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
-    public static Path getVsamDatasetCurrentTestMethodArchiveFolder() {
-        return vsamDatasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getVsamDatasetCurrentTestMethodArchiveFolder() {
+        return this.vsamDatasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
-    public static Path getUnixPathCurrentTestMethodArchiveFolder() {
-        return unixPathArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getUnixPathCurrentTestMethodArchiveFolder() {
+        return this.unixPathArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
     
     /* (non-Javadoc)
@@ -171,15 +171,15 @@ public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFile
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosFileManagerException("The zOS Manager is not available");
         }
-        setZosmfManager(addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class));
+        this.zosmfManager = addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class);
         if (zosmfManager == null) {
             throw new ZosFileManagerException("The zOSMF Manager is not available");
         }
-        setZosUnixCommandCommandManager(addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class));
+        this.zosUnixCommandManager = addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class);
         if (zosUnixCommandManager == null) {
             throw new ZosFileManagerException("The zOS UNIX Command Manager is not available");
         }
@@ -305,21 +305,21 @@ public class ZosmfZosFileManagerImpl extends AbstractManager implements IZosFile
     
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
     public IZosFileHandler generateZosFileHandler(Field field, List<Annotation> annotations) {
-        ZosmfZosFileHandlerImpl zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl(field.getName());
+        ZosmfZosFileHandlerImpl zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl(this, field.getName());
         zosFileHandlers.put(zosmfZosFileHandlerImpl.toString(), zosmfZosFileHandlerImpl);        
         return zosmfZosFileHandlerImpl;
     }
     
-    public static IZosFileHandler newZosFileHandler() {
+    public IZosFileHandler newZosFileHandler() {
         ZosmfZosFileHandlerImpl zosmfZosFileHandlerImpl;
         if (zosFileHandlers.get("INTERNAL") == null) {
-            zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl();
+            zosmfZosFileHandlerImpl = new ZosmfZosFileHandlerImpl(this);
             zosFileHandlers.put(zosmfZosFileHandlerImpl.toString(), zosmfZosFileHandlerImpl);
         }
         return zosFileHandlers.get("INTERNAL");
     }
     
-    public static String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
+    public String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
         try {
             return zosManager.getRunDatasetHLQ(image);
         } catch (ZosManagerException e) {

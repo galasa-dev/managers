@@ -76,6 +76,9 @@ public class TestZosmfZosVSAMDatasetImpl {
     private ZosmfManagerImpl zosmfManagerMock;
     
     @Mock
+    private ZosmfZosFileManagerImpl zosFileManagerMock;
+    
+    @Mock
     private ZosmfZosFileHandlerImpl zosFileHandlerMock;
     
     @Mock
@@ -137,25 +140,30 @@ public class TestZosmfZosVSAMDatasetImpl {
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
         
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
         
         PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        ZosmfZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosmfManager()).thenReturn(zosmfManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosFileManager()).thenReturn(zosFileManagerMock);
+        Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenReturn(zosDatasetMock);
+        Mockito.when(zosDatasetMock.getZosmfApiProcessor()).thenReturn(zosmfApiProcessorMock);
+        Path pathMock = newMockedPath(false);
+        Mockito.when(zosFileManagerMock.getVsamDatasetCurrentTestMethodArchiveFolder()).thenReturn(pathMock);
         
-        zosVSAMDataset = new ZosmfZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
+        zosVSAMDataset = new ZosmfZosVSAMDatasetImpl(zosFileHandlerMock, zosImageMock, VSAM_DATASET_NAME);
         zosVSAMDatasetSpy = Mockito.spy(zosVSAMDataset);
     }
     
     @Test
     @PrepareForTest({LogFactory.class, ZosmfZosFileManagerImpl.class})
     public void testConstructorException() throws ZosmfManagerException, ZosFileManagerException {
-    	PowerMockito.mockStatic(ZosmfZosFileManagerImpl.class);
-        Mockito.when(ZosmfZosFileManagerImpl.newZosFileHandler()).thenReturn(zosFileHandlerMock);
+        Mockito.when(zosFileManagerMock.newZosFileHandler()).thenReturn(zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException(EXCEPTION));
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage(EXCEPTION);
-        new ZosmfZosVSAMDatasetImpl(zosImageMock, VSAM_DATASET_NAME);
+        new ZosmfZosVSAMDatasetImpl(zosFileHandlerMock, zosImageMock, VSAM_DATASET_NAME);
     }
     
     @Test
@@ -386,7 +394,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     	zosVSAMDatasetSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
     	ZosVSAMDatasetException expectedException = Assert.assertThrows(expectedMessage , ZosVSAMDatasetException.class, ()->{
-			zosVSAMDatasetSpy.saveToResultsArchive();
+			zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO
     	});
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosVSAMDatasetSpy.setShouldArchive(true);
@@ -394,78 +402,47 @@ public class TestZosmfZosVSAMDatasetImpl {
         PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
         PowerMockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
-        ZosmfZosFileManagerImpl.setVsamDatasetArtifactRoot(newMockedPath(false));
-        ZosmfZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testMethod");
+        zosFileManagerMock.setVsamDatasetArtifactRoot(newMockedPath(false));
+        zosFileManagerMock.setCurrentTestMethodArchiveFolderName("testMethod");
         PowerMockito.doReturn(CONTENT).when(zosVSAMDatasetSpy).retrieveAsText();
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosVSAMDatasetSpy).retrieveAsBinary();
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         
         logMessage = null;
         expectedMessage = "\"" + VSAM_DATASET_NAME + "\"" + " archived to " + PATH_MOCK;
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doReturn("99").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
         logMessage = null;
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
 
         Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.BINARY);       
         logMessage = null;
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doReturn("XX").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
         logMessage = null;
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());        
         logMessage = null;
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doThrow(new ZosManagerException(EXCEPTION)).when(zosManagerMock).storeArtifact(Mockito.any(), Mockito.any(), Mockito.any());        
         logMessage = null;
         expectedMessage = "Unable to save VSAM data set to archive";
-        zosVSAMDatasetSpy.saveToResultsArchive(); 
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO 
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
         
         PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
-        zosVSAMDatasetSpy.saveToResultsArchive();
+        zosVSAMDatasetSpy.saveToResultsArchive("TODO");//TODO
 		Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
     }
-    
-//    @Test
-//    public void testSaveToResultsArchiveException() throws ZosFileManagerException {
-//        PowerMockito.doReturn(true).when(zosVSAMDatasetSpy).exists();
-//        Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.TEXT);
-//        PowerMockito.doReturn(CONTENT).when(zosVSAMDatasetSpy).retrieveAsText();
-//        PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
-//        
-//        logMessage = null;
-//        String expectedMessage = "\"" + VSAM_DATASET_NAME + "\"" + " archived to " + PATH_MOCK;
-//        zosVSAMDatasetSpy.saveToResultsArchive();
-//        
-//        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).saveToResultsArchive();
-//        PowerMockito.doReturn("99").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
-//        
-//        zosVSAMDatasetSpy.saveToResultsArchive();
-//        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(2)).saveToResultsArchive();
-//
-//        Whitebox.setInternalState(zosVSAMDatasetSpy, "dataType", DatasetDataType.BINARY);
-//        PowerMockito.doReturn(CONTENT.getBytes()).when(zosVSAMDatasetSpy).retrieveAsBinary();
-//        zosVSAMDatasetSpy.saveToResultsArchive();
-//        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(3)).saveToResultsArchive();
-//        
-//        PowerMockito.doReturn(false).when(zosVSAMDatasetSpy).exists();
-//        zosVSAMDatasetSpy.saveToResultsArchive();
-//        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(4)).saveToResultsArchive();
-//        
-//        PowerMockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetSpy).exists();
-//        zosVSAMDatasetSpy.saveToResultsArchive();
-//        Mockito.verify(zosVSAMDatasetSpy, Mockito.times(5)).saveToResultsArchive();
-//    }
     
     private Path newMockedPath(boolean fileExists) throws IOException {
         Path pathMock = Mockito.mock(Path.class);
@@ -942,7 +919,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDataset() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(zosFileManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("CYLINDER").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-TYPE"));
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("MAXLRECL"));
         PowerMockito.doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.eq("SPACE-PRI"));
@@ -966,7 +943,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException1() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));       
+        Mockito.when(zosFileManagerMock.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));       
         exceptionRule.expect(ZosVSAMDatasetException.class);
         exceptionRule.expectMessage(EXCEPTION);
         zosVSAMDatasetSpy.createReproDataset(CONTENT);
@@ -974,7 +951,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException2() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(zosFileManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("0").doReturn("CYLINDER").doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         PowerMockito.doReturn(reproDatasetMock).when(zosFileHandlerMock).newDataset(Mockito.any(), Mockito.any());
@@ -985,7 +962,7 @@ public class TestZosmfZosVSAMDatasetImpl {
     
     @Test
     public void testCreateReproDatasetException3() throws ZosFileManagerException {
-        Mockito.when(ZosmfZosFileManagerImpl.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
+        Mockito.when(zosFileManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(REPRO_DATASET_NAME);
         PowerMockito.doReturn("0").doReturn("CYLINDER").doReturn("0").doReturn("0").when(zosVSAMDatasetSpy).getValueFromListcat(Mockito.any());
         Whitebox.setInternalState(zosVSAMDatasetSpy, "zosFileHandler", zosFileHandlerMock);
         Mockito.when(zosFileHandlerMock.newDataset(Mockito.any(), Mockito.any())).thenThrow(new ZosDatasetException());

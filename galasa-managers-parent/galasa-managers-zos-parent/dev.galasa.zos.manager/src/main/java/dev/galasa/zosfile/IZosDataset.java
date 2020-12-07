@@ -280,11 +280,11 @@ public interface IZosDataset {
     public byte[] retrieveAsBinary() throws ZosDatasetException;
 
     /**
-     * Store the content of the data set with the test output
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * Store the content of the data set to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosDatasetException
      */
-    public void saveToResultsArchive() throws ZosDatasetException;
+    public void saveToResultsArchive(String rasPath) throws ZosDatasetException;
     
     /**
      * Returns true if the data set exists and is a partitioned data set
@@ -355,10 +355,12 @@ public interface IZosDataset {
     public Collection<String> memberList() throws ZosDatasetException;
 
     /**
-     * Store the content of the partitioned data set member with the test output
+     * Store the content of the partitioned data set member to the Results Archive Store
+     * @param memberName
+     * @param rasPath path in Results Archive Store
      * @throws ZosDatasetException
      */
-    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException;
+    public void memberSaveToResultsArchive(@NotNull String memberName, String rasPath) throws ZosDatasetException;
     
     /**
      * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content

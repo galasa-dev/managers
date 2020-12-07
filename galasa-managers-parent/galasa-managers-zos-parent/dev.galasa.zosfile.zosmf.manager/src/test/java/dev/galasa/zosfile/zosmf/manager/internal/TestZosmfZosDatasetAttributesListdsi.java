@@ -51,6 +51,9 @@ public class TestZosmfZosDatasetAttributesListdsi {
     private IZosManagerSpi zosManagerMock;
     
     @Mock
+    private ZosmfZosFileManagerImpl zosFileManagerMock;
+    
+    @Mock
     private IZosUNIXCommandSpi zosUNIXCommandSpiMock;
     
     @Mock
@@ -74,24 +77,25 @@ public class TestZosmfZosDatasetAttributesListdsi {
     @Before
     public void setup() throws Exception {
         Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(RUN_HLQ);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
-        ZosmfZosFileManagerImpl.setRunId(RUNID);
-        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(zosUNIXCommandSpiMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getRunId()).thenReturn(RUNID);
+        Mockito.when(zosFileManagerMock.getZosUnixCommandManager()).thenReturn(zosUNIXCommandSpiMock);
         
-        zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(zosImageMock);
+        zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(zosFileManagerMock, zosImageMock);
         zosDatasetAttributesListdsiSpy = Mockito.spy(zosmfZosDatasetAttributesListdsi);
     }
     
     @Test
     public void testInitialise() throws ZosDatasetException {
         PowerMockito.doNothing().when(zosDatasetAttributesListdsiSpy).createExecDataset();
+        Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "zosFileManager", zosFileManagerMock);
         zosDatasetAttributesListdsiSpy.initialise();
         Assert.assertTrue("initialise() should set initialised to true", Whitebox.getInternalState(zosDatasetAttributesListdsiSpy, "initialised"));
     }
     
     @Test
     public void testInitialiseException1() throws ZosDatasetException {
-        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(null);
+    	Mockito.when(zosFileManagerMock.getZosUnixCommandManager()).thenReturn(null);
         exceptionRule.expect(ZosDatasetException.class);
         exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
         zosDatasetAttributesListdsiSpy.initialise();

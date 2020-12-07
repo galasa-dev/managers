@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.IZosDataset;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
@@ -21,6 +22,7 @@ import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
+import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
 /**
  * Implementation of {@link IZosFileHandler} using zOS/MF
@@ -36,33 +38,46 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
     private List<ZosmfZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();
     private String fieldName;
     
+	private ZosmfZosFileManagerImpl zosFileManager;
+	public ZosmfZosFileManagerImpl getZosFileManager() {
+		return zosFileManager;
+	}
+	public IZosManagerSpi getZosManager() {
+		return zosFileManager.getZosManager();
+	}
+
+	public IZosmfManagerSpi getZosmfManager() {
+		return zosFileManager.getZosmfManager();
+	}
+    
     private static final Log logger = LogFactory.getLog(ZosmfZosFileHandlerImpl.class);
 
-    public ZosmfZosFileHandlerImpl() {
-        this("INTERNAL");
+    public ZosmfZosFileHandlerImpl(ZosmfZosFileManagerImpl zosFileManager) {
+        this(zosFileManager, "INTERNAL");
     }
 
-    public ZosmfZosFileHandlerImpl(String fieldName) {
+    public ZosmfZosFileHandlerImpl(ZosmfZosFileManagerImpl zosFileManager, String fieldName) {
+    	this.zosFileManager = zosFileManager;
         this.fieldName = fieldName;
     }
 
     @Override
     public IZosDataset newDataset(String dsname, IZosImage image) throws ZosDatasetException {
-        ZosmfZosDatasetImpl zosDataset = new ZosmfZosDatasetImpl(image, dsname);
+        ZosmfZosDatasetImpl zosDataset = new ZosmfZosDatasetImpl(this, image, dsname);
         zosDatasets.add(zosDataset);
         return zosDataset;
     }
 
     @Override
     public IZosUNIXFile newUNIXFile(String fullFilePath, IZosImage image) throws ZosUNIXFileException {
-        ZosmfZosUNIXFileImpl zosUnixFile = new ZosmfZosUNIXFileImpl(image, fullFilePath);
+        ZosmfZosUNIXFileImpl zosUnixFile = new ZosmfZosUNIXFileImpl(this, image, fullFilePath);
         zosUnixFiles.add(zosUnixFile);
         return zosUnixFile;
     }
 
     @Override
     public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException {
-        ZosmfZosVSAMDatasetImpl zosVsamDataset = new ZosmfZosVSAMDatasetImpl(image, dsname);
+        ZosmfZosVSAMDatasetImpl zosVsamDataset = new ZosmfZosVSAMDatasetImpl(this, image, dsname);
         this.zosVsamDatasets.add(zosVsamDataset);
         return zosVsamDataset;
     }
@@ -80,7 +95,7 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
             try {
 	            if (zosDataset.created() && zosDataset.exists()) {
 	                if (!zosDataset.isTemporary() && zosDataset.shouldArchive()) {
-	                    zosDataset.saveToResultsArchive();
+	                    zosDataset.saveToResultsArchive("TODO");
 	                }
 	                if (zosDataset.retainToTestEnd()) {
 	                    this.zosDatasetsForCleanup.add(zosDataset);
@@ -106,7 +121,7 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
             try {
 	            if (zosDataset.created() && zosDataset.exists() && zosDataset.shouldArchive()) {
 	                if (!zosDataset.isTemporary()) {
-	                    zosDataset.saveToResultsArchive();
+	                    zosDataset.saveToResultsArchive("TODO");//TODO
 	                }
 	                zosDataset.delete();
 	            }
@@ -122,7 +137,7 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
             ZosmfZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
             try {
 	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
-	                zosVsamDataset.saveToResultsArchive();
+	                zosVsamDataset.saveToResultsArchive("TODO");//TODO
 	                if (zosVsamDataset.retainToTestEnd()) {
 	                    this.zosVsamDatasetsForCleanup.add(zosVsamDataset);
 	                } else {
@@ -146,7 +161,7 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
         	ZosmfZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
             try {
 	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
-	                zosVsamDataset.saveToResultsArchive();
+	                zosVsamDataset.saveToResultsArchive("TODO");//TODO
 	                zosVsamDataset.delete();
 	            }
 			} catch (ZosVSAMDatasetException e) {
@@ -161,7 +176,7 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
             ZosmfZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
             try {
 				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists() && zosUnixFile.shouldArchive()) {
-	                zosUnixFile.saveToResultsArchive();
+	                zosUnixFile.saveToResultsArchive("TODO");//TODO
 	                if (!zosUnixFile.retainToTestEnd()) {
 	                	if (zosUnixFile.isDirectory()) {
 	                		zosUnixFile.directoryDeleteNonEmpty();

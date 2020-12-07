@@ -61,6 +61,12 @@ public class TestZosmfZosUNIXFileImpl {
     private ZosManagerImpl zosManagerMock;
     
     @Mock
+    private ZosmfZosFileManagerImpl zosFileManagerMock;
+    
+    @Mock
+    private ZosmfZosFileHandlerImpl zosFileHandlerMock;
+    
+    @Mock
     private ZosmfManagerImpl zosmfManagerMock;
     
     @Mock
@@ -107,12 +113,14 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosManagerMock.getZosFilePropertyUnixFilePermissions(Mockito.any())).thenReturn(MODE);
         
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
         
         PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        ZosmfZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosmfManager()).thenReturn(zosmfManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosFileManager()).thenReturn(zosFileManagerMock);
         
-        zosUNIXFile = new ZosmfZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        zosUNIXFile = new ZosmfZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, UNIX_PATH);
         zosUNIXFileSpy = Mockito.spy(zosUNIXFile);
     }
     
@@ -120,7 +128,7 @@ public class TestZosmfZosUNIXFileImpl {
     public void testConstructorException1() throws ZosmfManagerException, ZosFileManagerException {
         exceptionRule.expect(ZosUNIXFileException.class);
         exceptionRule.expectMessage("UNIX path must be absolute not be relative");
-        new ZosmfZosUNIXFileImpl(zosImageMock, "PATH");
+        new ZosmfZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, "PATH");
     }
     
     @Test
@@ -128,7 +136,7 @@ public class TestZosmfZosUNIXFileImpl {
         exceptionRule.expect(ZosUNIXFileException.class);
         exceptionRule.expectMessage(EXCEPTION);
         Mockito.doThrow(new ZosmfManagerException(EXCEPTION)).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        new ZosmfZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        new ZosmfZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, UNIX_PATH);
     }
     
     @Test
@@ -136,7 +144,7 @@ public class TestZosmfZosUNIXFileImpl {
         exceptionRule.expect(ZosUNIXFileException.class);
         exceptionRule.expectMessage(EXCEPTION);
         Mockito.when(zosManagerMock.getZosFilePropertyDirectoryListMaxItems(Mockito.any())).thenThrow(new ZosFileManagerException(EXCEPTION));
-        new ZosmfZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        new ZosmfZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, UNIX_PATH);
     }
     
     @Test
@@ -309,12 +317,12 @@ public class TestZosmfZosUNIXFileImpl {
     	zosUNIXFileSpy.setShouldArchive(false);
     	String expectedMessage = "shouldArchive flag is false";
     	ZosUNIXFileException expectedException = Assert.assertThrows(ZosUNIXFileException.class, ()->{
-			zosUNIXFileSpy.saveToResultsArchive();
+			zosUNIXFileSpy.saveToResultsArchive("TODO");//TODO
     	});
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosUNIXFileSpy.setShouldArchive(true);
         PowerMockito.doNothing().when(zosUNIXFileSpy).saveToResultsArchive(Mockito.any());
-        zosUNIXFileSpy.saveToResultsArchive();
+        zosUNIXFileSpy.saveToResultsArchive("TODO");//TODO
 
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         zosUNIXFileSpy.isDirectory();
@@ -850,8 +858,10 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(seekableByteChannelMock);
         Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
-        ZosmfZosFileManagerImpl.setUnixPathArtifactRoot(archivePathMock);
-        ZosmfZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testStoreArtifact");
+        zosFileManagerMock.setUnixPathArtifactRoot(archivePathMock);
+        zosFileManagerMock.setCurrentTestMethodArchiveFolderName("testStoreArtifact");
+        Whitebox.setInternalState(zosFileManagerMock, "currentTestMethodArchiveFolderName", "testStoreArtifact");
+        Mockito.when(zosFileManagerMock.getUnixPathArtifactRoot()).thenReturn(archivePathMock);
         
         return fileSystemProviderMock;
     }

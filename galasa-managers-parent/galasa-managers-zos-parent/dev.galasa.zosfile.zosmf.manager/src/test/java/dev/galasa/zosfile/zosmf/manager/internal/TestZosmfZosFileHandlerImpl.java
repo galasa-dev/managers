@@ -44,6 +44,9 @@ public class TestZosmfZosFileHandlerImpl {
 
     @Mock
     private ZosManagerImpl zosManagerMock;
+
+    @Mock
+    private ZosmfZosFileManagerImpl zosFileManagerMock;
     
     @Mock
     private ZosmfManagerImpl zosmfManagerMock;
@@ -87,17 +90,17 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
         PowerMockito.doReturn(zosmfApiProcessorMock).when(zosmfManagerMock).newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        ZosmfZosFileManagerImpl.setZosmfManager(zosmfManagerMock);
+        Mockito.when(zosFileManagerMock.getZosmfManager()).thenReturn(zosmfManagerMock);
 
-        zosFileHandler = new ZosmfZosFileHandlerImpl();
+        zosFileHandler = new ZosmfZosFileHandlerImpl(zosFileManagerMock);
         zosFileHandlerSpy = Mockito.spy(zosFileHandler);
     }
     
     @Test
     public void testConstructor() {
-        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new ZosmfZosFileHandlerImpl("INTERNAL").toString());
+        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new ZosmfZosFileHandlerImpl(zosFileManagerMock, "INTERNAL").toString());
     }
     
     @Test
@@ -175,7 +178,7 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosDatasetImplMock).retainToTestEnd();
         zosDatasets.add(zosDatasetImplMock);
         zosFileHandlerSpy.cleanupDatasets(false);
@@ -233,7 +236,7 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
         zosDatasets.add(zosDatasetImplMock);
         zosFileHandlerSpy.cleanupDatasetsTestComplete();
@@ -242,7 +245,7 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
         zosDatasets.add(zosDatasetImplMock);
         zosFileHandlerSpy.cleanupDatasetsTestComplete();
@@ -326,7 +329,7 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasets(false);
@@ -397,7 +400,7 @@ public class TestZosmfZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
@@ -567,7 +570,7 @@ public class TestZosmfZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFiles(false);
@@ -607,7 +610,7 @@ public class TestZosmfZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
         zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFilesTestComplete();

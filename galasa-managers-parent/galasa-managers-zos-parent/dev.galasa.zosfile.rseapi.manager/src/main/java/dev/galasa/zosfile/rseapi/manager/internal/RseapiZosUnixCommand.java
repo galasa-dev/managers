@@ -19,6 +19,7 @@ import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 import dev.galasa.zosrseapi.RseapiException;
 
 public class RseapiZosUnixCommand {
+	private RseapiZosFileHandlerImpl zosFileHandler;
 	private static final String PROP_INVOCATION = "invocation";
 	private static final String PROP_PATH = "path";
 	private static final String PROP_EXIT_CODE = "exit code";
@@ -29,11 +30,11 @@ public class RseapiZosUnixCommand {
     
     private static final Log logger = LogFactory.getLog(RseapiZosUnixCommand.class);
 	
-    private RseapiZosUnixCommand() {
-    	//NOP
+    public RseapiZosUnixCommand(RseapiZosFileHandlerImpl zosFileHandler) {
+    	this.zosFileHandler = zosFileHandler;
     }
     
-    public static JsonObject execute(IRseapiRestApiProcessor rseapiApiProcessor, String command) throws ZosDatasetException {
+    public JsonObject execute(IRseapiRestApiProcessor rseapiApiProcessor, String command) throws ZosDatasetException {
         IRseapiResponse response;
         try {
             JsonObject requestBody = new JsonObject();
@@ -46,7 +47,7 @@ public class RseapiZosUnixCommand {
 
         if (response.getStatusCode() != HttpStatus.SC_OK) {
         	// Error case
-            String displayMessage = RseapiZosDatasetImpl.buildErrorString("zOS UNIX command", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("zOS UNIX command", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }

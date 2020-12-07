@@ -204,11 +204,11 @@ public interface IZosVSAMDataset {
     public byte[] retrieveAsBinary() throws ZosVSAMDatasetException;
     
     /**
-     * Store the content of the data set with the test output
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * Store the content of the VSAM data set to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosVSAMDatasetException
      */
-    public void saveToResultsArchive() throws ZosVSAMDatasetException;
+    public void saveToResultsArchive(String rasPath) throws ZosVSAMDatasetException;
 
     /**
      * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content

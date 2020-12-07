@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,12 +24,15 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
+import com.google.gson.JsonObject;
+
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
 import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -44,6 +48,9 @@ public class TestRseapiZosFileHandlerImpl {
 
     @Mock
     private ZosManagerImpl zosManagerMock;
+    
+    @Mock
+    private RseapiZosFileManagerImpl zosFileManagerImplMock;
     
     @Mock
     private RseapiManagerImpl rseapiManagerMock;
@@ -87,33 +94,37 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        RseapiZosFileManagerImpl.setZosManager(zosManagerMock);
         PowerMockito.doReturn(rseapiApiProcessorMock).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        RseapiZosFileManagerImpl.setRseapiManager(rseapiManagerMock);
 
-        zosFileHandler = new RseapiZosFileHandlerImpl();
+        zosFileHandler = new RseapiZosFileHandlerImpl(zosFileManagerImplMock);
         zosFileHandlerSpy = Mockito.spy(zosFileHandler);
     }
     
     @Test
     public void testConstructor() {
-        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new RseapiZosFileHandlerImpl("INTERNAL").toString());
+        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new RseapiZosFileHandlerImpl(zosFileManagerImplMock, "INTERNAL").toString());
     }
     
     @Test
     public void testNewDataset() throws ZosDatasetException {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newDataset(DATASET_NAME, zosImageMock);
         Assert.assertTrue("Error in newDataset() method", obj instanceof RseapiZosDatasetImpl);
     }
     
     @Test
     public void testNewUNIXFile() throws Exception {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newUNIXFile(UNIX_FILE_NAME, zosImageMock);
         Assert.assertTrue("Error in newUNIXFile() method", obj instanceof RseapiZosUNIXFileImpl);
     }
     
     @Test
     public void testNewVSAMDataset() throws ZosVSAMDatasetException {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newVSAMDataset(DATASET_NAME, zosImageMock);
         Assert.assertTrue("Error in newVSAMDataset() method", obj instanceof RseapiZosVSAMDatasetImpl);
     }
@@ -174,7 +185,7 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosDatasetImplMock).retainToTestEnd();
         zosDatasets.add(zosDatasetImplMock);
         zosFileHandlerSpy.cleanupDatasets(false);
@@ -214,7 +225,7 @@ public class TestRseapiZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
         Mockito.doReturn(false).when(zosDatasetImplMock).shouldArchive();
         zosDatasets.add(zosDatasetImplMock);
@@ -223,7 +234,7 @@ public class TestRseapiZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
         Mockito.doReturn(true).when(zosDatasetImplMock).shouldArchive();
         zosDatasets.add(zosDatasetImplMock);
@@ -232,7 +243,7 @@ public class TestRseapiZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
         Mockito.doReturn(false).when(zosDatasetImplMock).shouldArchive();
         zosDatasets.add(zosDatasetImplMock);
@@ -289,7 +300,7 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasets(false);
@@ -340,7 +351,7 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
@@ -530,7 +541,7 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFiles(false);
@@ -570,10 +581,45 @@ public class TestRseapiZosFileHandlerImpl {
         
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
+        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive(Mockito.any());//TODO
         Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
         zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFilesTestComplete();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupUnixFilesTestComplete");
     }
+    
+//    @Test
+//    public void testBuildErrorString() throws RseapiException {
+//    	Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+//    	Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("OK");
+//        String expectedString = "Error action, HTTP Status Code 200 : OK";
+//        String returnString = RseapiZosDatasetImpl.getRseapiApiProcessor().buildErrorString("action", rseapiResponseMock);
+//        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+//        
+//        JsonObject responseBody = new JsonObject();
+//        responseBody.addProperty("status", "status");
+//        responseBody.addProperty("message", "message");
+//    	Mockito.when(rseapiResponseMock.getContent()).thenReturn(responseBody);
+//        expectedString = "Error action, HTTP Status Code 200 : OK\n" +
+//        				 "status: status\n" +
+//        				 "message: message";
+//        returnString = RseapiZosDatasetImpl.getRseapiApiProcessor().buildErrorString("action", rseapiResponseMock);
+//        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+//        
+//        Mockito.when(rseapiResponseMock.getContent()).thenReturn("message");
+//        expectedString = "Error action, HTTP Status Code 200 : OK response body:\n" +
+//        				 "message";
+//        returnString = RseapiZosDatasetImpl.getRseapiApiProcessor().buildErrorString("action", rseapiResponseMock);
+//        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+//        
+//        Mockito.when(rseapiResponseMock.getContent()).thenReturn(0);
+//        expectedString = "Error action, HTTP Status Code 200 : OK";
+//        returnString = RseapiZosDatasetImpl.getRseapiApiProcessor().buildErrorString("action", rseapiResponseMock);
+//        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+//        
+//        Mockito.when(rseapiResponseMock.getContent()).thenThrow(new RseapiException());
+//        expectedString = "Error action, HTTP Status Code 200 : OK";
+//        returnString = RseapiZosDatasetImpl.getRseapiApiProcessor().buildErrorString("action", rseapiResponseMock);
+//        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+//    }
 }

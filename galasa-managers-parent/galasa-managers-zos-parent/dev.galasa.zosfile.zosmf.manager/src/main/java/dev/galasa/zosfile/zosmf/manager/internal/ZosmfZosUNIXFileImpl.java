@@ -44,6 +44,11 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     
     IZosmfRestApiProcessor zosmfApiProcessor;
 
+	private ZosmfZosFileHandlerImpl zosFileHandler;
+	public ZosmfZosFileHandlerImpl getzosFileHandler() {
+		return zosFileHandler;
+	}
+
     // zOS Image
     private IZosImage image;
 
@@ -105,7 +110,8 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 
     private static final Log logger = LogFactory.getLog(ZosmfZosUNIXFileImpl.class);
 
-    public ZosmfZosUNIXFileImpl(IZosImage image, String unixPath) throws ZosUNIXFileException {
+    public ZosmfZosUNIXFileImpl(ZosmfZosFileHandlerImpl zosFileHandler, IZosImage image, String unixPath) throws ZosUNIXFileException {
+        this.zosFileHandler = zosFileHandler;
         if (!unixPath.startsWith(SLASH)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + "must be absolute not be relative");
         }
@@ -115,9 +121,9 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         splitUnixPath();
         
         try {
-            this.zosmfApiProcessor = ZosmfZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
-            this.maxItems = ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyDirectoryListMaxItems(image.getImageID());
-            this.mode = ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyUnixFilePermissions(this.image.getImageID());
+            this.zosmfApiProcessor = this.zosFileHandler.getZosmfManager().newZosmfRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
+            this.maxItems = this.zosFileHandler.getZosManager().getZosFilePropertyDirectoryListMaxItems(image.getImageID());
+            this.mode = this.zosFileHandler.getZosManager().getZosFilePropertyUnixFilePermissions(this.image.getImageID());
         } catch (ZosFileManagerException | ZosmfManagerException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -234,11 +240,11 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
 
     @Override
-    public void saveToResultsArchive() throws ZosUNIXFileException {
+    public void saveToResultsArchive(String rasPath) throws ZosUNIXFileException {
     	if (!shouldArchive()) {
     		throw new ZosUNIXFileException("shouldArchive flag is false");
     	}
-        saveToResultsArchive(this.unixPath);
+        saveToResultsArchive(this.unixPath, rasPath);
     }
     
     @Override
@@ -547,8 +553,8 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         return content;
     }
 
-
-    protected void saveToResultsArchive(String path) throws ZosUNIXFileException {
+    
+    protected void saveToResultsArchive(String path, String rasPath) throws ZosUNIXFileException {
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -649,7 +655,12 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     protected String storeArtifact(Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
-            artifactPath = ZosmfZosFileManagerImpl.getUnixPathArtifactRoot().resolve(ZosmfZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        	ZosmfZosFileManagerImpl zfm = this.zosFileHandler.getZosFileManager();
+        	Path upar = zfm.getUnixPathArtifactRoot();
+        	String n = zfm.currentTestMethodArchiveFolderName;
+        	Path ap = upar.resolve(n);
+        	this.zosFileHandler.getZosFileManager().getUnixPathArtifactRoot().resolve(this.zosFileHandler.getZosFileManager().currentTestMethodArchiveFolderName);
+            artifactPath = this.zosFileHandler.getZosFileManager().getUnixPathArtifactRoot().resolve(this.zosFileHandler.getZosFileManager().currentTestMethodArchiveFolderName);
             String lastElement = artifactPathElements[artifactPathElements.length-1];
             for (String artifactPathElement : artifactPathElements) {
                 if (!lastElement.equals(artifactPathElement)) {

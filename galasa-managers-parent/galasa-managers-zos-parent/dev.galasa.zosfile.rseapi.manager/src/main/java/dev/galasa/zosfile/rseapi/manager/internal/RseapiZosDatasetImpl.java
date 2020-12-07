@@ -90,6 +90,11 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
+	private RseapiZosFileHandlerImpl zosFileHandler;
+	public RseapiZosFileHandlerImpl getzosFileHandler() {
+		return zosFileHandler;
+	}
+
     private static final String PROP_NAME = "name";
     private static final String PROP_VOLUME_SERIAL = "volumeSerial";     
     private static final String PROP_UNIT = "unit";
@@ -129,16 +134,17 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     private static final String LOG_CONTENT_MUST_NOT_BE_NULL = "content must not be null";
     private static final String LOG_MEMBER_NAME_MUST_NOT_BE_NULL = "member name must not be null";
 
-    private static final Log logger = LogFactory.getLog(RseapiZosDatasetImpl.class);
+    public static final Log logger = LogFactory.getLog(RseapiZosDatasetImpl.class);
 
 	private static final String BINARY_HEADER = "binary";
 
-    public RseapiZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {        
+    public RseapiZosDatasetImpl(RseapiZosFileHandlerImpl zosFileHandler, IZosImage image, String dsname) throws ZosDatasetException {
+        this.zosFileHandler = zosFileHandler;
         this.image = image;
         splitDSN(dsname);
         
         try {
-            this.rseapiApiProcessor = RseapiZosFileManagerImpl.rseapiManager.newRseapiRestApiProcessor(this.image, RseapiZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
+            this.rseapiApiProcessor = this.zosFileHandler.getRseapiManager().newRseapiRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
         } catch (ZosFileManagerException | RseapiManagerException e) {
             throw new ZosDatasetException(e);
         }
@@ -176,7 +182,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
         if (response.getStatusCode() != HttpStatus.SC_CREATED) {
         	// Error case
-            String displayMessage = buildErrorString("Create data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("Create data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -242,7 +248,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
         if (response.getStatusCode() != HttpStatus.SC_OK) {
         	// Error case
-            String displayMessage = buildErrorString("List data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("List data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -316,22 +322,22 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     }
     
     @Override
-    public void saveToResultsArchive() throws ZosDatasetException {
+    public void saveToResultsArchive(String rasPath) throws ZosDatasetException {
     	if (!shouldArchive()) {
     		throw new ZosDatasetException("shouldArchive flag is false");
     	}
         try {
             if (exists()) {
                 if (isPDS()) {
-                    savePDSToResultsArchive();
+                    savePDSToResultsArchive(rasPath);
                 } else {
-                    Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
-					String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.dsname);
+                    Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
+					String fileName = zosFileHandler.getZosManager().buildUniquePathName(artifactPath, this.dsname);
                     try {
                     	if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
                     	} else  {
-                    		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
                     	}
         			} catch (ZosManagerException e) {
         				throw new ZosDatasetException(e);
@@ -359,8 +365,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         String emptyFileName;
         IZosUNIXFile emptyFile;
 		try {
-			emptyFileName = RseapiZosFileManagerImpl.getRunUNIXPathPrefix(image) + SLASH + RseapiZosFileManagerImpl.getRunId() + "/emptyFile";
-			emptyFile = RseapiZosFileManagerImpl.newZosFileHandler().newUNIXFile(emptyFileName, image);
+			emptyFileName = zosFileHandler.getZosFileManager().getRunUNIXPathPrefix(image) + SLASH + zosFileHandler.getZosFileManager().getRunId() + "/emptyFile";
+			emptyFile = zosFileHandler.getZosFileManager().newZosFileHandler().newUNIXFile(emptyFileName, image);
 			emptyFile.setShouldArchive(false);
 			if (!emptyFile.exists()) {
 				emptyFile.createRetain();
@@ -369,7 +375,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 			throw new ZosDatasetException(e);
 		}
     	String command = "> " + emptyFileName + ";cp " + emptyFileName + " \"//'" + joinDSN(memberName) +"'\"";
-        RseapiZosUnixCommand.execute(rseapiApiProcessor, command);
+    	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);
+    	zosUnixCommand.execute(rseapiApiProcessor, command);
         if (memberExists(memberName)) {
             logger.info(LOG_MEMBER + memberName + " created in " + LOG_DATA_SET + quoted(this.dsname) + logOnImage());
         } else {
@@ -485,7 +492,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {
         	// Error case
-            String displayMessage = buildErrorString("List data set members", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("List data set members", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -511,7 +518,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException {
+    public void memberSaveToResultsArchive(@NotNull String memberName, String rasPath) throws ZosDatasetException {
     	if (!shouldArchive()) {
     		throw new ZosDatasetException("shouldArchive flag is false");
     	}
@@ -520,14 +527,14 @@ public class RseapiZosDatasetImpl implements IZosDataset {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
+            Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
             artifactPath = artifactPath.resolve(this.dsname);
-			String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+			String fileName = zosFileHandler.getZosManager().buildUniquePathName(artifactPath, memberName);
             try {
             	if (this.dataType.equals(DatasetDataType.TEXT)) {
-            		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+            		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
             	} else  {
-            		RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+            		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
             	}
 			} catch (ZosManagerException e) {
 				throw new ZosDatasetException(e);
@@ -719,7 +726,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     @Override
     public void retrieveAttibutes() throws ZosDatasetException {
         if (this.rseapiZosDatasetAttributesListdsi == null) {
-            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.image, this.rseapiApiProcessor);
+            this.rseapiZosDatasetAttributesListdsi = new RseapiZosDatasetAttributesListdsi(this.zosFileHandler, this.rseapiApiProcessor, this.image);
         }
         JsonObject datasteAttributes = rseapiZosDatasetAttributesListdsi.get(this.dsname);
         
@@ -824,7 +831,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
         if (response.getStatusCode() != HttpStatus.SC_OK) {
         	// Error case
-            String displayMessage = buildErrorString("list data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("list data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -967,7 +974,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         if (response.getStatusCode() != HttpStatus.SC_OK) {
         	// Error case
-            String displayMessage = buildErrorString("retrieve content of data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("retrieve content of data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -1000,7 +1007,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 	    
 	    if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
 	    	// Error case
-	        String displayMessage = buildErrorString("delete " + name, response); 
+	        String displayMessage = this.zosFileHandler.buildErrorString("delete " + name, response); 
 	        logger.error(displayMessage);
 	        throw new ZosDatasetException(displayMessage);
 	    }
@@ -1040,7 +1047,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_CREATED) {
             // Error case
-            String displayMessage = buildErrorString("writing to data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("writing to data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -1048,21 +1055,21 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
-    protected void savePDSToResultsArchive() throws ZosFileManagerException {
-        Path artifactPath = RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
+    protected void savePDSToResultsArchive(String rasPath) throws ZosFileManagerException {
+        Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
         artifactPath = artifactPath.resolve(this.dsname);
         try {
-        	RseapiZosFileManagerImpl.zosManager.createArtifactDirectory(artifactPath);
+        	zosFileHandler.getZosManager().createArtifactDirectory(artifactPath);
             Collection<String> memberList = memberList();
             Iterator<String> memberListIterator = memberList.iterator();
         
         	while (memberListIterator.hasNext()) {
         		String memberName = memberListIterator.next();
-        		String fileName = RseapiZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+        		String fileName = zosFileHandler.getZosManager().buildUniquePathName(artifactPath, memberName);
         		if (this.dataType.equals(DatasetDataType.TEXT)) {
-        			RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+        			zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
         		} else {
-        			RseapiZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+        			zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
         		}
             	logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
         	}
@@ -1088,7 +1095,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         
         if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_CREATED) {
             // Error case
-            String displayMessage = buildErrorString("write to data set", response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("write to data set", response); 
             logger.error(displayMessage);
             throw new ZosDatasetException(displayMessage);
         }
@@ -1123,7 +1130,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         return requestBody;
     }
 
-    protected static String buildErrorString(String action, IRseapiResponse response) {
+    protected String buildErrorString(String action, IRseapiResponse response) {
     	String message = "";
     	try {
     		Object content = response.getContent();
