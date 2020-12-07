@@ -66,34 +66,8 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public ILogScanner scanSinceCheckpoint(Pattern searchPattern, Pattern failPattern)
-            throws FailTextFoundException, MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scanSinceCheckpoint(Pattern searchPattern) throws MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public ILogScanner scanSinceCheckpoint(String searchString, String failString, int count)
             throws MissingTextException, IncorrectOccurancesException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scanSinceCheckpoint(String searchString, String failString)
-            throws FailTextFoundException, MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scanSinceCheckpoint(String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -106,20 +80,8 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatchSinceCheckpoint(Pattern searchPattern) throws MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public String scanForMatchSinceCheckpoint(String searchString, int occurrance)
             throws MissingTextException, IncorrectOccurancesException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String scanForMatchSinceCheckpoint(String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -132,34 +94,8 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public ILogScanner scan(Pattern searchPattern, Pattern failPattern)
-            throws FailTextFoundException, MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scan(Pattern searchPattern) throws MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public ILogScanner scan(String searchString, String failString, int count)
             throws FailTextFoundException, MissingTextException, IncorrectOccurancesException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scan(String searchString, String failString)
-            throws FailTextFoundException, MissingTextException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ILogScanner scan(String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -172,20 +108,8 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatch(Pattern searchPattern) throws MissingTextException, IncorrectOccurancesException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public String scanForMatch(String searchString, int occurrance)
             throws MissingTextException, IncorrectOccurancesException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String scanForMatch(String searchString) throws MissingTextException {
         // TODO Auto-generated method stub
         return null;
     }
