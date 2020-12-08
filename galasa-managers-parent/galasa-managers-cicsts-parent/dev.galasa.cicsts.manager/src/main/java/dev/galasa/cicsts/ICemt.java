@@ -6,8 +6,6 @@
 
 package dev.galasa.cicsts;
 
-import java.util.HashMap;
-
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.zos3270.ITerminal;
@@ -25,12 +23,10 @@ public interface ICemt {
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param resourceType a {@link String} of the resource type you are looking for.
      * @param resourceName a {@link String} of the name of the resource you are looking for.
-     * @return a {@link HashMap} object containing all of the properties of the resource.
-     * @throws CemtException if resource not found.
+     * @return a {@link CicstsHashMap} object containing all of the properties of the resource.
+     * @throws CemtException.
      */
-
-
-
+   
     public CicstsHashMap inquireResource(@NotNull ICicsTerminal cemtTerminal,
                                                    @NotNull String resourceType,
                                                    @NotNull String resourceName
@@ -38,15 +34,14 @@ public interface ICemt {
     
 
     /** 
-     * Set the state of a CEMT resource using the resource type and name. If the searchText is not found on the terminal screen then
-     * an exception will be thrown.
+     * Set the state of a CEMT resource using the resource type and name.
      * @param cemtTerminal an {@link ITerminal} object logged on to the CICS region and in an active CEMT session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param resourceType a {@link String} of the type of resource you want to set.
      * @param resourceName a {@link String} of the name of the resource you want to set.
-     * @param action a {@link String} of the action you want to perform.
-     * @param searchText a {@link String} of the text you want to search for on the terminal screen.
+     * @param action a {@link String} of the action you want to perform on the resource.
+     * @return a {@link CicstsHashMap} object containing all of the properties of the resource.
      * @throws CemtException
      */
 
