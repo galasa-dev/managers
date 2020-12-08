@@ -192,7 +192,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region);
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup());
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException e) {
@@ -224,7 +224,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
         // Start the autoconnect terminals
         logger.info("Connecting CICS Terminals");
-        for (ICicsTerminal terminal : this.terminals) {
+        for (CicsTerminalImpl terminal : this.terminals) {
+            if (!terminal.isConnectAtStartup()) {
+                continue;
+            }
+            
             try {
                 terminal.connectToCicsRegion();
             } catch (CicstsManagerException e) {

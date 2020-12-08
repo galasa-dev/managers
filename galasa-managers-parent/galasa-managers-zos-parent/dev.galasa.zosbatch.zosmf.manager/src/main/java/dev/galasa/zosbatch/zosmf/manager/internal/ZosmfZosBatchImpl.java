@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJob.JobStatus;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
@@ -100,18 +101,22 @@ public class ZosmfZosBatchImpl implements IZosBatch {
 				if (zosBatchJobImpl.submitted()) {
 				    if (!zosBatchJobImpl.isComplete()) {
 				    	if (endOfTest) {
-				    		zosBatchJobImpl.cancel();
-				    		zosBatchJobImpl.archiveJobOutput();
-				    		zosBatchJobImpl.purge();
+				    		if (zosBatchJobImpl.getStatus() != JobStatus.NOTFOUND) {
+					    		zosBatchJobImpl.cancel();
+					    		zosBatchJobImpl.archiveJobOutput();
+					    		zosBatchJobImpl.purge();
+				    		}
 				            iterator.remove();
 				    	}
 				    } else {
-				        if (!zosBatchJobImpl.isArchived()) {
-				            zosBatchJobImpl.archiveJobOutput();
-				        }
-				        if (!zosBatchJobImpl.isPurged()) {
-				            zosBatchJobImpl.purge();
-				        }
+				    	if (zosBatchJobImpl.getStatus() != JobStatus.NOTFOUND) {
+					        if (!zosBatchJobImpl.isArchived()) {
+					            zosBatchJobImpl.archiveJobOutput();
+					        }
+					        if (!zosBatchJobImpl.isPurged()) {
+					            zosBatchJobImpl.purge();
+					        }
+				    	}
 			            iterator.remove();
 				    }
 				}
