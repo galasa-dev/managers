@@ -14,6 +14,7 @@
   <modules>
   	<module>dev.galasa.core.manager</module>
   	<module>dev.galasa.artifact.manager</module>
+  	<module>dev.galasa.textscan.manager</module>
   	<module>dev.galasa.core.manager.ivt</module>
   	<module>dev.galasa.artifact.manager.ivt</module>
   </modules>

@@ -231,14 +231,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getStatusString() {
-    	if (this.status != JobStatus.OUTPUT) {
-	    	try {
-				updateJobStatus();
-			} catch (ZosBatchException e) {
-				logger.error(e);
-			}
-    	}
-        return (this.statusString != null ? this.statusString : StringUtils.repeat(QUERY, 8));
+    	return getStatus().toString();
     }
     
     @Override
@@ -556,6 +549,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             } else if (this.statusString != null && "NOT_FOUND".equals(this.statusString)) {
         		logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
+                this.status = JobStatus.NOTFOUND;
             }
             setStatus(this.statusString);
             String retcodeProperty = jsonNull(responseBody, PROP_RETCODE);
@@ -658,7 +652,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void archiveJobOutput() throws ZosBatchException {
-        if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
+        if (shouldArchive() && getStatus() != JobStatus.NOTFOUND && (!isArchived() || !this.jobComplete)) {
             Path rasPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
             String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
             rasPath = rasPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(rasPath, folderName));

@@ -302,9 +302,9 @@ public class TestZosmfZosBatchJobImpl {
     @Test
     public void testGetStatusString() throws ZosBatchException {
     	Mockito.doNothing().when(zosBatchJobSpy).updateJobStatus();
-        Assert.assertEquals("getStatusString() should return the 'unknown' value", "????????", zosBatchJobSpy.getStatusString());
+        Assert.assertEquals("getStatusString() should return the expected value", JobStatus.UNKNOWN.toString(), zosBatchJobSpy.getStatusString());
         zosBatchJobSpy.setStatusString(FIXED_STATUS_OUTPUT);
-        Assert.assertEquals("getStatusString() should return the 'unknown' value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatusString());
+        Assert.assertEquals("getStatusString() should return the expected value", FIXED_STATUS_OUTPUT, zosBatchJobSpy.getStatusString());
 
     	Mockito.doThrow(new ZosBatchException(EXCEPTION)).when(zosBatchJobSpy).updateJobStatus();
         zosBatchJobSpy.setStatusString(null);
@@ -972,6 +972,7 @@ public class TestZosmfZosBatchJobImpl {
     	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", false);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+    	PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
     	zosBatchJobSpy.archiveJobOutput();
     	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive", Mockito.any());
 
@@ -979,6 +980,7 @@ public class TestZosmfZosBatchJobImpl {
     	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
     	zosBatchJobSpy.archiveJobOutput();
     	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive", Mockito.any());
 
@@ -986,6 +988,7 @@ public class TestZosmfZosBatchJobImpl {
     	zosBatchJobSpy.setShouldArchive(true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+    	PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
     	zosBatchJobSpy.archiveJobOutput();
     	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(1)).invoke("saveOutputToResultsArchive", Mockito.any());
 
@@ -993,6 +996,15 @@ public class TestZosmfZosBatchJobImpl {
     	zosBatchJobSpy.setShouldArchive(false);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
+    	zosBatchJobSpy.archiveJobOutput();
+    	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive", Mockito.any());
+
+    	Mockito.clearInvocations(zosBatchJobSpy);
+    	zosBatchJobSpy.setShouldArchive(true);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobArchived", true);
+    	Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", true);
+    	PowerMockito.doReturn(JobStatus.NOTFOUND).when(zosBatchJobSpy).getStatus();
     	zosBatchJobSpy.archiveJobOutput();
     	PowerMockito.verifyPrivate(zosBatchJobSpy, Mockito.times(0)).invoke("saveOutputToResultsArchive", Mockito.any());
     }

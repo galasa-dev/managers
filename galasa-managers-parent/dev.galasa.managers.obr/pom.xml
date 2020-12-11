@@ -30,6 +30,12 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.textscan.manager</artifactId>
+			<version>0.14.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager</artifactId>
 			<version>0.14.0-SNAPSHOT</version>
 			<scope>compile</scope>
@@ -137,6 +143,18 @@
 		<dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.ceda.manager</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.cicsts.cemt.manager.ivt</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.cicsts.ceda.manager.ivt</artifactId>
             <version>0.14.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
