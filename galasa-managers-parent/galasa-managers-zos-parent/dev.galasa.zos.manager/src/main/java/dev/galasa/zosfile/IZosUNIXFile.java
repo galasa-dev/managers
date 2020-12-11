@@ -48,13 +48,6 @@ public interface IZosUNIXFile {
     public IZosUNIXFile create() throws ZosUNIXFileException;
 
     /**
-     * Create the zOS UNIX file or directory from the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZoException 
-     */
-    public IZosUNIXFile createRetain() throws ZosUNIXFileException;
-
-    /**
      * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory will throw {@link ZosUNIXFileException}
      * @return deleted
      * @throws ZosUNIXFileException
@@ -87,10 +80,11 @@ public interface IZosUNIXFile {
     public String retrieve() throws ZosUNIXFileException;
 
     /**
-     * Recursively store the content of the zOS UNIX file or directory to the test output 
+     * Recursively store the content of the zOS UNIX file or directory to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosUNIXFileException
      */
-    public void saveToResultsArchive() throws ZosUNIXFileException;
+    public void saveToResultsArchive(String rasPath) throws ZosUNIXFileException;
     
     /**
      * Return true if this object represents a zOS UNIX directory

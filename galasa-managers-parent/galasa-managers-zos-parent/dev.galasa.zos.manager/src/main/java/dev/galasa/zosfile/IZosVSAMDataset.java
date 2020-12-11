@@ -139,13 +139,6 @@ public interface IZosVSAMDataset {
      * @throws ZosVSAMDatasetException 
      */
     public IZosVSAMDataset create() throws ZosVSAMDatasetException;
-
-    /**
-     * Allocate the physical VSAM data set on the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZosVSAMDatasetException 
-     */
-    public IZosVSAMDataset createRetain() throws ZosVSAMDatasetException;
     
     /**
      * Delete the VSAM data set on the zOS image.
@@ -204,11 +197,11 @@ public interface IZosVSAMDataset {
     public byte[] retrieveAsBinary() throws ZosVSAMDatasetException;
     
     /**
-     * Store the content of the data set with the test output
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * Store the content of the VSAM data set to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosVSAMDatasetException
      */
-    public void saveToResultsArchive() throws ZosVSAMDatasetException;
+    public void saveToResultsArchive(String rasPath) throws ZosVSAMDatasetException;
 
     /**
      * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content

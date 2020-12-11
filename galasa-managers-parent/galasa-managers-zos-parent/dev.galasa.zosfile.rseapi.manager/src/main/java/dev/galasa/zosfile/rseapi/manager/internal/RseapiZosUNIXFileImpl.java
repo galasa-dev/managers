@@ -41,7 +41,13 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     
     IRseapiRestApiProcessor rseapiApiProcessor;
 
-    // zOS Image
+    private Path testMethodArchiveFolder;
+
+	private RseapiZosFileHandlerImpl zosFileHandler;
+	public RseapiZosFileHandlerImpl getZosFileHandler() {
+		return zosFileHandler;
+	}
+
     private IZosImage image;
 
     private static final String SLASH = "/";
@@ -49,8 +55,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     private static final String RESTFILES_FILE_PATH = SLASH + "rseapi" + SLASH + "api" + SLASH + "v1" + SLASH + "unixfiles";
     private static final String RESTFILES_FILE_PATH_RAW_CONTENT = SLASH + "rawContent";
     private static final String PATH_EQUALS = "?path=";
-    
-    private boolean retainToTestEnd = false;
 
     private String unixPath;
     private String fileName;
@@ -92,18 +96,19 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     private static final Log logger = LogFactory.getLog(RseapiZosUNIXFileImpl.class);
 
-	public RseapiZosUNIXFileImpl(IZosImage image, String unixPath) throws ZosUNIXFileException {
+	public RseapiZosUNIXFileImpl(RseapiZosFileHandlerImpl zosFileHandler, IZosImage image, String unixPath) throws ZosUNIXFileException {
         if (!unixPath.startsWith(SLASH)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + "must be absolute not be relative");
-        }
-        
+        }        
         this.image = image;
         this.unixPath = unixPath;
+        this.zosFileHandler = zosFileHandler;
+        this.testMethodArchiveFolder = this.zosFileHandler.getZosFileManager().getUnixPathCurrentTestMethodArchiveFolder();
         splitUnixPath();
         
         try {
-            this.rseapiApiProcessor = RseapiZosFileManagerImpl.rseapiManager.newRseapiRestApiProcessor(this.image, RseapiZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
-            this.mode = RseapiZosFileManagerImpl.zosManager.getZosFilePropertyUnixFilePermissions(this.image.getImageID());
+            this.rseapiApiProcessor = this.zosFileHandler.getZosFileManager().getRseapiManager().newRseapiRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
+            this.mode = this.zosFileHandler.getZosManager().getZosFilePropertyUnixFilePermissions(this.image.getImageID());
         } catch (ZosFileManagerException | RseapiManagerException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -133,22 +138,12 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
         
         if (exists()) {
-            String retained = "";
-            if (this.retainToTestEnd) {
-                retained = " and will be retained until the end of this test run";
-            }
-            logger.info(LOG_UNIX_PATH + quoted(this.unixPath) + " created" + logOnImage() + retained);
+            logger.info(LOG_UNIX_PATH + quoted(this.unixPath) + " created" + logOnImage());
             this.pathCreated = true;
         } else {
             logger.info(LOG_UNIX_PATH + quoted(this.unixPath) + " not created" + logOnImage());
         }
         return this;
-    }
-
-    @Override
-    public IZosUNIXFile createRetain() throws ZosUNIXFileException {
-        this.retainToTestEnd = true;
-        return create();
     }
     
     @Override
@@ -203,7 +198,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         
         if (response.getStatusCode() != HttpStatus.SC_OK) {
             // Error case
-        	String displayMessage = buildErrorString("writing to " + quoted(this.unixPath), response); 
+        	String displayMessage = this.zosFileHandler.buildErrorString("writing to " + quoted(this.unixPath), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -224,11 +219,8 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     }
 
     @Override
-    public void saveToResultsArchive() throws ZosUNIXFileException {
-    	if (!shouldArchive()) {
-    		throw new ZosUNIXFileException("shouldArchive flag is false");
-    	}
-        saveToResultsArchive(this.unixPath);
+    public void saveToResultsArchive(String rasPath) throws ZosUNIXFileException {
+        saveToResultsArchive(this.unixPath, rasPath);
     }
     
     @Override
@@ -354,7 +346,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             attributes.append(emptyStringWhenNull(responseBody, PROP_ENCODING));            
         } else {
             // Error case
-            String displayMessage = buildErrorString("creating path " + quoted(path), response);
+            String displayMessage = this.zosFileHandler.buildErrorString("creating path " + quoted(path), response);
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -377,7 +369,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
         if (response.getStatusCode() != HttpStatus.SC_CREATED) {            
             // Error case
-            String displayMessage = buildErrorString("creating path " + quoted(path), response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("creating path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -411,7 +403,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
         if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {            
             // Error case
-            String displayMessage = buildErrorString("creating path " + quoted(path), response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("creating path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -445,7 +437,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             logger.trace(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
             return false;
         } else {
-        	String displayMessage = buildErrorString("listing path " + quoted(path), response); 
+        	String displayMessage = this.zosFileHandler.buildErrorString("listing path " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -475,7 +467,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
         if (response.getStatusCode() != HttpStatus.SC_OK) {            
             // Error case
-            String displayMessage = buildErrorString("retrieve content " + quoted(path), response); 
+            String displayMessage = this.zosFileHandler.buildErrorString("retrieve content " + quoted(path), response); 
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -501,7 +493,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    protected void saveToResultsArchive(String path) throws ZosUNIXFileException {
+    protected void saveToResultsArchive(String path, String rasPath) throws ZosUNIXFileException {
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -511,15 +503,15 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
                 String entryPath = entry.getKey();
                 String entryType = entry.getValue();
                 if (entryType.equals(TYPE_FILE)) {
-                    String archiveLocation = storeArtifact(retrieve(entryPath), false, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
+                	String archiveLocation = storeArtifact(rasPath, retrieve(entryPath), false, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
                     logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
                 } else if (entryType.equals(TYPE_DIRECTORY)) {
-                    String archiveLocation = storeArtifact(null, true, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
+                	String archiveLocation = storeArtifact(rasPath, null, true, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
                     logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
                 }
             }
         } else {
-            String archiveLocation = storeArtifact(retrieve(path), false, this.unixPath);
+        	String archiveLocation = storeArtifact(rasPath, retrieve(path), false, this.unixPath);
             logger.info(quoted(this.unixPath) + LOG_ARCHIVED_TO + archiveLocation);
         }
     }
@@ -562,7 +554,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             return getPaths(path, responseBody, recursive);
         } else {
             // Error case
-        	String displayMessage = buildErrorString("listing path " + quoted(path), response);
+        	String displayMessage = this.zosFileHandler.buildErrorString("listing path " + quoted(path), response);
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
@@ -588,21 +580,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         return paths;
     }
     
-    protected String storeArtifact(Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
+    protected String storeArtifact(String rasPath, Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
-            artifactPath = RseapiZosFileManagerImpl.getUnixPathArtifactRoot().resolve(RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
-            String lastElement = artifactPathElements[artifactPathElements.length-1];
-            for (String artifactPathElement : artifactPathElements) {
-                if (!lastElement.equals(artifactPathElement)) {
-                    artifactPath = artifactPath.resolve(artifactPathElement);
-                }
-            }
-            String uniquePathString = lastElement;
-            if (!directory && Files.exists(artifactPath.resolve(lastElement))) {
-                uniquePathString = lastElement + "_" + new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss.SSS").format(new Date());
-            }
-            artifactPath = artifactPath.resolve(StringUtils.stripStart(uniquePathString, SLASH));
+        	artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
             if (directory) {
                 Files.createDirectories(artifactPath);
             } else {
@@ -649,24 +630,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     protected String logOnImage() {
         return " on image " + this.image.getImageID();
     }
-
-    protected String buildErrorString(String action, IRseapiResponse response) {
-    	String message = "";
-    	try {
-    		Object content = response.getContent();
-			if (content != null) {
-				logger.trace(content);
-				if (content instanceof JsonObject) {
-					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
-				} else if (content instanceof String) {
-					message = " response body:\n" + content;
-				}
-			}
-		} catch (RseapiException e) {
-			// NOP
-		}
-        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
-    }
     
     @Override
     public String toString() {
@@ -706,11 +669,14 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
-    public boolean retainToTestEnd() {
-        return this.retainToTestEnd;
-    }
-
     public boolean deleted() {
         return this.deleted;
+    }
+    
+    protected void archiveContent() throws ZosUNIXFileException {
+    	if (shouldArchive()) {
+    		Path rasPath = this.testMethodArchiveFolder.resolve(this.zosFileHandler.getZosManager().buildUniquePathName(testMethodArchiveFolder, this.unixPath.substring(1)));
+            saveToResultsArchive(rasPath.toString());
+        }
     }
 }

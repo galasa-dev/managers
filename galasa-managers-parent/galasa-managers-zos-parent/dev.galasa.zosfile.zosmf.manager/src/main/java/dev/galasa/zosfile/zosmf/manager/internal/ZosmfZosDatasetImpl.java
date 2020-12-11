@@ -54,8 +54,6 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     // data set and member names
     private String dsname;
     private boolean datasetCreated = false;
-    private boolean retainToTestEnd = false;
-    private boolean temporary = false;
     private boolean convert = true;
     
     private Collection<String> datasetMembers;
@@ -88,6 +86,14 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     private boolean shouldArchive = true;
 
     private ZosmfZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
+
+	private ZosmfZosFileHandlerImpl zosFileHandler;
+
+	private Path testMethodArchiveFolder;
+
+	public ZosmfZosFileHandlerImpl getZosFileHandler() {
+		return zosFileHandler;
+	}
 
     private static final String PROP_VOLSER = "volser";     
     private static final String PROP_UNIT = "unit";       
@@ -134,13 +140,17 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     private static final Log logger = LogFactory.getLog(ZosmfZosDatasetImpl.class);
 
-    public ZosmfZosDatasetImpl(IZosImage image, String dsname) throws ZosDatasetException {
-        
+	private static final String LOG_CONTENT_MUST_NOT_BE_NULL = "content must not be null";
+	private static final String LOG_MEMBER_NAME_MUST_NOT_BE_NULL = "memberName must not be null";
+
+    public ZosmfZosDatasetImpl(ZosmfZosFileHandlerImpl zosFileHandler, IZosImage image, String dsname) throws ZosDatasetException {
+        this.zosFileHandler = zosFileHandler;
         this.image = image;
         splitDSN(dsname);
+        this.testMethodArchiveFolder = this.zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
         
         try {
-            this.zosmfApiProcessor = ZosmfZosFileManagerImpl.zosmfManager.newZosmfRestApiProcessor(this.image, ZosmfZosFileManagerImpl.zosManager.getZosFilePropertyFileRestrictToImage(image.getImageID()));
+            this.zosmfApiProcessor = this.zosFileHandler.getZosmfManager().newZosmfRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
         } catch (ZosFileManagerException | ZosmfManagerException e) {
             throw new ZosDatasetException(e);
         }
@@ -195,35 +205,12 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         }
         
         if (exists()) {
-            String retained = "";
-            if (this.retainToTestEnd) {
-                retained = " and will be retained until the end of this test run";
-            }
-            logger.info(LOG_DATA_SET + quoted(this.dsname) + " created" + logOnImage() + retained);
+            logger.info(LOG_DATA_SET + quoted(this.dsname) + " created" + logOnImage());
             this.datasetCreated = true;
         } else {
             logger.warn(LOG_DATA_SET + quoted(this.dsname) + " not created" + logOnImage());
         }
         return this;
-    }
-
-    @Override
-    public IZosDataset createRetain() throws ZosDatasetException {
-        this.retainToTestEnd = true;
-        return create();
-    }
-    
-    @Override
-    public IZosDataset createRetainTemporary() throws ZosDatasetException {
-        this.retainToTestEnd = true;
-        this.temporary = true;
-        return create();
-    }
-    
-    @Override
-    public IZosDataset createTemporary() throws ZosDatasetException {
-        this.temporary = true;
-        return create();
     }
 
     @Override
@@ -310,7 +297,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeText(@NotNull String content) throws ZosDatasetException {
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -319,7 +306,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
         }
@@ -355,28 +342,23 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     }
     
     @Override
-    public void saveToResultsArchive() throws ZosDatasetException {
-    	if (!shouldArchive()) {
-    		throw new ZosDatasetException("shouldArchive flag is false");
-    	}
+    public void saveToResultsArchive(String rasPath) throws ZosDatasetException {
         try {
             if (exists()) {
+                Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+        		logger.info("Archiving " + quoted(this.dsname) + " to " + artifactPath.toString());
                 if (isPDS()) {
-                    savePDSToResultsArchive();
+                    savePDSToResultsArchive(rasPath);
                 } else {
-                    Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
-					String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.dsname);
                     try {
                     	if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, retrieveAsText(), ResultArchiveStoreContentType.TEXT);
                     	} else  {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
                     	}
         			} catch (ZosManagerException e) {
         				throw new ZosDatasetException(e);
         			}
-                    
-                    logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
                 }
             }
         } catch (ZosFileManagerException e) {
@@ -391,7 +373,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberCreate(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -400,7 +382,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberDelete(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -447,7 +429,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public boolean memberExists(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -494,8 +476,8 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberStoreText(@NotNull String memberName, @NotNull String content) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -504,8 +486,8 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberStoreBinary(@NotNull String memberName, @NotNull byte[] content) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
-    	Objects.requireNonNull(content, "content must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
+    	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -514,7 +496,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public String memberRetrieveAsText(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -529,7 +511,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     @Override
     public byte[] memberRetrieveAsBinary(@NotNull String memberName) throws ZosDatasetException {
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
@@ -584,28 +566,23 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     }
 
     @Override
-    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException {
-    	if (!shouldArchive()) {
-    		throw new ZosDatasetException("shouldArchive flag is false");
-    	}
-    	Objects.requireNonNull(memberName, "memberName must not be null");
+    public void memberSaveToResultsArchive(@NotNull String memberName, String rasPath) throws ZosDatasetException {
+    	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
-            artifactPath = artifactPath.resolve(this.dsname);
-			String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+            Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+    		logger.info("Archiving " + quoted(this.dsname) + " to " + artifactPath.toString());
             try {
             	if (this.dataType.equals(DatasetDataType.TEXT)) {
-            		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+            		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
             	} else  {
-            		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+            		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
             	}
 			} catch (ZosManagerException e) {
 				throw new ZosDatasetException(e);
 			}
-            logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);
         }
@@ -792,7 +769,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     @Override
     public void retrieveAttibutes() throws ZosDatasetException {
         if (this.zosmfZosDatasetAttributesListdsi == null) {
-            this.zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(this.image);
+            this.zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(this.zosFileHandler.getZosFileManager(), this.image);
         }
         JsonObject datasteAttributes = zosmfZosDatasetAttributesListdsi.get(this.dsname);
         
@@ -1128,21 +1105,20 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         logger.trace(LOG_DATA_SET + quoted(joinDSN(memberName)) + " updated" + logOnImage());
     }
 
-    protected void savePDSToResultsArchive() throws ZosFileManagerException {
-        Path artifactPath = ZosmfZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder();
-        artifactPath = artifactPath.resolve(this.dsname);
+    protected void savePDSToResultsArchive(String rasPath) throws ZosFileManagerException {
+        Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
         try {
-        	ZosmfZosFileManagerImpl.zosManager.createArtifactDirectory(artifactPath);
+        	this.zosFileHandler.getZosManager().createArtifactDirectory(artifactPath);
             Collection<String> memberList = memberList();
             Iterator<String> memberListIterator = memberList.iterator();
         
         	while (memberListIterator.hasNext()) {
         		String memberName = memberListIterator.next();
-        		String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, memberName);
+        		String fileName = this.zosFileHandler.getZosManager().buildUniquePathName(artifactPath, memberName);
         		if (this.dataType.equals(DatasetDataType.TEXT)) {
-        			ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+        			this.zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
         		} else {
-        			ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+        			this.zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
         		}
             	logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
         	}
@@ -1321,16 +1297,14 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     public boolean created() {
         return this.datasetCreated;
     }
-    
-    public boolean retainToTestEnd() {
-        return this.retainToTestEnd;
-    }
-
-    public boolean isTemporary() {
-        return this.temporary;
-    }
-
     public IZosmfRestApiProcessor getZosmfApiProcessor() {
         return this.zosmfApiProcessor;
+    }
+    
+    protected void archiveContent() throws ZosDatasetException {
+    	if (shouldArchive()) {
+    		Path rasPath = this.testMethodArchiveFolder.resolve(this.zosFileHandler.getZosManager().buildUniquePathName(testMethodArchiveFolder, this.dsname));
+            saveToResultsArchive(rasPath.toString());
+        }
     }
 }

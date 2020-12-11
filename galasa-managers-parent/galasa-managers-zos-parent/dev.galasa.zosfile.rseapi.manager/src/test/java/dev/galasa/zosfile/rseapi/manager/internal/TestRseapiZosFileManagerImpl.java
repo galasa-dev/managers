@@ -99,13 +99,12 @@ public class TestRseapiZosFileManagerImpl {
         };
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         
-        RseapiZosFileManagerImpl.setZosManager(zosManagerMock);
-        RseapiZosFileManagerImpl.setRseapiManager(rseapiManagerMock);
-        
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
         zosFileManager = new RseapiZosFileManagerImpl();
-        zosFileManagerSpy = Mockito.spy(zosFileManager);
+        zosFileManagerSpy = Mockito.spy(zosFileManager);        
+        Whitebox.setInternalState(zosFileManagerSpy, "zosManager", zosManagerMock);
+        Whitebox.setInternalState(zosFileManagerSpy, "rseapiManager", rseapiManagerMock);
         Mockito.when(zosFileManagerSpy.getFramework()).thenReturn(frameworkMock);
         Mockito.when(frameworkMock.getResultArchiveStore()).thenReturn(resultArchiveStoreMock);
         Mockito.when(resultArchiveStoreMock.getStoredArtifactsRoot()).thenReturn(ARTIFACT_ROOT);
@@ -120,10 +119,13 @@ public class TestRseapiZosFileManagerImpl {
         zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestRseapiZosFileManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
         
-        RseapiZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("");
-        Assert.assertEquals("Error in getDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_Datasets"), RseapiZosFileManagerImpl.getDatasetCurrentTestMethodArchiveFolder());
-        Assert.assertEquals("Error in getVsamDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_VSAM_Datasets"), RseapiZosFileManagerImpl.getVsamDatasetCurrentTestMethodArchiveFolder());
-        Assert.assertEquals("Error in getUnixPathCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_Unix_Paths"), RseapiZosFileManagerImpl.getUnixPathCurrentTestMethodArchiveFolder());
+        Whitebox.setInternalState(zosFileManagerSpy, "currentTestMethodArchiveFolderName", "");
+        Assert.assertEquals("Error in getDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_Datasets"), zosFileManagerSpy.getDatasetCurrentTestMethodArchiveFolder());
+        Assert.assertEquals("Error in getVsamDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_VSAM_Datasets"), zosFileManagerSpy.getVsamDatasetCurrentTestMethodArchiveFolder());
+        Assert.assertEquals("Error in getUnixPathCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_Unix_Paths"), zosFileManagerSpy.getUnixPathCurrentTestMethodArchiveFolder());
+		Assert.assertEquals("getZosManager() should return the expected object", zosManagerMock , zosFileManagerSpy.getZosManager());
+		Assert.assertEquals("rseapiManagerMock() should return the expected object", rseapiManagerMock , zosFileManagerSpy.getRseapiManager());
+		Assert.assertEquals("getArtifactsRoot() should return the expected object", ARTIFACT_ROOT , zosFileManagerSpy.getArtifactsRoot());
     }
     
     @Test
@@ -184,89 +186,72 @@ public class TestRseapiZosFileManagerImpl {
     public void testProvisionBuild() throws Exception {
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
         zosFileManagerSpy.provisionBuild();
-        Assert.assertEquals("datasetArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_Datasets"), RseapiZosFileManagerImpl.datasetArtifactRoot);
-        Assert.assertEquals("vsamDatasetArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_VSAM_Datasets"), RseapiZosFileManagerImpl.vsamDatasetArtifactRoot);
-        Assert.assertEquals("unixPathArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_Unix_Paths"), RseapiZosFileManagerImpl.unixPathArtifactRoot);
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
-    }
-    
-    @Test
-    public void testStartOfTestClass() throws ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        zosFileManagerSpy.startOfTestClass();
-        Mockito.verify(zosFileManagerSpy, Mockito.times(1)).cleanup(Mockito.anyBoolean());
+        Assert.assertEquals("datasetArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_Datasets"),  zosFileManagerSpy.getDatasetArtifactRoot());
+        Assert.assertEquals("vsamDatasetArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_VSAM_Datasets"),  zosFileManagerSpy.getVsamDatasetArtifactRoot());
+        Assert.assertEquals("unixPathArtifactRoot should contain the supplied value", new File(".").toPath().resolve("provisioning").resolve("zOS_Unix_Paths"),  zosFileManagerSpy.getUnixPathArtifactRoot());
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "preTest", zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
     }
     
     @Test
     public void testStartOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
         zosFileManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"), null));
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "dummyTestMethodDataset", RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "dummyTestMethodDataset",  zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
         
         zosFileManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod"), DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset")));
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName() + "." + DummyTestClass.class.getDeclaredMethod("dummyBeforeMethod").getName(), zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
     }
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        RseapiZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("dummyTestMethodDataset");
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
+        Whitebox.setInternalState(zosFileManagerSpy, "currentTestMethodArchiveFolderName", "dummyTestMethodDataset");
         zosFileManagerSpy.endOfTestMethod(new GalasaMethod(null, DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset")), "pass", null);
-        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
     }
     
     @Test
     public void testEndOfTestClass() throws Exception {
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
-        Whitebox.setInternalState(RseapiZosFileManagerImpl.class, "zosFileHandlers", new HashMap<>());
+        Whitebox.setInternalState(zosFileManagerSpy, "zosFileHandlers", new HashMap<>());
         zosFileManagerSpy.endOfTestClass("pass", null);
-        Assert.assertEquals("currentTestMethodArchiveFolderName should be should be set to the expected value", "postTest", RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be should be set to the expected value", "postTest", zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
     }
     
     @Test
     public void testCleanup() throws Exception {
-        zosFileManagerSpy.cleanup(false);
-        zosFileManagerSpy.cleanup(true);
+        zosFileManagerSpy.cleanup();
+        zosFileManagerSpy.cleanup();
 
         Map<String, RseapiZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
         RseapiZosFileHandlerImpl rseapiZosFileHandlerImpl = Mockito.mock(RseapiZosFileHandlerImpl.class);
-        Mockito.doNothing().when(rseapiZosFileHandlerImpl).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(rseapiZosFileHandlerImpl).cleanup();
         zosFileHandlers.put(rseapiZosFileHandlerImpl.toString(), rseapiZosFileHandlerImpl);
-        Whitebox.setInternalState(RseapiZosFileManagerImpl.class, "zosFileHandlers", zosFileHandlers);
+        Whitebox.setInternalState(zosFileManagerSpy, "zosFileHandlers", zosFileHandlers);
         
-        zosFileManagerSpy.cleanup(false);
-        Mockito.verify(rseapiZosFileHandlerImpl, Mockito.times(1)).cleanup(Mockito.anyBoolean());
+        zosFileManagerSpy.cleanup();
+        Mockito.verify(rseapiZosFileHandlerImpl, Mockito.times(1)).cleanup();
         
         Mockito.clearInvocations(zosFileManagerSpy);
         zosFileHandlers = new HashMap<>();
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         zosFileHandlers.put(rseapiZosFileHandlerImpl.toString(), rseapiZosFileHandlerImpl);
-        Whitebox.setInternalState(RseapiZosFileManagerImpl.class, "zosFileHandlers", zosFileHandlers);
+        Whitebox.setInternalState(zosFileManagerSpy, "zosFileHandlers", zosFileHandlers);
         
-        zosFileManagerSpy.cleanup(true);
-        Mockito.verify(rseapiZosFileHandlerImpl, Mockito.times(1)).cleanup(Mockito.anyBoolean());
-    }
-    
-    @Test
-    public void testProvisionDiscard() throws ZosFileManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        zosFileManagerSpy.provisionDiscard();
-
-        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());  
-        zosFileManagerSpy.provisionDiscard();
-        Assert.assertEquals("provisionDiscard() should log expected message", "Problem in provisionDiscard()", logMessage);
+        zosFileManagerSpy.cleanup();
+        Mockito.verify(rseapiZosFileHandlerImpl, Mockito.times(1)).cleanup();
     }
     
     @Test
     public void testEndOfTestRun() throws NoSuchMethodException, SecurityException, ManagerException {
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        RseapiZosFileManagerImpl.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
+        Whitebox.setInternalState(zosFileManagerSpy, "currentTestMethodArchiveFolderName", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName());
         zosFileManagerSpy.endOfTestRun();
-        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName);
+        Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), zosFileManagerSpy.getCurrentTestMethodArchiveFolderName());
 
-        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup();
         zosFileManagerSpy.endOfTestRun();
         Assert.assertEquals("testEndOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
@@ -283,64 +268,64 @@ public class TestRseapiZosFileManagerImpl {
     
     @Test
     public void testRunid() {
-        RseapiZosFileManagerImpl.setRunId("RUNID");
-        Assert.assertEquals("getRunid() should return the supplied value", "RUNID", RseapiZosFileManagerImpl.getRunId());
+    	Whitebox.setInternalState(zosFileManagerSpy, "runId", "RUNID");
+        Assert.assertEquals("getRunid() should return the supplied value", "RUNID", zosFileManagerSpy.getRunId());
     }
     
     @Test
     public void testDatasetArtifactRoot() {
         Path path = new File("datasetArtifactRoot").toPath();
-        RseapiZosFileManagerImpl.setDatasetArtifactRoot(path);
-        Assert.assertEquals("getDatasetArtifactRoot() should return the supplied value", path, RseapiZosFileManagerImpl.getDatasetArtifactRoot());
+        Whitebox.setInternalState(zosFileManagerSpy, "datasetArtifactRoot", path);
+        Assert.assertEquals("getDatasetArtifactRoot() should return the supplied value", path, zosFileManagerSpy.getDatasetArtifactRoot());
     }
     
     @Test
     public void testVsamDatasetArtifactRoot() {
         Path path = new File("vsamDatasetArtifactRoot").toPath();
-        RseapiZosFileManagerImpl.setVsamDatasetArtifactRoot(path);
-        Assert.assertEquals("getVsamDatasetArtifactRoot() should return the supplied value", path, RseapiZosFileManagerImpl.getVsamDatasetArtifactRoot());
+        Whitebox.setInternalState(zosFileManagerSpy, "vsamDatasetArtifactRoot", path);
+        Assert.assertEquals("getVsamDatasetArtifactRoot() should return the supplied value", path, zosFileManagerSpy.getVsamDatasetArtifactRoot());
     }
     
     @Test
     public void testUnixPathArtifactRoot() {
         Path path = new File("unixPathArtifactRoot").toPath();
-        RseapiZosFileManagerImpl.setUnixPathArtifactRoot(path);
-        Assert.assertEquals("getUnixPathArtifactRoot() should return the supplied value", path, RseapiZosFileManagerImpl.getUnixPathArtifactRoot());
+        Whitebox.setInternalState(zosFileManagerSpy, "unixPathArtifactRoot", path);
+        Assert.assertEquals("getUnixPathArtifactRoot() should return the supplied value", path, zosFileManagerSpy.getUnixPathArtifactRoot());
     }
     
     @Test
     public void testNewZosFileHandler() {
-        Assert.assertNotNull("newZosFileHandler() should return a new RseapiZosFileHandlerImpl", RseapiZosFileManagerImpl.newZosFileHandler());
+        Assert.assertNotNull("newZosFileHandler() should return a new RseapiZosFileHandlerImpl", zosFileManagerSpy.newZosFileHandler());
     }
     
     @Test
 	public void testGetRunDatasetHLQ() throws ZosManagerException {
-	    Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
+	    Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn("HLQ");
 	    
-	    Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock));
+	    Assert.assertEquals("getRunDatasetHLQ() should return the supplied value", "HLQ", zosFileManagerSpy.getRunDatasetHLQ(zosImageMock));
 	}
 
 	@Test
     public void testGetRunDatasetHLQException() throws ZosManagerException {
-        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	RseapiZosFileManagerImpl.getRunDatasetHLQ(zosImageMock);
+        	zosFileManagerSpy.getRunDatasetHLQ(zosImageMock);
         });
     	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
 	public void testGetRunUNIXPathPrefix() throws ZosManagerException {
-	    Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunUNIXPathPrefix(Mockito.any())).thenReturn("prefix");
+	    Mockito.when(zosManagerMock.getRunUNIXPathPrefix(Mockito.any())).thenReturn("prefix");
 	    
-	    Assert.assertEquals("getRunZosUNIXPathPrefix() should return the supplied value", "prefix", RseapiZosFileManagerImpl.getRunUNIXPathPrefix(zosImageMock));
+	    Assert.assertEquals("getRunZosUNIXPathPrefix() should return the supplied value", "prefix", zosFileManagerSpy.getRunUNIXPathPrefix(zosImageMock));
 	}
 
 	@Test
     public void testGetRunUNIXPathPrefixException() throws ZosManagerException {
-        Mockito.when(RseapiZosFileManagerImpl.zosManager.getRunUNIXPathPrefix(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        Mockito.when(zosManagerMock.getRunUNIXPathPrefix(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	RseapiZosFileManagerImpl.getRunUNIXPathPrefix(zosImageMock);
+        	zosFileManagerSpy.getRunUNIXPathPrefix(zosImageMock);
         });
     	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }

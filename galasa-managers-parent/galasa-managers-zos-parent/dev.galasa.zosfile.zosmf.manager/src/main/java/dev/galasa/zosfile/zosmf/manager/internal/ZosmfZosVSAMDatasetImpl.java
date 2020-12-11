@@ -38,7 +38,13 @@ import dev.galasa.zosmf.ZosmfException;
 public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     
     private IZosmfRestApiProcessor zosmfApiProcessor;
-    private ZosmfZosFileHandlerImpl zosFileHandler;
+
+	private ZosmfZosFileHandlerImpl zosFileHandler;
+	public ZosmfZosFileHandlerImpl getZosFileHandler() {
+		return zosFileHandler;
+	}
+
+	private Path testMethodArchiveFolder;
 
     private ZosmfZosDatasetImpl zosDataset;
 
@@ -54,7 +60,6 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     private int primaryExtents;
     private int secondaryExtents;
     private String volumes;
-    private boolean retainToTestEnd = false;
     private boolean datasetCreated = false;
 
     // Optional parameters
@@ -178,20 +183,20 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     
     private static final String LOG_VSAM_DATA_SET = "VSAM data set ";
-    private static final String LOG_ARCHIVED_TO = " archived to ";
     private static final String LOG_DOES_NOT_EXIST = " does not exist";
     private static final String LOG_UNABLE_TO_DELETE_REPRO_DATASET = "Unable to delete IDCAMS REPRO temporary dataset";
     private static final String LOG_UNABLE_TO_RETRIEVE_CONTENT_FROM_REPRO_DATASET = "Unable to retrieve content from IDCAMS REPRO temporary dataset";
 
     private static final Log logger = LogFactory.getLog(ZosmfZosVSAMDatasetImpl.class);
 
-    public ZosmfZosVSAMDatasetImpl(IZosImage image, String dsname) throws ZosVSAMDatasetException {
-        this.zosFileHandler = (ZosmfZosFileHandlerImpl) ZosmfZosFileManagerImpl.newZosFileHandler();
+    public ZosmfZosVSAMDatasetImpl(ZosmfZosFileHandlerImpl zosFileHandler, IZosImage image, String dsname) throws ZosVSAMDatasetException {
+        this.zosFileHandler = zosFileHandler;
+        this.image = image;
+        this.name = dsname;
+        this.dataName = name + LLQ_DATA;
+        this.indexName = name + LLQ_INDEX;
+        this.testMethodArchiveFolder = this.zosFileHandler.getZosFileManager().getVsamDatasetCurrentTestMethodArchiveFolder();
         try {
-            this.image = image;
-            this.name = dsname;
-            this.dataName = name + LLQ_DATA;
-            this.indexName = name + LLQ_INDEX;
             this.zosDataset = (ZosmfZosDatasetImpl) this.zosFileHandler.newDataset(this.name, this.image);
         } catch (ZosDatasetException e) {
             throw new ZosVSAMDatasetException(e);
@@ -216,23 +221,13 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         idcamsRequest(requestBody);
         
         if (exists()) {
-            String retained = "";
-            if (this.retainToTestEnd) {
-                retained = " and will be retained until the end of this test run";
-            }
-            logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " created" + logOnImage() + retained);
+            logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " created" + logOnImage());
             this.datasetCreated = true;
         } else {
             throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " not created" + logOnImage());
         }
         
         return this;
-    }
-
-    @Override
-    public IZosVSAMDataset createRetain() throws ZosVSAMDatasetException {
-        this.retainToTestEnd = true;
-        return create();
     }
 
     @Override
@@ -379,29 +374,25 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         return content;
     }
 
-    public void saveToResultsArchive() throws ZosVSAMDatasetException {
-    	if (!shouldArchive()) {
-    		throw new ZosVSAMDatasetException("shouldArchive flag is false");
-    	}
+    @Override
+    public void saveToResultsArchive(String rasPath) throws ZosVSAMDatasetException {
         try {
             if (exists()) {
-            	Path artifactPath = ZosmfZosFileManagerImpl.getVsamDatasetCurrentTestMethodArchiveFolder();
-				String fileName = ZosmfZosFileManagerImpl.zosManager.buildUniquePathName(artifactPath, this.name);
+                Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+            	logger.info("Archiving " + quoted(this.name) + " to " + artifactPath.toString());
                 try {
                     if (getTotalRecords() == 0) {
-                    	ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), this.name, ResultArchiveStoreContentType.TEXT);
+                		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, "", ResultArchiveStoreContentType.TEXT);
                     } else {
                     	if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, retrieveAsText(), ResultArchiveStoreContentType.TEXT);
                     	} else  {
-                    		ZosmfZosFileManagerImpl.zosManager.storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
                     	}
                     }
     			} catch (ZosManagerException e) {
     				throw new ZosDatasetException(e);
     			}
-                
-                logger.info(quoted(this.name) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
             }
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save VSAM data set to archive", e);
@@ -857,7 +848,7 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
     protected ZosmfZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {
         String reproDsname;
         try {
-            reproDsname = ZosmfZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
+            reproDsname = this.zosFileHandler.getZosFileManager().getRunDatasetHLQ(this.image) + "." + temporaryLLQ();
         } catch (ZosFileManagerException e) {
             throw new ZosVSAMDatasetException(e);
         }
@@ -874,7 +865,8 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
             int spacePri = Integer.parseInt(getValueFromListcat("SPACE-PRI"));
             int spaceSec = Integer.parseInt(getValueFromListcat("SPACE-SEC"));
             reproDataset.setSpace(SpaceUnit.valueOf(spaceType + "S"), spacePri, spaceSec);
-            reproDataset.createTemporary();
+            reproDataset.create();
+            reproDataset.setShouldArchive(false);
             reproDataset.setDataType(this.dataType);
             if (content != null) {
                 if (content instanceof String) {
@@ -891,8 +883,8 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         return reproDataset;
     }
 
-    protected static String temporaryLLQ() {
-        return ZosmfZosFileManagerImpl.getRunId() + ".T" + StringUtils.leftPad(String.valueOf(++temporaryQualifierCounter), 4, "0");
+    protected String temporaryLLQ() {
+        return this.zosFileHandler.getZosFileManager().getRunId() + ".T" + StringUtils.leftPad(String.valueOf(++temporaryQualifierCounter), 4, "0");
     }
 
     protected String getValueFromListcat(String findString) throws ZosVSAMDatasetException {
@@ -1129,7 +1121,10 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         return this.datasetCreated;
     }
     
-    public boolean retainToTestEnd() {
-        return this.retainToTestEnd;
+    protected void archiveContent() throws ZosVSAMDatasetException {
+    	if (shouldArchive()) {
+    		Path rasPath = this.testMethodArchiveFolder.resolve(this.zosFileHandler.getZosManager().buildUniquePathName(testMethodArchiveFolder, this.name));
+            saveToResultsArchive(rasPath.toString());
+        }
     }
 }
