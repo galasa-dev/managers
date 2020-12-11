@@ -139,13 +139,6 @@ public interface IZosVSAMDataset {
      * @throws ZosVSAMDatasetException 
      */
     public IZosVSAMDataset create() throws ZosVSAMDatasetException;
-
-    /**
-     * Allocate the physical VSAM data set on the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZosVSAMDatasetException 
-     */
-    public IZosVSAMDataset createRetain() throws ZosVSAMDatasetException;
     
     /**
      * Delete the VSAM data set on the zOS image.

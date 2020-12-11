@@ -56,8 +56,6 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     // data set and member names
     private String dsname;
     private boolean datasetCreated = false;
-    private boolean retainToTestEnd = false;
-    private boolean temporary = false;
     private boolean convert = true;
     
     private Collection<String> datasetMembers;
@@ -90,8 +88,10 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
+	private Path testMethodArchiveFolder;
+
 	private RseapiZosFileHandlerImpl zosFileHandler;
-	public RseapiZosFileHandlerImpl getzosFileHandler() {
+	public RseapiZosFileHandlerImpl getZosFileHandler() {
 		return zosFileHandler;
 	}
 
@@ -142,6 +142,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         this.zosFileHandler = zosFileHandler;
         this.image = image;
         splitDSN(dsname);
+        this.testMethodArchiveFolder = this.zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
         
         try {
             this.rseapiApiProcessor = this.zosFileHandler.getRseapiManager().newRseapiRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
@@ -188,35 +189,12 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         }
         
         if (exists()) {
-            String retained = "";
-            if (this.retainToTestEnd) {
-                retained = " and will be retained until the end of this test run";
-            }
-            logger.info(LOG_DATA_SET + quoted(this.dsname) + " created" + logOnImage() + retained);
+            logger.info(LOG_DATA_SET + quoted(this.dsname) + " created" + logOnImage());
             this.datasetCreated = true;
         } else {
             logger.warn(LOG_DATA_SET + quoted(this.dsname) + " not created" + logOnImage());
         }
         return this;
-    }
-
-    @Override
-    public IZosDataset createRetain() throws ZosDatasetException {
-        this.retainToTestEnd = true;
-        return create();
-    }
-    
-    @Override
-    public IZosDataset createRetainTemporary() throws ZosDatasetException {
-        this.retainToTestEnd = true;
-        this.temporary = true;
-        return create();
-    }
-    
-    @Override
-    public IZosDataset createTemporary() throws ZosDatasetException {
-        this.temporary = true;
-        return create();
     }
 
     @Override
@@ -323,27 +301,22 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     
     @Override
     public void saveToResultsArchive(String rasPath) throws ZosDatasetException {
-    	if (!shouldArchive()) {
-    		throw new ZosDatasetException("shouldArchive flag is false");
-    	}
         try {
             if (exists()) {
                 if (isPDS()) {
                     savePDSToResultsArchive(rasPath);
                 } else {
-                    Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
-					String fileName = zosFileHandler.getZosManager().buildUniquePathName(artifactPath, this.dsname);
+                    Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+            		logger.info("Archiving " + quoted(this.dsname) + " to " + artifactPath.toString());
                     try {
                     	if (this.dataType.equals(DatasetDataType.TEXT)) {
-                    		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), retrieveAsText(), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, retrieveAsText(), ResultArchiveStoreContentType.TEXT);
                     	} else  {
-                    		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
+                    		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, new String(retrieveAsBinary()), ResultArchiveStoreContentType.TEXT);
                     	}
         			} catch (ZosManagerException e) {
         				throw new ZosDatasetException(e);
         			}
-                    
-                    logger.info(quoted(this.dsname) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
                 }
             }
         } catch (ZosFileManagerException e) {
@@ -369,7 +342,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 			emptyFile = zosFileHandler.getZosFileManager().newZosFileHandler().newUNIXFile(emptyFileName, image);
 			emptyFile.setShouldArchive(false);
 			if (!emptyFile.exists()) {
-				emptyFile.createRetain();
+				emptyFile.create();
 			}			
 		} catch (ZosFileManagerException e) {
 			throw new ZosDatasetException(e);
@@ -519,27 +492,22 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     @Override
     public void memberSaveToResultsArchive(@NotNull String memberName, String rasPath) throws ZosDatasetException {
-    	if (!shouldArchive()) {
-    		throw new ZosDatasetException("shouldArchive flag is false");
-    	}
     	Objects.requireNonNull(memberName, LOG_MEMBER_NAME_MUST_NOT_BE_NULL);
         if (!isPDS()) {
             throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + LOG_NOT_PDS);
         }
         try {
-            Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
-            artifactPath = artifactPath.resolve(this.dsname);
-			String fileName = zosFileHandler.getZosManager().buildUniquePathName(artifactPath, memberName);
             try {
-            	if (this.dataType.equals(DatasetDataType.TEXT)) {
-            		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
+            	Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+        		logger.info("Archiving " + quoted(this.dsname) + " to " + artifactPath.toString());
+                if (this.dataType.equals(DatasetDataType.TEXT)) {
+            		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, memberRetrieveAsText(memberName), ResultArchiveStoreContentType.TEXT);
             	} else  {
-            		zosFileHandler.getZosManager().storeArtifact(artifactPath.resolve(fileName), new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
+            		this.zosFileHandler.getZosManager().storeArtifact(artifactPath, new String(memberRetrieveAsBinary(memberName)), ResultArchiveStoreContentType.TEXT);
             	}
 			} catch (ZosManagerException e) {
 				throw new ZosDatasetException(e);
 			}
-            logger.info(quoted(joinDSN(memberName)) + LOG_ARCHIVED_TO + artifactPath.resolve(fileName));
         } catch (ZosFileManagerException e) {
             logger.error("Unable to save data set member to archive", e);
         }
@@ -1056,8 +1024,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     }
 
     protected void savePDSToResultsArchive(String rasPath) throws ZosFileManagerException {
-        Path artifactPath = zosFileHandler.getZosFileManager().getDatasetCurrentTestMethodArchiveFolder();
-        artifactPath = artifactPath.resolve(this.dsname);
+    	Path artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
         try {
         	zosFileHandler.getZosManager().createArtifactDirectory(artifactPath);
             Collection<String> memberList = memberList();
@@ -1129,24 +1096,6 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         }
         return requestBody;
     }
-
-    protected String buildErrorString(String action, IRseapiResponse response) {
-    	String message = "";
-    	try {
-    		Object content = response.getContent();
-			if (content != null) {
-				logger.trace(content);
-				if (content instanceof JsonObject) {
-					message = "\nstatus: " + ((JsonObject) content).get("status").getAsString() + "\n" + "message: " + ((JsonObject) content).get("message").getAsString(); 
-				} else if (content instanceof String) {
-					message = " response body:\n" + content;
-				}
-			}
-		} catch (RseapiException e) {
-			// NOP
-		}
-        return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
-    }
     
     /**
      * Infer the data set and member names from the full DSN
@@ -1186,16 +1135,15 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     public boolean created() {
         return this.datasetCreated;
     }
-    
-    public boolean retainToTestEnd() {
-        return this.retainToTestEnd;
-    }
-
-    public boolean isTemporary() {
-        return this.temporary;
-    }
 
     public IRseapiRestApiProcessor getRseapiApiProcessor() {
         return this.rseapiApiProcessor;
+    }
+    
+    protected void archiveContent() throws ZosDatasetException {
+    	if (shouldArchive()) {
+    		Path rasPath = this.testMethodArchiveFolder.resolve(this.zosFileHandler.getZosManager().buildUniquePathName(testMethodArchiveFolder, this.dsname));
+            saveToResultsArchive(rasPath.toString());
+        }
     }
 }

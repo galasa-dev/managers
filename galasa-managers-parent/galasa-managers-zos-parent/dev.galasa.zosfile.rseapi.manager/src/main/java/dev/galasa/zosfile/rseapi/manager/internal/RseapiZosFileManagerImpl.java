@@ -77,8 +77,9 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     }
 
     private Path artifactsRoot;
-
-    private boolean provisionCleanupComplete;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
+    }
 
     private Path datasetArtifactRoot;
     protected void setDatasetArtifactRoot(Path path) {
@@ -142,6 +143,7 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
         
     
@@ -202,24 +204,10 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     /*
      * (non-Javadoc)
      * 
-     * @see dev.galasa.framework.spi.IManager#startOfTestClass()
-     */
-    @Override
-    public void startOfTestClass() throws ManagerException {
-        cleanup(false);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
      */
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
-        if (!provisionCleanupComplete) {
-            cleanup(false);
-            provisionCleanupComplete = true;
-        }
         setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
@@ -233,18 +221,6 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     /*
      * (non-Javadoc)
      * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.reflect.Method,java.lang.String,java.lang.Throwable)
-     */
-    @Override
-    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup(false);
-        
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see dev.galasa.framework.spi.IManager#endOfTestClass(java.lang.String,java.lang.Throwable)
      */
     @Override
@@ -253,23 +229,8 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
         this.currentTestMethodArchiveFolderName = "postTest";
-        cleanup(true);
         
         return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#provisionDiscard()
-     */
-    @Override
-    public void provisionDiscard() {
-        try {
-            cleanup(true);
-        } catch (ZosFileManagerException e) {
-            logger.error("Problem in provisionDiscard()", e);
-        }
     }
 
     /*
@@ -280,15 +241,15 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     @Override
     public void endOfTestRun() {
         try {
-            cleanup(true);
+            cleanup();
         } catch (ZosFileManagerException e) {
             logger.error("Problem in endOfTestRun()", e);
         }
     }
     
-    protected void cleanup(boolean testComplete) throws ZosFileManagerException {
+    protected void cleanup() throws ZosFileManagerException {
         for (Entry<String, RseapiZosFileHandlerImpl> entry : zosFileHandlers.entrySet()) {
-            entry.getValue().cleanup(testComplete);
+            entry.getValue().cleanup();
         }
     }
     

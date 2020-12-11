@@ -342,7 +342,8 @@ public class ZosmfZosDatasetAttributesListdsi {
             execDataset.setRecordlength(255);
             execDataset.setBlockSize(32720);
             execDataset.setSpace(SpaceUnit.TRACKS, 1, 1);
-            execDataset.createTemporary();
+            execDataset.create();
+            execDataset.setShouldArchive(false);
         }
         if (!this.execDataset.memberExists(LISTDSI_EXEC_NAME)) {
             execDataset.memberStoreText(LISTDSI_EXEC_NAME, getExecResource());

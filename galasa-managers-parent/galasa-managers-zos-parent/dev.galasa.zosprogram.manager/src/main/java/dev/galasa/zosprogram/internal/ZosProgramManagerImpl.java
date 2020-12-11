@@ -234,7 +234,8 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
                     runLoadlib.setBlockSize(32720);
                     runLoadlib.setDatasetOrganization(DatasetOrganization.PARTITIONED);
                     runLoadlib.setDatasetType(DSType.LIBRARY);
-                    runLoadlib.createRetainTemporary();
+                    runLoadlib.create();
+                    runLoadlib.setShouldArchive(false);
                 }
             } catch (ZosManagerException e) {
                 throw new ZosProgramManagerException(e);

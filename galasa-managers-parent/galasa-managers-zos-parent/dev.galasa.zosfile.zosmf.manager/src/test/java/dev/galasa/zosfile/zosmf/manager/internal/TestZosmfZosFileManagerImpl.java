@@ -17,9 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -83,9 +81,6 @@ public class TestZosmfZosFileManagerImpl {
 
     @Mock
     private IZosImage zosImageMock;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final Path ARTIFACT_ROOT = new File(".").toPath();
 
@@ -126,6 +121,8 @@ public class TestZosmfZosFileManagerImpl {
         zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosmfZosFileManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
         
+        Assert.assertEquals("Error in getArtifactsRoot() should return the expected value", ARTIFACT_ROOT, zosFileManagerSpy.getArtifactsRoot());
+        
         zosFileManagerSpy.setCurrentTestMethodArchiveFolderName("");
         Assert.assertEquals("Error in getDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_Datasets"), zosFileManagerSpy.getDatasetCurrentTestMethodArchiveFolder());
         Assert.assertEquals("Error in getVsamDatasetCurrentTestMethodArchiveFolder() should return the expected value", ARTIFACT_ROOT.resolve("zOS_VSAM_Datasets"), zosFileManagerSpy.getVsamDatasetCurrentTestMethodArchiveFolder());
@@ -157,15 +154,19 @@ public class TestZosmfZosFileManagerImpl {
         Mockito.clearInvocations(zosFileManagerSpy);        
         zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
         PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        
+        Assert.assertEquals("Method should return expected object", zosUNIXCommandManagerMock, zosFileManagerSpy.getZosUnixCommandManager());
     }
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         allManagers.add(zosmfManagerMock);
         allManagers.add(zosUNIXCommandManagerMock);
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -173,18 +174,22 @@ public class TestZosmfZosFileManagerImpl {
         allManagers.add(zosManagerMock);
         allManagers.add(zosUNIXCommandManagerMock);
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The zOSMF Manager is not available");
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOSMF Manager is not available";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException3() throws ManagerException {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The zOS UNIX Command Manager is not available");
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS UNIX Command Manager is not available";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -205,15 +210,8 @@ public class TestZosmfZosFileManagerImpl {
     }
     
     @Test
-    public void testStartOfTestClass() throws ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        zosFileManagerSpy.startOfTestClass();
-        Mockito.verify(zosFileManagerSpy, Mockito.times(1)).cleanup(Mockito.anyBoolean());
-    }
-    
-    @Test
     public void testStartOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
         zosFileManagerSpy.startOfTestMethod(new GalasaMethod(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset"), null));
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", "dummyTestMethodDataset", zosFileManagerSpy.currentTestMethodArchiveFolderName);
@@ -224,7 +222,7 @@ public class TestZosmfZosFileManagerImpl {
     
     @Test
     public void testEndOfTestMethod() throws NoSuchMethodException, SecurityException, ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         zosFileManagerSpy.setCurrentTestMethodArchiveFolderName("dummyTestMethodDataset");
         zosFileManagerSpy.endOfTestMethod(new GalasaMethod(null, DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset")), "pass", null);
         Assert.assertEquals("currentTestMethodArchiveFolderName should contain the supplied value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), zosFileManagerSpy.currentTestMethodArchiveFolderName);
@@ -240,47 +238,37 @@ public class TestZosmfZosFileManagerImpl {
     
     @Test
     public void testCleanup() throws Exception {
-        zosFileManagerSpy.cleanup(false);
-        zosFileManagerSpy.cleanup(true);
+        zosFileManagerSpy.cleanup();
+        zosFileManagerSpy.cleanup();
 
         Map<String, ZosmfZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
         ZosmfZosFileHandlerImpl zosmfZosFileHandlerImplMock = Mockito.mock(ZosmfZosFileHandlerImpl.class);
-        Mockito.doNothing().when(zosmfZosFileHandlerImplMock).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosmfZosFileHandlerImplMock).cleanup();
         zosFileHandlers.put(zosmfZosFileHandlerImplMock.toString(), zosmfZosFileHandlerImplMock);
         Whitebox.setInternalState(zosFileManagerSpy, "zosFileHandlers", zosFileHandlers);
         
-        zosFileManagerSpy.cleanup(false);
-        Mockito.verify(zosFileManagerSpy, Mockito.atLeast(1)).cleanup(Mockito.anyBoolean());
+        zosFileManagerSpy.cleanup();
+        Mockito.verify(zosFileManagerSpy, Mockito.atLeast(1)).cleanup();
         
         Mockito.clearInvocations(zosFileManagerSpy);
         zosFileHandlers = new HashMap<>();
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         zosFileHandlers.put(zosmfZosFileHandlerImplMock.toString(), zosmfZosFileHandlerImplMock);
         Whitebox.setInternalState(zosFileManagerSpy, "zosFileHandlers", zosFileHandlers);
         
-        zosFileManagerSpy.cleanup(true);
-        Mockito.verify(zosmfZosFileHandlerImplMock, Mockito.atLeast(1)).cleanup(Mockito.anyBoolean());
-    }
-    
-    @Test
-    public void testProvisionDiscard() throws ZosFileManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
-        zosFileManagerSpy.provisionDiscard();
-
-        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());  
-        zosFileManagerSpy.provisionDiscard();
-        Assert.assertEquals("provisionDiscard() should log expected message", "Problem in provisionDiscard()", logMessage);
+        zosFileManagerSpy.cleanup();
+        Mockito.verify(zosmfZosFileHandlerImplMock, Mockito.atLeast(1)).cleanup();
     }
     
     @Test
     public void testEndOfTestRun() throws NoSuchMethodException, SecurityException, ManagerException {
         Whitebox.setInternalState(zosFileManagerSpy, "artifactsRoot", new File(".").toPath());
-        Mockito.doNothing().when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileManagerSpy).cleanup();
         zosFileManagerSpy.setCurrentTestMethodArchiveFolderName(DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName());
         zosFileManagerSpy.endOfTestRun();
         Assert.assertEquals("currentTestMethodArchiveFolderName should be expeacted value", DummyTestClass.class.getDeclaredMethod("dummyTestMethodDataset").getName(), zosFileManagerSpy.currentTestMethodArchiveFolderName);
 
-        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup(Mockito.anyBoolean());
+        Mockito.doThrow(new ZosFileManagerException()).when(zosFileManagerSpy).cleanup();
         zosFileManagerSpy.endOfTestRun();
         Assert.assertEquals("testEndOfTestRun() should log expected message", "Problem in endOfTestRun()", logMessage);
     }
@@ -339,11 +327,11 @@ public class TestZosmfZosFileManagerImpl {
     public void testGetRunDatasetHLQException() throws ZosManagerException {
         Whitebox.setInternalState(zosFileManagerSpy, "zosManager", zosManagerMock); 
         Mockito.when(zosFileManagerSpy.getZosManager().getRunDatasetHLQ(Mockito.any())).thenThrow(new ZosManagerException("exception"));
-        
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("exception");
-        
-        zosFileManagerSpy.getRunDatasetHLQ(zosImageMock);
+        String expectedMessage = "exception";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	zosFileManagerSpy.getRunDatasetHLQ(zosImageMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
     
     @Test

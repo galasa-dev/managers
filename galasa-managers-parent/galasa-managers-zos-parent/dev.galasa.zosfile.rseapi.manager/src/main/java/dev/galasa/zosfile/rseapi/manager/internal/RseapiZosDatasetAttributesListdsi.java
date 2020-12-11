@@ -100,7 +100,7 @@ public class RseapiZosDatasetAttributesListdsi {
     
     private static final Log logger = LogFactory.getLog(RseapiZosDatasetAttributesListdsi.class);
     
-    public RseapiZosDatasetAttributesListdsi(RseapiZosFileHandlerImpl zosFileHandler, IRseapiRestApiProcessor rseapiApiProcessor,	IZosImage image) {
+    public RseapiZosDatasetAttributesListdsi(RseapiZosFileHandlerImpl zosFileHandler, IRseapiRestApiProcessor rseapiApiProcessor, IZosImage image) {
         this.zosFileHandler = zosFileHandler;
         this.rseapiApiProcessor = rseapiApiProcessor;
         this.image = image;
@@ -348,7 +348,8 @@ public class RseapiZosDatasetAttributesListdsi {
             execDataset.setRecordlength(255);
             execDataset.setBlockSize(32720);
             execDataset.setSpace(SpaceUnit.TRACKS, 1, 1);
-            execDataset.createTemporary();
+            execDataset.create();
+            execDataset.setShouldArchive(false);
         }
         if (!this.execDataset.memberExists(LISTDSI_EXEC_NAME)) {
             execDataset.memberStoreText(LISTDSI_EXEC_NAME, getExecResource());

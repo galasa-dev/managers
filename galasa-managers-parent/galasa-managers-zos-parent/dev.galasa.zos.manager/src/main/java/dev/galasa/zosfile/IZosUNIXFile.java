@@ -48,13 +48,6 @@ public interface IZosUNIXFile {
     public IZosUNIXFile create() throws ZosUNIXFileException;
 
     /**
-     * Create the zOS UNIX file or directory from the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZoException 
-     */
-    public IZosUNIXFile createRetain() throws ZosUNIXFileException;
-
-    /**
      * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory will throw {@link ZosUNIXFileException}
      * @return deleted
      * @throws ZosUNIXFileException

@@ -5,6 +5,7 @@
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -37,11 +38,8 @@ import dev.galasa.zosrseapi.spi.IRseapiManagerSpi;
 public class RseapiZosFileHandlerImpl implements IZosFileHandler {
 
     private List<RseapiZosDatasetImpl> zosDatasets = new ArrayList<>();
-    private List<RseapiZosDatasetImpl> zosDatasetsForCleanup = new ArrayList<>();
     private List<RseapiZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();
-    private List<RseapiZosVSAMDatasetImpl> zosVsamDatasetsForCleanup = new ArrayList<>();
     private List<RseapiZosUNIXFileImpl> zosUnixFiles = new ArrayList<>();
-    private List<RseapiZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();
     private String fieldName;
     
 	private RseapiZosFileManagerImpl zosFileManager;
@@ -97,126 +95,63 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
         return zosVsamDataset;
     }
     
-    public void cleanup(boolean testComplete) throws ZosFileManagerException {
-        cleanupDatasets(testComplete);
-        cleanupVsamDatasets(testComplete);
-        cleanupUnixFiles(testComplete);
+    public void cleanup() throws ZosFileManagerException {
+        cleanupDatasets();
+        cleanupVsamDatasets();
+        cleanupUnixFiles();
     }
     
-    public void cleanupDatasets(boolean testComplete) throws ZosFileManagerException {
+    public void cleanupDatasets() throws ZosFileManagerException {
         Iterator<RseapiZosDatasetImpl> datasetIterator = this.zosDatasets.iterator();
         while (datasetIterator.hasNext()) {
             RseapiZosDatasetImpl zosDataset = datasetIterator.next();
             try {
 	            if (zosDataset.created() && zosDataset.exists()) {
-	                if (!zosDataset.isTemporary() && zosDataset.shouldArchive()) {
-	                    zosDataset.saveToResultsArchive("TODO");//TODO
-	                }
-	                if (zosDataset.retainToTestEnd()) {
-	                    this.zosDatasetsForCleanup.add(zosDataset);
-	                } else {
-	                    zosDataset.delete();
-	                }
-	            }
-			} catch (ZosDatasetException e) {
-				logger.error("Problem in cleanup phase", e);
-			}
-            datasetIterator.remove();
-        }
-        
-        if (testComplete) {
-            cleanupDatasetsTestComplete();
-        }
-    }
-    
-    protected void cleanupDatasetsTestComplete() throws ZosDatasetException {
-        Iterator<RseapiZosDatasetImpl> datasetForCleanupIterator = this.zosDatasetsForCleanup.iterator();
-        while (datasetForCleanupIterator.hasNext()) {
-            RseapiZosDatasetImpl zosDataset = datasetForCleanupIterator.next();
-            try {
-	            if (zosDataset.created() && zosDataset.exists()) {
-	                if (!zosDataset.isTemporary() && zosDataset.shouldArchive()) {
-	                    zosDataset.saveToResultsArchive("TODO");//TODO
+	                if (zosDataset.shouldArchive()) {
+	                    zosDataset.archiveContent();
 	                }
 	                zosDataset.delete();
 	            }
 			} catch (ZosDatasetException e) {
-				logger.error("Problem in cleanup phase", e);
+				logger.error("Problem in data set cleanup phase", e);
 			}
         }
     }
 
-    public void cleanupVsamDatasets(boolean testComplete) throws ZosFileManagerException {
+    public void cleanupVsamDatasets() throws ZosFileManagerException {
         Iterator<RseapiZosVSAMDatasetImpl> vsamDatasetIterator = this.zosVsamDatasets.iterator();
         while (vsamDatasetIterator.hasNext()) {
             RseapiZosVSAMDatasetImpl zosVsamDataset = vsamDatasetIterator.next();
             try {
-	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
-	                zosVsamDataset.saveToResultsArchive("TODO");//TODO
-	                if (zosVsamDataset.retainToTestEnd()) {
-	                    this.zosVsamDatasetsForCleanup.add(zosVsamDataset);
-	                } else {
-	                    zosVsamDataset.delete();
-	                }
-	            }
-			} catch (ZosVSAMDatasetException e) {
-				logger.error("Problem in cleanup phase", e);
-			}
-            vsamDatasetIterator.remove();
-        }
-        
-        if (testComplete) {
-            cleanupVsamDatasetsTestComplete();
-        }
-    }
-        
-    protected void cleanupVsamDatasetsTestComplete() throws ZosVSAMDatasetException {
-        Iterator<RseapiZosVSAMDatasetImpl> vsamDatasetForCleanupIterator = this.zosVsamDatasetsForCleanup.iterator();
-        while (vsamDatasetForCleanupIterator.hasNext()) {
-        	RseapiZosVSAMDatasetImpl zosVsamDataset = vsamDatasetForCleanupIterator.next();
-            try {
-	            if (zosVsamDataset.created() && zosVsamDataset.exists() && zosVsamDataset.shouldArchive()) {
-	                zosVsamDataset.saveToResultsArchive("TODO");//TODO
+	            if (zosVsamDataset.created() && zosVsamDataset.exists()) {
+	            	if (zosVsamDataset.shouldArchive()) {
+	            		zosVsamDataset.archiveContent();
+	            	}
 	                zosVsamDataset.delete();
 	            }
 			} catch (ZosVSAMDatasetException e) {
-				logger.error("Problem in cleanup phase", e);
+				logger.error("Problem in VSAM data set cleanup phase", e);
 			}
+            vsamDatasetIterator.remove();
         }
     }
 
-    public void cleanupUnixFiles(boolean testComplete) throws ZosFileManagerException {
+    public void cleanupUnixFiles() throws ZosFileManagerException {
         Iterator<RseapiZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
         while (unixFileIterator.hasNext()) {
             RseapiZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
             try {
-				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists() && zosUnixFile.shouldArchive()) {
-	                zosUnixFile.saveToResultsArchive("TODO");//TODO
-	                if (!zosUnixFile.retainToTestEnd()) {
-	                	if (zosUnixFile.isDirectory()) {
-	                		zosUnixFile.directoryDeleteNonEmpty();
-	                	} else {
-	                		zosUnixFile.delete();
-	                	}
-	                }
+				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
+					if (zosUnixFile.shouldArchive()) {
+						zosUnixFile.archiveContent();
+					}
+		            zosUnixFile.delete();
+		            zosUnixFile.cleanCreatedPath();
 	            }
 			} catch (ZosUNIXFileException e) {
-				logger.error("Problem in cleanup phase", e);
+				logger.error("Problem in UNIX file cleanup phase", e);
 			}
-            this.zosUnixFilesForCleanup.add(zosUnixFile);
             unixFileIterator.remove();
-        }
-        
-        if (testComplete) {
-            cleanupUnixFilesTestComplete();
-        }
-    }
-
-    protected void cleanupUnixFilesTestComplete() {
-        Iterator<RseapiZosUNIXFileImpl> zosUnixFilesForCleanupIterator = this.zosUnixFilesForCleanup.iterator();
-        while (zosUnixFilesForCleanupIterator.hasNext()) {
-            RseapiZosUNIXFileImpl zosUnixFile = zosUnixFilesForCleanupIterator.next();
-            zosUnixFile.cleanCreatedPath();
         }
     }
 
@@ -241,5 +176,9 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
 			// NOP
 		}
 	    return "Error " + action + ", HTTP Status Code " + response.getStatusCode() + " : " + response.getStatusLine() + message;
+	}
+    
+	public Path getArtifactsRoot() {
+		return this.zosFileManager.getArtifactsRoot();
 	}
 }
