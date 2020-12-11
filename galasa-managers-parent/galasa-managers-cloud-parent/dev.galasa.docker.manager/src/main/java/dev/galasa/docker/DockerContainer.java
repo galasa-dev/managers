@@ -70,4 +70,13 @@ public @interface DockerContainer {
      */
     public String dockerEngineTag() default "PRIMARY";
 
+    /**
+     * The <code>volumes</code> will be used to indicate that a volume is to be mounted to the container when the continer is creared. The value of this
+     * field can be a comma seperated list if multiple volumes are to be mounted. The general format of the value should look like 
+     * <code>volumes = "volume_name_a:volume_mount_path, volume_name_b:volume_mount_path"</code>. This will search the docker engine for a volume that 
+     * has this name, and create one if it doesn't.
+     * @return
+     */
+    public String volumes();
+
 }
