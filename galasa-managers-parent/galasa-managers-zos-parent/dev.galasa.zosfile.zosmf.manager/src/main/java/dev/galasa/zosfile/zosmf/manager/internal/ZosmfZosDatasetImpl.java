@@ -83,7 +83,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     private DatasetDataType dataType = DatasetDataType.TEXT;
 
-    private boolean shouldArchive = true;
+    private boolean shouldArchive = false;
 
     private ZosmfZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
 

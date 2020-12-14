@@ -700,7 +700,7 @@ public interface IZosVSAMDataset {
     public String getAttibutesAsString() throws ZosVSAMDatasetException;
 
     /**
-     * Set flag to control if the content of the VSAM data set should be stored to the test output. Defaults to true
+     * Set flag to control if the content of the VSAM data set should be stored to the test output. Defaults to false
      */    
     public void setShouldArchive(boolean shouldArchive);
 

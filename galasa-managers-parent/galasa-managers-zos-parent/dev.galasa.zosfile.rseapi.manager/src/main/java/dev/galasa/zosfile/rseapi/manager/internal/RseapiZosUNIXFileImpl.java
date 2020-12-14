@@ -67,7 +67,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
     private UNIXFileDataType dataType;
 
-    private boolean shouldArchive = true;
+    private boolean shouldArchive = false;
     
 	private static final String PROP_PERMISSIONS_SYMBOLIC = "permissionsSymbolic";
 	private static final String PROP_SIZE = "size";
