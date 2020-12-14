@@ -70,7 +70,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 
     private UNIXFileDataType dataType;
 
-    private boolean shouldArchive = true;
+    private boolean shouldArchive = false;
 
     private int maxItems;
 

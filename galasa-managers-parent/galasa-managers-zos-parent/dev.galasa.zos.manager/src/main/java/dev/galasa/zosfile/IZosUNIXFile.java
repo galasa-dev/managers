@@ -145,7 +145,7 @@ public interface IZosUNIXFile {
     public String getAttributesAsString() throws ZosUNIXFileException;
 
     /**
-     * Set flag to control if the content of the zOS UNIX path should be stored to the test output. Defaults to true
+     * Set flag to control if the content of the zOS UNIX path should be stored to the test output. Defaults to false
      */    
     public void setShouldArchive(boolean shouldArchive);
 
