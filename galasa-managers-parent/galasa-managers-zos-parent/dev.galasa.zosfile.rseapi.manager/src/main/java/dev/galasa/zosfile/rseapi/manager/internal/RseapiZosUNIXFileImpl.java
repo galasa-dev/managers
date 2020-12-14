@@ -8,8 +8,6 @@ package dev.galasa.zosfile.rseapi.manager.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
