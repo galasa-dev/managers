@@ -13,9 +13,7 @@ import java.nio.file.Paths;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -51,6 +49,9 @@ public class TestZosmfZosDatasetAttributesListdsi {
     private IZosManagerSpi zosManagerMock;
     
     @Mock
+    private ZosmfZosFileManagerImpl zosFileManagerMock;
+    
+    @Mock
     private IZosUNIXCommandSpi zosUNIXCommandSpiMock;
     
     @Mock
@@ -61,9 +62,6 @@ public class TestZosmfZosDatasetAttributesListdsi {
     
     @Mock
     private ZosmfZosDatasetImpl execDatasetMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String DATASET_NAME = "DATA.SET.NAME";
     
@@ -74,35 +72,40 @@ public class TestZosmfZosDatasetAttributesListdsi {
     @Before
     public void setup() throws Exception {
         Mockito.when(zosManagerMock.getRunDatasetHLQ(Mockito.any())).thenReturn(RUN_HLQ);
-        ZosmfZosFileManagerImpl.setZosManager(zosManagerMock);
-        ZosmfZosFileManagerImpl.setRunId(RUNID);
-        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(zosUNIXCommandSpiMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getRunId()).thenReturn(RUNID);
+        Mockito.when(zosFileManagerMock.getZosUnixCommandManager()).thenReturn(zosUNIXCommandSpiMock);
         
-        zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(zosImageMock);
+        zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(zosFileManagerMock, zosImageMock);
         zosDatasetAttributesListdsiSpy = Mockito.spy(zosmfZosDatasetAttributesListdsi);
     }
     
     @Test
     public void testInitialise() throws ZosDatasetException {
         PowerMockito.doNothing().when(zosDatasetAttributesListdsiSpy).createExecDataset();
+        Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "zosFileManager", zosFileManagerMock);
         zosDatasetAttributesListdsiSpy.initialise();
         Assert.assertTrue("initialise() should set initialised to true", Whitebox.getInternalState(zosDatasetAttributesListdsiSpy, "initialised"));
     }
     
     @Test
     public void testInitialiseException1() throws ZosDatasetException {
-        ZosmfZosFileManagerImpl.setZosUnixCommandCommandManager(null);
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
-        zosDatasetAttributesListdsiSpy.initialise();
+    	Mockito.when(zosFileManagerMock.getZosUnixCommandManager()).thenReturn(null);
+        String expectMessage = "Unable to create LISTDSI EXEC command";
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+            zosDatasetAttributesListdsiSpy.initialise();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitialiseException2() throws ZosDatasetException, ZosUNIXCommandManagerException {
         PowerMockito.when(zosUNIXCommandSpiMock.getZosUNIXCommand(Mockito.any())).thenThrow(new ZosUNIXCommandManagerException());
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to create LISTDSI EXEC command");
-        zosDatasetAttributesListdsiSpy.initialise();
+        String expectMessage = ("Unable to create LISTDSI EXEC command");
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.initialise();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
     
     @Test
@@ -134,9 +137,11 @@ public class TestZosmfZosDatasetAttributesListdsi {
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "initialised", true);
         JsonObject jsonObject = new JsonObject();
         PowerMockito.doReturn(jsonObject ).when(zosDatasetAttributesListdsiSpy).execListdsi(Mockito.anyString());
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Invalid JSON object returend from LISTDSI:\n" + jsonObject);
-        zosDatasetAttributesListdsiSpy.get(DATASET_NAME);
+        String expectMessage = ("Invalid JSON object returend from LISTDSI:\n" + jsonObject);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.get(DATASET_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
     
     @Test
@@ -161,18 +166,22 @@ public class TestZosmfZosDatasetAttributesListdsi {
     public void testExecListdsiException1() throws ZosUNIXCommandException, ZosDatasetException {
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "unixCommand", zosUNIXCommandMock);
         PowerMockito.when(zosUNIXCommandMock.issueCommand(Mockito.any())).thenThrow(new ZosUNIXCommandException());
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Problem issuing zOS UNIX command");
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        String expectMessage = ("Problem issuing zOS UNIX command");
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
 
     @Test
     public void testExecListdsiException2() throws ZosUNIXCommandException, ZosDatasetException {
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "unixCommand", zosUNIXCommandMock);
         PowerMockito.when(zosUNIXCommandMock.issueCommand(Mockito.any())).thenReturn("ERROR");
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to get data set attibutes: ERROR");
-        zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        String expectMessage = ("Unable to get data set attibutes: ERROR");
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
     
     @Test
@@ -209,9 +218,12 @@ public class TestZosmfZosDatasetAttributesListdsi {
         Assert.assertEquals("getExecResource() should return the expected value", execSource, zosDatasetAttributesListdsiSpy.getExecResource());
         
         Mockito.when(bundleMock.getResource(Mockito.any())).thenReturn(new URL("file://DUMMY"));
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage("Unable to get LISTDSI EXEC resource from Manager Bundle");
-        zosDatasetAttributesListdsiSpy.getExecResource();
+        String expectMessage = "Unable to get LISTDSI EXEC resource from Manager Bundle";
+
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetAttributesListdsiSpy.getExecResource();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
     }
     
     private JsonObject buildJsonObject(boolean empty) {

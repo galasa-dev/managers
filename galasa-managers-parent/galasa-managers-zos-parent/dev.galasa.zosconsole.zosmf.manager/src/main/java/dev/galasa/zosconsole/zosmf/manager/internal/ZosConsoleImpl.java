@@ -64,7 +64,7 @@ public class ZosConsoleImpl implements IZosConsole {
             }
         }
         if (consoleName.length() < 2 || consoleName.length() > 8) {
-            throw new ZosConsoleException("Invalid console name \"" + consoleName + "\" must be between 2 and 8 charaters long");
+            throw new ZosConsoleException("Invalid console name \"" + consoleName + "\" must be between 2 and 8 characters long");
         }
         return consoleName;
     }

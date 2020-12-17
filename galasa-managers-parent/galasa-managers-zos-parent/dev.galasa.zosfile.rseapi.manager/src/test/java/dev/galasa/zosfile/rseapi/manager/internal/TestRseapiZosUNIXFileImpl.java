@@ -60,12 +60,18 @@ public class TestRseapiZosUNIXFileImpl {
 
     @Mock
     private ZosManagerImpl zosManagerMock;
+
+    @Mock
+    private RseapiZosFileManagerImpl zosFileManagerMock;
     
     @Mock
     private RseapiManagerImpl rseapiManagerMock;
     
     @Mock
     private IRseapiRestApiProcessor rseapiApiProcessorMock;
+    
+    @Mock
+    private RseapiZosFileHandlerImpl zosFileHandlerMock;
     
     @Mock
     private IRseapiResponse rseapiResponseMock;
@@ -100,6 +106,8 @@ public class TestRseapiZosUNIXFileImpl {
     private static final String VALUE = "value";
 
     private static final int MAX_ROWS = 1000;
+
+	private static final String RAS_PATH = "RAS_PATH";
     
     @Before
     public void setup() throws Exception {
@@ -128,29 +136,38 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(zosManagerMock.getZosFilePropertyUnixFilePermissions(Mockito.any())).thenReturn(MODE);
         
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        RseapiZosFileManagerImpl.setZosManager(zosManagerMock);
+        Mockito.when(zosFileManagerMock.getZosManager()).thenReturn(zosManagerMock);
         
         PowerMockito.doReturn(rseapiApiProcessorMock).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        RseapiZosFileManagerImpl.setRseapiManager(rseapiManagerMock);
+        Mockito.when(zosFileManagerMock.getRseapiManager()).thenReturn(rseapiManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosFileManager()).thenReturn(zosFileManagerMock);
+        Mockito.when(zosFileHandlerMock.getZosManager()).thenReturn(zosManagerMock);
+
+    	Path pathMock = Mockito.mock(Path.class);
+    	Mockito.doReturn(pathMock).when(pathMock).resolve(Mockito.anyString());
+    	Mockito.doReturn("PATH_NAME").when(pathMock).toString();
+    	Mockito.doReturn(pathMock).when(zosFileManagerMock).getUnixPathArtifactRoot();
+        Mockito.when(zosFileManagerMock.getUnixPathCurrentTestMethodArchiveFolder()).thenReturn(pathMock);
         
-        zosUNIXFile = new RseapiZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        zosUNIXFile = new RseapiZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, UNIX_PATH);
         zosUNIXFileSpy = Mockito.spy(zosUNIXFile);
     }
     
     @Test
-    public void testConstructorException1() throws RseapiManagerException, ZosFileManagerException {
+    public void testConstructor() throws RseapiManagerException, ZosFileManagerException {
+    	Assert.assertEquals("getZosFileHandler() should return the expected object", zosFileHandlerMock, zosUNIXFileSpy.getZosFileHandler());
         String expectedMessage = "UNIX path must be absolute not be relative";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	new RseapiZosUNIXFileImpl(zosImageMock, "PATH");
+        	new RseapiZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, "PATH");
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
-    public void testConstructorException2() throws RseapiManagerException, ZosFileManagerException {
+    public void testConstructorException1() throws RseapiManagerException, ZosFileManagerException {
         Mockito.doThrow(new RseapiManagerException(EXCEPTION)).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	new RseapiZosUNIXFileImpl(zosImageMock, UNIX_PATH);
+        	new RseapiZosUNIXFileImpl(zosFileHandlerMock, zosImageMock, UNIX_PATH);
         });
     	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
@@ -169,7 +186,6 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertTrue("created() should return false", zosUNIXFileSpy.created());
         
         PowerMockito.doReturn(false).doReturn(true).when(zosUNIXFileSpy).exists();
-        Whitebox.setInternalState(zosUNIXFileSpy, "retainToTestEnd", true);
         zosUNIXFileSpy.create();
         Assert.assertTrue("created() should return false", zosUNIXFileSpy.created());
         
@@ -185,15 +201,7 @@ public class TestRseapiZosUNIXFileImpl {
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
-    
-    @Test
-    public void testCreateRetain() throws ZosUNIXFileException, RseapiException {
-        PowerMockito.doReturn(null).when(zosUNIXFileSpy).create();
-       
-        zosUNIXFileSpy.createRetain();
-        Assert.assertTrue("createdReturn() should set retainToTestEnd to true", Whitebox.getInternalState(zosUNIXFileSpy, "retainToTestEnd"));
-    }
-    
+
     @Test
     public void testDirectoryDeleteNonEmpty() throws ZosUNIXFileException {
         PowerMockito.doNothing().when(zosUNIXFileSpy).delete(Mockito.anyString(), Mockito.anyBoolean());
@@ -243,6 +251,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenCallRealMethod();
         String expectedMessage = "Error writing to '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.store(CONTENT);
@@ -294,11 +303,13 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenCallRealMethod();
+        String expectedMessage = "Error writing to '" + UNIX_DIRECTORY + "/" + UNIX_FILE + "', HTTP Status Code " + HttpStatus.SC_NOT_FOUND + " : NOT_FOUND";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.store(CONTENT);
         });
-    	Assert.assertEquals("exception should contain expected message", ERROR, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -332,16 +343,10 @@ public class TestRseapiZosUNIXFileImpl {
     
     @Test
     public void testOneLineMethods() throws ZosUNIXFileException {
-    	zosUNIXFileSpy.setShouldArchive(false);
-    	String expectedMessage = "shouldArchive flag is false";
-		ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-			zosUNIXFileSpy.saveToResultsArchive();
-    	});
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
 		zosUNIXFileSpy.setShouldArchive(true);
 
         PowerMockito.doNothing().when(zosUNIXFileSpy).saveToResultsArchive(Mockito.any());
-        zosUNIXFileSpy.saveToResultsArchive();
+        zosUNIXFileSpy.saveToResultsArchive(RAS_PATH);
 
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         zosUNIXFileSpy.isDirectory();
@@ -367,8 +372,6 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertEquals("logOnImage() should return the expected value", " on image " + IMAGE , zosUNIXFileSpy.logOnImage());
 
         Assert.assertEquals("toString() should return the expected value", UNIX_PATH, zosUNIXFileSpy.toString());
-        
-        Assert.assertFalse("retainToTestEnd() should return false", zosUNIXFileSpy.retainToTestEnd());
         
         Assert.assertFalse("deleted() should return false", zosUNIXFileSpy.deleted());
     }
@@ -465,7 +468,7 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
         });
@@ -493,7 +496,7 @@ public class TestRseapiZosUNIXFileImpl {
 
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
         });
@@ -570,7 +573,7 @@ public class TestRseapiZosUNIXFileImpl {
 
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.delete(UNIX_FILE, false);
         });
@@ -602,7 +605,7 @@ public class TestRseapiZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_ACCEPTABLE);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.exists(UNIX_PATH);
         });
@@ -644,7 +647,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         String expectedMessage = "Unable to retrieve content of '" + UNIX_PATH + "' on image " + IMAGE;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.retrieve(UNIX_PATH);
@@ -659,7 +662,7 @@ public class TestRseapiZosUNIXFileImpl {
 
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.retrieve(UNIX_PATH);
         });
@@ -673,6 +676,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
 
         Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenCallRealMethod();
         String expectedMessage = "Error retrieve content '" + UNIX_PATH + "', HTTP Status Code 404 : NOT_FOUND";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.retrieve(UNIX_PATH);
@@ -685,7 +689,7 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         PowerMockito.doReturn(CONTENT).when(zosUNIXFileSpy).retrieve(Mockito.any());
-        PowerMockito.doReturn("location").when(zosUNIXFileSpy).storeArtifact(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+        PowerMockito.doReturn("location").when(zosUNIXFileSpy).storeArtifact(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any());
         zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
         Assert.assertEquals("saveToResultsArchive() should log expected message", "'" + UNIX_PATH + "' archived to location", logMessage);
         
@@ -783,7 +787,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         JsonObject jsonObject = new JsonObject();
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
-        PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any());
+        Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenReturn(ERROR);
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.listDirectory("path1", false);
         });
@@ -823,11 +827,11 @@ public class TestRseapiZosUNIXFileImpl {
     public void testStoreArtifact() throws ZosFileManagerException, IOException {
         setupTestStoreArtifact();
         
-        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(CONTENT, true, "pathElement"));
+        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(RAS_PATH, CONTENT, true, "pathElement"));
         
-        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(CONTENT, false, "pathElement", "output.file"));
+        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(RAS_PATH, CONTENT, false, "pathElement", "output.file"));
         
-        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(CONTENT.getBytes(), false, "pathElement", "output.file"));
+        Assert.assertEquals("storeArtifact() should return the supplied mock value", "artifactPath", zosUNIXFileSpy.storeArtifact(RAS_PATH, CONTENT.getBytes(), false, "pathElement", "output.file"));
     }
     
     @Test
@@ -835,7 +839,7 @@ public class TestRseapiZosUNIXFileImpl {
         setupTestStoreArtifact();
         String expectedMessage = "Unable to store artifact. Invalid content object type: java.lang.Object";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.storeArtifact(new Object(), false, "pathElement", "output.file");
+        	zosUNIXFileSpy.storeArtifact(RAS_PATH, new Object(), false, "pathElement", "output.file");
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -846,7 +850,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new IOException());
         String expectedMessage = "Unable to store artifact";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.storeArtifact(CONTENT, false, "pathElement", "output.file");
+        	zosUNIXFileSpy.storeArtifact(RAS_PATH, CONTENT, false, "pathElement", "output.file");
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -864,8 +868,9 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(fileSystemProviderMock.newByteChannel(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(seekableByteChannelMock);
         Mockito.when(fileSystemProviderMock.newOutputStream(Mockito.any(Path.class), Mockito.any())).thenReturn(outputStreamMock);
         Mockito.when(fileSystemMock.getPath(Mockito.anyString(), Mockito.any())).thenReturn(archivePathMock);
-        RseapiZosFileManagerImpl.setUnixPathArtifactRoot(archivePathMock);
-        RseapiZosFileManagerImpl.setCurrentTestMethodArchiveFolderName("testStoreArtifact");
+        Mockito.when(zosFileManagerMock.getUnixPathArtifactRoot()).thenReturn(archivePathMock);
+        Mockito.when(zosFileHandlerMock.getArtifactsRoot()).thenReturn(archivePathMock);
+        Mockito.when(zosFileManagerMock.getCurrentTestMethodArchiveFolderName()).thenReturn("testStoreArtifact");
         
         return fileSystemProviderMock;
     }
@@ -897,41 +902,6 @@ public class TestRseapiZosUNIXFileImpl {
         
         Assert.assertEquals("emptyStringWhenNull() should return the expected value", "", zosUNIXFileSpy.emptyStringWhenNull(jsonObject, "xxxx"));
         Assert.assertEquals("emptyStringWhenNull() should return the expected value", VALUE, zosUNIXFileSpy.emptyStringWhenNull(jsonObject, PROPERTY));
-    }
-    
-    @Test
-    public void testBuildErrorString() throws RseapiException {
-        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("OK");
-        Mockito.when(rseapiResponseMock.getContent()).thenReturn(null);
-        String expectedString = "Error action, HTTP Status Code " + HttpStatus.SC_OK + " : OK";
-        String returnString = zosUNIXFileSpy.buildErrorString("action", rseapiResponseMock);
-        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-        
-        Mockito.when(rseapiResponseMock.getContent()).thenReturn(0);
-        returnString = zosUNIXFileSpy.buildErrorString("action", rseapiResponseMock);
-        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-        
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("status", "status");
-        jsonObject.addProperty("message", "message");
-        Mockito.when(rseapiResponseMock.getContent()).thenReturn(jsonObject);
-        expectedString = "Error action, HTTP Status Code " + HttpStatus.SC_OK + " : OK\n" + 
-        		"status: status\n" + 
-        		"message: message";
-        returnString = zosUNIXFileSpy.buildErrorString("action", rseapiResponseMock);
-        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-
-        Mockito.when(rseapiResponseMock.getContent()).thenReturn("STRING");
-        expectedString = "Error action, HTTP Status Code " + HttpStatus.SC_OK + " : OK response body:\n" + 
-        		"STRING";
-        returnString = zosUNIXFileSpy.buildErrorString("action", rseapiResponseMock);
-        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
-        
-        Mockito.when(rseapiResponseMock.getContent()).thenThrow(new RseapiException());
-        expectedString = "Error action, HTTP Status Code " + HttpStatus.SC_OK + " : OK";
-        returnString = zosUNIXFileSpy.buildErrorString("action", rseapiResponseMock);
-        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
     }
     
     @Test
@@ -974,5 +944,18 @@ public class TestRseapiZosUNIXFileImpl {
         zosUNIXFileSpy.cleanCreatedDelete();
         
         Mockito.verify(zosUNIXFileSpy, Mockito.times(2)).cleanCreatedDelete();
+    }
+    
+    @Test
+    public void testArchiveContent() throws ZosUNIXFileException {
+    	Mockito.doNothing().when(zosUNIXFileSpy).saveToResultsArchive(Mockito.any());
+    	Mockito.doReturn("PATH_NAME").when(zosManagerMock).buildUniquePathName(Mockito.any(), Mockito.any());
+    	Mockito.when(zosUNIXFileSpy.shouldArchive()).thenReturn(false);
+    	zosUNIXFileSpy.archiveContent();
+    	Mockito.verify(zosUNIXFileSpy, Mockito.times(0)).saveToResultsArchive(Mockito.any());
+    	
+    	Mockito.when(zosUNIXFileSpy.shouldArchive()).thenReturn(true);
+    	zosUNIXFileSpy.archiveContent();
+    	Mockito.verify(zosUNIXFileSpy, Mockito.times(1)).saveToResultsArchive(Mockito.any());
     }
 }

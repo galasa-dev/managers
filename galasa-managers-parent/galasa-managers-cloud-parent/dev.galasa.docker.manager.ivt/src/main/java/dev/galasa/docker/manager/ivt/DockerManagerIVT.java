@@ -55,7 +55,7 @@ public class DockerManagerIVT {
     public IDockerContainer container;
 
     @BundleResources
-    IBundleResources resources;
+    public IBundleResources resources;
 
     @HttpClient
     public IHttpClient httpClient;

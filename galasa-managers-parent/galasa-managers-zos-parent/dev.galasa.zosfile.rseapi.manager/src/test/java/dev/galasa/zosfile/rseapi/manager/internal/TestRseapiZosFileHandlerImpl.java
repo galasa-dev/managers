@@ -5,11 +5,13 @@
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,13 +25,17 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
+import com.google.gson.JsonObject;
+
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.ZosVSAMDatasetException;
 import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
+import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.internal.RseapiManagerImpl;
+import dev.galasa.zosrseapi.internal.RseapiResponseImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class})
@@ -44,6 +50,9 @@ public class TestRseapiZosFileHandlerImpl {
 
     @Mock
     private ZosManagerImpl zosManagerMock;
+    
+    @Mock
+    private RseapiZosFileManagerImpl zosFileManagerMock;
     
     @Mock
     private RseapiManagerImpl rseapiManagerMock;
@@ -87,46 +96,53 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doAnswer(answer).when(logMock).error(Mockito.any(), Mockito.any());
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
-        RseapiZosFileManagerImpl.setZosManager(zosManagerMock);
         PowerMockito.doReturn(rseapiApiProcessorMock).when(rseapiManagerMock).newRseapiRestApiProcessor(Mockito.any(), Mockito.anyBoolean());
-        RseapiZosFileManagerImpl.setRseapiManager(rseapiManagerMock);
 
-        zosFileHandler = new RseapiZosFileHandlerImpl();
+        zosFileHandler = new RseapiZosFileHandlerImpl(zosFileManagerMock);
         zosFileHandlerSpy = Mockito.spy(zosFileHandler);
     }
     
     @Test
     public void testConstructor() {
-        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new RseapiZosFileHandlerImpl("INTERNAL").toString());
+        Assert.assertEquals("Constructor should return ", zosFileHandler.toString(), new RseapiZosFileHandlerImpl(zosFileManagerMock, "INTERNAL").toString());
+        Path pathMock = Mockito.mock(Path.class);
+        Mockito.when(zosFileManagerMock.getArtifactsRoot()).thenReturn(pathMock);
+		Assert.assertEquals("Constructor should return ", pathMock, zosFileHandlerSpy.getArtifactsRoot());
     }
     
     @Test
     public void testNewDataset() throws ZosDatasetException {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newDataset(DATASET_NAME, zosImageMock);
         Assert.assertTrue("Error in newDataset() method", obj instanceof RseapiZosDatasetImpl);
     }
     
     @Test
     public void testNewUNIXFile() throws Exception {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newUNIXFile(UNIX_FILE_NAME, zosImageMock);
         Assert.assertTrue("Error in newUNIXFile() method", obj instanceof RseapiZosUNIXFileImpl);
     }
     
     @Test
     public void testNewVSAMDataset() throws ZosVSAMDatasetException {
+    	Mockito.when(zosFileHandlerSpy.getRseapiManager()).thenReturn(rseapiManagerMock);
+    	Mockito.when(zosFileHandlerSpy.getZosManager()).thenReturn(zosManagerMock);
         Object obj = zosFileHandlerSpy.newVSAMDataset(DATASET_NAME, zosImageMock);
         Assert.assertTrue("Error in newVSAMDataset() method", obj instanceof RseapiZosVSAMDatasetImpl);
     }
     
     @Test
     public void testCleanupMethods() throws Exception {
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupDatasets(Mockito.anyBoolean());
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupVsamDatasets(Mockito.anyBoolean());
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupUnixFiles(Mockito.anyBoolean());
-        zosFileHandlerSpy.cleanup(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        Mockito.doNothing().when(zosFileHandlerSpy).cleanupDatasets();
+        Mockito.doNothing().when(zosFileHandlerSpy).cleanupVsamDatasets();
+        Mockito.doNothing().when(zosFileHandlerSpy).cleanupUnixFiles();
+        zosFileHandlerSpy.cleanup();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles");
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasets");
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles");
     }
     
     @Test
@@ -136,113 +152,41 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosDatasetImplMock).exists();
         zosDatasets.add(zosDatasetImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosDatasets", zosDatasets);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupDatasets");
         
         Mockito.doReturn(false).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();        
         zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupDatasets");
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(false).when(zosDatasetImplMock).exists();        
         zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupDatasets");
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
         Mockito.doReturn(false).when(zosDatasetImplMock).shouldArchive();
-        Mockito.doReturn(false).when(zosDatasetImplMock).retainToTestEnd();
         Mockito.doReturn(true).when(zosDatasetImplMock).delete();
         zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupDatasets");
         
         Mockito.doReturn(true).when(zosDatasetImplMock).created();
         Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
         Mockito.doReturn(true).when(zosDatasetImplMock).shouldArchive();
-        Mockito.doReturn(false).when(zosDatasetImplMock).retainToTestEnd();
         Mockito.doReturn(true).when(zosDatasetImplMock).delete();
         zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupDatasets", Mockito.anyBoolean());
-        
-        Mockito.doReturn(true).when(zosDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosDatasetImplMock).retainToTestEnd();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(6)).invoke("cleanupDatasets", Mockito.anyBoolean());
-        
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupDatasetsTestComplete();
-        zosFileHandlerSpy.cleanupDatasets(true);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupDatasetsTestComplete");
+        zosFileHandlerSpy.cleanupDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupDatasets");
         
         Mockito.doThrow(new ZosDatasetException()).when(zosDatasetImplMock).exists();        
         zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasets(false);
-        Assert.assertEquals("cleanupDatasets() should log expected message ", "Problem in cleanup phase", logMessage);
-    }
-    
-    @Test
-    public void testCleanupDatasetsTestComplete() throws Exception {
-        List<RseapiZosDatasetImpl> zosDatasets = new ArrayList<>();        
-        Mockito.doReturn(false).when(zosDatasetImplMock).created();
-        Mockito.doReturn(false).when(zosDatasetImplMock).exists();
-        zosDatasets.add(zosDatasetImplMock);
-        Whitebox.setInternalState(zosFileHandlerSpy, "zosDatasetsForCleanup", zosDatasets);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doReturn(false).when(zosDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosDatasetImplMock).created();
-        Mockito.doReturn(false).when(zosDatasetImplMock).exists();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosDatasetImplMock).isTemporary();
-        Mockito.doReturn(false).when(zosDatasetImplMock).shouldArchive();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
-        Mockito.doReturn(true).when(zosDatasetImplMock).shouldArchive();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosDatasetImplMock).exists();
-        Mockito.doNothing().when(zosDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(false).when(zosDatasetImplMock).isTemporary();
-        Mockito.doReturn(false).when(zosDatasetImplMock).shouldArchive();
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(6)).invoke("cleanupDatasetsTestComplete");
-        
-        Mockito.doThrow(new ZosDatasetException()).when(zosDatasetImplMock).exists();        
-        zosDatasets.add(zosDatasetImplMock);
-        zosFileHandlerSpy.cleanupDatasetsTestComplete();
-        Assert.assertEquals("cleanupDatasetsTestComplete() should log expected message ", "Problem in cleanup phase", logMessage);
+        zosFileHandlerSpy.cleanupDatasets();
+        Assert.assertEquals("cleanupDatasets() should log expected message ", "Problem in data set cleanup phase", logMessage);
     }
     
     @Test
@@ -253,103 +197,42 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosVsamDatasets", zosVsamDatasets);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasets");
         
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupVsamDatasets");
         
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupVsamDatasets");
         
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupVsamDatasets");
         
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).retainToTestEnd();
         Mockito.doReturn(true).when(zosVSAMDatasetImplMock).delete();
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
-        
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(6)).invoke("cleanupVsamDatasets", Mockito.anyBoolean());
-        
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupVsamDatasetsTestComplete();
-        zosFileHandlerSpy.cleanupVsamDatasets(true);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasetsTestComplete");
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupVsamDatasets");
         
         Mockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetImplMock).exists();        
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasets(false);
-        Assert.assertEquals("cleanupVsamDatasets() should log expected message ", "Problem in cleanup phase", logMessage);
-    }
-    
-    @Test
-    public void testCleanupVsamDatasetsTestComplete() throws Exception {
-        List<RseapiZosVSAMDatasetImpl> zosVsamDatasets = new ArrayList<>();        
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        Whitebox.setInternalState(zosFileHandlerSpy, "zosVsamDatasetsForCleanup", zosVsamDatasets);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupVsamDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupVsamDatasetsTestComplete");
-        
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupVsamDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldArchive();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupVsamDatasetsTestComplete");
-        
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
-        Mockito.doNothing().when(zosVSAMDatasetImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).retainToTestEnd();
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupVsamDatasetsTestComplete");
-        
-        Mockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetImplMock).exists();        
-        zosVsamDatasets.add(zosVSAMDatasetImplMock);
-        zosFileHandlerSpy.cleanupVsamDatasetsTestComplete();
-        Assert.assertEquals("cleanupVsamDatasetsTestComplete() should log expected message ", "Problem in cleanup phase", logMessage);
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        Assert.assertEquals("cleanupVsamDatasets() should log expected message ", "Problem in VSAM data set cleanup phase", logMessage);
     }
     
     @Test
@@ -361,8 +244,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
@@ -371,8 +254,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
@@ -381,8 +264,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
@@ -391,28 +274,28 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
-
-        zosUnixFiles = new ArrayList<>();        
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
-        zosUnixFiles.add(zosUNIXFileImplMock);
-        Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
+        zosUnixFiles.add(zosUNIXFileImplMock);
+        Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(5)).invoke("cleanupUnixFiles");
+
+        zosUnixFiles = new ArrayList<>();        
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(6)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(6)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
@@ -421,8 +304,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(7)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(7)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
@@ -431,8 +314,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(8)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(8)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -441,8 +324,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(9)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(9)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -451,8 +334,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(10)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(10)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -461,8 +344,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(11)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(11)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -471,8 +354,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(12)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(12)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -481,8 +364,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(13)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(13)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -491,8 +374,8 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(14)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(14)).invoke("cleanupUnixFiles");
 
         zosUnixFiles = new ArrayList<>();        
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
@@ -501,79 +384,50 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         zosUnixFiles.add(zosUNIXFileImplMock);
         Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFiles", zosUnixFiles);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(15)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
-                
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).retainToTestEnd();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).isDirectory();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).delete();
-        zosUnixFiles.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(16)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(15)).invoke("cleanupUnixFiles");
         
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).retainToTestEnd();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).isDirectory();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).directoryDeleteNonEmpty();
-        zosUnixFiles.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(17)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
-        
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
-        zosUnixFiles.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(18)).invoke("cleanupUnixFiles", Mockito.anyBoolean());
-        
-        Mockito.doNothing().when(zosFileHandlerSpy).cleanupUnixFilesTestComplete();
-        zosFileHandlerSpy.cleanupUnixFiles(true);
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFilesTestComplete");
-        
         Mockito.doThrow(new ZosUNIXFileException()).when(zosUNIXFileImplMock).exists();        
         zosUnixFiles.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFiles(false);
-        Assert.assertEquals("cleanupUnixFiles() should log expected message ", "Problem in cleanup phase", logMessage);
+        zosFileHandlerSpy.cleanupUnixFiles();
+        Assert.assertEquals("cleanupUnixFiles() should log expected message ", "Problem in UNIX file cleanup phase", logMessage);
     }
     
     @Test
-    public void testCleanupUnixFilesTestComplete() throws Exception {
-        List<RseapiZosUNIXFileImpl> zosUnixFilesForCleanup = new ArrayList<>();        
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
-        zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
-        Whitebox.setInternalState(zosFileHandlerSpy, "zosUnixFilesForCleanup", zosUnixFilesForCleanup);
-        zosFileHandlerSpy.cleanupUnixFilesTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(1)).invoke("cleanupUnixFilesTestComplete");
+    public void testBuildErrorString() throws RseapiException {
+    	RseapiResponseImpl rseapiResponseMock = Mockito.mock(RseapiResponseImpl.class);
+		Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+    	Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("OK");
+        String expectedString = "Error action, HTTP Status Code 200 : OK";
+        String returnString = zosFileHandlerSpy.buildErrorString("action", rseapiResponseMock);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
         
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
-        zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFilesTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(2)).invoke("cleanupUnixFilesTestComplete");
+        JsonObject responseBody = new JsonObject();
+        responseBody.addProperty("status", "status");
+        responseBody.addProperty("message", "message");
+    	Mockito.when(rseapiResponseMock.getContent()).thenReturn(responseBody);
+        expectedString = "Error action, HTTP Status Code 200 : OK\n" +
+        				 "status: status\n" +
+        				 "message: message";
+        returnString = zosFileHandlerSpy.buildErrorString("action", rseapiResponseMock);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
         
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFilesTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(3)).invoke("cleanupUnixFilesTestComplete");
+        Mockito.when(rseapiResponseMock.getContent()).thenReturn("message");
+        expectedString = "Error action, HTTP Status Code 200 : OK response body:\n" +
+        				 "message";
+        returnString = zosFileHandlerSpy.buildErrorString("action", rseapiResponseMock);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
         
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doNothing().when(zosUNIXFileImplMock).saveToResultsArchive();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).retainToTestEnd();
-        zosUnixFilesForCleanup.add(zosUNIXFileImplMock);
-        zosFileHandlerSpy.cleanupUnixFilesTestComplete();
-        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(4)).invoke("cleanupUnixFilesTestComplete");
+        Mockito.when(rseapiResponseMock.getContent()).thenReturn(0);
+        expectedString = "Error action, HTTP Status Code 200 : OK";
+        returnString = zosFileHandlerSpy.buildErrorString("action", rseapiResponseMock);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
+        
+        Mockito.when(rseapiResponseMock.getContent()).thenThrow(new RseapiException());
+        expectedString = "Error action, HTTP Status Code 200 : OK";
+        returnString = zosFileHandlerSpy.buildErrorString("action", rseapiResponseMock);
+        Assert.assertEquals("buildErrorString() should return the valid String", returnString, expectedString);
     }
 }

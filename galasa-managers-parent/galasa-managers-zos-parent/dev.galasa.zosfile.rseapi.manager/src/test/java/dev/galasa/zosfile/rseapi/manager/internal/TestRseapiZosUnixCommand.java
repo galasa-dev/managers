@@ -7,6 +7,7 @@ package dev.galasa.zosfile.rseapi.manager.internal;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,6 +28,10 @@ import dev.galasa.zosrseapi.RseapiException;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FrameworkUtil.class})
 public class TestRseapiZosUnixCommand {
+	
+	private RseapiZosUnixCommand rseapiZosUnixCommand;
+	
+	private RseapiZosUnixCommand rseapiZosUnixCommandSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -56,20 +61,27 @@ public class TestRseapiZosUnixCommand {
     private static final String PROP_EXIT_CODE = "exit code";
 
 	private static final String EXCEPTION = "exception";
+	
+	@Before
+    public void setup() throws Exception {
+		Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenCallRealMethod();
+        rseapiZosUnixCommand = new RseapiZosUnixCommand(zosFileHandlerMock);
+        rseapiZosUnixCommandSpy = Mockito.spy(rseapiZosUnixCommand);
+    }
     
     @Test
     public void testExecute() throws RseapiException, ZosDatasetException {
     	Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
     	Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(0));
-		Assert.assertEquals("execute() should return the expected value", getCommandJsonObject(0), RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND));
+		Assert.assertEquals("execute() should return the expected value", getCommandJsonObject(0), rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND));
     }
     
     @Test
     public void testExecuteException1() throws RseapiException, ZosDatasetException {
     	Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new RseapiException(EXCEPTION));
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND);
+        	rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND);
         });
     	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
@@ -81,7 +93,7 @@ public class TestRseapiZosUnixCommand {
     	Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         String expectedMessage = "Error zOS UNIX command, HTTP Status Code " + HttpStatus.SC_NOT_FOUND + " : NOT_FOUND";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND);
+        	rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -93,7 +105,7 @@ public class TestRseapiZosUnixCommand {
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
         String expectedMessage = "Issue command failed";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND);
+        	rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -105,7 +117,7 @@ public class TestRseapiZosUnixCommand {
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(99));
         String expectedMessage = "Command failed. Response body:\n" + getCommandJsonObject(99);
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND);
+        	rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -117,7 +129,7 @@ public class TestRseapiZosUnixCommand {
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(-1));
         String expectedMessage = "Command failed. Response body:\n" + getCommandJsonObject(-1);
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	RseapiZosUnixCommand.execute(rseapiApiProcessorMock, COMMAND);
+        	rseapiZosUnixCommandSpy.execute(rseapiApiProcessorMock, COMMAND);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
