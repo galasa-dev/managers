@@ -6,9 +6,7 @@
 package dev.galasa.zosmf.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,22 +22,23 @@ public class TestZosmfPropertiesSingleton {
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testCpsException() throws ZosmfManagerException {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, ZosmfPropertiesSingleton.cps());
+    	String expectedMessage = "Attempt to access manager CPS before it has been initialised";
+        ZosmfManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfManagerException.class, ()->{
+            Assert.assertEquals("Exception", null, ZosmfPropertiesSingleton.cps());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws ZosmfManagerException {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        ZosmfPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, ZosmfPropertiesSingleton.cps());
+    	String expectedMessage = "Attempt to set manager CPS before instance created";
+        ZosmfManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfManagerException.class, ()->{
+            ZosmfPropertiesSingleton.setCps(cpsMock);
+            Assert.assertEquals("Exception", null, ZosmfPropertiesSingleton.cps());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

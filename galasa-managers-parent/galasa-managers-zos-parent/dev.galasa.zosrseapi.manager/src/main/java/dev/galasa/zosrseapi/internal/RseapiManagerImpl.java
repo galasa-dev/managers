@@ -7,6 +7,7 @@ package dev.galasa.zosrseapi.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,9 @@ import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 import dev.galasa.zosrseapi.Rseapi;
 import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.RseapiManagerException;
+import dev.galasa.zosrseapi.internal.properties.ImageServers;
 import dev.galasa.zosrseapi.internal.properties.RseapiPropertiesSingleton;
-import dev.galasa.zosrseapi.internal.properties.ServerImages;
+import dev.galasa.zosrseapi.internal.properties.SysplexServers;
 import dev.galasa.zosrseapi.spi.IRseapiManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
@@ -46,17 +48,24 @@ public class RseapiManagerImpl extends AbstractManager implements IRseapiManager
     
     protected static final String NAMESPACE = "rseapi";
     
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        RseapiManagerImpl.zosManager = zosManager;
-    }
+    protected IZosManagerSpi zosManager;
+    public void setZosManager(IZosManagerSpi zosManager) {
+	    this.zosManager = zosManager;
+	}
+	public IZosManagerSpi getZosManager() {
+		return this.zosManager;
+	}
 
-    protected static IHttpManagerSpi httpManager;    
-    public static void setHttpManager(IHttpManagerSpi httpManager) {
-        RseapiManagerImpl.httpManager = httpManager;
+	protected IHttpManagerSpi httpManager;    
+    public void setHttpManager(IHttpManagerSpi httpManager) {
+        this.httpManager = httpManager;
     }
+    public IHttpManagerSpi getHttpManager() {
+		return this.httpManager;
+	}
 
-    private final HashMap<String, IRseapi> taggedRseapis = new HashMap<>();
+
+	private final HashMap<String, IRseapi> taggedRseapis = new HashMap<>();
     private final HashMap<String, IRseapi> rseapis = new HashMap<>();
     
     /* (non-Javadoc)
@@ -126,76 +135,87 @@ public class RseapiManagerImpl extends AbstractManager implements IRseapiManager
     public IRseapi generateRseapi(Field field, List<Annotation> annotations) throws RseapiManagerException {
         Rseapi annotationRseapi = field.getAnnotation(Rseapi.class);
 
-        //*** Default the tag to primary
-        String tag = defaultString(annotationRseapi.imageTag(), "primary");
+      //*** Default the tag to primary
+        String tag = defaultString(annotationRseapi.imageTag(), "PRIMARY").toUpperCase();
 
         //*** Have we already generated this tag
         if (taggedRseapis.containsKey(tag)) {
             return taggedRseapis.get(tag);
         }
 
-        RseapiImpl rseapi = new RseapiImpl(tag);
-        taggedRseapis.put(tag, rseapi);
-        rseapis.put(rseapi.getImage().getImageID(), rseapi);
-        
-        return rseapi;
-    }
+     // TODO this needs to be proper DSEd
+        IZosImage zosImage = null;
+        try {
+            zosImage = getZosManager().getImageForTag(tag);
+        } catch(Exception e) {
+            throw new RseapiManagerException("Unable to locate z/OS image for tag '" + tag + "'", e);
+        }
 
+        // TODO should be the DSE server id or provision one
+
+        Map<String, IRseapi> possibleRseapis = getRseapis(zosImage);
+        if (possibleRseapis.isEmpty()) {
+            throw new RseapiManagerException("Unable to provision RSE API server, no RSE API server defined for image tag '" + tag + "'");
+        }
+
+        IRseapi selected = possibleRseapis.values().iterator().next();  // TODO do we want to randomise this?
+        taggedRseapis.put(tag, selected);
+
+        return selected;
+    }
 
     @Override
-    public IRseapi newRseapi(IZosImage image) throws RseapiException {
-        if (rseapis.containsKey(image.getImageID())) {
-            return this.rseapis.get(image.getImageID());
+    public IRseapi newRseapi(String serverId) throws RseapiException {
+        if (rseapis.containsKey(serverId)) {
+            return this.rseapis.get(serverId);
         }
-        IRseapi rseapi = new RseapiImpl(image);
-        this.rseapis.put(image.getImageID(), rseapi);
+        IRseapi rseapi = new RseapiImpl(this, serverId);
+        this.rseapis.put(serverId, rseapi);
         return rseapi;
     }
 
+    public Map<String, IRseapi> getRseapis(@NotNull IZosImage zosImage) throws RseapiManagerException {
+        HashMap<String, IRseapi> possibleRseapis = new HashMap<>();
 
-    public Map<String, IRseapi> getRseapis(@NotNull String clusterId) throws RseapiManagerException {
         try {
-            for (String imageId : ServerImages.get(clusterId)) {
-                if (!this.rseapis.containsKey(imageId)) {
-                    logger.info("Requesting zOS image " + imageId + " in cluster \"" + clusterId + "\" for RSE API server");
-                    IZosImage rseapiImage = getImage(imageId, clusterId);
-                    this.rseapis.put(rseapiImage.getImageID(), newRseapi(rseapiImage));
+            List<String> possibleServers = ImageServers.get(zosImage);
+            if (possibleServers.isEmpty()) {
+                possibleServers = SysplexServers.get(zosImage);
+                if (possibleServers.isEmpty()) {
+                    // Default to assume there is a RSE API server running on the same image on port 6800
+                    possibleServers = new ArrayList<String>(1);
+                    possibleServers.add(zosImage.getImageID());
                 }
             }
-        } catch (ZosManagerException e) {
-            throw new RseapiManagerException("Unable to get RSE API servers for cluster \"" + clusterId + "\"", e);
-        }
-        if (rseapis.isEmpty()) {
-            throw new RseapiManagerException("No RSE API servers defined for cluster \"" + clusterId + "\"");
-        }
-        return rseapis;
-    }
 
+
+            for (String serverId : possibleServers) {
+            	IRseapi actualRseapi = this.rseapis.get(serverId);
+
+                if (actualRseapi == null) {
+                    logger.trace("Retreiving RSE API server " + serverId);
+                    actualRseapi = newRseapi(serverId);
+                    this.rseapis.put(serverId, actualRseapi);
+                }
+                possibleRseapis.put(serverId, actualRseapi);
+            }
+        } catch (ZosManagerException e) {
+            throw new RseapiManagerException("Unable to get RSE API servers for image \"" + zosImage.getImageID() + "\"", e);
+        }
+        return possibleRseapis;
+    }
 
     @Override
     public IRseapiRestApiProcessor newRseapiRestApiProcessor(IZosImage image, boolean restrictToImage) throws RseapiManagerException {
-        if (restrictToImage) {
-            HashMap<String, IRseapi> rseapiMap = new HashMap<>();
-            IRseapi rseapi = this.rseapis.get(image.getImageID());
-            if (rseapi == null) {
-                throw new RseapiManagerException("No RSE API sever configured on " + image.getImageID());
+    	if (restrictToImage) {
+            Map<String, IRseapi> rseapiMap = getRseapis(image);
+            for(IRseapi rseapi : rseapiMap.values()) {
+                if (rseapi.getImage().getImageID().equals(image.getImageID())) {
+                    return new RseapiRestApiProcessor(rseapiMap);
+                }
             }
-            rseapiMap.put(image.getImageID(), rseapi);
-            return new RseapiRestApiProcessor(rseapiMap);
+            throw new RseapiManagerException("No RSE API server configured on " + image.getImageID());
         }
-        return new RseapiRestApiProcessor(getRseapis(image.getClusterID()));
+        return new RseapiRestApiProcessor(getRseapis(image));
     }
-
-
-    protected IZosImage getImage(String imageId, String clusterId) throws RseapiManagerException {
-        IZosImage rseapiImage;
-        try {
-            rseapiImage = zosManager.getImage(imageId);
-        } catch (ZosManagerException e) {
-            throw new RseapiManagerException("Unable to get RSE API server zOS image \"" + imageId + "\" in cluster \"" + clusterId + "\"", e);
-        }
-        return rseapiImage;
-    }
-
-
 }

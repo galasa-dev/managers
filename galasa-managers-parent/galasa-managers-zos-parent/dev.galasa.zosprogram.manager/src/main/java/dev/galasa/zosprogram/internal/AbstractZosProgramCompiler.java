@@ -12,15 +12,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
-import dev.galasa.zos.IZosImage;
-import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosprogram.ZosProgramException;

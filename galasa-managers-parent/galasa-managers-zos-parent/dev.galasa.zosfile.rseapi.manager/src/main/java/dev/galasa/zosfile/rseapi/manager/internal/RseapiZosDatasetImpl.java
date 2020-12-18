@@ -164,12 +164,13 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         requestBody = addPropertyWhenSet(requestBody, PROP_ALLOCATION_UNIT, this.alcunit != null? alcunit.name().replaceFirst("S$",""): null);
         requestBody = addPropertyWhenSet(requestBody, PROP_PRIMARY, this.primary);
         requestBody = addPropertyWhenSet(requestBody, PROP_SECONDARY, this.secondary);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DIRECTORY_BLOCKS, this.dirblk);
+        // RSE API bug requires dir > 0 for PDSE (LIBRARY)
+        requestBody = addPropertyWhenSet(requestBody, PROP_DIRECTORY_BLOCKS, (this.dstype == DSType.LIBRARY || this.dstype == DSType.PDSE) && this.dirblk == -1? 1 : this.dirblk);
         requestBody = addPropertyWhenSet(requestBody, PROP_AVERAGE_BLOCK, this.avgblk);
         requestBody = addPropertyWhenSet(requestBody, PROP_RECORD_FORMAT, this.recfm);
         requestBody = addPropertyWhenSet(requestBody, PROP_BLOCK_SIZE, this.blksize);
         requestBody = addPropertyWhenSet(requestBody, PROP_RECORD_LENGTH, this.lrecl);
-        requestBody = addPropertyWhenSet(requestBody, PROP_DSN_TYPE, this.dstype != null && this.dstype.equals(DSType.PDSE)? DSType.LIBRARY : this.dstype);
+        requestBody = addPropertyWhenSet(requestBody, PROP_DSN_TYPE, this.dstype == DSType.PDSE? DSType.LIBRARY : this.dstype);
         requestBody = addPropertyWhenSet(requestBody, PROP_STOR_CLASS, this.storeclass);
         requestBody = addPropertyWhenSet(requestBody, PROP_MGMT_CLASS, this.mgntclass);
         requestBody = addPropertyWhenSet(requestBody, PROP_DATA_CLASS, this.dataclass);

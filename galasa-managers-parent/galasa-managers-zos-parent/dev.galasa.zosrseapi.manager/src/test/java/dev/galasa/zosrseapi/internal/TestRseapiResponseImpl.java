@@ -8,6 +8,7 @@ package dev.galasa.zosrseapi.internal;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -35,13 +36,9 @@ import com.google.gson.JsonParser;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.zosrseapi.RseapiException;
-import dev.galasa.zosrseapi.internal.properties.RequestRetry;
-import dev.galasa.zosrseapi.internal.properties.ServerHostname;
-import dev.galasa.zosrseapi.internal.properties.ServerImages;
-import dev.galasa.zosrseapi.internal.properties.ServerPort;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServerImages.class, ServerHostname.class, ServerPort.class, RequestRetry.class})
+@PrepareForTest(IOUtils.class)
 public class TestRseapiResponseImpl {
     
     private RseapiResponseImpl rseapiResponse;
@@ -133,7 +130,7 @@ public class TestRseapiResponseImpl {
     }
     
     @Test
-    public void testTextContent() throws RseapiException {
+    public void testTextContent() throws RseapiException, UnsupportedOperationException, IOException {
         Whitebox.setInternalState(rseapiResponseSpy, "content", CONTENT_STRING);
         Assert.assertEquals("getTextContent() should return the expected value", CONTENT_STRING, rseapiResponseSpy.getTextContent());
 
@@ -145,6 +142,15 @@ public class TestRseapiResponseImpl {
         RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiResponseSpy.getTextContent();
         });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    	
+    	Whitebox.setInternalState(rseapiResponseSpy, "content", new ByteArrayInputStream(CONTENT_STRING.getBytes()));
+    	PowerMockito.mockStatic(IOUtils.class);
+        Mockito.when(IOUtils.toString(Mockito.any(InputStreamReader.class))).thenThrow(new IOException());
+    	expectedMessage = "Unable to convert content to String Object";
+    	expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+    		rseapiResponseSpy.getTextContent();
+		});
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     

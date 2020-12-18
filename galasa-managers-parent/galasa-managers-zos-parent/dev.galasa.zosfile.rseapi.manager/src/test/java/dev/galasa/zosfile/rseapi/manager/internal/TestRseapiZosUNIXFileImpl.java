@@ -913,15 +913,19 @@ public class TestRseapiZosUNIXFileImpl {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         zosUNIXFileSpy.cleanCreatedPath();
         
+        zosUNIXFileSpy.setShouldArchive(false);
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doNothing().when(zosUNIXFileSpy).cleanCreatedPathStore();
         PowerMockito.doNothing().when(zosUNIXFileSpy).cleanCreatedDelete();
         zosUNIXFileSpy.cleanCreatedPath();
 
+        zosUNIXFileSpy.setShouldArchive(true);
+        zosUNIXFileSpy.cleanCreatedPath();
+
         Mockito.doThrow(new ZosUNIXFileException(EXCEPTION)).when(zosUNIXFileSpy).exists(Mockito.any());
         zosUNIXFileSpy.cleanCreatedPath();
         
-        Mockito.verify(zosUNIXFileSpy, Mockito.times(4)).cleanCreatedPath();
+        Mockito.verify(zosUNIXFileSpy, Mockito.times(5)).cleanCreatedPath();
     }
     
     @Test

@@ -175,8 +175,12 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.create();
         
         Whitebox.setInternalState(zosDatasetSpy, "dstype", DSType.PDS);
+        zosDatasetSpy.create();
         
-        // First call returns false, second returns true
+        Whitebox.setInternalState(zosDatasetSpy, "dstype", DSType.LIBRARY);
+        Whitebox.setInternalState(zosDatasetSpy, "dirblk", 0);
+        zosDatasetSpy.create();
+
         PowerMockito.doReturn(false).doReturn(true).when(zosDatasetSpy).exists();
         zosDatasetSpy.create();
         Assert.assertTrue("created() should return true", zosDatasetSpy.created());

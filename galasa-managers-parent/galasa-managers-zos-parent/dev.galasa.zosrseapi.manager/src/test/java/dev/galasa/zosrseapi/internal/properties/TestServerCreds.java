@@ -21,50 +21,52 @@ import dev.galasa.zosrseapi.RseapiManagerException;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RseapiPropertiesSingleton.class, CpsProperties.class})
-public class TestRequestRetry {
+public class TestServerCreds {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    private static final String IMAGE_ID = "IMAGE";
+    private static final String SERVER_ID = "server";
+    
+    private static final String CREDS = "creds";
     
     @Test
     public void testConstructor() {
-        RequestRetry requestRetry = new RequestRetry();
-        Assert.assertNotNull("Object was not created", requestRetry);
+        ServerCreds serverCreds = new ServerCreds();
+        Assert.assertNotNull("Object was not created", serverCreds);
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RequestRetry.get()", 0, getProperty("0"));
-        Assert.assertEquals("Unexpected value returned from RequestRetry.get()", Integer.MIN_VALUE, getProperty(String.valueOf(Integer.MIN_VALUE)));
-        Assert.assertEquals("Unexpected value returned from RequestRetry.get()", Integer.MAX_VALUE, getProperty(String.valueOf(Integer.MAX_VALUE)));
+        Assert.assertEquals("Unexpected value returned from ServerCreds.get()", CREDS, getProperty(CREDS));
+        Assert.assertEquals("Unexpected value returned from ServerCreds.get()", "", getProperty(""));
+        Assert.assertNull("Unexpected value returned from ServerCreds.get()", getProperty(null));
     }
     
     @Test
-    public void testInvalid() throws Exception {
-        String expectedMessage = "Invalid value given for rseapi.*.request.retry 'XXX'";
+    public void testException() throws Exception {
+        String expectedMessage = "Problem accessing the CPS when retrieving RSE API credentials for server " + SERVER_ID;
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
-        	getProperty("XXX");
+        	getProperty("ANY", true);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
-    private int getProperty(String value) throws Exception {
+    private String getProperty(String value) throws Exception {
         return getProperty(value, false);
     }
     
-    private int getProperty(String value, boolean exception) throws Exception {
+    private String getProperty(String value, boolean exception) throws Exception {
         PowerMockito.spy(RseapiPropertiesSingleton.class);
         PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(RseapiPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
-        	PowerMockito.doReturn(value).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
+            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
         } else {
-            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return RequestRetry.get(IMAGE_ID);
+        return ServerCreds.get(SERVER_ID);
     }
 }

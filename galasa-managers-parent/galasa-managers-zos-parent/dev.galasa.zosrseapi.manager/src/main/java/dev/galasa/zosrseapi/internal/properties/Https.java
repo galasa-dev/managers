@@ -26,7 +26,7 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  * 
  * @galasa.examples 
  * <code>rseapi.server.https=true</code><br>
- * <code>rseapi.server.SYSA.https=true</code>
+ * <code>rseapi.server.RSESYSA.https=true</code>
  *
  */
 public class Https extends CpsProperties {
