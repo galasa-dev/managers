@@ -73,7 +73,7 @@ public class ZosmfImpl implements IZosmf {
         } catch(ZosmfManagerException e) {
             throw new ZosmfException("Unable to initialise zOS/MF server " + serverId, e);
         } catch (ZosManagerException e) {
-            throw new ZosmfException("Unable to initalise zOS/MF server " + serverId + " as z/OS image '" + imageId + "' is not defined", e);
+            throw new ZosmfException("Unable to initialise zOS/MF server " + serverId + " as z/OS image '" + imageId + "' is not defined", e);
         }
 
         initialize();

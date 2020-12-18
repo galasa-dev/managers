@@ -7,9 +7,7 @@ package dev.galasa.zosmf.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -30,12 +28,15 @@ public class TestRequestRetry {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String SERVERID = "MFSYSA";
     
     private static final String DEFAULT_REQUEST_RETRY = "3";
+    
+    @Test
+    public void testConstructor() {
+        RequestRetry requestRetry = new RequestRetry();
+        Assert.assertNotNull("Object was not created", requestRetry);
+    }
     
     @Before
     public void setup() throws ConfigurationPropertyStoreException, ZosmfManagerException {
@@ -55,12 +56,14 @@ public class TestRequestRetry {
     @Test
     public void testInvalid() throws Exception {
         String invalidValue = "BOB";
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value given for zosmf.*.request.retry '" + invalidValue + "'");
+        String expectedMessage = "Invalid value given for zosmf.*.request.retry '" + invalidValue + "'";
         
         Mockito.when(configurationPropertyStoreServiceMock.getProperty("command", "request.retry", SERVERID)).thenReturn(invalidValue);
 
-        RequestRetry.get(SERVERID);
+        ZosmfManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfManagerException.class, ()->{
+        	RequestRetry.get(SERVERID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
 }

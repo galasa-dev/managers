@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
+import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.zos.IZosImage;
@@ -35,8 +36,8 @@ import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.RseapiManagerException;
 import dev.galasa.zosrseapi.internal.properties.Https;
 import dev.galasa.zosrseapi.internal.properties.RequestRetry;
-import dev.galasa.zosrseapi.internal.properties.ServerHostname;
-import dev.galasa.zosrseapi.internal.properties.ServerImages;
+import dev.galasa.zosrseapi.internal.properties.ServerCreds;
+import dev.galasa.zosrseapi.internal.properties.ServerImage;
 import dev.galasa.zosrseapi.internal.properties.ServerPort;
 
 /**
@@ -49,7 +50,8 @@ public class RseapiImpl implements IRseapi {
     
     private static final Log logger = LogFactory.getLog(RseapiImpl.class);
 
-    private String imageTag;
+	private final RseapiManagerImpl rseapiManager;
+	private String serverId;
     private IZosImage image;
     private IHttpClient httpClient;
     private String rseapiUrl;
@@ -59,14 +61,21 @@ public class RseapiImpl implements IRseapi {
 
 	private static final String PATH_SERVERDETAILS = "/rseapi/api/v1/info/serverdetails";
 
-    public RseapiImpl(IZosImage image) throws RseapiException {
-        this.image = image;
-        initialize();
-    }
-
-    public RseapiImpl(String imageTag) throws RseapiException {
-        this.imageTag = imageTag;
-        setImage();        
+    public RseapiImpl(RseapiManagerImpl rseapiManager, String serverId) throws RseapiException {
+    	this.rseapiManager = rseapiManager;
+        this.serverId = serverId;
+        
+        String imageId = null;
+        try {
+            imageId = ServerImage.get(this.serverId);
+            this.image = rseapiManager.getZosManager().getUnmanagedImage(imageId);
+        
+        } catch(RseapiManagerException e) {
+            throw new RseapiException("Unable to initialise RSE API server " + serverId, e);
+        } catch (ZosManagerException e) {
+            throw new RseapiException("Unable to initialise RSE API server " + serverId + " as z/OS image '" + imageId + "' is not defined", e);
+        }
+        
         initialize();
     }
 
@@ -91,14 +100,14 @@ public class RseapiImpl implements IRseapi {
         try {
             addCommonHeaders();
             rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-            logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
+            logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
             if (convert) {
                 rseapiResponse.setHttpClientresponse(this.httpClient.getJson(validPath(path)));
             } else {
                 rseapiResponse.setHttpClientresponse(this.httpClient.getFile(validPath(path)));
             }
             
-            logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+            logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
             if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
                 throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
             }
@@ -120,10 +129,10 @@ public class RseapiImpl implements IRseapi {
 	    try {
 	        addCommonHeaders();
 	        rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-	        logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
-	        logger.debug(LOG_BODY + requestBody);
+	        logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
+	        logger.trace(LOG_BODY + requestBody);
 	        rseapiResponse.setHttpClientresponse(this.httpClient.putJson(validPath(path), requestBody));
-	        logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+	        logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
 	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
 	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
 	        }
@@ -145,10 +154,10 @@ public class RseapiImpl implements IRseapi {
 	    try {
 	        addCommonHeaders();
 	        rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-	        logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
-	        logger.debug(LOG_BODY + requestBody);
+	        logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
+	        logger.trace(LOG_BODY + requestBody);
 	        rseapiResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), requestBody));
-	        logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+	        logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
 	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
 	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
 	        }
@@ -170,10 +179,10 @@ public class RseapiImpl implements IRseapi {
         try {
             addCommonHeaders();
             rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-            logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
-            logger.debug(LOG_BODY + requestBody);
+            logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
+            logger.trace(LOG_BODY + requestBody);
             rseapiResponse.setHttpClientresponse(this.httpClient.postJson(validPath(path), requestBody));
-            logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+            logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
             if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
                 throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
             }
@@ -195,9 +204,9 @@ public class RseapiImpl implements IRseapi {
         try {
             addCommonHeaders();
             rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-            logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
+            logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
             rseapiResponse.setHttpClientresponse(this.httpClient.postJson(validPath(path), null));
-            logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+            logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
             if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
                 throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
             }
@@ -219,9 +228,9 @@ public class RseapiImpl implements IRseapi {
         try {
             addCommonHeaders();
             rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
-            logger.debug(logRequest(method, rseapiResponse.getRequestUrl()));
+            logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
             rseapiResponse.setHttpClientresponse(this.httpClient.deleteJson(validPath(path)));
-            logger.debug(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+            logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
             if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
                 throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
             }
@@ -253,25 +262,13 @@ public class RseapiImpl implements IRseapi {
 
     protected void initialize() throws RseapiException {
         
-        String imageId = image.getImageID();
-        String clusterId = image.getClusterID();
-        List<String> configuredRseapis;
+    	String rseapiHostname;
         try {
-            configuredRseapis = ServerImages.get(clusterId);
-        } catch (RseapiManagerException e) {
-            throw new RseapiException(e);
-        }
-        if (!configuredRseapis.contains(imageId)) {
-            throw new RseapiException("RSE API server not configured for image '" + imageId + "' on cluster '" + clusterId + "'" + (imageTag != null ? " tag '" + imageTag + "'" : ""));
-        }
-        
-        String rseapiHostname;
-        try {
-            rseapiHostname = ServerHostname.get(image.getImageID());
+            rseapiHostname = image.getDefaultHostname();
         } catch (ZosManagerException e) {
             throw new RseapiException(e);
         }
-        String rseapiPort;
+        int rseapiPort;
         try {
             rseapiPort = ServerPort.get(image.getImageID());
         } catch (RseapiManagerException e) {
@@ -287,10 +284,22 @@ public class RseapiImpl implements IRseapi {
         }
         this.rseapiUrl = scheme + "://" + rseapiHostname + ":" + rseapiPort;
 
-        this.httpClient = RseapiManagerImpl.httpManager.newHttpClient();
+        this.httpClient = this.rseapiManager.getHttpManager().newHttpClient();
         
         try {
-			ICredentials creds = image.getDefaultCredentials();
+            ICredentials creds = null;
+            String credsId = ServerCreds.get(this.serverId);
+            if (credsId != null) {
+                try {
+                    creds = this.rseapiManager.getFramework().getCredentialsService().getCredentials(credsId);
+                } catch (CredentialsException e) {
+                    throw new RseapiException("Problem accessing credentials store", e);
+                }
+            }
+            
+            if (creds == null) {
+                creds = image.getDefaultCredentials();
+            }
             this.httpClient.setURI(new URI(this.rseapiUrl));
             if (creds instanceof ICredentialsUsernamePassword) {
                 this.httpClient.setAuthorisation(((ICredentialsUsernamePassword) creds).getUsername(), ((ICredentialsUsernamePassword) creds).getPassword());
@@ -302,25 +311,15 @@ public class RseapiImpl implements IRseapi {
         }
         
         try {
-            this.requestRetry = RequestRetry.get(image.getImageID());
+            this.requestRetry = RequestRetry.get(this.serverId);
         } catch (ZosManagerException e) {
             throw new RseapiException(e);
         }
     }
 
-    protected void setImage() throws RseapiException {
-        if (this.image == null) {
-            try {
-                this.image = RseapiManagerImpl.zosManager.getImageForTag(this.imageTag);
-            } catch (ZosManagerException e) {
-                throw new RseapiException(e);
-            }
-        }
-    }
-
     protected void addCommonHeaders() {
         for (Entry<String, String> entry : this.commonHeaders.entrySet()) {
-            logger.debug("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
+            logger.trace("Adding HTTP header: " + entry.getKey() + ": " + entry.getValue());
             this.httpClient.addCommonHeader(entry.getKey(), entry.getValue());
         }
         

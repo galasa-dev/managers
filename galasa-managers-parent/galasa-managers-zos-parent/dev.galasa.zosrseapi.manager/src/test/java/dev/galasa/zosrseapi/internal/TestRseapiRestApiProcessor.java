@@ -12,7 +12,10 @@ import java.util.LinkedHashMap;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,7 +31,7 @@ import dev.galasa.zosrseapi.IRseapiResponse;
 import dev.galasa.zosrseapi.RseapiException;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(RseapiRequestType.class)
+@PrepareForTest({RseapiRequestType.class})
 public class TestRseapiRestApiProcessor {
     
     private RseapiRestApiProcessor rseapiRestApiProcessor;
@@ -50,9 +53,24 @@ public class TestRseapiRestApiProcessor {
     @Mock
     private IRseapiResponse rseapiResponseMock;
     
+    @Rule
+    public TestName testName = new TestName();
+    
+    private RseapiRequestType rseapiRequestTypeINVALID;
+    
     private HashMap<String, IRseapi> rseapis = new LinkedHashMap<>();
     
     private static final String PATH = "request-path";
+    
+    @Before
+    public void mockEnum() {
+    	if (testName.getMethodName().equals("testSendRequest")) {
+	    	rseapiRequestTypeINVALID = PowerMockito.mock(RseapiRequestType.class);
+	    	Whitebox.setInternalState(rseapiRequestTypeINVALID, "ordinal", 5);
+	    	PowerMockito.mockStatic(RseapiRequestType.class);
+	        PowerMockito.when(RseapiRequestType.values()).thenReturn(new RseapiRequestType[]{RseapiRequestType.GET, RseapiRequestType.PUT_TEXT, RseapiRequestType.PUT_JSON, RseapiRequestType.POST_JSON, RseapiRequestType.DELETE, rseapiRequestTypeINVALID});
+    	}
+    }
 
     @Test
     public void testSendRequest() throws RseapiException {
@@ -103,6 +121,12 @@ public class TestRseapiRestApiProcessor {
         String expectedMessage = "Unable to get valid response from RSE API server";
         RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.GET, PATH, null, null, null, false);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    	
+    	expectedMessage = "Unable to get valid response from RSE API server";
+        expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiRestApiProcessorSpy.sendRequest(rseapiRequestTypeINVALID, PATH, null, null, null, false);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }

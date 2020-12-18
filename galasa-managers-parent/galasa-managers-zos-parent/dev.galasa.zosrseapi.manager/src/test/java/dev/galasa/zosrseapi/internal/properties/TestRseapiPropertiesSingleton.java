@@ -15,7 +15,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.zosrseapi.RseapiManagerException;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestZosmfPropertiesSingleton {
+public class TestRseapiPropertiesSingleton {
     
     private RseapiPropertiesSingleton singletonInstance;
 

@@ -26,7 +26,7 @@ public class TestServerPort {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    private static final String IMAGE_ID = "IMAGE";
+    private static final String SERVER = "SERVER";
     
     @Test
     public void testConstructor() {
@@ -36,22 +36,13 @@ public class TestServerPort {
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from ServerPort.get()", "1024", getProperty("1024"));
-        Assert.assertEquals("Unexpected value returned from ServerPort.get()", "6800", getProperty(null));
-    }
-    
-    @Test
-    public void testInvalidString() throws Exception {
-        String expectedMessage = "For input string: \"XXX\"";
-        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
-        	getProperty("XXX");
-        });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+        Assert.assertEquals("Unexpected value returned from ServerPort.get()", 6800, getProperty("6800"));
+        Assert.assertEquals("Unexpected value returned from ServerPort.get()", 1024, getProperty("1024"));
     }
     
     @Test
     public void testInvalidTooSmall() throws Exception {
-        String expectedMessage = "Invalid value (-1) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
+        String expectedMessage = "Invalid value '-1' for RSE API server port property for server "  + SERVER + ". Range  0-65535";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("-1");
         });
@@ -60,7 +51,7 @@ public class TestServerPort {
     
     @Test
     public void testInvalidTooBig() throws Exception {
-        String expectedMessage = "Invalid value (65536) for RSE API server port property for zOS image "  + IMAGE_ID + ". Range  0-65535";
+        String expectedMessage = "Invalid value '65536' for RSE API server port property for server "  + SERVER + ". Range  0-65535";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
         	getProperty("65536");
         });
@@ -68,29 +59,29 @@ public class TestServerPort {
     }
     
     @Test
-    public void testException() throws Exception {
-        String expectedMessage = "Problem asking the CPS for the RSE API server port property for zOS image " + IMAGE_ID;
+    public void testInvalid() throws Exception {
+        String expectedMessage = "Invalid value 'XXX' for RSE API server port property for server "  + SERVER + ". Range  0-65535";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
-        	getProperty("ANY", true);
+        	getProperty("XXX");
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
-    private String getProperty(String value) throws Exception {
+    private int getProperty(String value) throws Exception {
         return getProperty(value, false);
     }
     
-    private String getProperty(String value, boolean exception) throws Exception {
+    private int getProperty(String value, boolean exception) throws Exception {
         PowerMockito.spy(RseapiPropertiesSingleton.class);
         PowerMockito.doReturn(configurationPropertyStoreServiceMock).when(RseapiPropertiesSingleton.class, "cps");
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
-            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
+            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         } else {
-            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return ServerPort.get(IMAGE_ID);
+        return ServerPort.get(SERVER);
     }
 }

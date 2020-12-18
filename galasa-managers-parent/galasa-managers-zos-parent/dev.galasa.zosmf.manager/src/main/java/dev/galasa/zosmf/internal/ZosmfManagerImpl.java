@@ -141,7 +141,7 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
 
         Map<String, IZosmf> possibleZosmfs = getZosmfs(zosImage);
         if (possibleZosmfs.isEmpty()) {
-            throw new ZosmfManagerException("Unable to provision zOS/MF, no zOS/MF defined for image tag '" + tag + "'");
+            throw new ZosmfManagerException("Unable to provision zOS/MF, no zOS/MF server defined for image tag '" + tag + "'");
         }
 
         IZosmf selected = possibleZosmfs.values().iterator().next();  // TODO do we want to randomise this?
@@ -206,17 +206,6 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
             throw new ZosmfManagerException("No zOSMF server configured on " + image.getImageID());
         }
         return new ZosmfRestApiProcessor(getZosmfs(image));
-    }
-
-
-    protected IZosImage getImage(String imageId) throws ZosmfManagerException {
-        IZosImage zosmfImage;
-        try {
-            zosmfImage = zosManager.getUnmanagedImage(imageId);
-        } catch (ZosManagerException e) {
-            throw new ZosmfManagerException("Unable to get zOSMF server for zOS image \"" + imageId + "\"", e);
-        }
-        return zosmfImage;
     }
 
 

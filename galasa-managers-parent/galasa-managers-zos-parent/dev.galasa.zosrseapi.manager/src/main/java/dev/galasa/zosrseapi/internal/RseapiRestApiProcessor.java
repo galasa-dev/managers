@@ -105,7 +105,7 @@ public class RseapiRestApiProcessor implements IRseapiRestApiProcessor {
     }
     
     protected IRseapi getCurrentRseapiServer() {
-        logger.debug("Using RSE API on " + this.currentRseapi);
+        logger.debug("Using RSE API server on " + this.currentRseapi);
         this.currentRseapi.clearHeaders();
         return this.currentRseapi;
     }
