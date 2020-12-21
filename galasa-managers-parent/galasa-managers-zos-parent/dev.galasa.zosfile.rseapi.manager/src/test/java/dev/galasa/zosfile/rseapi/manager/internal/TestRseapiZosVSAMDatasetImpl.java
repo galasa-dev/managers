@@ -1293,4 +1293,12 @@ public class TestRseapiZosVSAMDatasetImpl {
     	zosVSAMDatasetSpy.archiveContent();
     	Mockito.verify(zosVSAMDatasetSpy, Mockito.times(1)).saveToResultsArchive(Mockito.any());
     }
+    
+    @Test
+    public void testShouldCleanup() {
+    	zosVSAMDatasetSpy.setShouldCleanup(false);
+    	Assert.assertFalse("setShouldCleanup() should return false", zosVSAMDatasetSpy.shouldCleanup());
+    	zosVSAMDatasetSpy.setShouldCleanup(true);
+    	Assert.assertTrue("setShouldCleanup() should return true", zosVSAMDatasetSpy.shouldCleanup());
+    }
 }

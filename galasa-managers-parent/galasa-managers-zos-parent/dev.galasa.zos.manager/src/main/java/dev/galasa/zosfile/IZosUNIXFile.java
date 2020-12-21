@@ -153,4 +153,14 @@ public interface IZosUNIXFile {
      * Return flag that controls if the content of the zOS UNIX path should be stored to the test output
      */    
     public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the zOS UNIX path should be automatically deleted from zOS at test end. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the zOS UNIX path should be automatically deleted from zOS at test end
+     */    
+    public boolean shouldCleanup();
 }

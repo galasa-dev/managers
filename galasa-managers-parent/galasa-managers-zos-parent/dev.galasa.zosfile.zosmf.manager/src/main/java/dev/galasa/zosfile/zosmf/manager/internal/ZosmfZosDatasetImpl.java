@@ -85,6 +85,8 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 
     private boolean shouldArchive = false;
 
+    private boolean shouldCleanup = true;
+
     private ZosmfZosDatasetAttributesListdsi zosmfZosDatasetAttributesListdsi;
 
 	private ZosmfZosFileHandlerImpl zosFileHandler;
@@ -866,6 +868,16 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
 	}
 
     protected JsonObject getAttibutes() throws ZosDatasetException {

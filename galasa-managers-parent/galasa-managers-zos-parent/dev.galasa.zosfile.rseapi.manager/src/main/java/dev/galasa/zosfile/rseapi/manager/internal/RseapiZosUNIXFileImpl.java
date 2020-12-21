@@ -68,6 +68,8 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     private UNIXFileDataType dataType;
 
     private boolean shouldArchive = false;
+
+    private boolean shouldCleanup = true;
     
 	private static final String PROP_PERMISSIONS_SYMBOLIC = "permissionsSymbolic";
 	private static final String PROP_SIZE = "size";
@@ -282,7 +284,17 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
-	}    
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
+	}
     
     protected String getAttributesAsString(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {

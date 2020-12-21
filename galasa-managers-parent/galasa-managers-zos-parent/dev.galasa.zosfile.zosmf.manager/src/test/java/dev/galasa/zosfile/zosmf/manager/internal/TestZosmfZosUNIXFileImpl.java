@@ -1004,12 +1004,16 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doNothing().when(zosUNIXFileSpy).cleanCreatedPathStore();
         PowerMockito.doNothing().when(zosUNIXFileSpy).cleanCreatedDelete();
+        PowerMockito.doReturn(true).when(zosUNIXFileSpy).shouldArchive();
         zosUNIXFileSpy.cleanCreatedPath();
 
+        PowerMockito.doReturn(false).when(zosUNIXFileSpy).shouldArchive();
+        zosUNIXFileSpy.cleanCreatedPath();
+        
         Mockito.doThrow(new ZosUNIXFileException(EXCEPTION)).when(zosUNIXFileSpy).exists(Mockito.any());
         zosUNIXFileSpy.cleanCreatedPath();
         
-        Mockito.verify(zosUNIXFileSpy, Mockito.times(4)).cleanCreatedPath();
+        Mockito.verify(zosUNIXFileSpy, Mockito.times(5)).cleanCreatedPath();
     }
     
     @Test
@@ -1045,5 +1049,13 @@ public class TestZosmfZosUNIXFileImpl {
     	Mockito.when(zosUNIXFileSpy.shouldArchive()).thenReturn(true);
     	zosUNIXFileSpy.archiveContent();
     	Mockito.verify(zosUNIXFileSpy, Mockito.times(1)).saveToResultsArchive(Mockito.any());
+    }
+    
+    @Test
+    public void testShouldCleanup() {
+    	zosUNIXFileSpy.setShouldCleanup(false);
+    	Assert.assertFalse("setShouldCleanup() should return false", zosUNIXFileSpy.shouldCleanup());
+    	zosUNIXFileSpy.setShouldCleanup(true);
+    	Assert.assertTrue("setShouldCleanup() should return true", zosUNIXFileSpy.shouldCleanup());
     }
 }

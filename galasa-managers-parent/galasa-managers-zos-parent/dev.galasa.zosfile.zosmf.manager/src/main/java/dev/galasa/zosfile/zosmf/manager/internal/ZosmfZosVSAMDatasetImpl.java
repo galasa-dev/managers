@@ -152,6 +152,8 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
 
     private boolean shouldArchive = false;
 
+    private boolean shouldCleanup = true;
+
     private static int temporaryQualifierCounter = 0;
 
     // Abbreviations used as parameters in the IDCAMS commands
@@ -843,6 +845,16 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
 	}
 
     protected ZosmfZosDatasetImpl createReproDataset(Object content) throws ZosVSAMDatasetException {

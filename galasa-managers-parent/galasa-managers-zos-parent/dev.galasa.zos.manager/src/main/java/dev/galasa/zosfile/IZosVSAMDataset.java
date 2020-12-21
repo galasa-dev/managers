@@ -708,4 +708,14 @@ public interface IZosVSAMDataset {
      * Return flag that controls if the content of the VSAM data set should be stored to the test output
      */    
     public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the VSAM data set should be automatically deleted from zOS at test end. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the VSAM job output should be automatically deleted from zOS at test end
+     */    
+    public boolean shouldCleanup();
 }

@@ -962,4 +962,12 @@ public class TestRseapiZosUNIXFileImpl {
     	zosUNIXFileSpy.archiveContent();
     	Mockito.verify(zosUNIXFileSpy, Mockito.times(1)).saveToResultsArchive(Mockito.any());
     }
+    
+    @Test
+    public void testShouldCleanup() {
+    	zosUNIXFileSpy.setShouldCleanup(false);
+    	Assert.assertFalse("setShouldCleanup() should return false", zosUNIXFileSpy.shouldCleanup());
+    	zosUNIXFileSpy.setShouldCleanup(true);
+    	Assert.assertTrue("setShouldCleanup() should return true", zosUNIXFileSpy.shouldCleanup());
+    }
 }
