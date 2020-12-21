@@ -95,7 +95,9 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
 	                if (zosDataset.shouldArchive()) {
 	                    zosDataset.archiveContent();
 	                }
-	                zosDataset.delete();
+	                if (zosDataset.shouldCleanup()) {
+	                	zosDataset.delete();
+	                }
 	            }
 			} catch (ZosDatasetException e) {
 				logger.error("Problem in data set cleanup phase", e);
@@ -112,7 +114,9 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
 	            	if (zosVsamDataset.shouldArchive()) {
 	            		zosVsamDataset.archiveContent();
 	            	}
-	                zosVsamDataset.delete();
+	                if (zosVsamDataset.shouldCleanup()) {
+	                	zosVsamDataset.delete();
+	                }
 	            }
 			} catch (ZosVSAMDatasetException e) {
 				logger.error("Problem in VSAM data set cleanup phase", e);
@@ -130,8 +134,10 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
 					if (zosUnixFile.shouldArchive()) {
 						zosUnixFile.archiveContent();
 					}
-		            zosUnixFile.delete();
-		            zosUnixFile.cleanCreatedPath();
+	                if (zosUnixFile.shouldCleanup()) {
+	                	zosUnixFile.delete();
+			            zosUnixFile.cleanCreatedPath();
+	                }
 	            }
 			} catch (ZosUNIXFileException e) {
 				logger.error("Problem in UNIX file cleanup phase", e);

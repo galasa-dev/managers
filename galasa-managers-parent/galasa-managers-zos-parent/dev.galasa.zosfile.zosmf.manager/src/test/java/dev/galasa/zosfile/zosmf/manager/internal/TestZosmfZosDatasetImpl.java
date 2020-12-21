@@ -1665,6 +1665,14 @@ public class TestZosmfZosDatasetImpl {
     	Mockito.verify(zosDatasetSpy, Mockito.times(1)).saveToResultsArchive(Mockito.any());
     }
     
+    @Test
+    public void testShouldCleanup() {
+    	zosDatasetSpy.setShouldCleanup(false);
+    	Assert.assertFalse("setShouldCleanup() should return false", zosDatasetSpy.shouldCleanup());
+    	zosDatasetSpy.setShouldCleanup(true);
+    	Assert.assertTrue("setShouldCleanup() should return true", zosDatasetSpy.shouldCleanup());
+    }
+    
     private JsonObject getJsonObject() {
         return getJsonObject(1, 0);
     }

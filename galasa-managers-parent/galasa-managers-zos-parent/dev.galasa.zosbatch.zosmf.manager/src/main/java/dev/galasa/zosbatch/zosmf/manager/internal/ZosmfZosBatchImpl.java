@@ -100,20 +100,20 @@ public class ZosmfZosBatchImpl implements IZosBatch {
             try {
 				if (zosBatchJobImpl.submitted()) {
 				    if (!zosBatchJobImpl.isComplete()) {
-				    	if (endOfTest) {
-				    		if (zosBatchJobImpl.getStatus() != JobStatus.NOTFOUND) {
-					    		zosBatchJobImpl.cancel();
-					    		zosBatchJobImpl.archiveJobOutput();
+				    	if (zosBatchJobImpl.getStatus() != JobStatus.NOTFOUND && endOfTest) {
+					    	zosBatchJobImpl.cancel();
+					    	zosBatchJobImpl.archiveJobOutput();
+					    	if (zosBatchJobImpl.shouldCleanup()) {
 					    		zosBatchJobImpl.purge();
-				    		}
-				            iterator.remove();
+					    	}
+					        iterator.remove();
 				    	}
 				    } else {
 				    	if (zosBatchJobImpl.getStatus() != JobStatus.NOTFOUND) {
 					        if (!zosBatchJobImpl.isArchived()) {
 					            zosBatchJobImpl.archiveJobOutput();
 					        }
-					        if (!zosBatchJobImpl.isPurged()) {
+					        if (!zosBatchJobImpl.isPurged() && zosBatchJobImpl.shouldCleanup()) {
 					            zosBatchJobImpl.purge();
 					        }
 				    	}

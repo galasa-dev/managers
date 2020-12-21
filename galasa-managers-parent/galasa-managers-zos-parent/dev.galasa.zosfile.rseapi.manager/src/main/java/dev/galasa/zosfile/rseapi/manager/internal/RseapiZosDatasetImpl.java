@@ -86,6 +86,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     private boolean shouldArchive = false;
 
+    private boolean shouldCleanup = true;
+
     private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
 	private Path testMethodArchiveFolder;
@@ -783,6 +785,16 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
 	}
 
     protected JsonObject getAttibutes() throws ZosDatasetException {

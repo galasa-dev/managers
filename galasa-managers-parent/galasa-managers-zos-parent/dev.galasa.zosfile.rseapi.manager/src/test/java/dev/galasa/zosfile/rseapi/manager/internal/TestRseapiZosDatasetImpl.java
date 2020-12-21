@@ -1485,6 +1485,14 @@ public class TestRseapiZosDatasetImpl {
     }
     
     @Test
+    public void testShouldCleanup() {
+    	zosDatasetSpy.setShouldCleanup(false);
+    	Assert.assertFalse("setShouldCleanup() should return false", zosDatasetSpy.shouldCleanup());
+    	zosDatasetSpy.setShouldCleanup(true);
+    	Assert.assertTrue("setShouldCleanup() should return true", zosDatasetSpy.shouldCleanup());
+    }
+    
+    @Test
     public void testGetRseapiApiProcessor() {
         Assert.assertEquals("getRseapiApiProcessor() should return the mocked IRseapiRestApiProcessor", rseapiApiProcessorMock, zosDatasetSpy.getRseapiApiProcessor());
     }
