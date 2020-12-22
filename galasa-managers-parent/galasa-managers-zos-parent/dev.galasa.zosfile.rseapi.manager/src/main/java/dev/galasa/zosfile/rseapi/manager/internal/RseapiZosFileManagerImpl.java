@@ -48,17 +48,17 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     
     private static final Log logger = LogFactory.getLog(RseapiZosFileManagerImpl.class);
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        RseapiZosFileManagerImpl.zosManager = zosManager;
+    private IZosManagerSpi zosManager;
+    public IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
     
-    protected static IRseapiManagerSpi rseapiManager;
-    public static void setRseapiManager(IRseapiManagerSpi rseapiManager) {
-        RseapiZosFileManagerImpl.rseapiManager = rseapiManager;
+    private IRseapiManagerSpi rseapiManager;
+    public IRseapiManagerSpi getRseapiManager() {
+        return this.rseapiManager;
     }
 
-    private static final Map<String, RseapiZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
+    private final Map<String, RseapiZosFileHandlerImpl> zosFileHandlers = new HashMap<>();
 
     private static final String ZOS_DATASETS = "zOS_Datasets";
     
@@ -68,54 +68,55 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
 
     private static final String PROVISIONING = "provisioning";
 
-    private static String runId;
-    protected static void setRunId(String id) {
-        runId = id;
+    private String runId;
+    protected void setRunId(String id) {
+        this.runId = id;
     }
-    protected static String getRunId() {
-        return runId;
+    protected String getRunId() {
+        return this.runId;
     }
 
     private Path artifactsRoot;
-
-    private boolean provisionCleanupComplete;
-
-    protected static Path datasetArtifactRoot;
-    protected static void setDatasetArtifactRoot(Path path) {
-        datasetArtifactRoot = path;
-    }
-    protected static Path getDatasetArtifactRoot() {
-        return datasetArtifactRoot;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
     }
 
-    protected static Path vsamDatasetArtifactRoot;
-    protected static void setVsamDatasetArtifactRoot(Path path) {
-        vsamDatasetArtifactRoot = path;
+    private Path datasetArtifactRoot;
+    protected void setDatasetArtifactRoot(Path path) {
+    	this.datasetArtifactRoot = path;
     }
-    protected static Path getVsamDatasetArtifactRoot() {
-        return vsamDatasetArtifactRoot;
+    protected Path getDatasetArtifactRoot() {
+        return this.datasetArtifactRoot;
     }
 
-    protected static Path unixPathArtifactRoot;
-    protected static void setUnixPathArtifactRoot(Path path) {
-        unixPathArtifactRoot = path;
+    private Path vsamDatasetArtifactRoot;
+    protected void setVsamDatasetArtifactRoot(Path path) {
+    	this.vsamDatasetArtifactRoot = path;
     }
-    protected static Path getUnixPathArtifactRoot() {
-        return unixPathArtifactRoot;
+    protected Path getVsamDatasetArtifactRoot() {
+        return this.vsamDatasetArtifactRoot;
+    }
+
+    private Path unixPathArtifactRoot;
+    protected void setUnixPathArtifactRoot(Path path) {
+    	this.unixPathArtifactRoot = path;
+    }
+    protected Path getUnixPathArtifactRoot() {
+    	return this.unixPathArtifactRoot;
     }
     
-    protected static String currentTestMethodArchiveFolderName;
-    public static void setCurrentTestMethodArchiveFolderName(String folderName) {
-        RseapiZosFileManagerImpl.currentTestMethodArchiveFolderName = folderName;
+    private String currentTestMethodArchiveFolderName;
+    public String getCurrentTestMethodArchiveFolderName() {
+    	return this.currentTestMethodArchiveFolderName;
     }
-    public static Path getDatasetCurrentTestMethodArchiveFolder() {
-        return datasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getDatasetCurrentTestMethodArchiveFolder() {
+        return this.datasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
-    public static Path getVsamDatasetCurrentTestMethodArchiveFolder() {
-        return vsamDatasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getVsamDatasetCurrentTestMethodArchiveFolder() {
+        return this.vsamDatasetArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
-    public static Path getUnixPathCurrentTestMethodArchiveFolder() {
-        return unixPathArtifactRoot.resolve(currentTestMethodArchiveFolderName);
+    public Path getUnixPathCurrentTestMethodArchiveFolder() {
+        return this.unixPathArtifactRoot.resolve(currentTestMethodArchiveFolderName);
     }
     
     /* (non-Javadoc)
@@ -142,6 +143,7 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
         
     
@@ -165,11 +167,11 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosFileManagerException("The zOS Manager is not available");
         }
-        setRseapiManager(addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class));
+        this.rseapiManager = addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class);
         if (rseapiManager == null) {
             throw new ZosFileManagerException("The RSE API Manager is not available");
         }
@@ -196,17 +198,7 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
-        setCurrentTestMethodArchiveFolderName("preTest");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#startOfTestClass()
-     */
-    @Override
-    public void startOfTestClass() throws ManagerException {
-        cleanup(false);
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
 
     /*
@@ -216,30 +208,14 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
      */
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
-        if (!provisionCleanupComplete) {
-            cleanup(false);
-            provisionCleanupComplete = true;
-        }
         setDatasetArtifactRoot(artifactsRoot.resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(ZOS_UNIX_PATHS));
         if (galasaMethod.getJavaTestMethod() != null) {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName());
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
-            setCurrentTestMethodArchiveFolderName(galasaMethod.getJavaExecutionMethod().getName());
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.reflect.Method,java.lang.String,java.lang.Throwable)
-     */
-    @Override
-    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup(false);
-        
-        return null;
     }
 
     /*
@@ -252,24 +228,9 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
         setDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_DATASETS));        
         setVsamDatasetArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_VSAM_DATASETS));        
         setUnixPathArtifactRoot(artifactsRoot.resolve(PROVISIONING).resolve(ZOS_UNIX_PATHS));
-        setCurrentTestMethodArchiveFolderName("postTest");
-        cleanup(true);
+        this.currentTestMethodArchiveFolderName = "postTest";
         
         return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#provisionDiscard()
-     */
-    @Override
-    public void provisionDiscard() {
-        try {
-            cleanup(true);
-        } catch (ZosFileManagerException e) {
-            logger.error("Problem in provisionDiscard()", e);
-        }
     }
 
     /*
@@ -280,45 +241,45 @@ public class RseapiZosFileManagerImpl extends AbstractManager implements IZosFil
     @Override
     public void endOfTestRun() {
         try {
-            cleanup(true);
+            cleanup();
         } catch (ZosFileManagerException e) {
             logger.error("Problem in endOfTestRun()", e);
         }
     }
     
-    protected void cleanup(boolean testComplete) throws ZosFileManagerException {
+    protected void cleanup() throws ZosFileManagerException {
         for (Entry<String, RseapiZosFileHandlerImpl> entry : zosFileHandlers.entrySet()) {
-            entry.getValue().cleanup(testComplete);
+            entry.getValue().cleanup();
         }
     }
     
     @GenerateAnnotatedField(annotation=ZosFileHandler.class)
     public IZosFileHandler generateZosFileHandler(Field field, List<Annotation> annotations) {
-        RseapiZosFileHandlerImpl rseapiZosFileHandlerImpl = new RseapiZosFileHandlerImpl(field.getName());
+        RseapiZosFileHandlerImpl rseapiZosFileHandlerImpl = new RseapiZosFileHandlerImpl(this, field.getName());
         zosFileHandlers.put(rseapiZosFileHandlerImpl.toString(), rseapiZosFileHandlerImpl);        
         return rseapiZosFileHandlerImpl;
     }
     
-    public static IZosFileHandler newZosFileHandler() {
+    public IZosFileHandler newZosFileHandler() {
         RseapiZosFileHandlerImpl rseapiZosFileHandlerImpl;
-        if (zosFileHandlers.get("INTERNAL") == null) {
-            rseapiZosFileHandlerImpl = new RseapiZosFileHandlerImpl();
-            zosFileHandlers.put(rseapiZosFileHandlerImpl.toString(), rseapiZosFileHandlerImpl);
+        if (this.zosFileHandlers.get("INTERNAL") == null) {
+            rseapiZosFileHandlerImpl = new RseapiZosFileHandlerImpl(this);
+            this.zosFileHandlers.put(rseapiZosFileHandlerImpl.toString(), rseapiZosFileHandlerImpl);
         }
-        return zosFileHandlers.get("INTERNAL");
+        return this.zosFileHandlers.get("INTERNAL");
     }
     
-    public static String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
+    public String getRunDatasetHLQ(IZosImage image) throws ZosFileManagerException {
         try {
-            return zosManager.getRunDatasetHLQ(image);
+            return this.zosManager.getRunDatasetHLQ(image);
         } catch (ZosManagerException e) {
             throw new ZosFileManagerException(e);
         }
     }
     
-    public static String getRunUNIXPathPrefix(IZosImage image) throws ZosFileManagerException {
+    public String getRunUNIXPathPrefix(IZosImage image) throws ZosFileManagerException {
         try {
-            return zosManager.getRunUNIXPathPrefix(image);
+            return this.zosManager.getRunUNIXPathPrefix(image);
         } catch (ZosManagerException e) {
             throw new ZosFileManagerException(e);
         }

@@ -18,9 +18,9 @@ import dev.galasa.zosrseapi.internal.RseapiManagerField;
  * 
  * @galasa.annotation
  * 
- * @galasa.description The <code>{@literal @}Rseapi</code> annotation requests the z/OSMF Manager to provide a
- * z/OSMF instance associated with a z/OS image. 
- * The test can request multiple z/OSMF instances, with the default being associated with the <b>primary</b> zOS image.
+ * @galasa.description The <code>{@literal @}Rseapi</code> annotation requests the RSE API Manager to provide a
+ * RSE API server instance associated with a z/OS image. 
+ * The test can request multiple RSE API instances, with the default being associated with the <b>primary</b> zOS image.
  * 
  * @galasa.examples 
  * {@literal @}ZosImage(imageTag="A")<br>
@@ -42,6 +42,6 @@ public @interface Rseapi {
     /**
      * The tag of the zOS Image this variable is to be populated with
      */
-    String imageTag() default "primary";
+    String imageTag() default "PRIMARY";
 
 }

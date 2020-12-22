@@ -9,9 +9,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -36,9 +34,6 @@ public class TestSysplexServers {
     @Mock
     private IZosImage zosImage;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String SYSPLEXID = "PLEX1";
     
     private static final String DEMO_SERVER1 = "MFSYSA";
@@ -54,6 +49,12 @@ public class TestSysplexServers {
         ZosmfPropertiesSingleton.setCps(configurationPropertyStoreServiceMock);       
     }
     
+    @Test
+    public void testConstructor() {
+    	SysplexServers sysplexServers = new SysplexServers();
+        Assert.assertNotNull("Object was not created", sysplexServers);
+    }
+    
     
     @Test
     public void testValid() throws Exception {
@@ -66,12 +67,14 @@ public class TestSysplexServers {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOSMF servers property for zOS sysplex " + SYSPLEXID);
+    	String expectedMessage = "Problem asking the CPS for the zOSMF servers property for zOS sysplex " + SYSPLEXID;
 
         Mockito.when(configurationPropertyStoreServiceMock.getProperty("sysplex", "default.servers", SYSPLEXID)).thenThrow(new ConfigurationPropertyStoreException("Test exception"));
 
-        SysplexServers.get(zosImage);
+        ZosmfManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfManagerException.class, ()->{
+        	SysplexServers.get(zosImage);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());        
     }
 
 }

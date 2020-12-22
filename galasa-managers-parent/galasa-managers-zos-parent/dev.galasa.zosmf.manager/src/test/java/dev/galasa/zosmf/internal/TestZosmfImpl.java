@@ -17,9 +17,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,6 +33,7 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsToken;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
@@ -112,15 +111,10 @@ public class TestZosmfImpl {
     
     @Mock
     private ICredentialsToken credentialsTokenMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
-    private static final String SERVER_ID = "SERVER1";
+    private static final String SERVER_ID = "SERVER_ID1";
 
     private static final String IMAGE = "image";
-
-    private static final String IMAGE_TAG = "tag";
 
     private static final String CLUSTER = "cluster";
 
@@ -189,10 +183,24 @@ public class TestZosmfImpl {
     }
     
     @Test
-    public void testStringConstructor() throws ZosmfException {
+    public void testConstructor() throws ZosManagerException {
         ZosmfImpl localZosmf = new ZosmfImpl(zosmfManagerMock, SERVER_ID);
         Assert.assertTrue("Error in String constructor", localZosmf instanceof ZosmfImpl);
         Assert.assertEquals("requestRetry() should return the expected value", REQUEST_RETRY, localZosmf.getRequestRetry());
+
+        Mockito.when(zosManagerMock.getUnmanagedImage(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        String expectedMessage =  "Unable to initialise zOS/MF server " + SERVER_ID + " as z/OS image '" + IMAGE + "' is not defined";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	new ZosmfImpl(zosmfManagerMock, SERVER_ID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+    	Mockito.when(ServerImage.get(Mockito.any())).thenThrow(new ZosmfException(EXCEPTION));
+        expectedMessage =  "Unable to initialise zOS/MF server " + SERVER_ID;
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	new ZosmfImpl(zosmfManagerMock, SERVER_ID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -225,18 +233,22 @@ public class TestZosmfImpl {
     public void testGetBadHttpResponseException() throws ZosmfException {
         setupGet();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.get(PATH, null, true);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.get(PATH, null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetHttpException() throws ZosmfException, HttpClientException {
         setupGet();
         Mockito.when(httpClientMock.getText(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem with GET to zOSMF server");
-        zosmfSpy.get(PATH, null, true);
+        String expectedMessage =  "Problem with GET to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.get(PATH, null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     private void setupGet() {
@@ -247,7 +259,7 @@ public class TestZosmfImpl {
             Mockito.when(httpClientResponseStringMock.getStatusLine()).thenReturn(STATUS_LINE);
             
             Mockito.when(httpClientMock.getFile(Mockito.anyString())).thenReturn(closeableHttpResponseMock);       
-            Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
+            Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);
             Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT.getBytes()));
             Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
             Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -271,18 +283,22 @@ public class TestZosmfImpl {
     public void testPostJsonBadHttpResponseException() throws ZosmfException {
         setupPostJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.postJson(PATH, new JsonObject(), null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.postJson(PATH, new JsonObject(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testPostJsonHttpException() throws ZosmfException, HttpClientException {
         setupPostJson();
         Mockito.when(httpClientMock.postJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem with POST to zOSMF server");
-        zosmfSpy.postJson(PATH, new JsonObject(), null);
+        String expectedMessage =  "Problem with POST to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.postJson(PATH, new JsonObject(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPostJson() {
@@ -310,18 +326,22 @@ public class TestZosmfImpl {
     public void testPutTextBadHttpResponseException() throws ZosmfException {
         setupPutText();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.putText(PATH, "", null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putText(PATH, "", null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testPutTextHttpException() throws ZosmfException, HttpClientException {
         setupPutText();
         Mockito.when(httpClientMock.putText(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem with PUT to zOSMF server");
-        zosmfSpy.putText(PATH, "", null);
+        String expectedMessage =  "Problem with PUT to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putText(PATH, "", null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPutText() {
@@ -349,18 +369,22 @@ public class TestZosmfImpl {
     public void testPutJsonBadHttpResponseException() throws ZosmfException {
         setupPutJson();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.putJson(PATH, new JsonObject(), null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putJson(PATH, new JsonObject(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testPutJsonHttpException() throws ZosmfException, HttpClientException {
         setupPutJson();
         Mockito.when(httpClientMock.putJson(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem with PUT to zOSMF server");
-        zosmfSpy.putJson(PATH, new JsonObject(), null);
+        String expectedMessage =  "Problem with PUT to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putJson(PATH, new JsonObject(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPutJson() {
@@ -388,18 +412,22 @@ public class TestZosmfImpl {
     public void testPutBinaryBadHttpResponseException() throws ZosmfException {
         setupPutBinary();
         Mockito.when(httpClientResponseByteMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.putBinary(PATH, "".getBytes(), null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putBinary(PATH, "".getBytes(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testPutBinaryHttpException() throws ZosmfException, HttpClientException {
         setupPutBinary();
         Mockito.when(httpClientMock.putBinary(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Problem with PUT to zOSMF server");
-        zosmfSpy.putBinary(PATH, "".getBytes(), null);
+        String expectedMessage = "Problem with PUT to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.putBinary(PATH, "".getBytes(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupPutBinary() {
@@ -427,18 +455,22 @@ public class TestZosmfImpl {
     public void testDeleteBadHttpResponseException() throws ZosmfException {
         setupDelete();
         Mockito.when(httpClientResponseJsonMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND);
-        zosmfSpy.delete(PATH, null);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.delete(PATH, null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testDeleteHttpException() throws ZosmfException, HttpClientException {
         setupDelete();
         Mockito.when(httpClientMock.deleteJson(Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage( "Problem with DELETE to zOSMF server");
-        zosmfSpy.delete(PATH, null);
+        String expectedMessage =  "Problem with DELETE to zOSMF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.delete(PATH, null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private void setupDelete() {
@@ -450,6 +482,15 @@ public class TestZosmfImpl {
         } catch (HttpClientException | UnsupportedOperationException e) {
             throw new MockitoException("Problem in setupDelete() method ", e);
         }
+    }
+
+    @Test
+    public void testServerInfo() throws HttpClientException, ZosmfException, UnsupportedOperationException, IOException {
+    	setupGet(); 
+    	JsonObject jsonObject = new JsonObject();
+    	jsonObject.addProperty("zosmf_version", "version");
+        Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(jsonObject.toString().getBytes()));
+        Assert.assertEquals("serverInfo() should return the expected value", jsonObject, zosmf.serverInfo());
     }
     
     @Test
@@ -483,43 +524,72 @@ public class TestZosmfImpl {
         
         PowerMockito.doReturn(credentialsMock).when(zosImageMock, "getDefaultCredentials");
         zosmfSpy.initialize();
+        Mockito.when(ServerCreds.get(Mockito.any())).thenReturn(null);
+        zosmfSpy.initialize();
+        Assert.assertEquals("toString() should return the expected value", toStringValue, zosmfSpy.toString());
+    }
+    
+    @Test
+    public void testInitializeServerHostnameException() throws Exception {
+        Mockito.when(zosImageMock.getDefaultHostname()).thenThrow(new ZosManagerException(EXCEPTION));
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeServerPortException() throws Exception {
         Mockito.when(ServerPort.get(Mockito.any())).thenThrow(new ZosmfManagerException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosmfSpy.initialize();
+        String expectedMessage = EXCEPTION;
+
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeHttpsException() throws Exception {
         Mockito.when(Https.get(Mockito.any())).thenThrow(new ZosmfManagerException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosmfSpy.initialize();
+        String expectedMessage = EXCEPTION;
+
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testInitializeHttpClientException() throws Exception {
         Mockito.when(ServerCreds.get(Mockito.any())).thenReturn(null);
         Mockito.when(zosImageMock.getDefaultCredentials()).thenThrow(new ZosManagerException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unable to create HTTP Client");
-        
-        zosmfSpy.initialize();
+        String expectedMessage = "Unable to create HTTP Client";
+
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitializeRequestRetryException() throws Exception {
         Mockito.when(RequestRetry.get(Mockito.any())).thenThrow(new ZosmfManagerException(EXCEPTION));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage(EXCEPTION);
-        
-        zosmfSpy.initialize();
+        String expectedMessage = EXCEPTION;
+
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
     }
     
+    @Test
+    public void testInitializeCredentialsException() throws Exception {
+        Mockito.when(frameworkMock.getCredentialsService()).thenThrow(new CredentialsException(EXCEPTION));
+        String expectedMessage = "Problem accessing credentials store";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfSpy.initialize();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
+    }
 }

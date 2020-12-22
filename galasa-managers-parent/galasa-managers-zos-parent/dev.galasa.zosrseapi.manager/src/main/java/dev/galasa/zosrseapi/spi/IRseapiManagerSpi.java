@@ -22,20 +22,20 @@ import dev.galasa.zosrseapi.RseapiManagerException;
 public interface IRseapiManagerSpi extends IRseapiManager {
     
     /**
-     * Returns a RSE API server for a single image
-     * @param image requested image
+     * Returns a RSE API server
+     * @param serverId the server ID
      * @return the RSE API server
      * @throws RseapiManagerException
      */
-    public IRseapi newRseapi(IZosImage image) throws RseapiManagerException;
+    public IRseapi newRseapi(String serverId) throws RseapiManagerException;
     
     /**
-     * Returns a map of RSE API servers for a cluster
-     * @param clusterId the cluster id
+     * Returns a map of RSE API servers available for use with a z/OS Image
+     * @param zosImage the z/OS Image you want the RSE API servers for
      * @return the RSE API servers
      * @throws RseapiManagerException
      */
-    public Map<String, IRseapi> getRseapis(@NotNull String clusterId) throws RseapiManagerException;
+    public Map<String, IRseapi> getRseapis(@NotNull IZosImage zosImage) throws RseapiManagerException;
 
     /**
      * Returns a {@link IRseapiRestApiProcessor} for a single image

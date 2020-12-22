@@ -7,9 +7,7 @@ package dev.galasa.zosmf.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -30,12 +28,15 @@ public class TestServerPort {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String SERVERID = "MFSYSA";
     
     private static final String TEST_PORT = "5000";
+    
+    @Test
+    public void testConstructor() {
+        ServerPort serverPort = new ServerPort();
+        Assert.assertNotNull("Object was not created", serverPort);
+    }
     
     @Before
     public void setup() throws ConfigurationPropertyStoreException, ZosmfManagerException {
@@ -63,35 +64,28 @@ public class TestServerPort {
     
     @Test
     public void testInvalidString() throws Exception {
-        String invalidPort = "BOB";
-        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
-        
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
-        
-        ServerPort.get(SERVERID);
+    	testInvalid("BOB");
     }
     
     @Test
     public void testInvalidTooSmall() throws Exception {
-        String invalidPort = "-1";
-        Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
-
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
-        
-        ServerPort.get(SERVERID);
+    	testInvalid("-1");
     }
     
     @Test
     public void testInvalidTooBig() throws Exception {
-        String invalidPort = "70000";
+        testInvalid("70000");
+    }
+    
+    private void testInvalid(String invalidPort) throws Exception {
         Mockito.when(configurationPropertyStoreServiceMock.getProperty("server", "port", SERVERID)).thenReturn(invalidPort);
 
-        exceptionRule.expect(ZosmfManagerException.class);
-        exceptionRule.expectMessage("Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535");
+        String expectedMessage = "Invalid value '" + invalidPort + "' for zOSMF server port property for zOS server "  + SERVERID + ". Range  0-65535";
         
-        ServerPort.get(SERVERID);
+        ZosmfManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfManagerException.class, ()->{
+        	ServerPort.get(SERVERID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
 }

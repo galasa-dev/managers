@@ -121,7 +121,8 @@
 						<Export-Package>
 							dev.galasa.selenium,
 							org.openqa.selenium,
-							org.openqa.selenium.support.ui
+							org.openqa.selenium.support.ui,
+							org.openqa.selenium.interactions
 						</Export-Package>
 					</instructions>
 				</configuration>

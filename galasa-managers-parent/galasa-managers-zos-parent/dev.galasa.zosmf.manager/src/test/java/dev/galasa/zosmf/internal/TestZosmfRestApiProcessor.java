@@ -12,9 +12,7 @@ import java.util.LinkedHashMap;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -53,9 +51,6 @@ public class TestZosmfRestApiProcessor {
     private IZosmfResponse zosmfResponseMock;
     
     private HashMap<String, IZosmf> zosmfs = new LinkedHashMap<>();
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String PATH = "request-path";
 
@@ -110,9 +105,11 @@ public class TestZosmfRestApiProcessor {
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
 
         ZosmfRequestType INVALID = PowerMockito.mock(ZosmfRequestType.class);
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Unable to get valid response from zOS/MF server");
-        zosmfRestApiProcessorSpy.sendRequest(INVALID, PATH, null, null, null, false);
+        String expectedMessage = "Unable to get valid response from zOS/MF server";
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+            zosmfRestApiProcessorSpy.sendRequest(INVALID, PATH, null, null, null, false);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

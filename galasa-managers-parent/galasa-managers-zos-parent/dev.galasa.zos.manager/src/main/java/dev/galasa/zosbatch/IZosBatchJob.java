@@ -159,12 +159,22 @@ public interface IZosBatchJob {
     public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException;
 
     /**
-     * Set flag to control if the job output should be stored to the test output. Defaults to true
+     * Set flag to control if the job output should be automatically stored to the test output. Defaults to true
      */    
     public void setShouldArchive(boolean shouldArchive);
 
     /**
-     * Return flag that controls if the job output should be stored to the test output
+     * Return flag that controls if the job output should be automatically stored to the test output
      */    
     public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the job output should be automatically purged from zOS. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the job output should be automatically purged from zOS
+     */    
+    public boolean shouldCleanup();
 }

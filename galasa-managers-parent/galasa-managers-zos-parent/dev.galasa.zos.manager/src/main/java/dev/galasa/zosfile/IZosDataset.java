@@ -210,28 +210,6 @@ public interface IZosDataset {
      * @throws ZosDatasetException 
      */
     public IZosDataset create() throws ZosDatasetException;
-    
-    /**
-     * Allocate the physical data set on the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZosDatasetException 
-     */
-    public IZosDataset createRetain() throws ZosDatasetException;
-    
-    /**
-     * Allocate the physical data set on the zOS image. Will be retained across test methods and Will be not be saved to test archive before being
-     * deleted at test class end
-     * @return
-     * @throws ZosDatasetException 
-     */
-    public IZosDataset createRetainTemporary() throws ZosDatasetException;
-
-    /**
-     * Allocate the physical data set on the zOS image. Will be not be saved to test archive before being deleted at test method end
-     * @return
-     * @throws ZosDatasetException 
-     */
-    public IZosDataset createTemporary() throws ZosDatasetException;
 
     /**
      * Delete the data set on the zOS image.
@@ -280,11 +258,11 @@ public interface IZosDataset {
     public byte[] retrieveAsBinary() throws ZosDatasetException;
 
     /**
-     * Store the content of the data set with the test output
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * Store the content of the data set to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosDatasetException
      */
-    public void saveToResultsArchive() throws ZosDatasetException;
+    public void saveToResultsArchive(String rasPath) throws ZosDatasetException;
     
     /**
      * Returns true if the data set exists and is a partitioned data set
@@ -355,10 +333,12 @@ public interface IZosDataset {
     public Collection<String> memberList() throws ZosDatasetException;
 
     /**
-     * Store the content of the partitioned data set member with the test output
+     * Store the content of the partitioned data set member to the Results Archive Store
+     * @param memberName
+     * @param rasPath path in Results Archive Store
      * @throws ZosDatasetException
      */
-    public void memberSaveToResultsArchive(@NotNull String memberName) throws ZosDatasetException;
+    public void memberSaveToResultsArchive(@NotNull String memberName, String rasPath) throws ZosDatasetException;
     
     /**
      * Set the data type ({@link DatasetDataType}) for store and retrieve of the data set content
@@ -588,12 +568,22 @@ public interface IZosDataset {
     public String getAttibutesAsString() throws ZosDatasetException;
 
     /**
-     * Set flag to control if the content of the data set should be stored to the test output. Defaults to true
+     * Set flag to control if the content of the data set should be automatically stored to the test output at test end. Defaults to false
      */    
     public void setShouldArchive(boolean shouldArchive);
 
     /**
-     * Return flag that controls if the content of the data set should be stored to the test output
+     * Return flag that controls if the content of the data set should be automatically stored to the test output at test end
      */    
     public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the data set should be automatically deleted from zOS at test end. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the data set should be automatically deleted from zOS at test end
+     */    
+    public boolean shouldCleanup();
 }

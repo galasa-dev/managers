@@ -71,7 +71,10 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     private String jobFilesPath;
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
+    
     private boolean shouldArchive = true;
+
+    private boolean shouldCleanup = true;
 
 	private static final String PROP_REASON = "reason";
     private static final String PROP_RC = "rc";
@@ -365,6 +368,16 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
 	}
 
 	protected void getOutput() throws ZosBatchException {

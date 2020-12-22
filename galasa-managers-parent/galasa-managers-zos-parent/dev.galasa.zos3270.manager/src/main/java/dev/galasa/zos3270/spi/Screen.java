@@ -253,7 +253,7 @@ public class Screen {
             ByteArrayOutputStream outboundBuffer = new ByteArrayOutputStream();
 
             outboundBuffer.write(this.lastAid.getKeyValue());
-            
+
             if (!all && (this.lastAid == AttentionIdentification.CLEAR 
                     || this.lastAid == AttentionIdentification.PA1
                     || this.lastAid == AttentionIdentification.PA2
@@ -262,7 +262,7 @@ public class Screen {
             } else {
                 BufferAddress cursor = new BufferAddress(this.screenCursor);
                 outboundBuffer.write(cursor.getCharRepresentation());
-                
+
                 readModifiedBuffer(outboundBuffer);
             }
             writeTrace(outboundBuffer);
@@ -476,7 +476,7 @@ public class Screen {
                 throw new DatastreamException("Unsupported Order - " + order.getClass().getName());
             }
         }
-        
+
 
         if (writeControlCharacter.isKeyboardReset()) {
             this.lastAid = AttentionIdentification.NONE;
@@ -683,7 +683,7 @@ public class Screen {
     private void processSA(OrderSetAttribute order) {
         // TODO add processing for character attributes
     }
-    
+
     private void processNewLine() {
         this.buffer[this.workingCursor] = new BufferNewLine();
         incrementWorkingCursor();
@@ -769,22 +769,22 @@ public class Screen {
 
             row++;
         }
-        
+
 
         screenSB.append("!| ");
         screenSB.append(reportOperator());
         screenSB.append("\n");
-        
-        
+
+
         return screenSB.toString();
     }
-    
+
     private String reportOperator() {
         int cursorRow = screenCursor / columns;
         int cursorCol = screenCursor % columns;
 
         StringBuilder operator = new StringBuilder();
-        
+
         if (network.isConnected()) {
             operator.append("Connected-");
         } else {
@@ -797,13 +797,13 @@ public class Screen {
         }
         operator.append(" Size=" + this.rows + "x" + this.columns);
         operator.append(" Cursor=" + screenCursor + "," + cursorRow + "x" + cursorCol);
-        
+
         if (this.keyboardLockSet) {
             operator.append(" Keyboard Locked");
         } else {
             operator.append(" Keyboard Unlocked");
         }
-       
+
         return operator.toString();
     }
 
@@ -1521,12 +1521,15 @@ public class Screen {
 
             outboundBuffer.write(aid.getKeyValue());
 
-            BufferAddress cursor = new BufferAddress(this.screenCursor);
-            outboundBuffer.write(cursor.getCharRepresentation());
 
             if (aid == AttentionIdentification.CLEAR) {
                 erase();
+            } else if (aid == AttentionIdentification.PA1) {
+            } else if (aid == AttentionIdentification.PA2) {
+            } else if (aid == AttentionIdentification.PA3) {
             } else {
+                BufferAddress cursor = new BufferAddress(this.screenCursor);
+                outboundBuffer.write(cursor.getCharRepresentation());
                 readModifiedBuffer(outboundBuffer);
             }
             writeTrace(outboundBuffer);

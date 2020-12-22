@@ -33,7 +33,8 @@ import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 
 public class ZosmfZosDatasetAttributesListdsi {
     
-    private ZosmfZosFileHandlerImpl zosFileHandler;
+	private ZosmfZosFileManagerImpl zosFileManager;
+	private ZosmfZosFileHandlerImpl zosFileHandler;
     private IZosUNIXCommand unixCommand;
     private IZosImage image;
     private String execDatasetName;
@@ -100,18 +101,19 @@ public class ZosmfZosDatasetAttributesListdsi {
     
     private static final Log logger = LogFactory.getLog(ZosmfZosDatasetAttributesListdsi.class);
     
-    public ZosmfZosDatasetAttributesListdsi(IZosImage image) {
+    public ZosmfZosDatasetAttributesListdsi(ZosmfZosFileManagerImpl zosFileManager, IZosImage image) {
+    	this.zosFileManager = zosFileManager;
         this.image = image;
     }
     
     protected void initialise() throws ZosDatasetException {
         try {
-            if (ZosmfZosFileManagerImpl.zosUnixCommandManager == null) {
-                throw new ZosDatasetException("ZosmfZosFileManagerImpl.zosUnixCommandManager is null");
+            if (zosFileManager.getZosUnixCommandManager() == null) {
+                throw new ZosDatasetException("zosFileManager zosUnixCommandManager is null");
             }
-            this.unixCommand = ZosmfZosFileManagerImpl.zosUnixCommandManager.getZosUNIXCommand(image);
-            this.zosFileHandler = (ZosmfZosFileHandlerImpl) ZosmfZosFileManagerImpl.newZosFileHandler();
-            this.execDatasetName = ZosmfZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + ZosmfZosFileManagerImpl.getRunId() + ".EXEC";
+            this.unixCommand = zosFileManager.getZosUnixCommandManager().getZosUNIXCommand(image);
+            this.zosFileHandler = (ZosmfZosFileHandlerImpl) zosFileManager.newZosFileHandler();
+            this.execDatasetName = zosFileManager.getRunDatasetHLQ(this.image) + "." + zosFileManager.getRunId() + ".EXEC";
             createExecDataset();
             initialised = true;
         } catch (ZosFileManagerException | ZosUNIXCommandManagerException e) {
@@ -340,7 +342,8 @@ public class ZosmfZosDatasetAttributesListdsi {
             execDataset.setRecordlength(255);
             execDataset.setBlockSize(32720);
             execDataset.setSpace(SpaceUnit.TRACKS, 1, 1);
-            execDataset.createTemporary();
+            execDataset.create();
+            execDataset.setShouldArchive(false);
         }
         if (!this.execDataset.memberExists(LISTDSI_EXEC_NAME)) {
             execDataset.memberStoreText(LISTDSI_EXEC_NAME, getExecResource());

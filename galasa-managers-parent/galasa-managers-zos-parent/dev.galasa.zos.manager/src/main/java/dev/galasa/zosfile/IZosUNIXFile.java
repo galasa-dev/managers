@@ -48,13 +48,6 @@ public interface IZosUNIXFile {
     public IZosUNIXFile create() throws ZosUNIXFileException;
 
     /**
-     * Create the zOS UNIX file or directory from the zOS image. Will be retained across test methods and deleted at test class end
-     * @return
-     * @throws ZoException 
-     */
-    public IZosUNIXFile createRetain() throws ZosUNIXFileException;
-
-    /**
      * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory will throw {@link ZosUNIXFileException}
      * @return deleted
      * @throws ZosUNIXFileException
@@ -87,10 +80,11 @@ public interface IZosUNIXFile {
     public String retrieve() throws ZosUNIXFileException;
 
     /**
-     * Recursively store the content of the zOS UNIX file or directory to the test output 
+     * Recursively store the content of the zOS UNIX file or directory to the Results Archive Store
+     * @param rasPath path in Results Archive Store
      * @throws ZosUNIXFileException
      */
-    public void saveToResultsArchive() throws ZosUNIXFileException;
+    public void saveToResultsArchive(String rasPath) throws ZosUNIXFileException;
     
     /**
      * Return true if this object represents a zOS UNIX directory
@@ -151,7 +145,7 @@ public interface IZosUNIXFile {
     public String getAttributesAsString() throws ZosUNIXFileException;
 
     /**
-     * Set flag to control if the content of the zOS UNIX path should be stored to the test output. Defaults to true
+     * Set flag to control if the content of the zOS UNIX path should be stored to the test output. Defaults to false
      */    
     public void setShouldArchive(boolean shouldArchive);
 
@@ -159,4 +153,14 @@ public interface IZosUNIXFile {
      * Return flag that controls if the content of the zOS UNIX path should be stored to the test output
      */    
     public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the zOS UNIX path should be automatically deleted from zOS at test end. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the zOS UNIX path should be automatically deleted from zOS at test end
+     */    
+    public boolean shouldCleanup();
 }

@@ -1148,6 +1148,14 @@ public class TestZosmfZosBatchJobImpl {
     	Mockito.doReturn(FIXED_JOBID).when(zosBatchJobSpy).getJobId();
     	Assert.assertTrue("submitted() should return true", zosBatchJobSpy.submitted());
     }
+    
+    @Test
+    public void testShouldCleanup() {
+    	zosBatchJobSpy.setShouldCleanup(true);
+    	Assert.assertTrue("shouldCleanup() should return true", zosBatchJobSpy.shouldCleanup());
+    	zosBatchJobSpy.setShouldCleanup(false);
+    	Assert.assertFalse("shouldCleanup() should return false", zosBatchJobSpy.shouldCleanup());
+    }
                  
     private Path newMockedPath(boolean fileExists) throws IOException {
         Path pathMock = Mockito.mock(Path.class);

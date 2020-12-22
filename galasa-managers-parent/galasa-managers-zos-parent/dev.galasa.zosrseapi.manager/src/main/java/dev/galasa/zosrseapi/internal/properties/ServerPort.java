@@ -5,7 +5,8 @@
  */
 package dev.galasa.zosrseapi.internal.properties;
 
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosrseapi.RseapiManagerException;
 
@@ -14,11 +15,11 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name rseapi.server.[imageid].https
+ * @galasa.name rseapi.server.[imageid].port
  * 
- * @galasa.description The hostname RSE API server 
+ * @galasa.description The port number of the RSE API server 
  * 
- * @galasa.required Yes
+ * @galasa.required no
  * 
  * @galasa.default 6800
  * 
@@ -26,25 +27,22 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  * 
  * @galasa.examples 
  * <code>rseapi.server.port=6800</code><br>
- * <code>rseapi.server.SYSA.port=6800</code>
+ * <code>rseapi.server.RSESYSA.port=6800</code>
  *
  */
 public class ServerPort extends CpsProperties {
 
-    public static String get(String imageId) throws RseapiManagerException {
-        try {
-            String serverPort = getStringNulled(RseapiPropertiesSingleton.cps(), "server", "port", imageId);
+    public static int get(@NotNull String serverId) throws RseapiManagerException {
+        String serverPort = getStringWithDefault(RseapiPropertiesSingleton.cps(), "6800", "server", "port", serverId);
 
-            if (serverPort == null) {
-                return "6800";
-            }
+        try {
             int serverPortInt = Integer.parseInt(serverPort);
             if (serverPortInt < 0 || serverPortInt > 65535) {
-                throw new RseapiManagerException("Invalid value (" + serverPort + ") for RSE API server port property for zOS image "  + imageId + ". Range  0-65535");
+                throw new RseapiManagerException("Invalid value '" + serverPort + "' for RSE API server port property for server "  + serverId + ". Range  0-65535");
             }
-            return serverPort;
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new RseapiManagerException("Problem asking the CPS for the RSE API server port property for zOS image "  + imageId, e);
+            return serverPortInt;
+        } catch(NumberFormatException e) {
+            throw new RseapiManagerException("Invalid value '" + serverPort + "' for RSE API server port property for server "  + serverId + ". Range  0-65535",e);
         }
     }
 
