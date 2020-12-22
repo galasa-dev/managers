@@ -18,7 +18,12 @@ public class LogScannerImpl implements ILogScanner {
 
     @Override
     public ILogScanner setScannable(ITextScannable scannable) throws TextScanManagerException {
-        // TODO Auto-generated method stub
+    	if(scannable.isScannableInputStream()) {
+    		
+    	}else if(scannable.isScannableString()) {
+    		
+    	}
+    	
         return null;
     }
 
