@@ -21,7 +21,7 @@ import dev.galasa.textscan.spi.TextScannerImpl;
 
 public class TestInputStreamLargeFile {
 
-	File file = new File("/Users/dianaslepikaite/Documents/Galasa/managers/galasa-managers-parent/galasa-managers-core-parent/dev.galasa.textscan.manager/src/main/java/loremIpsum.txt");
+	File file = new File("src/test/resources/loremIpsum.txt");
 	InputStream stream;
 	ITextScanner scanner;
 	Pattern searchpattern;
