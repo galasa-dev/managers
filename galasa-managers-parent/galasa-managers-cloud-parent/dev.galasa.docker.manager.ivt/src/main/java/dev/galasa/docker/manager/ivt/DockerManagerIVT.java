@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 
@@ -21,9 +22,13 @@ import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.docker.DockerContainer;
+import dev.galasa.docker.DockerContainerConfig;
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.DockerVolume;
 import dev.galasa.docker.IDockerContainer;
+import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerExec;
+import dev.galasa.docker.internal.DockerExecImpl;
 import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
@@ -41,6 +46,9 @@ import dev.galasa.http.IHttpClient;
  * 4) Attempt to use http to retrieve the html file<br>
  * 5) Retrieve the console logs to ensure the html file was accessed<br>
  * 6) retrieve the stored file to ensure it comes back
+ * 7) Create a user define container using the @DockerContainerConfig annoation
+ * 8) Change config and start with ENV's and ensure they are set
+ * 9) Mounts a non created volume to the container and ensure all is created and mounted
  * 
  * @author Michael Baylis
  *
@@ -53,6 +61,19 @@ public class DockerManagerIVT {
 
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "a", start = false)
     public IDockerContainer container;
+
+    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
+    public IDockerContainer containerSecondry;
+
+    @DockerContainerConfig
+    public IDockerContainerConfig config1;
+
+    @DockerContainerConfig(
+        dockerVolumes =  {
+            @DockerVolume(mountPath = "/tmp/testvol"),
+        }
+    )
+    public IDockerContainerConfig config2;
 
     @BundleResources
     public IBundleResources resources;
@@ -156,4 +177,57 @@ public class DockerManagerIVT {
         
        assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
     }   
+
+    /**
+     * Start a docker container with a an empty config. Should result in normal startup
+     * @throws DockerManagerException
+     */
+    @Test
+    public void startWithConfig() throws DockerManagerException {
+        assertThat(config1).isNotNull();
+        container.startWithConfig(this.config1);
+    }
+
+    /**
+     * Start a container with some environment variables set
+     * 
+     * @throws DockerManagerException
+     */
+    @Test
+    public void startWithConfigAndEnvsSet() throws DockerManagerException {
+        HashMap<String,String> envs = new HashMap<>();
+        envs.put("FOO", "GALASA");
+
+        config1.setEnvs(envs);
+        container.startWithConfig(this.config1);
+
+        IDockerExec exec = container.exec("env");
+        exec.waitForExec();
+        String out = exec.getCurrentOutput();;
+        assertThat(out).contains("FOO=GALASA");
+    }
+
+    /**
+     * Start a docker container with a docker volume mounted
+     * 
+     * @throws DockerManagerException
+     */
+    @Test
+    public void startWithConfigAndVolumes() throws DockerManagerException {
+        assertThat(config2).isNotNull();
+        container.startWithConfig(config2);
+    }
+
+    @Test
+    public void twoContainersShareVolume() throws DockerManagerException {
+        container.startWithConfig(config2);
+        containerSecondry.startWithConfig(config2);
+
+        container.exec("/bin/touch", "/tmp/testvol/test.log").waitForExec();
+
+        IDockerExec exec = containerSecondry.exec("/bin/ls", "/tmp/testvol");
+        exec.waitForExec();
+        assertThat(exec.getCurrentOutput()).contains("test.log");
+    }
+
 }

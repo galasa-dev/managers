@@ -7,6 +7,7 @@ package dev.galasa.docker.internal;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ public class DockerEnvironment implements IDockerEnvironment {
     private Map<String, DockerContainerImpl> containersByTag = new HashMap<>();
     private Map<String, DockerEngineImpl> enginesByTag = new HashMap<>();
     private boolean dockerEnginesChecked;
+    private List<DockerVolumeImpl> volumes = new ArrayList<>();
 
     private final static Log logger = LogFactory.getLog(DockerEnvironment.class);
 
@@ -171,7 +173,7 @@ public class DockerEnvironment implements IDockerEnvironment {
 
     /**
      * Discrads the entire docker environment, stopping and deleting all docker
-     * containers in instance.
+     * containers in instance and volumes.
      * 
      * @throws DockerManagerException
      */
@@ -179,6 +181,9 @@ public class DockerEnvironment implements IDockerEnvironment {
     public void discard() throws DockerManagerException {
         for (DockerContainerImpl container : containersByTag.values()) {
             container.discard();
+        }
+        for (DockerVolumeImpl volume : volumes) {
+            volume.discard();
         }
     }
 
@@ -439,6 +444,24 @@ public class DockerEnvironment implements IDockerEnvironment {
 
         } catch (Exception e) {
             logger.error("Failed to discard slot " + slotName + " on docker engine " + dockerEngineId, e);
+        }
+    }
+
+    @Override
+    public DockerVolumeImpl allocateDockerVolume(String volumeName, String mountPath, String dockerEngineTag, boolean persist) throws DockerProvisionException {
+        DockerEngineImpl engine = enginesByTag.get(dockerEngineTag);
+        if (engine == null) {
+            engine = buildDockerEngine(dockerEngineTag);
+            enginesByTag.put(dockerEngineTag, engine);
+        }
+        try {
+            DockerVolumeImpl volume = new DockerVolumeImpl(volumeName, mountPath, engine);
+            if (!persist) {
+                volumes.add(volume);
+            }
+            return volume;
+        } catch (DockerManagerException e) {
+            throw new DockerProvisionException("Failed to allocate docker volume.", e);
         }
     }
 }

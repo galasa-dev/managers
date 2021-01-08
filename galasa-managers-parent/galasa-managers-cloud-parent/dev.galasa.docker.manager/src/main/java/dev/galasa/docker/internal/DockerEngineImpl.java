@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -224,6 +225,37 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	public JsonObject getImage(@NotNull String imageName) throws DockerManagerException {
 		return getJson("/images/" + imageName + "/json");
+	}
+
+	public JsonObject getVolume(String volumeName) throws DockerManagerException {
+		return getJson("/volumes/" + volumeName);
+	}
+
+	public String deleteVolume(String volumeName) throws DockerManagerException {
+		return deleteString("/volumes/" + volumeName);
+	}
+
+	/**
+	 * Create a volume with a defined name. The volume will not be tied to the test as a resource to be cleaned up
+	 * at the end of test. Instead it will be monitored and cleaned up from a user defined CPS property.
+	 * 
+	 * @param volumeName
+	 * @return
+	 * @throws DockerManagerException
+	 */
+	public JsonObject createVolume(String volumeName) throws DockerManagerException {
+		JsonObject data = new JsonObject();
+		if (!"".equals(volumeName)) {
+			data.addProperty("Name", volumeName);
+		}
+		
+		JsonObject labels = new JsonObject();
+		labels.addProperty("GALASA", "GALASA");
+		labels.addProperty("RUN_ID", framework.getTestRunName());
+
+		data.add("Labels", labels);
+
+		return postJson("/volumes/create", data);
 	}
 
 	/**

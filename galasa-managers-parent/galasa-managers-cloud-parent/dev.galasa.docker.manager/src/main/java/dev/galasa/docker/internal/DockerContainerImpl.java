@@ -38,8 +38,10 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
 import dev.galasa.docker.IDockerContainer;
+import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerExec;
 import dev.galasa.docker.IDockerImage;
+import dev.galasa.docker.IDockerVolume;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -64,6 +66,7 @@ public class DockerContainerImpl implements IDockerContainer {
     private String containerID;
     private String containerName;
     private JsonObject metadata;
+    private IDockerContainerConfig userConfig;
 
     private boolean leaveRunning;
     private boolean alreadyUp;
@@ -116,11 +119,12 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Generates the metadata the container will be created with in the dockerEngine
+     * Generates the container creation metadata with any included user definedconfig
      * 
+     * @param config
      * @return JsonObject
      */
-    private JsonObject generateMetadata() {
+    private JsonObject generateMetadata(IDockerContainerConfig config) {
         JsonObject metadata = new JsonObject();
         metadata.addProperty("Image", this.image.getFullName());
 
@@ -135,6 +139,40 @@ public class DockerContainerImpl implements IDockerContainer {
         labels.addProperty("SlotId", dockerSlot.getSlotName());
         metadata.add("Labels", labels);
 
+        if (config == null) {
+            return metadata;
+        }
+        // Currently only supporting ENVS and Volumes
+
+        // Envs
+        JsonArray env = new JsonArray();
+        HashMap<String,String> envs = config.getEnvs();
+        if (envs.keySet().size() > 0) {
+            for (String envName: envs.keySet()) {
+                env.add(envName+"="+envs.get(envName));
+            }
+            metadata.add("Env", env);
+        }
+        
+
+        // Volumes
+        JsonArray mounts = new JsonArray();
+        List<IDockerVolume> volumes = config.getVolumes();
+        for (IDockerVolume volume : volumes)  {
+            JsonObject mount = new JsonObject();
+
+            mount.addProperty("Target", volume.getMountPath());
+            mount.addProperty("Source", volume.getVoumeName());
+            mount.addProperty("Type", "volume");
+            mount.addProperty("ReadOnly", volume.readOnly());
+
+            mounts.add(mount);
+        }
+        if (mounts.size() > 0 ) {
+            hostConfig.add("Mounts", mounts);
+            metadata.remove("HostConfig");
+            metadata.add("HostConfig", hostConfig);
+        }
         return metadata;
     }
 
@@ -155,9 +193,10 @@ public class DockerContainerImpl implements IDockerContainer {
             if (!alreadyDefined) {
                 this.image.pullImage();
                 try {
-                    this.metadata = generateMetadata();
+                    this.metadata = generateMetadata(this.userConfig);
                     logger.debug("Creating Docker Container '" + tag + "'");
                     JsonObject newContainer = dockerEngine.createContainer(containerName, this.metadata);
+                    alreadyDefined = true;
                     logger.debug("Created Docker Container '" + tag + "'");
                     containerID = newContainer.get("Id").getAsString();
                     if (containerID == null || containerID.trim().isEmpty()) {
@@ -174,6 +213,26 @@ public class DockerContainerImpl implements IDockerContainer {
         } catch (DockerManagerException | DynamicStatusStoreException e) {
             throw new DockerProvisionException("Unable to prepare the Docker Container '" + this.tag + "'", e);
         }
+    }
+
+    /**
+     * If using the @DockerContainerConfig annotation a user can pass customer
+     * configurations to container startup.
+     * 
+     * @param config
+     * @throws DockerManagerException
+     */
+    @Override
+    public void startWithConfig(IDockerContainerConfig config) throws DockerManagerException {
+        // If defined we need to cleanup the container ready for new configuration
+        if (alreadyDefined) {
+            logger.info("Container is already defined. Cleaning old container");
+            stopDockerContainer();
+            deleteContainer();
+            alreadyDefined = false;
+        }
+        this.userConfig = config;
+        start();
     }
 
     /**

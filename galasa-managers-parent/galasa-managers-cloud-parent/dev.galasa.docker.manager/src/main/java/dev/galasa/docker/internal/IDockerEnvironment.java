@@ -72,6 +72,15 @@ public interface IDockerEnvironment {
 	//public void preAllocate(Resource rm) throws ResourceManagementException;
 
 	/**
+	 * Allocates a docker volume with a passed name. If the volume already exsists on the Engine, that volume will be used.
+	 * 
+	 * @param volumeName
+	 * @return
+	 * @throws DockerProvisionException
+	 */
+	public DockerVolumeImpl allocateDockerVolume(String volumeName, String mountPath, String DockerEngineTag, boolean persist) throws DockerProvisionException;
+
+	/**
 	 *  Free up the docker slot used to house a docker container.
 	 * 
 	 * @param dockerSlot
