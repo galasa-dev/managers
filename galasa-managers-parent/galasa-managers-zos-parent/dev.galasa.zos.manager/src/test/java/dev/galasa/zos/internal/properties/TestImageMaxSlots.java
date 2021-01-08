@@ -6,9 +6,7 @@
 package dev.galasa.zos.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestImageMaxSlots {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "image";
     
@@ -55,10 +50,11 @@ public class TestImageMaxSlots {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOS image "  + null + " max slots");
-        
-        getProperty(null, null, true);
+        String expectedMessage = "Problem asking the CPS for the zOS image "  + null + " max slots";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty(null, null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private int getProperty(String arg, String value) throws Exception {

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosmf.internal.properties;
 
@@ -15,7 +15,7 @@ import dev.galasa.zosmf.ZosmfManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zosmf.server.[imageid].port
+ * @galasa.name zosmf.server.[serverid].port
  * 
  * @galasa.description The port number of the zOS/MF server
  * 

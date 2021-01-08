@@ -6,9 +6,7 @@
 package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestFileRestrictToImage {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String IMAGE_ID = "IMAGE";
     
     @Test
@@ -41,31 +36,32 @@ public class TestFileRestrictToImage {
     
     @Test
     public void testNull() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty(null));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty(null));
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("true"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("TRUE"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", true, getProperty("TrUe"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("fasle"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("FALSE"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("FaLsE"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", true, getProperty("true"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", true, getProperty("TRUE"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", true, getProperty("TrUe"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty("fasle"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty("FALSE"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty("FaLsE"));
     }
     
     @Test
     public void testInvalid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("XXX"));
-        Assert.assertEquals("Unexpected value returned from RestrictToImage.get()", false, getProperty("999"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty("XXX"));
+        Assert.assertEquals("Unexpected value returned from ConsoleRestrictToImage.get()", false, getProperty("999"));
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the file restrict to image property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the file restrict to image property for zOS image " + IMAGE_ID;
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private boolean getProperty(String value) throws Exception {

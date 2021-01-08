@@ -216,7 +216,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         ZosBatch annotationZosBatch = field.getAnnotation(ZosBatch.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosBatch.imageTag(), "primary");
+        String tag = defaultString(annotationZosBatch.imageTag(), "PRIMARY").toUpperCase();;
 
         //*** Have we already generated this tag
         if (this.taggedZosBatches.containsKey(tag)) {
@@ -235,7 +235,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
         ZosBatchJobname annotationZosBatchJobname = field.getAnnotation(ZosBatchJobname.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosBatchJobname.imageTag(), "primary");
+        String tag = defaultString(annotationZosBatchJobname.imageTag(), "PRIMARY").toUpperCase();;
         IZosImage image;
         try {
             image = zosManager.getImageForTag(tag);

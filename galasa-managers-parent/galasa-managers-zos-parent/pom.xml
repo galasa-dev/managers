@@ -27,6 +27,7 @@
     <module>dev.galasa.zosrseapi.manager</module>
     <module>dev.galasa.zosbatch.rseapi.manager</module>
     <module>dev.galasa.zosfile.rseapi.manager</module>
+    <module>dev.galasa.zosconsole.oeconsol.manager</module>
   </modules>
   
 </project>

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zos.spi;
 
@@ -9,6 +9,7 @@ import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.ICredentials;
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
@@ -17,6 +18,7 @@ import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
 import dev.galasa.zosfile.ZosFileManagerException;
 
 public interface IZosManagerSpi extends IZosManager {
@@ -177,4 +179,21 @@ public interface IZosManagerSpi extends IZosManager {
      * @throws ZosFileManagerException
      */
 	String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException;
+	
+    /**
+     * Provides other managers to the zOS Console {@code zosconsole.console.[imageid].restrict.to.image} property
+     * @param imageId
+     * @return
+     * @throws ZosConsoleManagerException
+     */
+	boolean getZosConsolePropertyConsoleRestrictToImage(String imageId) throws ZosConsoleManagerException;
+	
+	/**
+	 * Returns the credentials on the specified image id
+	 * @param credentialsId
+	 * @param imageId
+	 * @return
+	 * @throws ZosManagerException
+	 */
+	ICredentials getCredentials(String credentialsId, String imageId) throws ZosManagerException;
 }
