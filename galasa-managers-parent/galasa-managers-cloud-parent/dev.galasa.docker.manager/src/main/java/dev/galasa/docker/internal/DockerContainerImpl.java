@@ -162,7 +162,7 @@ public class DockerContainerImpl implements IDockerContainer {
             JsonObject mount = new JsonObject();
 
             mount.addProperty("Target", volume.getMountPath());
-            mount.addProperty("Source", volume.getVoumeName());
+            mount.addProperty("Source", volume.getVolumeName());
             mount.addProperty("Type", "volume");
             mount.addProperty("ReadOnly", volume.readOnly());
 
