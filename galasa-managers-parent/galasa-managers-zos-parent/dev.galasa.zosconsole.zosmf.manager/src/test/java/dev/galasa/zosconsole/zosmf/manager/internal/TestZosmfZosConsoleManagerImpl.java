@@ -13,9 +13,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,7 +22,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.ManagerException;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
@@ -34,17 +31,14 @@ import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
-import dev.galasa.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPropertiesSingleton;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-public class TestZosConsoleManagerImpl {
+public class TestZosmfZosConsoleManagerImpl {
     
-    private ZosConsoleManagerImpl zosConsoleManager;
+    private ZosmfZosConsoleManagerImpl zosConsoleManager;
     
-    private ZosConsoleManagerImpl zosConsoleManagerSpy;
-    
-    private ZosConsoleZosmfPropertiesSingleton zosConsoleZosmfPropertiesSingleton;
+    private ZosmfZosConsoleManagerImpl zosConsoleManagerSpy;
 
     private List<IManager> allManagers;
     
@@ -68,20 +62,15 @@ public class TestZosConsoleManagerImpl {
     @Mock
     private IZosImage zosImageMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Before
-    public void setup() throws Exception {        
-        ZosConsoleManagerImpl.setZosManager(zosManagerMock);
-        ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
-        zosConsoleZosmfPropertiesSingleton = new ZosConsoleZosmfPropertiesSingleton();
-        zosConsoleZosmfPropertiesSingleton.activate();
+    public void setup() throws Exception {
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         
-        zosConsoleManager = new ZosConsoleManagerImpl();
+        zosConsoleManager = new ZosmfZosConsoleManagerImpl();
         zosConsoleManagerSpy = Mockito.spy(zosConsoleManager);
+        zosConsoleManagerSpy.setZosManager(zosManagerMock);
+        zosConsoleManagerSpy.setZosmfManager(zosmfManagerMock);
         Mockito.when(zosConsoleManagerSpy.getFramework()).thenReturn(frameworkMock);
         Mockito.when(frameworkMock.getResultArchiveStore()).thenReturn(resultArchiveStoreMock);
         Mockito.when(resultArchiveStoreMock.getStoredArtifactsRoot()).thenReturn(new File("/").toPath());
@@ -93,7 +82,7 @@ public class TestZosConsoleManagerImpl {
     @Test
     public void testInitialise() throws ManagerException {
         allManagers.add(managerMock);
-        zosConsoleManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosConsoleManagerImpl.class));
+        zosConsoleManager.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(TestZosmfZosConsoleManagerImpl.class));
         Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
     }
     
@@ -102,14 +91,6 @@ public class TestZosConsoleManagerImpl {
         Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
         zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
-    }
-
-    @Test
-    public void testInitialiseException() throws ConfigurationPropertyStoreException, ManagerException {
-        Mockito.when(frameworkMock.getConfigurationPropertyService(Mockito.any())).thenThrow(new ConfigurationPropertyStoreException("exception"));
-        exceptionRule.expect(ZosConsoleManagerException.class);
-        exceptionRule.expectMessage("Unable to request framework services");
-        zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
     }
     
     @Test
@@ -133,17 +114,21 @@ public class TestZosConsoleManagerImpl {
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
-        exceptionRule.expect(ZosConsoleManagerException.class);
-        exceptionRule.expectMessage("The zOS Manager is not available");
-        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOS Manager is not available";
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testYouAreRequiredException2() throws ManagerException {
         allManagers.add(zosManagerMock);
-        exceptionRule.expect(ZosConsoleManagerException.class);
-        exceptionRule.expectMessage("The zOSMF Manager is not available");
-        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        String expectedMessage = "The zOSMF Manager is not available";
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -159,20 +144,26 @@ public class TestZosConsoleManagerImpl {
         Annotation annotation = DummyTestClass.class.getAnnotation(dev.galasa.zosconsole.ZosConsole.class);
         annotations.add(annotation);
         
-        Object zosConsoleImplObject = zosConsoleManager.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
-        Assert.assertTrue("Error in generateZosConsole() method", zosConsoleImplObject instanceof ZosConsoleImpl);
+        Whitebox.setInternalState(zosConsoleManager, "zosmfManager", zosmfManagerMock);
+        Whitebox.setInternalState(zosConsoleManager, "zosManager", zosManagerMock);
+        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
+        Mockito.when(zosManagerMock.getZosConsolePropertyConsoleRestrictToImage(Mockito.any())).thenReturn(false);
         
-        HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
-        ZosConsoleImpl zosConsoleImpl = Mockito.mock(ZosConsoleImpl.class);
-        taggedZosConsoles.put("TAG", zosConsoleImpl);
+        
+        Object zosConsoleImplObject = zosConsoleManager.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
+        Assert.assertTrue("Error in generateZosConsole() method", zosConsoleImplObject instanceof ZosmfZosConsoleImpl);
+        
+        HashMap<String, ZosmfZosConsoleImpl> taggedZosConsoles = new HashMap<>();
+        ZosmfZosConsoleImpl zosmfZosConsoleImpl = Mockito.mock(ZosmfZosConsoleImpl.class);
+        taggedZosConsoles.put("TAG", zosmfZosConsoleImpl);
         Whitebox.setInternalState(zosConsoleManagerSpy, "taggedZosConsoles", taggedZosConsoles);
         
         zosConsoleImplObject = zosConsoleManagerSpy.generateZosConsole(DummyTestClass.class.getDeclaredField("zosConsole"), annotations);
-        Assert.assertEquals("generateZosConsole() should retrn the supplied instance of ZosBatchImpl", zosConsoleImpl, zosConsoleImplObject);
+        Assert.assertEquals("generateZosConsole() should retrn the supplied instance of ZosBatchImpl", zosmfZosConsoleImpl, zosConsoleImplObject);
     }
     
     @Test
-    public void testGetZosConsole() {
+    public void testGetZosConsole() throws ZosConsoleException {
         IZosConsole zosConsole = zosConsoleManagerSpy.getZosConsole(zosImageMock);
         Assert.assertNotNull("getZosConsole() should not be null", zosConsole);
         IZosConsole zosConsole2 = zosConsoleManagerSpy.getZosConsole(zosImageMock);

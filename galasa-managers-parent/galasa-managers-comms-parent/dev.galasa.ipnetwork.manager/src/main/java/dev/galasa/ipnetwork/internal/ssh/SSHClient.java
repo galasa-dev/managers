@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.ipnetwork.internal.ssh;
 
@@ -33,6 +33,8 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.ipnetwork.ICommandShell;
+import dev.galasa.ipnetwork.SSHAuthFailException;
+import dev.galasa.ipnetwork.SSHException;
 
 /**
  * SSH client for Galasa
@@ -344,7 +346,7 @@ public class SSHClient implements ICommandShell {
 
             } catch (Exception e) {
                 if ("Auth fail".equals(e.getMessage())) {
-                    throw e;
+                    throw new SSHAuthFailException(e);
                 }
 
                 if (retry > 0) {

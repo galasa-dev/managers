@@ -6,9 +6,7 @@
 package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestDirectoryListMaxItems {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     
@@ -54,42 +49,47 @@ public class TestDirectoryListMaxItems {
     
     @Test
     public void testNegative() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Directory list max items property must be greater than 0");
-        
-        getProperty("-99");
+        String expectedMessage = "Directory list max items property must be greater than 0";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("-99");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testZero() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Directory list max items property must be greater than 0");
-        
-        getProperty("0");
+        String expectedMessage = "Directory list max items property must be greater than 0";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("0");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testNonInteger() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
-        
-        getProperty("99.99");
+        String expectedMessage = "Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID;
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("99.99");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testNonNumeric() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
-
-        getProperty("XXX");
+        String expectedMessage = "Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID;
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("XXX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID);
-
-        getProperty(null, true);
+        String expectedMessage = "Problem asking the CPS for the directory list max items property for zOS image " + IMAGE_ID;
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty(null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private int getProperty(String i) throws Exception {

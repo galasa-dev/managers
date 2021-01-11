@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zos.internal;
 
@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
+import dev.galasa.ICredentials;
 import dev.galasa.ManagerException;
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.framework.spi.AbstractManager;
@@ -37,6 +38,8 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.framework.spi.utils.DssUtils;
 import dev.galasa.ipnetwork.IIpHost;
@@ -74,6 +77,9 @@ import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
 import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
+import dev.galasa.zosconsole.internal.properties.ConsoleRestrictToImage;
+import dev.galasa.zosconsole.internal.properties.ZosConsolePropertiesSingleton;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.internal.properties.DirectoryListMaxItems;
 import dev.galasa.zosfile.internal.properties.FileRestrictToImage;
@@ -84,7 +90,8 @@ import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     protected static final String NAMESPACE = "zos";
     protected static final String ZOSBATCH_NAMESPACE = "zosbatch";
-    protected static final String ZOSFILE_NAMESPACE = "zosbatch";
+    protected static final String ZOSFILE_NAMESPACE = "zosfile";
+    protected static final String ZOSCONSOLE_NAMESPACE = "zosconsole";
     
     private static final Log logger = LogFactory.getLog(ZosManagerImpl.class);
 
@@ -111,6 +118,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             ZosPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
             ZosBatchPropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSBATCH_NAMESPACE));
             ZosFilePropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSFILE_NAMESPACE));
+            ZosConsolePropertiesSingleton.setCps(framework.getConfigurationPropertyService(ZOSCONSOLE_NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosManagerException("Unable to request framework services", e);
         }
@@ -486,6 +494,27 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     }
 
     @Override
+    public ICredentials getCredentials(String credentialsId, String imageId) throws ZosManagerException {
+    	ICredentials credentials;
+        try {
+            ICredentialsService credsService = getFramework().getCredentialsService();
+
+            credentials = credsService.getCredentials(credentialsId);
+            if (credentials == null) {
+            	credentials = credsService.getCredentials(credentialsId.toUpperCase());
+            }
+        } catch (CredentialsException e) {
+            throw new ZosManagerException("Unable to acquire the credentials for id " + credentialsId, e);
+        }
+
+        if (credentials == null) {
+            throw new ZosManagerException("zOS Credentials missing for image " + imageId + " id " + credentialsId);
+        }
+
+        return credentials;
+    }
+
+    @Override
     public IZosImage getUnmanagedImage(String imageId) throws ZosManagerException {
         Objects.nonNull(imageId);
         IZosImage zosImage = this.images.get(imageId);
@@ -559,6 +588,11 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	@Override
 	public String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException {
 		return UnixFilePermissions.get(imageId);
+	}
+
+	@Override
+	public boolean getZosConsolePropertyConsoleRestrictToImage(String imageId) throws ZosConsoleManagerException {
+		return ConsoleRestrictToImage.get(imageId);
 	}
 
 	@Override

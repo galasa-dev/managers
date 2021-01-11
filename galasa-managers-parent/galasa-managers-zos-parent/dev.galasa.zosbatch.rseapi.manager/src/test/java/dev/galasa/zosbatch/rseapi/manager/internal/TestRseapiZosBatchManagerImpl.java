@@ -268,7 +268,7 @@ public class TestRseapiZosBatchManagerImpl {
         
         HashMap<String, RseapiZosBatchImpl> taggedZosBatches = new HashMap<>();
         RseapiZosBatchImpl zosBatchImpl = Mockito.mock(RseapiZosBatchImpl.class);
-        taggedZosBatches.put("tag", zosBatchImpl);
+        taggedZosBatches.put("TAG", zosBatchImpl);
         Whitebox.setInternalState(zosBatchManagerSpy, "taggedZosBatches", taggedZosBatches);
         
         zosBatchImplObject = zosBatchManagerSpy.generateZosBatch(DummyTestClass.class.getDeclaredField("zosBatch"), annotations);
@@ -292,7 +292,7 @@ public class TestRseapiZosBatchManagerImpl {
         annotations.add(annotation);
         Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new ZosBatchManagerException(EXCEPTION));
 
-        String expectedMessage = "Unable to get image for tag \"tag\"";
+        String expectedMessage = "Unable to get image for tag \"TAG\"";
         ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
 			zosBatchManagerSpy.generateZosBatchJobname(DummyTestClass.class.getDeclaredField("zosBatchJobname"), annotations);
 		});
@@ -315,9 +315,9 @@ public class TestRseapiZosBatchManagerImpl {
     }
     
     class DummyTestClass {
-        @dev.galasa.zosbatch.ZosBatch(imageTag="tag")
+        @dev.galasa.zosbatch.ZosBatch(imageTag="TAG")
         public dev.galasa.zosbatch.IZosBatch zosBatch;
-        @dev.galasa.zosbatch.ZosBatchJobname(imageTag="tag")
+        @dev.galasa.zosbatch.ZosBatchJobname(imageTag="TAG")
         public dev.galasa.zosbatch.IZosBatchJobname zosBatchJobname;
         @dev.galasa.Before
         public void dummyBeforeMethod() throws ZosBatchException {

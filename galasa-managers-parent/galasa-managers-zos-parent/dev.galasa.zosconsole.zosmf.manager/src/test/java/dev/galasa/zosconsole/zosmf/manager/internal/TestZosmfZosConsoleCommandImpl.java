@@ -8,14 +8,11 @@ package dev.galasa.zosconsole.zosmf.manager.internal;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -24,7 +21,6 @@ import com.google.gson.JsonObject;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
-import dev.galasa.zosconsole.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -33,12 +29,11 @@ import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({RestrictToImage.class})
-public class TestZosConsoleCommandImpl {
+public class TestZosmfZosConsoleCommandImpl {
     
-    private ZosConsoleCommandImpl zosConsoleCommand;
+    private ZosmfZosConsoleCommandImpl zosConsoleCommand;
     
-    private ZosConsoleCommandImpl zosConsoleCommandSpy;
+    private ZosmfZosConsoleCommandImpl zosConsoleCommandSpy;
 
     @Mock
     private IZosImage zosImageMock;
@@ -52,9 +47,6 @@ public class TestZosConsoleCommandImpl {
     @Mock
     private IZosmfResponse zosmfResponseMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private static final String CONSOLE_COMMAND = "ZOS CONSOLE_COMMAND";
 
     private static final String CONSOLE_NAME = "CNAME";
@@ -64,27 +56,15 @@ public class TestZosConsoleCommandImpl {
     @Before
     public void setup() throws Exception {
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
-        
-        PowerMockito.mockStatic(RestrictToImage.class);
-        Mockito.when(RestrictToImage.get(Mockito.any())).thenReturn(true);
 
-        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenReturn(zosmfApiProcessorMock);
-        ZosConsoleManagerImpl.setZosmfManager(zosmfManagerMock);
+        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfApiProcessorMock);
         
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         
-        zosConsoleCommand = new ZosConsoleCommandImpl(CONSOLE_COMMAND, CONSOLE_NAME, zosImageMock);
+        zosConsoleCommand = new ZosmfZosConsoleCommandImpl(zosmfApiProcessorMock, CONSOLE_COMMAND, CONSOLE_NAME, zosImageMock);
         zosConsoleCommandSpy = Mockito.spy(zosConsoleCommand);
-    }
-    
-    @Test
-    public void testConstructorException() throws ZosmfManagerException, ZosConsoleManagerException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage("exception");
-        Mockito.when(zosmfManagerMock.newZosmfRestApiProcessor(zosImageMock, RestrictToImage.get(zosImageMock.getImageID()))).thenThrow(new ZosmfManagerException("exception"));
-        new ZosConsoleCommandImpl(CONSOLE_COMMAND, CONSOLE_NAME, zosImageMock);
     }
     
     @Test
@@ -99,28 +79,32 @@ public class TestZosConsoleCommandImpl {
     
     @Test
     public void testIssueCommandException() throws ZosmfManagerException, ZosConsoleManagerException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage("exception");
+        String expectedMessage = "exception";
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
-        zosConsoleCommand.issueCommand();
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleCommand.issueCommand();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testIssueCommandException1() throws ZosConsoleException, ZosmfException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage( "Unable to issue console command \"" + CONSOLE_COMMAND + "\"");
+        String expectedMessage =  "Unable to issue console command \"" + CONSOLE_COMMAND + "\"";
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
-        
-        zosConsoleCommand.issueCommand();
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleCommand.issueCommand();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testIssueCommandException2() throws ZosConsoleException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage("Console command \"" + CONSOLE_COMMAND + "\" failed. Reason \"reason\"");
+        String expectedMessage = "Console command \"" + CONSOLE_COMMAND + "\" failed. Reason \"reason\"";
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        
-        zosConsoleCommand.issueCommand();
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleCommand.issueCommand();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -148,21 +132,23 @@ public class TestZosConsoleCommandImpl {
 
     @Test
     public void testRequestResponseException() throws ZosConsoleException, ZosmfException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage("exception");
+        String expectedMessage = "exception";
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException("exception"));
-        
-        zosConsoleCommand.requestResponse();
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleCommand.requestResponse();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
 
     @Test
     public void testRequestResponseException1() throws ZosConsoleException, ZosmfException {
-        exceptionRule.expect(ZosConsoleException.class);
-        exceptionRule.expectMessage( "Unable to issue console command \"" + CONSOLE_COMMAND + "\"");
+        String expectedMessage =  "Unable to issue console command \"" + CONSOLE_COMMAND + "\"";
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException("exception"));
-        
-        zosConsoleCommand.requestResponse();
+        ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
+        	zosConsoleCommand.requestResponse();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test

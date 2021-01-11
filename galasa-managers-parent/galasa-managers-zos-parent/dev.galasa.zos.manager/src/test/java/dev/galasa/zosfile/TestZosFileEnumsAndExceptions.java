@@ -5,13 +5,8 @@
  */
 package dev.galasa.zosfile;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import dev.galasa.zosfile.IZosDataset.DSType;
 import dev.galasa.zosfile.IZosDataset.DatasetDataType;
@@ -35,22 +30,6 @@ public class TestZosFileEnumsAndExceptions {
     private static final String EXCEPTION_MESSAGE = "exception-message";
     
     private static final String EXCEPTION_CAUSE = "exception-cause";
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
-    private Matcher<? extends Throwable> cause = new BaseMatcher<Throwable>() {
-
-        @Override
-        public boolean matches(Object item) {
-            return item.getClass().equals(Exception.class);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("\"" + EXCEPTION_CAUSE + "\"");
-        }
-    };
     
     @Test
     public void testDSType() {
@@ -197,145 +176,165 @@ public class TestZosFileEnumsAndExceptions {
     
     @Test
     public void testZosDatasetException1() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);
-        throw new ZosDatasetException();
+        Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	throw new ZosDatasetException();
+        });
     }
     
     @Test
     public void testZosDatasetException2() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new ZosDatasetException(EXCEPTION_MESSAGE);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	throw new ZosDatasetException(EXCEPTION_MESSAGE);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
     public void testZosDatasetException3() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);        
-        exceptionRule.expectCause(cause);
-        throw new ZosDatasetException(new Exception(EXCEPTION_CAUSE));
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	throw new ZosDatasetException(new Exception(EXCEPTION_CAUSE));
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosDatasetException4() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	throw new ZosDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosDatasetException5() throws ZosDatasetException {
-        exceptionRule.expect(ZosDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	throw new ZosDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+        });
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosUNIXFileException1() throws ZosUNIXFileException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        throw new ZosUNIXFileException();
+    	Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+        	throw new ZosUNIXFileException();
+        });
     }
     
     @Test
     public void testZosUNIXFileException2() throws ZosUNIXFileException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new ZosUNIXFileException(EXCEPTION_MESSAGE);
+    	ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+    		throw new ZosUNIXFileException(EXCEPTION_MESSAGE);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
     public void testZosUNIXFileException3() throws ZosUNIXFileException {
-        exceptionRule.expect(ZosUNIXFileException.class);        
-        exceptionRule.expectCause(cause);
-        throw new ZosUNIXFileException(new Exception(EXCEPTION_CAUSE));
+    	ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+    		throw new ZosUNIXFileException(new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosUNIXFileException4() throws ZosUNIXFileException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosUNIXFileException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+    		throw new ZosUNIXFileException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosUNIXFileException5() throws ZosUNIXFileException {
-        exceptionRule.expect(ZosUNIXFileException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosUNIXFileException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+    		throw new ZosUNIXFileException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosVSAMDatasetException1() throws ZosVSAMDatasetException {
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        throw new ZosVSAMDatasetException();
+    	Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
+    		throw new ZosVSAMDatasetException();
+    	});
     }
     
     @Test
     public void testZosVSAMDatasetException2() throws ZosVSAMDatasetException {
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE);
+    	ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
+    		throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
     public void testZosVSAMDatasetException3() throws ZosVSAMDatasetException {
-        exceptionRule.expect(ZosVSAMDatasetException.class);        
-        exceptionRule.expectCause(cause);
-        throw new ZosVSAMDatasetException(new Exception(EXCEPTION_CAUSE));
+    	ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
+    		throw new ZosVSAMDatasetException(new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosVSAMDatasetException4() throws ZosVSAMDatasetException {
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
+    		throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosVSAMDatasetException5() throws ZosVSAMDatasetException {
-        exceptionRule.expect(ZosVSAMDatasetException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	ZosVSAMDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosVSAMDatasetException.class, ()->{
+    		throw new ZosVSAMDatasetException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosFileManagerException1() throws ZosFileManagerException {
-        exceptionRule.expect(ZosFileManagerException.class);
-        throw new ZosFileManagerException();
+    	Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+    		throw new ZosFileManagerException();
+    	});
     }
     
     @Test
     public void testZosFileManagerException2() throws ZosFileManagerException {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        throw new ZosFileManagerException(EXCEPTION_MESSAGE);
+    	ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+    		throw new ZosFileManagerException(EXCEPTION_MESSAGE);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     }
     
     @Test
     public void testZosFileManagerException3() throws ZosFileManagerException {
-        exceptionRule.expect(ZosFileManagerException.class);        
-        exceptionRule.expectCause(cause);
-        throw new ZosFileManagerException(new Exception(EXCEPTION_CAUSE));
+    	ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+    		throw new ZosFileManagerException(new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosFileManagerException4() throws ZosFileManagerException {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosFileManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+    		throw new ZosFileManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
     
     @Test
     public void testZosFileManagerException5() throws ZosFileManagerException {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage(EXCEPTION_MESSAGE);
-        exceptionRule.expectCause(cause);
-        throw new ZosFileManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+    		throw new ZosFileManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
     }
 }

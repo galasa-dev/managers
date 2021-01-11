@@ -15,7 +15,7 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name rseapi.server.[imageid].port
+ * @galasa.name rseapi.server.[serverid].port
  * 
  * @galasa.description The port number of the RSE API server 
  * 

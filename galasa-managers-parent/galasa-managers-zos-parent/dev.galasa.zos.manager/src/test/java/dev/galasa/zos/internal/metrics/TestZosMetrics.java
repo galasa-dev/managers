@@ -12,9 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -57,9 +55,6 @@ public class TestZosMetrics {
     private Log logMock;
     
     private static String logMessage;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     @Before
     public void setup() throws DynamicStatusStoreException {
@@ -108,8 +103,10 @@ public class TestZosMetrics {
     @Test
     public void testInitialiseException() throws DynamicStatusStoreException, MetricsServerException {
         Mockito.when(frameworkMock.getDynamicStatusStoreService(Mockito.any())).thenThrow(new DynamicStatusStoreException());
-        exceptionRule.expect(MetricsServerException.class);
-        exceptionRule.expectMessage("Unable to initialise zOS Metrics");
-        zosMetricsSpy.initialise(frameworkMock, metricsServer);
+        String expectedMessage = "Unable to initialise zOS Metrics";
+        MetricsServerException expectedException = Assert.assertThrows("expected exception should be thrown", MetricsServerException.class, ()->{
+        	zosMetricsSpy.initialise(frameworkMock, metricsServer);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 }

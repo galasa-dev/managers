@@ -335,7 +335,7 @@ public class TestZosProgramManagerImpl {
     }
 
     class DummyTestClass {
-        @dev.galasa.zosprogram.ZosProgram(imageTag="tag", 
+        @dev.galasa.zosprogram.ZosProgram(imageTag="TAG", 
                                           language = dev.galasa.zosprogram.ZosProgram.Language.COBOL, 
                                           name = "DUMMYPGM")
         public dev.galasa.zosprogram.IZosProgram zosProgram;
