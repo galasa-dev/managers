@@ -6,9 +6,7 @@
 package dev.galasa.zosbatch.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestJobWaitTimeout {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     
@@ -55,34 +50,38 @@ public class TestJobWaitTimeout {
     
     @Test
     public void testNegative() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Batch job wait timeout property must be a positive integer");
-        
-        getProperty("-99");
+        String expectedMessage = "Batch job wait timeout property must be a positive integer";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("-99");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testNonInteger() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
-        
-        getProperty("99.99");
+        String expectedMessage = "Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("99.99");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testNonNumeric() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
-
-        getProperty("XXX");
+        String expectedMessage = "Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("XXX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the batch job wait timeout property for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     private int getProperty(String value) throws Exception {

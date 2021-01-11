@@ -42,14 +42,14 @@ import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUNIXCommandSpi {
     protected static final String NAMESPACE = "zosunixcommand";
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosUNIXCommandManagerImpl.zosManager = zosManager;
+    protected IZosManagerSpi zosManager;
+    public void setZosManager(IZosManagerSpi zosManager) {
+        this.zosManager = zosManager;
     }
 
-    protected static IIpNetworkManagerSpi ipNetworkManager;
-    public static void setIpNetworkManager(IIpNetworkManagerSpi ipNetworkManager) {
-        ZosUNIXCommandManagerImpl.ipNetworkManager = ipNetworkManager;
+    protected IIpNetworkManagerSpi ipNetworkManager;
+    public void setIpNetworkManager(IIpNetworkManagerSpi ipNetworkManager) {
+        this.ipNetworkManager = ipNetworkManager;
     }
 
     private final HashMap<String, ZosUNIXCommandImpl> taggedZosUNIXCommands = new HashMap<>();
@@ -125,7 +125,7 @@ public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUN
         ZosUNIXCommand annotationZosUNIXCommand = field.getAnnotation(ZosUNIXCommand.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationZosUNIXCommand.imageTag(), "primary");
+        String tag = defaultString(annotationZosUNIXCommand.imageTag(), "PRIMARY").toUpperCase();;
 
         //*** Have we already generated this tag
         if (this.taggedZosUNIXCommands.containsKey(tag)) {
@@ -133,7 +133,7 @@ public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUN
         }
 
         IZosImage image = zosManager.getImageForTag(tag);
-        IZosUNIXCommand zosUNIXCommand = new ZosUNIXCommandImpl(image);
+        IZosUNIXCommand zosUNIXCommand = new ZosUNIXCommandImpl(this.ipNetworkManager, image);
         this.taggedZosUNIXCommands.put(tag, (ZosUNIXCommandImpl) zosUNIXCommand);
         
         return zosUNIXCommand;
@@ -141,13 +141,13 @@ public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUN
 
 
     @Override
-    public @NotNull IZosUNIXCommand getZosUNIXCommand(IZosImage image) throws ZosUNIXCommandManagerException {
+    public @NotNull IZosUNIXCommand getZosUNIXCommand(IZosImage image) {
         //*** Have we already generated this image
         if (this.zosUNIXCommands.containsKey(image)) {
             return this.zosUNIXCommands.get(image);
         }
 
-        IZosUNIXCommand zosUNIXCommand = new ZosUNIXCommandImpl(image);
+        IZosUNIXCommand zosUNIXCommand = new ZosUNIXCommandImpl(this.ipNetworkManager, image);
         this.zosUNIXCommands.put(image, (ZosUNIXCommandImpl) zosUNIXCommand);
         
         return zosUNIXCommand;

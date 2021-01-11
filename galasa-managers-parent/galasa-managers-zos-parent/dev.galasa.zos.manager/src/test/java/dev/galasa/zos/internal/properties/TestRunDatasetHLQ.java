@@ -7,9 +7,7 @@ package dev.galasa.zos.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -37,9 +35,6 @@ public class TestRunDatasetHLQ {
     
     @Mock
     private ICredentialsUsernamePassword credentialsUsernamePasswordMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "image";
     
@@ -76,18 +71,20 @@ public class TestRunDatasetHLQ {
     public void testException1() throws Exception {
         ICredentials credentialsMock = Mockito.mock(ICredentials.class);
         Mockito.doReturn(credentialsMock).when(zosProvisionedImageMock).getDefaultCredentials();
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to get the run username for image " + IMAGE_ID);
-        
-        getProperty(zosProvisionedImageMock, null);
+        String expectedMessage = "Unable to get the run username for image " + IMAGE_ID;
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty(zosProvisionedImageMock, null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException2() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOS run data set HLQ for image "  + IMAGE_ID);
-        
-        getProperty(zosProvisionedImageMock, null, true);
+        String expectedMessage = "Problem asking the CPS for the zOS run data set HLQ for image "  + IMAGE_ID;
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty(zosProvisionedImageMock, null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(ZosProvisionedImageImpl arg, String value) throws Exception {

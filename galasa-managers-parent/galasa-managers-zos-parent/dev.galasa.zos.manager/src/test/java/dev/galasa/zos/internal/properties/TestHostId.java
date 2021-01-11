@@ -7,9 +7,7 @@ package dev.galasa.zos.internal.properties;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,9 +30,6 @@ public class TestHostId {
     
     @Mock
     private ZosProvisionedImageImpl zosProvisionedImageMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "image";
     
@@ -63,10 +58,11 @@ public class TestHostId {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOS image "  + IMAGE_ID + " ip host id");
-        
-        getProperty(zosProvisionedImageMock, null, true);
+        String expectedMessage = "Problem asking the CPS for the zOS image "  + IMAGE_ID + " ip host id";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty(zosProvisionedImageMock, null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(ZosProvisionedImageImpl arg, String value) throws Exception {

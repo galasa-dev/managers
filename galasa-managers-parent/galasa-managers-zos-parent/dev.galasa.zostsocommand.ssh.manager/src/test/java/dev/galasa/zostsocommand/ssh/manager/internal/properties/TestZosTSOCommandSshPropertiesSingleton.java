@@ -6,9 +6,7 @@
 package dev.galasa.zostsocommand.ssh.manager.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,22 +22,22 @@ public class TestZosTSOCommandSshPropertiesSingleton {
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testCpsException() throws ZosTSOCommandManagerException {
-        exceptionRule.expect(ZosTSOCommandManagerException.class);
-        exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, ZosTSOCommandSshPropertiesSingleton.cps());
+    	String expectedMessage = "Attempt to access manager CPS before it has been initialised";
+        ZosTSOCommandManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosTSOCommandManagerException.class, ()->{
+        	ZosTSOCommandSshPropertiesSingleton.cps();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws ZosTSOCommandManagerException {
-        exceptionRule.expect(ZosTSOCommandManagerException.class);
-        exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        ZosTSOCommandSshPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, ZosTSOCommandSshPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to set manager CPS before instance created";
+        ZosTSOCommandManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosTSOCommandManagerException.class, ()->{
+        	ZosTSOCommandSshPropertiesSingleton.setCps(cpsMock);;
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

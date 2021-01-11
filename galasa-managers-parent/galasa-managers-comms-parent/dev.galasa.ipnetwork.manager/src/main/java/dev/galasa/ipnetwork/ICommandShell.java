@@ -1,11 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.ipnetwork;
-
-import dev.galasa.ipnetwork.internal.ssh.SSHException;
 
 public interface ICommandShell {
 

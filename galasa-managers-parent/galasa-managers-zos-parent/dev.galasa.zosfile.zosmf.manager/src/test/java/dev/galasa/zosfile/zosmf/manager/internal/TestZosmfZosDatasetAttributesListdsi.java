@@ -99,16 +99,6 @@ public class TestZosmfZosDatasetAttributesListdsi {
     }
     
     @Test
-    public void testInitialiseException2() throws ZosDatasetException, ZosUNIXCommandManagerException {
-        PowerMockito.when(zosUNIXCommandSpiMock.getZosUNIXCommand(Mockito.any())).thenThrow(new ZosUNIXCommandManagerException());
-        String expectMessage = ("Unable to create LISTDSI EXEC command");
-        ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	zosDatasetAttributesListdsiSpy.initialise();
-        });
-        Assert.assertEquals("exception should contain expected cause", expectMessage, expectedException.getMessage());
-    }
-    
-    @Test
     public void testGet() throws ZosDatasetException {
         Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "initialised", true);
         JsonObject jsonObject = buildJsonObject(true); 
