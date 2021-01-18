@@ -6,9 +6,7 @@
 package dev.galasa.zos.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestTSOCommandExtraBundle {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String DEFAULT_EXTRA_BUNDLE_TSO_COMMAND_MANAGER = "dev.galasa.zostsocommand.ssh.manager";
     
     private static final String BUNDLE_EXTRA_MANAGER = "some.different.manager";
@@ -49,10 +44,11 @@ public class TestTSOCommandExtraBundle {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem asking CPS for the zOS TSO Command Manager extra bundle name");
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking CPS for the zOS TSO Command Manager extra bundle name";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

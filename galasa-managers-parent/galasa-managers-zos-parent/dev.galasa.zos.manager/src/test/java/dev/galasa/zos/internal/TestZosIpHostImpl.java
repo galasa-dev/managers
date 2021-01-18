@@ -5,10 +5,9 @@
  */
 package dev.galasa.zos.internal;
 
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -47,9 +46,6 @@ public class TestZosIpHostImpl {
     @Mock
     private ICredentialsService credentialsServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String IMAGE_ID = "image";
 
     private static final String PLEX_ID = "sysplex";
@@ -85,8 +81,10 @@ public class TestZosIpHostImpl {
     
     @Test
     public void testProvisionPort() throws IpNetworkManagerException {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Not written yet");
-        zosIpHostSpy.provisionPort("TYPE");
+        String expectedMessage = "Not written yet";
+        UnsupportedOperationException expectedException = Assert.assertThrows("expected exception should be thrown", UnsupportedOperationException.class, ()->{
+        	zosIpHostSpy.provisionPort("TYPE");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 }

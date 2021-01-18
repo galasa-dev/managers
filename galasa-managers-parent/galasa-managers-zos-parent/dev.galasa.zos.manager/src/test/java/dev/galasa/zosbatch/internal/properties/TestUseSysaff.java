@@ -6,9 +6,7 @@
 package dev.galasa.zosbatch.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestUseSysaff {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     
@@ -63,10 +58,11 @@ public class TestUseSysaff {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the batch job use SYSAFF property for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the batch job use SYSAFF property for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private boolean getProperty(String value) throws Exception {

@@ -9,9 +9,7 @@ import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -42,10 +40,6 @@ public class TestZosResourceManagement {
     @Mock
     private IResourceManagement resourceManagementMock;
 
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private static final String RUN_NAME = "RUN-NAME";
     
     @Test
@@ -64,9 +58,11 @@ public class TestZosResourceManagement {
         zosResourceManagementSpy.runFinishedOrDeleted(RUN_NAME);
         
         PowerMockito.when(frameworkMock.getDynamicStatusStoreService(Mockito.anyString())).thenThrow(new DynamicStatusStoreException());
-        exceptionRule.expect(ResourceManagerException.class);
-        exceptionRule.expectMessage("Unable to initialise zOS resource monitor");
-        zosResourceManagementSpy.initialise(frameworkMock, resourceManagementMock);
+        String expectedMessage = "Unable to initialise zOS resource monitor";
+        ResourceManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ResourceManagerException.class, ()->{
+        	zosResourceManagementSpy.initialise(frameworkMock, resourceManagementMock);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
 

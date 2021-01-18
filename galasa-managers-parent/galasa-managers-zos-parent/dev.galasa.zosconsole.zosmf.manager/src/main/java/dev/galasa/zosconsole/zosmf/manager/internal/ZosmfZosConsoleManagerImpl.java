@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosconsole.zosmf.manager.internal;
 
@@ -15,45 +15,49 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.ZosManagerException;
-import dev.galasa.zos.spi.IZosManagerSpi;
-import dev.galasa.zosconsole.IZosConsole;
-import dev.galasa.zosconsole.ZosConsole;
-import dev.galasa.zosconsole.ZosConsoleField;
-import dev.galasa.zosconsole.ZosConsoleManagerException;
-import dev.galasa.zosconsole.spi.IZosConsoleSpi;
-import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
-import dev.galasa.zosconsole.zosmf.manager.internal.properties.ZosConsoleZosmfPropertiesSingleton;
+import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zosconsole.IZosConsole;
+import dev.galasa.zosconsole.ZosConsole;
+import dev.galasa.zosconsole.ZosConsoleException;
+import dev.galasa.zosconsole.ZosConsoleField;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
+import dev.galasa.zosconsole.spi.IZosConsoleSpi;
+import dev.galasa.zosmf.spi.IZosmfManagerSpi;
 
 /**
  * zOS Console Manager implemented using zOS/MF
  *
  */
 @Component(service = { IManager.class })
-public class ZosConsoleManagerImpl extends AbstractManager implements IZosConsoleSpi {
-    protected static final String NAMESPACE = "zosconsole";
+public class ZosmfZosConsoleManagerImpl extends AbstractManager implements IZosConsoleSpi {
 
-    protected static IZosManagerSpi zosManager;
-    public static void setZosManager(IZosManagerSpi zosManager) {
-        ZosConsoleManagerImpl.zosManager = zosManager;
+    private IZosManagerSpi zosManager;
+    public void setZosManager(IZosManagerSpi zosManager) {
+        this.zosManager = zosManager;
+    }
+    public IZosManagerSpi getZosManager() {
+    	return this.zosManager;
     }
     
-    protected static IZosmfManagerSpi zosmfManager;
-    public static void setZosmfManager(IZosmfManagerSpi zosmfManager) {
-        ZosConsoleManagerImpl.zosmfManager = zosmfManager;
+    private IZosmfManagerSpi zosmfManager;
+    public void setZosmfManager(IZosmfManagerSpi zosmfManager) {
+        this.zosmfManager = zosmfManager;
+    }
+    public IZosmfManagerSpi getZosmfManager() {
+    	return this.zosmfManager;
     }
 
-    private final HashMap<String, ZosConsoleImpl> taggedZosConsoles = new HashMap<>();
-    private final HashMap<String, ZosConsoleImpl> zosConsoles = new HashMap<>();
+    private final HashMap<String, ZosmfZosConsoleImpl> taggedZosConsoles = new HashMap<>();
+    private final HashMap<String, ZosmfZosConsoleImpl> zosConsoles = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -62,11 +66,6 @@ public class ZosConsoleManagerImpl extends AbstractManager implements IZosConsol
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-        try {
-            ZosConsoleZosmfPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-        } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosConsoleManagerException("Unable to request framework services", e);
-        }
 
         if(galasaTest.isJava()) {
             //*** Check to see if any of our annotations are present in the test class
@@ -135,18 +134,18 @@ public class ZosConsoleManagerImpl extends AbstractManager implements IZosConsol
         }
 
         IZosImage image = zosManager.getImageForTag(tag);
-        IZosConsole zosConsole = new ZosConsoleImpl(image);
-        this.taggedZosConsoles.put(tag, (ZosConsoleImpl) zosConsole);
+        IZosConsole zosConsole = new ZosmfZosConsoleImpl(image, this);
+        this.taggedZosConsoles.put(tag, (ZosmfZosConsoleImpl) zosConsole);
         
         return zosConsole;
     }
 
     @Override
-    public @NotNull IZosConsole getZosConsole(IZosImage image) {
+    public @NotNull IZosConsole getZosConsole(IZosImage image) throws ZosConsoleException {
         if (zosConsoles.containsKey(image.getImageID())) {
             return zosConsoles.get(image.getImageID());
         } else {
-            ZosConsoleImpl zosConsole = new ZosConsoleImpl(image);
+            ZosmfZosConsoleImpl zosConsole = new ZosmfZosConsoleImpl(image, this);
             zosConsoles.put(image.getImageID(), zosConsole);
             return zosConsole;
         }

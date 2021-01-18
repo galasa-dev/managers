@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -29,7 +29,7 @@ import com.jcraft.jsch.Session;
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
-import dev.galasa.ipnetwork.internal.ssh.SSHException;
+import dev.galasa.ipnetwork.SSHException;
 
 public class SSHFileSystem extends FileSystem {
 

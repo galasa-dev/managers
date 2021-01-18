@@ -6,9 +6,7 @@
 package dev.galasa.zosbatch.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestMsgClass {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Mock
     private IZosImage zosImageMock;
@@ -58,35 +53,33 @@ public class TestMsgClass {
     }
     
     @Test
-    public void testException() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOSMF default message class for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
-    }
-    
-    @Test
-    public void testException1() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message class value must be 1 character in the range [A-Z0-9]");
-        
-        getProperty("");
-    }
-    
-    @Test
-    public void testException2() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message class value must be 1 character in the range [A-Z0-9]");
-        
-        getProperty("XX");
+    public void testExceptions() throws Exception {
+        String expectedMessage = "Problem asking the CPS for the zOSMF default message class for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    	
+        expectedMessage = "Message class value must be 1 character in the range [A-Z0-9]";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        expectedMessage = "Message class value must be 1 character in the range [A-Z0-9]";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("XX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException3() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message class value must be 1 character in the range [A-Z0-9]");
-        
-        getProperty("?");
+        String expectedMessage = "Message class value must be 1 character in the range [A-Z0-9]";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("?");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

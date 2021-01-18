@@ -6,9 +6,7 @@
 package dev.galasa.zos.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,22 +22,23 @@ public class TestZosPropertiesSingleton {
     @Mock
     private IConfigurationPropertyStoreService cpsMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testCpsException() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Attempt to access manager CPS before it has been initialised");
-        Assert.assertEquals("Exception", null, ZosPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to access manager CPS before it has been initialised";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	ZosPropertiesSingleton.cps();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetCpsException() throws ZosManagerException {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Attempt to set manager CPS before instance created");
-        ZosPropertiesSingleton.setCps(cpsMock);
-        Assert.assertEquals("Exception", null, ZosPropertiesSingleton.cps());
+        String expectedMessage = "Attempt to set manager CPS before instance created";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+            ZosPropertiesSingleton.setCps(cpsMock);
+        	ZosPropertiesSingleton.cps();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

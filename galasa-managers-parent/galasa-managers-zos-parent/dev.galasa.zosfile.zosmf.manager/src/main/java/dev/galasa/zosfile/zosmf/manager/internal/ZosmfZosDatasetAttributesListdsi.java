@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -29,7 +29,6 @@ import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 
 public class ZosmfZosDatasetAttributesListdsi {
     
@@ -116,7 +115,7 @@ public class ZosmfZosDatasetAttributesListdsi {
             this.execDatasetName = zosFileManager.getRunDatasetHLQ(this.image) + "." + zosFileManager.getRunId() + ".EXEC";
             createExecDataset();
             initialised = true;
-        } catch (ZosFileManagerException | ZosUNIXCommandManagerException e) {
+        } catch (ZosFileManagerException e) {
             throw new ZosDatasetException("Unable to create LISTDSI EXEC command", e);
         }
     }
