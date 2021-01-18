@@ -91,20 +91,4 @@ public @interface DockerVolume {
      */
     public boolean readOnly() default false;
 
-
-    /**
-     * 
-     * ReadOnly to be a field
-     * 
-     * Preexsisting volumeName
-     * 
-     * Strip out the persist
-     * 
-     * Use new dss methods called : 
-     * 
-     * Create resman
-     * 
-     * Preload volume
-     */
-
 }

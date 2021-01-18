@@ -20,12 +20,25 @@ import org.apache.commons.io.IOUtils;
 import dev.galasa.docker.DockerManagerException;
 
 public class DockerImageBuilderImpl implements IDockerImageBuilder {
-    DockerEngineImpl engine;
+    private DockerEngineImpl engine;
 
+    /**
+     * Pass the docker engine that the image will be required upon.
+     * @param engine
+     */
     public DockerImageBuilderImpl(DockerEngineImpl engine) {
         this.engine = engine;
     }
 
+    /**
+     * Build a new image on the docker engine. A dockerfile MUST be passed. Any resources required to build the 
+     * dockerfile need to be passed with there corresponding filename.
+     * 
+     * @param imageName
+     * @param dockerfile
+     * @param resources
+     * @throws DockerMangerException
+     */
     @Override
     public void buildImage(String imageName, InputStream dockerfile, Map<String,InputStream> resources)
             throws DockerManagerException {
@@ -37,9 +50,13 @@ public class DockerImageBuilderImpl implements IDockerImageBuilder {
 
     }
 
-    /** Create a temp dir and record it
+    /**
+     * Creates a tar.gz in a temp build directory and pass back a path to the file.
      * 
-     * Create the 
+     * @param dockerfile
+     * @param buildResources
+     * @return
+     * @throws DockerManagerException
      */
     private Path createDockerTagGz(InputStream dockerfile, Map<String,InputStream> buildResources) throws DockerManagerException {
         File buildDir = new File("/tmp/galasa-build-dir");

@@ -91,15 +91,6 @@ public interface IDockerEnvironment {
 	public void removeDockerVolume(DockerVolumeImpl volume) throws DockerManagerException;
 
 
-	// /**
-	//  * Pre-loads a file into the volume, saving to a specified fileName;
-	//  * 
-	//  * @param fileName
-	//  * @param data
-	//  * @throws DockerManagerException
-	//  */
-	// public void loadDockerVolume(String fileName, InputStream data, String volumeTag, String dockerEngineTag) throws DockerManagerException;
-
 	/**
 	 *  Free up the docker slot used to house a docker container.
 	 * 

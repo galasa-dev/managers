@@ -143,6 +143,14 @@ public class DockerVolumeImpl implements IDockerVolume {
         engine.deleteVolume(this.volumeName);
     }
 
+    /**
+     * Load a file from an InputStream into the volume. This can be called before the volume is used or 
+     * mounted to any containers.
+     * 
+     * @param fileName
+     * @param data
+     * @throws DockerManagerException
+     */
     @Override
     public void LoadFile(String fileName, InputStream data) throws DockerManagerException {
         File volumeDir = new File("/tmp/" + this.tag);
@@ -174,11 +182,27 @@ public class DockerVolumeImpl implements IDockerVolume {
         engine.deleteContainer(containerId);
     }
 
+    /**
+     * Pass a fileName and String to load into a docker volume. This can be called before the volume is used or 
+     * mounted to any containers.
+     * 
+     * @param fileName
+     * @param data
+     * @throws DockerManagerException
+     */
     @Override
     public void LoadFileAsString(String fileName, String data) throws DockerManagerException {
         LoadFile(fileName, new ByteArrayInputStream(data.getBytes()));
     }
 
+    /**
+     * A private method used to create a dockerfile for the busybox image used to load files into the volume.
+     * 
+     * @param path
+     * @param fileName
+     * @return
+     * @throws DockerManagerException
+     */
     private InputStream createDockerfile(String path, String fileName) throws DockerManagerException {
         try {
             String dockerfileTemplate = this.dockerManager.getArtifactManager()
@@ -194,6 +218,11 @@ public class DockerVolumeImpl implements IDockerVolume {
         }
     }
 
+    /**
+     * Generates the metadata used by container that will load a docker volume
+     * @param imageName
+     * @return
+     */
     private JsonObject generateMetadata(String imageName) {
         JsonObject metadata = new JsonObject();
         metadata.addProperty("Image", imageName);
