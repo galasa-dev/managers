@@ -1,10 +1,33 @@
 package dev.galasa.docker.internal;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerVolume;
 
@@ -14,47 +37,45 @@ import dev.galasa.docker.IDockerVolume;
  * @author James Davies
  */
 public class DockerVolumeImpl implements IDockerVolume {
+    private DockerManagerImpl dockerManager;
+
     private final String volumeName;
     private final String mountPath;
     private final DockerEngineImpl engine;
     private final boolean readOnly;
+    private final String tag;
 
     private static final Log logger = LogFactory.getLog(DockerVolumeImpl.class);
 
     /**
-     * Constructor that determines the nature of the volume (readOnly or not), and provisions or ensures
-     * the volumes exsists.
+     * Constructor that determines the nature of the volume (readOnly or not), and
+     * provisions or ensures the volumes exsists.
      * 
      * @param volumeName
      * @param mountPath
      * @param engine
      * @throws DockerManagerException
      */
-    public DockerVolumeImpl(String volumeName, String mountPath, DockerEngineImpl engine)
-            throws DockerManagerException {
-
-        // Non Galasa made volumes should not be edited by Galasa run containers.
-        if ("".equals(volumeName)) {
-            this.readOnly = false;
-            logger.info("Generating volume");
-
-            // If no named passed, Docker will name the volume. We will add galasa labels.
-            JsonObject json = engine.createVolume(volumeName);
-            this.volumeName = json.get("Name").getAsString();
-        } else {
-            this.volumeName = volumeName;
-            this.readOnly = true;
-        }
-   
+    public DockerVolumeImpl(DockerManagerImpl dockerManager, String volumeName, String tag, String mountPath,
+            DockerEngineImpl engine, boolean readOnly, boolean provision) throws DockerManagerException {
+        this.dockerManager = dockerManager;
+        this.volumeName = volumeName;
         this.mountPath = mountPath;
         this.engine = engine;
+        this.readOnly = readOnly;
+        this.tag = tag;
 
-        if(!doesVolumeExist()) {
+        if (provision) {
+            logger.info("Generating volume");
+            engine.createVolume(volumeName);
+        }
+
+        if (!doesVolumeExist()) {
             logger.error("No volume found with name: " + this.volumeName);
             throw new DockerManagerException("Could not find volume with name: " + this.volumeName);
-            
+
         }
-        logger.info("Existing volume found.");
+        logger.info("Volume found.");
     }
 
     /**
@@ -67,7 +88,7 @@ public class DockerVolumeImpl implements IDockerVolume {
         return this.volumeName;
     }
 
-     /**
+    /**
      * Returns mount path
      * 
      * @return mountPath
@@ -77,7 +98,7 @@ public class DockerVolumeImpl implements IDockerVolume {
         return this.mountPath;
     }
 
-     /**
+    /**
      * Returns readonly state
      * 
      * @return readOnly
@@ -87,14 +108,27 @@ public class DockerVolumeImpl implements IDockerVolume {
         return this.readOnly;
     }
 
-     /**
+    /**
+     * Return tag of hosted engine.
+     */
+    @Override
+    public String getEngineTag() {
+        return engine.getEngineTag();
+    }
+
+    @Override
+    public String getVolumeTag() {
+        return this.tag;
+    }
+
+    /**
      * Checks the docker engine for a specific named volume
      * 
      * @return boolean exists
      */
-    public boolean doesVolumeExist() throws DockerManagerException {
+    private boolean doesVolumeExist() throws DockerManagerException {
         if (engine.getVolume(this.volumeName) != null) {
-            return true;   
+            return true;
         }
         return false;
     }
@@ -105,11 +139,89 @@ public class DockerVolumeImpl implements IDockerVolume {
      * @throws DockerManagerException
      */
     public void discard() throws DockerManagerException {
-        if (readOnly) {
-            logger.error("Not deleted, not a Galasa volume!");
-        } else {
-            engine.deleteVolume(this.volumeName);
+
+        engine.deleteVolume(this.volumeName);
+    }
+
+    @Override
+    public void LoadFile(String fileName, InputStream data) throws DockerManagerException {
+        File volumeDir = new File("/tmp/" + this.tag);
+        DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
+
+        if (volumeDir.exists()) {
+            volumeDir.delete();
+        }
+        volumeDir.mkdir();
+
+        // Create a busy box image to load the volume
+        InputStream dockerfile = createDockerfile(volumeDir.getAbsolutePath(), fileName);
+        Map<String, InputStream> resources = new HashMap<>();
+        resources.put(fileName, data);
+        builder.buildImage("galasa-volume-loader", dockerfile, resources);
+
+        //  Run the busybox, then remove it
+        JsonObject json = engine.createContainer(this.volumeName + "_LOADER", generateMetadata("galasa-volume-loader"));
+        String containerId = json.get("Id").getAsString();
+
+        String status = "";
+        engine.startContainer(containerId);
+        while (!"exited".equals(status)) {
+            json = engine.getContainer(containerId);
+            json = json.get("State").getAsJsonObject();
+            status = json.get("Status").getAsString();
+        }
+        
+        engine.deleteContainer(containerId);
+    }
+
+    @Override
+    public void LoadFileAsString(String fileName, String data) throws DockerManagerException {
+        LoadFile(fileName, new ByteArrayInputStream(data.getBytes()));
+    }
+
+    private InputStream createDockerfile(String path, String fileName) throws DockerManagerException {
+        try {
+            String dockerfileTemplate = this.dockerManager.getArtifactManager()
+            .getBundleResources(this.getClass())
+            .retrieveFileAsString("resources/VolumeBusyboxDockerfile");
+
+            dockerfileTemplate = dockerfileTemplate.replace("${FILENAME}", fileName);
+            dockerfileTemplate = dockerfileTemplate.replace("${MOUNTPATH}", this.mountPath);
+
+            return new ByteArrayInputStream(dockerfileTemplate.getBytes());
+        } catch (IOException | TestBundleResourceException e) {
+            throw new DockerManagerException("Failed to generate the Dockerfile for loading volumes", e);
         }
     }
-    
+
+    private JsonObject generateMetadata(String imageName) {
+        JsonObject metadata = new JsonObject();
+        metadata.addProperty("Image", imageName);
+
+        JsonObject hostConfig = new JsonObject();
+        metadata.add("HostConfig", hostConfig);
+        
+        JsonObject labels = new JsonObject();
+        labels.addProperty("GALASA", "GALASA");
+        metadata.add("Labels", labels);
+        
+        // Volumes
+        JsonArray mounts = new JsonArray();
+
+        JsonObject mount = new JsonObject();
+
+        mount.addProperty("Target", this.mountPath);
+        mount.addProperty("Source", this.volumeName);
+        mount.addProperty("Type", "volume");
+        mount.addProperty("ReadOnly", this.readOnly);
+
+        mounts.add(mount);
+        
+        if (mounts.size() > 0 ) {
+            hostConfig.add("Mounts", mounts);
+            metadata.remove("HostConfig");
+            metadata.add("HostConfig", hostConfig);
+        }
+        return metadata;
+    }
 }

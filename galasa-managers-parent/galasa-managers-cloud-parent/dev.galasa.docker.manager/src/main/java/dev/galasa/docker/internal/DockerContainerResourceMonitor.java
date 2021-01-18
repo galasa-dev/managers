@@ -95,7 +95,7 @@ public class DockerContainerResourceMonitor implements Runnable {
     private List<String> getOrphanedContainers(String engine, IHttpClient client) {
         List<String> orphanedContainers = new ArrayList<>();
         try {
-            HttpClientResponse<String> resp = client.getText("/containers/json");
+            HttpClientResponse<String> resp = client.getText("/containers/json?all=true");
             if (resp.getStatusCode() != 200) {
                 logger.error("Something went wrong when retrieving containers: " + resp.getStatusLine());
                 return orphanedContainers;

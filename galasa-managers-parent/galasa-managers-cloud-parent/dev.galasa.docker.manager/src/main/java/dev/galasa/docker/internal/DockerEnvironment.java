@@ -24,6 +24,9 @@ import dev.galasa.docker.DockerProvisionException;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerSlots;
+import dev.galasa.framework.spi.DssAdd;
+import dev.galasa.framework.spi.DssDelete;
+import dev.galasa.framework.spi.DssDeletePrefix;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicResource;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
@@ -183,7 +186,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             container.discard();
         }
         for (DockerVolumeImpl volume : volumes) {
-            volume.discard();
+            removeDockerVolume(volume);
         }
     }
 
@@ -448,20 +451,64 @@ public class DockerEnvironment implements IDockerEnvironment {
     }
 
     @Override
-    public DockerVolumeImpl allocateDockerVolume(String volumeName, String mountPath, String dockerEngineTag, boolean persist) throws DockerProvisionException {
+    public DockerVolumeImpl allocateDockerVolume(String volumeName, String tag, String mountPath, String dockerEngineTag, boolean readOnly) throws DockerProvisionException {
+
         DockerEngineImpl engine = enginesByTag.get(dockerEngineTag);
         if (engine == null) {
             engine = buildDockerEngine(dockerEngineTag);
             enginesByTag.put(dockerEngineTag, engine);
         }
+        
+        // String enginePropertyPrefix = "engine." + dockerEngineTag + ".volume."; 
+        String volumePropertyPrefix = "volume.";
+        String preProvisionVolumeName = "GALASA_VOLUME_" + framework.getTestRunName() + "_";
+        int volumeNumber = 1;
+        String fullVolumeName;
+        boolean provision = true;
+
         try {
-            DockerVolumeImpl volume = new DockerVolumeImpl(volumeName, mountPath, engine);
-            if (!persist) {
+            if (!"".equals(volumeName)) {
+                fullVolumeName = volumeName;
+                provision = false;
+            } else {
+                while (framework.getTestRunName().equals(dss.get(volumePropertyPrefix + preProvisionVolumeName + volumeNumber))){
+                        volumeNumber++;
+                }
+                fullVolumeName = preProvisionVolumeName + volumeNumber;
+                dss.performActions(new DssAdd(volumePropertyPrefix + fullVolumeName + ".engine", dockerEngineTag),
+                                    new DssAdd(volumePropertyPrefix + fullVolumeName + ".run", framework.getTestRunName()));
+            }
+            
+        } catch (DynamicStatusStoreException e) {
+            throw new DockerProvisionException("Failed to form a volume name", e);
+        }
+
+
+        try {
+            DockerVolumeImpl volume = new DockerVolumeImpl(dockerManager, fullVolumeName, tag, mountPath, engine, readOnly, provision);
+            if (provision) {
                 volumes.add(volume);
             }
+
+            
             return volume;
         } catch (DockerManagerException e) {
             throw new DockerProvisionException("Failed to allocate docker volume.", e);
         }
+    }
+
+    @Override
+    public void removeDockerVolume(DockerVolumeImpl volume) throws DockerManagerException {
+        String volumeProperty = "engine." + volume.getEngineTag() + ".volume." + volume.getVolumeName(); 
+
+        try{
+            dss.performActions(
+                new DssDelete(volumeProperty, framework.getTestRunName())
+            );
+        } catch (DynamicStatusStoreException e) {
+            throw new DockerManagerException("Failed to clean dss Volume properties for: " + volume.getVolumeName() ,e);
+        }
+
+        volume.discard();
     }
 }

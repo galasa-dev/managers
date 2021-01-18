@@ -34,11 +34,18 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * @galasa.examples
  * <code>{@literal @}DockerContainerConfig(
  *      dockerVolumes =  {
-            @DockerVolume(volumeName = config, mountPath = "/configs"),
-        }
-    )
-    public IDockerContainerConfig config;
+ *           // A read only mount, as a specific volume was requested.    
+ *           @DockerVolume(volumeName = config, mountPath = "/configs"),
+ *           // A data volume that will persist past the life of the test
+ *           @DockerVolume(mountPath = "/data", persist = true),
+ *           // A sharing volume that will be cleanup post test.
+ *           @DockerVolume(mountPath = "/mnt/appShare"),
+ *       }
+ *   )
+ *   public IDockerContainerConfig config;
  * </code>
+ * 
+ * @author James Davies
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
@@ -47,13 +54,12 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 public @interface DockerVolume {
 
     /**
-     * If a volume name is passed, the mount will be read only. If no name is passed then a volume name will be generated
-     * This generated volume will be labeled and monitored after the test has finished and cleaned up by a user defined
-     * wait duration.
+     * By default it is expected that Galasa should provision and control the volume. This field should only be used if beinding to an
+     * already exisitng volume.
      * 
      * @return
      */
-    public String volumeName() default "";
+    public String existingVolumeName() default "";
 
     /**
      * Where to mount the volume on the container.
@@ -61,6 +67,13 @@ public @interface DockerVolume {
      * @return
      */
     public String mountPath();
+
+    /**
+     * When wanting to reference a mount that is going to be provisioned, this tage will be used.
+     * 
+     * @return
+     */
+    public String volumeTag();
 
     /**
      * The <code>dockerEngineTag</code> will be used in the future so that a volume can be allocated on a specific Docker Engine type.
@@ -71,12 +84,27 @@ public @interface DockerVolume {
     public String dockerEngineTag() default "PRIMARY";
 
     /**
-     * The volume will not be removed by the end of test class, but later from resource management. Default will be 24 hours until removed 
-     * but is user defined.
+     * This field is used to protect this volume. If this volume is intended to be mounted to multiple containers, which you do not want 
+     * editing the contents, set this to be true
      * 
      * @return
      */
-    public boolean persist() default false;
+    public boolean readOnly() default false;
 
+
+    /**
+     * 
+     * ReadOnly to be a field
+     * 
+     * Preexsisting volumeName
+     * 
+     * Strip out the persist
+     * 
+     * Use new dss methods called : 
+     * 
+     * Create resman
+     * 
+     * Preload volume
+     */
 
 }

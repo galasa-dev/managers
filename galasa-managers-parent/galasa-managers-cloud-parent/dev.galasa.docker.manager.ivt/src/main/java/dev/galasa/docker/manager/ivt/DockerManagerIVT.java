@@ -28,7 +28,7 @@ import dev.galasa.docker.DockerVolume;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerExec;
-import dev.galasa.docker.internal.DockerExecImpl;
+import dev.galasa.docker.IDockerVolume;
 import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
@@ -70,7 +70,7 @@ public class DockerManagerIVT {
 
     @DockerContainerConfig(
         dockerVolumes =  {
-            @DockerVolume(mountPath = "/tmp/testvol"),
+            @DockerVolume(volumeTag = "testVolume", mountPath = "/tmp/testvol"),
         }
     )
     public IDockerContainerConfig config2;
@@ -228,6 +228,47 @@ public class DockerManagerIVT {
         IDockerExec exec = containerSecondry.exec("/bin/ls", "/tmp/testvol");
         exec.waitForExec();
         assertThat(exec.getCurrentOutput()).contains("test.log");
+    }
+
+    @Test 
+    public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException {
+        IDockerVolume volume = config2.getVolumeByTag("testVolume");
+        InputStream in = resources.retrieveFile("resources/SampleConfig.cfg");
+        volume.LoadFile("TestConfigFile.cfg", in);
+
+        container.startWithConfig(config2);
+
+        IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/TestConfigFile.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("IsThisConfig=true");
+    }
+
+    @Test 
+    public void preLoadVolumeWithConfigAsString() throws DockerManagerException, TestBundleResourceException {
+        IDockerVolume volume = config2.getVolumeByTag("testVolume");
+        volume.LoadFileAsString("AnotherConfig.cfg", "AdditionalStringConfigs");
+
+        container.startWithConfig(config2);
+
+        IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/AnotherConfig.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigs");
+    }
+
+    @Test 
+    public void preLoadVolumeWithMultipleConfigs() throws DockerManagerException, TestBundleResourceException {
+        IDockerVolume volume = config2.getVolumeByTag("testVolume");
+        volume.LoadFileAsString("YetAnotherConfig.cfg", "AdditionalStringConfigs");
+        volume.LoadFileAsString("EvenYetAnotherConfig.cfg", "AdditionalStringConfigsAgain");
+
+        container.startWithConfig(config2);
+
+        IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/YetAnotherConfig.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigs");
+        cmd = container.exec("/bin/cat", "/tmp/testvol/EvenYetAnotherConfig.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigsAgain");
     }
 
 }

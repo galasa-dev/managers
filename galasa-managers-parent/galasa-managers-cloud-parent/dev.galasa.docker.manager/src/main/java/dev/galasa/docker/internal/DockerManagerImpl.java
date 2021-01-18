@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.docker.DockerContainer;
 import dev.galasa.docker.DockerContainerConfig;
 import dev.galasa.docker.DockerManagerException;
@@ -59,6 +60,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
     protected IHttpManagerSpi                   httpManager;
+    private IArtifactManager                    artifactManager;
     private IDockerEnvironment                  dockerEnvironment;
     private List<DockerRegistryImpl>            registries = new ArrayList<DockerRegistryImpl>();
     private boolean                             required = false;
@@ -115,6 +117,13 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 		}
         activeManagers.add(this);
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        if (httpManager == null) {
+            throw new DockerManagerException("The http manager is not available");
+        }
+        artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);
+        if (artifactManager == null) {
+            throw new DockerManagerException("The Artifact manager is not available");
+        }
     }
 
     @Override
@@ -188,7 +197,11 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     @GenerateAnnotatedField(annotation =  DockerVolume.class)
     public IDockerVolume generateDockerVolumme(DockerVolume annotation) throws DockerManagerException {
         try {
-            return dockerEnvironment.allocateDockerVolume(annotation.volumeName(), annotation.mountPath(), annotation.dockerEngineTag(), annotation.persist());
+            return dockerEnvironment.allocateDockerVolume(  annotation.existingVolumeName(), 
+                                                            annotation.volumeTag(),
+                                                            annotation.mountPath(),
+                                                            annotation.dockerEngineTag(),
+                                                            annotation.readOnly());
         } catch (DockerProvisionException e) {
             throw new DockerManagerException("Failed to allocate docker volume", e);
         }
@@ -320,6 +333,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     	} catch (URISyntaxException e) {
     		throw new DockerManagerException("Failed to parse the found URI", e);
     	}
+    }
+
+    public IArtifactManager getArtifactManager() {
+        return this.artifactManager;
     }
 
 }

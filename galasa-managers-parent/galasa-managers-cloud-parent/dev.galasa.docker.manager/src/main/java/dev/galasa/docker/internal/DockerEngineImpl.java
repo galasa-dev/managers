@@ -5,10 +5,13 @@
  */
 package dev.galasa.docker.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
 
@@ -214,6 +217,35 @@ public class DockerEngineImpl implements IDockerEngine {
 
 		dockerEngineClient.addCommonHeader("X-Registry-Auth", registryToken);
 		return pullImage(fullName);
+	}
+
+	public byte[] buildImage(String imageName, Path dockerfile) throws DockerManagerException, IOException {
+		return postBinary("/build?t="+imageName, Files.readAllBytes(dockerfile));
+	}
+
+	public byte[] postBinary(String path, byte[] data) throws DockerManagerException {
+		try {
+			HttpClientResponse<byte[]> resp = dockerEngineClient.postBinary(path, data);
+			byte[] response = resp.getContent();
+
+			switch (resp.getStatusCode()) {
+			case HttpStatus.SC_OK:
+			case HttpStatus.SC_CREATED:
+				if (response == null) {
+					return null;
+				}
+				return response;
+			case HttpStatus.SC_NO_CONTENT:
+			case HttpStatus.SC_NOT_FOUND:
+				return null;
+			}
+
+			logger.error("Post failed to docker engine - " + resp.getStatusLine());
+			logger.error(resp.getStatusMessage());
+			throw new DockerManagerException("Post failed to docker engine - " + resp.getStatusLine());
+		} catch (Exception e) {
+			throw new DockerManagerException("Post failed to docker engine", e);
+		}
 	}
 
 	/**

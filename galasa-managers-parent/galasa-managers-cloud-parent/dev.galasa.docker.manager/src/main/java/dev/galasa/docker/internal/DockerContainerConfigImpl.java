@@ -54,5 +54,20 @@ public class DockerContainerConfigImpl implements IDockerContainerConfig {
     public List<IDockerVolume> getVolumes() {
         return this.volumes;
     }
+
+    /**
+     * Retruns a specific named volume from the configuration
+     * 
+     * @return volume
+     */
+    @Override
+    public IDockerVolume getVolumeByTag(String volumeTag) {
+        for (IDockerVolume volume : this.volumes) {
+            if (volumeTag.equals(volume.getVolumeTag())) {
+                return volume;
+            }
+        }
+        return null;
+    }
     
 }
