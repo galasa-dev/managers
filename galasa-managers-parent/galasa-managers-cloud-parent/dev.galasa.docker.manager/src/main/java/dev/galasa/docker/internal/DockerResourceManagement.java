@@ -21,7 +21,7 @@ import dev.galasa.framework.spi.ResourceManagerException;
 /**
  * Resource management for the docker slots used to run docker containers
  * 
- * @author Jmes Davies
+ * @author James Davies
  */
 @Component(service = { IResourceManagementProvider.class })
 public class DockerResourceManagement implements IResourceManagementProvider {
@@ -33,6 +33,7 @@ public class DockerResourceManagement implements IResourceManagementProvider {
 
     private DockerSlotResourceMonitor               slotResourceMonitor;
     private DockerContainerResourceMonitor          containerResourceMonitor;
+    private DockerVolumeResourceMonitor             volumeResourceMonitor;
 
     /**
      * Initialses the resource management of the docker slots.
@@ -57,6 +58,7 @@ public class DockerResourceManagement implements IResourceManagementProvider {
         }
         slotResourceMonitor = new DockerSlotResourceMonitor(framework, resourceManagement, dss, this, cps);
         containerResourceMonitor = new DockerContainerResourceMonitor(framework, resourceManagement, cps, dss);
+        volumeResourceMonitor = new DockerVolumeResourceMonitor(framework, resourceManagement, dss, this, cps);
         return true;
 
     }
@@ -72,7 +74,11 @@ public class DockerResourceManagement implements IResourceManagementProvider {
         
         this.resourceManagement.
         getScheduledExecutorService().
-        scheduleWithFixedDelay(containerResourceMonitor, this.framework.getRandom().nextInt(10), 10, TimeUnit.MINUTES);
+        scheduleWithFixedDelay(containerResourceMonitor, this.framework.getRandom().nextInt(10), 10, TimeUnit.SECONDS);
+
+        this.resourceManagement.
+        getScheduledExecutorService().
+        scheduleWithFixedDelay(volumeResourceMonitor, this.framework.getRandom().nextInt(10), 10, TimeUnit.SECONDS);
     }
 
     /**

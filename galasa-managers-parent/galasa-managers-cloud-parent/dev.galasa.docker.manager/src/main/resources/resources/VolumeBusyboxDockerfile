@@ -1,0 +1,3 @@
+FROM busybox:latest
+ADD ${FILENAME} ${FILENAME}
+CMD ["/bin/mv","${FILENAME}", "${MOUNTPATH}/${FILENAME}"]
