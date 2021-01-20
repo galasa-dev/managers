@@ -33,6 +33,7 @@ public class Network {
     private final String        host;
     private final int           port;
     private final boolean       ssl;
+    private final String        terminalId;
     private boolean             switchedSSL     = false;
     private boolean             doStartTls      = true;    
 
@@ -47,14 +48,15 @@ public class Network {
 
     private boolean             basicTelnet = false;
 
-    public Network(String host, int port) {
-        this(host, port, false);
+    public Network(String host, int port, String terminalId) {
+        this(host, port, false, terminalId);
     }
 
-    public Network(String host, int port, boolean ssl) {
-        this.host = host;
-        this.port = port;
-        this.ssl = ssl;
+    public Network(String host, int port, boolean ssl, String terminalId) {
+        this.host       = host;
+        this.port       = port;
+        this.ssl        = ssl;
+        this.terminalId = terminalId;
     }
 
     public boolean connectClient() throws NetworkException {
@@ -184,7 +186,7 @@ public class Network {
 
     public void sendDatastream(OutputStream outputStream, byte[] outboundDatastream) throws NetworkException {
         if (outputStream == null) {
-            throw new NetworkException("Attempt to send data to a disconnected terminal");
+            throw new NetworkException("Attempt to send data to a disconnected terminal " + this.terminalId);
         }
         
         synchronized(outputStream) {
