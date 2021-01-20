@@ -7,18 +7,13 @@ package test.zos3270.network;
 
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
 
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.spi.NetworkException;
@@ -52,7 +47,7 @@ public class ConnectTest {
 
     @Test
     public void testCreateSocket() throws Exception {
-        Network network = new Network("google.com", 80);
+        Network network = new Network("google.com", 80, "dummy");
         try (Socket socket = network.createSocket()) {
             Assert.assertEquals("Invalid port was set", 80, socket.getPort());
         }
@@ -63,7 +58,7 @@ public class ConnectTest {
     public void testExceptionDuringConnect() throws SocketException, NetworkException {
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(null, null));
 
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;
