@@ -34,7 +34,7 @@ public class ReadModifiedTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(bais, baos));
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;
@@ -107,7 +107,7 @@ public class ReadModifiedTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(bais, baos));
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;
@@ -176,7 +176,7 @@ public class ReadModifiedTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(bais, baos));
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;
@@ -228,7 +228,7 @@ public class ReadModifiedTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(bais, baos));
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;
@@ -275,7 +275,7 @@ public class ReadModifiedTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DummySocket dummySocket = new DummySocket(new DummySocketImpl(bais, baos));
-        Network network = new Network("dummy", 0) {
+        Network network = new Network("dummy", 0, "dummy") {
             @Override
             public Socket createSocket() throws UnknownHostException, IOException {
                 return dummySocket;

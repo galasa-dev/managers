@@ -49,7 +49,7 @@ public class Terminal implements ITerminal {
     }
 
     public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws TerminalInterruptedException {
-        network = new Network(host, port, ssl);
+        network = new Network(host, port, ssl, id);
         screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
         this.id = id;
     }

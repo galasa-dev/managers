@@ -717,6 +717,7 @@ public class NetworkThread extends Thread {
 
         if (length == -1) {
             endOfStream = true;
+            logger.trace("Terminal has been disconnected");
             return null;
         }
         if (length == 0) {
