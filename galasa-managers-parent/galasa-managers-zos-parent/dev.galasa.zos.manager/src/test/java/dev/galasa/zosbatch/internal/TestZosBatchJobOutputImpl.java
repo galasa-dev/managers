@@ -9,9 +9,7 @@ import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -35,9 +33,6 @@ public class TestZosBatchJobOutputImpl {
     private static final String DDNAME = "ddname";
 
     private static final String RECORDS = "records";
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     @Before
     public void setup() throws ZosBatchManagerException {
@@ -80,10 +75,11 @@ public class TestZosBatchJobOutputImpl {
         
         Assert.assertNotNull("next() should return a value", iterator.next());
         
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Object can not be updated");
-        
-        iterator.remove();
+        String expectedMessage = "Object can not be updated";
+        UnsupportedOperationException expectedException = Assert.assertThrows("expected exception should be thrown", UnsupportedOperationException.class, ()->{
+        	iterator.remove();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

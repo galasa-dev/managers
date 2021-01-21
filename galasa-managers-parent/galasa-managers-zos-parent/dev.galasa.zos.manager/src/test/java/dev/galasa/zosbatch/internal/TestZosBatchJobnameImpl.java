@@ -6,9 +6,7 @@
 package dev.galasa.zosbatch.internal;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,9 +29,6 @@ public class TestZosBatchJobnameImpl {
     @Mock
     private IZosImage zosImageMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     @Test
     public void testGetJobnameImage() throws ZosBatchManagerException {
     	Mockito.when(zosImageMock.getImageID()).thenReturn("image");
@@ -44,9 +39,11 @@ public class TestZosBatchJobnameImpl {
         Assert.assertTrue("toString() should return the job name", zosJobname.toString().startsWith(FIXED_PREFIX));
         
         Mockito.when(JobnamePrefix.get(Mockito.any())).thenThrow(new ZosBatchManagerException());
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem getting batch jobname prefix");
-        new ZosBatchJobnameImpl(zosImageMock);
+        String expectedMessage = "Problem getting batch jobname prefix";
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	new ZosBatchJobnameImpl(zosImageMock);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 
 /**
  * SPI interface to {@link IZosUNIXCommand}
@@ -22,5 +21,5 @@ public interface IZosUNIXCommandSpi {
      * @return an {@link IZosUNIXCommand} implementation instance
      */
     @NotNull
-    public IZosUNIXCommand getZosUNIXCommand(IZosImage image) throws ZosUNIXCommandManagerException;
+    public IZosUNIXCommand getZosUNIXCommand(IZosImage image);
 }

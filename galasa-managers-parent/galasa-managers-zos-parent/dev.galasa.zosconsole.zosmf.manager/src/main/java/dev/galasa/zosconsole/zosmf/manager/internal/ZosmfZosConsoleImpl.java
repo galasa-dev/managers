@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosconsole.zosmf.manager.internal;
 
@@ -18,18 +18,26 @@ import dev.galasa.zosconsole.IZosConsole;
 import dev.galasa.zosconsole.IZosConsoleCommand;
 import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
+import dev.galasa.zosmf.IZosmfRestApiProcessor;
+import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * Implementation of {@link IZosConsole} using zOS/MF
  *
  */
-public class ZosConsoleImpl implements IZosConsole {
+public class ZosmfZosConsoleImpl implements IZosConsole {
 
-    private List<ZosConsoleCommandImpl> zosConsoleCommands = new ArrayList<>();
+    private List<ZosmfZosConsoleCommandImpl> zosConsoleCommands = new ArrayList<>();
+    private IZosmfRestApiProcessor zosmfApiProcessor;
     private IZosImage image;
     
-    public ZosConsoleImpl(IZosImage image) {
+    public ZosmfZosConsoleImpl(IZosImage image, ZosmfZosConsoleManagerImpl zosConsoleManager) throws ZosConsoleException {
         this.image = image;
+        try {
+			this.zosmfApiProcessor = zosConsoleManager.getZosmfManager().newZosmfRestApiProcessor(image, zosConsoleManager.getZosManager().getZosConsolePropertyConsoleRestrictToImage(image.getImageID()));
+		} catch (ZosmfManagerException | ZosConsoleManagerException e) {
+			throw new ZosConsoleException(e);
+		}
     }
 
     @Override
@@ -39,14 +47,8 @@ public class ZosConsoleImpl implements IZosConsole {
 
     @Override
     public @NotNull IZosConsoleCommand issueCommand(@NotNull String command, String consoleName) throws ZosConsoleException {
-        ZosConsoleCommandImpl zosConsoleCommand;
-        
-        try {
-            zosConsoleCommand = new ZosConsoleCommandImpl(command, consoleName(consoleName), this.image);
-            this.zosConsoleCommands.add(zosConsoleCommand);
-        } catch (ZosConsoleManagerException e) {
-            throw new ZosConsoleException("Unable to issue console command", e);
-        }
+        ZosmfZosConsoleCommandImpl zosConsoleCommand = new ZosmfZosConsoleCommandImpl(this.zosmfApiProcessor, command, consoleName(consoleName), this.image);
+        this.zosConsoleCommands.add(zosConsoleCommand);
         
         return zosConsoleCommand.issueCommand();
     }

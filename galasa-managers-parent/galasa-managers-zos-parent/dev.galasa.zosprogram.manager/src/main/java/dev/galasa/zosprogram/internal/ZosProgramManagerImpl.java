@@ -200,7 +200,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
 
         String name = nulled(annotationZosProgram.name());
         String location = nulled(annotationZosProgram.location());
-        String tag = defaultString(annotationZosProgram.imageTag(), "primary");
+        String tag = defaultString(annotationZosProgram.imageTag(), "PRIMARY").toUpperCase();;
         Language language = annotationZosProgram.language();
         boolean cics = annotationZosProgram.cics();
         String loadlib = nulled(annotationZosProgram.loadlib());

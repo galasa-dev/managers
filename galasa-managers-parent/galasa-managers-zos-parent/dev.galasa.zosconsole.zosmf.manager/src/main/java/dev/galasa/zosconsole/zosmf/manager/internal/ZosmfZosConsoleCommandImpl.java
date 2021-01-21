@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosconsole.zosmf.manager.internal;
 
@@ -19,19 +19,16 @@ import com.google.gson.JsonObject;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosconsole.IZosConsoleCommand;
 import dev.galasa.zosconsole.ZosConsoleException;
-import dev.galasa.zosconsole.ZosConsoleManagerException;
-import dev.galasa.zosconsole.zosmf.manager.internal.properties.RestrictToImage;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
-import dev.galasa.zosmf.ZosmfManagerException;
 
 /**
  * Implementation of {@link IZosConsoleCommand} using zOS/MF
  *
  */
-public class ZosConsoleCommandImpl implements IZosConsoleCommand {
+public class ZosmfZosConsoleCommandImpl implements IZosConsoleCommand {
     
     private IZosmfRestApiProcessor zosmfApiProcessor;
 
@@ -45,18 +42,13 @@ public class ZosConsoleCommandImpl implements IZosConsoleCommand {
     private static final String SLASH = "/";
     private static final String RESTCONSOLE_PATH = SLASH + "zosmf" + SLASH + "restconsoles" + SLASH + "consoles" + SLASH;
     
-    private static final Log logger = LogFactory.getLog(ZosConsoleCommandImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosmfZosConsoleCommandImpl.class);
 
-    public ZosConsoleCommandImpl(@NotNull String command, String consoleName, IZosImage image) throws ZosConsoleException {
+    public ZosmfZosConsoleCommandImpl(IZosmfRestApiProcessor zosmfApiProcessor, String command, String consoleName, IZosImage image) {
+        this.zosmfApiProcessor = zosmfApiProcessor;
         this.image = image;
         this.consoleName = consoleName;
         this.command = command;
-        
-        try {
-            this.zosmfApiProcessor = ZosConsoleManagerImpl.zosmfManager.newZosmfRestApiProcessor(image, RestrictToImage.get(image.getImageID()));
-        } catch (ZosConsoleManagerException | ZosmfManagerException e) {
-            throw new ZosConsoleException(e);
-        }
     }
 
     public @NotNull IZosConsoleCommand issueCommand() throws ZosConsoleException {
