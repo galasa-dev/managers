@@ -5,13 +5,17 @@
  */
 package dev.galasa.docker.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -215,6 +219,35 @@ public class DockerEngineImpl implements IDockerEngine {
 		return pullImage(fullName);
 	}
 
+	public byte[] buildImage(String imageName, Path dockerfile) throws DockerManagerException, IOException {
+		return postBinary("/build?t="+imageName, Files.readAllBytes(dockerfile));
+	}
+
+	public byte[] postBinary(String path, byte[] data) throws DockerManagerException {
+		try {
+			HttpClientResponse<byte[]> resp = dockerEngineClient.postBinary(path, data);
+			byte[] response = resp.getContent();
+
+			switch (resp.getStatusCode()) {
+			case HttpStatus.SC_OK:
+			case HttpStatus.SC_CREATED:
+				if (response == null) {
+					return null;
+				}
+				return response;
+			case HttpStatus.SC_NO_CONTENT:
+			case HttpStatus.SC_NOT_FOUND:
+				return null;
+			}
+
+			logger.error("Post failed to docker engine - " + resp.getStatusLine());
+			logger.error(resp.getStatusMessage());
+			throw new DockerManagerException("Post failed to docker engine - " + resp.getStatusLine());
+		} catch (Exception e) {
+			throw new DockerManagerException("Post failed to docker engine", e);
+		}
+	}
+
 	/**
 	 * Retrieves the image information
 	 * 
@@ -224,6 +257,37 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	public JsonObject getImage(@NotNull String imageName) throws DockerManagerException {
 		return getJson("/images/" + imageName + "/json");
+	}
+
+	public JsonObject getVolume(String volumeName) throws DockerManagerException {
+		return getJson("/volumes/" + volumeName);
+	}
+
+	public String deleteVolume(String volumeName) throws DockerManagerException {
+		return deleteString("/volumes/" + volumeName);
+	}
+
+	/**
+	 * Create a volume with a defined name. The volume will not be tied to the test as a resource to be cleaned up
+	 * at the end of test. Instead it will be monitored and cleaned up from a user defined CPS property.
+	 * 
+	 * @param volumeName
+	 * @return
+	 * @throws DockerManagerException
+	 */
+	public JsonObject createVolume(String volumeName) throws DockerManagerException {
+		JsonObject data = new JsonObject();
+		if (!"".equals(volumeName)) {
+			data.addProperty("Name", volumeName);
+		}
+		
+		JsonObject labels = new JsonObject();
+		labels.addProperty("GALASA", "GALASA");
+		labels.addProperty("RUN_ID", framework.getTestRunName());
+
+		data.add("Labels", labels);
+
+		return postJson("/volumes/create", data);
 	}
 
 	/**

@@ -19,12 +19,17 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.docker.DockerContainer;
+import dev.galasa.docker.DockerContainerConfig;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
+import dev.galasa.docker.DockerVolume;
 import dev.galasa.docker.DockerEngine;
 import dev.galasa.docker.IDockerContainer;
+import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerManager;
+import dev.galasa.docker.IDockerVolume;
 import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerPropertiesSingleton;
 import dev.galasa.docker.internal.properties.DockerRegistry;
@@ -55,6 +60,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
     protected IHttpManagerSpi                   httpManager;
+    private IArtifactManager                    artifactManager;
     private IDockerEnvironment                  dockerEnvironment;
     private List<DockerRegistryImpl>            registries = new ArrayList<DockerRegistryImpl>();
     private boolean                             required = false;
@@ -111,6 +117,13 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 		}
         activeManagers.add(this);
         httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        if (httpManager == null) {
+            throw new DockerManagerException("The http manager is not available");
+        }
+        artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);
+        if (artifactManager == null) {
+            throw new DockerManagerException("The Artifact manager is not available");
+        }
     }
 
     @Override
@@ -170,6 +183,30 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         return this.getDockerEngine(annotationServer.dockerEngineTag());
     }
 
+    @GenerateAnnotatedField(annotation = DockerContainerConfig.class)
+    public IDockerContainerConfig generateDockerContainerConfig(Field field, List<Annotation> annotations) throws DockerManagerException {
+        List<IDockerVolume> volumes = new ArrayList<>();
+        DockerContainerConfig config = field.getAnnotation(DockerContainerConfig.class);
+
+        for (DockerVolume volumeAnnotation : config.dockerVolumes()) {
+            volumes.add(generateDockerVolumme(volumeAnnotation));
+        }
+        return new DockerContainerConfigImpl(volumes);
+    }
+
+    @GenerateAnnotatedField(annotation =  DockerVolume.class)
+    public IDockerVolume generateDockerVolumme(DockerVolume annotation) throws DockerManagerException {
+        try {
+            return dockerEnvironment.allocateDockerVolume(  annotation.existingVolumeName(), 
+                                                            annotation.volumeTag(),
+                                                            annotation.mountPath(),
+                                                            annotation.dockerEngineTag(),
+                                                            annotation.readOnly());
+        } catch (DockerProvisionException e) {
+            throw new DockerManagerException("Failed to allocate docker volume", e);
+        }
+    }
+
     /**
      * Private method for retrieving the docker sever used by the docker environment
      * 
@@ -218,6 +255,12 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
                 if (annotation != null) {
                     IDockerContainer dockerContainer = generateDockerContainer(field, annotations);
                     registerAnnotatedField(field, dockerContainer);
+                }
+            } else if (field.getType() == IDockerContainerConfig.class) {
+                DockerContainerConfig annotation = field.getAnnotation(DockerContainerConfig.class);
+                if (annotation != null) {
+                    IDockerContainerConfig config = generateDockerContainerConfig(field, annotations);
+                    registerAnnotatedField(field, config);
                 }
             }
         }
@@ -290,6 +333,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     	} catch (URISyntaxException e) {
     		throw new DockerManagerException("Failed to parse the found URI", e);
     	}
+    }
+
+    public IArtifactManager getArtifactManager() {
+        return this.artifactManager;
     }
 
 }
