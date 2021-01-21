@@ -9,8 +9,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.InvalidParameterException;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +21,7 @@ import dev.galasa.textscan.ITextScannable;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.IncorrectOccurancesException;
 import dev.galasa.textscan.MissingTextException;
+import dev.galasa.textscan.TextScanManagerException;
 
 public class TextScannerImpl implements ITextScanner {
 
@@ -33,7 +35,7 @@ public class TextScannerImpl implements ITextScanner {
 			}
 		}
 		if(count<1) {
-			throw new InvalidParameterException("Invalid occurancies number");
+			throw new IncorrectOccurancesException("Invalid occurancies number");
 		}
 		Matcher m = searchPattern.matcher(text);
 		int found =0;
@@ -66,74 +68,134 @@ public class TextScannerImpl implements ITextScanner {
 
 	@Override
 	public ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int count)
-			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, ManagerException, IOException {
+			throws FailTextFoundException, MissingTextException,IncorrectOccurancesException,TextScanManagerException {
 		if(scannable.isScannableInputStream()) {
-			return scan(scannable.getScannableInputStream(),searchPattern,failPattern,count);	
+			try {
+				return scan(scannable.getScannableInputStream(),searchPattern,failPattern,count);
+			} catch (FailTextFoundException e) {
+				throw new FailTextFoundException();
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}else if(scannable.isScannableString()) {
-			return scan(scannable.getScannableString(),searchPattern,failPattern,count);
+			try {
+				return scan(scannable.getScannableString(),searchPattern,failPattern,count);
+			}  catch (FailTextFoundException e) {
+				throw new FailTextFoundException();
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
-		return null;
+		throw new TextScanManagerException("Incorrect Scannable, must be String or an Input stream");
 	}
 
 	@Override
 	public ITextScanner scan(ITextScannable scannable, String searchString, String failString, int count)
-			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, ManagerException, IOException {
+			throws TextScanManagerException{
 		if(scannable.isScannableInputStream()) {
-			return scan(scannable.getScannableInputStream(),searchString,failString,count);	
+			try {
+				return scan(scannable.getScannableInputStream(),searchString,failString,count);
+			} catch (FailTextFoundException e) {
+				throw new FailTextFoundException();
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}else if(scannable.isScannableString()) {
-			return scan(scannable.getScannableString(),searchString,failString,count);
+			try {
+				return scan(scannable.getScannableString(),searchString,failString,count);
+			} catch (FailTextFoundException e) {
+				throw new FailTextFoundException();
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
-		return null;
+		throw new TextScanManagerException("Incorrect Scannable, must be String or an Input stream");
 	}
 
 	@Override
 	public ITextScanner scan(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int count)
-			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, IOException {
+			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException,TextScanManagerException{
+		if(count<1) {
+			throw new IncorrectOccurancesException("Invalid occurancies number");
+		}
+		searchPattern = Pattern.compile(searchPattern.toString(),Pattern.MULTILINE);
+		ArrayList<Integer> array = new ArrayList<>();
 		BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream));
-		CircularFifoQueue<String> queue = new CircularFifoQueue<String>(10);
+		LinkedList<String> queue = new LinkedList<String>();
 		String line = "";
 		String toScan = "";
+		int offset = 0;
+		int stp = 0;
 		int found =0;
 		boolean find = false;
 		int lines = 0;
 		int occurance = 0;
-		if(count<1) {
-			throw new InvalidParameterException("Invalid occurancies number");
-		}
-		while((line =reader.readLine())!=null) {
-			occurance = count;
-			queue.add(line);
-			if(queue.isAtFullCapacity()) {
-				toScan ="";
-				for(int i=0;i<queue.size();i++) {
-					toScan+=queue.get(i);
-				}
-				if (failPattern != null) {
-					if (failPattern.matcher(toScan).find()) {
-						throw new FailTextFoundException("Fail Pattern '"+failPattern+"' was found");
+
+		try {
+
+			while((line =reader.readLine())!=null) {
+				occurance = count;
+				queue.add(line);
+				if(queue.size()>=10) {
+					toScan ="";
+					for(int i=0;i<queue.size();i++) {
+						toScan+=queue.get(i)+"\n";
 					}
-				}
-				Matcher m = searchPattern.matcher(toScan);
-				while (occurance > 0) {
-					find = m.find();
-					if(find) {
-						found++;
-						queue.clear();
+					if (failPattern != null) {
+						if (failPattern.matcher(toScan).find()) {
+							throw new FailTextFoundException("Fail Pattern '"+failPattern+"' was found");
+						}
 					}
-					occurance--;
+					Matcher m = searchPattern.matcher(toScan);
+					while (occurance > 0) {
+						stp=0;
+						find = m.find();
+						if(find) {
+							stp = m.start()+offset;
+							if(!array.contains(stp)) {
+							found++;
+							array.add(stp);
+
+							}
+						}
+						occurance--;
+					}
+					offset = offset + queue.getFirst().length()+1;
+						queue.poll();
+					
 				}
-				queue.poll();
-			}else {
-				toScan ="";
-				for(int i=0;i<queue.size();i++) {
-					toScan+=queue.get(i);
-				}
+				lines ++;
 			}
-			lines ++;
+		} catch (IOException e) {
+			throw new TextScanManagerException();
 		}
 		if (lines<10) {
+			toScan ="";
+			for(int i=0;i<queue.size();i++) {
+				toScan+=queue.get(i)+"\n";
+			}
 			scan(toScan,searchPattern,failPattern,count);
 		}else if(found>0&&found<count) {
 			throw new IncorrectOccurancesException("Was looking for "+count+" instances of '"+searchPattern+"' but found "+ found);
@@ -146,7 +208,7 @@ public class TextScannerImpl implements ITextScanner {
 
 	@Override
 	public ITextScanner scan(InputStream inputStream, String searchString, String failString, int count)
-			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, IOException {
+			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, TextScanManagerException {
 
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
 		Pattern fp = Pattern.compile("\\Q" + failString + "\\E");
@@ -158,7 +220,7 @@ public class TextScannerImpl implements ITextScanner {
 			throws MissingTextException, IncorrectOccurancesException {
 
 		if(occurrence<1) {
-			throw new InvalidParameterException("Invalid occurrance");
+			throw new IncorrectOccurancesException("Invalid occurrance");
 		}
 		Matcher m = searchPattern.matcher(text);
 		int found =0;
@@ -190,71 +252,121 @@ public class TextScannerImpl implements ITextScanner {
 
 	@Override
 	public String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence)
-			throws MissingTextException, IncorrectOccurancesException, ManagerException, IOException {
+			throws MissingTextException, IncorrectOccurancesException, TextScanManagerException{
 		if(scannable.isScannableInputStream()) {
-			return scanForMatch(scannable.getScannableInputStream(),searchPattern,occurrence);	
+			try {
+				return scanForMatch(scannable.getScannableInputStream(),searchPattern,occurrence);
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}		
 		}else if(scannable.isScannableString()) {
-			return scanForMatch(scannable.getScannableString(),searchPattern,occurrence);
+			try {
+				return scanForMatch(scannable.getScannableString(),searchPattern,occurrence);
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
-		return null;
+		throw new TextScanManagerException("Incorrect Scannable, must be String or an Input stream");
 	}
 
 	@Override
 	public String scanForMatch(ITextScannable scannable, String searchString, int occurrence)
-			throws MissingTextException, IncorrectOccurancesException, ManagerException, IOException {
+			throws MissingTextException, IncorrectOccurancesException, TextScanManagerException {
 		if(scannable.isScannableInputStream()) {
-			return scanForMatch(scannable.getScannableInputStream(),searchString,occurrence);	
+			try {
+				return scanForMatch(scannable.getScannableInputStream(),searchString,occurrence);
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}		
 		}else if(scannable.isScannableString()) {
-			return scanForMatch(scannable.getScannableString(),searchString,occurrence);
+			try {
+				return scanForMatch(scannable.getScannableString(),searchString,occurrence);
+			} catch (IncorrectOccurancesException e) {
+				throw new IncorrectOccurancesException();
+			} catch (MissingTextException e) {
+				throw new MissingTextException();
+
+			} catch (ManagerException e) {
+				throw new TextScanManagerException();
+			}	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
-		return null;
+		throw new TextScanManagerException("Incorrect Scannable, must be String or an Input stream");
 	}
 
 	@Override
 	public String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence)
-			throws MissingTextException, IncorrectOccurancesException, IOException {
-		BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream));
-		CircularFifoQueue<String> queue = new CircularFifoQueue<String>(10);
+			throws MissingTextException, IncorrectOccurancesException, TextScanManagerException {
+		if(occurrence<1) {
+			throw new IncorrectOccurancesException("Invalid occurancies number");
+		}
+		BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream)); 
+		ArrayList<Integer> array = new ArrayList<>();
+		LinkedList<String> queue = new LinkedList<String>();
+		searchPattern = Pattern.compile(searchPattern.toString(),Pattern.MULTILINE);
 		String line = "";
 		String toScan = "";
 		String string = "";
 		int found =0;
+		int offset = 0;
+		int stp = 0;
 		boolean find = false;
 		int lines = 0;
 		int count = 0;
-		if(occurrence<1) {
-			throw new InvalidParameterException("Invalid occurancies number");
-		}
-		while((line =reader.readLine())!=null) {
-			count = occurrence;
-			queue.add(line);
-			if(queue.isAtFullCapacity()) {
-				toScan ="";
-				for(int i=0;i<queue.size();i++) {
-					toScan+=queue.get(i);
-				}
-				Matcher m = searchPattern.matcher(toScan);
-				while (count > 0) {
-					find = m.find();
-					if(find) {
-						found++;
-						string = m.group();
-						queue.clear();
+
+		try {
+			while((line =reader.readLine())!=null) {
+				count = occurrence;
+				queue.add(line);
+				if(queue.size()>=10) {
+					toScan ="";
+					for(int i=0;i<queue.size();i++) {
+						toScan+=queue.get(i)+"\n";
 					}
-					count--;
+					Matcher m = searchPattern.matcher(toScan);
+					while (count > 0) {
+						stp=0;
+						find = m.find();
+						if(find) {
+							string=m.group();
+							stp = m.start()+offset;
+							if(!array.contains(stp)) {
+							found++;
+							array.add(stp);
+
+							}
+						}
+						count--;
+					}
+					offset = offset + queue.getFirst().length()+1;
+					queue.poll();
 				}
-				queue.poll();
-			}else {
-				toScan ="";
-				for(int i=0;i<queue.size();i++) {
-					toScan+=queue.get(i);
-				}
+				lines ++;
 			}
-			lines ++;
+		} catch (IOException e) {
+			throw new TextScanManagerException();
 		}
 		if (lines<10) {
+			toScan ="";
+			for(int i=0;i<queue.size();i++) {
+				toScan+=queue.get(i)+"\n";
+			}
 			string = scanForMatch(toScan,searchPattern,occurrence);
 
 		}else if(found ==0) {
@@ -269,7 +381,7 @@ public class TextScannerImpl implements ITextScanner {
 
 	@Override
 	public String scanForMatch(InputStream inputStream, String searchString, int occurrence)
-			throws MissingTextException, IncorrectOccurancesException, IOException {
+			throws MissingTextException, IncorrectOccurancesException, TextScanManagerException{
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
 		return scanForMatch(inputStream, p, occurrence);
 	}

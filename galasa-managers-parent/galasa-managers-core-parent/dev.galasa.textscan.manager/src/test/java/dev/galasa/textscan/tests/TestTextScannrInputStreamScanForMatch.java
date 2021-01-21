@@ -14,6 +14,7 @@ import org.junit.Test;
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.MissingTextException;
+import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.TextScannerImpl;
 import dev.galasa.textscan.IncorrectOccurancesException;
 
@@ -33,30 +34,29 @@ public class TestTextScannrInputStreamScanForMatch {
 
 	
 	/** ScanForMach method input stream input Pattern 
-	 * @throws MissingTextException 
-	 * @throws IncorrectOccurancesException 
-	 * @throws IOException **/
+	 * @throws IOException 
+	 * @throws TextScanManagerException **/
 	
 	@Test
-	public void testScanForMachForInputStreamInputWithSearchPatternFound() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithSearchPatternFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("a");
 		count=1;
 		assertThat("a",is(scanner.scanForMatch(stream,searchpattern,count)));
 	}
 	@Test(expected = MissingTextException.class)
-	public void testScanForMachForInputStreamInputWithSearchPatternNotFound() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithSearchPatternNotFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("\\d");
 		count=1;
 		scanner.scanForMatch(stream,searchpattern,count);
 	}
 	@Test(expected = IncorrectOccurancesException.class)
-	public void testScanForMachForInputStreamInputWithIncorrectOccurancesPattern() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithIncorrectOccurancesPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[c]");
 		count=10;
 		scanner.scanForMatch(stream,searchpattern,count);
 	}
-	@Test(expected = InvalidParameterException.class)
-	public void testScanForMachInputStreamWithInvalidOccurancesPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	@Test(expected = IncorrectOccurancesException.class)
+	public void testScanForMachInputStreamWithInvalidOccurancesPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[c]");
 		count =0;
 		scanner.scanForMatch(stream,searchpattern,count);
@@ -64,30 +64,29 @@ public class TestTextScannrInputStreamScanForMatch {
 	
 	
 	/** ScanForMach method Input Stream input String 
-	 * @throws MissingTextException 
-	 * @throws IncorrectOccurancesException 
-	 * @throws IOException **/
+	 * @throws IOException 
+	 * @throws TextScanManagerException **/
 	
 	@Test
-	public void testScanForMachForInputStreamInputWithSearchStringFound() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithSearchStringFound() throws TextScanManagerException {
 		searchString = "test";
 		count=1;
 		assertThat("test",is(scanner.scanForMatch(stream,searchString,count)));
 	}
 	@Test(expected = MissingTextException.class)
-	public void testScanForMachForInputStreamInputWithSearchStringNotFound() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithSearchStringNotFound() throws TextScanManagerException {
 		searchString = "dragon";
 		count=1;
 		assertThat("test",is(scanner.scanForMatch(stream,searchString,count)));
 	}
 	@Test(expected = IncorrectOccurancesException.class)
-	public void testScanForMachForInputStreamInputWithIncorrectOccurancesString() throws IncorrectOccurancesException, MissingTextException, IOException {
+	public void testScanForMachForInputStreamInputWithIncorrectOccurancesString() throws TextScanManagerException {
 		searchString = "test";
 		count=5;
 		assertThat("test",is(scanner.scanForMatch(stream,searchString,count)));
 	}
-	@Test(expected = InvalidParameterException.class)
-	public void testScanForMachInputStreamWithInvalidOccurancesString() throws IncorrectOccurancesException, MissingTextException, IOException {
+	@Test(expected = IncorrectOccurancesException.class)
+	public void testScanForMachInputStreamWithInvalidOccurancesString() throws TextScanManagerException {
 		searchString = "test";
 		count=0;
 		assertThat("test",is(scanner.scanForMatch(stream,searchString,count)));

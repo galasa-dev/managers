@@ -12,6 +12,7 @@ import org.junit.Test;
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.MissingTextException;
+import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.TextScannerImpl;
 import dev.galasa.textscan.IncorrectOccurancesException;
 
@@ -30,30 +31,29 @@ public class TestTextScannerStringScanForMach {
 	}
 
 /** scanForMatch method String input Pattern 
- * @throws MissingTextException 
- * @throws IncorrectOccurancesException **/
+ * @throws TextScanManagerException **/
 	
 	@Test
-	public void testScanForMachForStringInputWithSearchPatternFound() throws IncorrectOccurancesException, MissingTextException {
+	public void testScanForMachForStringInputWithSearchPatternFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("h");
 		count = 1;
 		assertThat("h",is(scanner.scanForMatch(string,searchpattern,count)));
 	
 	}
 	@Test(expected = MissingTextException.class)
-	public void testScanForMachForStringInputWithSearchPatternNotFound() throws IncorrectOccurancesException, MissingTextException {
+	public void testScanForMachForStringInputWithSearchPatternNotFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[5]");
 		count = 1;
 		scanner.scanForMatch(string,searchpattern,count);
 	}
 	@Test(expected = IncorrectOccurancesException.class)
-	public void testScanForMachForStringInputWithIncorrectOccurancesPattern() throws IncorrectOccurancesException, MissingTextException {
+	public void testScanForMachForStringInputWithIncorrectOccurancesPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[abc]");
 		count = 5;
 		scanner.scanForMatch(string,searchpattern,count) ;
 	}
-	@Test (expected = InvalidParameterException.class)
-	public void testScanForStringInputWithIncorrectOccurancesNumber() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException {
+	@Test (expected = IncorrectOccurancesException.class)
+	public void testScanForStringInputWithIncorrectOccurancesNumber() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[abc]");
 		count = 0;
 		scanner.scanForMatch(string,searchpattern,count) ;
@@ -81,7 +81,7 @@ public class TestTextScannerStringScanForMach {
 		count =3;
 		scanner.scanForMatch(string,searchString,count);
 	}
-	@Test (expected = InvalidParameterException.class)
+	@Test (expected = IncorrectOccurancesException.class)
 	public void testScanForStringInputWithIncorrectOccurancesNumberString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException {
 		searchString = "test";
 		scanner = new TextScannerImpl();

@@ -3,9 +3,7 @@ package dev.galasa.textscan.tests;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidParameterException;
 import java.util.regex.Pattern;
 
 import org.junit.Before;
@@ -13,6 +11,7 @@ import org.junit.Test;
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.MissingTextException;
+import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.TextScannerImpl;
 import dev.galasa.textscan.IncorrectOccurancesException;
 
@@ -33,40 +32,38 @@ public class TestTextScannerInputStreamScan {
 	}
 
 	/** scan method input stream input Pattern 
-	 * @throws MissingTextException 
-	 * @throws FailTextFoundException 
-	 * @throws IncorrectOccurancesException 
-	 * @throws IOException **/
+	 * @throws IOException 
+	 * @throws TextScanManagerException **/
 	@Test(expected = FailTextFoundException.class)
-	public void testScanForInputStreamInputWithFailPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithFailPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[c]");
 		failpattern = Pattern.compile("[a-zA-Z]");
 		count =1;
 		scanner.scan(stream,searchpattern,failpattern,count);
 	}
 	@Test
-	public void testScanForInputStreamInputWithSearchPatternFound() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithSearchPatternFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[a]");
 		failpattern = null;
 		count =1;
 		assertTrue(scanner.scan(stream,searchpattern,failpattern,count) instanceof ITextScanner);
 	}
 	@Test(expected = MissingTextException.class) 
-	public void testScanForInputStreamInputWithSearchPatternNotFound() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithSearchPatternNotFound() throws TextScanManagerException {
 		searchpattern = Pattern.compile("\\d");
 		failpattern = null;
 		count =1;
 		scanner.scan(stream,searchpattern,failpattern,count);
 	}
 	@Test(expected = IncorrectOccurancesException.class)
-	public void testScanForInputStreamInputWithIncorrectOccurancesPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithIncorrectOccurancesPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[c]");
 		failpattern = null;
 		count =10;
 		scanner.scan(stream,searchpattern,failpattern,count);
 	}
-	@Test(expected = InvalidParameterException.class)
-	public void testScanInputStreamWithInvalidOccurancesPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	@Test(expected = IncorrectOccurancesException.class)
+	public void testScanInputStreamWithInvalidOccurancesPattern() throws TextScanManagerException {
 		searchpattern = Pattern.compile("[c]");
 		failpattern = null;
 		count =0;
@@ -74,40 +71,38 @@ public class TestTextScannerInputStreamScan {
 	}
 
 	/** scan method Input Stream input String 
-	 * @throws MissingTextException 
-	 * @throws FailTextFoundException 
-	 * @throws IncorrectOccurancesException 
-	 * @throws IOException **/
+	 * @throws IOException 
+	 * @throws TextScanManagerException **/
 	@Test(expected = FailTextFoundException.class)
-	public void testScanForInputStreamInputWithFailString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithFailString() throws TextScanManagerException {
 		searchString = "test";
 		failString = "scan";
 		count =1;
 		scanner.scan(stream, searchString, failString, count);
 	}
 	@Test
-	public void testScanForInputStreamInputWithSearchStringFound() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithSearchStringFound() throws TextScanManagerException {
 		searchString = "test";
 		failString = null;
 		count =1;
 		assertTrue(scanner.scan(stream, searchString, failString, count)instanceof ITextScanner);
 	}
 	@Test(expected = MissingTextException.class)
-	public void testScanForInputStreamInputWithSearchStringNotFound() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithSearchStringNotFound() throws TextScanManagerException {
 		searchString = "dragon";
 		failString = null;
 		count =1;
 		scanner.scan(stream, searchString, failString, count);
 	}
 	@Test(expected = IncorrectOccurancesException.class)
-	public void testScanForInputStreamInputWithIncorrectOccurancesrString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	public void testScanForInputStreamInputWithIncorrectOccurancesrString() throws TextScanManagerException {
 		searchString = "test";
 		failString = null;
 		count =10;
 		scanner.scan(stream, searchString, failString, count);
 	}
-	@Test(expected = InvalidParameterException.class)
-	public void testScanInputStreamwithInvalidOccurancesString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, IOException {
+	@Test(expected = IncorrectOccurancesException.class)
+	public void testScanInputStreamwithInvalidOccurancesString() throws TextScanManagerException {
 		searchString = "test";
 		failString = null;
 		count =0;

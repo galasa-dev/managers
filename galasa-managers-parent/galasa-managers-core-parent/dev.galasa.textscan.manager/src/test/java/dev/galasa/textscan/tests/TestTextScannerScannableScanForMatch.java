@@ -15,6 +15,7 @@ import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScannable;
 import dev.galasa.textscan.ITextScanner;
 import dev.galasa.textscan.MissingTextException;
+import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.TextScannerImpl;
 import dev.galasa.textscan.IncorrectOccurancesException;
 
@@ -62,7 +63,7 @@ public class TestTextScannerScannableScanForMatch {
 		count = 10;
 		scanner.scanForMatch(scannableString,searchpattern,count);
 	}
-	@Test (expected = InvalidParameterException.class)
+	@Test (expected = IncorrectOccurancesException.class)
 	public void testScanScannableInvalidOccurancesPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		searchpattern = Pattern.compile("[a]");
 		count = 0;
@@ -123,7 +124,7 @@ public class TestTextScannerScannableScanForMatch {
 		count = 10;
 		scanner.scanForMatch(scannableString,searchString,count);
 	}
-	@Test (expected = InvalidParameterException.class)
+	@Test (expected = IncorrectOccurancesException.class)
 	public void testScanScannableInvalidOccurancesString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		searchString = "dummy";
 		count = 0;
@@ -160,17 +161,17 @@ public class TestTextScannerScannableScanForMatch {
 	 * @throws FailTextFoundException 
 	 * @throws IncorrectOccurancesException 
 	 * @throws IOException **/
-	@Test
+	@Test (expected = TextScanManagerException.class)
 	public void testScanForMatchScannableEmptyString() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		searchString = "dummy";
 		count = 1;
-		assertThat(null,is(scanner.scanForMatch(scannableEmpty,searchString,count)));
+		scanner.scanForMatch(scannableEmpty,searchString,count);
 	}
-	@Test
+	@Test (expected = TextScanManagerException.class)
 	public void testScanForMatchScannableEmptyPattern() throws IncorrectOccurancesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		searchpattern = Pattern.compile("[^abc]");
 		count = 1;
-		assertThat(null,is(scanner.scanForMatch(scannableEmpty,searchpattern,count)));
+		scanner.scanForMatch(scannableEmpty,searchpattern,count);
 	}
 
 }

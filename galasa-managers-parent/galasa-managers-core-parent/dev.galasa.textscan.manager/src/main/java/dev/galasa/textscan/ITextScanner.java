@@ -5,11 +5,10 @@
  */
 package dev.galasa.textscan;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
-import dev.galasa.ManagerException;
+
 
 /**
  * Provides utility text scanning routines for tests and Managers to use, intended for use with logs or batch jobs etc.
@@ -37,9 +36,9 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failurePattern was found
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
+     * @throws TextScanManagerException 
      */
-    ITextScanner scan(String text, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
+    ITextScanner scan(String text, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scan(text, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
@@ -51,9 +50,9 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failureLiteral was found
      * @throws MissingTextException - If no occurrences of the searchLiteral was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
+     * @throws TextScanManagerException 
      */
-    ITextScanner scan(String text, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException;
+    ITextScanner scan(String text, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Search a IScannable for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
@@ -66,11 +65,9 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failurePattern was found
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws ManagerException  
-     * @throws IOException 
+     * @throws TextScanManagerException
      */
-    ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, ManagerException, IOException;
+    ITextScanner scan(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scan(scannable, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
@@ -82,11 +79,9 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failureLiteral was found
      * @throws MissingTextException - If no occurrences of the searchLiteral was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws ManagerException 
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    ITextScanner scan(ITextScannable scannable, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, ManagerException, IOException;
+    ITextScanner scan(ITextScannable scannable, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Search an InputStream for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
@@ -102,10 +97,9 @@ public interface ITextScanner {
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failurePattern was found
      * @throws MissingTextException - If no occurrences of the searchPattern was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    ITextScanner scan(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, IOException;
+    ITextScanner scan(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scan(inputStream, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
@@ -116,11 +110,10 @@ public interface ITextScanner {
      * @param count - At least how many occurrences of the searchText must exist
      * @return This text scanner for fluent calls
      * @throws FailTextFoundException - If the failureLiteral was found
-     * @throws MissingTextException - If no occurrences of the searchLiteral was found 
-     * @throws IncorrectOccurancesException - If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws IOException 
+     * @throws MissingTextException - If no occurrences of the searchLiteral was found
+     * @throws TextScanManagerException 
      */
-    ITextScanner scan(InputStream inputStream, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurancesException, IOException;
+    ITextScanner scan(InputStream inputStream, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, TextScanManagerException;
     
     /**
      * Will search the text looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
@@ -131,9 +124,9 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException - The searchPattern was not found at all
-     * @throws IncorrectOccurancesException - The searchPattern was found, but not the x occurrence
+     * @throws TextScanManagerException 
      */
-    String scanForMatch(String text, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurancesException;
+    String scanForMatch(String text, Pattern searchPattern, int occurrence) throws MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scanForMatch(text, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
@@ -143,9 +136,8 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchLiteral found
      * @throws MissingTextException - The searchLiteral was not found at all
-     * @throws IncorrectOccurancesException - The searchLiteral was found, but not the x occurrence
      */
-    String scanForMatch(String text, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurancesException;
+    String scanForMatch(String text, String searchLiteral, int occurrence) throws MissingTextException;
     
     /**
      * Will search the scannable looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
@@ -156,11 +148,9 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException - The searchPattern was not found at all
-     * @throws IncorrectOccurancesException - The searchPattern was found, but not the x occurrence
-     * @throws ManagerException 
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurancesException, ManagerException, IOException;
+    String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scanForMatch(scannable, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
@@ -170,11 +160,9 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchLiteral found
      * @throws MissingTextException - The searchLiteral was not found at all
-     * @throws IncorrectOccurancesException - The searchLiteral was found, but not the x occurrence
-     * @throws ManagerException 
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    String scanForMatch(ITextScannable scannable, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurancesException, ManagerException, IOException;
+    String scanForMatch(ITextScannable scannable, String searchLiteral, int occurrence) throws MissingTextException, TextScanManagerException;
     
     /**
      * Will search the inputStream looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
@@ -188,10 +176,9 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException - The searchPattern was not found at all
-     * @throws IncorrectOccurancesException - The searchPattern was found, but not the x occurrence
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurancesException, IOException;
+    String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence) throws MissingTextException, TextScanManagerException;
     
     /**
      * Convenience method for scanForMatch(inputStream, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
@@ -201,9 +188,8 @@ public interface ITextScanner {
      * @param occurrence - The occurrence to be returned
      * @return The text of the searchLiteral found
      * @throws MissingTextException - The searchLiteral was not found at all
-     * @throws IncorrectOccurancesException - The searchLiteral was found, but not the x occurrence
-     * @throws IOException 
+     * @throws TextScanManagerException 
      */
-    String scanForMatch(InputStream inputStream, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurancesException, IOException;
+    String scanForMatch(InputStream inputStream, String searchLiteral, int occurrence) throws MissingTextException, TextScanManagerException;
     
 }
