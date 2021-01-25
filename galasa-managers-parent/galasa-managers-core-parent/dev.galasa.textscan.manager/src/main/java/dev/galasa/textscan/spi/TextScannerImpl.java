@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -29,29 +28,31 @@ public class TextScannerImpl implements ITextScanner {
 	@Override
 	public ITextScanner scan(String text, Pattern searchPattern, Pattern failPattern, int count)
 			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException {
-		if (failPattern != null) {
-			if (failPattern.matcher(text).find()) {
-				throw new FailTextFoundException("Fail Pattern '"+failPattern+"' was found");
-			}
-		}
-		if(count<1) {
+
+		if (count < 1) {
 			throw new IncorrectOccurancesException("Invalid occurancies number");
 		}
-		Matcher m = searchPattern.matcher(text);
-		int found =0;
-		int occurance = count;
-		boolean find = false;
-		while (occurance > 0) {
-			find = m.find();
-			if (!find&& found ==0) {
-				throw new MissingTextException("Search Pattern '"+searchPattern+"' was not found");
+
+		if (failPattern != null) {
+			if (failPattern.matcher(text).find()) {
+				throw new FailTextFoundException("Fail Pattern '" + failPattern + "' was found");
 			}
-			else if(!find) {
-				throw new IncorrectOccurancesException("Was looking for "+count+" instances of '"+searchPattern+"' but found "+ found);
-			}
-			found++;
-			occurance--;
 		}
+
+		Matcher m = searchPattern.matcher(text);
+		int found = 0;
+
+		while (m.find()) {
+			found++;
+		}
+
+		if (found == 0) {
+			throw new MissingTextException("Search Pattern '" + searchPattern + "' was not found");
+		}
+		else if (found < count) {
+			throw new IncorrectOccurancesException("Was looking for " + count + " instances of '" + searchPattern + "' but found " + found);
+		}
+
 		return this;
 	}
 
@@ -59,8 +60,8 @@ public class TextScannerImpl implements ITextScanner {
 	public ITextScanner scan(String text, String searchString, String failString, int count)
 			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException {
 
-		Pattern fp = Pattern.compile("\\Q" + failString + "\\E",Pattern.DOTALL | Pattern.MULTILINE);
-		Pattern p = Pattern.compile("\\Q" + searchString + "\\E",Pattern.DOTALL | Pattern.MULTILINE);
+		Pattern fp = Pattern.compile("\\Q" + failString + "\\E");
+		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
 
 		return scan(text,p,fp,count);
 
@@ -136,74 +137,61 @@ public class TextScannerImpl implements ITextScanner {
 
 	@Override
 	public ITextScanner scan(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int count)
-			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException,TextScanManagerException{
-		if(count<1) {
+			throws FailTextFoundException, MissingTextException, IncorrectOccurancesException,TextScanManagerException {
+
+		if (count < 1) {
 			throw new IncorrectOccurancesException("Invalid occurancies number");
 		}
-		searchPattern = Pattern.compile(searchPattern.toString(),Pattern.MULTILINE);
-		ArrayList<Integer> array = new ArrayList<>();
-		BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream));
-		LinkedList<String> queue = new LinkedList<String>();
-		String line = "";
-		String toScan = "";
+
+		ArrayList<Integer> foundPatternStartPositions = new ArrayList<>();
+		LinkedList<String> buffer = new LinkedList<String>();
+
 		int offset = 0;
-		int stp = 0;
-		int found =0;
-		boolean find = false;
-		int lines = 0;
-		int occurance = 0;
 
-		try {
-
-			while((line =reader.readLine())!=null) {
-				occurance = count;
-				queue.add(line);
-				if(queue.size()>=10) {
-					toScan ="";
-					for(int i=0;i<queue.size();i++) {
-						toScan+=queue.get(i)+"\n";
-					}
-					if (failPattern != null) {
-						if (failPattern.matcher(toScan).find()) {
-							throw new FailTextFoundException("Fail Pattern '"+failPattern+"' was found");
-						}
-					}
-					Matcher m = searchPattern.matcher(toScan);
-					while (occurance > 0) {
-						stp=0;
-						find = m.find();
-						if(find) {
-							stp = m.start()+offset;
-							if(!array.contains(stp)) {
-							found++;
-							array.add(stp);
-
-							}
-						}
-						occurance--;
-					}
-					offset = offset + queue.getFirst().length()+1;
-						queue.poll();
-					
+		try (BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream))){
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				buffer.add(line);
+				if (buffer.size() > 10) {
+					offset = offset + buffer.remove(0).length() + 1;
 				}
-				lines ++;
+
+				// Build a String from the current buffer
+				StringBuffer sb = new StringBuffer();
+				for (String queueLine : buffer) {
+					sb.append(queueLine);
+					sb.append("\n");
+				}
+
+				String currentBuffer = sb.toString();
+
+				if (failPattern != null) {
+					if (failPattern.matcher(currentBuffer).find()) {
+						throw new FailTextFoundException("Fail Pattern '" + failPattern + "' was found");
+					}
+				}
+
+				Matcher m = searchPattern.matcher(currentBuffer);
+				while (m.find()) {
+
+					int stp = m.start() + offset;
+					if (!foundPatternStartPositions.contains(stp)) {
+						foundPatternStartPositions.add(stp);
+
+					}
+				}
+			}
+			if (foundPatternStartPositions.size() >= count) {
+				return this;
 			}
 		} catch (IOException e) {
 			throw new TextScanManagerException();
 		}
-		if (lines<10) {
-			toScan ="";
-			for(int i=0;i<queue.size();i++) {
-				toScan+=queue.get(i)+"\n";
-			}
-			scan(toScan,searchPattern,failPattern,count);
-		}else if(found>0&&found<count) {
-			throw new IncorrectOccurancesException("Was looking for "+count+" instances of '"+searchPattern+"' but found "+ found);
-		}else if(found==0) {
-			throw new MissingTextException("Search Pattern '"+searchPattern+"' was not found");
-		}
 
-		return this;
+		if(foundPatternStartPositions.isEmpty()) {
+			throw new MissingTextException("Search Pattern '" + searchPattern + "' was not found");
+		}
+		throw new IncorrectOccurancesException("Was looking for " + count + " instances of '" + searchPattern + "' but found " + foundPatternStartPositions.size());
 	}
 
 	@Override
@@ -219,25 +207,26 @@ public class TextScannerImpl implements ITextScanner {
 	public String scanForMatch(String text, Pattern searchPattern, int occurrence)
 			throws MissingTextException, IncorrectOccurancesException {
 
-		if(occurrence<1) {
+		if(occurrence < 1) {
 			throw new IncorrectOccurancesException("Invalid occurrance");
 		}
+
 		Matcher m = searchPattern.matcher(text);
 		int found =0;
 		String searchText = "";
-		boolean find = false;
-		while (occurrence > 0) {
-			find=m.find();
-			if (!find&& found ==0) {
-				throw new MissingTextException("Search Pattern '"+searchPattern+"' was not found");
-			}
-			else if(!find) {
-				throw new IncorrectOccurancesException("Was looking for "+occurrence+" instances of '"+searchPattern+"' but found "+ found);
-			}
+
+		while (m.find()) {
 			found++;
-			occurrence--;
 			searchText = m.group();
 		}
+
+		if (found == 0) {
+			throw new MissingTextException("Search Pattern '" + searchPattern + "' was not found");
+		}
+		else if (found < occurrence) {
+			throw new IncorrectOccurancesException("Was looking for " + occurrence + " instances of '" + searchPattern + "' but found " + found);
+		}
+
 		return searchText;
 	}
 
@@ -245,7 +234,7 @@ public class TextScannerImpl implements ITextScanner {
 	public String scanForMatch(String text, String searchString, int occurrence)
 			throws MissingTextException, IncorrectOccurancesException {
 
-		Pattern p = Pattern.compile("\\Q" + searchString + "\\E",Pattern.DOTALL | Pattern.MULTILINE);
+		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
 
 		return scanForMatch(text, p, occurrence);
 	}
@@ -313,70 +302,55 @@ public class TextScannerImpl implements ITextScanner {
 	@Override
 	public String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence)
 			throws MissingTextException, IncorrectOccurancesException, TextScanManagerException {
-		if(occurrence<1) {
+
+		if (occurrence < 1) {
 			throw new IncorrectOccurancesException("Invalid occurancies number");
 		}
-		BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream)); 
-		ArrayList<Integer> array = new ArrayList<>();
-		LinkedList<String> queue = new LinkedList<String>();
-		searchPattern = Pattern.compile(searchPattern.toString(),Pattern.MULTILINE);
-		String line = "";
-		String toScan = "";
-		String string = "";
-		int found =0;
+
+		ArrayList<Integer> foundPatternStartPositions = new ArrayList<>();
+		LinkedList<String> buffer = new LinkedList<String>();
+
 		int offset = 0;
-		int stp = 0;
-		boolean find = false;
-		int lines = 0;
-		int count = 0;
+		String foundString = "";
 
-		try {
-			while((line =reader.readLine())!=null) {
-				count = occurrence;
-				queue.add(line);
-				if(queue.size()>=10) {
-					toScan ="";
-					for(int i=0;i<queue.size();i++) {
-						toScan+=queue.get(i)+"\n";
-					}
-					Matcher m = searchPattern.matcher(toScan);
-					while (count > 0) {
-						stp=0;
-						find = m.find();
-						if(find) {
-							string=m.group();
-							stp = m.start()+offset;
-							if(!array.contains(stp)) {
-							found++;
-							array.add(stp);
-
-							}
-						}
-						count--;
-					}
-					offset = offset + queue.getFirst().length()+1;
-					queue.poll();
+		try (BufferedReader  reader = new BufferedReader (new InputStreamReader(inputStream))) {
+			String line = "";
+			while ((line =reader.readLine()) != null) {
+				buffer.add(line);
+				if (buffer.size() > 10) {
+					offset = offset + buffer.remove(0).length() + 1;
 				}
-				lines ++;
+
+				// Build a String from the current buffer
+				StringBuffer sb = new StringBuffer();
+				for (String queueLine : buffer) {
+					sb.append(queueLine);
+					sb.append("\n");
+				}
+
+				String currentBuffer = sb.toString();
+				Matcher m = searchPattern.matcher(currentBuffer);
+
+				while (m.find()) {
+
+					int stp = m.start() + offset;
+					if (!foundPatternStartPositions.contains(stp)) {
+						foundPatternStartPositions.add(stp);
+						foundString = m.group();
+					} 
+					if (foundPatternStartPositions.size() >= occurrence) {
+						return foundString;
+					}
+				}
 			}
+
 		} catch (IOException e) {
 			throw new TextScanManagerException();
 		}
-		if (lines<10) {
-			toScan ="";
-			for(int i=0;i<queue.size();i++) {
-				toScan+=queue.get(i)+"\n";
-			}
-			string = scanForMatch(toScan,searchPattern,occurrence);
-
-		}else if(found ==0) {
-			throw new MissingTextException("Search Pattern '"+searchPattern+"' was not found");
-		}else if(found>0&&found<occurrence) {
-			throw new IncorrectOccurancesException("Was looking for "+count+" instances of '"+searchPattern+"' but found "+ found);
+		if(foundPatternStartPositions.isEmpty()) {
+			throw new MissingTextException("Search Pattern '" + searchPattern + "' was not found");
 		}
-
-
-		return string;
+		throw new IncorrectOccurancesException("Was looking for " + occurrence + " instances of '" + searchPattern + "' but found " + foundPatternStartPositions.size());
 	}
 
 	@Override
