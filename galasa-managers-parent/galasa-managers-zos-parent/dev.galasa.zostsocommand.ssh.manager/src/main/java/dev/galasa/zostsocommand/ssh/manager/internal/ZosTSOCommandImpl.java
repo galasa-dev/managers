@@ -7,13 +7,10 @@ package dev.galasa.zostsocommand.ssh.manager.internal;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.zos.IZosImage;
 import dev.galasa.zostsocommand.IZosTSOCommand;
 import dev.galasa.zostsocommand.ZosTSOCommandException;
-import dev.galasa.zostsocommand.ZosTSOCommandManagerException;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 
 /**
  * Implementation of {@link IZosTSOCommand} using ssh
@@ -22,13 +19,11 @@ import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 public class ZosTSOCommandImpl implements IZosTSOCommand {
 
     private IZosUNIXCommand zosUnixCommand;
+	private String tsocmdPath;
     
-    public ZosTSOCommandImpl(IZosImage image) throws ZosTSOCommandManagerException {
-        try {
-            this.zosUnixCommand = ZosTSOCommandManagerImpl.zosUnixCommandManager.getZosUNIXCommand(image);
-        } catch (ZosUNIXCommandManagerException e) {
-            throw new ZosTSOCommandException("Unable to get zOS UNIX Command instance", e);
-        }
+    public ZosTSOCommandImpl(IZosUNIXCommand zosUNIXCommand, String tsocmdPath) {
+    	this.zosUnixCommand = zosUNIXCommand;
+    	this.tsocmdPath = tsocmdPath;
     }
 
     @Override
@@ -55,14 +50,10 @@ public class ZosTSOCommandImpl implements IZosTSOCommand {
 
     protected String buildCommand(String command) {
         StringBuilder builtCommand = new StringBuilder();
-        builtCommand.append("tsocmd ");
-        if (!command.startsWith("\"")) {
-            builtCommand.append("\"");
-        }
-        builtCommand.append(command);
-        if (!command.endsWith("\"")) {
-            builtCommand.append("\"");
-        }
+        builtCommand.append(tsocmdPath);
+        builtCommand.append(" \'");
+        builtCommand.append(command.replaceAll("\\\'", "\\\'\\\"\\\'\\\"\\\'"));
+        builtCommand.append("\'");
         return builtCommand.toString();
     }
 }

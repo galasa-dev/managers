@@ -30,10 +30,9 @@ import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
 
 public class RseapiZosDatasetAttributesListdsi {
-    
-    private RseapiZosFileHandlerImpl zosFileHandler;
-    private IZosImage image;
+	private RseapiZosFileHandlerImpl zosFileHandler;
 	private IRseapiRestApiProcessor rseapiApiProcessor;
+    private IZosImage image;
     private String execDatasetName;
     private RseapiZosDatasetImpl execDataset;
     private boolean initialised;
@@ -101,15 +100,15 @@ public class RseapiZosDatasetAttributesListdsi {
     
     private static final Log logger = LogFactory.getLog(RseapiZosDatasetAttributesListdsi.class);
     
-    public RseapiZosDatasetAttributesListdsi(IZosImage image, IRseapiRestApiProcessor rseapiApiProcessor) {
-        this.image = image;
+    public RseapiZosDatasetAttributesListdsi(RseapiZosFileHandlerImpl zosFileHandler, IRseapiRestApiProcessor rseapiApiProcessor, IZosImage image) {
+        this.zosFileHandler = zosFileHandler;
         this.rseapiApiProcessor = rseapiApiProcessor;
-    }
-    
-    protected void initialise() throws ZosDatasetException {
+        this.image = image;
+	}
+
+	protected void initialise() throws ZosDatasetException {
         try {
-            this.zosFileHandler = (RseapiZosFileHandlerImpl) RseapiZosFileManagerImpl.newZosFileHandler();
-            this.execDatasetName = RseapiZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + RseapiZosFileManagerImpl.getRunId() + ".EXEC";
+            this.execDatasetName = this.zosFileHandler.getZosFileManager().getRunDatasetHLQ(this.image) + "." + this.zosFileHandler.getZosFileManager().getRunId() + ".EXEC";
             createExecDataset();
             initialised = true;
         } catch (ZosFileManagerException e) {
@@ -316,7 +315,8 @@ public class RseapiZosDatasetAttributesListdsi {
     protected JsonObject execListdsi(String dsname) throws ZosDatasetException {
         String command = "tsocmd \"EXEC '" + execDatasetName + "(" + LISTDSI_EXEC_NAME + ")' '" + dsname + "'\" 2>/dev/null;echo RC=$?";
 
-        JsonObject responseBody = RseapiZosUnixCommand.execute(rseapiApiProcessor, command);
+    	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);
+    	JsonObject responseBody = zosUnixCommand.execute(rseapiApiProcessor, command);
         
         logger.trace(responseBody);
         if (!getExitRc(responseBody).equals("RC=0")) {
@@ -348,7 +348,8 @@ public class RseapiZosDatasetAttributesListdsi {
             execDataset.setRecordlength(255);
             execDataset.setBlockSize(32720);
             execDataset.setSpace(SpaceUnit.TRACKS, 1, 1);
-            execDataset.createTemporary();
+            execDataset.create();
+            execDataset.setShouldArchive(false);
         }
         if (!this.execDataset.memberExists(LISTDSI_EXEC_NAME)) {
             execDataset.memberStoreText(LISTDSI_EXEC_NAME, getExecResource());

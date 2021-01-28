@@ -10,9 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,9 +30,6 @@ public class TestClusterImages {
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
     
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-    
     private static final String CLUSTER_ID = "cluster";
     
     private static final List<String> CLUSTERS = Arrays.asList(new String[] {"image1", "image2"});
@@ -47,10 +42,11 @@ public class TestClusterImages {
     
     @Test
     public void testNull() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Unable to locate zOS images for cluster " + null + ", see property zos.cluster.*.images");
-        
-        getProperty(null, Collections.emptyList());
+        String expectedMessage = "Unable to locate zOS images for cluster " + null + ", see property zos.cluster.*.images";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty(null, Collections.emptyList());
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -60,10 +56,11 @@ public class TestClusterImages {
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the cluster images for cluster 'ANY'");
-        
-        getProperty("ANY", null, true);
+        String expectedMessage = "Problem asking the CPS for the cluster images for cluster 'ANY'";
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	getProperty("ANY", null, true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private List<String> getProperty(String arg, List<String> value) throws Exception {

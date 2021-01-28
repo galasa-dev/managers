@@ -5,13 +5,17 @@
  */
 package dev.galasa.docker.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -24,8 +28,13 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
 import dev.galasa.docker.IDockerEngine;
+import dev.galasa.docker.internal.properties.DockerDSEEngine;
 import dev.galasa.docker.internal.properties.DockerEngine;
 import dev.galasa.docker.internal.properties.DockerEnginePort;
+import dev.galasa.docker.internal.properties.DockerEngines;
+import dev.galasa.docker.internal.properties.DockerSlots;
+import dev.galasa.framework.spi.DynamicStatusStoreException;
+import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
@@ -35,9 +44,12 @@ public class DockerEngineImpl implements IDockerEngine {
 	private IFramework framework;
 	private DockerManagerImpl dockerManager;
 	private final IHttpClient dockerEngineClient;
-	private final URI uri;
+	private final IDynamicStatusStoreService dss;
+
+	private URI uri;
 
 	private String dockerEngineId;
+	private String dockerEngineTag;
 	private String dockerVersion;
 	private String apiVersion;
 
@@ -51,30 +63,90 @@ public class DockerEngineImpl implements IDockerEngine {
 	 * @param dockerManager
 	 * @throws DockerProvisionException
 	 */
-	public DockerEngineImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerEngineTag)
-			throws DockerProvisionException {
+	public DockerEngineImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerEngineTag,
+			IDynamicStatusStoreService dss) throws DockerProvisionException {
 		this.framework = framework;
 		this.dockerManager = dockerManager;
-		this.dockerEngineId = dockerEngineTag;
+		this.dockerEngineTag = dockerEngineTag;
+		this.dss = dss;
 
 		this.dockerEngineClient = dockerManager.httpManager.newHttpClient();
 		try {
-			String engine = DockerEngine.get(this);
-			String port = DockerEnginePort.get(this);
 
-			if (engine != null && port != null) {
-				this.uri = new URI(engine + ":" + port);
-				dockerEngineClient.setURI(this.uri);
+			// Get the DSE image
+			this.dockerEngineId = DockerDSEEngine.get(this);
+			if (this.dockerEngineId != null) {
+				initDseEngine();
 			} else {
-				throw new DockerProvisionException("Could not retrieve proper endpoint for docker engine: Engine - "
-						+ engine + ", Port - " + port);
+				// Only works on "default" cluster currently
+				initClusterEngine();
 			}
 
-			logger.info("Docker Engine is set to " + engine.toString());
+			if (this.uri.toString() == null) {
+				throw new DockerProvisionException("Could not locate a availabe engine");
+			}
+
 		} catch (Exception e) {
 			throw new DockerProvisionException("Unable to instantiate Docker Engine", e);
 		}
 
+	}
+
+	// Setup the client for the selected Engine
+	private void initDseEngine() throws DockerManagerException, URISyntaxException {
+		String engine = DockerEngine.get(this);
+		String port = DockerEnginePort.get(this);
+
+		if (!engine.startsWith("http://") && !engine.startsWith("https://")) {
+			// If no scheme, default to http
+			engine = "http://" + engine;
+		}
+
+		this.uri = new URI(engine + ":" + port);
+		this.dockerEngineClient.setURI(this.uri);
+		logger.info("Docker DSE Engine is set to " + this.dockerEngineId);
+	}
+
+	// Locate a free engine from a group of engines
+	private void initClusterEngine() throws DockerManagerException, DynamicStatusStoreException, URISyntaxException,
+			DockerProvisionException {
+		// Get available Engines
+		String[] engines = DockerEngines.get(this).split(",");
+
+		// Select an engine and check slot availabilty
+		for (String engineId : engines) {
+			this.dockerEngineId = engineId;
+			String engine = DockerEngine.get(this);
+			String port = DockerEnginePort.get(this);
+			int slotLimit = Integer.parseInt(DockerSlots.get(this));
+
+			if (!engine.startsWith("http://") && !engine.startsWith("https://")) {
+				// If no scheme, default to http
+				engine = "http://" + engine;
+			}
+
+			// Quick check to see if there is an engine with a free slot. This does not allocate slot
+			String currentSlots = dss.get("engine." + engineId + ".current.slots");
+			if (currentSlots == null) {
+				currentSlots = "0";
+			}
+			int currentSlotsI = Integer.parseInt(currentSlots);
+
+			if (currentSlotsI < slotLimit) {
+				if (engine != null && port != null) {
+					this.uri = new URI(engine + ":" + port);
+					this.dockerEngineClient.setURI(this.uri);
+					logger.info("Docker Engine is set to " + engineId);
+					return;
+				}
+			}
+			logger.info("Engine " + engineId + " has no free slots. Checking to see if another engine is available.");
+		}
+		throw new DockerProvisionException("No Engines are free");
+	}
+
+	public String getEngineTag() {
+		return this.dockerEngineTag;
 	}
 
 	public String getEngineId() {
@@ -147,6 +219,35 @@ public class DockerEngineImpl implements IDockerEngine {
 		return pullImage(fullName);
 	}
 
+	public byte[] buildImage(String imageName, Path dockerfile) throws DockerManagerException, IOException {
+		return postBinary("/build?t="+imageName, Files.readAllBytes(dockerfile));
+	}
+
+	public byte[] postBinary(String path, byte[] data) throws DockerManagerException {
+		try {
+			HttpClientResponse<byte[]> resp = dockerEngineClient.postBinary(path, data);
+			byte[] response = resp.getContent();
+
+			switch (resp.getStatusCode()) {
+			case HttpStatus.SC_OK:
+			case HttpStatus.SC_CREATED:
+				if (response == null) {
+					return null;
+				}
+				return response;
+			case HttpStatus.SC_NO_CONTENT:
+			case HttpStatus.SC_NOT_FOUND:
+				return null;
+			}
+
+			logger.error("Post failed to docker engine - " + resp.getStatusLine());
+			logger.error(resp.getStatusMessage());
+			throw new DockerManagerException("Post failed to docker engine - " + resp.getStatusLine());
+		} catch (Exception e) {
+			throw new DockerManagerException("Post failed to docker engine", e);
+		}
+	}
+
 	/**
 	 * Retrieves the image information
 	 * 
@@ -156,6 +257,37 @@ public class DockerEngineImpl implements IDockerEngine {
 	 */
 	public JsonObject getImage(@NotNull String imageName) throws DockerManagerException {
 		return getJson("/images/" + imageName + "/json");
+	}
+
+	public JsonObject getVolume(String volumeName) throws DockerManagerException {
+		return getJson("/volumes/" + volumeName);
+	}
+
+	public String deleteVolume(String volumeName) throws DockerManagerException {
+		return deleteString("/volumes/" + volumeName);
+	}
+
+	/**
+	 * Create a volume with a defined name. The volume will not be tied to the test as a resource to be cleaned up
+	 * at the end of test. Instead it will be monitored and cleaned up from a user defined CPS property.
+	 * 
+	 * @param volumeName
+	 * @return
+	 * @throws DockerManagerException
+	 */
+	public JsonObject createVolume(String volumeName) throws DockerManagerException {
+		JsonObject data = new JsonObject();
+		if (!"".equals(volumeName)) {
+			data.addProperty("Name", volumeName);
+		}
+		
+		JsonObject labels = new JsonObject();
+		labels.addProperty("GALASA", "GALASA");
+		labels.addProperty("RUN_ID", framework.getTestRunName());
+
+		data.add("Labels", labels);
+
+		return postJson("/volumes/create", data);
 	}
 
 	/**

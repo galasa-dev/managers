@@ -33,4 +33,9 @@ public @interface CicsTerminal {
      */
     String cicsTag() default "PRIMARY";
     
+    /**
+     * The CICS TS Manager will automatically connect the terminal to the CICS TS region when ever is starts 
+     */
+    boolean connectAtStartup() default true;
+    
 }

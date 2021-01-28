@@ -20,7 +20,7 @@ spec:
         platform: hdc
       initContainers:
       - name: init-chown-data
-        image: busybox:latest
+        image: ${dockerRegistry}/busybox:1.32.0
         imagePullPolicy: IfNotPresent
         command: ["chown", "-R", "1000", "/data"]
         volumeMounts:

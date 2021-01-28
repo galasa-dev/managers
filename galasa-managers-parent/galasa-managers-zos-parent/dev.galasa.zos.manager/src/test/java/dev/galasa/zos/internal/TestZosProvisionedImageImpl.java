@@ -9,9 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -68,9 +66,6 @@ public class TestZosProvisionedImageImpl {
     private Log logMock;
     
     private static String logMessage;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "image";
 
@@ -165,9 +160,11 @@ public class TestZosProvisionedImageImpl {
         PowerMockito.when(ImageMaxSlots.get(Mockito.anyString())).thenReturn(1);
         PowerMockito.when(dssMock.get(Mockito.anyString())).thenThrow(new DynamicStatusStoreException());
         
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem finding used slots for zOS Image " + IMAGE_ID);
-        zosProvisionedImageSpy.getCurrentUsage();
+        String expectedMessage = "Problem finding used slots for zOS Image " + IMAGE_ID;
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	zosProvisionedImageSpy.getCurrentUsage();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -194,9 +191,11 @@ public class TestZosProvisionedImageImpl {
     @Test
     public void testAllocateImageException() throws Exception {
         PowerMockito.when(dssMock.get(Mockito.anyString())).thenThrow(new DynamicStatusStoreException());
-        exceptionRule.expect(ZosManagerException.class);
-        exceptionRule.expectMessage("Problem finding used slots for zOS Image " + IMAGE_ID);
-        zosProvisionedImageSpy.allocateImage();
+        String expectedMessage = "Problem finding used slots for zOS Image " + IMAGE_ID;
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	zosProvisionedImageSpy.allocateImage();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test

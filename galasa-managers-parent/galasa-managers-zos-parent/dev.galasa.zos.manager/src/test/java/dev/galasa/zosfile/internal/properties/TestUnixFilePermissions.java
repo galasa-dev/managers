@@ -6,9 +6,7 @@
 package dev.galasa.zosfile.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,9 +25,6 @@ public class TestUnixFilePermissions {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     
     private static final String IMAGE_ID = "IMAGE";
     
@@ -61,18 +56,20 @@ public class TestUnixFilePermissions {
     
     @Test
     public void testInvalid() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("The default UNIX file permissions property must be in the range \"---------\" to \"rwxrwxrwx\" and match the regex expression \"([-r][-w][-x]){3}\"");
-        
-        getProperty("XXX");
+        String expectedMessage = "The default UNIX file permissions property must be in the range \"---------\" to \"rwxrwxrwx\" and match the regex expression \"([-r][-w][-x]){3}\"";
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("XXX");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testException() throws Exception {
-        exceptionRule.expect(ZosFileManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the default UNIX file permissions property for zOS image " + IMAGE_ID);
-
-        getProperty("ANY", true);
+        String expectedMessage = "Problem asking the CPS for the default UNIX file permissions property for zOS image " + IMAGE_ID;
+        ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

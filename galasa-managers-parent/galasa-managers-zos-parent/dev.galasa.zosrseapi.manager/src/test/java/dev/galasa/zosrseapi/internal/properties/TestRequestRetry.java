@@ -28,17 +28,10 @@ public class TestRequestRetry {
     
     private static final String IMAGE_ID = "IMAGE";
     
-    private static final int DEFAULT_REQUEST_RETRY = 3;
-    
     @Test
     public void testConstructor() {
         RequestRetry requestRetry = new RequestRetry();
         Assert.assertNotNull("Object was not created", requestRetry);
-    }
-    
-    @Test
-    public void testNull() throws Exception {
-        Assert.assertEquals("Unexpected value returned from RequestRetry.get()", DEFAULT_REQUEST_RETRY, getProperty(null));
     }
     
     @Test
@@ -50,18 +43,9 @@ public class TestRequestRetry {
     
     @Test
     public void testInvalid() throws Exception {
-        String expectedMessage = "For input string: \"XXX\"";
-        NumberFormatException expectedException = Assert.assertThrows("expected exception should be thrown", NumberFormatException.class, ()->{
-        	getProperty("XXX");
-        });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
-    }
-    
-    @Test
-    public void testException() throws Exception {
-        String expectedMessage = "Problem asking the CPS for the RSE API request retry property for zOS image " + IMAGE_ID;
+        String expectedMessage = "Invalid value given for rseapi.*.request.retry 'XXX'";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
-        	getProperty("ANY", true);
+        	getProperty("XXX");
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -76,9 +60,9 @@ public class TestRequestRetry {
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
-            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
+        	PowerMockito.doReturn(value).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());            
         } else {
-            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringWithDefault", Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
         
         return RequestRetry.get(IMAGE_ID);

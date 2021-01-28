@@ -5,11 +5,13 @@
  */
 package dev.galasa.docker.internal;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
+import dev.galasa.docker.IDockerVolume;
 
 public interface IDockerEnvironment {
 	/**
@@ -72,11 +74,30 @@ public interface IDockerEnvironment {
 	//public void preAllocate(Resource rm) throws ResourceManagementException;
 
 	/**
+	 * Allocates a docker volume with a passed name. If the volume already exsists on the Engine, that volume will be used.
+	 * 
+	 * @param volumeName
+	 * @return
+	 * @throws DockerProvisionException
+	 */
+	public DockerVolumeImpl allocateDockerVolume(String volumeName, String tag, String mountPath, String DockerEngineTag, boolean persist) throws DockerProvisionException;
+
+	/**
+	 * Removes a docker volume. 
+	 * 
+	 * @param volume
+	 * @throws DockerManagerException
+	 */
+	public void removeDockerVolume(DockerVolumeImpl volume) throws DockerManagerException;
+
+
+	/**
 	 *  Free up the docker slot used to house a docker container.
 	 * 
 	 * @param dockerSlot
 	 * @throws DockerProvisionException
 	 */
 	public void freeDockerSlot(DockerSlotImpl dockerSlot) throws DockerProvisionException;
+
 	//public void abortPreAllocation();
 }

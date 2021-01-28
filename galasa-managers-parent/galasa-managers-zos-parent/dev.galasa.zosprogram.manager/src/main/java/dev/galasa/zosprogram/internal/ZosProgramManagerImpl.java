@@ -200,7 +200,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
 
         String name = nulled(annotationZosProgram.name());
         String location = nulled(annotationZosProgram.location());
-        String tag = defaultString(annotationZosProgram.imageTag(), "primary");
+        String tag = defaultString(annotationZosProgram.imageTag(), "PRIMARY").toUpperCase();;
         Language language = annotationZosProgram.language();
         boolean cics = annotationZosProgram.cics();
         String loadlib = nulled(annotationZosProgram.loadlib());
@@ -234,7 +234,8 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
                     runLoadlib.setBlockSize(32720);
                     runLoadlib.setDatasetOrganization(DatasetOrganization.PARTITIONED);
                     runLoadlib.setDatasetType(DSType.LIBRARY);
-                    runLoadlib.createRetainTemporary();
+                    runLoadlib.create();
+                    runLoadlib.setShouldArchive(false);
                 }
             } catch (ZosManagerException e) {
                 throw new ZosProgramManagerException(e);

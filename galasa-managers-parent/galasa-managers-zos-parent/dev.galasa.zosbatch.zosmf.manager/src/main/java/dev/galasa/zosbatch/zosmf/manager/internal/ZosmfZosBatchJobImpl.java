@@ -75,7 +75,11 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     private String jobFilesPath;
     private IZosBatchJobOutputSpi jobOutput;
     private boolean useSysaff;
+    
     private boolean shouldArchive = true;
+
+    private boolean shouldCleanup = true;
+    
 	private Path testMethodArchiveFolder;
     
     private static final String PROP_REASON = "reason";
@@ -229,14 +233,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getStatusString() {
-    	if (this.status != JobStatus.OUTPUT) {
-	    	try {
-				updateJobStatus();
-			} catch (ZosBatchException e) {
-				logger.error(e);
-			}
-    	}
-        return (this.statusString != null ? this.statusString : StringUtils.repeat(QUERY, 8));
+        return getStatus().toString();
     }
     
     @Override
@@ -370,6 +367,16 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public boolean shouldArchive() {
 		return this.shouldArchive;
+	}
+
+    @Override
+	public void setShouldCleanup(boolean shouldCleanup) {
+		this.shouldCleanup = shouldCleanup;
+	}
+
+	@Override
+	public boolean shouldCleanup() {
+		return this.shouldCleanup;
 	}
 
 	protected void getOutput() throws ZosBatchException {
@@ -573,7 +580,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
                     jsonZero(responseBody, PROP_REASON) == 10) {
                 logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
-                this.statusString = JobStatus.NOTFOUND.toString();
+                this.status = JobStatus.NOTFOUND;
             } else {
                 // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
                 String displayMessage = buildErrorString("Update job status", responseBody); 
@@ -771,8 +778,8 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected void archiveJobOutput() throws ZosBatchException {
-    	if (shouldArchive() && (!isArchived() || !this.jobComplete)) {
-            String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
+    	if (shouldArchive() && getStatus() != JobStatus.NOTFOUND && (!isArchived() || !this.jobComplete)) {
+            String folderName = this.jobname.getName() + "_" + this.jobid + "_" + getRetcode().replace(" ", "-");
             Path rasPath = this.testMethodArchiveFolder.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(testMethodArchiveFolder, folderName));
             saveOutputToResultsArchive(rasPath.toString());
         }

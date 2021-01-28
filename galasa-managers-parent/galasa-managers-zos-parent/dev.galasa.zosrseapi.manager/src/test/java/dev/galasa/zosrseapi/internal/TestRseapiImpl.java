@@ -36,6 +36,9 @@ import com.google.gson.JsonObject;
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsToken;
 import dev.galasa.ICredentialsUsernamePassword;
+import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -49,17 +52,26 @@ import dev.galasa.zosrseapi.RseapiException;
 import dev.galasa.zosrseapi.RseapiManagerException;
 import dev.galasa.zosrseapi.internal.properties.Https;
 import dev.galasa.zosrseapi.internal.properties.RequestRetry;
-import dev.galasa.zosrseapi.internal.properties.ServerHostname;
-import dev.galasa.zosrseapi.internal.properties.ServerImages;
+import dev.galasa.zosrseapi.internal.properties.ServerCreds;
+import dev.galasa.zosrseapi.internal.properties.ServerImage;
 import dev.galasa.zosrseapi.internal.properties.ServerPort;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogFactory.class, ServerImages.class, ServerHostname.class, ServerPort.class, Https.class, RequestRetry.class})
+@PrepareForTest({LogFactory.class, ServerImage.class, ServerPort.class, Https.class, ServerCreds.class, RequestRetry.class})
 public class TestRseapiImpl {
     
     private RseapiImpl rseapi;
     
     private RseapiImpl rseapiSpy;
+    
+    @Mock
+    private IFramework frameworkMock;
+
+    @Mock
+    private ICredentialsService credentialsServiceMock;
+    
+    @Mock
+	private RseapiManagerImpl rseapiManagerMock;
 
     @Mock
     private IZosImage zosImageMock;
@@ -108,11 +120,11 @@ public class TestRseapiImpl {
     
     private static String logMessage;
 
+    private static final String SERVER = "server";
+
+    private static final String CREDS_ID = "credsid";
+
     private static final String IMAGE = "image";
-
-    private static final String IMAGE_TAG = "tag";
-
-    private static final String CLUSTER = "cluster";
 
     private static final String USERID = "userid";
 
@@ -120,7 +132,7 @@ public class TestRseapiImpl {
 
     private static final String HOSTNAME = "hostname";
 
-    private static final String PORT = "999";
+    private static final Integer PORT = 999;
 
     private static final String PATH = "request-path";
 
@@ -152,15 +164,13 @@ public class TestRseapiImpl {
             }
         };
         Mockito.doAnswer(answer).when(logMock).debug(Mockito.any());
+        Mockito.doAnswer(answer).when(logMock).trace(Mockito.any());
         
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
-        Mockito.when(zosImageMock.getClusterID()).thenReturn(CLUSTER);
+    	Mockito.when(zosImageMock.getDefaultHostname()).thenReturn(HOSTNAME);
         
-        PowerMockito.mockStatic(ServerImages.class);
-        Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(IMAGE));
-        
-        PowerMockito.mockStatic(ServerHostname.class);
-        Mockito.when(ServerHostname.get(Mockito.any())).thenReturn(HOSTNAME);
+        PowerMockito.mockStatic(ServerImage.class);
+        Mockito.when(ServerImage.get(Mockito.any())).thenReturn(IMAGE);
         
         PowerMockito.mockStatic(ServerPort.class);
         Mockito.when(ServerPort.get(Mockito.any())).thenReturn(PORT);
@@ -168,11 +178,8 @@ public class TestRseapiImpl {
         PowerMockito.mockStatic(Https.class);
         Mockito.when(Https.get(Mockito.any())).thenReturn(true);
         
-        Whitebox.setInternalState(RseapiManagerImpl.class, "httpManager", httpManagerMock);
-        Mockito.when(httpManagerMock.newHttpClient()).thenReturn(httpClientMock);
-        
-        Whitebox.setInternalState(RseapiManagerImpl.class, "zosManager", zosManagerMock);
-        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenReturn(zosImageMock);
+        PowerMockito.mockStatic(ServerCreds.class);
+        Mockito.when(ServerCreds.get(Mockito.any())).thenReturn(CREDS_ID);
         
         PowerMockito.mockStatic(RequestRetry.class);
         Mockito.when(RequestRetry.get(Mockito.any())).thenReturn(REQUEST_RETRY);
@@ -180,16 +187,38 @@ public class TestRseapiImpl {
         PowerMockito.doReturn(credentialsUsernamePasswordMock).when(zosImageMock, "getDefaultCredentials");
         PowerMockito.doReturn(USERID).when(credentialsUsernamePasswordMock, "getUsername");
         PowerMockito.doReturn(PASSWORD).when(credentialsUsernamePasswordMock, "getPassword");
+
+        Mockito.when(rseapiManagerMock.getZosManager()).thenReturn(zosManagerMock);
+        Mockito.when(zosManagerMock.getUnmanagedImage(Mockito.any())).thenReturn(zosImageMock);
+        Mockito.when(rseapiManagerMock.getHttpManager()).thenReturn(httpManagerMock);
+        Mockito.when(httpManagerMock.newHttpClient()).thenReturn(httpClientMock);
+        Mockito.when(rseapiManagerMock.getFramework()).thenReturn(frameworkMock);
+        Mockito.when(frameworkMock.getCredentialsService()).thenReturn(credentialsServiceMock);
+        Mockito.when(credentialsServiceMock.getCredentials(Mockito.any())).thenReturn(credentialsMock);
         
-        rseapi = new RseapiImpl(zosImageMock);
+        rseapi = new RseapiImpl(rseapiManagerMock, SERVER);
         rseapiSpy = PowerMockito.spy(rseapi);
     }
     
     @Test
-    public void testStringConstructor() throws RseapiException {
-        RseapiImpl localRseapi = new RseapiImpl(IMAGE_TAG);
+    public void testConstructor() throws ZosManagerException {
+        RseapiImpl localRseapi = new RseapiImpl(rseapiManagerMock, SERVER);
         Assert.assertTrue("Error in String constructor", localRseapi instanceof RseapiImpl);
         Assert.assertEquals("requestRetry() should return the expected value", REQUEST_RETRY, localRseapi.getRequestRetry());
+
+        Mockito.when(zosManagerMock.getUnmanagedImage(Mockito.any())).thenThrow(new ZosManagerException(EXCEPTION));
+        String expectedMessage =  "Unable to initialise RSE API server " + SERVER + " as z/OS image '" + IMAGE + "' is not defined";
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	new RseapiImpl(rseapiManagerMock, SERVER);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+    	Mockito.when(ServerImage.get(Mockito.any())).thenThrow(new RseapiException(EXCEPTION));
+        expectedMessage =  "Unable to initialise RSE API server " + SERVER;
+        expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	new RseapiImpl(rseapiManagerMock, SERVER);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -511,46 +540,19 @@ public class TestRseapiImpl {
         String toStringValue = zosImageMock.getImageID() + " https://" + HOSTNAME + ":" + PORT;
         Assert.assertEquals("toString() should return the expected value", toStringValue, rseapiSpy.toString());
         
-        PowerMockito.doReturn(credentialsMock).when(zosImageMock, "getDefaultCredentials");
         Mockito.when(Https.get(Mockito.any())).thenReturn(false);
         rseapiSpy.initialize();
         toStringValue = zosImageMock.getImageID() + " http://" + HOSTNAME + ":" + PORT;
         Assert.assertEquals("toString() should return the expected value", toStringValue, rseapiSpy.toString());
-    }
-    
-    @Test
-    public void testInitializeServerImagesException() throws Exception {
-        Mockito.when(ServerImages.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
-        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
-        	rseapiSpy.initialize();
-        });
-    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
-    }
-    
-    @Test
-    public void testInitializeImageNoConfiguredException() throws Exception {
-        Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
-        String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "'";
-        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
-        	rseapiSpy.initialize();
-        });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
-    }
-    
-    @Test
-    public void testInitializeImageNoConfiguredTagException() throws Exception {
-        Mockito.when(ServerImages.get(Mockito.any())).thenReturn(Arrays.asList(""));
-        Whitebox.setInternalState(rseapiSpy, "imageTag", IMAGE_TAG);
-        String expectedMessage = "RSE API server not configured for image '" + IMAGE + "' on cluster '" + CLUSTER + "' tag '" + IMAGE_TAG + "'";
-        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
-        	rseapiSpy.initialize();
-        });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+        
+        Mockito.when(ServerCreds.get(Mockito.any())).thenReturn(null);
+        rseapiSpy.initialize();
+        Assert.assertEquals("toString() should return the expected value", toStringValue, rseapiSpy.toString());
     }
     
     @Test
     public void testInitializeServerHostnameException() throws Exception {
-        Mockito.when(ServerHostname.get(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
+        Mockito.when(zosImageMock.getDefaultHostname()).thenThrow(new ZosManagerException(EXCEPTION));
         RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
         });
@@ -577,7 +579,7 @@ public class TestRseapiImpl {
     
     @Test
     public void testInitializeHttpClientException() throws Exception {
-        Mockito.when(zosImageMock.getDefaultCredentials()).thenThrow(new ZosManagerException(EXCEPTION));
+        Mockito.when(httpClientMock.setTrustingSSLContext()).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage = "Unable to create HTTP Client";
         RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
         	rseapiSpy.initialize();
@@ -595,16 +597,13 @@ public class TestRseapiImpl {
     }
     
     @Test
-    public void testSetImage() throws Exception {
-        rseapiSpy.setImage();
-        Assert.assertEquals("setImage() should set image to the expected value", zosImageMock, Whitebox.getInternalState(rseapiSpy, "image"));
-        
-        Whitebox.setInternalState(rseapiSpy, "image", (String) null);
-        Mockito.when(zosManagerMock.getImageForTag(Mockito.any())).thenThrow(new RseapiManagerException(EXCEPTION));
+    public void testInitializeCredentialsException() throws Exception {
+        Mockito.when(frameworkMock.getCredentialsService()).thenThrow(new CredentialsException(EXCEPTION));
+        String expectedMessage = "Problem accessing credentials store";
         RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
-        	rseapiSpy.setImage();
+        	rseapiSpy.initialize();
         });
-    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
     }
     
     @Test

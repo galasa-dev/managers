@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -29,11 +29,11 @@ import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 
 public class ZosmfZosDatasetAttributesListdsi {
     
-    private ZosmfZosFileHandlerImpl zosFileHandler;
+	private ZosmfZosFileManagerImpl zosFileManager;
+	private ZosmfZosFileHandlerImpl zosFileHandler;
     private IZosUNIXCommand unixCommand;
     private IZosImage image;
     private String execDatasetName;
@@ -100,21 +100,22 @@ public class ZosmfZosDatasetAttributesListdsi {
     
     private static final Log logger = LogFactory.getLog(ZosmfZosDatasetAttributesListdsi.class);
     
-    public ZosmfZosDatasetAttributesListdsi(IZosImage image) {
+    public ZosmfZosDatasetAttributesListdsi(ZosmfZosFileManagerImpl zosFileManager, IZosImage image) {
+    	this.zosFileManager = zosFileManager;
         this.image = image;
     }
     
     protected void initialise() throws ZosDatasetException {
         try {
-            if (ZosmfZosFileManagerImpl.zosUnixCommandManager == null) {
-                throw new ZosDatasetException("ZosmfZosFileManagerImpl.zosUnixCommandManager is null");
+            if (zosFileManager.getZosUnixCommandManager() == null) {
+                throw new ZosDatasetException("zosFileManager zosUnixCommandManager is null");
             }
-            this.unixCommand = ZosmfZosFileManagerImpl.zosUnixCommandManager.getZosUNIXCommand(image);
-            this.zosFileHandler = (ZosmfZosFileHandlerImpl) ZosmfZosFileManagerImpl.newZosFileHandler();
-            this.execDatasetName = ZosmfZosFileManagerImpl.getRunDatasetHLQ(this.image) + "." + ZosmfZosFileManagerImpl.getRunId() + ".EXEC";
+            this.unixCommand = zosFileManager.getZosUnixCommandManager().getZosUNIXCommand(image);
+            this.zosFileHandler = (ZosmfZosFileHandlerImpl) zosFileManager.newZosFileHandler();
+            this.execDatasetName = zosFileManager.getRunDatasetHLQ(this.image) + "." + zosFileManager.getRunId() + ".EXEC";
             createExecDataset();
             initialised = true;
-        } catch (ZosFileManagerException | ZosUNIXCommandManagerException e) {
+        } catch (ZosFileManagerException e) {
             throw new ZosDatasetException("Unable to create LISTDSI EXEC command", e);
         }
     }
@@ -340,7 +341,8 @@ public class ZosmfZosDatasetAttributesListdsi {
             execDataset.setRecordlength(255);
             execDataset.setBlockSize(32720);
             execDataset.setSpace(SpaceUnit.TRACKS, 1, 1);
-            execDataset.createTemporary();
+            execDataset.create();
+            execDataset.setShouldArchive(false);
         }
         if (!this.execDataset.memberExists(LISTDSI_EXEC_NAME)) {
             execDataset.memberStoreText(LISTDSI_EXEC_NAME, getExecResource());

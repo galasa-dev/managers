@@ -6,9 +6,7 @@
 package dev.galasa.zosbatch.internal.properties;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,9 +26,6 @@ public class TestMsgLevel {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Mock
     private IZosImage zosImageMock;
@@ -71,51 +66,42 @@ public class TestMsgLevel {
     }
     
     @Test
-    public void testException() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Problem asking the CPS for the zOSMF default message level for zOS image " + IMAGE_ID);
-        
-        getProperty("ANY", true);
-    }
-    
-    @Test
-    public void testException1() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
-        
-        getProperty("(0,3)");
-    }
-    
-    @Test
-    public void testException2() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
-        
-        getProperty("(4,0)");
-    }
-    
-    @Test
-    public void testException3() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
-        
-        getProperty("(,3)");
-    }
-    
-    @Test
-    public void testException4() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
-        
-        getProperty("4");
-    }
-    
-    @Test
-    public void testException5() throws Exception {
-        exceptionRule.expect(ZosBatchManagerException.class);
-        exceptionRule.expectMessage("Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"");
-        
-        getProperty("X");
+    public void testExceptions() throws Exception {
+        String expectedMessage = "Problem asking the CPS for the zOSMF default message level for zOS image " + IMAGE_ID;
+        ZosBatchManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("ANY", true);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        expectedMessage = "Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("(0,3)");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        expectedMessage = "Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("(4,0)");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+    	expectedMessage = "Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("(,3)");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        expectedMessage = "Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("4");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        expectedMessage = "Message level value invalid. Valid examples: \"(2,1)\", \"0\", \"(,0)\"";
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchManagerException.class, ()->{
+        	getProperty("X");
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(String value) throws Exception {

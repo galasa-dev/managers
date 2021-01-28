@@ -19,9 +19,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -39,8 +37,8 @@ import dev.galasa.http.IHttpClient;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.internal.properties.Https;
 import dev.galasa.zosmf.internal.properties.RequestRetry;
-import dev.galasa.zosmf.internal.properties.SysplexServers;
 import dev.galasa.zosmf.internal.properties.ServerPort;
+import dev.galasa.zosmf.internal.properties.SysplexServers;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SysplexServers.class, ServerPort.class, Https.class, RequestRetry.class})
@@ -70,9 +68,6 @@ public class TestZosmfResponseImpl {
     
     @Mock
     private StatusLine statusLineMock;
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String URL = "http://domain/";
 
@@ -111,9 +106,11 @@ public class TestZosmfResponseImpl {
         Assert.assertTrue("getJsonContent() should return the expected value", JSONOBJECT_CONTENT.equals(zosmfResponseSpy.getJsonContent()));
         
         Whitebox.setInternalState(zosmfResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Content not a JsonObject - " + Integer.class.getName());
-        zosmfResponseSpy.getJsonContent();
+        String expectedMessage = "Content not a JsonObject - " + Integer.class.getName();
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfResponseSpy.getJsonContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -128,9 +125,11 @@ public class TestZosmfResponseImpl {
         Assert.assertTrue("getJsonArrayContent() should return the expected value", JSONARRAY_CONTENT.equals(zosmfResponseSpy.getJsonArrayContent()));
         
         Whitebox.setInternalState(zosmfResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Content not a JsonArray Object - " + Integer.class.getName());
-        zosmfResponseSpy.getJsonArrayContent();
+        String expectedMessage = "Content not a JsonArray Object - " + Integer.class.getName();
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfResponseSpy.getJsonArrayContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -139,9 +138,11 @@ public class TestZosmfResponseImpl {
         Assert.assertTrue("getTextContent() should return the expected value", CONTENT_STRING.equals(zosmfResponseSpy.getTextContent()));
         
         Whitebox.setInternalState(zosmfResponseSpy, "content", new Integer(0));
-        exceptionRule.expect(ZosmfException.class);
-        exceptionRule.expectMessage("Content not a String Object - " + Integer.class.getName());
-        zosmfResponseSpy.getTextContent();
+        String expectedMessage = "Content not a String Object - " + Integer.class.getName();
+        ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+        	zosmfResponseSpy.getTextContent();
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -159,22 +160,23 @@ public class TestZosmfResponseImpl {
     
     @Test
     public void testSetHttpClientresponseCloseableHttpResponse() throws UnsupportedOperationException, IOException, ZosmfException {
-      Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);        
-      Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
-      Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-      Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-      Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
-      
-      zosmfResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
-      Assert.assertTrue("getContent() should return the expected value", CONTENT_STRING.equals(IOUtils.toString((InputStream) zosmfResponseSpy.getContent(), StandardCharsets.UTF_8)));
-      Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, zosmfResponseSpy.getStatusCode());
-      Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, zosmfResponseSpy.getStatusLine());
-      
-      Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
-      exceptionRule.expect(ZosmfException.class);
-      exceptionRule.expectMessage("Could not retrieve response");
-      
-      zosmfResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	Mockito.when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntity);
+    	Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(CONTENT_STRING.getBytes()));
+    	Mockito.when(closeableHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+    	Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+    	Mockito.when(statusLineMock.getReasonPhrase()).thenReturn(STATUS_LINE);
+    	
+    	zosmfResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	Assert.assertTrue("getContent() should return the expected value", CONTENT_STRING.equals(IOUtils.toString((InputStream) zosmfResponseSpy.getContent(), StandardCharsets.UTF_8)));
+    	Assert.assertEquals("getStatusCode() should return the expected value", HttpStatus.SC_OK, zosmfResponseSpy.getStatusCode());
+    	Assert.assertEquals("getStatusLine() should return the expected value", STATUS_LINE, zosmfResponseSpy.getStatusLine());
+    	
+    	Mockito.when(httpEntity.getContent()).thenThrow(new IOException());
+    	String expectedMessage = "Could not retrieve response";
+    	ZosmfException expectedException = Assert.assertThrows("expected exception should be thrown", ZosmfException.class, ()->{
+    		zosmfResponseSpy.setHttpClientresponse(closeableHttpResponseMock);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
     
     @Test
