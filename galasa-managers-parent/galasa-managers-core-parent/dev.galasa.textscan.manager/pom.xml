@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>dev.galasa</groupId>
 		<artifactId>galasa-managers-core-parent</artifactId>
-		<version>0.14.0</version>
+		<version>0.15.0-SNAPSHOT</version>
 	</parent>
 
 	<name>Galasa Text Scan Manager</name>
@@ -14,19 +14,19 @@
 
 	<groupId>dev.galasa</groupId>
 	<artifactId>dev.galasa.textscan.manager</artifactId>
-	<version>0.14.0</version>
+	<version>0.15.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa</artifactId>
-			<version>0.14.0</version>
+			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework</artifactId>
-			<version>0.14.0</version>
+			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
 		
 	</dependencies>
