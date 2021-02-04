@@ -499,11 +499,13 @@ public class DockerEnvironment implements IDockerEnvironment {
 
     @Override
     public void removeDockerVolume(DockerVolumeImpl volume) throws DockerManagerException {
-        String volumeProperty = "engine." + volume.getEngineTag() + ".volume." + volume.getVolumeName(); 
+        String volumeRun = "volume." + volume.getVolumeName() + ".run";
+        String volumeEngine = "volume." + volume.getVolumeName() + ".engine";
 
         try{
             dss.performActions(
-                new DssDelete(volumeProperty, framework.getTestRunName())
+                new DssDelete(volumeRun, framework.getTestRunName()),
+                new DssDelete(volumeEngine, volume.getEngineTag())
             );
         } catch (DynamicStatusStoreException e) {
             throw new DockerManagerException("Failed to clean dss Volume properties for: " + volume.getVolumeName() ,e);
