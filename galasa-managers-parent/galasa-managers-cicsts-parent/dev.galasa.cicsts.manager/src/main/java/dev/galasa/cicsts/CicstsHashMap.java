@@ -25,4 +25,10 @@ public class CicstsHashMap extends HashMap<String,String> {
         return testValue.equals(value);
     }
 
+    public void checkParameterEquals(@NotNull String parameter, @NotNull String value) throws CicstsManagerException {
+        if (!isParameterEquals(parameter, value)) {
+            throw new CicstsManagerException("Parameter " + parameter + " does not equal " + value);
+        }
+    }
+
 }
