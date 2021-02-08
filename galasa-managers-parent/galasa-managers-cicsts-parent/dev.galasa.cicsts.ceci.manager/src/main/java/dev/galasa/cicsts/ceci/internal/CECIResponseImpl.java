@@ -7,6 +7,7 @@ package dev.galasa.cicsts.ceci.internal;
 
 import java.util.Map;
 
+import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICeciResponseOutputValue;
 
@@ -33,6 +34,24 @@ public class CECIResponseImpl implements ICeciResponse {
     }
 
     @Override
+    public void checkNormal() throws CeciManagerException {
+        if (!isNormal()) {
+            throw new CeciManagerException("CECI response is not 'NORMAL', actual response is '" + response + "'");
+        }
+        
+        return;
+    }
+
+    @Override
+    public void checkNotAbended() throws CeciManagerException {
+        if (response.startsWith("ABEND ")) {
+            throw new CeciManagerException("CECI response is an abend '" + response + "'");
+        }
+
+        return;
+    }
+    
+    @Override
     public String getResponse() {
         return response;
     }
@@ -56,4 +75,5 @@ public class CECIResponseImpl implements ICeciResponse {
     public String toString() {
         return String.format("RESPONSE: %s EIBRESP=%+010d EIBRESP2=%+010d", response, eibresp, eibresp2);
     }
+
 }

@@ -127,7 +127,7 @@ public class CemtImpl implements ICemt {
       try {
          terminal.tab().waitForKeyboard().enter().waitForKeyboard();
          
-         if(!terminal.retrieveScreen().contains("+")) {
+         if(!terminal.retrieveScreen().contains("RESULT - OVERTYPE TO MODIFY")) {
             throw new CemtException("Problem finding properties");
          }
       }catch(Exception e) {

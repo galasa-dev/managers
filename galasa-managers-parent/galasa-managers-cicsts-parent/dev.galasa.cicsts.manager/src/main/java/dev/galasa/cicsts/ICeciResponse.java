@@ -19,6 +19,16 @@ public interface ICeciResponse {
     public boolean isNormal();
     
     /**
+     * Throws an exception if the CECI response is not "NORMAL" 
+     */
+    public void checkNormal() throws CeciManagerException;
+    
+    /**
+     * Throws an exception if the CECI response is an abend 
+     */
+    public void checkNotAbended() throws CeciManagerException;
+    
+    /**
      * Returns the text value of the CECI issues CICS API command, e.g. "NORMAL", 
      * @return the response
      */
