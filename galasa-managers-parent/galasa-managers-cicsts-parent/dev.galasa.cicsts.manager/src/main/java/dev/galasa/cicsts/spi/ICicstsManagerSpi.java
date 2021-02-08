@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
+import dev.galasa.cicsts.ICicsRegion;
 
 public interface ICicstsManagerSpi {
 
@@ -68,5 +69,7 @@ public interface ICicstsManagerSpi {
     @NotNull
     public ICemtProvider getCemtProvider() throws CicstsManagerException;
 
+    
+    public void cicstsRegionStarted(ICicsRegion region) throws CicstsManagerException;
 
 }

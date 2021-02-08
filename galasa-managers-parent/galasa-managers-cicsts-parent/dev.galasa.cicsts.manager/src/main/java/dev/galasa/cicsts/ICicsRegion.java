@@ -49,4 +49,6 @@ public interface ICicsRegion {
     ICeci ceci() throws CicstsManagerException;    
     void startup() throws CicstsManagerException;
     void shutdown() throws CicstsManagerException;
+    
+    boolean isProvisionStart();
 }

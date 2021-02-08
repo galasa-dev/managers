@@ -65,6 +65,9 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
         return this.masType;
     }
     
+    protected  ICicstsManagerSpi getCicstsManager() {
+        return this.cicstsManager;
+    }
     
     @Override
     public ICeci ceci() throws CicstsManagerException {
@@ -89,19 +92,5 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
         }
         return this.cemt;
     }
-
-    @Override
-    public void startup() throws CicstsManagerException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
-    }
-
-    @Override
-    public void shutdown() throws CicstsManagerException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); // TODO
-    }
-
-
-
-
 
 }
