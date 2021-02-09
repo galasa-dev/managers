@@ -34,21 +34,38 @@ public class CECIResponseImpl implements ICeciResponse {
     }
 
     @Override
-    public void checkNormal() throws CeciManagerException {
+    public ICeciResponse checkNormal() throws CeciManagerException {
         if (!isNormal()) {
             throw new CeciManagerException("CECI response is not 'NORMAL', actual response is '" + response + "'");
         }
         
-        return;
+        return this;
     }
 
     @Override
-    public void checkNotAbended() throws CeciManagerException {
+    public ICeciResponse checkNotAbended() throws CeciManagerException {
         if (response.startsWith("ABEND ")) {
             throw new CeciManagerException("CECI response is an abend '" + response + "'");
         }
 
-        return;
+        return this;
+    }
+    
+    @Override
+    public ICeciResponse checkAbended(String abendCode) throws CeciManagerException {
+        if (abendCode == null) {
+            if (response.startsWith("ABEND ")) {
+                return this;
+            }
+            throw new CeciManagerException("CECI response was not an abend - response = '" + response + "'");
+        }
+        
+        
+        if (!response.startsWith("ABEND " + abendCode)) {
+            throw new CeciManagerException("CECI response did not abend with '" + abendCode + "' - response = '" + response + "'");
+        }
+
+        return this;
     }
     
     @Override
