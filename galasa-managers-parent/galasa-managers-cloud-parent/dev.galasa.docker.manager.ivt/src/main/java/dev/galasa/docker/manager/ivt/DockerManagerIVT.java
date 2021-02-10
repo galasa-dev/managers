@@ -67,9 +67,6 @@ public class DockerManagerIVT {
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
     public IDockerContainer containerSecondry;
 
-    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "c", start = false)
-    public IDockerContainer containerThird;
-
     @DockerContainerConfig
     public IDockerContainerConfig config1;
 
@@ -282,8 +279,8 @@ public class DockerManagerIVT {
         ports.add("8080/tcp");
         config1.setExposedPorts(ports);
 
-        containerThird.startWithConfig(config1);
-        InetSocketAddress exposedPort = containerThird.getFirstSocketForExposedPort("8080/tcp");
+        container.startWithConfig(config1);
+        InetSocketAddress exposedPort = container.getFirstSocketForExposedPort("8080/tcp");
         assertThat(exposedPort).as("Correctly retrieved the exposed port").isNotNull();
     }
 

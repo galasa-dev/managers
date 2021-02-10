@@ -57,7 +57,7 @@ public class DockerContainerConfigImpl implements IDockerContainerConfig {
     }
 
     /**
-     * Retruns a specific named volume from the configuration
+     * Returns a specific named volume from the configuration
      * 
      * @return volume
      */
@@ -71,11 +71,18 @@ public class DockerContainerConfigImpl implements IDockerContainerConfig {
         return null;
     }
 
+    /**
+     * Allows ports to be exposed at container startup
+     */
     @Override
     public void setExposedPorts(List<String> ports) {
         this.ports = ports;
     }
 
+    /**
+     * Returns a list of ports exposed from the configuration
+     * @return ports
+     */
     @Override
     public List<String> getExposedPorts() {
         return this.ports;

@@ -142,7 +142,7 @@ public class DockerContainerImpl implements IDockerContainer {
         if (config == null) {
             return metadata;
         }
-        // Currently only supporting ENVS and Volumes
+        // Currently only supporting ENVS and Volumes and ports
 
         // Envs
         JsonArray env = new JsonArray();
