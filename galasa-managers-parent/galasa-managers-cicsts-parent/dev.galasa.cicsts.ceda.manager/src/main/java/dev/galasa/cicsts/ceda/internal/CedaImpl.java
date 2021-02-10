@@ -8,6 +8,7 @@ package dev.galasa.cicsts.ceda.internal;
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.cicsts.CedaException;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeda;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
@@ -20,8 +21,6 @@ import dev.galasa.zos3270.spi.NetworkException;
 public class CedaImpl implements ICeda{
 
 	private ICicsRegion cicsRegion;
-	
-	private ICicsTerminal terminal;
 	
 	public CedaImpl(ICicsRegion cicsRegion) {
 		this.cicsRegion = cicsRegion;
@@ -36,25 +35,21 @@ public class CedaImpl implements ICeda{
 			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
-		this.terminal = terminal;
-
-		try {
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-		}catch(Exception e) {
-			throw new CedaException("Problem starting transaction", e);
+		if (!terminal.isClearScreen()) {
+		    try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
 		}
 
 		try {
-			this.terminal.waitForKeyboard();
 			if(resourceParameters==null){
-				this.terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
+				terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
 						") GROUP(" + groupName + ") ").enter().waitForKeyboard();
 			}else{
 
-				this.terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
+				terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
 						") GROUP(" + groupName + ") " + resourceParameters).enter().waitForKeyboard();
 			}
 		}catch(TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
@@ -62,7 +57,7 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			if(this.terminal.retrieveScreen().contains("DEFINE SUCCESSFUL")){
+			if(terminal.retrieveScreen().contains("DEFINE SUCCESSFUL")){
 				if(terminal.retrieveScreen().contains("MESSAGES:")) {
 					terminal.pf9();
 				}
@@ -72,10 +67,10 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			this.terminal.pf3();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -88,14 +83,13 @@ public class CedaImpl implements ICeda{
 			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
-		this.terminal = terminal;
-		try{
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-		}catch(TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e){
-			throw new CedaException(
-					"Unable to prepare for the CEDA install group", e);
-		}
+        if (!terminal.isClearScreen()) {
+            try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
+        }
 
 		try {
 			terminal.type("CEDA INSTALL GROUP(" + groupName + ")").enter().waitForKeyboard();
@@ -105,11 +99,11 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			if(!this.terminal.retrieveScreen().contains("INSTALL SUCCESSFUL")) {
-				this.terminal.pf9();
-				this.terminal.pf3();
-				this.terminal.clear();
-				this.terminal.waitForKeyboard();
+			if(!terminal.retrieveScreen().contains("INSTALL SUCCESSFUL")) {
+				terminal.pf9();
+				terminal.pf3();
+				terminal.clear();
+				terminal.waitForKeyboard();
 				throw new CedaException("Errors detected whilst installing group");
 			}
 		}catch(Exception e) {
@@ -117,10 +111,10 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			this.terminal.pf3();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -135,17 +129,17 @@ public class CedaImpl implements ICeda{
 			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
-		this.terminal = terminal;
-		try {
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-		}catch(Exception e) {
-			throw new CedaException("Problem starting transaction", e);
-		}
+        if (!terminal.isClearScreen()) {
+            try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
+        }
 
 		try {
 
-			this.terminal.type("CEDA INSTALL " + resourceType + "(" + resourceName + ") GROUP(" +
+			terminal.type("CEDA INSTALL " + resourceType + "(" + resourceName + ") GROUP(" +
 					cedaGroup + ")").enter().waitForKeyboard();
 
 		}catch(Exception e) {
@@ -155,18 +149,18 @@ public class CedaImpl implements ICeda{
 		try {
 			boolean error = false;
 			try {
-				if (this.terminal.retrieveScreen().contains("USE P9 FOR S MSGS")) {
+				if (terminal.retrieveScreen().contains("USE P9 FOR S MSGS")) {
 					error = true;
 
 					//if the terminal contains the error then error = true elseif it contains
 					//the success then error = false
-				}else if(!this.terminal.retrieveScreen().contains("INSTALL SUCCESSFUL")) {
+				}else if(!terminal.retrieveScreen().contains("INSTALL SUCCESSFUL")) {
 					error = true;
 				}
 
 				if(error) {
-					this.terminal.pf9();
-					this.terminal.waitForKeyboard();
+					terminal.pf9();
+					terminal.waitForKeyboard();
 					throw new CedaException("Errors detected whilst installing group");
 				}
 			}catch(Exception e) {
@@ -177,10 +171,10 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			this.terminal.pf3();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -193,27 +187,26 @@ public class CedaImpl implements ICeda{
 			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
-		this.terminal = terminal;
+        if (!terminal.isClearScreen()) {
+            try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
+        }
 
 		try {
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-		}catch(Exception e) {
-			throw new CedaException("Problem starting transaction", e);
-		}
-
-		try {
-			this.terminal.type("CEDA DELETE GROUP(" + groupName + ") ALL").enter().waitForKeyboard();
+			terminal.type("CEDA DELETE GROUP(" + groupName + ") ALL").enter().waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction");
 		}
 
 		try {
-			if(!this.terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
-				this.terminal.pf9();
-				this.terminal.pf3();
-				this.terminal.clear();
-				this.terminal.waitForKeyboard();
+			if(!terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
+				terminal.pf9();
+				terminal.pf3();
+				terminal.clear();
+				terminal.waitForKeyboard();
 
 				throw new CedaException("Errors detected whilst discarding group");
 			}
@@ -222,10 +215,10 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			this.terminal.pf3();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -240,27 +233,28 @@ public class CedaImpl implements ICeda{
 			 throw new CedaException("The provided terminal is not from the correct CICS Region");
 		}
 
-		this.terminal = terminal;
-		try {
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
-		}catch(Exception e) {
-			throw new CedaException("Problem starting transaction", e);
-		}
+        if (!terminal.isClearScreen()) {
+            try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
+        }
+
 
 		try {
 
-			this.terminal.waitForKeyboard();
-			this.terminal.type("CEDA DELETE " + resourceType + "("
+			terminal.waitForKeyboard();
+			terminal.type("CEDA DELETE " + resourceType + "("
 					+ resourceName + ") GROUP(" + groupName + ")").enter();
-			this.terminal.waitForKeyboard();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
 
 		try {
-			if(!this.terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
-				this.terminal.pf9()
+			if(!terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
+				terminal.pf9()
 				.pf3().clear()
 				.waitForKeyboard();
 				throw new CedaException("Errors detected whilst discarding group");
@@ -270,10 +264,10 @@ public class CedaImpl implements ICeda{
 
 		}
 		try {
-			this.terminal.pf3();
-			this.terminal.waitForKeyboard();
-			this.terminal.clear();
-			this.terminal.waitForKeyboard();
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}

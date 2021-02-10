@@ -19,6 +19,22 @@ public interface ICeciResponse {
     public boolean isNormal();
     
     /**
+     * Throws an exception if the CECI response is not "NORMAL" 
+     */
+    public ICeciResponse checkNormal() throws CeciManagerException;
+    
+    /**
+     * Throws an exception if the CECI response is an abend 
+     */
+    public ICeciResponse checkNotAbended() throws CeciManagerException;
+    
+    /**
+     * Throws an exception if the CECI response has not abended with the supplied code
+     * @Param abendCode the abend code to check against, or null for any abend
+     */
+    public ICeciResponse checkAbended(String abendCode) throws CeciManagerException;
+    
+    /**
      * Returns the text value of the CECI issues CICS API command, e.g. "NORMAL", 
      * @return the response
      */
