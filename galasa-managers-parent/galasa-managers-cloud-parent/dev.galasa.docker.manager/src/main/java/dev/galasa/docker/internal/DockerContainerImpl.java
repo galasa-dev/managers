@@ -153,7 +153,16 @@ public class DockerContainerImpl implements IDockerContainer {
             }
             metadata.add("Env", env);
         }
-        
+
+        // Ports
+        JsonObject exposedPorts = new JsonObject();
+        List<String> ports = config.getExposedPorts();
+        if (ports.size() > 0) {
+            for (String port: ports) {
+                exposedPorts.add(port, new JsonObject());
+            }
+            metadata.add("ExposedPorts", exposedPorts);
+        }
 
         // Volumes
         JsonArray mounts = new JsonArray();
@@ -173,6 +182,9 @@ public class DockerContainerImpl implements IDockerContainer {
             metadata.remove("HostConfig");
             metadata.add("HostConfig", hostConfig);
         }
+
+        logger.info("Container metadata:" + metadata.toString());
+
         return metadata;
     }
 

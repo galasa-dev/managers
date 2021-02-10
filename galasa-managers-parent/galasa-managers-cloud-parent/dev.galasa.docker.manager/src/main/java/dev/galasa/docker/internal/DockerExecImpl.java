@@ -101,7 +101,7 @@ public class DockerExecImpl implements IDockerExec {
 
         } catch(Exception e) {
             finished = true;
-            throw new DockerManagerException("");
+            throw new DockerManagerException("Failed to exec: ", e);
         }
 
     }

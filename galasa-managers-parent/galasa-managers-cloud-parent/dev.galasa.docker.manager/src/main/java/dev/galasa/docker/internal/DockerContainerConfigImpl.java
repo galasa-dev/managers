@@ -13,8 +13,9 @@ import dev.galasa.docker.IDockerVolume;
  * @author James Davies
  */
 public class DockerContainerConfigImpl implements IDockerContainerConfig {
-    private List<IDockerVolume> volumes = new ArrayList<>();
-    private HashMap<String,String> envs = new HashMap<>();
+    private List<IDockerVolume>     volumes     = new ArrayList<>();
+    private HashMap<String,String>  envs     = new HashMap<>();
+    private List<String>            ports   = new ArrayList<>();
 
     /**
      * Consturctors that sets all requested volumes to the config
@@ -68,6 +69,16 @@ public class DockerContainerConfigImpl implements IDockerContainerConfig {
             }
         }
         return null;
+    }
+
+    @Override
+    public void setExposedPorts(List<String> ports) {
+        this.ports = ports;
+    }
+
+    @Override
+    public List<String> getExposedPorts() {
+        return this.ports;
     }
     
 }

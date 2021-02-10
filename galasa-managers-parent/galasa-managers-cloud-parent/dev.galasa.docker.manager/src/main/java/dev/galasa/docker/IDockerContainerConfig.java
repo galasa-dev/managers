@@ -37,4 +37,8 @@ public interface IDockerContainerConfig {
      */
     public IDockerVolume getVolumeByTag(String volumeTag);
     
+
+    public void setExposedPorts(List<String> ports);
+
+    public List<String> getExposedPorts();
 }

@@ -12,7 +12,9 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 
@@ -64,6 +66,9 @@ public class DockerManagerIVT {
 
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
     public IDockerContainer containerSecondry;
+
+    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "c", start = false)
+    public IDockerContainer containerThird;
 
     @DockerContainerConfig
     public IDockerContainerConfig config1;
@@ -269,6 +274,17 @@ public class DockerManagerIVT {
         cmd = container.exec("/bin/cat", "/tmp/testvol/EvenYetAnotherConfig.cfg");
         cmd.waitForExec();
         assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigsAgain");
+    }
+
+    @Test
+    public void exposePortForContainerThroughConfig() throws DockerManagerException {
+        List<String> ports = new ArrayList<>();
+        ports.add("8080/tcp");
+        config1.setExposedPorts(ports);
+
+        containerThird.startWithConfig(config1);
+        InetSocketAddress exposedPort = containerThird.getFirstSocketForExposedPort("8080/tcp");
+        assertThat(exposedPort).as("Correctly retrieved the exposed port").isNotNull();
     }
 
 }
