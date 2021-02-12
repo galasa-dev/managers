@@ -1645,4 +1645,14 @@ public class Screen {
         this.lastAid = aid;
     }
 
+    public synchronized boolean isClearScreen() {
+        for(IBufferHolder bh : buffer) {
+            if (bh != null) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
 }

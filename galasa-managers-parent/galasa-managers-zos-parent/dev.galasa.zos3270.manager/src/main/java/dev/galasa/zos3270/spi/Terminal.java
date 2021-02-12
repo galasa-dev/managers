@@ -176,9 +176,26 @@ public class Terminal implements ITerminal {
     }
     
     @Override
-    public boolean isTextInField(String string, long timeoutInMilliseconds) throws TerminalInterruptedException {
-        throw new UnsupportedOperationException("PLACEHOLDER"); //TODO
-//        return false;
+    public boolean isTextInField(String text, long timeoutInMilliseconds) throws TerminalInterruptedException {
+        if (isTextInField(text)) {
+            return true;
+        }
+        
+        Instant expire = Instant.now().plus(timeoutInMilliseconds, ChronoUnit.MILLIS);
+        while(expire.isAfter(Instant.now())) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new TerminalInterruptedException("Wait for text was interrupted",e);
+            }
+            
+            if (isTextInField(text)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
 
@@ -518,6 +535,11 @@ public class Terminal implements ITerminal {
     @Override
     public void setDoStartTls(boolean doStartTls) {
         this.network.setDoStartTls(doStartTls);
+    }
+
+    @Override
+    public boolean isClearScreen() {
+        return this.screen.isClearScreen();
     }
 
 
