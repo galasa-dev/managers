@@ -65,9 +65,6 @@ public class DockerManagerIVT {
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
     public IDockerContainer containerSecondry;
 
-    @DockerContainer(image = "library/hello-world:latest", dockerContainerTag = "c", start = false)
-    public IDockerContainer containerThird;
-
     @DockerContainerConfig
     public IDockerContainerConfig config1;
 
