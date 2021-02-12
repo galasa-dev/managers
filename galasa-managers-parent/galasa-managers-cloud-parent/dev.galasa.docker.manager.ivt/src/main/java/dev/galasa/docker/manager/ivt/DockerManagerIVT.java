@@ -65,6 +65,9 @@ public class DockerManagerIVT {
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
     public IDockerContainer containerSecondry;
 
+    @DockerContainer(image = "library/hello-world:latest", dockerContainerTag = "c", start = false)
+    public IDockerContainer containerThird;
+
     @DockerContainerConfig
     public IDockerContainerConfig config1;
 
@@ -269,6 +272,16 @@ public class DockerManagerIVT {
         cmd = container.exec("/bin/cat", "/tmp/testvol/EvenYetAnotherConfig.cfg");
         cmd.waitForExec();
         assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigsAgain");
+    }
+
+    @Test
+    public void testANonCleanShutDownRestart() throws DockerManagerException {
+        container.start();
+        container.exec("/usr/local/apache2/bin/httpd", "-k", "stop").waitForExec();
+        assertThat(container.isRunning()).isEqualTo(false);
+
+        container.startWithConfig(config1);
+        assertThat(container.isRunning()).isEqualTo(true);
     }
 
 }
