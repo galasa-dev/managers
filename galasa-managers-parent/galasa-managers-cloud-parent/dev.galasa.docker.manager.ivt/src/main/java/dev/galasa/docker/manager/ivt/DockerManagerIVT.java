@@ -271,4 +271,14 @@ public class DockerManagerIVT {
         assertThat(cmd.getCurrentOutput()).contains("AdditionalStringConfigsAgain");
     }
 
+    @Test
+    public void testANonCleanShutDownRestart() throws DockerManagerException {
+        container.start();
+        container.exec("/usr/local/apache2/bin/httpd", "-k", "stop").waitForExec();
+        assertThat(container.isRunning()).isEqualTo(false);
+
+        container.startWithConfig(config1);
+        assertThat(container.isRunning()).isEqualTo(true);
+    }
+
 }
