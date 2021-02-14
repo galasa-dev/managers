@@ -300,6 +300,7 @@ public class DockerContainerImpl implements IDockerContainer {
     private void stopDockerContainer() throws DockerManagerException {
         if (!isRunning()) {
             logger.info("Stop command ignored, container already stopped.");
+            alreadyUp = false;
             return;
         }
         try {

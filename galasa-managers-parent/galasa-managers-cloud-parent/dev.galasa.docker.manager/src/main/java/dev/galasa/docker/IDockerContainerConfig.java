@@ -39,7 +39,9 @@ public interface IDockerContainerConfig {
     
 
     /**
-     * Allows a set of ports to be exposed before container startup.
+     * Allows a set of ports to be exposed inside the container before startup. Ports are to be expressed for the
+     * conatiner and not the host (I.e. "8080/tcp"), as a random port will be exposed on the host, which can be
+     * obtained on the container object
      * 
      * @param ports
      */
