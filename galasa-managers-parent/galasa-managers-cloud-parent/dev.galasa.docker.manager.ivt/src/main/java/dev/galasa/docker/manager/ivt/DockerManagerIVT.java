@@ -292,5 +292,6 @@ public class DockerManagerIVT {
 
         container.startWithConfig(config1);
         assertThat(container.isRunning()).isEqualTo(true);
+    }
 
 }
