@@ -10,6 +10,7 @@ import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICeda;
 import dev.galasa.cicsts.ICemt;
 import dev.galasa.cicsts.MasType;
+import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
 
 public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
@@ -25,6 +26,7 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     private ICeci ceci;
     private ICeda ceda;
     private ICemt cemt;
+    private ICicsResource cicsResource;
 
     public BaseCicsImpl(ICicstsManagerSpi cicstsManager, String cicsTag, IZosImage zosImage, String applid, MasType masType) {
         this.cicstsManager = cicstsManager;
@@ -93,4 +95,11 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
         return this.cemt;
     }
 
+    @Override
+	public ICicsResource cicsResource() throws CicstsManagerException {
+        if (this.cicsResource == null) {
+            this.cicsResource = this.cicstsManager.getCicsResourceProvider().getCicsResource(this);
+        }
+        return this.cicsResource;
+	}
 }

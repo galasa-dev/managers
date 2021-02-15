@@ -63,6 +63,13 @@ public interface ICicstsManagerSpi {
     public ICedaProvider getCedaProvider() throws CicstsManagerException;
 
     /**
+     * @return The registered CICS Resource provider
+     * @throws CicstsManagerException
+     */
+    @NotNull
+    public ICicsResourceProvider getCicsResourceProvider() throws CicstsManagerException;
+
+    /**
      * @return The registered CEMT provider
      * @throws CicstsManagerException
      */

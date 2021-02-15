@@ -17,6 +17,7 @@
     <module>dev.galasa.docker.manager.ivt</module>
     <module>dev.galasa.kubernetes.manager</module>
     <module>dev.galasa.kubernetes.manager.ivt</module>
+    <module>dev.galasa.liberty.manager</module>
   </modules>
   
 </project>

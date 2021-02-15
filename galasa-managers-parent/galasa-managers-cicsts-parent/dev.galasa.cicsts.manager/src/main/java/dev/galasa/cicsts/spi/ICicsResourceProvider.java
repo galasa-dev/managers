@@ -1,0 +1,28 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
+package dev.galasa.cicsts.spi;
+
+import javax.validation.constraints.NotNull;
+
+import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.cicsresource.ICicsResource;
+
+/**
+ * Provides CICS Region related ICicsResource objects
+ *
+ */
+public interface ICicsResourceProvider {
+    
+    /**
+     * Returns a unique instance of the ICicsResource per CICS region 
+     * 
+     * @param cicsRegion
+     * @return ICicsResource object for this CICS region, will a different instance for different regions
+     */
+    @NotNull
+    ICicsResource getCicsResource(ICicsRegion cicsRegion);
+
+}
