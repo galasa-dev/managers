@@ -37,4 +37,20 @@ public interface IDockerContainerConfig {
      */
     public IDockerVolume getVolumeByTag(String volumeTag);
     
+
+    /**
+     * Allows a set of ports to be exposed inside the container before startup. Ports are to be expressed for the
+     * conatiner and not the host (I.e. "8080/tcp"), as a random port will be exposed on the host, which can be
+     * obtained on the container object
+     * 
+     * @param ports
+     */
+    public void setExposedPorts(List<String> ports);
+
+    /**
+     * Retruns a list of exposed ports
+     * 
+     * @return
+     */
+    public List<String> getExposedPorts();
 }
