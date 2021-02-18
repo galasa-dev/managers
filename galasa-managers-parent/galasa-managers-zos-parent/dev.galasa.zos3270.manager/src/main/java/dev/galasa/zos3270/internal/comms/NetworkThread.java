@@ -581,7 +581,7 @@ public class NetworkThread extends Thread {
 
     private void doIacDoTimingMark(InputStream messageStream) throws NetworkException {
         logger.trace("timing received");
-        this.network.sendIac(new byte[] {IAC, DONT, TIMING_MARK});
+        this.network.sendIac(new byte[] {IAC, WILL, TIMING_MARK});
     }
 
     private void doIacDoTelnetEor(InputStream messageStream) throws NetworkException, IOException {
