@@ -36,6 +36,7 @@ import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClientException;
+import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
@@ -189,10 +190,10 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	
 		//Convert HashMap of run properties to a Json String
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
-		String request = gson.toJson(this.runProperties);
+		JsonObject json = gson.toJsonTree(this.runProperties).getAsJsonObject();
 
 		logger.info("Sending Run Request to ElasticLog Endpoint");
-		logger.trace("Document Request -\n" + request);
+		logger.trace("Document Request -\n" + json.toString());
 		
 		//Register endpoint data as confidential
 		String index = ElasticLogIndex.get();
@@ -205,18 +206,35 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			client.setTrustingSSLContext();
 			client.addOkResponseCode(201);
 			client.setURI(new URI(endpoint));
-
-			//Send document to index
-			client.postText(index + "/_doc", request);
-			logger.info("Run successfully logged to Elastic index " + index);
+			
+			HttpClientResponse<JsonObject> response = client.postJson(index + "/_doc", json);
+			
+			int statusCode = response.getStatusCode();
+			String message = response.getStatusMessage();
+			
+			//Send document to index and check response code
+			if(statusCode != 201 && statusCode != 200){
+			   logger.error("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			}else {
+			  logger.info("Run successfully logged to Elastic index " + index); 
+			}
         
 			//Change index to latest document index
 			index = index + "_latest";
 		 	String testCase = (String) this.runProperties.get("testCase");
 		 	
 		 	//Create new doc if doesnt exist, updates if doc already exists
-			client.postText(index + "/_doc/" + testCase + testingEnvironment, request);
-			logger.info("Run successfully logged to Elastic index " + index);
+		 	
+		 	response = client.postJson(index + "/_doc/" + testCase + testingEnvironment, json);
+		 	
+			statusCode = response.getStatusCode();
+			message = response.getStatusMessage();
+			
+			if(statusCode != 201 && statusCode != 200) {
+			   logger.error("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			}else {
+			  logger.info("Run successfully logged to Elastic index " + index); 
+			}
 
 		} catch (HttpClientException e) {
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
