@@ -91,7 +91,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		} catch (Exception e) {
 			throw new ElasticLogManagerException("Unable to request framework services", e);
 		}
-        
+		
 		if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
 			youAreRequired(allManagers, activeManagers);
 		
@@ -114,6 +114,11 @@ public class ElasticLogManagerImpl extends AbstractManager {
 
 		httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
 	}
+	
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;
+    }
 
 	/**
 	 * Test class result step, build and send the document request
@@ -123,6 +128,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	 */
 	@Override
 	public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
+	    
 		//Record test information
 		this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
 		this.runProperties.put("runId", this.framework.getTestRunName());
