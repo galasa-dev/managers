@@ -219,7 +219,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			client.addOkResponseCode(201);
 			client.setURI(new URI(endpoint));
 			
-	        if(creds instanceof ICredentialsUsernamePassword) {
+	        if(creds != null && creds instanceof ICredentialsUsernamePassword) {
 	              
 	              ICredentialsUsernamePassword userPass = (ICredentialsUsernamePassword) creds;
 	              String user = userPass.getUsername();
