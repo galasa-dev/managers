@@ -23,7 +23,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
+import dev.galasa.elasticlog.internal.properties.ElasticLogCredentials;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
 import dev.galasa.elasticlog.internal.properties.ElasticLogIndex;
 import dev.galasa.elasticlog.internal.properties.ElasticLogLocalRun;
@@ -34,6 +37,8 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
@@ -54,6 +59,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	private IFramework							framework;
 	private IConfigurationPropertyStoreService	cps;
 	private IConfidentialTextService			ctf;
+	
+	private ICredentialsService                 credService;
 
 	private List<IManager>						otherManagers	= new ArrayList<IManager>();
 
@@ -79,11 +86,12 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			this.framework = framework;
 			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
 			this.ctf = framework.getConfidentialTextService();
+			this.credService = framework.getCredentialsService();
 			ElasticLogPropertiesSingleton.setCps(this.cps);
 		} catch (Exception e) {
 			throw new ElasticLogManagerException("Unable to request framework services", e);
 		}
-        
+		
 		if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
 			youAreRequired(allManagers, activeManagers);
 		
@@ -106,14 +114,21 @@ public class ElasticLogManagerImpl extends AbstractManager {
 
 		httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
 	}
+	
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;
+    }
 
 	/**
 	 * Test class result step, build and send the document request
 	 * 
 	 * @throws ManagerException
+	 * @throws CredentialsException 
 	 */
 	@Override
 	public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
+	    
 		//Record test information
 		this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
 		this.runProperties.put("runId", this.framework.getTestRunName());
@@ -201,11 +216,23 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		ctf.registerText(index, "ElasticLog Index");
 		ctf.registerText(endpoint, "ElasticLog Endpoint");
 		try {
+		   
+		    ICredentials creds = getCreds();
+		   
 			//Set up http client for requests
 			IHttpClient client = this.httpManager.newHttpClient();
 			client.setTrustingSSLContext();
 			client.addOkResponseCode(201);
 			client.setURI(new URI(endpoint));
+			
+	        if(creds != null && creds instanceof ICredentialsUsernamePassword) {
+	              
+	              ICredentialsUsernamePassword userPass = (ICredentialsUsernamePassword) creds;
+	              String user = userPass.getUsername();
+	              String pass = userPass.getPassword();
+	              client.setAuthorisation(user, pass);
+	           }
+			
 			
 			HttpClientResponse<JsonObject> response = client.postJson(index + "/_doc", json);
 			
@@ -240,6 +267,14 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
 		} catch (URISyntaxException e) {
 			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
+		}catch (CredentialsException e) {
+		    throw new ElasticLogManagerException("Problem retrieving credentials", e);
 		}
+	}
+	
+	private ICredentials getCreds() throws CredentialsException, ElasticLogManagerException{
+	   String credKey = ElasticLogCredentials.get();
+	   ICredentials creds = credService.getCredentials(credKey);
+	   return creds;
 	}
 }
