@@ -47,7 +47,8 @@ pipeline {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
                withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
-                     gradleTasks.each { task ->
+                     script {
+                        gradleTasks.each { task ->
                         ['dev.galasa.core.manager',
                         'dev.galasa.artifact.manager',
                         'dev.galasa.textscan.manager',
@@ -56,7 +57,7 @@ pipeline {
                         ].each { subproject ->
                            sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:${subproject}:${task}"
                         }}
-                     }
+                     }}
                }}
             }
          }
