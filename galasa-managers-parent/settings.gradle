@@ -11,3 +11,4 @@ rootProject.name = 'galasa-managers-parent'
 
 include 'galasa-managers-core-parent'
 include 'galasa-managers-core-parent:dev.galasa.core.manager'
+include 'galasa-managers-core-parent:dev.galasa.artifact.manager'
