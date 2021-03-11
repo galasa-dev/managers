@@ -45,16 +45,14 @@ pipeline {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
                withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
-                     def projectName = "galasa-managers-core-parent"
-                     def tasks = "${GRADLE_TASKS}".tokenize( ' ' )
-                     tasks.each { task ->
+                     GRADLE_TASKS.split(' ').each { task ->
                         ['dev.galasa.core.manager',
                         'dev.galasa.artifact.manager',
                         'dev.galasa.textscan.manager',
                         'dev.galasa.core.manager.ivt',
                         'dev.galasa.artifact.manager.ivt'
                         ].each { subproject ->
-                           sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :${projectName}:${subproject}:${it}"
+                           sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:${subproject}:${task}"
                         }}
                      }
                }}
