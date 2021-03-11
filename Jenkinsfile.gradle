@@ -45,7 +45,7 @@ pipeline {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
                withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
-                     GRADLE_TASKS.split(' ').each { task ->
+                     "${GRADLE_TASKS}".split(' ').each { task ->
                         ['dev.galasa.core.manager',
                         'dev.galasa.artifact.manager',
                         'dev.galasa.textscan.manager',
