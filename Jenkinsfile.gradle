@@ -338,9 +338,10 @@ pipeline {
       }
    }
    post {
-       // triggered when red sign
-       failure {
-           slackSend (channel: '#galasa-devs', color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-       }
+      // triggered when red sign
+      // Temporarily disabled for testing purposes
+      // failure {
+      //     slackSend (channel: '#galasa-devs', color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+      // }
     }
 }
