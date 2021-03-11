@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            url = System.getenv('MAVEN_REPO') ?: 'https://nexus.galasa.dev/repository/maven-development'
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'galasa-managers-parent'
+
+include 'galasa-managers-core-parent'
+include 'galasa-managers-core-parent:dev.galasa.core.manager'
