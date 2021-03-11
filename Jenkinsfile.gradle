@@ -11,6 +11,8 @@ pipeline {
       
 //Set some defaults
       def workspace = pwd()
+
+      def gradleTasks = "${GRADLE_TASKS}".split(' ')
    }
    stages {
 // Set up the workspace, clear the git directories and setup the manve settings.xml files
@@ -45,7 +47,7 @@ pipeline {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
                withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
-                     "${GRADLE_TASKS}".split(' ').each { task ->
+                     gradleTasks.each { task ->
                         ['dev.galasa.core.manager',
                         'dev.galasa.artifact.manager',
                         'dev.galasa.textscan.manager',
