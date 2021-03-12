@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
         maven {
-            url "https://nexus.galasa.dev/repository/maven-development"
+            url "https://nexus.galasa.dev/repository/maven-gradle"
         }
         gradlePluginPortal()
     }
