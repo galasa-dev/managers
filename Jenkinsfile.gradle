@@ -11,8 +11,6 @@ pipeline {
       
 //Set some defaults
       def workspace = pwd()
-
-      def gradleTasks = "${GRADLE_TASKS}".split(' ')
    }
    stages {
 // Set up the workspace, clear the git directories and setup the manve settings.xml files
@@ -47,18 +45,19 @@ pipeline {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
                withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
                   dir('galasa-managers-parent') {
-                     script {
-                        gradleTasks.each { task ->
-                        ['dev.galasa.core.manager',
-                        'dev.galasa.artifact.manager',
-                        'dev.galasa.textscan.manager',
-                        'dev.galasa.core.manager.ivt',
-                        'dev.galasa.artifact.manager.ivt'
-                        ].each { subproject ->
-                           sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:${subproject}:${task}"
-                        }}
-                     }}
-               }}
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.core.manager:clean :galasa-managers-core-parent:dev.galasa.core.manager:${GRADLE_TASKS}"
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.artifact.manager:clean :galasa-managers-core-parent:dev.galasa.artifact.manager:${GRADLE_TASKS}"
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.textscan.manager:clean :galasa-managers-core-parent:dev.galasa.textscan.manager:${GRADLE_TASKS}"
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.core.manager.ivt:clean :galasa-managers-core-parent:dev.galasa.core.manager.ivt:${GRADLE_TASKS}"
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.artifact.manager.ivt:clean :galasa-managers-core-parent:dev.galasa.artifact.manager.ivt:${GRADLE_TASKS}"
+                     // Keep looking for a way to loop through tasks and subprojects (that doesn't break Jeknins) e.g.
+                     // tasks.each { task ->
+                     //    subprojects.each {project -> 
+                     //        gradle :${project}:${task}
+                     //    }
+                     // }
+                  }
+               }
             }
          }
       }
