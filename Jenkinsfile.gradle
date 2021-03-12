@@ -42,8 +42,12 @@ pipeline {
       }
       stage('Managers Core Gradle') {
          steps {
-            withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
+            withCredentials([
+               string(credentialsId: 'galasa-gpg', variable: 'GPG'),
+               usernamePassword(credentialsId: 'galasa-nexus', usernameVariable: 'MAVENUSERNAME', passwordVariable: 'MAVENPASSWORD'),
+               usernamePassword(credentialsId: 'gradle-cache', usernameVariable: 'CACHEUSERNAME', passwordVariable: 'CACHEPASSWORD')
+            ]) {
+               withFolderProperties {
                   dir('galasa-managers-parent') {
                      sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS}"
                     
@@ -59,7 +63,7 @@ pipeline {
                      //    }
                      // }
                   }
-               }}
+               }
             }
          }
       }
