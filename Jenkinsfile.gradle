@@ -5,15 +5,16 @@ pipeline {
    }
    options { timestamps () }
    environment {
-//Configure Maven from the maven tooling in Jenkins
-      def mvnHome = tool 'Default'
-      PATH = "${mvnHome}/bin:${env.PATH}"
+      //Configure Gradle from the maven tooling in Jenkins
+      def gradleHome = tool 'gradle'
+      PATH = "${gradleHome}/bin:${env.PATH}"
       
-//Set some defaults
+      //Set some defaults
       def workspace = pwd()
    }
+
    stages {
-// Set up the workspace, clear the git directories and setup the manve settings.xml files
+      // Set up the workspace, clear the git directories and setup the manve settings.xml files
       stage('prep-workspace') { 
          steps {
             configFileProvider([configFile(fileId: '86dde059-684b-4300-b595-64e83c2dd217', targetLocation: 'settings.xml')]) {
