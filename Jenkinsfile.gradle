@@ -50,9 +50,9 @@ pipeline {
             ]) {
                withFolderProperties {
                   dir('galasa-managers-parent') {
-                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
+                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
                         ":galasa-managers-core-parent:dev.galasa.core.manager:${it}"
-                     }.join(' ')}"
+                     }.join(' ')}"""
                     
                      // sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.core.manager:clean :galasa-managers-core-parent:dev.galasa.core.manager:${GRADLE_TASKS}"
                      // sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} :galasa-managers-core-parent:dev.galasa.artifact.manager:clean :galasa-managers-core-parent:dev.galasa.artifact.manager:${GRADLE_TASKS}"
