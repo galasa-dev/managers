@@ -198,10 +198,10 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		this.runProperties.put("customBuild", customBuild);
 	
 		if(testingAreas != null)
-			this.runProperties.put("testingAreas", testingAreas.toArray(new String[0]));
+			this.runProperties.put("testingAreas", testingAreas.toArray(new String[testingAreas.size()]));
 	
 		if(tags != null)
-			this.runProperties.put("tags", tags.toArray(new String[0]));	    	
+			this.runProperties.put("tags", tags.toArray(new String[tags.size()]));	    	
 	
 		//Convert HashMap of run properties to a Json String
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
