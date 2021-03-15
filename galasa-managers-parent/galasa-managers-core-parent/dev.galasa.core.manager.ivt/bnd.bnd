@@ -1,0 +1,3 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Core Manager IVTs
+Export-Package: dev.galasa.core.manager.ivt,dev.galasa.framework.ivt
