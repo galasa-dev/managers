@@ -41,7 +41,7 @@ pipeline {
             }
          }
       }
-      stage('Managers Core Gradle') {
+      stage('Managers Gradle') {
          steps {
             withCredentials([
                string(credentialsId: 'galasa-gpg', variable: 'GPG'),
@@ -50,30 +50,7 @@ pipeline {
             ]) {
                withFolderProperties {
                   dir('galasa-managers-parent') {
-                     // dev.galasa.core.manager
-                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
-                        ":galasa-managers-core-parent:dev.galasa.core.manager:${it}"
-                     }.join(' ')}"""
-
-                     // dev.galasa.artifact.manager
-                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
-                        ":galasa-managers-core-parent:dev.galasa.artifact.manager:${it}"
-                     }.join(' ')}"""
-
-                     // dev.galasa.textscan.manager
-                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
-                        ":galasa-managers-core-parent:dev.galasa.textscan.manager:${it}"
-                     }.join(' ')}"""
-                     
-                     // dev.galasa.core.manager.ivt
-                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
-                        ":galasa-managers-core-parent:dev.galasa.core.manager.ivt:${it}"
-                     }.join(' ')}"""
-                     
-                     // dev.galasa.artifact.manager.ivt
-                     sh """gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS.split(' ').collect {
-                        ":galasa-managers-core-parent:dev.galasa.artifact.manager.ivt:${it}"
-                     }.join(' ')}"""
+                     sh "gradle -s ${GRADLE_CACHE} -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_TASKS}"
                   }
                }
             }
