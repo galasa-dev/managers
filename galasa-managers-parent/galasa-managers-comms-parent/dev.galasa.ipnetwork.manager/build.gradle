@@ -1,0 +1,11 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'IP Network Manager'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    implementation 'dev.galasa:com.jcraft.jsch:0.1.55'
+}
