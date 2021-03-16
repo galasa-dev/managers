@@ -6,7 +6,9 @@ description = 'Galasa HTTP Manager IVTs'
 
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.http.manager:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.core.manager:0.15.0-SNAPSHOT'
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
     implementation 'org.assertj:assertj-core:3.11.1'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.apache.httpcomponents:httpclient-osgi:4.5.8'
 }

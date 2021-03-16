@@ -6,6 +6,6 @@ description = 'Galasa Artifact Manager IVTs'
 
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.artifact.manager:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.core.manager:0.15.0-SNAPSHOT'
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
 }
