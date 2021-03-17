@@ -12,4 +12,5 @@ dependencies {
     implementation 'org.apache.httpcomponents:httpmime:4.5.8'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-io:commons-io:2.6'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.0'
 }
