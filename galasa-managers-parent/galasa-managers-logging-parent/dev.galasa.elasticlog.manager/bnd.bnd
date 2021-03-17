@@ -1,6 +1,14 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa ElasticLog Manager
-Export-Package: dev.galasa.elasticlog.manager
-Import-Package: 
+Import-Package: com.google.gson,\
+    dev.galasa,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.creds,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.http,\
+    dev.galasa.http.spi,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.logging
 
 
