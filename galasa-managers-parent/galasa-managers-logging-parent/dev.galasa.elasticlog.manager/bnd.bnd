@@ -1,0 +1,6 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa ElasticLog Manager
+Export-Package: dev.galasa.elasticlog.manager
+Import-Package: 
+
+

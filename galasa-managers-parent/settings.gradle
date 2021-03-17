@@ -9,13 +9,16 @@ pluginManagement {
 
 rootProject.name = 'galasa-managers-parent'
 
-// include 'galasa-managers-core-parent'
+// galasa-managers-core-parent
 include 'galasa-managers-core-parent:dev.galasa.core.manager'
 include 'galasa-managers-core-parent:dev.galasa.artifact.manager'
 include 'galasa-managers-core-parent:dev.galasa.textscan.manager'
 include 'galasa-managers-core-parent:dev.galasa.core.manager.ivt'
 include 'galasa-managers-core-parent:dev.galasa.artifact.manager.ivt'
-// include 'galasa-managers-comms-parent'
+// galasa-managers-comms-parent
 include 'galasa-managers-comms-parent:dev.galasa.ipnetwork.manager'
 include 'galasa-managers-comms-parent:dev.galasa.http.manager'
 include 'galasa-managers-comms-parent:dev.galasa.http.manager.ivt'
+// galasa-managers-logging-parent
+include ':galasa-managers-logging-parent:dev.galasa.elasticlog.manager'
+// include ':galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
