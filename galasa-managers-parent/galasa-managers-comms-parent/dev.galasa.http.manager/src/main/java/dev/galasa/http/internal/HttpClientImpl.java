@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.http.internal;
 
@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +31,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.io.IOUtils;
@@ -77,6 +75,8 @@ import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 
 public class HttpClientImpl implements IHttpClient {
 
@@ -235,11 +235,11 @@ public class HttpClientImpl implements IHttpClient {
         return HttpClientResponse.textResponse(execute(request.buildRequest()));
     }
 
-        
+
     @Override
     public HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException {       
         HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
         request.setBody(binary);
         return executeByteRequest(request);
     }
@@ -247,7 +247,7 @@ public class HttpClientImpl implements IHttpClient {
     @Override
     public HttpClientResponse<byte[]> getBinary(String url, byte[] binary) throws HttpClientException {       
         HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN });
+                new ContentType[] { ContentType.TEXT_PLAIN });
         request.setBody(binary);
         return executeByteRequest(request);
     }
@@ -255,7 +255,7 @@ public class HttpClientImpl implements IHttpClient {
     @Override
     public HttpClientResponse<byte[]> postBinary(String url, byte[] binary) throws HttpClientException {       
         HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
+                new ContentType[] { ContentType.TEXT_PLAIN }, ContentType.TEXT_PLAIN);
         request.setBody(binary);
         return executeByteRequest(request);
     }
@@ -263,7 +263,7 @@ public class HttpClientImpl implements IHttpClient {
     @Override
     public HttpClientResponse<byte[]> deleteBinary(String url, byte[] binary) throws HttpClientException {       
         HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
-        new ContentType[] { ContentType.TEXT_PLAIN });
+                new ContentType[] { ContentType.TEXT_PLAIN });
         request.setBody(binary);
         return executeByteRequest(request);
     }
@@ -496,7 +496,7 @@ public class HttpClientImpl implements IHttpClient {
             } else {
                 message.addHeader(HttpHeaders.CONTENT_TYPE, contentType.getMimeType());
             }
-            
+
         }
 
         if (acceptTypes.length > 0) {
@@ -516,7 +516,7 @@ public class HttpClientImpl implements IHttpClient {
         }
 
     }
-    
+
     private byte[] execute(HttpUriRequest request, boolean retry) throws HttpClientException {
 
         while (true) {
@@ -720,7 +720,7 @@ public class HttpClientImpl implements IHttpClient {
     public CloseableHttpResponse getFile(String path) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_OCTET_STREAM, ContentType.APPLICATION_X_TAR });
+                    new ContentType[] { ContentType.APPLICATION_OCTET_STREAM, ContentType.APPLICATION_X_TAR });
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
@@ -732,7 +732,7 @@ public class HttpClientImpl implements IHttpClient {
     public CloseableHttpResponse getFile(String path, ContentType... contentTypes) throws HttpClientException {
         try{
             HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(path, null).toString(),
-                contentTypes);
+                    contentTypes);
 
             return execute(request.buildRequest());
         } catch (HttpClientException e) {
@@ -745,7 +745,7 @@ public class HttpClientImpl implements IHttpClient {
         try {
             BufferedInputStream in = new BufferedInputStream(file);
             CloseableHttpResponse response = putStream(path, null, ContentType.APPLICATION_X_TAR, in, new ContentType[] {
-                ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN }, null, false);
+                    ContentType.APPLICATION_XML, ContentType.APPLICATION_JSON, ContentType.TEXT_PLAIN }, null, false);
             in.close();
             response.close();
             file.close();
@@ -771,8 +771,8 @@ public class HttpClientImpl implements IHttpClient {
                 addHeaders(put, contentType, acceptTypes);
                 return httpClient.execute(put, context);
             } catch (IOException e) {
-               logger.error("IO error with input stream", e);
-               throw new HttpClientException(e);
+                logger.error("IO error with input stream", e);
+                throw new HttpClientException(e);
             }
         } else {
             throw new HttpClientException("Data was not an expected object type");
