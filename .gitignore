@@ -10,3 +10,5 @@ core*.dmp
 heapdump*.phd
 javacore*.txt
 Snap*.trc
+**/build
+**/.gradle

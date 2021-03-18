@@ -198,10 +198,10 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		this.runProperties.put("customBuild", customBuild);
 	
 		if(testingAreas != null)
-			this.runProperties.put("testingAreas", testingAreas.toArray(new String[0]));
+			this.runProperties.put("testingAreas", testingAreas.toArray(new String[testingAreas.size()]));
 	
 		if(tags != null)
-			this.runProperties.put("tags", tags.toArray(new String[0]));	    	
+			this.runProperties.put("tags", tags.toArray(new String[tags.size()]));	    	
 	
 		//Convert HashMap of run properties to a Json String
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
@@ -241,7 +241,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			
 			//Send document to index and check response code
 			if(statusCode != 201 && statusCode != 200){
-			   logger.error("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			   logger.warn("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
 			}else {
 			  logger.info("Run successfully logged to Elastic index " + index); 
 			}
@@ -258,19 +258,19 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			message = response.getStatusMessage();
 			
 			if(statusCode != 201 && statusCode != 200) {
-			   logger.error("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			   logger.warn("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
 			}else {
 			  logger.info("Run successfully logged to Elastic index " + index); 
 			}
 
 		} catch (HttpClientException e) {
-			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
+			logger.warn("ElasticLog Manager failed to send information to Elastic Endpoint: ", e);
 		} catch (URISyntaxException e) {
-			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
+			logger.warn("ElasticLog Manager failed to send parse URI of Elastic Endpoint: ", e);
 		}catch (CredentialsException e) {
-		    throw new ElasticLogManagerException("Problem retrieving credentials", e);
+		    logger.warn("Problem retrieving credentials: ", e);
 		}
-	}
+	}    
 	
 	private ICredentials getCreds() throws CredentialsException, ElasticLogManagerException{
 	   String credKey = ElasticLogCredentials.get();
