@@ -50,32 +50,9 @@ pipeline {
             ]) {
                withFolderProperties {
                   dir('galasa-managers-parent') {
-                     sh "gradle -s ${GRADLE_CACHE} -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_TASKS}"
+                     sh "gradle -s -Dgradle.user.home=${workspace}/.gradle -Psigning.gnupg.keyName=8534E695 -Psigning.gnupg.passphrase=$GPG ${GRADLE_CACHE} ${GRADLE_TASKS}"
                   }
                }
-            }
-         }
-      }
-      stage('Managers Comms Maven') {
-         steps {
-            withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
-                  dir('galasa-managers-parent/galasa-managers-comms-parent') {
-                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-
-                     dir('dev.galasa.ipnetwork.manager') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-                     }
-
-                     dir('dev.galasa.http.manager') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-                     }
-
-                     dir('dev.galasa.http.manager.ivt') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-                     }
-                  }
-               } }
             }
          }
       }
