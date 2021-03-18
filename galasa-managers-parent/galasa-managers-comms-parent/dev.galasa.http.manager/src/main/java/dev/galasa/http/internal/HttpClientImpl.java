@@ -31,7 +31,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -77,6 +76,7 @@ import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.XmlType;
 
 public class HttpClientImpl implements IHttpClient {
 

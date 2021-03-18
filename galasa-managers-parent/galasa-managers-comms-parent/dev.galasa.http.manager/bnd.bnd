@@ -8,8 +8,8 @@ Import-Package: com.google.gson,\
     dev.galasa.http.spi,\
     javax.net.ssl,\
     javax.validation.constraints;resolution:=optional,\
-    javax.xml.bind,\
-    javax.xml.bind.annotation,\
+    jakarta.xml.bind,\
+    jakarta.xml.bind.annotation,\
     javax.xml.parsers,\
     org.apache.commons.io,\
     org.apache.commons.logging,\
