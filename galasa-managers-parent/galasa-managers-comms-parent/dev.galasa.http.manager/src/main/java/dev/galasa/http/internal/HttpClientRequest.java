@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.http.internal;
 
@@ -13,9 +13,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -36,6 +33,8 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Representation of an HTTP Request as used in {@link HttpClientImpl}. This

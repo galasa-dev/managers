@@ -8,6 +8,7 @@ package dev.galasa.core.manager.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -18,6 +19,7 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ManagerException;
+import dev.galasa.Tags;
 import dev.galasa.core.manager.CoreManagerException;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
@@ -32,6 +34,7 @@ import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IGherkinManager;
+import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IStatementOwner;
 import dev.galasa.framework.spi.ResourceUnavailableException;
@@ -39,10 +42,12 @@ import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class, IGherkinManager.class })
-public class CoreManager extends AbstractGherkinManager implements ICoreManager {
+public class CoreManager extends AbstractGherkinManager implements ICoreManager, ILoggingManager {
 
 	private IConfigurationPropertyStoreService cpsTest;
 	private IConfidentialTextService           ctf;
+	
+	private Class<?> testClass;
 
 	/*
 	 * (non-Javadoc)
@@ -69,6 +74,8 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
 			if(registerStatements(galasaTest.getGherkinTest(), statementOwners)) {
 				youAreRequired(allManagers, activeManagers);
 			}
+		} else {
+		    this.testClass = galasaTest.getJavaTestClass();
 		}
 
 		// *** We always want the Core Manager initialised and included in the Test Run
@@ -185,6 +192,75 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager 
     @Override
     public boolean doYouSupportSharedEnvironments() {
         return true;   // this manager does not provision resources, therefore support environments 
+    }
+
+    @Override
+    public String getTestTooling() {
+        return null;
+    }
+
+    @Override
+    public String getTestType() {
+        return null;
+    }
+
+    @Override
+    public String getTestingEnvironment() {
+        return null;
+    }
+
+    @Override
+    public String getProductRelease() {
+        return null;
+    }
+
+    @Override
+    public String getBuildLevel() {
+        return null;
+    }
+
+    @Override
+    public String getCustomBuild() {
+        return null;
+    }
+
+    @Override
+    public List<String> getTestingAreas() {
+        return null;
+    }
+
+    @Override
+    public List<String> getTags() {
+        if(this.testClass == null) {
+            return null;
+        }
+        
+        Tags annotationTags = this.testClass.getAnnotation(Tags.class);
+        if (annotationTags == null || annotationTags.value() == null) {
+            return null;
+        }
+        
+        ArrayList<String> tags = new ArrayList<>();
+        
+        for(String tag : annotationTags.value()) {
+            if (tag == null) {
+                continue;
+            }
+            
+            tag = tag.trim();
+            if (tag.isEmpty()) {
+                continue;
+            }
+            
+            tags.add(tag);
+        }
+        
+        if (tags.isEmpty()) {
+            return null;
+        }
+        
+        
+        return tags;
     }
 
 }
