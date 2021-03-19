@@ -10,26 +10,26 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
 /**
- * Selenium Gecko Profile CPS Property
+ * Selenium Driver Type CPS Property
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.local.gecko.profile
+ * @galasa.name selenium.driver.type
  * 
- * @galasa.description Provides a profile to use when using the gecko driver for extensions
+ * @galasa.description Describes the selenium runtime that will be used.
  * 
  * @galasa.required No
  * 
- * @galasa.valid_values A valid String name of a profile
+ * @galasa.valid_values A valid String representation of a type. Available choices: local, docker, kubernetes, grid
  * 
  * @galasa.examples 
- * <code>selenium.local.gecko.profile=default</code>
+ * <code>selenium.driver.type=docker</code>
  * 
  */
-public class SeleniumGeckoProfile extends CpsProperties {
+public class SeleniumWebDriverType extends CpsProperties {
 
     public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringNulled(SeleniumPropertiesSingleton.cps(), "local", "gecko.profile");
+        return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "local", "driver", "type");
     }
 
 }

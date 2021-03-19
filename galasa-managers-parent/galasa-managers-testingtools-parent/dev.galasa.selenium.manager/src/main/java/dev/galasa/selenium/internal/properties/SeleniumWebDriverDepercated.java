@@ -25,7 +25,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * <code>selenium.instance.PRIMARY.web.driver=GECKO</code>
  * 
  */
-public class SeleniumWebDriver extends CpsProperties {
+public class SeleniumWebDriverDepercated extends CpsProperties {
 
     public static String get(String instance) throws SeleniumManagerException {
         return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "GECKO", "instance", "web.driver", instance);

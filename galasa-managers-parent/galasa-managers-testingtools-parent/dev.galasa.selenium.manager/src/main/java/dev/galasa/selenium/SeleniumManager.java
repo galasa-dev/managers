@@ -15,7 +15,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @SeleniumManagerField
-@ValidAnnotatedFields({ ISeleniumManager.class })
+@ValidAnnotatedFields({ IDriver.class })
 public @interface SeleniumManager {
-
+    public Browser browser() default Browser.FIREFOX;
 }

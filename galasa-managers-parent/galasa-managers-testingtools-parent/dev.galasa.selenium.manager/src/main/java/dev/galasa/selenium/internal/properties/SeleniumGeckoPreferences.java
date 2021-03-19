@@ -14,7 +14,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.instance.INSTANCE.gecko.preferences
+ * @galasa.name selenium.local.gecko.preferences
  * 
  * @galasa.description Provides extra preferences to use when using the gecko driver for extensions
  * 
@@ -23,13 +23,13 @@ import dev.galasa.selenium.SeleniumManagerException;
  * @galasa.valid_values A comma seperated list of key value pairs for the preferences
  * 
  * @galasa.examples 
- * <code>selenium.instance.PRIMARY.gecko.preferences=app.update.silent=false,dom.popup_maximum=0</code>
+ * <code>selenium.local.gecko.preferences=app.update.silent=false,dom.popup_maximum=0</code>
  * 
  */
 public class SeleniumGeckoPreferences extends CpsProperties {
 
-    public static String get(String instance) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringNulled(SeleniumPropertiesSingleton.cps(), "instance", "gecko.preferences", instance);
+    public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
+        return getStringNulled(SeleniumPropertiesSingleton.cps(), "local", "gecko.preferences");
     }
 
 }

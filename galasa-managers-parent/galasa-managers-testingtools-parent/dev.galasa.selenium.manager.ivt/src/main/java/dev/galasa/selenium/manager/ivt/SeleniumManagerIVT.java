@@ -11,10 +11,11 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.Browser;
+import dev.galasa.selenium.IDriver;
 import dev.galasa.selenium.IFirefoxOptions;
 
 @Test
@@ -23,8 +24,8 @@ public class SeleniumManagerIVT {
     @Logger
     public Log logger;
 
-    @SeleniumManager
-    public ISeleniumManager seleniumManager;
+    @SeleniumManager(browser = Browser.FIREFOX)
+    public IDriver seleniumManager;
 
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";

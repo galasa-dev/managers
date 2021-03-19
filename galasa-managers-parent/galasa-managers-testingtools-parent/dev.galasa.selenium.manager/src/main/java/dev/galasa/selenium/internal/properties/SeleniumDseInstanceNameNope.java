@@ -27,7 +27,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * <code>selenium.dse.instance.name=PRIMARY</code>
  * 
  */
-public class SeleniumDseInstanceName extends CpsProperties {
+public class SeleniumDseInstanceNameNope extends CpsProperties {
 
     public static String get() throws SeleniumManagerException {
         return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "PRIMARY", "dse", "instance.name");

@@ -14,7 +14,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.instance.INSTANCE.browser.path
+ * @galasa.name selenium.local.driver.BROWSER.path
  * 
  * @galasa.description Provides a path to the webdriver on the system being tested
  * 
@@ -23,13 +23,13 @@ import dev.galasa.selenium.SeleniumManagerException;
  * @galasa.valid_values A valid String representation of a path
  * 
  * @galasa.examples 
- * <code>selenium.instance.PRIMARY.chrome.path=/usr/bin/chromedriver</code>
+ * <code>selenium.local.driver.CHROME.path=/usr/bin/chromedriver</code>
  * 
  */
-public class SeleniumWebDriverPath extends CpsProperties {
+public class SeleniumLocalDriverPath extends CpsProperties {
 
-    public static String get(String instance, String browser) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringNulled(SeleniumPropertiesSingleton.cps(), "instance",  "path", instance, browser);
+    public static String get(String browser) throws ConfigurationPropertyStoreException, SeleniumManagerException {
+        return getStringNulled(SeleniumPropertiesSingleton.cps(), "local",  "path", "driver", browser);
     }
 
 }
