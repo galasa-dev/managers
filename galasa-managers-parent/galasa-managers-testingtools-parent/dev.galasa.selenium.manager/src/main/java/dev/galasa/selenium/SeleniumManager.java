@@ -17,5 +17,5 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @SeleniumManagerField
 @ValidAnnotatedFields({ IDriver.class })
 public @interface SeleniumManager {
-    public Browser browser() default Browser.FIREFOX;
+    public Browser browser() default Browser.NOTSPECIFIED;
 }

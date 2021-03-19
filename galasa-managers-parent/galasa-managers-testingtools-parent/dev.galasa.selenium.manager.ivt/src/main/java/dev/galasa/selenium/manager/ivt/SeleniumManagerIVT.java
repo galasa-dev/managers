@@ -14,7 +14,6 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
-import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IDriver;
 import dev.galasa.selenium.IFirefoxOptions;
 
@@ -24,7 +23,7 @@ public class SeleniumManagerIVT {
     @Logger
     public Log logger;
 
-    @SeleniumManager(browser = Browser.FIREFOX)
+    @SeleniumManager()
     public IDriver seleniumManager;
 
     public static final String WEBSITE = "https://duckduckgo.com";

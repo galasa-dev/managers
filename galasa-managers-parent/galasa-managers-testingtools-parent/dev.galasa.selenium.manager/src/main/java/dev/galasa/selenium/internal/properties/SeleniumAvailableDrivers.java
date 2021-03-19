@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2021.
+ * (c) Copyright IBM Corp. 2019.
  */
 package dev.galasa.selenium.internal.properties;
 
@@ -26,10 +26,14 @@ import dev.galasa.selenium.SeleniumManagerException;
  * <code>selenium.driver.type=docker</code>
  * 
  */
-public class SeleniumWebDriverType extends CpsProperties {
-
-    public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringWithDefault(SeleniumPropertiesSingleton.cps(), "local", "driver", "type");
+public class SeleniumAvailableDrivers extends CpsProperties {
+    
+    public static String[] get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
+        String drivers = getStringNulled(SeleniumPropertiesSingleton.cps(), "available", "drivers");
+        if (drivers != null) {
+            return drivers.split(",");
+        }
+        throw new SeleniumManagerException("No avilable drivers, set selenium.available.drivers.");
     }
 
 }

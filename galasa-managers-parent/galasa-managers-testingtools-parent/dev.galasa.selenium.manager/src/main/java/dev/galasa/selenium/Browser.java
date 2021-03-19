@@ -5,9 +5,11 @@ public enum Browser {
     OPERA,
     IE, 
     CHROME, 
-    EDGE;
+    EDGE,
+    NOTSPECIFIED;
 
     public String getDockerImageName(String version) throws SeleniumManagerException{
+        // Make this a property
         if ("".equals(version)) {
             version = "4.0.0-beta-2-20210317";
         }

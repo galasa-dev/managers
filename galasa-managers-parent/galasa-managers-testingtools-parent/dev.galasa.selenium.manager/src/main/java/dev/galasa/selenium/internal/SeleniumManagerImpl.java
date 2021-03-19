@@ -74,7 +74,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         if (activeManagers.contains(this)) {
             return;
         }
-
+        
         activeManagers.add(this);
     }
 

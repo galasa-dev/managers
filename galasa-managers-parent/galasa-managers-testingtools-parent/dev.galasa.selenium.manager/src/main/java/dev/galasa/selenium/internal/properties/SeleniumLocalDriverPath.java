@@ -29,7 +29,11 @@ import dev.galasa.selenium.SeleniumManagerException;
 public class SeleniumLocalDriverPath extends CpsProperties {
 
     public static String get(String browser) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringNulled(SeleniumPropertiesSingleton.cps(), "local",  "path", "driver", browser);
+        String path = getStringNulled(SeleniumPropertiesSingleton.cps(), "local",  "path", "driver", browser);
+        if (path == null) {
+            throw new SeleniumManagerException("No path provided for driver selected. Please set selenium.local.driver."+browser+".path");
+        }
+        return path;
     }
 
 }
