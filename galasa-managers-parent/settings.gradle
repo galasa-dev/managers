@@ -25,7 +25,7 @@ include ':galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
 // galasa-managers-zos-parent
 include ':galasa-managers-zos-parent:dev.galasa.zos.manager'
 include ':galasa-managers-zos-parent:dev.galasa.zos.manager.ivt'
-// include ':galasa-managers-zos-parent:dev.galasa.zosmf.manager'
+include ':galasa-managers-zos-parent:dev.galasa.zosmf.manager'
 // include ':galasa-managers-zos-parent:dev.galasa.zosprogram.manager'
 // include ':galasa-managers-zos-parent:dev.galasa.zosbatch.zosmf.manager'
 // include ':galasa-managers-zos-parent:dev.galasa.zosconsole.zosmf.manager'

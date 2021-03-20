@@ -1,0 +1,6 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa zOS/MF Manager
+Export-Package: dev.galasa.zosmf.manager
+Import-Package: 
+
+
