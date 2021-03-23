@@ -471,7 +471,7 @@ public class DockerEnvironment implements IDockerEnvironment {
                 fullVolumeName = volumeName;
                 provision = false;
             } else {
-                while (framework.getTestRunName().equals(dss.get(volumePropertyPrefix + preProvisionVolumeName + volumeNumber))){
+                while (framework.getTestRunName().equals(dss.get(volumePropertyPrefix + preProvisionVolumeName + volumeNumber+ ".run"))){
                         volumeNumber++;
                 }
                 fullVolumeName = preProvisionVolumeName + volumeNumber;
