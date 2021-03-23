@@ -56,25 +56,7 @@ pipeline {
             }
          }
       }
-      stage('Managers Logging Maven') {
-         steps {
-            withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
-               withFolderProperties { withSonarQubeEnv('GalasaSonarQube') {
-                  dir('galasa-managers-parent/galasa-managers-logging-parent') {
-                     sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-
-                     dir('dev.galasa.elasticlog.manager') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-                     }
-
-                     dir('dev.galasa.elasticlog.manager.ivt') {
-                        sh "mvn --settings ${workspace}/settings.xml -Dmaven.repo.local=${workspace}/repository -Dgpg.skip=${GPG_SKIP} -Dgpg.passphrase=$GPG  -P ${MAVEN_PROFILE} -B -e -fae --non-recursive ${MAVEN_GOAL}"
-                     }
-                  }
-               } }
-            }
-         }
-      }
+      
       stage('Managers zOS Maven') {
          steps {
             withCredentials([string(credentialsId: 'galasa-gpg', variable: 'GPG')]) {
