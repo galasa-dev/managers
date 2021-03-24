@@ -1,0 +1,19 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa RSE API Manager
+Export-Package: dev.galasa.zosrseapi, dev.galasa.zosrseapi.spi
+Import-Package: com.google.gson,\
+    dev.galasa,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.creds,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.http,\
+    dev.galasa.http.spi,\
+    dev.galasa.zos,\
+    dev.galasa.zos.spi,\
+    dev.galasa.zosrseapi.spi,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.io,\
+    org.apache.commons.logging,\
+    org.apache.http,\
+    org.apache.http.client.methods
