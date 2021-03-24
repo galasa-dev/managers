@@ -39,6 +39,6 @@ include 'galasa-managers-zos-parent:dev.galasa.zos3270.manager.ivt'
 // include 'galasa-managers-zos-parent:dev.galasa.zos3270.ui' // Leaving as Maven build for now
 // include 'galasa-managers-zos-parent:dev.galasa.zos.feature' // Leaving as Maven build for now
 include 'galasa-managers-zos-parent:dev.galasa.zosrseapi.manager'
-// include 'galasa-managers-zos-parent:dev.galasa.zosbatch.rseapi.manager'
+include 'galasa-managers-zos-parent:dev.galasa.zosbatch.rseapi.manager'
 // include 'galasa-managers-zos-parent:dev.galasa.zosfile.rseapi.manager'
 
