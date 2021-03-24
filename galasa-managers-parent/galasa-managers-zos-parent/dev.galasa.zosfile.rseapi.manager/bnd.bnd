@@ -1,0 +1,19 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa zOS File Manager - RSE API Implementation
+Import-Package: com.google.gson,\
+    dev.galasa,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.zos,\
+    dev.galasa.zos.spi,\
+    dev.galasa.zosfile,\
+    dev.galasa.zosfile.spi,\
+    dev.galasa.zosrseapi,\
+    dev.galasa.zosrseapi.spi,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.lang3,\
+    org.apache.commons.lang3.math,\
+    org.apache.commons.logging,\
+    org.osgi.framework
+
+
