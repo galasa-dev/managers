@@ -1,0 +1,5 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa CICS/TS Manager
+Export-Package: dev.galasa.cicsts.manager
+Import-Package: 
+
