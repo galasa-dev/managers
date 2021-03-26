@@ -1,0 +1,6 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Linux Manager
+Export-Package: 
+Import-Package: 
+
+
