@@ -1,0 +1,14 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'Galasa CEDA Manager IVTs'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager')
+    implementation project (':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
+    implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
+    implementation 'org.assertj:assertj-core:3.11.1'
+}

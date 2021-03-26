@@ -1,0 +1,8 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa CEMT Manager IVTs
+Export-Package: dev.galasa.cicsts.cemt.manager.ivt
+Import-Package: dev.galasa,\
+    dev.galasa.cicsts,\
+    dev.galasa.zos3270,\
+    dev.galasa.zos3270.spi,\
+    org.assertj.core.api
