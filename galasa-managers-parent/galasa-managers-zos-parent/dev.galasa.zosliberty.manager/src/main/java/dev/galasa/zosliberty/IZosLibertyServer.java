@@ -15,17 +15,43 @@ import dev.galasa.zosfile.IZosUNIXFile;
 public interface IZosLibertyServer {
 	
 	/**
-	 * Provides the location of the Liberty Install Directory
-	 * @param wlpInstallDir
-	 */
-	public void setWlpInstallDir(String wlpInstallDir);
-	
-	/**
-	 * Returns Liberty Install Directory as a {@link IZosUNIXFile} object
-	 * @return Liberty Install Directory
+	 * Provides the Liberty Server Name
+	 * @param serverName
 	 * @throws ZosLibertyServerException
 	 */
-	public IZosUNIXFile getWlpInstallDir() throws ZosLibertyServerException;
+	public void setServerName(String serverName);
+	
+	/**
+	 * Returns Liberty Server Name
+	 * @return the Liberty Server Name
+	 */
+	public String getServerName();
+	
+	/**
+	 * Provides the location of the Liberty Install Directory ($WLP_INSTALL_DIR)
+	 * @param wlpInstallDir
+	 * @throws ZosLibertyServerException
+	 */
+	public void setWlpInstallDir(String wlpInstallDir) throws ZosLibertyServerException;
+	
+	/**
+	 * Returns Liberty Install Directory ($WLP_INSTALL_DIR) as a {@link IZosUNIXFile} object
+	 * @return Liberty Install Directory
+	 */
+	public IZosUNIXFile getWlpInstallDir();
+	
+	/**
+	 * Provides the location of the Liberty User Directory ($WLP_USER_DIR)
+	 * @param wlpUserDir
+	 * @throws ZosLibertyServerException
+	 */
+	public void setWlpUserDir(String wlpUserDir) throws ZosLibertyServerException;
+	
+	/**
+	 * Returns Liberty User Directory ($WLP_USER_DIR) as a {@link IZosUNIXFile} object
+	 * @return Liberty User Directory
+	 */
+	public IZosUNIXFile getWlpUserDir();
 	
 	/**
 	 * Set the server.xml object for this Liberty server 

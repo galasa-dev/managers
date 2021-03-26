@@ -301,7 +301,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     public void storeText(@NotNull String content) throws ZosDatasetException {
     	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStoreText(String memberName, String content) method instead");
         }
         storeText(content, null, this.convert);
     }
@@ -310,7 +310,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     public void storeBinary(@NotNull byte[] content) throws ZosDatasetException {
     	Objects.requireNonNull(content, LOG_CONTENT_MUST_NOT_BE_NULL);
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStore(String memberName, String content) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberStoreBinary(String memberName, String content) method instead");
         }
         storeBinary(content, null, this.convert);
     }
@@ -318,7 +318,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     @Override
     public String retrieveAsText() throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use retrieve(String memberName) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberRetrieveAsText(String memberName) method instead");
         }
         Object content = retrieve(null);
         if (content instanceof byte[]) {
@@ -332,7 +332,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     @Override
     public byte[] retrieveAsBinary() throws ZosDatasetException {
         if (isPDS()) {
-            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use retrieve(String memberName) method instead");
+            throw new ZosDatasetException(LOG_DATA_SET + quoted(this.dsname) + " is a partitioned data set. Use memberRetrieveAsBinary(String memberName) method instead");
         }
         Object content = retrieve(null);
         if (content instanceof String) {

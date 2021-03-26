@@ -22,21 +22,52 @@ import org.w3c.dom.Node;
 public interface IZosLibertyServerXml {
 
 	/**
+	 * Replace the Liberty server.xml from {@link Document} content
+	 * @param content the server.xml content
+	 */
+	public void setServerXmlFromDocument(Document content);
+
+	/**
+	 * Replace the Liberty server.xml from {@link String} content
+	 * @param content the server.xml content
+	 * @throws ZosLibertyServerException 
+	 */
+	public void setServerXmlFromString(String content) throws ZosLibertyServerException;
+
+	/**
 	 * Get the Liberty server.xml as a {@link Document}
 	 * @return the content of the Liberty server.xml
 	 */
 	public Document getServerXmlAsDocument();
-
-	/**
-	 * Replace the Liberty server.xml from a {@link Document}
-	 */
-	public void setServerXmlFromDocument(Document serverXml);
 	
 	/**
-	 * Builds, defines and installs a Liberty server object. Waits for message CWWKF0011I in the Liberty messages log
+	 * Create the server.xml file on the zOS UNIX file system
 	 * @throws ZosLibertyServerException
 	 */
 	public void build() throws ZosLibertyServerException;
+	
+	/**
+	 * Add a simple XML element to the Liberty serverXml Document object
+	 * 
+	 * @param elementName the XML element name
+	 * @param elementId the XML element id
+	 * @param elementAttributes the XML element attributes
+	 * @throws ZosLibertyServerException
+	 */
+	public void addXmlElement(String elementName, String elementId, Map<String, String> elementAttributes) throws ZosLibertyServerException;
+
+	/**
+	 * Update the content of the {@link IZosLibertyServerXml) with the content of the server.xml file from the zOS UNIX file system 
+	 * @throws ZosLibertyServerException
+	 */
+	public void loadFromFileSystem() throws ZosLibertyServerException;
+	
+	// TODO from IWLPServer
+	
+	
+	
+	
+	
 	
 	
 	public IServerXmlElement newServerXmlElement(String elementName, Map<String, String> elementAttributes);
@@ -80,16 +111,8 @@ public interface IZosLibertyServerXml {
 	
 	
 	
-	// TODO from IWLPServer
-
-
-	
-
-
-
-	
 	/**
-	 * Add a compound element to the Liberty serverXml Document object
+	 * Add a compound XML element to the Liberty serverXml Document object
 	 * 
 	 * @param parent - The parent element
 	 * @param elementName - The top element name

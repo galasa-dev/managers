@@ -21,8 +21,6 @@
 		<module>dev.galasa.cicsts.cemt.manager.ivt</module>
 		<module>dev.galasa.cicsts.ceda.manager.ivt</module>
         <module>dev.galasa.cicsts.resource.manager</module>
-        <module>dev.galasa.cicsts.resource.jvmserver.manager</module>
-        <module>dev.galasa.cicsts.resource.bundle.manager</module>
 	</modules>
 
 </project>

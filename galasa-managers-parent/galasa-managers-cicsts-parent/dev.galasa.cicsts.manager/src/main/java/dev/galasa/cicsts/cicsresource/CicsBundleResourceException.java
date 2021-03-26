@@ -5,7 +5,7 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
-public class CicsBundleResourceException extends CicsResourceException {
+public class CicsBundleResourceException extends CicsResourceManagerException {
     private static final long serialVersionUID = 1L;
 
     public CicsBundleResourceException() {

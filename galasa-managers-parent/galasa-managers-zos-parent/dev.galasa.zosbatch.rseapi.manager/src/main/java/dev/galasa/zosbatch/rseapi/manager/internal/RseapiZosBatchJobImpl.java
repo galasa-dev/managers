@@ -600,6 +600,8 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         
             logger.debug(responseBody);
             fileOutput = jsonNull(responseBody, PROP_CONTENT);
+        } else if(response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
+        	return null;
         } else {            
             // Error case
             String displayMessage = buildErrorString("Retrieve job output", response);

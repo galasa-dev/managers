@@ -8,6 +8,7 @@ package dev.galasa.cicsts.spi;
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 
 /**
@@ -21,8 +22,9 @@ public interface ICicsResourceProvider {
      * 
      * @param cicsRegion
      * @return ICicsResource object for this CICS region, will a different instance for different regions
+     * @throws CicsResourceManagerException 
      */
     @NotNull
-    ICicsResource getCicsResource(ICicsRegion cicsRegion);
+    ICicsResource getCicsResource(ICicsRegion cicsRegion) throws CicsResourceManagerException;
 
 }

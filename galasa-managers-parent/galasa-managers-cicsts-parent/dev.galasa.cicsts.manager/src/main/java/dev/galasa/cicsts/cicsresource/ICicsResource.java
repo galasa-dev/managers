@@ -5,10 +5,10 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
-import java.util.Map;
+import java.util.HashMap;
 
+import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.cicsresource.IJvmserver.JvmserverType;
-import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosliberty.IZosLibertyServer;
 
 /**
@@ -19,32 +19,37 @@ public interface ICicsResource {
 	
 	/**
 	 * Create a CICS JVMSERVER resource object using the CICS/Galasa default properties
+	 * @param cicsTerminal a ICicsTerminal object for CEDA and CEMT transactions  
 	 * @param name the JVM server name
 	 * @param group the JVM server RDO group name
 	 * @param jvmprofileName the name of the JVM profile
 	 * @param jvmserverType the JVM server type
 	 * @return the Galasa JVM server object
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IJvmserver newJvmserver(String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsResourceException;
+	public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException;
 	
 	/**
 	 * Create a CICS JVMSERVER resource object using the supplied JVM profile
+	 * @param cicsTerminal a ICicsTerminal object for CEDA and CEMT transactions
 	 * @param name the JVM server name
 	 * @param group the JVM server RDO group name
 	 * @param jvmprofile the JVM server profile
-	 * @param jvmserverType the JVM server type {@link JvmserverType}
 	 * @return the Galasa JVM server object
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IJvmserver newJvmserver(String name, String group, IJvmprofile jvmprofile, JvmserverType jvmserverType) throws CicsResourceException;
+	public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException;
 	
 	/**
 	 * Create a CICS Liberty JVMSERVER resource object using the supplied JVM profile and Liberty server
+	 * @param cicsTerminal a ICicsTerminal object for CEDA and CEMT transactions
 	 * @param name the JVM server name
 	 * @param group the JVM server RDO group name
 	 * @param jvmprofile the JVM server profile
 	 * @return the Galasa JVM server object
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IJvmserver newLibertyJvmserver(String name, String group, IJvmprofile jvmprofile, IZosLibertyServer libertyServer) throws CicsResourceException;
+	public IJvmserver newLibertyJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile, IZosLibertyServer libertyServer) throws CicsJvmserverResourceException;
 
 	/**
 	 * Create an empty JVM profile object for use by a {@link IJvmserver}
@@ -54,25 +59,28 @@ public interface ICicsResource {
 	public IJvmprofile newJvmprofile(String jvmprofileName);
 	
 	/**
-	 * Create an JVM profile object for use by a {@link IJvmserver} using the supplied {@link Map} of options.<p>
+	 * Create a JVM profile object for use by a {@link IJvmserver} using the CICS/Galasa default properties
+	 * @param jvmprofileName the name of the JVM profile
+	 * @param jvmserverType the JVM server type {@link JvmserverType}
+	 * @return the JVM profile
+	 * @throws CicsJvmprofileResourceException
+	 */
+	public IJvmprofile newJvmprofile(String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmprofileResourceException;
+
+	/**
+	 * Create an JVM profile object for use by a {@link IJvmserver} using the supplied String content, e.g. previously read  or Galasa artifact
+	 * or from zOS UNIX file system.<p>
+	 * See {@link IJvmprofile#setProfileValue(String, String)} for format of options
+	 * @param jvmprofileName the name of the JVM profile
+	 * @return the JVM profile content
+	 */
+	public IJvmprofile newJvmprofile(String jvmprofileName, String content);
+
+	/**
+	 * Create an JVM profile object for use by a {@link IJvmserver} using the supplied {@link HashMap} of options.<p>
 	 * See {@link IJvmprofile#setProfileValue(String, String)} for format of options
 	 * @param jvmprofileName the name of the JVM profile
 	 * @return the JVM profile
 	 */
-	public IJvmprofile newJvmprofile(String jvmprofileName, Map<String, String> content);
-
-	/**
-	 * Create a JVM profile object for use by a {@link IJvmserver}
-	 * @param jvmprofileName the name of the JVM profile
-	 * @param jvmserverType the JVM server type {@link JvmserverType}
-	 * @return the JVM profile
-	 */
-	public IJvmprofile newJvmprofile(String jvmprofileName, JvmserverType jvmserverType);
-
-	/**
-	 * Create a JVM profile object for use by a {@link IJvmserver} using an existing {@link IZosUNIXFile}
-	 * @param jvmprofileName the existing JVM profile file
-	 * @return the JVM profile
-	 */
-	public IJvmprofile newJvmprofile(IZosUNIXFile jvmprofile);
+	public IJvmprofile newJvmprofile(String jvmprofileName, HashMap<String, String> content);
 }

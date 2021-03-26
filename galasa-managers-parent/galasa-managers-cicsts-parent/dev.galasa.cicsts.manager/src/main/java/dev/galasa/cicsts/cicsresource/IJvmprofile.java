@@ -5,6 +5,7 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -18,14 +19,34 @@ import dev.galasa.zosliberty.IZosLibertyServer;
 public interface IJvmprofile {
 	
 	/**
+	 * Set the JVM profile name in the JVM server resource definition
+	 * @param name the profile name
+	 */
+	public void setProfileName(String name);
+
+	/**
+	 * Set the location for the JVM profile on the zOS UNIX file system.<br>
+	 * <b>WARNING: This should must equal to the CICS region JVMPROFILEDIR SIT parameter</b> 
+	 * @param jvmProfileDir
+	 */
+	public void setJvmProfileDir(String jvmProfileDir);
+
+	/**
 	 * Returns the JVM profile as a {@link IZosUNIXFile} object
 	 * @return the JVM profile
 	 */
 	public IZosUNIXFile getProfile();
 	
 	/**
+	 * Returns the JVM profile name in the JVM server resource definition
+	 * @return
+	 */
+	public String getProfileName();
+
+	/**
 	 * Sets JVM server option or JVM system property in the JVM profile of the format <code>key=value</code>.<br>
-	 * If the key exists, it will be replaced. To append a value to an existing option or property, use {@link #appendProfileValue(String, String)}<p> 
+	 * If the key exists, it will be replaced. To append a value to an existing option or property, use {@link #appendProfileValue(String, String)}.
+	 * Adding the + character before key results in the value being appended to the existing option, rather than creating a new option entry<p> 
 	 * Examples:<br>
 	 * <table border="1">
 	 *   <tr>
@@ -50,8 +71,8 @@ public interface IJvmprofile {
 	 *   </tr>
 	 *   <tr>
 	 *     <td><code>-Xshareclasses:printStats</code></td>
-	 *     <td><code>-Xshareclasses</code></td>
-	 *     <td><code>:printStats</code></td>
+	 *     <td><code>-Xshareclasses:</code></td>
+	 *     <td><code>printStats</code></td>
 	 *   </tr>
 	 *   <tr>
 	 *     <td><code>-Xnocompressedrefs</code></td>
@@ -92,17 +113,55 @@ public interface IJvmprofile {
 	public void removeProfileValue(String key);
 	
 	/**
-	 * Returns a {@link Map} of the JVM server options and JVM system property in the JVM profile
+	 * Returns true it the current JVM profile object contains the given option
+	 * @param option the JVM profile option
+	 * @return true or false
+	 */
+	public boolean containsOption(String option);
+
+	/**
+	 * Returns a {@link HashMap} of the JVM server options and JVM system property in the JVM profile
 	 * @return content of the JVM Profile
 	 */
-	public Map<String, String> getProfileMap();
+	public HashMap<String, String> getProfileMap();
 	
+	/**
+	 * Returns a {@link String} of the JVM server options and JVM system property in the JVM profile
+	 * @return content of the JVM Profile
+	 */
+	public String getProfileString();
+
+	/**
+	 * Returns the location for the JVM profile Directory
+	 * @return the value of the JVM Profile Directory
+	 */
+	public String getJvmProfileDir();
+	
+	/**
+	 * Print the content of the JVM profile
+	 */
+	public void printProfile();
+
 	/**
 	 * Build the JVM profile on the zOS UNIX file system
 	 * 
-	 * @throws CicsResourceException
+	 * @throws CicsJvmserverResourceException
 	 */
 	public void build() throws CicsJvmserverResourceException;
+
+	/**
+	 * Delete the JVM profile on the zOS UNIX file system
+	 * 
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void delete() throws CicsJvmserverResourceException;
+	
+    /**
+     * Store the content JVM profile on the zOS UNIX system to the Results Archive Store
+     * @param rasPath path in Results Archive Store
+     * @throws CicsJvmserverResourceException
+     */
+    public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
 
 	/**
 	 * Add a previously created JVM profile include file to the JVM profile using the <code>%INCLUDE</code> option
@@ -125,7 +184,7 @@ public interface IJvmprofile {
 	 * Removes and deletes a JVM profile include file from the JVM profile 
 	 * @param name the JVM profile include file to remove
 	 */
-	public void removeProfileIncludeFile(IZosUNIXFile name) throws CicsJvmserverResourceException;
+	public void removeProfileIncludeFile(IZosUNIXFile profileInclude) throws CicsJvmserverResourceException;
 
 	/**
 	 * Removes and deletes all JVM profile included files from the JVM profile
@@ -213,44 +272,44 @@ public interface IJvmprofile {
 	public void setZosConnectInstallDir(String zOSConnectInstallDir) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.server.name</code> JVM system property in the JVM profile.
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.name</code> JVM system property in the JVM profile.
 	 * Liberty defaults this to defaultServer. 
-	 * @param serverName the value for <code>com.ibm.cics.jvmserver.wlp.server.name</code>
+	 * @param serverName the value for <code>-Dcom.ibm.cics.jvmserver.wlp.server.name</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setWlpServerName(String serverName) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.autoconfigure</code> JVM system property in the JVM profile
-	 * @param autoconfigure the value for <code>com.ibm.cics.jvmserver.wlp.autoconfigure</code>
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.autoconfigure</code> JVM system property in the JVM profile
+	 * @param autoconfigure the value for <code>-Dcom.ibm.cics.jvmserver.wlp.autoconfigure</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setWlpAutoconfigure(boolean autoconfigure) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.server.host</code> JVM system property in the JVM profile
-	 * @param hostname the value of<code>com.ibm.cics.jvmserver.wlp.server.host</code>
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.host</code> JVM system property in the JVM profile
+	 * @param hostname the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.host</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setWlpServerHost(String hostname) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.server.http.port</code> JVM system property in the JVM profile
-	 * @param httpPort the value of<code>com.ibm.cics.jvmserver.wlp.server.http.port</code>
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.http.port</code> JVM system property in the JVM profile
+	 * @param httpPort the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.http.port</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setWlpServerHttpPort(int httpPort) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.server.https.port</code> JVM system property in the JVM profile
-	 * @param httpsPort the value of<code>com.ibm.cics.jvmserver.wlp.server.https.port</code>
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.https.port</code> JVM system property in the JVM profile
+	 * @param httpsPort the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.https.port</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
-	public void setWlpServerHttpsPort(int httpPort) throws CicsJvmserverResourceException;
+	public void setWlpServerHttpsPort(int httpsPort) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>com.ibm.cics.jvmserver.wlp.wab</code> JVM system property in the JVM profile
-	 * @param wabEnabled the value of<code>com.ibm.cics.jvmserver.wlp.wab</code>
+	 * Set the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.wab</code> JVM system property in the JVM profile
+	 * @param wabEnabled the value of <code>-Dcom.ibm.cics.jvmserver.wlp.wab</code>
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setWlpServerWabEnabled(boolean wabEnabled) throws CicsJvmserverResourceException;
@@ -275,38 +334,38 @@ public interface IJvmprofile {
 	public String getWlpOutputDir();
 	
 	/**
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.server.name</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.server.name</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.name</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.name</code>
 	 */
 	public String getWlpServerName();	
 	
 	/**
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.autoconfigure</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.autoconfigure</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.autoconfigure</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.autoconfigure</code>
 	 */
 	public String getWlpAutoconfigure();
 
 	/** 
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.server.host</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.server.host</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.host</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.host</code>
 	 */	
 	public String getWlpServerHost();
 	
 	/**
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.server.http.port</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.server.http.port</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.http.port</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.http.port</code>
 	 */
 	public String getWlpServerHttpPort();
 
 	/**
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.server.https.port</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.server.https.port</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.server.https.port</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.server.https.port</code>
 	 */
 	public String getWlpServerHttpsPort();	
 
 	/**
-	 * Returns the value of the <code>com.ibm.cics.jvmserver.wlp.wab</code> JVM system property in the JVM profile
-	 * @return the value of <code>com.ibm.cics.jvmserver.wlp.wab</code>
+	 * Returns the value of the <code>-Dcom.ibm.cics.jvmserver.wlp.wab</code> JVM system property in the JVM profile
+	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.wab</code>
 	 */
 	public boolean getWlpServerWabEnabled();
 

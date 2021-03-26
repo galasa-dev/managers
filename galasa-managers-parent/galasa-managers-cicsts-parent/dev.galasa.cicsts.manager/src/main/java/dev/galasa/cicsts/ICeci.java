@@ -9,17 +9,22 @@ import java.util.HashMap;
 
 import javax.validation.constraints.NotNull;
 
-import dev.galasa.zos3270.ITerminal;
-
 /**
  * CICS/TS Command-level Interpreter (CECI) Interface.
  *
  */
 public interface ICeci {
+	
+	/**
+	 * Start a new active CECI session. Sets terminal to mixed case and input (<code>CEOT TRANIDONLY</code>) and starts the CECI transaction
+	 * @param ceciTerminal an {@link ICicsTerminal}
+	 * @throws CeciException
+	 */
+	public void startCECISession(@NotNull ICicsTerminal ceciTerminal) throws CeciException;
     
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param command a {@link String} containing the CECI command
@@ -30,15 +35,15 @@ public interface ICeci {
     
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param command a {@link String} containing the CECI command
      * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
      * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
      * The following examples shows how to retrieve a specific returned value:<br><code>
-     * issueCommand(ITerminal, "ASSIGN USERID(&VAR)", false)<br>
-     * retrieveVariableText(ITerminal, "ASSIGN USERID(&VAR)", false)
+     * issueCommand(ICicsTerminal, "ASSIGN USERID(&VAR)", false)<br>
+     * retrieveVariableText(ICicsTerminal, "&VAR")
      * </code>
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
@@ -47,7 +52,7 @@ public interface ICeci {
 
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param command a {@link String} containing the CECI command
@@ -59,7 +64,7 @@ public interface ICeci {
     
     /**
      * Issue a CECI command. The command will be stored and executed from a CECI variable. 
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param command a {@link String} containing the CECI command
@@ -67,8 +72,8 @@ public interface ICeci {
      * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
      * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
      * The following examples shows how to retrieve a specific returned value:<br><code>
-     * issueCommand(ITerminal, "ASSIGN USERID(&VAR)", false)<br>
-     * retrieveVariableText(ITerminal, "ASSIGN USERID(&VAR)", false)
+     * issueCommand(ICicsTerminal, "ASSIGN USERID(&VAR)", false)<br>
+     * retrieveVariableText(ICicsTerminal, "ASSIGN USERID(&VAR)", false)
      * </code>
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
@@ -77,7 +82,7 @@ public interface ICeci {
 
     /**
      * Define a CECI text variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
@@ -89,7 +94,7 @@ public interface ICeci {
 
     /**
      * Define a CECI binary variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
@@ -100,48 +105,58 @@ public interface ICeci {
     public int defineVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull char[] value) throws CeciException;
     
     /**
-     * Define a double word CECI variable. 
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Define a double word CECI variable (CECI variable type <b>FD</b>). 
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
-     * @param value a long representing a double word (8 bytes) with a decimal integer value from -9223372036854775808 to +9223372036854775807
+     * @param value a long representing a double word (8 bytes) with a decimal integer value from -9223372036854775808D to +9223372036854775807D (0x80000000 00000000 to 0x7FFFFFFF FFFFFFFF)
      * @return the length of the defined variable
      * @throws CeciException
      */
     public int defineVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException;
     
     /**
-     * Define a full word CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Define a full word CECI variable (CECI variable type <b>F</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
-     * @param value an integer representing a full word (4 bytes) with a decimal value from -2147483648 to +2147483647 ({@link Integer.MIN_VALUE} to {@link Integer.MAX_VALUE})
+     * @param value an integer representing a full word (4 bytes) with a decimal value from -2147483648 to +2147483647 (0x80000000 to 0x7FFFFFFF)
      * @return the length of the defined variable 
      * @throws CeciException
      */
     public int defineVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
     
     /**
-     * Define a half word CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Define a half word CECI variable (CECI variable type <b>H</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
-     * @param value an integer representing a full word (2 bytes) with a decimal value from -32768 to +32767
+     * @param value an integer representing a full word (2 bytes) with a decimal value from -32768 to +32767 (0x8000 to 0x7FFF)
      * @return the length of the defined variable 
      * @throws CeciException
      */
     public int defineVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
     
     /**
-     * Define a packed decimal CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Define a packed decimal CECI variable (CECI variable type <b>P</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
-     * @param value an integer representing a full word (2 bytes) with a decimal value from -9999999 to +9999999 (0x9999999D to 0x9999999C)
+     * @param value an integer representing 4 byte decimal value from -9999999 to +9999999 (0x9999999D to 0x9999999C)
      * @return the length of the defined variable 
      * @throws CeciException
      */
-    public int defineVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
+    public int defineVariable4BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException;
 
     /**
+	 * Define a full double word CECI variable (CECI variable type <b>D</b>).
+	 * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
+	 * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
+	 * @param value a long representing 8 byte decimal with a decimal integer value from -999999999999999 to +999999999999999 (0x99999999 9999999D to 0x99999999 9999999F)
+	 * @return the length of the defined variable
+	 * @throws CeciException
+	 */
+	public int defineVariable8BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException;
+
+	/**
      * Retrieve a CECI text variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
@@ -150,7 +165,7 @@ public interface ICeci {
 
     /**
      * Retrieve a CECI binary variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
@@ -158,8 +173,8 @@ public interface ICeci {
     public char[] retrieveVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
-     * Retrieve a double word CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Retrieve a double word CECI variable (CECI variable type <b>FD</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
@@ -167,8 +182,8 @@ public interface ICeci {
     public long retrieveVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
-     * Retrieve a full word CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Retrieve a full word CECI variable (CECI variable type <b>F</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
@@ -176,8 +191,8 @@ public interface ICeci {
     public int retrieveVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
-     * Retrieve a half word CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Retrieve a half word CECI variable (CECI variable type <b>H</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
@@ -185,17 +200,26 @@ public interface ICeci {
     public int retrieveVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
 
     /**
-     * Retrieve a packed decimal CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * Retrieve a packed decimal CECI variable (CECI variable type <b>P</b>).
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
      * @return variable value
      * @throws CeciException
      */
-    public int retrieveVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
+    public int retrieveVariable4BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
     
     /**
+	 * Retrieve a double word CECI variable (CECI variable type <b>D</b>).
+	 * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
+	 * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
+	 * @return variable value
+	 * @throws CeciException
+	 */
+	public long retrieveVariable8BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException;
+
+	/**
      * Delete a single CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param name variable name. CECI variable names have a maximum length of 10 characters including leading {@literal &}.
@@ -205,14 +229,14 @@ public interface ICeci {
 
     /**
      * Delete all variables in this CECI session.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @throws CeciException
      */
     public void deleteAllVariables(@NotNull ICicsTerminal ceciTerminal) throws CeciException;
 
     /**
      * Retrieve the content of the current EXEC Interface Block (EIB)
-     * @param terminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param terminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @return the {@link IExecInterfaceBlock} 
      * @throws CeciException
      */
@@ -220,12 +244,12 @@ public interface ICeci {
 
     /**
      * EXEC CICS LINK to a PROGRAM.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param programName the name of the PROGRAM
      * @param commarea a string representing the COMMAREA. If null, COMMAREA will be omitted from the command. Can be CECI variable name populated with
-     *  (<b>&</b>name set via {@link #defineVariableText(ITerminal, String, String)}) or the actual data. The value of DATALENGTH in the command will be 
+     *  (<b>&</b>name set via {@link #defineVariableText(ICicsTerminal, String, String)}) or the actual data. The value of DATALENGTH in the command will be 
      * be allowed to default.
      * @param sysid the system name where the CICS region where the link request is to be routed. If null, SYSID will be omitted from the command.
      * @param transid the name of the mirror transaction on the remote region. If null, TRANSID will be omitted from the command.
@@ -236,9 +260,9 @@ public interface ICeci {
     public ICeciResponse linkProgram(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, String commarea, String sysid, String transid, boolean synconreturn) throws CeciException;
 
     /**
-     * EXEC CICS LINK to a PROGRAM with a CHANNEL. Use {@link #putContainer(ITerminal, String, String, String)} to create the container(s) on the CHANNEL 
-     * and {@link #getContainer(ITerminal, String, String, String)} to retrieve the content after the LINK.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * EXEC CICS LINK to a PROGRAM with a CHANNEL. Use {@link #putContainer(ICicsTerminal, String, String, String)} to create the container(s) on the CHANNEL 
+     * and {@link #getContainer(ICicsTerminal, String, String, String)} to retrieve the content after the LINK.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>  
      * @param programName the name of the PROGRAM
@@ -249,10 +273,10 @@ public interface ICeci {
     
     /**
      * Puts data in a CONTAINER with an associated CHANNEL.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param channelName the CHANNELNAME
      * @param containerName the COTAINER name
-     * @param content a string representing the container contents. Can be CECI variable name populated with (<b>&</b>name set via {@link #defineVariableText(ITerminal, String, String)}) 
+     * @param content a string representing the container contents. Can be CECI variable name populated with (<b>&</b>name set via {@link #defineVariableText(ICicsTerminal, String, String)}) 
      * or the actual data. The value of FLENGTH in the command will be set to the data length.
      * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command.
      * @param fromCcsid provides a value for FROMCCSID. If null, will be omitted from the command.
@@ -264,12 +288,12 @@ public interface ICeci {
     
     /**
      * Gets the data in a CONTAINER with an associated CHANNEL into a CECI variable.
-     * @param ceciTerminal an {@link ITerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param channelName the CHANNELNAME
      * @param containerName the CONTAINER name
-     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ITerminal, String)} or {@link #retrieveVariableHex(ITerminal, String)}
+     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ICicsTerminal, String)} or {@link #retrieveVariableHex(ICicsTerminal, String)}
      * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command. 
      * @param intoCcsid provides a value for INTOCCSID. If null, will be omitted from the command.
      * @param intoCodepage provides a value for INTOCODEPAGE. If null, will be omitted from the command.

@@ -6,6 +6,17 @@
 package dev.galasa.cicsts.cicsresource;
 
 public enum CicsResourceStatus {
-	ENABLED,
-	DISABLED;
+	ENABLED("Enabled"),
+	DISABLED("Disabled");
+	
+	private final String status;
+	
+	CicsResourceStatus(String status) {
+		this.status = status;
+	}
+	
+	@Override
+	public String toString() {
+		return this.status;
+	}
 }

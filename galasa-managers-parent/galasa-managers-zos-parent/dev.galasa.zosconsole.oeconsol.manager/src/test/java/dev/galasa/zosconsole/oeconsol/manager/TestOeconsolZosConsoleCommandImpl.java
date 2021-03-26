@@ -126,7 +126,7 @@ public class TestOeconsolZosConsoleCommandImpl {
 
     @Test
     public void testRequestResponse() {
-        String expectedMessage = "oeconsol does not provide support delayed response";
+        String expectedMessage = "oeconsol does not provide support for delayed response";
         ZosConsoleException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleException.class, ()->{
 			zosConsoleCommandSpy.requestResponse();
         });

@@ -42,6 +42,13 @@ public interface ICicstsManagerSpi {
     void registerCedaProvider(@NotNull ICedaProvider cedaProvider);
     
     /**
+     * Register the a ICicsResource instance provider with the CICS TS Manager
+     * 
+     * @param cicsResourceProvider - the new provider
+     */
+    void registerCicsResourceProvider(@NotNull ICicsResourceProvider cicsResourceProvider);
+    
+    /**
      * Register the a ICemt instance provider with the CICS TS Manager
      * 
      * @param cemtProvider - the new provider

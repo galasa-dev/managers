@@ -17,22 +17,32 @@ import dev.galasa.zosliberty.IZosLibertyServer;
  * provided to manage the logs files associated with the JVM server.<p>
  * JVM profile options should be managed via the {@link IJvmprofile} JVM profile object
  */
-public interface IJvmserver extends ICicsResourceBase {
+public interface IJvmserver {
 	
 	public enum JvmserverType {
-		CLASSPATH("Classpath"),
-		OSGI("OSGi"),
-		LIBERTY("Liberty");
+		AXIS2("Axis2", "DFHJVMAX.jvmprofile"),
+		CLASSPATH("Classpath", "DFHJVMAX.jvmprofile"),
+		CMCI("CMCI", "EYUCMCIJ.jvmprofile"),
+		LIBERTY("Liberty", "DFHWLP.jvmprofile"),
+		OSGI("OSGi", "DFHOSGI.jvmprofile"),
+		STS("STS", "DFHJVMST.jvmprofile"),
+		UNKNOWN("UNKNOWN", null);
 
-		String type;
+		private final String type;
+		private final String cicsSuppliedProfile;
 		
-		JvmserverType(String type) {
+		JvmserverType(String type, String cicsSuppliedProfile) {
 			this.type = type;
+			this.cicsSuppliedProfile = cicsSuppliedProfile;
 		}
 		
 		@Override
 		public String toString() {
 			return this.type;
+		}
+		
+		public String getCicsSuppliedProfile() {
+			return cicsSuppliedProfile;
 		}
 	}
 	
@@ -40,45 +50,211 @@ public interface IJvmserver extends ICicsResourceBase {
 		PHASEOUT,
 		PURGE,
 		FORCEPURGE,
-		KILL
+		KILL,
+		FAILED
 	}
+	
+	/**
+	 * Set the CICS JVMSERVER resource definition DESCRIPTION attribute value
+	 * @param value the resource definition DESCRIPTION attribute value
+	 */
+	public void setDefinitionDescriptionAttribute(String value);
+	
+	/**
+	 * Set the CICS JVMSERVER resource definition STATUS attribute value
+	 * @param value the resource definition STATUS attribute value
+	 */
+	public void setDefinitionStatusAttribute(CicsResourceStatus value);
 	
 	/**
 	 * Set the CICS JVMSERVER resource LERUNOPTS attribute value
 	 * @param lerunopts the resource LERUNOPTS attribute value
 	 */
-	public void setResourceLerunopts(String lerunopts);
-	
+	public void setResourceDefinitionLerunopts(String lerunopts);
+
 	/**
 	 * Set the CICS JVMSERVER resource THREADLIMIT attribute value
 	 * @param threadlimit the resource THREADLIMIT attribute value
 	 */
-	public void setResourceThreadlimit(int threadlimit);
+	public void setResourceDefinitionThreadlimit(int threadlimit);
+
+	/**
+	 * Return the CICS JVMSERVER resource definition NAME attribute value
+	 * @return the resource definition NAME attribute value
+	 */
+	public String getResourceDefinitionNameAttribute();
 	
+	/**
+	 * Return the CICS JVMSERVER resource definition GROUP attribute value
+	 * @return the resource definition GROUP attribute value
+	 */
+	public String getResourceDefinitionGroupAttribute();
+	
+	/**
+	 * Return the CICS JVMSERVER resource definition DESCRIPTION attribute value
+	 * @return the resource definition DESCRIPTION attribute value
+	 */
+	public String getResourceDefinitionDescriptionAttribute();
+	
+	/**
+	 * Return the CICS JVMSERVER resource definition STATUS attribute value
+	 * @return the resource definition STATUS attribute value
+	 */
+	public CicsResourceStatus getResourceDefinitionStatusAttribute();
+
 	/**
 	 * Return the CICS JVMSERVER resource STATUS attribute value
 	 * @return the resource STATUS attribute value
 	 */
-	public CicsResourceStatus getResourceStatus();
-	
+	public CicsResourceStatus getResourceDefinitionStatus();
+
 	/**
 	 * Return the CICS JVMSERVER resource JVMPROFILE attribute value
 	 * @return the resource JVMPROFILE attribute value
 	 */
-	public String getResourceJvmprofile();
-	
+	public String getResourceDefinitionJvmprofile();
+
 	/**
 	 * Return the CICS JVMSERVER resource LERUNOPTS attribute value
 	 * @return the resource LERUNOPTS attribute value
 	 */
-	public String getResourceLerunopts();
-	
+	public String getResourceDefinitionLerunopts();
+
 	/**
 	 * Return the CICS JVMSERVER resource THREADLIMIT attribute value
 	 * @return the resource THREADLIMIT attribute value
 	 */
-	public int getResourceThreadlimit();	
+	public int getResourceDefinitionThreadlimit();
+
+	/**
+	 * Build the CICS JVMSERVER resource definition only 
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void buildResourceDefinition() throws CicsJvmserverResourceException;	
 	
+	/**
+	 * Build and install the CICS JVMSERVER resource definition 
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void buildInstallResourceDefinition() throws CicsJvmserverResourceException;	
+	
+	/**
+	 * Install the CICS JVMSERVER resource definition
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void installResourceDefinition() throws CicsJvmserverResourceException;
+
+	/**
+	 * Enable the CICS JVMSERVER resource
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void enable() throws CicsJvmserverResourceException;
+
+	/**
+	 * Wait for the CICS JVMSERVER resource to be enabled. Does NOT issue the enable command
+	 * @return true if enabled, false if not enabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean waitForEnable() throws CicsJvmserverResourceException;
+
+	/**
+	 * Wait for the CICS JVMSERVER resource to be enabled with specified timeout. Does NOT issue the enable command 
+	 * @param millisecondTimeout
+	 * @return true if enabled, false if not enabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException;
+
+	/**
+	 * Returns whether the CICS JVMSERVER resource is currently enabled
+	 * @return true if enabled, false if not enabled
+	 * @throws CicsJvmserverResourceException 
+	 */
+	public boolean isEnabled() throws CicsJvmserverResourceException;
+
+	/**
+	 * Disable the CICS JVMSERVER resource
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean disable() throws CicsJvmserverResourceException;
+	
+	/**
+	 * Disable the CICS JVMSERVER resource with a specific {@link PurgeType}
+	 * @param purgeType
+	 * @return true if the resource disables within the time, false otherwise
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean disable(PurgeType purgeType) throws CicsJvmserverResourceException;
+	
+	/**
+	 * Disable the CICS JVMSERVER resource with a specific {@link PurgeType} and specified timeout
+	 * @param purgeType
+	 * @param millisecondTimeout
+	 * @return true if the resource disables within the time, false otherwise
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean disable(PurgeType purgeType, int millisecondTimeout) throws CicsJvmserverResourceException;
+
+	/**
+	 * Disable the CICS JVMSERVER resource. This method will escalate through all the {@link PurgeType} levels (PHASEOUT, PURGE, FORCEPURGE, KILL) as
+	 * necessary. If the disable at any level is not successful within the default timeout, escalation will happen
+	 * @return the {@link PurgeType} at which the disable was successful
+	 * @throws CicsJvmserverResourceException 
+	 */
+	public PurgeType disableWithEscalate() throws CicsJvmserverResourceException;
+
+	/**
+	 * Disable the CICS JVMSERVER resource. This method will escalate through all the {@link PurgeType} levels (PHASEOUT, PURGE, FORCEPURGE, KILL) as
+	 * necessary. If the disable at any level is not successful within the stepMillisecondTimeout, escalation will happen
+	 * @param stepMillisecondTimeout time to allow each step to disable before escalating
+	 * @return the {@link PurgeType} at which the disable was successful
+	 * @throws CicsJvmserverResourceException 
+	 */
+	public PurgeType disableWithEscalate(int stepMillisecondTimeout) throws CicsJvmserverResourceException;
+
+	/**
+	 * Wait for the CICS JVMSERVER resource to be disabled. Does NOT issue the disable command
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean waitForDisable() throws CicsJvmserverResourceException;
+
+	/**
+	 * Wait for the CICS JVMSERVER resource to be disabled with specified timeout. Does NOT issue the disable command
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean waitForDisable(int millisecondTimeout) throws CicsJvmserverResourceException;
+
+	/**
+	 * Delete the CICS JVMSERVER resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void delete() throws CicsJvmserverResourceException;
+
+	/**
+	 * Delete the CICS JVMSERVER resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded. 
+	 * Errors during the process will cause an exception to be thrown depending on the value of ignoreErrors 
+	 * @param ignoreErrors 
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void delete(boolean ignoreErrors) throws CicsJvmserverResourceException;
+
+	/**
+	 * Discard the CICS JVMSERVER resource. If the resource is enabled, it will be disabled and discarded
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void discard() throws CicsJvmserverResourceException;
+
+	/**
+	 * Disable and discard the CICS JVMSERVER resource and delete the resource definition.
+	 * Errors during the process will cause an exception to be thrown depending on the value of ignoreErrors 
+	 * @param ignoreErrors 
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void disableDiscardDelete(boolean ignoreErrors) throws CicsJvmserverResourceException;
+
 	/**
 	 * Set the JVMSERVER Threadlimit value in CEMT
 	 * @param the Threadlimit value
@@ -114,7 +290,7 @@ public interface IJvmserver extends ICicsResourceBase {
 	public IJvmprofile getJvmprofile();
 	
 	/**
-	 * Build the JVM server profile zOS UNIX file only 
+	 * Build the JVM server profile zOS UNIX file only
 	 * @throws CicsJvmserverResourceException
 	 */
 	public void buildProfile() throws CicsJvmserverResourceException;	
@@ -126,43 +302,10 @@ public interface IJvmserver extends ICicsResourceBase {
 	public boolean isProfileBuilt();	
 	
 	/**
-	 * Disable the CICS JVMSERVER resource with a specific {@link PurgeType} and specified timeout
-	 * @param purgeType
-	 * @param millisecondTimeout
-	 * @return true if the resource disables within the time, false otherwise
-	 * @throws CicsJvmserverResourceException
-	 */
-	public boolean disable(PurgeType purgeType, int millisecondTimeout) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Disable the CICS JVMSERVER resource. This method will escalate through all the {@link PurgeType} levels (PHASEOUT, PURGE, FORCEPURGE, KILL) as
-	 * necessary. If the disable at any level is not successful within the stepMillisecondTimeout, escalation will happen
-	 * @param stepMillisecondTimeout time to allow each step to disable before escalating
-	 * @return the {@link PurgeType} at which the disable was successful
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public PurgeType disableWithEscalate(int stepMillisecondTimeout) throws CicsJvmserverResourceException;
-
-	/**
-	 * Delete the CICS JVMSERVER resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded
-	 * @throws CicsJvmserverResourceException
-	 */
-	@Override
-	public void delete() throws CicsJvmserverResourceException;	
-	
-	/**
-	 * Delete the CICS JVMSERVER resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded. 
-	 * Errors during the process will cause an exception to be thrown depending on the value of ignoreErrors 
-	 * @param ignoreErrors 
-	 * @throws CicsJvmserverResourceException
-	 */
-	public void delete(boolean ignoreErrors) throws CicsJvmserverResourceException;
-	
-	/**
 	 * Sets the zOS Liberty server object associated with this JVM server
 	 * @param zosLibertyServer the {@link IZosLibertyServer} object to associate with this JVM server
 	 */
-	public void setLibertyServer(IZosLibertyServer zosLibertyServer) throws CicsJvmserverResourceException;
+	public void setLibertyServer(IZosLibertyServer zosLibertyServer);
 
 	/**
 	 * Returns the zOS Liberty server object associated with this JVM server
@@ -171,40 +314,84 @@ public interface IJvmserver extends ICicsResourceBase {
 	public IZosLibertyServer getLibertyServer();
 	
 	/**
+	 * Returns the JVM server name as defined in the CICS Resource Definition
+	 * @return the JVM server name
+	 */
+	public String getName();
+
+	/**
 	 * Convenience method that returns the JAVA_HOME as defined in the JVM Profile
 	 * @return the JAVA_HOME value
+	 * @throws CicsJvmserverResourceException
 	 */
-	public String getJavaHome();
+	public IZosUNIXFile getJavaHome() throws CicsJvmserverResourceException;
 	
 	/**
 	 * Convenience method that returns the WORK_DIR as defined in the JVM Profile
 	 * @return the WORK_DIR value
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getWorkingDirectory();
+	public IZosUNIXFile getWorkingDirectory() throws CicsJvmserverResourceException;
 	
 	/**
 	 * Returns the JVM server JVMLOG file
 	 * @return JVMLOG {@link IZosUNIXFile}
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getJvmLogFile();
+	public IZosUNIXFile getJvmLogFile() throws CicsJvmserverResourceException;
 
 	/**
 	 * Returns the JVM server STDOUT file
 	 * @return STDOUT {@link IZosUNIXFile}
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getStdOutFile();
+	public IZosUNIXFile getStdOutFile() throws CicsJvmserverResourceException;
 	
 	/**
 	 * Returns the JVM server STDERR file
 	 * @return STDERR {@link IZosUNIXFile}
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getStdErrFile();
+	public IZosUNIXFile getStdErrFile() throws CicsJvmserverResourceException;
 	
 	/**
 	 * Returns the JVM server JVMTRACE file
 	 * @return JVMTRACE {@link IZosUNIXFile}
+	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getJvmTraceFile();
+	public IZosUNIXFile getJvmTraceFile() throws CicsJvmserverResourceException;
+	
+	/**
+	 * Returns the contents of the JVM server JVMLOG file
+	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC 
+	 * @return contents of JVMLOG
+	 * @throws CicsJvmserverResourceException 
+	 */
+	public OutputStream getJvmLog(boolean binary) throws CicsJvmserverResourceException;
+
+	/**
+	 * Returns the contents of JVM server STDOUT file
+	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
+	 * @return contents of STDOUT
+	 * @throws CicsJvmserverResourceException
+	 */
+	public OutputStream getStdOut(boolean binary) throws CicsJvmserverResourceException;
+	
+	/**
+	 * Returns the contents of JVM server STDERR file
+	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
+	 * @return contents of STDERR
+	 * @throws CicsJvmserverResourceException
+	 */
+	public OutputStream getStdErr(boolean binary) throws CicsJvmserverResourceException;
+	
+	/**
+	 * Returns the contents of JVM server JVMTRACE file
+	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
+	 * @return contents of JVMTRACE
+	 * @throws CicsJvmserverResourceException
+	 */
+	public OutputStream getJvmTrace(boolean binary) throws CicsJvmserverResourceException;
 	
 	/**
 	 * Save a checkpoint of the current state of the JVM server log files
@@ -213,14 +400,6 @@ public interface IJvmserver extends ICicsResourceBase {
 	 */
 	public String checkpointLogs() throws CicsJvmserverResourceException;
 
-	/**
-	 * Returns the contents of a specified log file
-	 * @param logFile the logFile retrieve
-	 * @return contents of logFile
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public OutputStream getLogFile(IZosUNIXFile logFile) throws CicsJvmserverResourceException;
-	
 	/**
 	 * Returns the contents of a specified log file since the supplied checkpoint
 	 * @param logFile the logFile retrieve
@@ -414,7 +593,7 @@ public interface IJvmserver extends ICicsResourceBase {
      * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
 	 */
-	public void clearJvmLogs() throws CicsJvmserverResourceException;
+	public void deleteJvmserverLogs() throws CicsJvmserverResourceException;
 
 	/**
 	 * Store the content of the JVM server log files to the Results Archive Store and delete the files
