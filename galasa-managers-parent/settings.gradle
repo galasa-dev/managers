@@ -50,4 +50,4 @@ include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager.ivt'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager.ivt'
 // galasa-managers-unix-parent
 include 'galasa-managers-unix-parent:dev.galasa.linux.manager'
-// include 'galasa-managers-unix-parent:dev.galasa.linux.manager.ivt'
+include 'galasa-managers-unix-parent:dev.galasa.linux.manager.ivt'
