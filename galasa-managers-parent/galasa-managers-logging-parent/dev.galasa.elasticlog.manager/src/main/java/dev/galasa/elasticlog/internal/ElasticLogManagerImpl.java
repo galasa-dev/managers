@@ -23,7 +23,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
+import dev.galasa.elasticlog.internal.properties.ElasticLogCredentials;
 import dev.galasa.elasticlog.internal.properties.ElasticLogEndpoint;
 import dev.galasa.elasticlog.internal.properties.ElasticLogIndex;
 import dev.galasa.elasticlog.internal.properties.ElasticLogLocalRun;
@@ -34,8 +37,11 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClientException;
+import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
@@ -53,6 +59,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	private IFramework							framework;
 	private IConfigurationPropertyStoreService	cps;
 	private IConfidentialTextService			ctf;
+	
+	private ICredentialsService                 credService;
 
 	private List<IManager>						otherManagers	= new ArrayList<IManager>();
 
@@ -78,11 +86,12 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			this.framework = framework;
 			this.cps = framework.getConfigurationPropertyService(NAMESPACE);
 			this.ctf = framework.getConfidentialTextService();
+			this.credService = framework.getCredentialsService();
 			ElasticLogPropertiesSingleton.setCps(this.cps);
 		} catch (Exception e) {
 			throw new ElasticLogManagerException("Unable to request framework services", e);
 		}
-        
+		
 		if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
 			youAreRequired(allManagers, activeManagers);
 		
@@ -105,14 +114,21 @@ public class ElasticLogManagerImpl extends AbstractManager {
 
 		httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
 	}
+	
+    @Override
+    public boolean doYouSupportSharedEnvironments() {
+        return true;
+    }
 
 	/**
 	 * Test class result step, build and send the document request
 	 * 
 	 * @throws ManagerException
+	 * @throws CredentialsException 
 	 */
 	@Override
 	public void testClassResult(@NotNull String finalResult, Throwable finalException) throws ManagerException {
+	    
 		//Record test information
 		this.runProperties.put("testCase", this.framework.getTestRun().getTestClassName());
 		this.runProperties.put("runId", this.framework.getTestRunName());
@@ -182,17 +198,17 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		this.runProperties.put("customBuild", customBuild);
 	
 		if(testingAreas != null)
-			this.runProperties.put("testingAreas", testingAreas.toArray(new String[0]));
+			this.runProperties.put("testingAreas", testingAreas.toArray(new String[testingAreas.size()]));
 	
 		if(tags != null)
-			this.runProperties.put("tags", tags.toArray(new String[0]));	    	
+			this.runProperties.put("tags", tags.toArray(new String[tags.size()]));	    	
 	
 		//Convert HashMap of run properties to a Json String
 		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
-		String request = gson.toJson(this.runProperties);
+		JsonObject json = gson.toJsonTree(this.runProperties).getAsJsonObject();
 
 		logger.info("Sending Run Request to ElasticLog Endpoint");
-		logger.trace("Document Request -\n" + request);
+		logger.trace("Document Request -\n" + json.toString());
 		
 		//Register endpoint data as confidential
 		String index = ElasticLogIndex.get();
@@ -200,28 +216,65 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		ctf.registerText(index, "ElasticLog Index");
 		ctf.registerText(endpoint, "ElasticLog Endpoint");
 		try {
+		   
+		    ICredentials creds = getCreds();
+		   
 			//Set up http client for requests
 			IHttpClient client = this.httpManager.newHttpClient();
 			client.setTrustingSSLContext();
 			client.addOkResponseCode(201);
 			client.setURI(new URI(endpoint));
-
-			//Send document to index
-			client.postText(index + "/_doc", request);
-			logger.info("Run successfully logged to Elastic index " + index);
+			
+	        if(creds != null && creds instanceof ICredentialsUsernamePassword) {
+	              
+	              ICredentialsUsernamePassword userPass = (ICredentialsUsernamePassword) creds;
+	              String user = userPass.getUsername();
+	              String pass = userPass.getPassword();
+	              client.setAuthorisation(user, pass);
+	           }
+			
+			
+			HttpClientResponse<JsonObject> response = client.postJson(index + "/_doc", json);
+			
+			int statusCode = response.getStatusCode();
+			String message = response.getStatusMessage();
+			
+			//Send document to index and check response code
+			if(statusCode != 201 && statusCode != 200){
+			   logger.warn("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			}else {
+			  logger.info("Run successfully logged to Elastic index " + index); 
+			}
         
 			//Change index to latest document index
 			index = index + "_latest";
 		 	String testCase = (String) this.runProperties.get("testCase");
 		 	
 		 	//Create new doc if doesnt exist, updates if doc already exists
-			client.postText(index + "/_doc/" + testCase + testingEnvironment, request);
-			logger.info("Run successfully logged to Elastic index " + index);
+		 	
+		 	response = client.postJson(index + "/_doc/" + testCase + testingEnvironment, json);
+		 	
+			statusCode = response.getStatusCode();
+			message = response.getStatusMessage();
+			
+			if(statusCode != 201 && statusCode != 200) {
+			   logger.warn("Error logging to Elastic index " + index + ": " + statusCode + " - " + message);
+			}else {
+			  logger.info("Run successfully logged to Elastic index " + index); 
+			}
 
 		} catch (HttpClientException e) {
-			logger.info("ElasticLog Manager failed to send information to Elastic Endpoint");
+			logger.warn("ElasticLog Manager failed to send information to Elastic Endpoint: ", e);
 		} catch (URISyntaxException e) {
-			logger.info("ElasticLog Manager failed to send parse URI of Elastic Endpoint");
+			logger.warn("ElasticLog Manager failed to send parse URI of Elastic Endpoint: ", e);
+		}catch (CredentialsException e) {
+		    logger.warn("Problem retrieving credentials: ", e);
 		}
+	}    
+	
+	private ICredentials getCreds() throws CredentialsException, ElasticLogManagerException{
+	   String credKey = ElasticLogCredentials.get();
+	   ICredentials creds = credService.getCredentials(credKey);
+	   return creds;
 	}
 }

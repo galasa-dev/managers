@@ -1,4 +1,3 @@
-package dev.galasa.zosconsole.oeconsol.manager;
 /*
  * Licensed Materials - Property of IBM
  * 
@@ -36,3 +35,4 @@ package dev.galasa.zosconsole.oeconsol.manager;
 * <p>
 * See <a href="https://github.com/IBM/IBM-Z-zOS/tree/master/zOS-Tools-and-Toys/oeconsol">oeconsol</a> for documentation and download
  */
+package dev.galasa.zosconsole.oeconsol.manager;

@@ -43,4 +43,30 @@ public class DseCicsImpl extends BaseCicsImpl {
         return this.version;
     }
 
+    @Override
+    public boolean isProvisionStart() {
+        return true;  // DSE regions are assumed to be started before the test runs
+    }
+
+    @Override
+    public void startup() throws CicstsManagerException {
+        throw new CicstsManagerException("Unable to startup DSE CICS TS regions");
+        
+    }
+
+    @Override
+    public void shutdown() throws CicstsManagerException {
+        throw new CicstsManagerException("Unable to shutdown DSE CICS TS regions");
+    }
+
+    @Override
+    public void submitRuntimeJcl() throws CicstsManagerException {
+        throw new CicstsManagerException("Unable to submit DSE CICS TS regions");
+    }
+
+    @Override
+    public boolean hasRegionStarted() throws CicstsManagerException {
+        throw new CicstsManagerException("Unable to check DSE CICS TS regions has started");
+    }
+
 }

@@ -1,0 +1,16 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'HTTP Manager'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    implementation 'org.apache.httpcomponents:httpclient-osgi:4.5.8'
+    implementation 'org.apache.httpcomponents:httpcore-osgi:4.4.11'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.8'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.0'
+}

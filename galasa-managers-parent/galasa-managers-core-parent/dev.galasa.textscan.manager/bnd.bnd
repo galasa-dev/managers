@@ -1,0 +1,3 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Text Scan Manager
+Export-Package: dev.galasa.textscan,dev.galasa.textscan.spi

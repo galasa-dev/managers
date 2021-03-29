@@ -27,6 +27,8 @@ public interface ITerminal {
 
     ITerminal positionCursorToFieldContaining(@NotNull String searchText)
             throws TextNotFoundException, KeyboardLockedException;
+    
+    boolean isClearScreen();
 
     ITerminal waitForTextInField(String string) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
 

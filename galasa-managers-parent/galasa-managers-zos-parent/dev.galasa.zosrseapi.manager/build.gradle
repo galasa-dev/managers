@@ -1,0 +1,17 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'Galasa RSE API Manager'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.apache.httpcomponents:httpclient-osgi:4.5.8'
+    testImplementation 'org.powermock:powermock-module-junit4:2.0.4'
+    testImplementation 'org.powermock:powermock-api-mockito2:2.0.4'
+}

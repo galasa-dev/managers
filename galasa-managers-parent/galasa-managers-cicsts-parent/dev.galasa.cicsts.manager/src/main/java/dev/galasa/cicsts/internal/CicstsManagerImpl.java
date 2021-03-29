@@ -229,6 +229,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
                 continue;
             }
             
+            if (!terminal.getCicsRegion().isProvisionStart()) {
+                continue;
+            }
+            
             try {
                 terminal.connectToCicsRegion();
             } catch (CicstsManagerException e) {
@@ -332,6 +336,23 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
         
         return this.cemtProvider;
+    }
+
+    @Override
+    public void cicstsRegionStarted(ICicsRegion region) throws CicstsManagerException {
+        // A region has started, so connect everything up
+        
+        // Connect terminals that are associated with the region
+        
+        for(CicsTerminalImpl terminal : terminals) {
+            if (terminal.getCicsRegion() == region) {
+                if (terminal.isConnectAtStartup()) {
+                    if (!terminal.connectToCicsRegion()) {
+                        throw new CicstsManagerException("Failed to connect terminal to CICS TS region");
+                    }
+                }
+            }
+        }
     }
 
 }
