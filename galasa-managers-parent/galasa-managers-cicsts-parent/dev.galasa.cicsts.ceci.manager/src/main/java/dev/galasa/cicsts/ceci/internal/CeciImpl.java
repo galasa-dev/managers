@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICeciResponseOutputValue;
@@ -23,7 +24,6 @@ import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.IExecInterfaceBlock;
 import dev.galasa.zos3270.FieldNotFoundException;
-import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
@@ -32,9 +32,9 @@ import dev.galasa.zos3270.spi.NetworkException;
 /**
  * Implementation of {@link ICECI}
  */
-public class CECIImpl implements ICeci {
+public class CeciImpl implements ICeci {
     
-    private static final Log logger = LogFactory.getLog(CECIImpl.class);
+    private static final Log logger = LogFactory.getLog(CeciImpl.class);
     private static final String INITIAL_SCREEN_ID = "STATUS:  ENTER ONE OF THE FOLLOWING";
     private static final String COMMAND_BEFORE_SCREEN_ID = "STATUS:  ABOUT TO EXECUTE COMMAND";
     private static final String COMMAND_AFTER_SCREEN_ID = "STATUS:  COMMAND EXECUTION COMPLETE";
@@ -51,19 +51,45 @@ public class CECIImpl implements ICeci {
     private static final String VARIABLE_TYPE_DOUBLE_WORD = "FD";
     private static final String VARIABLE_TYPE_FULL_WORD = "F";
     private static final String VARIABLE_TYPE_HALF_WORD = "H";
-    private static final String VARIABLE_TYPE_PACKED = "P";
+    private static final String VARIABLE_TYPE_4_BYTE_PACKED = "P";
+    private static final String VARIABLE_TYPE_8_BYTE_PACKED = "D";
     private static final String MESSAGE_DFHAC2206 = "DFHAC2206";
+    
+    private static final String WRONG_CICS_REGION = "Provided terminal does not belong to the correct CICS TS Region";
     
     private String command;
     private ICicsTerminal terminal;
-    private final ICicsRegion   cicsRegion;
+    private final ICicsRegion cicsRegion;
     
-    public CECIImpl(CECIManagerImpl manager, ICicsRegion cicsRegion) {
+    public CeciImpl(CeciManagerImpl manager, ICicsRegion cicsRegion) {
         this.cicsRegion = cicsRegion;
     }
     
 
     @Override
+	public void startCECISession(@NotNull ICicsTerminal ceciTerminal) throws CeciException {
+        this.terminal = ceciTerminal;
+        if (ceciTerminal.getCicsRegion() != cicsRegion) {
+            throw new CeciException(WRONG_CICS_REGION);
+        }
+	    try {
+	    	if (!this.terminal.isClearScreen()) {
+                this.terminal.resetAndClear();
+	    	}
+            this.terminal.type("CEOT TR").enter().waitForKeyboard();
+        	this.terminal.pf3().waitForKeyboard();
+        	this.terminal.resetAndClear();
+        	this.terminal.type("CECI").enter().waitForKeyboard();
+        } catch (CicstsManagerException | TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException | FieldNotFoundException e) {
+            throw new CeciException("Problem starting CECI session", e);
+        }
+		if (!isInitialScreen(this.terminal.retrieveScreen())) {
+			throw new CeciException("Not on CECI initial screen");			
+		}
+	}
+
+
+	@Override
     public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command) throws CeciException {
         return issueCommand(ceciTerminal, command, true);
     }
@@ -72,7 +98,7 @@ public class CECIImpl implements ICeci {
     public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, boolean parseOutput) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         
         String commandVariable = COMMAND_VARIABLE_NAME;
@@ -110,25 +136,22 @@ public class CECIImpl implements ICeci {
             }
             
             // Return the response
-            return newCECIResponse(parseOutput);
+            return newCeciResponse(parseOutput);
         } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CeciException("Error issuing CECI command", e);
         }
     }
     
     @Override
-    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command,
-            HashMap<String, Object> options) throws CeciException {
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, Object> options) throws CeciException {
         return issueCommand(ceciTerminal, command, options, true);
     }
 
 
     @Override
-    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command,
-            HashMap<String, Object> options, boolean parseOutput) throws CeciException {
+    public ICeciResponse issueCommand(@NotNull ICicsTerminal ceciTerminal, @NotNull String command, HashMap<String, Object> options, boolean parseOutput) throws CeciException {
         StringBuilder sb = new StringBuilder();
         sb.append(command);
-        
         if (options != null && !options.isEmpty()) {
             for(Entry<String, Object> entry : options.entrySet()) {
                 String key = entry.getKey();
@@ -154,7 +177,7 @@ public class CECIImpl implements ICeci {
     public int defineVariableText(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull String value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         name = validateVariable(name, value.toCharArray(), null);
         return setVariable(name, value, null);
@@ -165,7 +188,7 @@ public class CECIImpl implements ICeci {
     public int defineVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull char[] value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         name = validateVariable(name, value, null);
         return setVariableHex(name, value);
@@ -175,7 +198,7 @@ public class CECIImpl implements ICeci {
     public int defineVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         String format = "%+0" + getLength(VARIABLE_TYPE_DOUBLE_WORD) + "d";
         String valueString = String.format(format, value);
@@ -187,7 +210,7 @@ public class CECIImpl implements ICeci {
     public int defineVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         String format = "%+0" + getLength(VARIABLE_TYPE_FULL_WORD) + "d";
         String valueString = String.format(format, value);
@@ -199,7 +222,7 @@ public class CECIImpl implements ICeci {
     public int defineVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         String format = "%+0" + getLength(VARIABLE_TYPE_HALF_WORD) + "d";
         String valueString = String.format(format, value);
@@ -208,23 +231,36 @@ public class CECIImpl implements ICeci {
     }
 
     @Override
-    public int defineVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException {
+    public int defineVariable4BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull int value) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
-        String format = "%+0" + getLength(VARIABLE_TYPE_PACKED) + "d";
+        String format = "%+0" + getLength(VARIABLE_TYPE_4_BYTE_PACKED) + "d";
         String valueString = String.format(format, value);
-        name = validateVariable(name, valueString.toCharArray(), VARIABLE_TYPE_PACKED);
-        return setVariable(name, String.format("%+08d",value), VARIABLE_TYPE_PACKED);
+        name = validateVariable(name, valueString.toCharArray(), VARIABLE_TYPE_4_BYTE_PACKED);
+        return setVariable(name, String.format("%+08d",value), VARIABLE_TYPE_4_BYTE_PACKED);
     }
 
     @Override
+	public int defineVariable8BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name, @NotNull long value) throws CeciException {
+	    this.terminal = ceciTerminal;
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
+	    String format = "%+0" + getLength(VARIABLE_TYPE_8_BYTE_PACKED) + "d";
+	    String valueString = String.format(format, value);
+	    name = validateVariable(name, valueString.toCharArray(), VARIABLE_TYPE_8_BYTE_PACKED);
+	    return setVariable(name, valueString, VARIABLE_TYPE_8_BYTE_PACKED);
+	}
+
+
+	@Override
     public String retrieveVariableText(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
-        if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
-        }
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
         name = validateVariable(name, null, null);
         return getVariable(name, null);
     }
@@ -232,9 +268,9 @@ public class CECIImpl implements ICeci {
     @Override
     public char[] retrieveVariableBinary(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
-        if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
-        }
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
         name = validateVariable(name, null, null);
         return getVariableHex(name);
     }
@@ -242,6 +278,9 @@ public class CECIImpl implements ICeci {
     @Override
     public long retrieveVariableDoubleWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
         name = validateVariable(name, null, null);
         return Long.valueOf(getVariable(name, VARIABLE_TYPE_DOUBLE_WORD));
     }
@@ -249,9 +288,9 @@ public class CECIImpl implements ICeci {
     @Override
     public int retrieveVariableFullWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
-        if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
-        }
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
         name = validateVariable(name, null, null);
         return Integer.valueOf(getVariable(name, VARIABLE_TYPE_FULL_WORD));
     }
@@ -259,31 +298,42 @@ public class CECIImpl implements ICeci {
     @Override
     public int retrieveVariableHalfWord(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
-        if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
-        }
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
         name = validateVariable(name, null, null);
         return Integer.valueOf(getVariable(name, VARIABLE_TYPE_HALF_WORD));
     }
 
     @Override
-    public int retrieveVariablePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
+    public int retrieveVariable4BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         name = validateVariable(name, null, null);
-        return Integer.valueOf(getVariable(name, VARIABLE_TYPE_PACKED));
+        return Integer.valueOf(getVariable(name, VARIABLE_TYPE_4_BYTE_PACKED));
     }
 
     @Override
+	public long retrieveVariable8BytePacked(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
+	    this.terminal = ceciTerminal;
+	    if (ceciTerminal.getCicsRegion() != cicsRegion) {
+	        throw new CeciException(WRONG_CICS_REGION);
+	    }
+	    name = validateVariable(name, null, null);
+	    return Long.valueOf(getVariable(name, VARIABLE_TYPE_8_BYTE_PACKED));
+	}
+
+
+	@Override
     public void deleteVariable(@NotNull ICicsTerminal ceciTerminal, @NotNull String name) throws CeciException {
         if (!name.startsWith("&")){
             name = "&" + name;
         }
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         try {
             hexOff();
@@ -310,7 +360,7 @@ public class CECIImpl implements ICeci {
     public void deleteAllVariables(@NotNull ICicsTerminal ceciTerminal) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         try {
             hexOff();
@@ -331,14 +381,14 @@ public class CECIImpl implements ICeci {
     public IExecInterfaceBlock getEIB(@NotNull ICicsTerminal ceciTerminal) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         try {
             hexOn();
             String eibHex = terminal.pf4().waitForKeyboard().retrieveScreen() + terminal.pf11().waitForKeyboard().retrieveScreen();
             hexOff();
             String eibText = terminal.pf4().waitForKeyboard().retrieveScreen() + terminal.pf11().waitForKeyboard().retrieveScreen();
-            return new CECIExecInterfaceBlockImpl(eibText, eibHex);
+            return new CeciExecInterfaceBlockImpl(eibText, eibHex);
         } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException e) {
             throw new CeciException("Unable to navigate to EIB screen", e);
         }
@@ -348,7 +398,7 @@ public class CECIImpl implements ICeci {
     public ICeciResponse linkProgram(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, String commarea, String sysid, String transid, boolean synconreturn) throws CeciException {
         this.terminal = ceciTerminal;       
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         StringBuilder commandBuffer = new StringBuilder();
         commandBuffer.append("LINK PROGRAM(");
@@ -384,7 +434,7 @@ public class CECIImpl implements ICeci {
     public ICeciResponse linkProgramWithChannel(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, @NotNull String channelName, String sysid, String transid, boolean synconreturn) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         StringBuilder commandBuffer = new StringBuilder();
         commandBuffer.append("LINK PROGRAM(");
@@ -413,7 +463,7 @@ public class CECIImpl implements ICeci {
     public ICeciResponse putContainer(@NotNull ICicsTerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String content, String dataType, String fromCcsid, String fromCodepage) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         String dataVariableName;
         if (content.startsWith("&")) {
@@ -451,7 +501,7 @@ public class CECIImpl implements ICeci {
     public ICeciResponse getContainer(@NotNull ICicsTerminal ceciTerminal, @NotNull String channelName, @NotNull String containerName, @NotNull String variableName, String intoCcsid, String intoCodepage) throws CeciException {
         this.terminal = ceciTerminal;
         if (ceciTerminal.getCicsRegion() != cicsRegion) {
-            throw new CeciException("Provided terminal does not belong to the correct CICS TS Region");
+            throw new CeciException(WRONG_CICS_REGION);
         }
         if (!variableName.startsWith("&")){
             variableName = "&" + variableName;
@@ -479,32 +529,66 @@ public class CECIImpl implements ICeci {
     
     protected ICicsTerminal initialScreen() throws CeciException {
         try {
-            if (!isCECIScreen()) {
+            if (!isCeciScreen()) {
                 // Might be on the USER screen. Send enter and try again
                 terminal.enter().waitForKeyboard();
-                if (!isCECIScreen()) {
+                if (!isCeciScreen()) {
                     throw new CeciException("Cannot identify terminal as CECI session");
                 }
                 
             }
             if (isHelpScreen(terminal.retrieveScreen())) {
-                return (ICicsTerminal)terminal.enter().waitForKeyboard();
+            	terminal.enter().waitForKeyboard();
+            } else {
+            	terminal.home().eraseEof().home().enter().waitForKeyboard();
             }
-            return (ICicsTerminal)terminal.home().eraseEof().home().enter().waitForKeyboard();
+    		for (int i = 0; i <= 10; i++) {
+    			if (isInitialScreen(terminal.retrieveScreen())) {
+    				break;
+    			}
+    			sleep(10);
+    		}
+    		if (!isInitialScreen(terminal.retrieveScreen())) {
+    			terminal.reportScreenWithCursor();
+    			throw new CeciException("Unable to navigate to CECI initial screen");
+    		}
+            return terminal;
         } catch (TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
             throw new CeciException("Unable to navigate to CECI initial screen", e);
         }
     }
 
-    protected ITerminal variableScreen() throws CeciException {
+
+    protected ICicsTerminal variableScreen() throws CeciException {
         try {
-            return initialScreen().pf5().waitForKeyboard();
+        	initialScreen().pf5().waitForKeyboard();
+    		for (int i = 0; i <= 10; i++) {
+    			if (isVariablesScreen(terminal.retrieveScreen())) {
+    				break;
+    			}
+    			sleep(10);
+    		}
+    		if (!isVariablesScreen(terminal.retrieveScreen())) {
+    			terminal.reportScreenWithCursor();
+    			throw new CeciException("Unable to navigate to CECI variables screen");
+    		}
+            return terminal;
         } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CeciException("Unable to navigate to CECI variables screen", e);
         }
     }
 
-    protected boolean isCECIScreen() {
+    protected void sleep(int ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			logger.debug(e);
+			Thread.currentThread().interrupt();
+		}
+	}
+
+
+	protected boolean isCeciScreen() {
         String screen = terminal.retrieveScreen(); 
         return isInitialScreen(screen) ||
                isHelpScreen(screen) ||
@@ -548,14 +632,14 @@ public class CECIImpl implements ICeci {
         return screen.contains(VAR_EXPANSION_SCREEN_ID);
     }
 
-    protected ITerminal multipleTab(int times) throws FieldNotFoundException, KeyboardLockedException {
+    protected ICicsTerminal multipleTab(int times) throws FieldNotFoundException, KeyboardLockedException {
         for (int i = 0; i < times; i++) {
             terminal.tab();
         }
         return terminal;
     }
 
-    protected ITerminal multipleNewLine(int times) throws FieldNotFoundException, KeyboardLockedException {
+    protected ICicsTerminal multipleNewLine(int times) throws FieldNotFoundException, KeyboardLockedException {
         for (int i = 0; i < times; i++) {
             terminal.newLine();
         }
@@ -611,7 +695,7 @@ public class CECIImpl implements ICeci {
             // Go to the first variable on the variable screen
             variableScreen().newLine();
             // Find an empty variable field
-            String fieldValue = terminal.retrieveFieldAtCursor();
+            String fieldValue = terminal.reportScreenWithCursor().retrieveFieldAtCursor();
             while (!fieldValue.replace(" ", "").isEmpty()) {
                 if (fieldValue.equals("PF")) {
                     throw new CeciException("No space on CECI variable screen for new variables");
@@ -647,7 +731,7 @@ public class CECIImpl implements ICeci {
                 next = setVariableOnPage(chunks, next, 16);
             }
             
-            terminal.enter().waitForKeyboard();
+            terminal.home().enter().waitForKeyboard();
             logger.info("New CECI variable \"" + name + "\" defined");
             
             return value.length();
@@ -792,8 +876,10 @@ public class CECIImpl implements ICeci {
             return 11;
         } else if (lengthString.equals(VARIABLE_TYPE_HALF_WORD)) {
             return 6;
-        } else  if (lengthString.equals(VARIABLE_TYPE_PACKED)) {
+        } else  if (lengthString.equals(VARIABLE_TYPE_4_BYTE_PACKED)) {
             return 8;
+        } else if (lengthString.equals(VARIABLE_TYPE_8_BYTE_PACKED)) {
+            return 16;
         } else {
             return Integer.parseInt(lengthString);
         }
@@ -868,7 +954,7 @@ public class CECIImpl implements ICeci {
         return sb.toString();
     }
 
-    protected ITerminal moveToVariable(String name) throws CeciException {
+    protected ICicsTerminal moveToVariable(String name) throws CeciException {
         try {
             // Set Hex off
             hexOff();
@@ -911,10 +997,10 @@ public class CECIImpl implements ICeci {
      * @return
      * @throws CECIException
      */
-    protected ITerminal hexOn() throws CeciException {
+    protected ICicsTerminal hexOn() throws CeciException {
         try {
             if (!isHexOn()) {
-                return terminal.pf2().waitForKeyboard();
+                return (ICicsTerminal) terminal.pf2().waitForKeyboard();
             }
         } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CeciException("Unable to set CECI HEX ON", e);
@@ -927,10 +1013,10 @@ public class CECIImpl implements ICeci {
      * @return
      * @throws CECIException
      */
-    protected ITerminal hexOff() throws CeciException {
+    protected ICicsTerminal hexOff() throws CeciException {
         try {
             if (isHexOn()) {
-                return terminal.pf2().waitForKeyboard();
+                return (ICicsTerminal) terminal.pf2().waitForKeyboard();
             }
         } catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException e) {
             throw new CeciException("Unable to set CECI HEX OFF", e);
@@ -938,14 +1024,14 @@ public class CECIImpl implements ICeci {
         return terminal;
     }
 
-    protected ICeciResponse newCECIResponse(boolean parseOutput) throws CeciException {
+    protected ICeciResponse newCeciResponse(boolean parseOutput) throws CeciException {
         String screen = terminal.retrieveScreen();
 
         String response = getFieldAfter(screen, "RESPONSE: ", "EIBRESP").trim();
         int eibresp = Integer.parseInt(getFieldAfter(screen, "EIBRESP="));
         int eibresp2 = Integer.parseInt(getFieldAfter(screen, "EIBRESP2="));        
 
-        CECIResponseImpl ceciResponse = new CECIResponseImpl(response, eibresp, eibresp2);
+        CeciResponseImpl ceciResponse = new CeciResponseImpl(response, eibresp, eibresp2);
         if (parseOutput) {
             ceciResponse.setResponseOutput(parseResponseOutput());
         } else {
@@ -1066,4 +1152,7 @@ public class CECIImpl implements ICeci {
         return screen.substring(start, end);
     }
 
+    protected ICicsRegion getCicsRegion() {
+    	return this.cicsRegion;
+    }
 }

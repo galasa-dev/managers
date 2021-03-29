@@ -130,6 +130,12 @@
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.zosliberty.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.manager</artifactId>
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
@@ -158,9 +164,15 @@
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.ceda.manager.ivt</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.cicsts.resource.manager</artifactId>
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
@@ -238,6 +250,11 @@
 			<artifactId>dev.galasa.kubernetes.manager.ivt</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.liberty.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.galasaecosystem.manager</artifactId>

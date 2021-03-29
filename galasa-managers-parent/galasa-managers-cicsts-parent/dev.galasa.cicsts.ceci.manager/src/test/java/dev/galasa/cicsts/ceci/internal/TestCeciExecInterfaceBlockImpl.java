@@ -6,9 +6,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestCECIExecInterfaceBlockImpl {
+public class TestCeciExecInterfaceBlockImpl {
 
-    public static CECIExecInterfaceBlockImpl eib;
+    public static CeciExecInterfaceBlockImpl eib;
     private static String eibText = 
             "  LINK PROG(CUSTPGM)                                                            \r\n" + 
             "  EXEC INTERFACE BLOCK                                                          \r\n" + 
@@ -110,7 +110,7 @@ public class TestCECIExecInterfaceBlockImpl {
     
     @BeforeClass
     public static void beforeClass() {
-        eib = new CECIExecInterfaceBlockImpl(eibText, eibHex);
+        eib = new CeciExecInterfaceBlockImpl(eibText, eibHex);
     }
 
     @Test
@@ -276,15 +276,15 @@ public class TestCECIExecInterfaceBlockImpl {
     @Test
     public void testMoreCoverage() {
         String text = "    EIBRESP      = +0000000000                                                 \r\n";
-        CECIExecInterfaceBlockImpl dummyEib = new CECIExecInterfaceBlockImpl(text , " ");
+        CeciExecInterfaceBlockImpl dummyEib = new CeciExecInterfaceBlockImpl(text , " ");
         Assert.assertEquals("Unxpected result", "NORMAL", dummyEib.getResponse());
         
         text = "    EIBRESP      = +0000000001                                                  \r\n";
-        dummyEib = new CECIExecInterfaceBlockImpl(text , " ");
+        dummyEib = new CeciExecInterfaceBlockImpl(text , " ");
         Assert.assertEquals("Unxpected result", "", dummyEib.getResponse());
         
         text = "    EIBFN        = X'FFFF'                                                      \r\n";
-        dummyEib = new CECIExecInterfaceBlockImpl(text , " ");
+        dummyEib = new CeciExecInterfaceBlockImpl(text , " ");
         Assert.assertTrue("Unxpected result", Arrays.equals(new char[] {0x0FF, 0x0FF}, dummyEib.getEIBFN()));
     }
 }

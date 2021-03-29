@@ -7,7 +7,7 @@ package dev.galasa.cicsts.ceci.internal;
 
 import dev.galasa.cicsts.IExecInterfaceBlock;
 
-public class CECIExecInterfaceBlockImpl implements IExecInterfaceBlock {
+public class CeciExecInterfaceBlockImpl implements IExecInterfaceBlock {
 
     private int eibtime;
     private int eibdate;
@@ -46,7 +46,7 @@ public class CECIExecInterfaceBlockImpl implements IExecInterfaceBlock {
     private char[] eibreqidHex;
     private char[] eibrsrceHex;
     
-    public CECIExecInterfaceBlockImpl(String eibText, String eibHex) {
+    public CeciExecInterfaceBlockImpl(String eibText, String eibHex) {
         parseText(eibText);
         parseHex(eibHex);
     }

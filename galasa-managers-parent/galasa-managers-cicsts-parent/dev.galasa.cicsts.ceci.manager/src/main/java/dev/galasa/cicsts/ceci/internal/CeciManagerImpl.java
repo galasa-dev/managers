@@ -17,8 +17,8 @@ import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICicsRegion;
-import dev.galasa.cicsts.ceci.internal.properties.CECIPropertiesSingleton;
-import dev.galasa.cicsts.ceci.spi.spi.ICECIManagerSpi;
+import dev.galasa.cicsts.ceci.internal.properties.CeciPropertiesSingleton;
+import dev.galasa.cicsts.ceci.spi.spi.ICeciManagerSpi;
 import dev.galasa.cicsts.spi.ICeciProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
@@ -29,12 +29,12 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class })
-public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi, ICeciProvider {
+public class CeciManagerImpl extends AbstractManager implements ICeciManagerSpi, ICeciProvider {
     
     protected static final String NAMESPACE = "ceci";
     private ICicstsManagerSpi cicstsManager;
     
-    private HashMap<ICicsRegion, ICeci> regionCecis = new HashMap<>();
+    protected HashMap<ICicsRegion, ICeci> regionCecis = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -43,7 +43,7 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi,
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
-            CECIPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            CeciPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new CeciManagerException("Unable to request framework services", e);
         }
@@ -58,7 +58,7 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi,
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        generateAnnotatedFields(CECIManagerField.class);
+        generateAnnotatedFields(CeciManagerField.class);
     }
 
 
@@ -86,7 +86,7 @@ public class CECIManagerImpl extends AbstractManager implements ICECIManagerSpi,
     public @NotNull ICeci getCeci(ICicsRegion cicsRegion) {
         ICeci ceci = this.regionCecis.get(cicsRegion);
         if (ceci == null) {
-            ceci = new CECIImpl(this, cicsRegion);
+            ceci = new CeciImpl(this, cicsRegion);
             this.regionCecis.put(cicsRegion, ceci);
         }
         return ceci;

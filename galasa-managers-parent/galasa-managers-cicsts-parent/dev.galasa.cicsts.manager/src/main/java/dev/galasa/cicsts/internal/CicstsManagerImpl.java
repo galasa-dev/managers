@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.internal;
 
@@ -37,6 +37,7 @@ import dev.galasa.cicsts.spi.ICemtProvider;
 import dev.galasa.cicsts.spi.ICicsRegionLogonProvider;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioner;
+import dev.galasa.cicsts.spi.ICicsResourceProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
@@ -69,6 +70,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private ICeciProvider ceciProvider;
     private ICedaProvider cedaProvider;
     private ICemtProvider cemtProvider;
+    private ICicsResourceProvider cicsResourceProvider;
 
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
@@ -309,6 +311,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
     
     @Override
+    public void registerCicsResourceProvider(@NotNull ICicsResourceProvider cicsResourceProvider) {
+        this.cicsResourceProvider = cicsResourceProvider;
+    }
+
+    @Override
     @NotNull
     public ICeciProvider getCeciProvider() throws CicstsManagerException {
         if (this.ceciProvider == null) {
@@ -339,6 +346,15 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
 
     @Override
+    public @NotNull ICicsResourceProvider getCicsResourceProvider() throws CicstsManagerException {
+   	    if (this.cicsResourceProvider == null) {
+            throw new CicstsManagerException("No CICS Resource provider has been registered");
+        }
+        
+        return this.cicsResourceProvider;
+	}
+
+	@Override
     public void cicstsRegionStarted(ICicsRegion region) throws CicstsManagerException {
         // A region has started, so connect everything up
         

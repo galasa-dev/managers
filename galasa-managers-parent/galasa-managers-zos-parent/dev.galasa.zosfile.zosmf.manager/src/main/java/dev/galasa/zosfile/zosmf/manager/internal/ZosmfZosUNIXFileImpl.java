@@ -8,14 +8,15 @@ package dev.galasa.zosfile.zosmf.manager.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import javax.validation.constraints.NotEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -60,15 +61,18 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     private String unixPath;
     private String fileName;
     private String directoryPath;
-    private String type;
+    private UNIXFileType fileType;
+    private String createMode;
+    private UNIXFileDataType dataType;
+	private Set<PosixFilePermission> filePermissions;
+	private int fileSize = -1;
+	private String lastModified;
+	private String user;
+	private String group;
 
     private boolean pathCreated;
     private String createdPath;
     private boolean deleted;
-
-    private String mode;
-
-    private UNIXFileDataType dataType;
 
     private boolean shouldArchive = false;
 
@@ -89,15 +93,8 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     private static final String PROP_GROUP = "group";
     private static final String PROP_MTIME = "mtime";
     private static final String PROP_TARGET = "target";
-    
-    private static final String TYPE_FILE = "file";
-    private static final String TYPE_CHARACTER = "character";
-    private static final String TYPE_DIRECTORY = "directory";
-    private static final String TYPE_EXTLINK = "extlink";
-    private static final String TYPE_SYMBLINK = "symblink";
-    private static final String TYPE_FIFO = "FIFO";
-    private static final String TYPE_SOCKET = "socket";
-    private static final String TYPE_UNKNOWN = "UNKNOWN";
+	private static final String PROP_RERQUEST = "request";
+	private static final String PROP_RECURSIVE = "recursive";
 
     private static final String LOG_UNIX_PATH = "UNIX path ";
     private static final String LOG_LISTING = "listing";
@@ -124,7 +121,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         try {
             this.zosmfApiProcessor = this.zosFileHandler.getZosmfManager().newZosmfRestApiProcessor(this.image, this.zosFileHandler.getZosManager().getZosFilePropertyFileRestrictToImage(image.getImageID()));
             this.maxItems = this.zosFileHandler.getZosManager().getZosFilePropertyDirectoryListMaxItems(image.getImageID());
-            this.mode = this.zosFileHandler.getZosManager().getZosFilePropertyUnixFilePermissions(this.image.getImageID());
+            this.createMode = this.zosFileHandler.getZosManager().getZosFilePropertyUnixFilePermissions(this.image.getImageID());
         } catch (ZosFileManagerException | ZosmfManagerException e) {
             throw new ZosUNIXFileException(e);
         }
@@ -133,6 +130,11 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public IZosUNIXFile create() throws ZosUNIXFileException {
+        return create(PosixFilePermissions.fromString(this.createMode));
+    }
+    
+    @Override
+	public IZosUNIXFile create(Set<PosixFilePermission> accessPermissions) throws ZosUNIXFileException {
         if (exists()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + " already exists" + logOnImage());
         }
@@ -142,7 +144,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         for (String part : directoryPathParts) {
             path.append(part);
             if (!exists(path.toString())) {
-                createPath(path.toString(), TYPE_DIRECTORY);
+                createPath(path.toString(), UNIXFileType.DIRECTORY, accessPermissions);
                 if (this.createdPath == null) {
                     this.createdPath = path.toString() + SLASH;
                 }
@@ -150,7 +152,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             path.append(SLASH);
         }
         if (this.fileName != null) {
-            createPath(this.unixPath, this.type);
+            createPath(this.unixPath, this.fileType, accessPermissions);
         }
         
         if (exists()) {
@@ -160,9 +162,10 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             logger.info(LOG_UNIX_PATH + quoted(this.unixPath) + " not created" + logOnImage());
         }
         return this;
-    }
-    
-    @Override
+	}
+
+
+	@Override
     public boolean delete() throws ZosUNIXFileException {
         delete(this.unixPath, false);
         return this.deleted;
@@ -241,19 +244,31 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
 
     @Override
-    public Map<String, String> directoryList() throws ZosUNIXFileException {
+    public SortedMap<String, IZosUNIXFile> directoryList() throws ZosUNIXFileException {
         return listDirectory(this.unixPath, false);
     }
 
     @Override
-    public Map<String, String> directoryListRecursive() throws ZosUNIXFileException {
-        return listDirectory(this.unixPath, false);
+    public SortedMap<String, IZosUNIXFile> directoryListRecursive() throws ZosUNIXFileException {
+        return listDirectory(this.unixPath, true);
     }
 
 
     @Override
-    public void setDataType(UNIXFileDataType dataType) {
-        this.dataType = dataType;
+	public void setDataType(UNIXFileDataType dataType) {
+	    this.dataType = dataType;
+	}
+
+
+	@Override
+	public void setAccessPermissions(Set<PosixFilePermission> accessPermissions, boolean recursive) throws ZosUNIXFileException {
+		setAccessPermissions(this.unixPath, accessPermissions, recursive);
+	}
+
+
+	@Override
+    public UNIXFileType getFileType() {
+    	return this.fileType;
     }
 
 
@@ -266,7 +281,58 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    @Override
+	@Override
+	public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException {
+		if (this.filePermissions == null) {
+			retrieveAttibutes();
+		}
+		return this.filePermissions;
+	}
+
+
+	@Override
+	public int getSize() throws ZosUNIXFileException {
+		if (this.fileSize == -1) {
+			retrieveAttibutes();
+		}
+		return this.fileSize;
+	}
+
+
+	@Override
+	public String getLastModified() throws ZosUNIXFileException {
+		if (this.lastModified == null) {
+			retrieveAttibutes();
+		}
+		return this.lastModified;
+	}
+
+
+	@Override
+	public String getUser() throws ZosUNIXFileException {
+		if (this.user == null) {
+			retrieveAttibutes();
+		}
+		return this.user;
+	}
+
+
+	@Override
+	public String getGroup() throws ZosUNIXFileException {
+		if (this.group == null) {
+			retrieveAttibutes();
+		}
+		return this.group;
+	}
+
+
+	@Override
+	public void retrieveAttibutes() throws ZosUNIXFileException {
+		getAttributes(this.unixPath);
+	}
+
+
+	@Override
     public String getUnixPath() {
         return this.unixPath;
     }
@@ -285,7 +351,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     
     @Override 
     public String getAttributesAsString() throws ZosUNIXFileException {
-        return getAttributesAsString(this.unixPath);
+        return attributesToString(getAttributes(this.unixPath));
     }
 
     @Override
@@ -308,14 +374,13 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 		return this.shouldCleanup;
 	}
     
-    protected String getAttributesAsString(String path) throws ZosUNIXFileException {
+    protected JsonObject getAttributes(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
             path = path.substring(0, path.length()-1);
         }
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
-        StringBuilder attributes = new StringBuilder();
         
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_LSTAT.toString(), "true");
@@ -339,66 +404,93 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         logger.trace(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
-            JsonObject item = items.get(0).getAsJsonObject();
-            attributes.append("Name=");
-            attributes.append(emptyStringWhenNull(item, PROP_NAME));
-            attributes.append(COMMA);
-            attributes.append("Type=");
-            attributes.append(determineType(emptyStringWhenNull(item, PROP_MODE)));
-            attributes.append(COMMA);
-            attributes.append("Mode=");
-            attributes.append(emptyStringWhenNull(item, PROP_MODE));
-            attributes.append(COMMA);
-            attributes.append("Size=");
-            attributes.append(emptyStringWhenNull(item, PROP_SIZE));
-            attributes.append(COMMA);
-            attributes.append("UID=");
-            attributes.append(emptyStringWhenNull(item, PROP_UID));
-            attributes.append(COMMA);
-            attributes.append("User=");
-            attributes.append(emptyStringWhenNull(item, PROP_USER));
-            attributes.append(COMMA);
-            attributes.append("GID=");
-            attributes.append(emptyStringWhenNull(item, PROP_GID));
-            attributes.append(COMMA);
-            attributes.append("Group=");
-            attributes.append(emptyStringWhenNull(item, PROP_GROUP));
-            attributes.append(COMMA);
-            attributes.append("Modified=");
-            attributes.append(emptyStringWhenNull(item, PROP_MTIME));
-            attributes.append(COMMA);
-            attributes.append("Target=");
-            attributes.append(emptyStringWhenNull(item, PROP_TARGET));
+        	JsonObject attributes = items.get(0).getAsJsonObject();
+        	if (path.equals(this.unixPath)) {
+				JsonElement element = attributes .get(PROP_MODE);
+	            if (element != null) {
+	            	this.filePermissions = PosixFilePermissions.fromString(element.getAsString().substring(1));
+	            	this.fileType = determineType(element.getAsString());
+	            }
+	        	element = attributes.get(PROP_SIZE);
+	            if (element != null) {
+	            	this.fileSize = element.getAsInt();
+	            }
+	            element = attributes.get(PROP_USER);
+	            if (element != null) {
+	            	this.user = element.getAsString();
+	            }
+	            element = attributes.get(PROP_GROUP);
+	            if (element != null) {
+	            	this.group = element.getAsString();
+	            }
+	            element = attributes.get(PROP_MTIME);
+	            if (element != null) {
+	            	this.lastModified = element.getAsString();
+	            }
+        	}
+            return attributes;
+            
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString(LOG_LISTING, responseBody, path);
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
-        logger.trace("Attibutes of "+ LOG_UNIX_PATH + quoted(path) + " retrieved from  image " + this.image.getImageID());
+    }
+    
+    protected String attributesToString(JsonObject item) {
+        StringBuilder attributes = new StringBuilder();
+        attributes.append("Name=");
+        attributes.append(emptyStringWhenNull(item, PROP_NAME));
+        attributes.append(COMMA);
+        attributes.append("Type=");
+        attributes.append(determineType(emptyStringWhenNull(item, PROP_MODE)));
+        attributes.append(COMMA);
+        attributes.append("Mode=");
+        attributes.append(emptyStringWhenNull(item, PROP_MODE));
+        attributes.append(COMMA);
+        attributes.append("Size=");
+        attributes.append(emptyStringWhenNull(item, PROP_SIZE));
+        attributes.append(COMMA);
+        attributes.append("UID=");
+        attributes.append(emptyStringWhenNull(item, PROP_UID));
+        attributes.append(COMMA);
+        attributes.append("User=");
+        attributes.append(emptyStringWhenNull(item, PROP_USER));
+        attributes.append(COMMA);
+        attributes.append("GID=");
+        attributes.append(emptyStringWhenNull(item, PROP_GID));
+        attributes.append(COMMA);
+        attributes.append("Group=");
+        attributes.append(emptyStringWhenNull(item, PROP_GROUP));
+        attributes.append(COMMA);
+        attributes.append("Modified=");
+        attributes.append(emptyStringWhenNull(item, PROP_MTIME));
+        attributes.append(COMMA);
+        attributes.append("Target=");
+        attributes.append(emptyStringWhenNull(item, PROP_TARGET));
         return attributes.toString();
     }
 
-    protected String determineType(String mode) {
+    protected UNIXFileType determineType(String mode) {
         String typeChar = mode.substring(0, 1);
         switch(typeChar) {
-            case "-": return TYPE_FILE;
-            case "c": return TYPE_CHARACTER;
-            case "d": return TYPE_DIRECTORY;
-            case "e": return TYPE_EXTLINK;
-            case "l": return TYPE_SYMBLINK;
-            case "p": return TYPE_FIFO;
-            case "s": return TYPE_SOCKET;
-            default: return TYPE_UNKNOWN;
+            case "-": return UNIXFileType.FILE;
+            case "c": return UNIXFileType.CHARACTER;
+            case "d": return UNIXFileType.DIRECTORY;
+            case "e": return UNIXFileType.EXTLINK;
+            case "l": return UNIXFileType.SYMBLINK;
+            case "p": return UNIXFileType.FIFO;
+            case "s": return UNIXFileType.SOCKET;
+            default: return UNIXFileType.UNKNOWN;
         }
     }
 
 
-    protected boolean createPath(String path, String type) throws ZosUNIXFileException {
-
+    protected boolean createPath(String path, UNIXFileType type, Set<PosixFilePermission> accessPermissions) throws ZosUNIXFileException {
         JsonObject requestBody = new JsonObject();
-        requestBody.addProperty(PROP_TYPE, type);
-        requestBody.addProperty(PROP_MODE, this.mode);
+        requestBody.addProperty(PROP_TYPE, type.toString());
+        requestBody.addProperty(PROP_MODE, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(accessPermissions));
         
         String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
         IZosmfResponse response;
@@ -424,11 +516,45 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             logger.error(displayMessage);
             throw new ZosUNIXFileException(displayMessage);
         }
+        setAccessPermissions(path, accessPermissions, false);
+        
         return true;
     }
 
 
-    protected void delete(String path, boolean recursive) throws ZosUNIXFileException {
+    protected void setAccessPermissions(String unixPath, Set<PosixFilePermission> accessPermissions, boolean recursive) throws ZosUNIXFileException {
+		JsonObject requestBody = new JsonObject();
+	    requestBody.addProperty(PROP_RERQUEST, "chmod");
+	    requestBody.addProperty(PROP_MODE, IZosUNIXFile.posixFilePermissionsToOctal(accessPermissions));
+	    requestBody.addProperty(PROP_RECURSIVE, String.valueOf(recursive));
+	    String urlPath = RESTFILES_FILE_SYSTEM_PATH + unixPath;
+	    IZosmfResponse response;
+	    try {
+	        response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_JSON, urlPath, new HashMap<>(), requestBody, 
+	                new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+	    } catch (ZosmfException e) {
+	        throw new ZosUNIXFileException(e);
+	    }
+	    
+	    if (response.getStatusCode() != HttpStatus.SC_OK) {
+	        // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
+	        JsonObject responseBody;
+	        try {
+	            responseBody = response.getJsonContent();
+	        } catch (ZosmfException e) {
+	            throw new ZosUNIXFileException("Unable to change file access permissions of " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
+	        }
+	        logger.trace(responseBody);
+	        String displayMessage = buildErrorString("Unable to change file access permissions of " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), responseBody, this.unixPath); 
+	        logger.error(displayMessage);
+	        throw new ZosUNIXFileException(displayMessage);
+	    }
+	
+	    logger.trace("File access permissions of " + LOG_UNIX_PATH + quoted(this.directoryPath) + " updated" + logOnImage());
+	}
+
+
+	protected void delete(String path, boolean recursive) throws ZosUNIXFileException {
         if (!exists(path)) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
@@ -437,7 +563,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             if (!isDirectory(path)) {
                 throw new ZosUNIXFileException(LOG_INVALID_REQUETS + LOG_UNIX_PATH + quoted(path) + " is not a directory");
             }
-            headers.put(ZosmfCustomHeaders.X_IBM_OPTION.toString(), "recursive");
+            headers.put(ZosmfCustomHeaders.X_IBM_OPTION.toString(), PROP_RECURSIVE);
         }
         String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
         IZosmfResponse response;
@@ -557,14 +683,14 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(path) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         if (isDirectory(path)) {
-            Map<String, String> paths = listDirectory(path, true);
-            for (Map.Entry<String,String> entry : paths.entrySet()) {
+            Map<String, IZosUNIXFile> paths = listDirectory(path, true);
+            for (Map.Entry<String, IZosUNIXFile> entry : paths.entrySet()) {
                 String entryPath = entry.getKey();
-                String entryType = entry.getValue();
-                if (entryType.equals(TYPE_FILE)) {
+                UNIXFileType entryFileType = entry.getValue().getFileType();
+                if (!entryFileType.equals(UNIXFileType.FILE)) {
                     String archiveLocation = storeArtifact(rasPath, retrieve(entryPath), false, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
                     logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
-                } else if (entryType.equals(TYPE_DIRECTORY)) {
+                } else if (entryFileType.equals(UNIXFileType.DIRECTORY)) {
                     String archiveLocation = storeArtifact(rasPath, null, true, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
                     logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
                 }
@@ -578,13 +704,14 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 
     protected boolean isDirectory(String path) throws ZosUNIXFileException {
         if (path.equals(this.unixPath) && !exists(path)) {
-            return this.type.equals(TYPE_DIRECTORY);
+            return this.fileType.equals(UNIXFileType.DIRECTORY);
         }
-        return getAttributesAsString(path).contains("Type=" + TYPE_DIRECTORY);
+        getAttributes(path);
+        return getFileType() == UNIXFileType.DIRECTORY;
     }
 
 
-    protected Map<String, String> listDirectory(String path, boolean recursive) throws ZosUNIXFileException {
+    protected SortedMap<String, IZosUNIXFile> listDirectory(String path, boolean recursive) throws ZosUNIXFileException {
         if (!isDirectory(path)) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(path) + " is not a directory");
         }
@@ -623,7 +750,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    protected Map<String, String> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
+    protected SortedMap<String, IZosUNIXFile> getPaths(String root, JsonObject responseBody, boolean recursive) throws ZosUNIXFileException {
         if (!root.endsWith(SLASH)) {
             root = root + SLASH;
         }
@@ -632,16 +759,23 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         if (totalRowsValue > returnedRowsValue) {
             throw new ZosUNIXFileException("The number of files and directories (" + totalRowsValue  + ") in UNIX path " + quoted(root) + " is greater than the maximum allowed rows (" + Integer.toString(this.maxItems) + ")");
         }
-        SortedMap<String, String> paths = new TreeMap<>();
+        SortedMap<String, IZosUNIXFile> paths = new TreeMap<>();
         if (returnedRowsValue > 0) {
             JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);            
             for (int i = 0; i < returnedRowsValue; i++) {
                 JsonObject item = items.get(i).getAsJsonObject();
                 String path = root + item.get(PROP_NAME).getAsString();
-                String pathType = determineType(item.get(PROP_MODE).getAsString());
+                UNIXFileType pathType = determineType(item.get(PROP_MODE).getAsString().substring(1));
                 if (!(path.endsWith("/.") || path.endsWith("/.."))) {
-                    paths.put(path, pathType);
-                    if (pathType.equals(TYPE_DIRECTORY)) {
+                	ZosmfZosUNIXFileImpl unixFile = new ZosmfZosUNIXFileImpl(this.zosFileHandler, this.image, path);
+                	unixFile.setFileType(pathType);
+                	unixFile.setFilePermissions(item.get(PROP_MODE).getAsString().substring(1));
+                	unixFile.setFileSize(item.get(PROP_SIZE).getAsInt());
+                	unixFile.setLastModified(item.get(PROP_MTIME).getAsString());
+                	unixFile.setUser(item.get(PROP_USER).getAsString());
+                	unixFile.setGroup(item.get(PROP_GROUP).getAsString());
+                    paths.put(path, unixFile);
+                    if (pathType.equals(UNIXFileType.DIRECTORY) && recursive) {
                         paths.putAll(listDirectory(path, recursive));
                     }
                 }
@@ -650,7 +784,32 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         return paths;
     }
     
-    protected String storeArtifact(String rasPath, Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
+    protected void setFileType(UNIXFileType type) {
+        this.fileType = type;
+    }
+    
+    protected void setFilePermissions(String filePermissions) {
+        this.filePermissions = PosixFilePermissions.fromString(filePermissions);
+    }
+    
+    protected void setFileSize(int fileSize) {
+    	this.fileSize = fileSize;
+    }
+    
+    protected void setLastModified(String lastModified) {
+    	this.lastModified = lastModified;
+    }
+    
+    protected void setUser(String user) {
+    	this.user = user;
+    }
+    
+    protected void setGroup(String group) {
+    	this.group = group;
+    }
+    
+    //TODO: Investigate artifactPathElements
+    protected String storeArtifact(String rasPath, Object content, boolean directory, String ... artifactPathElements) throws ZosUNIXFileException {
         Path artifactPath;
         try {
         	artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
@@ -676,12 +835,12 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         if (this.unixPath.endsWith(SLASH)) {
             this.fileName = null;
             this.directoryPath = this.unixPath.substring(0,this.unixPath.length()-1);
-            this.type = TYPE_DIRECTORY;
+            this.fileType = UNIXFileType.DIRECTORY;
         } else {
             int index = this.unixPath.lastIndexOf('/');
             this.fileName = this.unixPath.substring(++index);
             this.directoryPath = this.unixPath.substring(0,index-1);
-            this.type = TYPE_FILE;
+            this.fileType = UNIXFileType.FILE;
         }
     }
 
@@ -728,7 +887,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         sb.append("Error "); 
         sb.append(action);
         sb.append(" UNIX path ");
-        sb.append(quoted(this.unixPath));
+        sb.append(quoted(path));
         sb.append(", category:");
         sb.append(errorCategory);
         sb.append(", rc:");
