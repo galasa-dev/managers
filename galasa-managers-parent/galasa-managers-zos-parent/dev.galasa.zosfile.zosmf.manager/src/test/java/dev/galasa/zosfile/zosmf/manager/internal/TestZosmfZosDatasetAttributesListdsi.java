@@ -31,7 +31,6 @@ import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
-import dev.galasa.zosunixcommand.ZosUNIXCommandManagerException;
 import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 @RunWith(PowerMockRunner.class)

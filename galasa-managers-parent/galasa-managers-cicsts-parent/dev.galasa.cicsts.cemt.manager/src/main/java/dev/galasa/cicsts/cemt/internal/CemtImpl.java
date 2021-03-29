@@ -145,7 +145,7 @@ public class CemtImpl implements ICemt {
 
             while(pageDown) {
 
-                terminal.pf8().waitForKeyboard();
+                terminal.pf11().waitForKeyboard();
                 terminalString = terminal.retrieveScreen();
                 returnMap = getAttributes(terminalString, resourceName, returnMap);
 
@@ -237,7 +237,7 @@ public class CemtImpl implements ICemt {
 
             while(pageDown) {
 
-                terminal.pf8().waitForKeyboard();
+                terminal.pf11().waitForKeyboard();
                 terminalString = terminal.retrieveScreen();
                 returnMap = getAttributes(terminalString, resourceName, returnMap);
 

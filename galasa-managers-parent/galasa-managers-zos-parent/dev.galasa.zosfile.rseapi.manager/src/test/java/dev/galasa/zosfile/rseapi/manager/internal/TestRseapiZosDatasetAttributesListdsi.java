@@ -176,7 +176,7 @@ public class TestRseapiZosDatasetAttributesListdsi {
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
         });
-    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getCause().getMessage());
     }
 
     @Test
@@ -189,7 +189,7 @@ public class TestRseapiZosDatasetAttributesListdsi {
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME);
         });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getCause().getMessage());
     }
 
     @Test

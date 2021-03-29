@@ -1,12 +1,11 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.internal.properties;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import dev.galasa.cicsts.CicstsManagerException;
@@ -43,6 +42,8 @@ public class ExtraBundles extends CpsProperties {
                 list.add("dev.galasa.cicsts.ceci.manager");
                 list.add("dev.galasa.cicsts.ceda.manager");
                 list.add("dev.galasa.cicsts.cemt.manager");
+                list.add("dev.galasa.cicsts.resource.manager");
+                list.add("dev.galasa.zosliberty.manager");
             } else if (list.size() == 1) {
                 if (list.get(0).equalsIgnoreCase("none")) {
                     return new ArrayList<>(0);

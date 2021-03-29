@@ -5,13 +5,49 @@
  */
 package dev.galasa.zosfile;
 
-import java.util.Map;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * Representation of a UNIX file or directory.
  *
  */
 public interface IZosUNIXFile {
+    
+    /**
+     * Enumeration of zOS UNIX file types:
+     * <li>{@link #FILE}</li>
+     * <li>{@link #CHARACTER}</li>
+     * <li>{@link #DIRECTORY}</li>
+     * <li>{@link #EXTLINK}</li>
+     * <li>{@link #SYMBLINK}</li>
+     * <li>{@link #FIFO}</li>
+     * <li>{@link #SOCKET}</li>
+     * <li>{@link #UNKNOWN}</li>
+     */
+    public enum UNIXFileType {
+        
+        FILE("file"),
+        CHARACTER("character"),
+        DIRECTORY("directory"),
+        EXTLINK("extlink"),
+        SYMBLINK("symblink"),
+        FIFO("FIFO"),
+        SOCKET("socket"),
+        UNKNOWN("UNKNOWN");
+        
+        private String fileType;
+        
+        UNIXFileType(String dataType) {
+            this.fileType = dataType;
+        }
+        
+        @Override
+        public String toString() {
+            return fileType;
+        }
+    }
     
     /**
      * Enumeration of data type for store and retrieve of data set content:
@@ -41,11 +77,20 @@ public interface IZosUNIXFile {
     }
     
     /**
-     * Create the zOS UNIX file or directory. Will be deleted at test method end
+     * Create the zOS UNIX file or directory
      * @return
-     * @throws ZoException 
+     * @throws ZosUNIXFileException 
      */
     public IZosUNIXFile create() throws ZosUNIXFileException;
+    
+    /**
+     * Create the zOS UNIX file or directory with the supplied Access Permissions 
+     * @param accessPermissions the access permissions, e.g.<br>
+     * {@code PosixFilePermissions.fromString("rwxrwxrwx")}
+     * @return
+     * @throws ZosUNIXFileException 
+     */
+    public IZosUNIXFile create(Set<PosixFilePermission> accessPermissions) throws ZosUNIXFileException;
 
     /**
      * Delete the zOS UNIX file or directory from the zOS image. Attempting to delete a non-empty directory will throw {@link ZosUNIXFileException}
@@ -94,34 +139,49 @@ public interface IZosUNIXFile {
     public boolean isDirectory() throws ZosUNIXFileException;
     
     /**
-     * Returns sorted {@link Map} the zOS UNIX files and directories in this zOS UNIX directory
+     * Returns sorted {@link SortedMap} the zOS UNIX files and directories in this zOS UNIX directory
      * @return
      * @throws ZosUNIXFileException
      */
-    public Map<String, String> directoryList() throws ZosUNIXFileException;
+    public SortedMap<String, IZosUNIXFile> directoryList() throws ZosUNIXFileException;
     
     /**
-     * Returns recursive sorted {@link Map} the zOS UNIX files and directories in this zOS UNIX directory
+     * Returns recursive sorted {@link SortedMap} the zOS UNIX files and directories in this zOS UNIX directory
      * @return
      * @throws ZosUNIXFileException
      */
-    public Map<String, String> directoryListRecursive() throws ZosUNIXFileException;
+    public SortedMap<String, IZosUNIXFile> directoryListRecursive() throws ZosUNIXFileException;
     
     /**
      * Set the data type ({@link UNIXFileDataType}) for store and retrieve of the zOS UNIX file content
-     * @param dataType
+     * @param fileType
      */
     public void setDataType(UNIXFileDataType dataType);
     
     /**
+     * Change the Access Permissions of the zOS UNIX file  
+     * @param accessPermissions the access permissions, e.g.<br>
+     * {@code PosixFilePermissions.fromString("rwxrwxrwx")}
+     * @param recursive change the access permissions recursively
+     * @throws ZosUNIXFileException
+     */
+    public void setAccessPermissions(Set<PosixFilePermission> accessPermissions, boolean recursive) throws ZosUNIXFileException;
+    
+    /**
+     * Return the zOS UNIX file type ({@link UNIXFileType})
+     * @param fileType
+     */
+    public UNIXFileType getFileType();
+    
+    /**
      * Return the data type ({@link UNIXFileDataType}) for store and retrieve of the zOS UNIX file content
-     * @param dataType
+     * @param fileType
      */
     public UNIXFileDataType getDataType();
     
     /**
      * Return the path of the zOS UNIX file or directory
-     * @param dataType
+     * @param fileType
      */
     public String getUnixPath();
     
@@ -132,10 +192,26 @@ public interface IZosUNIXFile {
     public String getFileName();
 
     /**
-     * Get the directory path for the zOS UNIX file or directory
+     * Return the full directory path for the zOS UNIX file or directory
      * @return
      */
-    public String getDirectoryPath();
+    public String getDirectoryPath() throws ZosUNIXFileException;
+    
+    public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException;
+    
+    public int getSize() throws ZosUNIXFileException;
+    
+    public String getLastModified() throws ZosUNIXFileException;
+    
+    public String getUser() throws ZosUNIXFileException;
+    
+    public String getGroup() throws ZosUNIXFileException;
+
+    /**
+     * Retrieve the attributes of an existing data set to make the values available in the getter methods
+     * @throws ZosUNIXFileException
+     */
+    public void retrieveAttibutes() throws ZosUNIXFileException;
 
     /**
      * Return the attributes of the zOS UNIX file or directory as a {@link String} 
@@ -163,4 +239,91 @@ public interface IZosUNIXFile {
      * Return flag that controls if the zOS UNIX path should be automatically deleted from zOS at test end
      */    
     public boolean shouldCleanup();
+    
+	/**
+	 * Convert  {@link Set}<{@link PosixFilePermission}> to Symbolic Notation (e.g. rwxwrxrwx)
+	 * @param accessPermissions
+	 * @return a {@link String} containing the file permissions in Symbolic Notation
+	 */	
+    public static String posixFilePermissionsToSymbolicNotation(Set<PosixFilePermission> accessPermissions) {
+	StringBuilder permissions = new StringBuilder();
+	permissions.append("---------");
+	for (PosixFilePermission posixFilePermission : accessPermissions) {
+        switch (posixFilePermission) {
+			case OWNER_READ:
+				permissions.replace(0, 1, "r");
+				break;
+			case OWNER_WRITE:
+				permissions.replace(1, 2, "w");
+				break;
+			case OWNER_EXECUTE:
+				permissions.replace(2, 3, "x");
+				break;
+			case GROUP_READ:
+				permissions.replace(3, 4, "r");
+				break;
+			case GROUP_WRITE:
+				permissions.replace(4, 5, "w");
+				break;
+			case GROUP_EXECUTE:
+				permissions.replace(5, 6, "x");
+				break;
+			case OTHERS_READ:
+				permissions.replace(6, 7, "r");
+				break;
+			case OTHERS_WRITE:
+				permissions.replace(7, 8, "w");
+				break;
+			case OTHERS_EXECUTE:
+				permissions.replace(8, 9, "x");
+				break;
+			default:
+				break;
+			}
+		}
+		return permissions.toString();
+	}
+
+    /**
+	 * Convert  {@link Set}<{@link PosixFilePermission}> to Numeric Notation (e.g. 777)
+	 * @param accessPermissions
+	 * @return a {@link String} containing the file permissions in Numeric Notation
+	 */	
+    public static String posixFilePermissionsToOctal(Set<PosixFilePermission> accessPermissions) {
+		int permissions = 0;
+		for (PosixFilePermission posixFilePermission : accessPermissions) {
+			switch (posixFilePermission) {
+			case OWNER_READ:
+				permissions = permissions + 400;
+				break;
+			case OWNER_WRITE:
+				permissions = permissions + 200;
+				break;
+			case OWNER_EXECUTE:
+				permissions = permissions + 100;
+				break;
+			case GROUP_READ:
+				permissions = permissions + 40;
+				break;
+			case GROUP_WRITE:
+				permissions = permissions + 20;
+				break;
+			case GROUP_EXECUTE:
+				permissions = permissions + 10;
+				break;
+			case OTHERS_READ:
+				permissions = permissions + 4;
+				break;
+			case OTHERS_WRITE:
+				permissions = permissions + 2;
+				break;
+			case OTHERS_EXECUTE:
+				permissions = permissions + 1;
+				break;
+			default:
+				break;
+			}
+		}
+		return String.format("%03d", permissions);
+	}
 }
