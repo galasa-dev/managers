@@ -1,0 +1,38 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Selenium Manager
+Export-Package: dev.galasa.selenium,\
+    org.openqa.selenium,\
+    org.openqa.selenium.interactions,\
+    org.openqa.selenium.support.ui
+Import-Package: dev.galasa,\
+    dev.galasa.framework,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.selenium,\
+    javax.net,\
+    javax.net.ssl,\
+    org.apache.commons.logging,\
+    org.openqa.selenium
+Embed-Transitive: true
+Embed-Dependency: *;scope=compile
+-includeresource: animal-sniffer-annotations-1.14.jar; lib:=true,\
+    byte-buddy-1.8.15.jar; lib:=true,\
+    checker-compat-qual-2.0.0.jar; lib:=true,\
+    commons-exec-1.3.jar; lib:=true,\
+    error_prone_annotations-2.1.3.jar; lib:=true,\
+    guava-25.0-jre.jar; lib:=true,\
+    j2objc-annotations-1.1.jar; lib:=true,\
+    jsr305-1.3.9.jar; lib:=true,\
+    okhttp-3.11.0.jar; lib:=true,\
+    okio-1.14.0.jar; lib:=true,\
+    selenium-api-3.14.0.jar; lib:=true,\
+    selenium-chrome-driver-3.14.0.jar; lib:=true,\
+    selenium-edge-driver-3.14.0.jar; lib:=true,\
+    selenium-firefox-driver-3.14.0.jar; lib:=true,\
+    selenium-ie-driver-3.14.0.jar; lib:=true,\
+    selenium-java-3.14.0.jar; lib:=true,\
+    selenium-opera-driver-3.14.0.jar; lib:=true,\
+    selenium-remote-driver-3.14.0.jar; lib:=true,\
+    selenium-safari-driver-3.14.0.jar; lib:=true,\
+    selenium-support-3.14.0.jar; lib:=true
