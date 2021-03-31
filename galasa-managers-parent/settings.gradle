@@ -57,3 +57,8 @@ include 'galasa-managers-cloud-parent:dev.galasa.docker.manager'
 include 'galasa-managers-cloud-parent:dev.galasa.docker.manager.ivt'
 include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager'
 include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager.ivt'
+// galasa-managers-testingtools-parent
+// include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager'
+// include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager.ivt'
+// include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager'
+// include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager.ivt'
