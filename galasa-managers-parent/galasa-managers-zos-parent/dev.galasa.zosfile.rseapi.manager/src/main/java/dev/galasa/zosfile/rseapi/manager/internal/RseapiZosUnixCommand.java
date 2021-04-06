@@ -12,7 +12,7 @@ import org.apache.http.HttpStatus;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import dev.galasa.zosfile.ZosDatasetException;
+import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosrseapi.IRseapi.RseapiRequestType;
 import dev.galasa.zosrseapi.IRseapiResponse;
 import dev.galasa.zosrseapi.IRseapiRestApiProcessor;
@@ -34,7 +34,7 @@ public class RseapiZosUnixCommand {
     	this.zosFileHandler = zosFileHandler;
     }
     
-    public JsonObject execute(IRseapiRestApiProcessor rseapiApiProcessor, String command) throws ZosDatasetException {
+    public JsonObject execute(IRseapiRestApiProcessor rseapiApiProcessor, String command) throws ZosFileManagerException {
         IRseapiResponse response;
         try {
             JsonObject requestBody = new JsonObject();
@@ -42,21 +42,21 @@ public class RseapiZosUnixCommand {
             requestBody.addProperty(PROP_PATH, "/usr/bin");
 			response = rseapiApiProcessor.sendRequest(RseapiRequestType.POST_JSON, RESTUNIXCOMMANDS_PATH, null, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, false);
         } catch (RseapiException e) {
-            throw new ZosDatasetException(e);
+            throw new ZosFileManagerException(e);
         }
 
         if (response.getStatusCode() != HttpStatus.SC_OK) {
         	// Error case
             String displayMessage = this.zosFileHandler.buildErrorString("zOS UNIX command", response); 
             logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
+            throw new ZosFileManagerException(displayMessage);
         }
         
         JsonObject responseBody;
         try {
             responseBody = response.getJsonContent();
         } catch (RseapiException e) {
-            throw new ZosDatasetException("Issue command failed", e);
+            throw new ZosFileManagerException("Issue command failed", e);
         }
         
         logger.trace(responseBody);
@@ -64,7 +64,7 @@ public class RseapiZosUnixCommand {
         if (exitCode == null || exitCode.getAsInt() != 0) {
         	String displayMessage = "Command failed. Response body:\n" + responseBody;
             logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
+            throw new ZosFileManagerException(displayMessage);
         }
         
         return responseBody;

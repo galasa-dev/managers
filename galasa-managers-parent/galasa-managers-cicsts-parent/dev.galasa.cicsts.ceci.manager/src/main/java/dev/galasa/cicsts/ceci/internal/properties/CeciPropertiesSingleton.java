@@ -12,11 +12,11 @@ import org.osgi.service.component.annotations.Deactivate;
 import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 
-@Component(service=CECIPropertiesSingleton.class, immediate=true)
-public class CECIPropertiesSingleton {
+@Component(service=CeciPropertiesSingleton.class, immediate=true)
+public class CeciPropertiesSingleton {
     
-    private static CECIPropertiesSingleton singletonInstance;
-    private static void setInstance(CECIPropertiesSingleton instance) {
+    private static CeciPropertiesSingleton singletonInstance;
+    private static void setInstance(CeciPropertiesSingleton instance) {
         singletonInstance = instance;
     }
     

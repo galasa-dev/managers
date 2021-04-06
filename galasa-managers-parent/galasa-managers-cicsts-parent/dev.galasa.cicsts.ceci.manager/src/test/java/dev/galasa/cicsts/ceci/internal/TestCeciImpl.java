@@ -1,13 +1,12 @@
 package dev.galasa.cicsts.ceci.internal;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,6 +15,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
@@ -26,17 +26,20 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
 @RunWith(PowerMockRunner.class)
-public class TestCECIImpl {
+public class TestCeciImpl {
     
 
-    private CECIImpl ceci;
+    private CeciImpl ceci;
     
-    private CECIImpl ceciSpy;
+    private CeciImpl ceciSpy;
     
-    // Static fields in CECIImpl
+    // Static fields in CeciImpl
+    private static final String INITIAL_SCREEN_ID = "STATUS:  ENTER ONE OF THE FOLLOWING";
+    private static final String VAR_SCREEN_ID = "VARIABLES   LENGTH   DATA";
     private static final String COMMAND_EXECUTION_COMPLETE = "STATUS:  COMMAND EXECUTION COMPLETE";
     private static final String MESSAGE_DFHAC2206 = "DFHAC2206";
     private static final String NO_SYNTAX_MESSAGES = "THERE ARE NO MESSAGES";
+    private static final String WRONG_CICS_REGION = "Provided terminal does not belong to the correct CICS TS Region";
     
     private static final String COMMAND_VALUE = "COMMAND";
     private static final String TEXT_VARIABLE_NAME = "&VARIABLE";
@@ -50,23 +53,27 @@ public class TestCECIImpl {
     private ICicsTerminal ceciTerminalMock;
     
     @Mock
+    private ICicsTerminal wrongCeciTerminalMock;
+    
+    @Mock
     private ICicsRegion  cicsRegionMock;
+    
+    @Mock
+    private ICicsRegion  wrongCicsRegionMock;
     
     @Mock
     private ICeciResponse ceciResponseMock;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Before
     public void setup() throws FieldNotFoundException, KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException {
-        ceci = new CECIImpl(null, cicsRegionMock);
+        ceci = new CeciImpl(null, cicsRegionMock);
         ceciSpy = Mockito.spy(ceci);
 
         // Mock all terminal function
         Mockito.when(ceciTerminalMock.type(Mockito.any())).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.enter()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.pf2()).thenReturn(ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.pf3()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.pf4()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.pf5()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.pf9()).thenReturn(ceciTerminalMock);
@@ -80,6 +87,36 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.reportScreenWithCursor()).thenReturn(ceciTerminalMock);
         Mockito.when(ceciTerminalMock.getCicsRegion()).thenReturn(cicsRegionMock);
+        Mockito.when(wrongCeciTerminalMock.getCicsRegion()).thenReturn(wrongCicsRegionMock);
+    }
+    
+    @Test
+    public void teststartCECISession() throws Exception {
+        setupTestIssueCommand();
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(INITIAL_SCREEN_ID);
+        Mockito.when(ceciTerminalMock.isClearScreen()).thenReturn(true);
+        ceciSpy.startCECISession(ceciTerminalMock);
+        
+        Mockito.when(ceciTerminalMock.isClearScreen()).thenReturn(false);
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("NOT_INITIAL_SCREEN_ID");
+        String expectedMessage = "Not on CECI initial screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.startCECISession(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
+
+        Mockito.when(ceciTerminalMock.resetAndClear()).thenThrow(new CicstsManagerException());
+        expectedMessage = "Problem starting CECI session";
+        expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.startCECISession(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage()); 
+        
+        expectedMessage = WRONG_CICS_REGION;
+        expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.startCECISession(wrongCeciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());        
     }
     
     @Test
@@ -94,16 +131,33 @@ public class TestCECIImpl {
         
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("USER SCREEN").thenReturn("USER SCREEN").thenReturn(COMMAND_EXECUTION_COMPLETE);
         Assert.assertEquals("Error in issueCommand() method", ceciResponseMock, ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE));
+        
+        Assert.assertEquals("Error in issueCommand() method", ceciResponseMock, ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE, null));
+
+        HashMap<String, Object> options = new HashMap<>();        
+        Assert.assertEquals("Error in issueCommand() method", ceciResponseMock, ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE, options));
+        
+        options.put("KEY1", null);
+        options.put("KEY2", "");
+        options.put("KEY3", "VALUE");        
+        Assert.assertEquals("Error in issueCommand() method", ceciResponseMock, ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE, options));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.issueCommand(wrongCeciTerminalMock, COMMAND_VALUE, true);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
     
     @Test
     public void testIssueCommandException1() throws Exception {
         setupTestIssueCommand();
         
-        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(MESSAGE_DFHAC2206);        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Command abended - see previous screen");
-        ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);        
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(MESSAGE_DFHAC2206); 
+        String expectedMessage = "Command abended - see previous screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -111,9 +165,11 @@ public class TestCECIImpl {
         setupTestIssueCommand();
         
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("USER SCREEN").thenReturn("USER SCREEN").thenReturn("USER SCREEN");        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Command failed - see previous screen");
-        ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        String expectedMessage = "Command failed - see previous screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
         
     }
 
@@ -121,10 +177,12 @@ public class TestCECIImpl {
     public void testIssueCommandException3() throws Exception {
         setupTestIssueCommand();
         
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Error issuing CECI command");
-        ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Error issuing CECI command";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
         
     }
 
@@ -132,26 +190,34 @@ public class TestCECIImpl {
     public void testIssueCommandException4() throws Exception {
         setupTestIssueCommand();
         
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Error issuing CECI command");
-        ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());  
+        String expectedMessage = "Error issuing CECI command";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.issueCommand(ceciTerminalMock, COMMAND_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
         
     }
     
     private void setupTestIssueCommand() throws Exception {        
         PowerMockito.doReturn(0).when(ceciSpy, "defineVariableText", Mockito.any(), Mockito.any(), Mockito.any());
-        PowerMockito.doReturn(true).when(ceciSpy, "isCECIScreen");
+        PowerMockito.doReturn(true).when(ceciSpy, "isCeciScreen");
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "initialScreen");
         PowerMockito.doNothing().when(ceciSpy, "checkForSyntaxMessages");
-        PowerMockito.doReturn(ceciResponseMock).when(ceciSpy, "newCECIResponse", Mockito.anyBoolean());        
+        PowerMockito.doReturn(ceciResponseMock).when(ceciSpy, "newCeciResponse", Mockito.anyBoolean());        
     }
 
     @Test
     public void testDefineVariableText() throws Exception {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.length()).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
+        
         Assert.assertEquals("Error in defineVariableText() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.defineVariableText(ceciTerminalMock, TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariableText(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -159,6 +225,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.length()).when(ceciSpy, "setVariableHex", Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in defineVariableBinary() method", TEXT_VARIABLE_VALUE.length(), ceciSpy.defineVariableBinary(ceciTerminalMock, TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray()));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariableBinary(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -166,6 +237,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(99).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in defineVariableDoubleWord() method", 99, ceciSpy.defineVariableDoubleWord(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariableDoubleWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -173,6 +249,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(99).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in defineVariableFullWord() method", 99, ceciSpy.defineVariableFullWord(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariableFullWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -180,13 +261,35 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(99).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in defineVariableHalfWord() method", 99, ceciSpy.defineVariableHalfWord(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariableHalfWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
-    public void testDefineVariablePacked() throws Exception {
+    public void testDefineVariable4BytePacked() throws Exception {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(99).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
-        Assert.assertEquals("Error in defineVariablePacked() method", 99, ceciSpy.defineVariablePacked(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        Assert.assertEquals("Error in defineVariablePacked() method", 99, ceciSpy.defineVariable4BytePacked(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariable4BytePacked(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
+    }
+
+    @Test
+    public void testDefineVariable8BytePacked() throws Exception {
+        PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
+        PowerMockito.doReturn(99).when(ceciSpy, "setVariable", Mockito.any(), Mockito.any(), Mockito.any());
+        Assert.assertEquals("Error in defineVariablePacked() method", 99, ceciSpy.defineVariable8BytePacked(ceciTerminalMock, TEXT_VARIABLE_NAME, 0));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.defineVariable8BytePacked(wrongCeciTerminalMock, TEXT_VARIABLE_NAME, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -194,6 +297,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE).when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in retrieveVariableText() method", TEXT_VARIABLE_VALUE, ceciSpy.retrieveVariableText(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariableText(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -201,6 +309,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn(TEXT_VARIABLE_VALUE.toCharArray()).when(ceciSpy, "getVariableHex", Mockito.any());
         Assert.assertTrue("Error in retrieveVariableBinary() method", Arrays.equals(TEXT_VARIABLE_VALUE.toCharArray(), ceciSpy.retrieveVariableBinary(ceciTerminalMock, TEXT_VARIABLE_NAME)));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariableBinary(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -208,6 +321,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn("99").when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in retrieveVariableDoubleWord() method", 99L, ceciSpy.retrieveVariableDoubleWord(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariableDoubleWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -215,6 +333,11 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn("99").when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in retrieveVariableFullWord() method", 99, ceciSpy.retrieveVariableFullWord(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariableFullWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -222,13 +345,35 @@ public class TestCECIImpl {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn("99").when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in retrieveVariableHalfWord() method", 99, ceciSpy.retrieveVariableHalfWord(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariableHalfWord(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
-    public void testRetrieveVariablePacked() throws Exception {
+    public void testRetrieveVariable4BytePacked() throws Exception {
         PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
         PowerMockito.doReturn("99").when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
-        Assert.assertEquals("Error in retrieveVariablePacked() method", 99, ceciSpy.retrieveVariablePacked(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        Assert.assertEquals("Error in retrieveVariablePacked() method", 99, ceciSpy.retrieveVariable4BytePacked(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariable4BytePacked(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
+    }
+
+    @Test
+    public void testRetrieveVariable8BytePacked() throws Exception {
+        PowerMockito.doReturn(TEXT_VARIABLE_NAME).when(ceciSpy, "validateVariable", Mockito.any(), Mockito.any(), Mockito.any());
+        PowerMockito.doReturn("99").when(ceciSpy, "getVariable", Mockito.any(), Mockito.any());
+        Assert.assertEquals("Error in retrieveVariablePacked() method", 99, ceciSpy.retrieveVariable8BytePacked(ceciTerminalMock, TEXT_VARIABLE_NAME));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.retrieveVariable8BytePacked(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -255,6 +400,11 @@ public class TestCECIImpl {
         PowerMockito.verifyPrivate(ceciTerminalMock, Mockito.times(2)).invoke("retrieveScreen");
         ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME.substring(1));
         PowerMockito.verifyPrivate(ceciTerminalMock, Mockito.times(3)).invoke("retrieveScreen");
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteVariable(wrongCeciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -264,9 +414,11 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(String.format(" %-10s   %+06d   %s", TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.length(), TEXT_VARIABLE_VALUE));
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "XXXX"))
                                                               .thenReturn("PF");
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to find variable to delete");
-        ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        String expectedMessage = "Unable to find variable to delete";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -276,9 +428,11 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(String.format(" %-10s   %+06d   %s", TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.length(), TEXT_VARIABLE_VALUE));
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", "XXXX"))
                                                               .thenReturn(String.format("%-10s", TEXT_VARIABLE_NAME));
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Delete variable failed");
-        ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        String expectedMessage = "Delete variable failed";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -288,9 +442,11 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(String.format(" %-10s   %+06d   %s", TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.length(), TEXT_VARIABLE_VALUE));
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", TEXT_VARIABLE_NAME));
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to delete variable");
-        ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        String expectedMessage = "Unable to delete variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -300,9 +456,11 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(String.format(" %-10s   %+06d   %s", TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.length(), TEXT_VARIABLE_VALUE));
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(String.format("%-10s", TEXT_VARIABLE_NAME));
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to delete variable");
-        ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        String expectedMessage = "Unable to delete variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteVariable(ceciTerminalMock, TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -317,6 +475,11 @@ public class TestCECIImpl {
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("PF");
         ceciSpy.deleteAllVariables(ceciTerminalMock);
         PowerMockito.verifyPrivate(ceciTerminalMock, Mockito.times(1)).invoke("tab");
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteAllVariables(wrongCeciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -325,9 +488,11 @@ public class TestCECIImpl {
         
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to delete all variables");
-        ceciSpy.deleteAllVariables(ceciTerminalMock);
+        String expectedMessage = "Unable to delete all variables";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteAllVariables(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -336,9 +501,11 @@ public class TestCECIImpl {
         
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to delete all variables");
-        ceciSpy.deleteAllVariables(ceciTerminalMock);
+        String expectedMessage = "Unable to delete all variables";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.deleteAllVariables(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private void setupTestDeleteVariable() throws Exception {
@@ -351,7 +518,12 @@ public class TestCECIImpl {
     public void testGetEIB() throws Exception {
         setupTestGetEIB();
         
-        Assert.assertTrue("Error in getEIB() method",  ceciSpy.getEIB(ceciTerminalMock) instanceof CECIExecInterfaceBlockImpl);
+        Assert.assertTrue("Error in getEIB() method",  ceciSpy.getEIB(ceciTerminalMock) instanceof CeciExecInterfaceBlockImpl);
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getEIB(wrongCeciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -359,9 +531,11 @@ public class TestCECIImpl {
         setupTestGetEIB();
         
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to EIB screen");        
-        ceciSpy.getEIB(ceciTerminalMock);
+        String expectedMessage = "Unable to navigate to EIB screen";        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getEIB(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -369,9 +543,11 @@ public class TestCECIImpl {
         setupTestGetEIB();
         
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to EIB screen");        
-        ceciSpy.getEIB(ceciTerminalMock);
+        String expectedMessage = "Unable to navigate to EIB screen";        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getEIB(ceciTerminalMock);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private void setupTestGetEIB() throws Exception {
@@ -393,6 +569,11 @@ public class TestCECIImpl {
 
         PowerMockito.doReturn(0).when(ceciSpy, "defineVariableText", Mockito.any(), Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in linkProgram() method", ceciResponseMock, ceciSpy.linkProgram(ceciTerminalMock, PROGRAM_NAME, "COMMAREA", null, null, false));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.linkProgram(wrongCeciTerminalMock, PROGRAM_NAME, null, null, null, false);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -409,6 +590,11 @@ public class TestCECIImpl {
 
         PowerMockito.doReturn(0).when(ceciSpy, "defineVariableText", Mockito.any(), Mockito.any(), Mockito.any());
         Assert.assertEquals("Error in linkProgramWithChannel() method", ceciResponseMock, ceciSpy.linkProgramWithChannel(ceciTerminalMock, PROGRAM_NAME, "CHANNEL_NAME", null, null, false));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.linkProgramWithChannel(wrongCeciTerminalMock, PROGRAM_NAME, null, null, null, false);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -425,6 +611,11 @@ public class TestCECIImpl {
         Assert.assertEquals("Error in putContainer() method", ceciResponseMock, ceciSpy.putContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, "CCID", null));
         
         Assert.assertEquals("Error in putContainer() method", ceciResponseMock, ceciSpy.putContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null, "CODEPAGE"));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.putContainer(wrongCeciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_VALUE, null, null, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
 
     @Test
@@ -439,85 +630,116 @@ public class TestCECIImpl {
         Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, "CODEPAGE"));
         
         Assert.assertEquals("Error in getContainer() method", ceciResponseMock, ceciSpy.getContainer(ceciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME.substring(1), null, null));
+        
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getContainer(wrongCeciTerminalMock, CHANNEL_NAME, CONTAINER_NAME, TEXT_VARIABLE_NAME, null, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", WRONG_CICS_REGION, expectedException.getMessage());
     }
     
     @Test
     public void testInitialScreen() throws Exception {
         setupTestInitialScreen();
         
-        PowerMockito.doReturn(true).when(ceciSpy, "isCECIScreen");
+        PowerMockito.doReturn(true).when(ceciSpy, "isCeciScreen");
         PowerMockito.doReturn(false).when(ceciSpy, "isHelpScreen", Mockito.any());
         Assert.assertEquals("Error in initialScreen() method", ceciTerminalMock, ceciSpy.initialScreen());
 
         PowerMockito.doReturn(true).when(ceciSpy, "isHelpScreen", Mockito.any());
         Assert.assertEquals("Error in initialScreen() method", ceciTerminalMock, ceciSpy.initialScreen());
 
-        PowerMockito.when(ceciSpy, "isCECIScreen").thenReturn(false).thenReturn(true);
+        PowerMockito.when(ceciSpy, "isCeciScreen").thenReturn(false).thenReturn(true);
         Assert.assertEquals("Error in initialScreen() method", ceciTerminalMock, ceciSpy.initialScreen());
+        
+        PowerMockito.doReturn(false).when(ceciSpy, "isInitialScreen", Mockito.any());
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	 ceciSpy.initialScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", "Unable to navigate to CECI initial screen", expectedException.getMessage());
     }
     
     @Test
     public void testInitialScreenException1() throws Exception {
         setupTestInitialScreen();
 
-        PowerMockito.doReturn(false).when(ceciSpy, "isCECIScreen");       
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Cannot identify terminal as CECI session");
-        ceciSpy.initialScreen();
+        PowerMockito.doReturn(false).when(ceciSpy, "isCeciScreen");  
+        String expectedMessage = "Cannot identify terminal as CECI session";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.initialScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitialScreenException2() throws Exception {
         setupTestInitialScreen();
 
-        PowerMockito.doReturn(false).when(ceciSpy, "isCECIScreen");
+        PowerMockito.doReturn(false).when(ceciSpy, "isCeciScreen");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to CECI initial screen");
-        ceciSpy.initialScreen();
+        String expectedMessage = "Unable to navigate to CECI initial screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.initialScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testInitialScreenException3() throws Exception {
         setupTestInitialScreen();
 
-        PowerMockito.doReturn(false).when(ceciSpy, "isCECIScreen");
+        PowerMockito.doReturn(false).when(ceciSpy, "isCeciScreen");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to CECI initial screen");
-        ceciSpy.initialScreen();
+        String expectedMessage = "Unable to navigate to CECI initial screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.initialScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     private void setupTestInitialScreen() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(INITIAL_SCREEN_ID);
     }
 
     @Test
     public void testVariableScreen() throws Exception {
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "initialScreen");
+        Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("").thenReturn(VAR_SCREEN_ID);
         Assert.assertEquals("Error in variableScreen() method", ceciTerminalMock, ceciSpy.variableScreen());
+        
+        PowerMockito.doReturn(false).when(ceciSpy, "isVariablesScreen", Mockito.any());
+        String expectedMessage = "Unable to navigate to CECI variables screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	 ceciSpy.variableScreen();
+        });
+		Assert.assertEquals("exception should contain expected cause", expectedMessage , expectedException.getMessage());
     }
     
     @Test
     public void testVariableScreenException1() throws Exception {
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "initialScreen");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to CECI variables screen");
-        ceciSpy.variableScreen();
+        String expectedMessage = "Unable to navigate to CECI variables screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.variableScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testVariableScreenException2() throws Exception {
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "initialScreen");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to navigate to CECI variables screen");
-        ceciSpy.variableScreen();
+        String expectedMessage = "Unable to navigate to CECI variables screen";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.variableScreen();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
-    public void testIsCECIScreen() throws Exception {
+    public void testisCeciScreen() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(true).when(ceciSpy, "isInitialScreen", Mockito.any());
         PowerMockito.doReturn(true).when(ceciSpy, "isHelpScreen", Mockito.any());
@@ -527,31 +749,31 @@ public class TestCECIImpl {
         PowerMockito.doReturn(true).when(ceciSpy, "isVariablesScreen", Mockito.any());
         PowerMockito.doReturn(true).when(ceciSpy, "isVariablesExpansionScreen", Mockito.any());
         PowerMockito.doReturn(true).when(ceciSpy, "isMsgScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
         
         PowerMockito.doReturn(false).when(ceciSpy, "isInitialScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isHelpScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isCommandBeforeScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isCommandAfterScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isEibScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isVariablesScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isVariablesExpansionScreen", Mockito.any());
-        Assert.assertTrue("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertTrue("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
         PowerMockito.doReturn(false).when(ceciSpy, "isMsgScreen", Mockito.any());
-        Assert.assertFalse("Error in isCECIScreen() method", ceciSpy.isCECIScreen());
+        Assert.assertFalse("Error in isCeciScreen() method", ceciSpy.isCeciScreen());
 
     }
     
@@ -623,33 +845,36 @@ public class TestCECIImpl {
     public void testCheckForSyntaxMessagesException1() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Whitebox.setInternalState(ceciSpy, "command", COMMAND_VALUE);
-        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(SPACES);       
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Command failed syntax check. \nCommand:\n  " + COMMAND_VALUE + "\nSyntax Error Screen:\n" + SPACES);
-        
-        ceciSpy.checkForSyntaxMessages();
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(SPACES); 
+        String expectedMessage = "Command failed syntax check. \nCommand:\n  " + COMMAND_VALUE + "\nSyntax Error Screen:\n" + SPACES;
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.checkForSyntaxMessages();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testCheckForSyntaxMessagesException2() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(NO_SYNTAX_MESSAGES);        
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to check for syntax messages");
-        
-        ceciSpy.checkForSyntaxMessages();
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to check for syntax messages";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.checkForSyntaxMessages();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testCheckForSyntaxMessagesException3() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(NO_SYNTAX_MESSAGES);        
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());        
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to check for syntax messages");
-        
-        ceciSpy.checkForSyntaxMessages();
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
+        String expectedMessage = "Unable to check for syntax messages";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.checkForSyntaxMessages();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -672,19 +897,21 @@ public class TestCECIImpl {
     @Test
     public void testValidateVariableException1() throws Exception {
         String name = "&2345678901";
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leading \"&\"");
-        
-        ceciSpy.validateVariable(name, TEXT_VARIABLE_VALUE.toCharArray(), null);
+        String expectedMessage = "CECI variable name \"" + name + "\" greater than maximum length of 10 characters including the leading \"&\"";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.validateVariable(name, TEXT_VARIABLE_VALUE.toCharArray(), null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testValidateVariableException2() throws Exception {
         String name = "&?";
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("CECI variable name \"" + name + "\" invalid must. Must start with \"&\" and can contain one of more [a-zA-Z0-9@#]");
-        
-        ceciSpy.validateVariable(name, TEXT_VARIABLE_VALUE.toCharArray(), null);
+        String expectedMessage = "CECI variable name \"" + name + "\" invalid must. Must start with \"&\" and can contain one of more [a-zA-Z0-9@#]";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.validateVariable(name, TEXT_VARIABLE_VALUE.toCharArray(), null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -692,18 +919,21 @@ public class TestCECIImpl {
         String value = "123456789";
         String type = "H";
         int maxLength = 6;
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("CECI variable value length " + value.length() + " greater than maximum of " + maxLength +  " for type \"" + type + "\"" );
-        
-        ceciSpy.validateVariable(TEXT_VARIABLE_NAME, value.toCharArray(), type);
+        String expectedMessage = "CECI variable value length " + value.length() + " greater than maximum of " + maxLength +  " for type \"" + type + "\"" ;
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.validateVariable(TEXT_VARIABLE_NAME, value.toCharArray(), type);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
     public void testValidateVariableException4() throws Exception {        
         String value = new String(new char[32768]).replace("\0", "X");
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("CECI variable value length " + value.length() + " greater than maximum 32767");
-        ceciSpy.validateVariable(TEXT_VARIABLE_NAME, value.toCharArray(), null);
+        String expectedMessage = "CECI variable value length " + value.length() + " greater than maximum 32767";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.validateVariable(TEXT_VARIABLE_NAME, value.toCharArray(), null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -726,32 +956,35 @@ public class TestCECIImpl {
     public void testSetVariableException1() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn("PF").when(ceciTerminalMock, "retrieveFieldAtCursor");
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("No space on CECI variable screen for new variables");
-        
-        ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        String expectedMessage = "No space on CECI variable screen for new variables";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetVariableException2() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn(String.format("%-10s", " ")).when(ceciTerminalMock, "retrieveFieldAtCursor");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI variable");
-        
-        ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
+        String expectedMessage = "Unable to set CECI variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetVariableException3() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn(String.format("%-10s", " ")).when(ceciTerminalMock, "retrieveFieldAtCursor");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI variable");
-        
-        ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
+        String expectedMessage = "Unable to set CECI variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariable(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private void setupTestVariable() throws Exception {
@@ -782,14 +1015,16 @@ public class TestCECIImpl {
     @Test
     public void testSetVariableOnPageException() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        Mockito.when(ceciTerminalMock.type(Mockito.any())).thenThrow(new FieldNotFoundException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable enter variable data");
+        Mockito.when(ceciTerminalMock.type(Mockito.any())).thenThrow(new FieldNotFoundException());  
+        String expectedMessage = "Unable enter variable data";
         
         String[] chunks = new String[] {TEXT_VARIABLE_VALUE, TEXT_VARIABLE_VALUE};
         int start = 0;
         int numberOfLines = 1;
-        ceciSpy.setVariableOnPage(chunks, start, numberOfLines);
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariableOnPage(chunks, start, numberOfLines);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -811,32 +1046,35 @@ public class TestCECIImpl {
     public void testSetVariableHexException1() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn("PF").when(ceciTerminalMock, "retrieveFieldAtCursor");
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("No space on CECI variable screen for new variables");
-        
-        ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        String expectedMessage = "No space on CECI variable screen for new variables";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetVariableHexException2() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn(String.format("%-10s", " ")).when(ceciTerminalMock, "retrieveFieldAtCursor");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI binary variable");
-        
-        ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());  
+        String expectedMessage = "Unable to set CECI binary variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testSetVariableHexException3() throws Exception {
         setupTestVariable();
         PowerMockito.doReturn(String.format("%-10s", " ")).when(ceciTerminalMock, "retrieveFieldAtCursor");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI binary variable");
-        
-        ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());  
+        String expectedMessage = "Unable to set CECI binary variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariableHex(TEXT_VARIABLE_NAME, TEXT_VARIABLE_VALUE.toCharArray());
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -863,14 +1101,16 @@ public class TestCECIImpl {
     @Test
     public void testSetVariableHexOnPageException() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
-        Mockito.when(ceciTerminalMock.type(Mockito.any())).thenThrow(new FieldNotFoundException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable enter variable data");
+        Mockito.when(ceciTerminalMock.type(Mockito.any())).thenThrow(new FieldNotFoundException()); 
+        String expectedMessage = "Unable enter variable data";
         
         char[] value = TEXT_VARIABLE_VALUE.toCharArray();
         int start = 0;
         int numberOfLines = 1;
-        ceciSpy.setVariableHexOnPage(value, start, numberOfLines);
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.setVariableHexOnPage(value, start, numberOfLines);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -894,43 +1134,47 @@ public class TestCECIImpl {
     public void testGetVariableException1() throws Exception {
         setupTestGetVariable();
         String lengthString = "XXXX";
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(lengthString);    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unexpected variable type \"" + lengthString  + "\" for \"" + TEXT_VARIABLE_NAME + "\"");
+        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(lengthString);  
+        String expectedMessage = "Unexpected variable type \"" + lengthString  + "\" for \"" + TEXT_VARIABLE_NAME + "\"";
         String type = "H";
-        
-        ceciSpy.getVariable(TEXT_VARIABLE_NAME, type);
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariable(TEXT_VARIABLE_NAME, type);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetVariableException2() throws Exception {
         setupTestGetVariable();
         String lengthString = "XXXX";
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(lengthString);   
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to determine variable field length");
-        
-        ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(lengthString); 
+        String expectedMessage = "Unable to determine variable field length";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetVariableException3() throws Exception {
         setupTestGetVariable();
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get CECI variable");
-        
-        ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
+        String expectedMessage = "Unable to get CECI variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetVariableException4() throws Exception {
         setupTestGetVariable();
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());    
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get CECI variable");
-        
-        ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to get CECI variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariable(TEXT_VARIABLE_NAME, null);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private void setupTestGetVariable() throws Exception {
@@ -954,11 +1198,12 @@ public class TestCECIImpl {
     public void getVariableFromPageException1() throws Exception {
         setupTestGetVariable();
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn(TEXT_VARIABLE_VALUE);
-        Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException());   
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get variable from page");
-        
-        ceciSpy.getVariableFromPage(1, 1);
+        Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException()); 
+        String expectedMessage = "Unable to get variable from page";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariableFromPage(1, 1);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
         
     }
     
@@ -977,31 +1222,34 @@ public class TestCECIImpl {
     @Test
     public void testGetVariableHexException1() throws Exception {
         setupTestGetVariable();
-        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("XXXX");   
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to determine variable field length");
-        
-        ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("XXXX"); 
+        String expectedMessage = "Unable to determine variable field length";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetVariableHexException2() throws Exception {
         setupTestGetVariable();
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get CECI binary variable");
-        
-        ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        String expectedMessage = "Unable to get CECI binary variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetVariableHexException3() throws Exception {
         setupTestGetVariable();
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get CECI binary variable");
-        
-        ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to get CECI binary variable";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariableHex(TEXT_VARIABLE_VALUE);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1018,11 +1266,12 @@ public class TestCECIImpl {
     public void testGetVariableHexPageException1() throws Exception {
         setupTestGetVariable();
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("5A5A5A5A");
-        Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to get binary variable from page");
-        
-        ceciSpy.getVariableHexFromPage(4, 1);
+        Mockito.when(ceciTerminalMock.tab()).thenThrow(new FieldNotFoundException());
+        String expectedMessage = "Unable to get binary variable from page";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getVariableHexFromPage(4, 1);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1037,11 +1286,12 @@ public class TestCECIImpl {
     @Test
     public void testMoveToVariableException1() throws Exception {
         setupMoveToVariable();
-        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" "); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to find variable " + TEXT_VARIABLE_NAME);
-    
-        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" ");
+        String expectedMessage = "Unable to find variable " + TEXT_VARIABLE_NAME;
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1049,21 +1299,23 @@ public class TestCECIImpl {
         setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " "); 
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("PF");
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to find variable " + TEXT_VARIABLE_NAME);
-    
-        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        String expectedMessage = "Unable to find variable " + TEXT_VARIABLE_NAME;
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testMoveToVariableException3() throws Exception {
         setupMoveToVariable();
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(TEXT_VARIABLE_NAME + " ");
-        Mockito.when(ceciTerminalMock.newLine()).thenThrow(new FieldNotFoundException());  
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Problem serching for variable " + TEXT_VARIABLE_NAME);
-    
-        ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        Mockito.when(ceciTerminalMock.newLine()).thenThrow(new FieldNotFoundException()); 
+        String expectedMessage = "Problem serching for variable " + TEXT_VARIABLE_NAME;
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.moveToVariable(TEXT_VARIABLE_NAME);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     private void setupMoveToVariable() throws Exception {
@@ -1085,22 +1337,24 @@ public class TestCECIImpl {
     public void testIsHexOnException1() throws CeciException, TimeoutException, KeyboardLockedException, TerminalInterruptedException {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" EIBTIME      = X'00");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to determine if CECI is in HEX mode");
-        
-        ceciSpy.isHexOn();        
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to determine if CECI is in HEX mode";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.isHexOn();  
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());      
     }
     
     @Test
     public void testIsHexOnException2() throws CeciException, TimeoutException, KeyboardLockedException, TerminalInterruptedException {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn(" EIBTIME      = X'00");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to determine if CECI is in HEX mode");
-        
-        ceciSpy.isHexOn();          
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to determine if CECI is in HEX mode";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.isHexOn();   
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());       
     }
     
     @Test
@@ -1118,11 +1372,12 @@ public class TestCECIImpl {
     public void testHexOnException1() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(false).when(ceciSpy, "isHexOn");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI HEX ON");
-        
-        ceciSpy.hexOn();        
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to set CECI HEX ON";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.hexOn();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1130,10 +1385,11 @@ public class TestCECIImpl {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(false).when(ceciSpy, "isHexOn");
         Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI HEX ON");
-        
-        ceciSpy.hexOn();          
+        String expectedMessage = "Unable to set CECI HEX ON";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.hexOn();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1151,36 +1407,38 @@ public class TestCECIImpl {
     public void testHexOffException1() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(true).when(ceciSpy, "isHexOn");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI HEX OFF");
-        
-        ceciSpy.hexOff();        
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to set CECI HEX OFF";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.hexOff();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testHexOffException2() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(true).when(ceciSpy, "isHexOn");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to set CECI HEX OFF");
-        
-        ceciSpy.hexOff();          
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to set CECI HEX OFF";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.hexOff();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
-    public void testNewCECIResponse() throws Exception {
+    public void testNewCeciResponse() throws Exception {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         Mockito.when(ceciTerminalMock.retrieveScreen()).thenReturn("   RESPONSE: FILENOTFOUND          EIBRESP=+0000000012 EIBRESP2=+0000000001     ");
         PowerMockito.doReturn(new LinkedHashMap<>()).when(ceciSpy, "parseResponseOutput");
         
-        ICeciResponse ceciResponse = ceciSpy.newCECIResponse(false);
+        ICeciResponse ceciResponse = ceciSpy.newCeciResponse(false);
         
-        ceciSpy.newCECIResponse(true);
-        Assert.assertEquals("Error in newCECIResponse() method", "FILENOTFOUND", ceciResponse.getResponse());
-        Assert.assertEquals("Error in newCECIResponse() method", 12, ceciResponse.getEIBRESP()); 
-        Assert.assertEquals("Error in newCECIResponse() method", 1, ceciResponse.getEIBRESP2()); 
+        ceciSpy.newCeciResponse(true);
+        Assert.assertEquals("Error in newCeciResponse() method", "FILENOTFOUND", ceciResponse.getResponse());
+        Assert.assertEquals("Error in newCeciResponse() method", 12, ceciResponse.getEIBRESP()); 
+        Assert.assertEquals("Error in newCeciResponse() method", 1, ceciResponse.getEIBRESP2()); 
     }
     
     @Test
@@ -1203,11 +1461,12 @@ public class TestCECIImpl {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("OPTION1");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output");
-        
-        ceciSpy.parseResponseOutput();
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to parse command output";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.parseResponseOutput();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1215,11 +1474,12 @@ public class TestCECIImpl {
         Whitebox.setInternalState(ceciSpy, "terminal", ceciTerminalMock);
         PowerMockito.doReturn(ceciTerminalMock).when(ceciSpy, "multipleTab", Mockito.anyInt());
         Mockito.when(ceciTerminalMock.retrieveFieldAtCursor()).thenReturn("OPTION1");
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output");
-        
-        ceciSpy.parseResponseOutput();
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to parse command output";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.parseResponseOutput();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1244,11 +1504,12 @@ public class TestCECIImpl {
         setupTestGetVariable();
         PowerMockito.doReturn("000").when(ceciSpy, "getVariableFromPage", Mockito.anyInt(), Mockito.anyInt());        
         String screen = "OPTION= LENGTH       LENGTH= H ";
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output option value");
-
-        ceciSpy.getOptionValue(screen);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to parse command output option value";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getOptionValue(screen);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1256,11 +1517,12 @@ public class TestCECIImpl {
         setupTestGetVariable();
         PowerMockito.doReturn("000").when(ceciSpy, "getVariableFromPage", Mockito.anyInt(), Mockito.anyInt());        
         String screen = "OPTION= LENGTH       LENGTH= H ";
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output option value");
-
-        ceciSpy.getOptionValue(screen);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to parse command output option value";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getOptionValue(screen);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
@@ -1282,21 +1544,23 @@ public class TestCECIImpl {
     public void testGetOptionValueInHexException1() throws Exception {
         setupTestGetVariable();
         PowerMockito.doReturn("F1").when(ceciSpy, "getVariableHexFromPage", Mockito.anyInt(), Mockito.anyInt());
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output binary option value");
-        
-        ceciSpy.getOptionValueInHex(1, 0);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TerminalInterruptedException());
+        String expectedMessage = "Unable to parse command output binary option value";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getOptionValueInHex(1, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testGetOptionValueInHexException2() throws Exception {
         setupTestGetVariable();
         PowerMockito.doReturn("F1").when(ceciSpy, "getVariableHexFromPage", Mockito.anyInt(), Mockito.anyInt());
-        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException()); 
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Unable to parse command output binary option value");
-        
-        ceciSpy.getOptionValueInHex(1, 0);
+        Mockito.when(ceciTerminalMock.waitForKeyboard()).thenThrow(new TimeoutException());
+        String expectedMessage = "Unable to parse command output binary option value";
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ceciSpy.getOptionValueInHex(1, 0);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 }

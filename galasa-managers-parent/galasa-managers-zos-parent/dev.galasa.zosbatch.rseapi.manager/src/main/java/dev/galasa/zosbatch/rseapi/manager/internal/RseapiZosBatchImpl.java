@@ -78,11 +78,17 @@ public class RseapiZosBatchImpl implements IZosBatch {
 
     @Override
     public List<IZosBatchJob> getJobs(String jobname, String owner) throws ZosBatchException {
-        if (jobname != null && (jobname.isEmpty() || jobname.length() > 8)) {
-            throw new ZosBatchException("Jobname must be between 1 and 8 characters or null");
+        if (jobname != null) {
+        	jobname = jobname.trim();
+        	if (jobname.isEmpty() || jobname.length() > 8) {
+        		throw new ZosBatchException("Jobname must be between 1 and 8 characters or null");
+        	}
         }
-        if (owner != null && (owner.isEmpty() || owner.length() > 8)) {
-            throw new ZosBatchException("Owner must be between 1 and 8 characters or null");
+        if (owner != null) {
+        	owner = owner.trim();
+        	if (owner.isEmpty() || owner.length() > 8) {
+        		throw new ZosBatchException("Owner must be between 1 and 8 characters or null");
+        	}
         }
         return getBatchJobs(jobname, owner);
     }
@@ -157,7 +163,8 @@ public class RseapiZosBatchImpl implements IZosBatch {
             // Get the jobs
             JsonArray jsonArray;
             try {
-                jsonArray = response.getJsonArrayContent();
+            	JsonObject jsonObject = response.getJsonContent();
+            	jsonArray = jsonObject.get("items").getAsJsonArray();
             } catch (RseapiException e) {
                 throw new ZosBatchException(e);
             }
@@ -166,7 +173,7 @@ public class RseapiZosBatchImpl implements IZosBatch {
                 String jobnameString = responseBody.get("jobName").getAsString();
                 IZosBatchJobname jobname = this.zosBatchManager.newZosBatchJobname(jobnameString);
                 RseapiZosBatchJobImpl zosBatchJob = new RseapiZosBatchJobImpl(this.zosBatchManager, this.image, jobname, null, null);
-                zosBatchJob.setJobid(responseBody.get("jobID").getAsString());
+                zosBatchJob.setJobid(responseBody.get("jobId").getAsString());
                 zosBatchJob.setOwner(responseBody.get("owner").getAsString());
                 zosBatchJob.setType(responseBody.get("type").getAsString());
                 zosBatchJob.setStatusString(responseBody.get("status").getAsString());

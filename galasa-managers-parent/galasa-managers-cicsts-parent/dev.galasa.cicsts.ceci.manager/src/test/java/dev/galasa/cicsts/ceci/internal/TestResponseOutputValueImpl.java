@@ -3,16 +3,11 @@ package dev.galasa.cicsts.ceci.internal;
 import java.util.Arrays;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import dev.galasa.cicsts.CeciException;
 
 public class TestResponseOutputValueImpl {
-    
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testGetTextValue() {
@@ -37,11 +32,13 @@ public class TestResponseOutputValueImpl {
         ResponseOutputValueImpl responseOutputValue = new ResponseOutputValueImpl(99);
         Assert.assertEquals("Unxpected result", 99, responseOutputValue.getIntValue());
         
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Value is " + String.class.getName() + " type");
+        String expectedMessage = "Value is " + String.class.getName() + " type";
         
-        responseOutputValue = new ResponseOutputValueImpl("TEXT");
-        responseOutputValue.getIntValue();
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ResponseOutputValueImpl responseOutputValue1 = new ResponseOutputValueImpl("TEXT");
+        	responseOutputValue1.getIntValue();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test
@@ -49,11 +46,13 @@ public class TestResponseOutputValueImpl {
         ResponseOutputValueImpl responseOutputValue = new ResponseOutputValueImpl(99L);
         Assert.assertEquals("Unxpected result", 99L, responseOutputValue.getLongValue());
         
-        exceptionRule.expect(CeciException.class);
-        exceptionRule.expectMessage("Value is " + String.class.getName() + " type");
+        String expectedMessage = "Value is " + String.class.getName() + " type";
         
-        responseOutputValue = new ResponseOutputValueImpl("TEXT");
-        responseOutputValue.getLongValue();
+        CeciException expectedException = Assert.assertThrows("expected exception should be thrown", CeciException.class, ()->{
+        	ResponseOutputValueImpl responseOutputValue1 = new ResponseOutputValueImpl("TEXT");
+        	responseOutputValue1.getLongValue();
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
 
     @Test

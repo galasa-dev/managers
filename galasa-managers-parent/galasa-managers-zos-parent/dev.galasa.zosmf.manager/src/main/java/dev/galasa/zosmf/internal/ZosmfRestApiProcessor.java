@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosmf.IZosmf;
+import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -69,6 +70,7 @@ public class ZosmfRestApiProcessor implements IZosmfRestApiProcessor {
                         zosmfServer.setHeader(entry.getKey(), entry.getValue());
                     }
                 }
+                zosmfServer.setHeader(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
                 switch (requestType) {
                 case GET:
                     response = zosmfServer.get(path, validStatusCodes, convert);

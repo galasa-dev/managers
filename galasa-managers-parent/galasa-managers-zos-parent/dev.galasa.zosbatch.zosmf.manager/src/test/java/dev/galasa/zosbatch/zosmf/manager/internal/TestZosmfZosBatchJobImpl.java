@@ -495,6 +495,7 @@ public class TestZosmfZosBatchJobImpl {
     
         Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
         
         String expectedMessage = "Error Retrieve job output, category:0, rc:0, reason:0, message:message\n" + 
         		"stack:\n" + 
@@ -686,6 +687,11 @@ public class TestZosmfZosBatchJobImpl {
         PowerMockito.doNothing().when(zosBatchJobSpy).addOutputFileContent(Mockito.any(), Mockito.any());
     	zosBatchJobSpy.getOutput();
     	
+    	PowerMockito.doReturn(JobStatus.ACTIVE).when(zosBatchJobSpy).getStatus();
+    	Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        zosBatchJobSpy.getOutput();
+
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
     	Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
     	zosBatchJobSpy.getOutput();
     	

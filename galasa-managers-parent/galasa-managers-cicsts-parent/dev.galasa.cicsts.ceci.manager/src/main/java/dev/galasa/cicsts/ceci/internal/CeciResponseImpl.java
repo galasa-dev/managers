@@ -11,14 +11,14 @@ import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICeciResponseOutputValue;
 
-public class CECIResponseImpl implements ICeciResponse {
+public class CeciResponseImpl implements ICeciResponse {
     
     private String response;
     private int eibresp;
     private int eibresp2;
     private Map<String, ICeciResponseOutputValue> responseOutput;
 
-    public CECIResponseImpl(String response, int eibresp, int eibresp2) {
+    public CeciResponseImpl(String response, int eibresp, int eibresp2) {
         this.response = response;
         this.eibresp = eibresp;
         this.eibresp2 = eibresp2;

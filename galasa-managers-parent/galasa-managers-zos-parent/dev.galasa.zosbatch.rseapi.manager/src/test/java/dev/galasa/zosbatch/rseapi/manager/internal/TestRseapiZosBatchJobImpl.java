@@ -750,6 +750,7 @@ public class TestRseapiZosBatchJobImpl {
     public void testGetOutputFileContent() throws ZosBatchException, RseapiException {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        PowerMockito.doReturn(JobStatus.ACTIVE).when(zosBatchJobSpy).getStatus();
         Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
         Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
 
@@ -758,9 +759,21 @@ public class TestRseapiZosBatchJobImpl {
         zosBatchJobSpy.getOutputFileContent(FIXED_PATH);
 
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        String expectedMessage = "Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND";
+        Assert.assertNull("getOutputFileContent() should return null", zosBatchJobSpy.getOutputFileContent(FIXED_PATH));
+
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("FORBIDDEN");
+        String expectedMessage = "Error Retrieve job output, HTTP Status Code 403 : FORBIDDEN";
     	ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+    		zosBatchJobSpy.getOutputFileContent(FIXED_PATH);
+    	});
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+        PowerMockito.doReturn(JobStatus.UNKNOWN).when(zosBatchJobSpy).getStatus();
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
+        expectedMessage = "Error Retrieve job output, HTTP Status Code 404 : NOT_FOUND";
+    	expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
     		zosBatchJobSpy.getOutputFileContent(FIXED_PATH);
     	});
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
