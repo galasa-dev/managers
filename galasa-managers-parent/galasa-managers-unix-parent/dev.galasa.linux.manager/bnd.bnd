@@ -1,0 +1,13 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Linux Manager
+Export-Package: dev.galasa.linux, dev.galasa.linux.spi
+Import-Package: dev.galasa,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.creds,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.ipnetwork,\
+    dev.galasa.ipnetwork.spi,\
+    dev.galasa.linux.spi,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.logging
