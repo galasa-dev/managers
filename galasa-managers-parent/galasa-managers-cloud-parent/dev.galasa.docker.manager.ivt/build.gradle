@@ -11,13 +11,5 @@ dependencies {
     implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
-    // implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
-    // implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
-    // implementation 'org.apache.httpcomponents:httpclient-osgi:4.5.8'
-    // implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.assertj:assertj-core:3.11.1'
-    // implementation 'org.apache.commons:commons-compress:1.19'
-    // testImplementation 'junit:junit:4.13'
-    // testImplementation 'org.mockito:mockito-core:2.10.0'
-    // testImplementation 'org.assertj:assertj-core:3.11.1'
 }
