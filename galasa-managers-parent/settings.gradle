@@ -51,3 +51,9 @@ include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager.ivt'
 // galasa-managers-unix-parent
 include 'galasa-managers-unix-parent:dev.galasa.linux.manager'
 include 'galasa-managers-unix-parent:dev.galasa.linux.manager.ivt'
+// galasa-managers-cloud-parent
+include 'galasa-managers-cloud-parent:dev.galasa.openstack.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.docker.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.docker.manager.ivt'
+include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager.ivt'
