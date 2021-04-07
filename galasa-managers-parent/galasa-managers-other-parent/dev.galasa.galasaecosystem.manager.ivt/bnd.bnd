@@ -1,0 +1,10 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Ecosystem Manager IVTs
+Export-Package: dev.galasa.galasaecosystem.manager.ivt
+Import-Package: dev.galasa,\
+    dev.galasa.core.manager,\
+    dev.galasa.galasaecosystem,\
+    dev.galasa.kubernetes,\
+    org.apache.commons.logging,\
+    org.assertj.core.api
+
