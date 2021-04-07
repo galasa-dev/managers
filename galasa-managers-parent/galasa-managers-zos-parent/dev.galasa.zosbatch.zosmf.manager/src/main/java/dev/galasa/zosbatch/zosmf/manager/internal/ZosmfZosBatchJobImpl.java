@@ -422,6 +422,8 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
                 String id = jsonNull(responseBody, PROP_ID);
                 addOutputFileContent(responseBody, this.jobFilesPath + "/" + id + "/records");
             }
+        } else if (response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
+        	return;
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString("Retrieve job output", (JsonObject) responseBodyObject); 

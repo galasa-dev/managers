@@ -1,0 +1,18 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa CICS/TS Resource Manager
+Export-Package: dev.galasa.cicsts.resource.spi
+Import-Package: dev.galasa,\
+    dev.galasa.cicsts,\
+    dev.galasa.cicsts.spi,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.zos,\
+    dev.galasa.zosbatch,\
+    dev.galasa.zosbatch.spi,\
+    dev.galasa.zosfile,\
+    dev.galasa.zosfile.spi,\
+    dev.galasa.zosliberty,\
+    dev.galasa.zosliberty.spi,\
+    org.apache.commons.lang3,\
+    org.apache.commons.logging,\
+    javax.validation.constraints;resolution:=optional

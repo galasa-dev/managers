@@ -5,6 +5,8 @@
  */
 package dev.galasa.zosfile;
 
+import java.nio.file.attribute.PosixFilePermissions;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,6 +15,8 @@ import dev.galasa.zosfile.IZosDataset.DatasetDataType;
 import dev.galasa.zosfile.IZosDataset.DatasetOrganization;
 import dev.galasa.zosfile.IZosDataset.RecordFormat;
 import dev.galasa.zosfile.IZosDataset.SpaceUnit;
+import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
+import dev.galasa.zosfile.IZosUNIXFile.UNIXFileType;
 import dev.galasa.zosfile.IZosVSAMDataset.BWOOption;
 import dev.galasa.zosfile.IZosVSAMDataset.DatasetOrganisation;
 import dev.galasa.zosfile.IZosVSAMDataset.EraseOption;
@@ -175,9 +179,67 @@ public class TestZosFileEnumsAndExceptions {
     }
     
     @Test
+    public void testUNIXFileType() {
+        Assert.assertEquals("Problem with UNIXFileType", "file", UNIXFileType.FILE.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "character", UNIXFileType.CHARACTER.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "directory", UNIXFileType.DIRECTORY.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "extlink", UNIXFileType.EXTLINK.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "symblink", UNIXFileType.SYMBLINK.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "FIFO", UNIXFileType.FIFO.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "socket", UNIXFileType.SOCKET.toString());
+        Assert.assertEquals("Problem with UNIXFileType", "UNKNOWN", UNIXFileType.UNKNOWN.toString());
+    }
+    
+    @Test
+    public void testUNIXFileDataType() {
+        Assert.assertEquals("Problem with UNIXFileDataType", "text", UNIXFileDataType.TEXT.toString());
+        Assert.assertEquals("Problem with UNIXFileDataType", "binary", UNIXFileDataType.BINARY.toString());
+    }
+    
+    @Test
+    public void testPosixFilePermissionsToSymbolicNotation() {
+    	String permissions = "rwxrwxrwx";
+    	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+    	permissions = "rwx------";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "---rwx---";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "------rwx";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "r--r--r--";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "-w--w--w-";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "--x--x--x";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+	permissions = "---------";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToSymbolicNotation", permissions, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(PosixFilePermissions.fromString(permissions)));
+    }
+    
+    @Test
+    public void testPosixFilePermissionsToOctal() {
+    	String permissions = "rwxrwxrwx";
+    	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "777", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+    	permissions = "rwx------";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "700", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "---rwx---";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "070", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "------rwx";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "007", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "r--r--r--";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "444", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "-w--w--w-";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "222", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "--x--x--x";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "111", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+	permissions = "---------";
+	Assert.assertEquals("Problem with IZosUNIXFile.posixFilePermissionsToOctal", "000", IZosUNIXFile.posixFilePermissionsToOctal(PosixFilePermissions.fromString(permissions)));
+    }
+    
+    @Test
     public void testZosDatasetException1() throws ZosDatasetException {
         Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
-        	throw new ZosDatasetException();
+            throw new ZosDatasetException();
         });
     }
     

@@ -358,7 +358,7 @@ public class TestZosmfZosDatasetImpl {
         zosDatasetSpy.storeText(CONTENT);
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStore(String memberName, String content) method instead";
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStoreText(String memberName, String content) method instead";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetSpy.storeText(CONTENT);
         });
@@ -375,7 +375,7 @@ public class TestZosmfZosDatasetImpl {
         PowerMockito.doReturn(CONTENT.getBytes()).when(zosDatasetSpy).inputStreamToByteArray(Mockito.any());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStore(String memberName, String content) method instead";
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberStoreBinary(String memberName, String content) method instead";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetSpy.storeBinary(CONTENT.getBytes());
         });
@@ -397,7 +397,7 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("retrieve() should return the supplied value", CONTENT, zosDatasetSpy.retrieveAsText());
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS(); 
-        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use retrieve(String memberName) method instead";
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberRetrieveAsText(String memberName) method instead";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetSpy.retrieveAsText();
         });
@@ -418,7 +418,7 @@ public class TestZosmfZosDatasetImpl {
         Assert.assertEquals("retrieveAsBinary() should return the supplied value", CONTENT, new String(zosDatasetSpy.retrieveAsBinary()));
         
         PowerMockito.doReturn(true).when(zosDatasetSpy).isPDS();
-        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use retrieve(String memberName) method instead";
+        String expectedMessage = "Data set \"" + DATASET_NAME + "\" is a partitioned data set. Use memberRetrieveAsBinary(String memberName) method instead";
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetSpy.retrieveAsBinary();
         });

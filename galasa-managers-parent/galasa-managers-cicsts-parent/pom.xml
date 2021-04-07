@@ -20,7 +20,7 @@
 		<module>dev.galasa.cicsts.cemt.manager</module>
 		<module>dev.galasa.cicsts.cemt.manager.ivt</module>
 		<module>dev.galasa.cicsts.ceda.manager.ivt</module>
-		
+        <module>dev.galasa.cicsts.resource.manager</module>
 	</modules>
 
 </project>

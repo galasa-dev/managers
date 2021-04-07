@@ -10,9 +10,11 @@ import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -35,7 +37,9 @@ import com.google.gson.JsonPrimitive;
 
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.internal.ZosManagerImpl;
+import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
+import dev.galasa.zosfile.IZosUNIXFile.UNIXFileType;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
@@ -51,6 +55,15 @@ public class TestZosmfZosUNIXFileImpl {
     private ZosmfZosUNIXFileImpl zosUNIXFile;
     
     private ZosmfZosUNIXFileImpl zosUNIXFileSpy;
+    
+    @Mock
+    private IZosUNIXFile zosUnixFileMockDirectory;
+    
+    @Mock
+    private IZosUNIXFile zosUnixFileMockFile;
+    
+    @Mock
+    private IZosUNIXFile zosUnixFileMockUnknown;
 
     @Mock
     private IZosImage zosImageMock;
@@ -77,9 +90,7 @@ public class TestZosmfZosUNIXFileImpl {
 
     private static final String UNIX_FILE = "file";
 
-    private static final String UNIX_PATH = UNIX_DIRECTORY + "/" + UNIX_FILE;    
-    
-    private static final String TYPE_FILE = "file";
+    private static final String UNIX_PATH = UNIX_DIRECTORY + "/" + UNIX_FILE;
     
     private static final String TYPE_DIRECTORY = "directory";
     
@@ -100,9 +111,15 @@ public class TestZosmfZosUNIXFileImpl {
     private static final int MAX_ROWS = 1000;
 
 	private static final String RAS_PATH = "RAS_PATH";
+	
+	private static final Set<PosixFilePermission> ACCESS_PERMISSIONS = PosixFilePermissions.fromString("rwxrwxrwx");
     
     @Before
     public void setup() throws Exception {
+		Mockito.when(zosUnixFileMockDirectory.getFileType()).thenReturn(UNIXFileType.DIRECTORY);
+		Mockito.when(zosUnixFileMockFile.getFileType()).thenReturn(UNIXFileType.FILE);
+		Mockito.when(zosUnixFileMockUnknown.getFileType()).thenReturn(UNIXFileType.UNKNOWN);
+    	
         Mockito.when(zosImageMock.getImageID()).thenReturn(IMAGE);
         
         Mockito.when(zosManagerMock.getZosFilePropertyFileRestrictToImage(Mockito.any())).thenReturn(true);
@@ -161,7 +178,7 @@ public class TestZosmfZosUNIXFileImpl {
     public void testCreate() throws ZosUNIXFileException, ZosmfException {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists();
         PowerMockito.doReturn(true).doReturn(false).doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
-        PowerMockito.doReturn(true).when(zosUNIXFileSpy).createPath(Mockito.any(), Mockito.any());
+        PowerMockito.doReturn(true).when(zosUNIXFileSpy).createPath(Mockito.any(), Mockito.any(), Mockito.any());
        
         zosUNIXFileSpy.create();
         Assert.assertFalse("created() should return false", zosUNIXFileSpy.created());
@@ -331,8 +348,8 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
         zosUNIXFileSpy.isDirectory();
 
-        Map<String, String> dirList = new HashMap<>();
-        dirList.put(UNIX_PATH, MODE);
+        SortedMap<String, IZosUNIXFile> dirList = new TreeMap<>();
+        dirList.put(UNIX_PATH, zosUnixFileMockFile);
         PowerMockito.doReturn(dirList).when(zosUNIXFileSpy).listDirectory(Mockito.any(), Mockito.anyBoolean());
         Assert.assertEquals("directoryList() should return expected content", dirList, zosUNIXFileSpy.directoryList());
 
@@ -343,8 +360,9 @@ public class TestZosmfZosUNIXFileImpl {
         Assert.assertEquals("getFileName() should return the expected value", UNIX_FILE, zosUNIXFileSpy.getFileName());
 
         Assert.assertEquals("getDirectoryPath() should return the expected value", UNIX_DIRECTORY, zosUNIXFileSpy.getDirectoryPath());
-        
-        PowerMockito.doReturn(MODE).when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
+
+        PowerMockito.doReturn(new JsonObject()).when(zosUNIXFileSpy).getAttributes(Mockito.any());
+        PowerMockito.doReturn(MODE).when(zosUNIXFileSpy).attributesToString(Mockito.any());
         Assert.assertEquals("getAttributesAsString() should return the expected value", MODE, zosUNIXFileSpy.getAttributesAsString());
 
         Assert.assertEquals("quoted() should return the expected value", "\"" + UNIX_PATH + "\"", zosUNIXFileSpy.quoted(UNIX_PATH));
@@ -365,6 +383,46 @@ public class TestZosmfZosUNIXFileImpl {
     }
     
     @Test
+    public void testSetAccessPermissions() throws ZosUNIXFileException, ZosmfException {
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        
+        zosUNIXFileSpy.setAccessPermissions(ACCESS_PERMISSIONS, false);
+        
+        zosUNIXFileSpy.setAccessPermissions(ACCESS_PERMISSIONS, true);
+      
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
+        String expectedMessage = EXCEPTION;
+        ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.setAccessPermissions(ACCESS_PERMISSIONS, true);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
+        
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
+        expectedMessage = "Unable to change file access permissions of UNIX path \"" + UNIX_PATH + "\" on image " + IMAGE;
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.setAccessPermissions(ACCESS_PERMISSIONS, true);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage()); 
+    }
+            
+    @Test
+    public void testSetAccessPermissionsException() throws ZosUNIXFileException, ZosmfException {
+        Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
+        Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        JsonObject responseBody = new JsonObject();
+		Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(responseBody);
+		PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any(), Mockito.any());
+        String expectedMessage = ERROR;
+        ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.setAccessPermissions(ACCESS_PERMISSIONS, true);
+        });
+        Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
+    }
+    
+    @Test
     public void testGetAttributesAsString() throws ZosUNIXFileException, ZosmfException {
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
@@ -373,31 +431,35 @@ public class TestZosmfZosUNIXFileImpl {
         JsonObject items = new JsonObject();
         items.addProperty("name", UNIX_FILE);
         items.addProperty("type", "type");    
-        items.addProperty("mode", "mode");    
-        items.addProperty("size", "size");    
+        items.addProperty("mode", "-rwxrwxrwx");    
+        items.addProperty("size", 0);    
         items.addProperty("uid", "uid");     
         items.addProperty("user", "user");    
         items.addProperty("gid", "gid");     
         items.addProperty("group", "group");   
-        items.addProperty("modified", "modified");
+        items.addProperty("mtime", "modified");
         items.addProperty("target", "target");  
         jsonArray.add(items);
         jsonObject.add("items", jsonArray);
 
         Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        PowerMockito.doReturn("file").when(zosUNIXFileSpy).determineType(Mockito.any());
+        PowerMockito.doReturn(UNIXFileType.FILE).when(zosUNIXFileSpy).determineType(Mockito.any());
         Answer<?> emptyStringWhenNullValue = new Answer<String>() {
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
+            	if (invocation.getArgument(1).equals("mode") || 
+            		invocation.getArgument(1).equals("size")) {
+            		return (String) invocation.callRealMethod();
+                }
                 return invocation.getArgument(1);
             }
         };
         PowerMockito.doAnswer(emptyStringWhenNullValue).when(zosUNIXFileSpy).emptyStringWhenNull(Mockito.any(), Mockito.any());
-        String returnedValue = "Name=name,Type=file,Mode=mode,Size=size,UID=uid,User=user,GID=gid,Group=group,Modified=mtime,Target=target";
-        Assert.assertEquals("getAttributesAsString() should return the expected value", returnedValue, zosUNIXFileSpy.getAttributesAsString(UNIX_PATH));
+        String returnedValue = "Name=name,Type=file,Mode=-rwxrwxrwx,Size=0,UID=uid,User=user,GID=gid,Group=group,Modified=mtime,Target=target";
+        Assert.assertEquals("getAttributesAsString() should return the expected value", returnedValue, zosUNIXFileSpy.attributesToString(zosUNIXFileSpy.getAttributes(UNIX_PATH)));
         
-        Assert.assertEquals("getAttributesAsString() should return the expected value", returnedValue, zosUNIXFileSpy.getAttributesAsString(UNIX_DIRECTORY + "/"));
+        Assert.assertEquals("getAttributesAsString() should return the expected value", returnedValue, zosUNIXFileSpy.attributesToString(zosUNIXFileSpy.getAttributes(UNIX_DIRECTORY + "/")));
     }
     
     @Test
@@ -405,7 +467,7 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         String expectedMessage = "UNIX path \"" + UNIX_PATH + "\" does not exist on image " + IMAGE;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        	zosUNIXFileSpy.getAttributes(UNIX_PATH);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -416,7 +478,7 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
         String expectedMessage = EXCEPTION;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        	zosUNIXFileSpy.getAttributes(UNIX_PATH);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
@@ -429,7 +491,7 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         String expectedMessage = "Unable to list UNIX path \"" + UNIX_PATH + "\" on image " + IMAGE;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        	zosUNIXFileSpy.getAttributes(UNIX_PATH);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -444,21 +506,21 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any(), Mockito.any());
         String expectedMessage = ERROR;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.getAttributesAsString(UNIX_PATH);
+        	zosUNIXFileSpy.getAttributes(UNIX_PATH);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
     @Test
     public void testDetermineType() {
-        Assert.assertEquals("determineType() should return the expected value", "file", zosUNIXFileSpy.determineType("-"));
-        Assert.assertEquals("determineType() should return the expected value", "character", zosUNIXFileSpy.determineType("c"));
-        Assert.assertEquals("determineType() should return the expected value", "directory", zosUNIXFileSpy.determineType("d"));
-        Assert.assertEquals("determineType() should return the expected value", "extlink", zosUNIXFileSpy.determineType("e"));
-        Assert.assertEquals("determineType() should return the expected value", "symblink", zosUNIXFileSpy.determineType("l"));
-        Assert.assertEquals("determineType() should return the expected value", "FIFO", zosUNIXFileSpy.determineType("p"));
-        Assert.assertEquals("determineType() should return the expected value", "socket", zosUNIXFileSpy.determineType("s"));
-        Assert.assertEquals("determineType() should return the expected value", "UNKNOWN", zosUNIXFileSpy.determineType("?"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.FILE, zosUNIXFileSpy.determineType("-"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.CHARACTER, zosUNIXFileSpy.determineType("c"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.DIRECTORY, zosUNIXFileSpy.determineType("d"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.EXTLINK, zosUNIXFileSpy.determineType("e"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.SYMBLINK, zosUNIXFileSpy.determineType("l"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.FIFO, zosUNIXFileSpy.determineType("p"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.SOCKET, zosUNIXFileSpy.determineType("s"));
+        Assert.assertEquals("determineType() should return the expected value", UNIXFileType.UNKNOWN, zosUNIXFileSpy.determineType("?"));
     }
     
     @Test
@@ -466,12 +528,13 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);
         
-        Assert.assertTrue("createPath() should return true", zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE));
+        PowerMockito.doNothing().when(zosUNIXFileSpy).setAccessPermissions(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
+        Assert.assertTrue("createPath() should return true", zosUNIXFileSpy.createPath(UNIX_PATH, UNIXFileType.FILE, ACCESS_PERMISSIONS));
       
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.POST_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenThrow(new ZosmfException(EXCEPTION));
         String expectedMessage = EXCEPTION;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        	zosUNIXFileSpy.createPath(UNIX_PATH, UNIXFileType.FILE, ACCESS_PERMISSIONS);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getCause().getMessage());
     }
@@ -486,7 +549,7 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(ERROR).when(zosUNIXFileSpy).buildErrorString(Mockito.any(), Mockito.any(), Mockito.any());
         String expectedMessage = ERROR;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        	zosUNIXFileSpy.createPath(UNIX_PATH, UNIXFileType.FILE, ACCESS_PERMISSIONS);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -499,7 +562,7 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosmfResponseMock.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
         String expectedMessage = "Unable to create UNIX path \"" + UNIX_PATH + "\" on image " + IMAGE;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
-        	zosUNIXFileSpy.createPath(UNIX_PATH, TYPE_FILE);
+        	zosUNIXFileSpy.createPath(UNIX_PATH, UNIXFileType.FILE, ACCESS_PERMISSIONS);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -705,10 +768,10 @@ public class TestZosmfZosUNIXFileImpl {
         zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
 
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
-        SortedMap<String, String> paths = new TreeMap<>();
-        paths.put("directory", TYPE_DIRECTORY);
-        paths.put("file", TYPE_FILE);
-        paths.put("unknown", "unknown");
+        SortedMap<String, IZosUNIXFile> paths = new TreeMap<>();
+        paths.put(UNIX_PATH, zosUnixFileMockDirectory);
+        paths.put(UNIX_PATH, zosUnixFileMockFile);
+        paths.put(UNIX_PATH, zosUnixFileMockUnknown);
         PowerMockito.doReturn(paths).when(zosUNIXFileSpy).listDirectory(Mockito.any(), Mockito.anyBoolean());
         zosUNIXFileSpy.saveToResultsArchive(UNIX_PATH);
 
@@ -725,7 +788,7 @@ public class TestZosmfZosUNIXFileImpl {
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         Assert.assertFalse("listDirectory() should return false", zosUNIXFileSpy.isDirectory(UNIX_PATH));
 
-        PowerMockito.doReturn("Type=file").when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
+        PowerMockito.doReturn(new JsonObject()).when(zosUNIXFileSpy).getAttributes(Mockito.any());
         
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         Assert.assertFalse("listDirectory() should return false", zosUNIXFileSpy.isDirectory(UNIX_DIRECTORY));
@@ -811,36 +874,57 @@ public class TestZosmfZosUNIXFileImpl {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("returnedRows", 0);
         jsonObject.addProperty("totalRows", 0);    
-        Map<String, String> paths = new TreeMap<>();    
-        Map<String, String> result = new TreeMap<>();
+        Map<String, IZosUNIXFile> paths = new TreeMap<>();    
+        Map<String, IZosUNIXFile> result = new TreeMap<>();
         PowerMockito.doReturn(paths).when(zosUNIXFileSpy).listDirectory(Mockito.any(), Mockito.anyBoolean());
         
         Assert.assertEquals("getPaths() should return expected content", result, zosUNIXFileSpy.getPaths("/root", jsonObject, false));
         
         JsonArray jsonArray = new JsonArray();
         JsonObject items = new JsonObject();
-        items.addProperty("name", ".");   
-        items.addProperty("mode", "drwxrwxrwx");  
+        items.addProperty("name", ".");
+        items.addProperty("mode", "drwxrwxrwx");
+        items.addProperty("size", 0);
+        items.addProperty("mtime", "2021-03-11T09:31:24");
+        items.addProperty("user", "USER");
+        items.addProperty("group", "GROUP");
         jsonArray.add(items);
         items = new JsonObject();
         items.addProperty("name", "..");   
-        items.addProperty("mode", "drwxrwxrwx");  
+        items.addProperty("mode", "drwxrwxrwx");
+        items.addProperty("size", 0);
+        items.addProperty("mtime", "2021-03-11T09:31:24");
+        items.addProperty("user", "USER");
+        items.addProperty("group", "GROUP");
         jsonArray.add(items);
         items = new JsonObject();
         items.addProperty("name", "path1");   
-        items.addProperty("mode", "drwxrwxrwx");  
+        items.addProperty("mode", "drwxrwxrwx");
+        items.addProperty("size", 0);
+        items.addProperty("mtime", "2021-03-11T09:31:24");
+        items.addProperty("user", "USER");
+        items.addProperty("group", "GROUP");
         jsonArray.add(items);
         items = new JsonObject();
         items.addProperty("name", "file1");   
-        items.addProperty("mode", "-rwxrwxrwx");  
+        items.addProperty("mode", "-rwxrwxrwx");
+        items.addProperty("size", 0);
+        items.addProperty("mtime", "2021-03-11T09:31:24");
+        items.addProperty("user", "USER");
+        items.addProperty("group", "GROUP");
         jsonArray.add(items);
         jsonObject.add("items", jsonArray);
         jsonObject.addProperty("returnedRows", 4);
-        jsonObject.addProperty("totalRows", 4);   
-        result.put("/root/path1", TYPE_DIRECTORY);  
-        result.put("/root/file1", TYPE_FILE);
+        jsonObject.addProperty("totalRows", 4);
         
-        Assert.assertEquals("getPaths() should return expected content", result, zosUNIXFileSpy.getPaths("/root/", jsonObject, false));
+        Mockito.when(zosUnixFileMockDirectory.getUnixPath()).thenReturn("/root/path1");
+        Mockito.when(zosUnixFileMockFile.getUnixPath()).thenReturn("/root/file1");
+        result.put(zosUnixFileMockDirectory.getUnixPath(), zosUnixFileMockDirectory);
+        result.put(zosUnixFileMockFile.getUnixPath(), zosUnixFileMockFile);
+        
+        for (Map.Entry<String, IZosUNIXFile> entry : zosUNIXFileSpy.getPaths("/root/", jsonObject, false).entrySet()) {
+        	Assert.assertEquals("getPaths() should return expected content", result.get(entry.getKey()).getUnixPath(), entry.getValue().getUnixPath());
+        }
         
         jsonObject.addProperty("returnedRows", MAX_ROWS);
         jsonObject.addProperty("totalRows", 9999);
@@ -908,21 +992,21 @@ public class TestZosmfZosUNIXFileImpl {
     public void testSplitUnixPath() {
         Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_PATH);
         Whitebox.setInternalState(zosUNIXFileSpy, "directoryPath", (String) null);
-        Whitebox.setInternalState(zosUNIXFileSpy, "type", (String) null);
+        Whitebox.setInternalState(zosUNIXFileSpy, "fileType", (String) null);
         
         zosUNIXFileSpy.splitUnixPath();
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_FILE, Whitebox.getInternalState(zosUNIXFileSpy, "fileName"));
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
-        Assert.assertEquals("splitUnixPath() should set the expected value", TYPE_FILE, Whitebox.getInternalState(zosUNIXFileSpy, "type"));
+        Assert.assertEquals("splitUnixPath() should set the expected value", UNIXFileType.FILE, Whitebox.getInternalState(zosUNIXFileSpy, "fileType"));
 
         Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_DIRECTORY + "/");
         Whitebox.setInternalState(zosUNIXFileSpy, "directoryPath", (String) null);
-        Whitebox.setInternalState(zosUNIXFileSpy, "type", (String) null);
+        Whitebox.setInternalState(zosUNIXFileSpy, "fileType", (String) null);
         
         zosUNIXFileSpy.splitUnixPath();
         Assert.assertEquals("splitUnixPath() should set the expected value", (String) null, Whitebox.getInternalState(zosUNIXFileSpy, "fileName"));
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
-        Assert.assertEquals("splitUnixPath() should set the expected value", TYPE_DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "type"));
+        Assert.assertEquals("splitUnixPath() should set the expected value", UNIXFileType.DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "fileType"));
     }
     
     @Test
