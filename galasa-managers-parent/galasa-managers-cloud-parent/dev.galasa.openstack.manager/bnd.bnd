@@ -1,0 +1,23 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Openstack Manager
+Export-Package: dev.galasa.openstack.manager
+Import-Package: com.google.gson,\
+    com.google.gson.annotations,\
+    dev.galasa,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.creds,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.ipnetwork,\
+    dev.galasa.ipnetwork.spi,\
+    dev.galasa.linux,\
+    dev.galasa.linux.spi,\
+    dev.galasa.openstack.manager,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.logging,\
+    org.apache.http,\
+    org.apache.http.client.methods,\
+    org.apache.http.entity,\
+    org.apache.http.impl.client,\
+    org.apache.http.message,\
+    org.apache.http.util

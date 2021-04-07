@@ -1,0 +1,9 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa JMeter Manager IVT
+Export-Package: dev.galasa.jmeter.manager.ivt
+Import-Package: dev.galasa,\
+    dev.galasa.artifact,\
+    dev.galasa.core.manager,\
+    dev.galasa.jmeter,\
+    org.apache.commons.logging,\
+    org.assertj.core.api
