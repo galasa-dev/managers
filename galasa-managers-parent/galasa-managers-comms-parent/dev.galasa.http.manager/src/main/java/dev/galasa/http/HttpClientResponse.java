@@ -283,10 +283,8 @@ public class HttpClientResponse<T> {
                         throw jse;
                     }
                     if (jsonElement != null) {
-                        if (jsonElement != null) {
-                            JsonObject json = jsonElement.getAsJsonObject();
-                            response.setContent(json);
-                        }
+                        JsonObject json = jsonElement.getAsJsonObject();
+                        response.setContent(json);
                     }
                 } else {
                     EntityUtils.consume(httpResponse.getEntity());
