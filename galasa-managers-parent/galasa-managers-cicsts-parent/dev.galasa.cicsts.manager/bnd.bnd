@@ -12,6 +12,7 @@ Import-Package: dev.galasa,\
     dev.galasa.zos.spi,\
     dev.galasa.zos3270,\
     dev.galasa.zos3270.spi,\
+    dev.galasa.zosliberty,\
     javax.validation.constraints;resolution:=optional,\
     org.apache.commons.logging
 

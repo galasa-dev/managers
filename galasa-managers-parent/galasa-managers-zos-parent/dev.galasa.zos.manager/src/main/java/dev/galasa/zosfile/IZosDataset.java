@@ -555,7 +555,7 @@ public interface IZosDataset {
 
     /**
      * Retrieve the attributes of an existing data set to make the values available in the getter methods
-     * @throws @ZosDatasetException
+     * @throws ZosDatasetException
      */
     public void retrieveAttibutes() throws ZosDatasetException;
 

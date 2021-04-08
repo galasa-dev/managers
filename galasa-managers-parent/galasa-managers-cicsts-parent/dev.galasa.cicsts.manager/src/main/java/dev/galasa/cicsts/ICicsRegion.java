@@ -6,6 +6,7 @@
 package dev.galasa.cicsts;
 
 import dev.galasa.ProductVersion;
+import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
 
 public interface ICicsRegion {
@@ -46,7 +47,15 @@ public interface ICicsRegion {
     //TODO
     ICemt cemt() throws CicstsManagerException;    
     ICeda ceda() throws CicstsManagerException;    
-    ICeci ceci() throws CicstsManagerException;    
+    ICeci ceci() throws CicstsManagerException;
+    
+    /**
+     * Provides a CICS resource instance that can then be used to create a specific CICS resource 
+     * @return a {@link ICicsResource} instance associated with this CICS region
+     * @throws CicstsManagerException
+     */
+    public ICicsResource cicsResource() throws CicstsManagerException;
+    
     void startup() throws CicstsManagerException;
     void shutdown() throws CicstsManagerException;
     
