@@ -30,7 +30,7 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
 /**
- * Implementation of {@link ICECI}
+ * Implementation of {@link ICeci}
  */
 public class CeciImpl implements ICeci {
     
@@ -982,7 +982,7 @@ public class CeciImpl implements ICeci {
     /**
      * Is HEX on. Disruptive, returns the EIB screen  
      * @return
-     * @throws CECIException
+     * @throws CeciException
      */
     protected boolean isHexOn() throws CeciException {
         try {
@@ -995,7 +995,7 @@ public class CeciImpl implements ICeci {
     /**
      * Set HEX on. Disruptive, returns the EIB screen  
      * @return
-     * @throws CECIException
+     * @throws CeciException
      */
     protected ICicsTerminal hexOn() throws CeciException {
         try {
@@ -1011,7 +1011,7 @@ public class CeciImpl implements ICeci {
     /**
      * Set HEX off. Disruptive, returns the EIB screen  
      * @return
-     * @throws CECIException
+     * @throws CeciException
      */
     protected ICicsTerminal hexOff() throws CeciException {
         try {
