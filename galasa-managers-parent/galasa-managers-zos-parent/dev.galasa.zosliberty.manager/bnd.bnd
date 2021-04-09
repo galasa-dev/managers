@@ -1,21 +1,21 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa zOS Liberty Manager
-Export-Package: dev.galasa.zosliberty
-Import-Package: com.google.gson,\
-    dev.galasa,\
+Export-Package: dev.galasa.zosliberty,\
+    dev.galasa.zosliberty.spi
+Import-Package: dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.language,\
     dev.galasa.zos,\
     dev.galasa.zos.spi,\
     dev.galasa.zosfile,\
     dev.galasa.zosfile.spi,\
-    dev.galasa.zosmf,\
-    dev.galasa.zosmf.spi,\
-    dev.galasa.zosunixcommand,\
-    dev.galasa.zosunixcommand.spi,\
+    dev.galasa.zosliberty.spi,\
     javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.lang3,\
-    org.apache.commons.lang3.math,\
+    javax.xml.parsers,\
+    javax.xml.transform,\
+    javax.xml.transform.dom,\
+    javax.xml.transform.stream,\
     org.apache.commons.logging,\
-    org.osgi.framework
+    org.w3c.dom,\
+    org.xml.sax
 
