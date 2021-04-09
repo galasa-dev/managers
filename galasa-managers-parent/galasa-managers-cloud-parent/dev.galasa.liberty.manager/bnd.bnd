@@ -2,7 +2,4 @@
 Bundle-Name: Galasa Liberty Manager
 Export-Package: dev.galasa.liberty,\
     dev.galasa.liberty.spi
-Import-Package: dev.galasa,\
-    dev.galasa.framework.spi,
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.logging
+Import-Package: dev.galasa
