@@ -9,13 +9,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.logging.Log;
 
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Test;
+import dev.galasa.core.manager.CoreManager;
+import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.kubernetes.IKubernetesNamespace;
+import dev.galasa.kubernetes.KubernetesNamespace;
+import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IFirefoxOptions;
-import dev.galasa.selenium.IWebDriver;
+import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
+import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
-import dev.galasa.selenium.WebDriver;
 
 @Test
 public class SeleniumManagerIVT {
@@ -23,8 +29,14 @@ public class SeleniumManagerIVT {
     @Logger
     public Log logger;
 
-    @WebDriver()
-    public IWebDriver seleniumManager;
+    @SeleniumManager
+    public ISeleniumManager SeleniumManager;
+    
+    @SeleniumManager(browser = Browser.CHROME)
+    public ISeleniumManager ChromeSeleniumManager;
+    
+    @KubernetesNamespace()
+    public IKubernetesNamespace thing;
 
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";
@@ -33,7 +45,9 @@ public class SeleniumManagerIVT {
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+    	SeleniumManager.getEdgeOptions();
+        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
+        page.takeScreenShot();
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
@@ -46,7 +60,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void clickingFields() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        IWebPage page = ChromeSeleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
@@ -58,7 +72,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void navigateGalasaGithub() throws SeleniumManagerException {
-        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.sendKeysToElementById(SEARCHID, "galasa dev github")
@@ -71,9 +85,9 @@ public class SeleniumManagerIVT {
 
     @Test
     public void testOptionsCanBeUsed() throws SeleniumManagerException {
-        IFirefoxOptions options = seleniumManager.getFirefoxOptions();
+        IFirefoxOptions options = SeleniumManager.getFirefoxOptions();
         options.setHeadless(true);
-        IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
+        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE, options);
         page.maximize().takeScreenShot();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();
