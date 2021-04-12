@@ -1,6 +1,8 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa CICS/TS Manager
-Export-Package: dev.galasa.cicsts, dev.galasa.cicsts.spi
+Export-Package: dev.galasa.cicsts,\
+    dev.galasa.cicsts.spi,\
+    dev.galasa.cicsts.cicsresource
 Import-Package: dev.galasa,\
     dev.galasa.cicsts,\
     dev.galasa.cicsts.spi,\
