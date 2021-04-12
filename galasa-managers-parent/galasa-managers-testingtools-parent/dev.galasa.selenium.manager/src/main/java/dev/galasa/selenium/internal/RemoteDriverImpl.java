@@ -164,7 +164,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
     	logger.trace("Generating Pod Yaml");
     	IBundleResources resources = artifacts.getBundleResources(getClass());
     	try {
-			String yaml = resources.retrieveFileAsString("resources/selenium-node-pod.yaml");
+			String yaml = resources.retrieveFileAsString("resources/selenium-node-deployment.yaml");
 			yaml = yaml.replace("<IMAGE_NAME>", this.browser.getDockerImageName());
 			
 			String runName = seleniumManager.getFramework().getTestRunName();
@@ -173,9 +173,9 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
 			String nodeSelectors = "";
 			String[] selectors = SeleniumKubernetesNodeSelector.get();
 			if (selectors.length > 1) {
-				nodeSelectors += "  nodeSelector:\n";
+				nodeSelectors += "      nodeSelector:\n";
 				for(String selector : selectors) {
-					nodeSelectors += "    " + selector + "\n";
+					nodeSelectors += "        " + selector + "\n";
 				}
 			}
 			yaml = yaml.replace("<NODE_SELECTOR>", nodeSelectors);
