@@ -15,17 +15,16 @@ import dev.galasa.selenium.IChromeOptions;
 import dev.galasa.selenium.IEdgeOptions;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.IInternetExplorerOptions;
-import dev.galasa.selenium.IWebDriver;
+import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
-public class WebDriverImpl implements IWebDriver {
-    private List<WebPageImpl> webPages = new ArrayList<>();
+public class LocalDriverImpl extends DriverImpl implements ISeleniumManager{
     private Path screenshotRasDirectory;
     private Browser browser;
 
-    public WebDriverImpl(Browser browser, Path screenshotRasDirectory) throws SeleniumManagerException {
-        this.screenshotRasDirectory = screenshotRasDirectory;
+    public LocalDriverImpl(Browser browser, Path screenshotRasDirectory) throws SeleniumManagerException {
+        this.screenshotRasDirectory = screenshotRasDirectory.resolve(browser.getDriverName());
         this.browser = browser;
     }
 
@@ -48,13 +47,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -70,13 +63,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -92,13 +79,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -114,13 +95,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -136,13 +111,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -158,13 +127,7 @@ public class WebDriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
-
-        if (url != null && !url.trim().isEmpty())
-            webPage.get(url);
-
-        this.webPages.add(webPage);
-        return webPage;
+        return allocatePage(driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -188,8 +151,6 @@ public class WebDriverImpl implements IWebDriver {
     }
 
     public void discard() {
-        for (WebPageImpl page : webPages) {
-            page.managerQuit();
-        }
+       discardPages();
     }
 }

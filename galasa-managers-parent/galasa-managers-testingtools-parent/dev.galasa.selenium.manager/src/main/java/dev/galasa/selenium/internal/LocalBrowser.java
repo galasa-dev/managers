@@ -30,12 +30,13 @@ import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.internal.properties.SeleniumAvailableDrivers;
+import dev.galasa.selenium.internal.properties.SeleniumDefaultDriver;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoPreferences;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoProfile;
 import dev.galasa.selenium.internal.properties.SeleniumLocalDriverPath;
 
 public enum LocalBrowser {
-  GECKO, IE, CHROME, EDGE, OPERA, ANY;
+  GECKO, IE, CHROME, EDGE, OPERA;
 
   static final Log logger = LogFactory.getLog(LocalBrowser.class);
 
@@ -53,12 +54,7 @@ public enum LocalBrowser {
         case IE:
           return getIEDriver();
         case NOTSPECIFIED:
-          String[] availabledrivers = SeleniumAvailableDrivers.get();
-          if (availabledrivers.length < 1) {
-            throw new SeleniumManagerException("No available drivers");
-          }
-          Random rand = new Random();
-          return getWebDriver(Browser.valueOf(availabledrivers[rand.nextInt(availabledrivers.length)]));    
+          return getWebDriver(Browser.valueOf(SeleniumDefaultDriver.get()));    
         default:
           throw new SeleniumManagerException("Unknown/Unsupported driver instance: " + browser.getDriverName());
       }

@@ -9,7 +9,6 @@
 	</parent>
 
 	<artifactId>dev.galasa.selenium.manager.ivt</artifactId>
-	<version>0.15.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa Selenium Manager IVT</name>

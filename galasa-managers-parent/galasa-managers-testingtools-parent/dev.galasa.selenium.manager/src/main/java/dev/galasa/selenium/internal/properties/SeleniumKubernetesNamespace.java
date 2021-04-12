@@ -26,14 +26,14 @@ import dev.galasa.selenium.SeleniumManagerException;
  * <code>selenium.local.driver.CHROME.path=/usr/bin/chromedriver</code>
  * 
  */
-public class SeleniumLocalDriverPath extends CpsProperties {
+public class SeleniumKubernetesNamespace extends CpsProperties {
 
-    public static String get(String browser) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        String path = getStringNulled(SeleniumPropertiesSingleton.cps(), "local",  "path", "driver", browser);
-        if (path == null) {
-            throw new SeleniumManagerException("No path provided for driver selected. Please set selenium.local.driver."+browser+".path");
+    public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
+        String namespace = getStringNulled(SeleniumPropertiesSingleton.cps(),"kubernetes","namespace");
+        if (namespace == null) {
+            throw new SeleniumManagerException("No kubernetes namespace provided");
         }
-        return path;
+        return namespace;
     }
 
 }

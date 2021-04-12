@@ -11,11 +11,11 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.selenium.IWebPage;
-import dev.galasa.selenium.SeleniumManager;
-import dev.galasa.selenium.SeleniumManagerException;
-import dev.galasa.selenium.IDriver;
 import dev.galasa.selenium.IFirefoxOptions;
+import dev.galasa.selenium.IWebDriver;
+import dev.galasa.selenium.IWebPage;
+import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.WebDriver;
 
 @Test
 public class SeleniumManagerIVT {
@@ -23,8 +23,8 @@ public class SeleniumManagerIVT {
     @Logger
     public Log logger;
 
-    @SeleniumManager()
-    public IDriver seleniumManager;
+    @WebDriver()
+    public IWebDriver seleniumManager;
 
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";
@@ -50,7 +50,7 @@ public class SeleniumManagerIVT {
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
-            .clickElementByLinkText("Twitter")
+            .clickElementByLinkText("Twitter").takeScreenShot()
             .waitForElementByLinkText("duckduckgo.com");
         assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
         page.quit();
@@ -74,7 +74,7 @@ public class SeleniumManagerIVT {
         IFirefoxOptions options = seleniumManager.getFirefoxOptions();
         options.setHeadless(true);
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
-        page.maximize();
+        page.maximize().takeScreenShot();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();
     }
