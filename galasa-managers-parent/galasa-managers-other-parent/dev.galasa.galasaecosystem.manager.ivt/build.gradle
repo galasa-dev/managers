@@ -1,0 +1,15 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'Galasa Ecosystem Manager IVTs'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    implementation project(':galasa-managers-cloud-parent:dev.galasa.kubernetes.manager')
+    implementation project(':galasa-managers-other-parent:dev.galasa.galasaecosystem.manager')
+    implementation 'org.assertj:assertj-core:3.11.1'
+}
