@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
@@ -53,6 +55,8 @@ import dev.galasa.selenium.internal.properties.SeleniumKubernetesNodeSelector;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 
 public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
+	private static final Log logger = LogFactory.getLog(RemoteDriverImpl.class);
+	
     private List<WebPageImpl>   webPages = new ArrayList<>();
     private URL                 remoteDriverEndpoint;
     private Path                screenshotRasDirectory;
@@ -157,6 +161,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
     }
     
     private String generatePodYaml(IArtifactManager artifacts) throws SeleniumManagerException {
+    	logger.trace("Generating Pod Yaml");
     	IBundleResources resources = artifacts.getBundleResources(getClass());
     	try {
 			String yaml = resources.retrieveFileAsString("resources/selenium-node-pod.yaml");
@@ -174,6 +179,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
 				}
 			}
 			yaml = yaml.replace("<NODE_SELECTOR>", nodeSelectors);
+			logger.trace(yaml);
 			return yaml;
 		} catch (TestBundleResourceException | IOException | ConfigurationPropertyStoreException e) {
 			throw new SeleniumManagerException("Unable to generate pod yaml",e);

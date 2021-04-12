@@ -6,13 +6,11 @@
 package dev.galasa.selenium.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+// import static org.junit.Assert.assertThat;
 
 import org.apache.commons.logging.Log;
 
-import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Test;
-import dev.galasa.core.manager.CoreManager;
-import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesNamespace;

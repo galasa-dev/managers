@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DssDelete;
@@ -48,8 +51,10 @@ public class SeleniumEnvironment {
 			switch(SeleniumWebDriverType.get()) {
 		    case ("local"):
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
+		    	break;
 		    default:
 		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
+		    	break;
 			}
 		} catch (ConfigurationPropertyStoreException e) {
 			throw new SeleniumManagerException("Failed to fetch Driver type", e);
