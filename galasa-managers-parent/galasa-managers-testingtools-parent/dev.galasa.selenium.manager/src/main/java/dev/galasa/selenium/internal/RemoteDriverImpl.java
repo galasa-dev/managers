@@ -168,7 +168,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
 			yaml = yaml.replace("<IMAGE_NAME>", this.browser.getDockerImageName());
 			
 			String runName = seleniumManager.getFramework().getTestRunName();
-			yaml = yaml.replace("<RUNNAME>", runName);
+			yaml = yaml.replace("<RUNNAME>", runName.toLowerCase());
 			
 			String nodeSelectors = "";
 			String[] selectors = SeleniumKubernetesNodeSelector.get();
