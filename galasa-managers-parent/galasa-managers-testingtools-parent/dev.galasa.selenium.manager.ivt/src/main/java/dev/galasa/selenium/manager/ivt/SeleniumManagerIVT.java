@@ -30,12 +30,6 @@ public class SeleniumManagerIVT {
     @SeleniumManager
     public ISeleniumManager SeleniumManager;
     
-    @SeleniumManager(browser = Browser.FIREFOX)
-    public ISeleniumManager ChromeSeleniumManager;
-    
-//    @KubernetesNamespace()
-//    public IKubernetesNamespace thing;
-
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";
     public static final String VALUE = "value";
@@ -58,7 +52,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void clickingFields() throws SeleniumManagerException {
-        IWebPage page = ChromeSeleniumManager.allocateWebPage(WEBSITE);
+        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
