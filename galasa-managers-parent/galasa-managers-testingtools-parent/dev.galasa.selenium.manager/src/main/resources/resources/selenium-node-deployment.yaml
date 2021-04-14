@@ -15,8 +15,6 @@ spec:
       labels:
         app: k8-selenium-node-<RUNNAME>
     spec:
-      metadata:
-        name: k8-selenium-node-<RUNNAME>
 <NODE_SELECTOR>
       containers:
         - name: web
