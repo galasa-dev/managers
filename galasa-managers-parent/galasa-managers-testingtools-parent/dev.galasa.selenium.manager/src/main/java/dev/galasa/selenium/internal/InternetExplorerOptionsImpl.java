@@ -1,8 +1,14 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.ie.InternetExplorerOptions;
+import org.openqa.selenium.opera.OperaOptions;
 
 import dev.galasa.selenium.IInternetExplorerOptions;
 

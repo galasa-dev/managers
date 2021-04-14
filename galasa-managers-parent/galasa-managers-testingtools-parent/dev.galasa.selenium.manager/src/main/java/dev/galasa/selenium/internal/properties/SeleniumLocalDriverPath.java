@@ -16,7 +16,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.name selenium.local.driver.BROWSER.path
  * 
- * @galasa.description Provides a path to the webdriver on the system being tested
+ * @galasa.description Provides a path to a local webdriver on the system being tested
  * 
  * @galasa.required Yes
  * 

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.selenium.internal.properties;
 
@@ -10,20 +10,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
 /**
- * Selenium Driver Type CPS Property
+ * Selenium Available Drivers CPS Property
  * 
  * @galasa.cps.property
  * 
  * @galasa.name selenium.driver.type
  * 
- * @galasa.description Describes the selenium runtime that will be used.
+ * @galasa.description Describes the selenium driver types that can be selected.
  * 
  * @galasa.required No
  * 
- * @galasa.valid_values A valid String representation of a type. Available choices: local, docker, kubernetes, grid
+ * @galasa.valid_values A valid String the describes any of the supported drivers: FIREFOX,CHROME,OPERA,EDGE
  * 
  * @galasa.examples 
- * <code>selenium.driver.type=docker</code>
+ * <code>selenium.available.drivers=CHROME,FIREFOX,OPERA,EDGE</code>
  * 
  */
 public class SeleniumAvailableDrivers extends CpsProperties {

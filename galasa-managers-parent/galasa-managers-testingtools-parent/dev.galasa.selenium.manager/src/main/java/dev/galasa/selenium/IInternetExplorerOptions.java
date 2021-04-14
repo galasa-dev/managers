@@ -1,9 +1,20 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium;
 
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.ie.InternetExplorerOptions;
 
+/**
+ * A Options pass through interface for the Selenium Options object
+ * 
+ * @author jamesdavies
+ *
+ */
 public interface IInternetExplorerOptions {
 
     public InternetExplorerOptions getOptions();

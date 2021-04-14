@@ -10,20 +10,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.selenium.SeleniumManagerException;
 
 /**
- * Selenium Driver Path CPS Property
+ * Selenium Kubernetes Namespace
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.local.driver.BROWSER.path
+ * @galasa.name selenium.kubernetes.namespace
  * 
- * @galasa.description Provides a path to the webdriver on the system being tested
+ * @galasa.description Provides the name of the namespace for the nodes to be provisioned on
  * 
  * @galasa.required Yes
  * 
- * @galasa.valid_values A valid String representation of a path
+ * @galasa.valid_values A valid String representation an available namespace on your k8's cluster
  * 
  * @galasa.examples 
- * <code>selenium.local.driver.CHROME.path=/usr/bin/chromedriver</code>
+ * <code>selenium.kubernetes.namespace=galasa</code>
  * 
  */
 public class SeleniumKubernetesNamespace extends CpsProperties {

@@ -30,11 +30,11 @@ public class SeleniumManagerIVT {
     @SeleniumManager
     public ISeleniumManager SeleniumManager;
     
-    @SeleniumManager(browser = Browser.CHROME)
+    @SeleniumManager(browser = Browser.FIREFOX)
     public ISeleniumManager ChromeSeleniumManager;
     
-    @KubernetesNamespace()
-    public IKubernetesNamespace thing;
+//    @KubernetesNamespace()
+//    public IKubernetesNamespace thing;
 
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";

@@ -1,10 +1,18 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium;
-
-import java.io.File;
-import java.util.List;
 
 import org.openqa.selenium.edge.EdgeOptions;
 
+/**
+ * A Options pass through interface for the Selenium Options object
+ * 
+ * @author jamesdavies
+ *
+ */
 public interface IEdgeOptions {
 
     public EdgeOptions getOptions();

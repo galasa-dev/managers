@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium;
 
 import java.io.File;
@@ -7,6 +12,12 @@ import java.util.logging.Level;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 
+/**
+ * A Options pass through interface for the Selenium Options object
+ * 
+ * @author jamesdavies
+ *
+ */
 public interface IChromeOptions {
 
     public ChromeOptions getOptions();

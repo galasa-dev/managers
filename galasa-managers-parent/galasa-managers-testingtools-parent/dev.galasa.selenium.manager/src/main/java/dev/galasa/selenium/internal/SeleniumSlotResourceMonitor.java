@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.util.Map;
@@ -16,6 +21,12 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IResourceManagement;
 
+/**
+ * Looks for slots allocated to non active tests.
+ * 
+ * @author jamesdavies
+ *
+ */
 public class SeleniumSlotResourceMonitor implements Runnable {
 	private final IFramework                            framework;
     private final IResourceManagement                   resourceManagement;

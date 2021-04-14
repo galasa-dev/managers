@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.io.IOException;
@@ -116,7 +121,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
  
     private void provisionDocker(IDockerManagerSpi dockerManager, IHttpManagerSpi httpManager) throws SeleniumManagerException {
         try {
-            IDockerContainer container = dockerManager.provisionContainer("Selenium_Standalone_node", browser.getDockerImageName(), true, "PRIMARY");
+            IDockerContainer container = dockerManager.provisionContainer("Selenium_Standalone_node_"+this.driverSlotName, browser.getDockerImageName(), true, "PRIMARY");
             
             List<InetSocketAddress> dockerEndpoint = container.getExposedPorts().get("4444/tcp");
             this.remoteDriverEndpoint = new URL("http:/"+ dockerEndpoint.get(0));

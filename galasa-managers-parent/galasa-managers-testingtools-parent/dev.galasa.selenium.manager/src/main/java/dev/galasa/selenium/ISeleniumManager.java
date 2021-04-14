@@ -1,9 +1,11 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.selenium;
+
+import java.util.List;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -76,6 +78,12 @@ public interface ISeleniumManager {
      * @return IInternetExplorerOptions
      */
     public IInternetExplorerOptions getInternetExplorerOptions();  
+    
+    /**
+     * Return the active pages
+     * @return List<IWebPage>
+     */
+    public List<IWebPage> getPages();
     
     /**
      * Cycle through any pages and quit

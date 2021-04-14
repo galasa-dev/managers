@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.selenium.internal;
 
@@ -32,6 +32,12 @@ import dev.galasa.selenium.internal.properties.SeleniumGeckoPreferences;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoProfile;
 import dev.galasa.selenium.internal.properties.SeleniumLocalDriverPath;
 
+/**
+ * Interactions with a different browser types for local Selenium drivers.
+ * 
+ * @author jamesdavies
+ *
+ */
 public enum LocalBrowser {
   GECKO, IE, CHROME, EDGE, OPERA;
 
@@ -49,9 +55,7 @@ public enum LocalBrowser {
         case EDGE:
           return getEdgeDriver();
         case IE:
-          return getIEDriver();
-        case NOTSPECIFIED:
-          return getWebDriver(Browser.valueOf(SeleniumDefaultDriver.get()));    
+          return getIEDriver();    
         default:
           throw new SeleniumManagerException("Unknown/Unsupported driver instance: " + browser.getDriverName());
       }

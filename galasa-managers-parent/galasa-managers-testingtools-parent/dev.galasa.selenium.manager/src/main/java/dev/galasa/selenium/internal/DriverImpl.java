@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
@@ -9,8 +14,14 @@ import org.openqa.selenium.WebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
+/**
+ * Superclass for the local and remote driver implementations for tracking and discarding webpages
+ * 
+ * @author jamesdavies
+ *
+ */
 public class DriverImpl {
-	private List<WebPageImpl> webPages = new ArrayList<>();
+	private List<IWebPage> webPages = new ArrayList<>();
 	 	 
 	public IWebPage allocatePage(WebDriver driver, String url, Path screenshotRasDirectory)
 			throws SeleniumManagerException {
@@ -24,9 +35,12 @@ public class DriverImpl {
 	}
 	 	 
 	public void discardPages() {
-		for (WebPageImpl page : webPages) {
-            page.managerQuit();
+		for (IWebPage page : webPages) {
+            page.close();
         }
-
 	}	
+	
+	public List<IWebPage> getPages() {
+		return this.webPages;
+	}
 }

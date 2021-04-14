@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.selenium.internal;
 
@@ -40,6 +40,7 @@ import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.SeleniumManagerField;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
 import dev.galasa.selenium.internal.properties.SeleniumScreenshotFailure;
+import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager {
@@ -89,12 +90,12 @@ public class SeleniumManagerImpl extends AbstractManager {
 
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
-    	if (otherManager instanceof IDockerManager) {
-            return true;
-        }
-    	if (otherManager instanceof IKubernetesManagerSpi) {
-            return true;
-        }
+		if (otherManager instanceof IDockerManager) {
+	        return true;
+	    }
+		if (otherManager instanceof IKubernetesManagerSpi) {
+	        return true;
+	    }
 
         return super.areYouProvisionalDependentOn(otherManager);
     }
@@ -109,22 +110,23 @@ public class SeleniumManagerImpl extends AbstractManager {
         }
 
         activeManagers.add(this);
-        this.dockerManager = this.addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
+    	this.k8Manager = this.addDependentManager(allManagers, activeManagers, IKubernetesManagerSpi.class);
+    	if (this.k8Manager == null) {
+            throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
+        }
+		this.dockerManager = this.addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
+		if (this.dockerManager == null) {
+	        throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
+	    }
         this.httpManager = this.addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
-        this.k8Manager = this.addDependentManager(allManagers, activeManagers, IKubernetesManagerSpi.class);
-        this.artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);
-        if (this.dockerManager == null) {
-            throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
-        }
-        if (this.k8Manager == null) {
-            throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
-        }
-        if (this.artifactManager == null) {
-            throw new SeleniumManagerException("Unable to locate the Artifact Manager");
-        }
         if (this.httpManager == null) {
             throw new SeleniumManagerException("Unable to locate the Http Manager");
         }
+        this.artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);        
+        if (this.artifactManager == null) {
+            throw new SeleniumManagerException("Unable to locate the Artifact Manager");
+        }
+        
     }
 
     @Override
@@ -159,9 +161,6 @@ public class SeleniumManagerImpl extends AbstractManager {
             if (!currentResult.equals("Passed")) {
                 if (SeleniumScreenshotFailure.get()) {
                 	seleniumEnvironment.screenShotPages();
-//                    for (IWebPage page : webPages) {
-//                        page.takeScreenShot();
-//                    }
                 }
             }
         } catch (ConfigurationPropertyStoreException e) {

@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.net.URI;
@@ -26,6 +31,12 @@ import dev.galasa.http.IHttpClient;
 import dev.galasa.http.StandAloneHttpClient;
 import dev.galasa.selenium.SeleniumManagerException;
 
+/**
+ * Monitors any configured Selenium Grids for stale sessions.
+ * 
+ * @author jamesdavies
+ *
+ */
 public class SeleniumGridSessionMonitor implements Runnable {
 	private final IFramework                            framework;
     private final IResourceManagement                   resourceManagement;
@@ -70,7 +81,6 @@ public class SeleniumGridSessionMonitor implements Runnable {
 	public void checkForStaleSessions() {
 		try {
 			Map<String, String> driverSlots = dss.getPrefix("driver.slot");
-			Set<String> activeRunNames = this.framework.getFrameworkRuns().getActiveRunNames();
 			Map<String,String> activeSeleniumSessions = new HashMap<>();
 			
 			IHttpClient client = StandAloneHttpClient.getHttpClient(3600, logger);

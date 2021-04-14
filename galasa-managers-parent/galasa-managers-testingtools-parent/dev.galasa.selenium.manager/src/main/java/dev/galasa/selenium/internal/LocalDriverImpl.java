@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
@@ -17,6 +22,13 @@ import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
+/**
+ * A local driver can be used to run Selenium tests. This is not support inside an Galasa ecosystem, as the tests run inside 
+ * the default engine. Please use the Docker, Kubernetes or Grid implementations for automation runs.
+ * 
+ * @author jamesdavies
+ *
+ */
 public class LocalDriverImpl extends DriverImpl implements ISeleniumManager{
     private Path screenshotRasDirectory;
     private Browser browser;

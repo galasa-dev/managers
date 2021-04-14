@@ -20,7 +20,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.required No
  * 
- * @galasa.valid_values beta.kubernetes.io/arch: amd64, platform: myplatform
+ * @galasa.valid_values Comma seperated list of any node selectors: beta.kubernetes.io/arch: amd64, platform: myplatform
  * 
  * @galasa.examples 
  * <code>selenium.kubernetes.node.selector=beta.kubernetes.io/arch: amd64</code>

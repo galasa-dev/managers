@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
@@ -13,10 +18,19 @@ import dev.galasa.framework.spi.IDssAction;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.internal.properties.SeleniumDefaultDriver;
 import dev.galasa.selenium.internal.properties.SeleniumDriverMaxSlots;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 
+/**
+ * Selenium Environment is a generic environment for both local and remote drivers
+ * 
+ * 
+ * @author jamesdavies
+ *
+ */
 public class SeleniumEnvironment {
 	
 	private SeleniumManagerImpl seleniumManager;
@@ -35,6 +49,13 @@ public class SeleniumEnvironment {
 		this.runName = seleniumManager.getFramework().getTestRunName();
 	}
 	
+	/**
+	 * Allocate the driver based on CPS configurations.
+	 * 
+	 * @param browser
+	 * @return
+	 * @throws SeleniumManagerException
+	 */
 	public ISeleniumManager allocateDriver(Browser browser) throws SeleniumManagerException {
 		ISeleniumManager driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
@@ -42,6 +63,10 @@ public class SeleniumEnvironment {
 		String slotName = allocateSlot();
 		
 		try {
+			if (browser.equals(Browser.NOTSPECIFIED)) {
+				browser = Browser.valueOf(SeleniumDefaultDriver.get());
+			}
+			
 			switch(SeleniumWebDriverType.get()) {
 		    case ("local"):
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
@@ -58,6 +83,12 @@ public class SeleniumEnvironment {
 
 	}
 	
+	/**
+	 * A selenium specific slot to limit the number of selenium parallel runs.
+	 * 
+	 * @return
+	 * @throws SeleniumManagerException
+	 */
 	private String allocateSlot() throws SeleniumManagerException {
 		String slotKey = "driver.current.slots";
 		String slots = "";
@@ -104,13 +135,24 @@ public class SeleniumEnvironment {
 		return slotName;
 	}
 
-	
-	public void screenShotPages() {
-//		for (ISeleniumManager driver: drivers) {
-//			driver.
-//		}
+	/**
+	 * Screenshot all active pages on all active drivers 
+	 * 
+	 * @throws SeleniumManagerException
+	 */
+	public void screenShotPages() throws SeleniumManagerException {
+		for (ISeleniumManager driver: drivers) {
+			for (IWebPage page : driver.getPages()) {
+				page.takeScreenShot();
+			}
+		}
 	}
 
+	/**
+	 * Discard drivers 
+	 * 
+	 * @throws SeleniumManagerException
+	 */
 	public void discard() throws SeleniumManagerException {
 		for (ISeleniumManager driver: drivers) {
 			driver.discard();

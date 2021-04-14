@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.selenium.internal;
 
 import java.util.concurrent.TimeUnit;
@@ -13,6 +18,15 @@ import dev.galasa.framework.spi.IResourceManagement;
 import dev.galasa.framework.spi.IResourceManagementProvider;
 import dev.galasa.framework.spi.ResourceManagerException;
 
+/**
+ * Resource management for Selenium manager.
+ * 
+ * We only watch the slot properties and the Grid interactions. Both Docker
+ * and Kubernetes are responsible for the own cleanup of stale resources.
+ * 
+ * @author jamesdavies
+ *
+ */
 @Component(service = { IResourceManagementProvider.class })
 public class SeleniumResourceManagement implements IResourceManagementProvider{
 	

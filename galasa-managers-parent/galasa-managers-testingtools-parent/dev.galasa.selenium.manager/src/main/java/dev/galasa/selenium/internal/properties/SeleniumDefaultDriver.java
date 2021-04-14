@@ -14,16 +14,16 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.default.driver
+ * @galasa.name selenium.default.driver.type
  * 
- * @galasa.description Describes default the selenium driver that will be used.
+ * @galasa.description If set, describes the default the selenium driver that will be used.
  * 
  * @galasa.required No
  * 
  * @galasa.valid_values A valid String representation of a type. Available choices: local, docker, kubernetes, grid
  * 
  * @galasa.examples 
- * <code>selenium.default.driver=firefox</code>
+ * <code>selenium.default.driver=FIREFOX</code>
  * 
  */
 public class SeleniumDefaultDriver extends CpsProperties {
