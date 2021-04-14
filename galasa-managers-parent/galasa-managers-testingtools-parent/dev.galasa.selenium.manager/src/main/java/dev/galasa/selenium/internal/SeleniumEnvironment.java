@@ -2,16 +2,10 @@ package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DssAdd;
-import dev.galasa.framework.spi.DssDelete;
 import dev.galasa.framework.spi.DssDeletePrefix;
 import dev.galasa.framework.spi.DssSwap;
 import dev.galasa.framework.spi.DynamicStatusStoreException;

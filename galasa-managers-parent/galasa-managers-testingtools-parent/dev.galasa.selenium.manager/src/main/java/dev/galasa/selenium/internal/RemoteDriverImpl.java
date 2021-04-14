@@ -27,16 +27,15 @@ import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerContainer;
 import dev.galasa.docker.spi.IDockerManagerSpi;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.kubernetes.IDeployment;
 import dev.galasa.kubernetes.IKubernetesNamespace;
-import dev.galasa.kubernetes.IResource;
-import dev.galasa.kubernetes.KubernetesManagerException;
+import dev.galasa.kubernetes.IService;
 import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
 // import dev.galasa.docker.DockerManagerException;
 // import dev.galasa.docker.IDockerContainer;
@@ -67,6 +66,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
     private SeleniumEnvironment seleniumEnvironment;
     
     private String driverSlotName;
+    private String k8sRunName;
     
     public RemoteDriverImpl(SeleniumEnvironment seleniumEnvironment,SeleniumManagerImpl seleniumManager, 
     		Browser browser, String slotName, Path screenshotRasDirectory) throws SeleniumManagerException {
@@ -83,7 +83,8 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
 				provisionDocker(seleniumManager.getDockerManager(), seleniumManager.getHttpManager());
 				break;
 			case ("kubernetes"):
-				provisionK8s(seleniumManager.getKubernetesManager(), seleniumManager.getArtifactManager());
+                this.k8sRunName = slotName.replace("_", "-").toLowerCase();
+				provisionK8s(seleniumManager.getKubernetesManager(), seleniumManager.getArtifactManager(), seleniumManager.getHttpManager());
 				break;
 			case ("grid"):
 				provisionGrid(seleniumManager.getHttpManager());
@@ -140,24 +141,53 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
         
     }
     
-    private void provisionK8s(IKubernetesManagerSpi k8Manager, IArtifactManager artifactManager) throws SeleniumManagerException {
+    private void provisionK8s(IKubernetesManagerSpi k8Manager, IArtifactManager artifactManager, IHttpManagerSpi httpManager) throws SeleniumManagerException {
     	String seleniumPodYaml = generatePodYaml(artifactManager);
+    	String seleniumServiceYaml = generateServiceYaml(artifactManager);
     	try {
     		IKubernetesNamespace namespace = k8Manager.getNamespaceByTag(SeleniumKubernetesNamespace.get()); 
     	
-    		IResource pod = namespace.createResource(seleniumPodYaml);
-    		for (int i=0;i<5;i++) {
-    			if (pod.getYaml().contains("ready: true")){
-    				return;
+    		IService service = (IService)namespace.createResource(seleniumServiceYaml);
+            IDeployment pod = (IDeployment)namespace.createResource(seleniumPodYaml);
+
+    		InetSocketAddress socket = service.getSocketAddressForPort(4444);
+    		
+    		this.remoteDriverEndpoint = new URL("http://" + socket.getHostString() + ":" + Integer.toString(socket.getPort()));
+    		IHttpClient client = httpManager.newHttpClient();
+            client.setURI(remoteDriverEndpoint.toURI());
+    	
+    		for (int i=0;i<=10;i++) {
+    			try {
+    				if (client.getJson("/status").getStatusCode() == 200){
+                        logger.debug("Connected to grid at: " + this.remoteDriverEndpoint);
+        				return;
+        			}
+    			} catch (HttpClientException e) {
+                    Thread.sleep(5000);
+    				logger.debug("Failed to reach node endpoint. Retrying in 5 seconds");
     			}
-    			Thread.sleep(2000);
-    			pod.refresh();
     		}
-    	} catch (KubernetesManagerException | ConfigurationPropertyStoreException | InterruptedException e) {
+    	} catch (Exception e) {
     		throw new SeleniumManagerException("Unable to provision K8 node", e);
     	}
     	throw new SeleniumManagerException("Selenium Node took too long to ready.");
     	
+    }
+    
+    private String generateServiceYaml(IArtifactManager artifacts) throws SeleniumManagerException {
+    	IBundleResources resources = artifacts.getBundleResources(getClass());
+        logger.trace("Generating Service Yaml");
+    	
+    	try {
+			String yaml = resources.retrieveFileAsString("resources/selenium-node-expose.yaml");
+			String runName = seleniumManager.getFramework().getTestRunName();
+			yaml = yaml.replace("<RUNNAME>", this.k8sRunName);
+			
+            logger.trace(yaml);
+			return yaml;
+    	} catch (IOException | TestBundleResourceException e) {
+    		throw new SeleniumManagerException("Failed to generate service yaml", e);
+    	}
     }
     
     private String generatePodYaml(IArtifactManager artifacts) throws SeleniumManagerException {
@@ -168,7 +198,7 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
 			yaml = yaml.replace("<IMAGE_NAME>", this.browser.getDockerImageName());
 			
 			String runName = seleniumManager.getFramework().getTestRunName();
-			yaml = yaml.replace("<RUNNAME>", runName.toLowerCase());
+			yaml = yaml.replace("<RUNNAME>", this.k8sRunName);
 			
 			String nodeSelectors = "";
 			String[] selectors = SeleniumKubernetesNodeSelector.get();

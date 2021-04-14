@@ -5,8 +5,6 @@
  */
 package dev.galasa.selenium.internal;
 
-import java.util.Random;
-
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -29,7 +27,6 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.SeleniumManagerException;
-import dev.galasa.selenium.internal.properties.SeleniumAvailableDrivers;
 import dev.galasa.selenium.internal.properties.SeleniumDefaultDriver;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoPreferences;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoProfile;
