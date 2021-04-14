@@ -373,5 +373,5 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
     public void discard() {
        discardPages();
     }
-    
+
 }
