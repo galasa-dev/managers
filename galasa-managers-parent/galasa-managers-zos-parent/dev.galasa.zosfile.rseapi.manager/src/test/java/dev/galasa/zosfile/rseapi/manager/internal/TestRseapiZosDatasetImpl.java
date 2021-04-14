@@ -522,9 +522,15 @@ public class TestRseapiZosDatasetImpl {
         zosDatasetSpy.memberCreate(MEMBER_NAME);
         expectedMessage = "Member " + MEMBER_NAME + " not created in Data set \"" + DATASET_NAME + "\" on image " + IMAGE;
         Assert.assertEquals("saveToResultsArchive() should log specified message", expectedMessage, logMessage);
-        
-        PowerMockito.doThrow(new ZosUNIXFileException(EXCEPTION)).doReturn(true).when(zosUNIXFileMock).exists();
+    	
+        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         ZosDatasetException expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
+        	zosDatasetSpy.memberCreate(MEMBER_NAME);
+        });
+    	Assert.assertEquals("exception should contain expected message", "Error zOS UNIX command, HTTP Status Code 404 : null", expectedException.getCause().getMessage());
+
+        PowerMockito.doThrow(new ZosUNIXFileException(EXCEPTION)).doReturn(true).when(zosUNIXFileMock).exists();
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosDatasetException.class, ()->{
         	zosDatasetSpy.memberCreate(MEMBER_NAME);
         });
     	Assert.assertEquals("exception should contain expected message", EXCEPTION, expectedException.getCause().getMessage());

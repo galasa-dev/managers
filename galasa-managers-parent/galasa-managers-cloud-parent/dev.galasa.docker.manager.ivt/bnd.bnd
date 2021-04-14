@@ -1,0 +1,10 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Docker Manager
+Export-Package: dev.galasa.docker.manager.ivt
+Import-Package: dev.galasa,\
+    dev.galasa.artifact,\
+    dev.galasa.core.manager,\
+    dev.galasa.docker,\
+    dev.galasa.http,\
+    org.apache.commons.logging,\
+    org.assertj.core.api

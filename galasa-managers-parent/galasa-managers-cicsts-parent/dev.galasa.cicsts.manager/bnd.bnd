@@ -1,0 +1,20 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa CICS/TS Manager
+Export-Package: dev.galasa.cicsts,\
+    dev.galasa.cicsts.spi,\
+    dev.galasa.cicsts.cicsresource
+Import-Package: dev.galasa,\
+    dev.galasa.cicsts,\
+    dev.galasa.cicsts.spi,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.ipnetwork,\
+    dev.galasa.zos,\
+    dev.galasa.zos.spi,\
+    dev.galasa.zos3270,\
+    dev.galasa.zos3270.spi,\
+    dev.galasa.zosliberty,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.logging
+

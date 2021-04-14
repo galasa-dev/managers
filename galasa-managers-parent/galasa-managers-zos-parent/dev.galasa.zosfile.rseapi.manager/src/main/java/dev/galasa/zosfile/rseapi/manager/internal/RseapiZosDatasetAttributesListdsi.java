@@ -316,7 +316,12 @@ public class RseapiZosDatasetAttributesListdsi {
         String command = "tsocmd \"EXEC '" + execDatasetName + "(" + LISTDSI_EXEC_NAME + ")' '" + dsname + "'\" 2>/dev/null;echo RC=$?";
 
     	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);
-    	JsonObject responseBody = zosUnixCommand.execute(rseapiApiProcessor, command);
+    	JsonObject responseBody;
+		try {
+			responseBody = zosUnixCommand.execute(rseapiApiProcessor, command);
+		} catch (ZosFileManagerException e) {
+			throw new ZosDatasetException(e);
+		}
         
         logger.trace(responseBody);
         if (!getExitRc(responseBody).equals("RC=0")) {

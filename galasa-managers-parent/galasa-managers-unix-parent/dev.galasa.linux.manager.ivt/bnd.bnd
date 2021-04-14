@@ -1,0 +1,10 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Linux Manager IVTs
+Export-Package: dev.galasa.linux.manager.ivt
+Import-Package: dev.galasa,\
+    dev.galasa.core.manager,\
+    dev.galasa.ipnetwork,\
+    dev.galasa.linux,\
+    org.apache.commons.logging
+
+

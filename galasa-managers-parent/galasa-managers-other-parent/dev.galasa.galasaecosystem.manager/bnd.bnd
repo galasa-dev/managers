@@ -1,0 +1,21 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Ecosystem Manager
+Export-Package: dev.galasa.galasaecosystem
+Import-Package: com.google.gson,\
+    dev.galasa,\
+    dev.galasa.api.run,\
+    dev.galasa.api.runs,\
+    dev.galasa.artifact,\
+    dev.galasa.framework.spi,\
+    dev.galasa.framework.spi.cps,\
+    dev.galasa.framework.spi.language,\
+    dev.galasa.framework.spi.utils,\
+    dev.galasa.http,\
+    dev.galasa.http.spi,\
+    dev.galasa.kubernetes,\
+    dev.galasa.kubernetes.spi,\
+    javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.io,\
+    org.apache.commons.logging,\
+    org.yaml.snakeyaml
+

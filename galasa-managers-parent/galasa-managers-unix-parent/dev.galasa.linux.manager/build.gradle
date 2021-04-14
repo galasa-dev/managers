@@ -1,0 +1,12 @@
+plugins {
+    id 'biz.aQute.bnd.builder' version '5.3.0'
+}
+
+description = 'Galasa Linux Manager'
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    implementation project(':galasa-managers-comms-parent:dev.galasa.ipnetwork.manager')
+    implementation 'io.prometheus:simpleclient:0.6.0'
+}

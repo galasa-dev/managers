@@ -352,7 +352,11 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 		}
     	String command = "> " + emptyFileName + ";cp " + emptyFileName + " \"//'" + joinDSN(memberName) +"'\"";
     	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);
-    	zosUnixCommand.execute(rseapiApiProcessor, command);
+    	try {
+			zosUnixCommand.execute(rseapiApiProcessor, command);
+		} catch (ZosFileManagerException e) {
+			throw new ZosDatasetException(e);
+		}
         if (memberExists(memberName)) {
             logger.info(LOG_MEMBER + memberName + " created in " + LOG_DATA_SET + quoted(this.dsname) + logOnImage());
         } else {

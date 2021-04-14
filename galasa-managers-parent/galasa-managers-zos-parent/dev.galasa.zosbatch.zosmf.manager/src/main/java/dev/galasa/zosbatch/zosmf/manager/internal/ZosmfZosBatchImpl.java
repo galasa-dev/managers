@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosbatch.zosmf.manager.internal;
 
@@ -29,7 +29,6 @@ import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchJobcard;
 import dev.galasa.zosbatch.ZosBatchManagerException;
-import dev.galasa.zosmf.IZosmf.ZosmfCustomHeaders;
 import dev.galasa.zosmf.IZosmf.ZosmfRequestType;
 import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
@@ -80,11 +79,17 @@ public class ZosmfZosBatchImpl implements IZosBatch {
 
     @Override
     public List<IZosBatchJob> getJobs(String jobname, String owner) throws ZosBatchException {
-        if (jobname != null && (jobname.isEmpty() || jobname.length() > 8)) {
-            throw new ZosBatchException("Jobname must be between 1 and 8 characters or null");
+        if (jobname != null) {
+        	jobname = jobname.trim();
+        	if (jobname.isEmpty() || jobname.length() > 8) {
+        		throw new ZosBatchException("Jobname must be between 1 and 8 characters or null");
+        	}
         }
-        if (owner != null && (owner.isEmpty() || owner.length() > 8)) {
-            throw new ZosBatchException("Owner must be between 1 and 8 characters or null");
+        if (owner != null) {
+        	owner = owner.trim();
+        	if (owner.isEmpty() || owner.length() > 8) {
+        		throw new ZosBatchException("Owner must be between 1 and 8 characters or null");
+        	}
         }
         return getBatchJobs(jobname, owner);
     }
@@ -137,7 +142,6 @@ public class ZosmfZosBatchImpl implements IZosBatch {
         String ownerQueryString = suppliedOwner == (null) ? "" : "owner=" + suppliedOwner;
         String listJobsPath = ZosmfZosBatchJobImpl.RESTJOBS_PATH + "?" + jobnameQueryString + "&" + ownerQueryString;
         HashMap<String, String> headers = new HashMap<>();
-        headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
         IZosmfResponse response;
         try {
             response = zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, listJobsPath, headers, null, new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
@@ -147,14 +151,12 @@ public class ZosmfZosBatchImpl implements IZosBatch {
         
         List<IZosBatchJob> zosBatchJobList = new ArrayList<>();
 
-        Object responseBodyObject;
         try {
-            responseBodyObject = response.getContent();
+        	logger.trace(response.getContent());
         } catch (ZosmfException e) {
             throw new ZosBatchException(e);
         }
         
-        logger.trace(responseBodyObject);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             // Get the jobs
             JsonArray jsonArray;
@@ -164,7 +166,7 @@ public class ZosmfZosBatchImpl implements IZosBatch {
                 throw new ZosBatchException(e);
             }
             for (JsonElement jsonElement : jsonArray) {
-                JsonObject responseBody = jsonElement.getAsJsonObject();
+            	JsonObject responseBody = jsonElement.getAsJsonObject();
                 String jobnameString = responseBody.get("jobname").getAsString();
                 IZosBatchJobname jobname = this.zosBatchManager.newZosBatchJobname(jobnameString);
                 ZosmfZosBatchJobImpl zosBatchJob = new ZosmfZosBatchJobImpl(this.zosBatchManager, this.image, jobname, null, null);
@@ -177,7 +179,18 @@ public class ZosmfZosBatchImpl implements IZosBatch {
             }
         } else {
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            String displayMessage = ZosmfZosBatchJobImpl.buildErrorString("List jobs output", (JsonObject) responseBodyObject); 
+        	JsonObject responseBody;
+        	String displayMessage;
+			try {
+				responseBody = response.getJsonContent();
+	            displayMessage = ZosmfZosBatchJobImpl.buildErrorString("List jobs", responseBody);
+			} catch (ZosmfException e) { 
+	            try {
+	            	displayMessage = "Error with List jobs. Output: " + response.getTextContent();
+				} catch (ZosmfException e1) {
+					displayMessage = "Error with List jobs";
+				}
+			} 
             logger.error(displayMessage);
             throw new ZosBatchException(displayMessage);
         }
