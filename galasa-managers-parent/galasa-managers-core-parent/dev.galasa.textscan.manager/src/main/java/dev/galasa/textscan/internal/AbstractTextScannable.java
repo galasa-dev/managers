@@ -1,14 +1,14 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
-package dev.galasa.textscan.spi;
+package dev.galasa.textscan.internal;
 
 import java.io.InputStream;
 
-import dev.galasa.ManagerException;
 import dev.galasa.textscan.ITextScannable;
+import dev.galasa.textscan.TextScanException;
 
 /**
  * Abstract Text Scannable
@@ -29,7 +29,7 @@ public class AbstractTextScannable implements ITextScannable {
     }
 
     @Override
-    public InputStream getScannableInputStream() throws ManagerException {
+    public InputStream getScannableInputStream() throws TextScanException {
         return null;
     }
 
@@ -39,12 +39,12 @@ public class AbstractTextScannable implements ITextScannable {
     }
 
     @Override
-    public ITextScannable updateScannable() throws ManagerException {
+    public ITextScannable updateScannable() throws TextScanException {
         return this;
     }
 
     @Override
-    public String getScannableString() throws ManagerException {
+    public String getScannableString() throws TextScanException {
         return "";
     }
 
