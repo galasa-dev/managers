@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
-package dev.galasa.linux.internal;
+package dev.galasa.linux;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
