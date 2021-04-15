@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -74,11 +74,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-
-        // *** If this bundle was loaded, it means it was specifically requested.
-        // *** Therefore mark as youAreRequired and if linux is present register as a
-        // provisioner
-        youAreRequired(allManagers, activeManagers);
 
         try {
             this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
