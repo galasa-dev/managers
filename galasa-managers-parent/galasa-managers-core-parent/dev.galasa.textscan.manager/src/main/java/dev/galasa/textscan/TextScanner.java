@@ -29,7 +29,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @Retention(RUNTIME)
 @Target(FIELD)
 @TextScanManagerField
-@ValidAnnotatedFields({ ILogScanner.class })
+@ValidAnnotatedFields({ ITextScanner.class })
 public @interface TextScanner {
 
 }
