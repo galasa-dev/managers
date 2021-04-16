@@ -30,7 +30,7 @@ public class LinuxDSEProvisioner implements ILinuxProvisioner {
     }
 
     @Override
-    public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities)
+    public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
             throws LinuxManagerException {
 
         try {

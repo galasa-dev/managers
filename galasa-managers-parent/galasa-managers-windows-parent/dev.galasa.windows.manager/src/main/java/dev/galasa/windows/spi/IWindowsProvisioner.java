@@ -14,7 +14,7 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 
 public interface IWindowsProvisioner {
 
-    IWindowsProvisionedImage provision(@NotNull String tag,
+    IWindowsProvisionedImage provisionWindows(@NotNull String tag,
             @NotNull List<String> capabilities) throws ManagerException, ResourceUnavailableException;
 
 }

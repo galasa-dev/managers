@@ -12,30 +12,30 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Linux Key Pair
+ * OpenStack Windows Flavor
  * <p>
- * Provide the registered Key Pair that OpenStack will use when deploying the image
+ * Provide the image flavor to use when building the instance
  * </p>
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].keypair=galasa<br>
- * openstack.linux.default.keypair=galasa<br>
- * Where imagename is that provided in {@link LinuxImages}<br>
+ * openstack.windows.[imagename].flavor=m1.medium<br>
+ * openstack.windows.default.flavor=m1.medium<br>
+ * Where imagename is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
- * There is no default
+ * The default is m1.medium
  * </p>
  * 
  * @author Michael Baylis
  *
  */
-public class LinuxKeyPair extends CpsProperties {
+public class WindowsFlavor extends CpsProperties {
 
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "keypair", image);
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "m1.medium", "windows", "flavor", image);
 
     }
 

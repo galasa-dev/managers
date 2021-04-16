@@ -12,30 +12,30 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Linux Key Pair
+ * OpenStack Windows Availability Zone
  * <p>
- * Provide the registered Key Pair that OpenStack will use when deploying the image
+ * Provide the availability zone to use when building the instance
  * </p>
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].keypair=galasa<br>
- * openstack.linux.default.keypair=galasa<br>
- * Where imagename is that provided in {@link LinuxImages}<br>
+ * openstack.windows.[imagename].availability.zone=nova<br>
+ * openstack.windows.default.availability.zone=nova<br>
+ * Where imagename is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
- * There is no default
+ * The default is nova
  * </p>
  * 
  * @author Michael Baylis
  *
  */
-public class LinuxKeyPair extends CpsProperties {
+public class WindowsAvailablityZone extends CpsProperties {
 
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "keypair", image);
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "nova", "windows", "availability.zone", image);
 
     }
 

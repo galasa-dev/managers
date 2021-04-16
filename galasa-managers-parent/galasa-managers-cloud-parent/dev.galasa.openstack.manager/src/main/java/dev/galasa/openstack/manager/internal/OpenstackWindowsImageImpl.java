@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -17,21 +17,21 @@ import dev.galasa.ICredentials;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
-import dev.galasa.linux.LinuxManagerException;
-import dev.galasa.linux.spi.ILinuxProvisionedImage;
-import dev.galasa.openstack.manager.OpenstackLinuxManagerException;
 import dev.galasa.openstack.manager.OpenstackManagerException;
+import dev.galasa.openstack.manager.OpenstackWindowsManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
-import dev.galasa.openstack.manager.internal.properties.LinuxAvailablityZone;
-import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
-import dev.galasa.openstack.manager.internal.properties.LinuxFlavor;
-import dev.galasa.openstack.manager.internal.properties.LinuxKeyPair;
+import dev.galasa.openstack.manager.internal.properties.WindowsAvailablityZone;
+import dev.galasa.openstack.manager.internal.properties.WindowsCredentials;
+import dev.galasa.openstack.manager.internal.properties.WindowsFlavor;
+import dev.galasa.openstack.manager.internal.properties.WindowsKeyPair;
+import dev.galasa.windows.WindowsManagerException;
+import dev.galasa.windows.spi.IWindowsProvisionedImage;
 
-public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
+public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IWindowsProvisionedImage {
 
-    private static final Log          logger = LogFactory.getLog(OpenstackLinuxImageImpl.class);
+    private static final Log          logger = LogFactory.getLog(OpenstackWindowsImageImpl.class);
 
     private FileSystem                fileSystem;
 
@@ -39,10 +39,10 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     private Path                      pathTemp;
     private Path                      pathHome;
 
-    public OpenstackLinuxImageImpl(@NotNull OpenstackManagerImpl manager,
+    public OpenstackWindowsImageImpl(@NotNull OpenstackManagerImpl manager,
             @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
             @NotNull String tag) {
-        super("Linux", manager, openstackHttpClient, instanceName, image, tag);
+        super("Windows", manager, openstackHttpClient, instanceName, image, tag);
     }
 
     @Override
@@ -51,39 +51,39 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     }
 
     @Override
-    public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
+    public @NotNull ICredentials getDefaultCredentials() throws WindowsManagerException {
         if (this.getIpHost() == null) {
-            throw new OpenstackLinuxManagerException("Openstack instance has not been built yet");
+            throw new OpenstackWindowsManagerException("Openstack instance has not been built yet");
         }
         try {
             return this.getIpHost().getDefaultCredentials();
         } catch (IpNetworkManagerException e) {
-            throw new OpenstackLinuxManagerException("Unable to retrieve credentials", e);
+            throw new OpenstackWindowsManagerException("Unable to retrieve credentials", e);
         }
     }
 
     protected @NotNull ICredentials getServerCredentials() throws OpenstackManagerException {
         try {
-            return this.manager.getFramework().getCredentialsService().getCredentials(LinuxCredentials.get(this.image));
+            return this.manager.getFramework().getCredentialsService().getCredentials(WindowsCredentials.get(this.image));
         } catch (Exception e) {
             throw new OpenstackManagerException("Unable to create credentials", e);
         }
     }
 
     public void build() throws OpenstackManagerException, ConfigurationPropertyStoreException {
-        logger.info("Building OpenStack Linux instance " + this.instanceName + " with image " + this.image + " for tag "
+        logger.info("Building OpenStack Windows instance " + this.instanceName + " with image " + this.image + " for tag "
                 + this.tag);
 
-        String flavor = LinuxFlavor.get(this.image);
+        String flavor = WindowsFlavor.get(this.image);
 
         Server server = new Server();
         server.name = this.instanceName;
         server.imageRef = getOpenstackHttpClient().getImageId(this.image);
         server.flavorRef = getOpenstackHttpClient().getFlavourId(flavor);
-        server.availability_zone = LinuxAvailablityZone.get(this.image);
+        server.availability_zone = WindowsAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
-        server.key_name = LinuxKeyPair.get(this.image);
+        server.key_name = WindowsKeyPair.get(this.image);
 
         if (server.imageRef == null) {
             throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
@@ -93,8 +93,6 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
             throw new OpenstackManagerException("Flavor " + flavor + " is missing in OpenStack");
         }
 
-        
-        logger.info("hello there ********2");
         ServerRequest serverRequest = new ServerRequest();
         serverRequest.server = server;
 
@@ -117,7 +115,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
             }
             homeDir = homeDir.replaceAll("\\r\\n?|\\n", "");
             this.pathHome = this.fileSystem.getPath(homeDir);
-            logger.info("Home directory for linux image tagged " + tag + " is " + homeDir);
+            logger.info("Home directory for Windows image tagged " + tag + " is " + homeDir);
         } catch (IpNetworkManagerException e) {
             throw new OpenstackManagerException("Unable to determine home directory", e);
         }
@@ -125,22 +123,22 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     }
 
     @Override
-    public @NotNull ICommandShell getCommandShell() throws LinuxManagerException {
+    public @NotNull ICommandShell getCommandShell() throws WindowsManagerException {
         return getServerCommandShell();
     }
 
     @Override
-    public @NotNull Path getRoot() throws LinuxManagerException {
+    public @NotNull Path getRoot() throws WindowsManagerException {
         return this.pathRoot;
     }
 
     @Override
-    public @NotNull Path getHome() throws LinuxManagerException {
+    public @NotNull Path getHome() throws WindowsManagerException {
         return this.pathHome;
     }
 
     @Override
-    public @NotNull Path getTmp() throws LinuxManagerException {
+    public @NotNull Path getTmp() throws WindowsManagerException {
         return this.pathTemp;
     }
 
