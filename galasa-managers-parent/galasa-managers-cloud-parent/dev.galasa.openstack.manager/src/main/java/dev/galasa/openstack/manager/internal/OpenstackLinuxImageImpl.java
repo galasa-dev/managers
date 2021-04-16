@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -16,13 +16,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ICredentials;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.spi.ILinuxProvisionedImage;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.Floatingip;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
@@ -31,6 +30,8 @@ import dev.galasa.openstack.manager.internal.json.Port;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
 import dev.galasa.openstack.manager.internal.properties.GenerateTimeout;
+import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
+import dev.galasa.openstack.manager.internal.properties.LinuxKeyPair;
 
 public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
 
@@ -43,8 +44,6 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     public final String               tag;
 
     private String                    id;
-    private String                    username;
-    private String                    password;
 
     private String                    hostname;
 
@@ -85,10 +84,9 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     @Override
     public @NotNull ICredentials getDefaultCredentials() throws LinuxManagerException {
         try {
-            return this.manager.getFramework().getCredentialsService().getCredentials("sshgalasa"); // TODO cps
-        } catch (CredentialsException e) {
-            throw new LinuxManagerException(
-                    "Unable to obtain default credentials for openstack linux server" + this.tag, e);
+            return this.manager.getFramework().getCredentialsService().getCredentials(LinuxCredentials.get(this.image));
+        } catch (Exception e) {
+            throw new LinuxManagerException("Unable to create credentials", e);
         }
     }
 
@@ -125,7 +123,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         logger.info("Building OpenStack Linux instance " + this.instanceName + " with image " + this.image + " for tag "
                 + this.tag);
 
-        String flavor = "m1.small";
+        String flavor = "m1.medium";
         int generateTimeout = GenerateTimeout.get();
         generateTimeout = 1;
 
@@ -136,7 +134,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         server.availability_zone = "nova"; // TODO cps
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
-        server.key_name = "galasa"; // TODO cps
+        server.key_name = LinuxKeyPair.get(this.image);
 
         if (server.imageRef == null) {
             throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
@@ -152,7 +150,6 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         try {
             this.openstackServer = this.openstackHttpClient.createServer(serverRequest);
             this.id = this.openstackServer.id;
-            this.password = this.openstackServer.adminPass;
 
             Instant expire = Instant.now();
             expire = expire.plus(generateTimeout, ChronoUnit.MINUTES);
@@ -179,7 +176,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
                 }
 
                 logger.trace("Still waiting for OpenStack Linux instance " + this.instanceName + " to be built, task="
-                        + state); // TODO switch to trace
+                        + state);
             }
 
             if (!up) {
@@ -195,7 +192,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
             // *** Locate the external network
             Network network = this.openstackHttpClient.findExternalNetwork(null); // TODO provide means to specify
-                                                                                  // network
+            // network
 
             if (network == null) {
                 throw new OpenstackManagerException("Unable to select an external network to allocate a floatingip on");

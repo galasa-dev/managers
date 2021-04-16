@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.linux;
 
@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
 
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
-import dev.galasa.linux.internal.LinuxManagerField;
 
 /**
  * Represents a IP Host for a Linux Image that has been provisioned for the test

@@ -46,7 +46,7 @@ import dev.galasa.openstack.manager.internal.properties.MaximumInstances;
 import dev.galasa.openstack.manager.internal.properties.NamePool;
 import dev.galasa.openstack.manager.internal.properties.OpenstackPropertiesSingleton;
 
-@Component(service = { IManager.class })
+@Component(service = { IManager.class, ILinuxProvisioner.class })
 public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvisioner {
     protected final static String                    NAMESPACE = "openstack";
 
