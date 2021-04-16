@@ -154,6 +154,7 @@ subprojects {
         testImplementation 'org.awaitility:awaitility:3.0.0'
         testImplementation 'org.assertj:assertj-core:3.16.1'
         testImplementation 'dev.galasa:galasa-testharness:0.15.0-SNAPSHOT'
+        testCompileOnly    'javax.validation:validation-api:2.0.1.Final'
 
     }
 
