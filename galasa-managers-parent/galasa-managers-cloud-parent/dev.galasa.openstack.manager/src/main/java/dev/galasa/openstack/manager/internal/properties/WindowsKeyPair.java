@@ -12,16 +12,16 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Linux Key Pair
+ * OpenStack Windows Key Pair
  * <p>
  * Provide the registered Key Pair that OpenStack will use when deploying the image
  * </p>
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].keypair=galasa<br>
- * openstack.linux.default.keypair=galasa<br>
- * Where imagename is that provided in {@link LinuxImages}<br>
+ * openstack.windows.[imagename].keypair=galasa<br>
+ * openstack.windows.default.keypair=galasa<br>
+ * Where imagename is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
  * There is no default
@@ -30,12 +30,12 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * @author Michael Baylis
  *
  */
-public class LinuxKeyPair extends CpsProperties {
+public class WindowsKeyPair extends CpsProperties {
 
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "keypair", image);
+        return getStringNulled(OpenstackPropertiesSingleton.cps(), "windows", "keypair", image);
 
     }
 

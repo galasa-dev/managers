@@ -1,9 +1,9 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * (c) Copyright IBM Corp. 2021.
  */
-package dev.galasa.linux.internal;
+package dev.galasa.windows.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -32,45 +32,44 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
-import dev.galasa.linux.ILinuxImage;
-import dev.galasa.linux.LinuxImage;
-import dev.galasa.linux.LinuxIpHost;
-import dev.galasa.linux.LinuxManagerException;
-import dev.galasa.linux.LinuxManagerField;
-import dev.galasa.linux.OperatingSystem;
-import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
-import dev.galasa.linux.spi.ILinuxManagerSpi;
-import dev.galasa.linux.spi.ILinuxProvisioner;
+import dev.galasa.windows.IWindowsImage;
+import dev.galasa.windows.WindowsImage;
+import dev.galasa.windows.WindowsIpHost;
+import dev.galasa.windows.WindowsManagerException;
+import dev.galasa.windows.WindowsManagerField;
+import dev.galasa.windows.spi.IWindowsManagerSpi;
+import dev.galasa.windows.spi.IWindowsProvisioner;
+import dev.galasa.windows.internal.properties.WindowsPropertiesSingleton;
 
 @Component(service = { IManager.class })
-public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSpi {
-    protected final static String              NAMESPACE    = "linux";
+public class WindowsManagerImpl extends AbstractManager implements IWindowsManagerSpi {
+    protected final static String              NAMESPACE    = "windows";
 
-    private final static Log                   logger       = LogFactory.getLog(LinuxManagerImpl.class);
+    private final static Log                   logger       = LogFactory.getLog(WindowsManagerImpl.class);
 
-    private LinuxProperties                    linuxProperties;
+    private WindowsProperties                    windowsProperties;
     private IConfigurationPropertyStoreService cps;
     private IDynamicStatusStoreService         dss;
     private IIpNetworkManagerSpi               ipManager;
 
-    private final ArrayList<ILinuxProvisioner> provisioners = new ArrayList<>();
+    private final ArrayList<IWindowsProvisioner> provisioners = new ArrayList<>();
 
-    private final HashMap<String, ILinuxImage> taggedImages = new HashMap<>();
+    private final HashMap<String, IWindowsImage> taggedImages = new HashMap<>();
 
     private BundleContext                      bundleContext;
 
     /*
-     * By default we need to load any managers that could provision linux images for
+     * By default we need to load any managers that could provision windows images for
      * us, eg OpenStack
      */
     @Override
-    public List<String> extraBundles(@NotNull IFramework framework) throws LinuxManagerException {
-        this.linuxProperties = new LinuxProperties(framework);
-        return this.linuxProperties.getExtraBundles();
+    public List<String> extraBundles(@NotNull IFramework framework) throws WindowsManagerException {
+        this.windowsProperties = new WindowsProperties(framework);
+        return this.windowsProperties.getExtraBundles();
     }
 
     @Override
-    public void registerProvisioner(ILinuxProvisioner provisioner) {
+    public void registerProvisioner(IWindowsProvisioner provisioner) {
         if (!provisioners.contains(provisioner)) {
             this.provisioners.add(provisioner);
         }
@@ -96,7 +95,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         if(galasaTest.isJava()) {
             // *** Check to see if any of our annotations are present in the test class
             // *** If there is, we need to activate
-            List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
+            List<AnnotatedField> ourFields = findAnnotatedFields(WindowsManagerField.class);
             if (!ourFields.isEmpty()) {
                 youAreRequired(allManagers, activeManagers);
             }
@@ -104,14 +103,14 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
         try {
             this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
-            LinuxPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
-            this.cps = LinuxPropertiesSingleton.cps();
+            WindowsPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            this.cps = WindowsPropertiesSingleton.cps();
         } catch (Exception e) {
-            throw new LinuxManagerException("Unable to request framework services", e);
+            throw new WindowsManagerException("Unable to request framework services", e);
         }
 
         // *** Ensure our DSE Provisioner is at the top of the list
-        this.provisioners.add(new LinuxDSEProvisioner(this));
+        this.provisioners.add(new WindowsDSEProvisioner(this));
     }
 
     @Override
@@ -124,30 +123,30 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         activeManagers.add(this);
         ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
-            throw new LinuxManagerException("The IP Network Manager is not available");
+            throw new WindowsManagerException("The IP Network Manager is not available");
         }
 
-        // *** Need to find all the Managers that could provision a Linux image on behalf of us
+        // *** Need to find all the Managers that could provision a Windows image on behalf of us
 
         try {
             final ServiceReference<?>[] lpServiceReferences = bundleContext
-                    .getAllServiceReferences(ILinuxProvisioner.class.getName(), null);
+                    .getAllServiceReferences(IWindowsProvisioner.class.getName(), null);
 
             if (lpServiceReferences == null || lpServiceReferences.length == 0) {
-                logger.debug("No Linux provisioners have been found");
+                logger.debug("No Windows provisioners have been found");
             } else {
                 for(ServiceReference<?> lpServiceReference : lpServiceReferences) {
-                    ILinuxProvisioner linuxProvisioner = (ILinuxProvisioner) this.bundleContext.getService(lpServiceReference);
-                    if (linuxProvisioner instanceof IManager) {
-                        logger.trace("Found Linux provisioner " + linuxProvisioner.getClass().getName());
+                    IWindowsProvisioner windowsProvisioner = (IWindowsProvisioner) this.bundleContext.getService(lpServiceReference);
+                    if (windowsProvisioner instanceof IManager) {
+                        logger.trace("Found Windows provisioner " + windowsProvisioner.getClass().getName());
                         // *** Tell the provisioner it is required,  does not necessarily mean it will register.
-                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers);
+                        ((IManager)windowsProvisioner).youAreRequired(allManagers, activeManagers);
                     }
                 }
             }
 
         } catch(Throwable t) {
-            throw new LinuxManagerException("Problem looking for Linux provisioners", t);
+            throw new WindowsManagerException("Problem looking for Windows provisioners", t);
         }
 
 
@@ -156,8 +155,8 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
-        for (ILinuxProvisioner provisioner : provisioners) {
-            if (provisioner instanceof LinuxDSEProvisioner) {
+        for (IWindowsProvisioner provisioner : provisioners) {
+            if (provisioner instanceof WindowsDSEProvisioner) {
                 continue;
             }
 
@@ -176,12 +175,12 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
         // *** First add our default provisioning agent to the end
-        this.provisioners.add(new LinuxDefaultProvisioner());
+        this.provisioners.add(new WindowsDefaultProvisioner());
 
         // *** Get all our annotated fields
-        List<AnnotatedField> annotatedFields = findAnnotatedFields(LinuxManagerField.class);
+        List<AnnotatedField> annotatedFields = findAnnotatedFields(WindowsManagerField.class);
 
-        // *** First, locate all the ILinuxImage fields
+        // *** First, locate all the IWindowsImage fields
         // *** And then generate them
         Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
         while (annotatedFieldIterator.hasNext()) {
@@ -189,48 +188,42 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             final Field field = annotatedField.getField();
             final List<Annotation> annotations = annotatedField.getAnnotations();
 
-            if (field.getType() == ILinuxImage.class) {
-                LinuxImage annotationLinuxImage = field.getAnnotation(LinuxImage.class);
-                if (annotationLinuxImage != null) {
-                    ILinuxImage linuxImage = generateLinuxImage(field, annotations);
-                    registerAnnotatedField(field, linuxImage);
+            if (field.getType() == IWindowsImage.class) {
+                WindowsImage annotationWindowsImage = field.getAnnotation(WindowsImage.class);
+                if (annotationWindowsImage != null) {
+                    IWindowsImage windowsImage = generateWindowsImage(field, annotations);
+                    registerAnnotatedField(field, windowsImage);
                 }
             }
         }
 
         // *** Auto generate the remaining fields
-        generateAnnotatedFields(LinuxManagerField.class);
+        generateAnnotatedFields(WindowsManagerField.class);
     }
 
-    private ILinuxImage generateLinuxImage(Field field, List<Annotation> annotations)
-            throws ResourceUnavailableException, LinuxManagerException {
-        LinuxImage annotationLinuxImage = field.getAnnotation(LinuxImage.class);
+    private IWindowsImage generateWindowsImage(Field field, List<Annotation> annotations)
+            throws ResourceUnavailableException, WindowsManagerException {
+        WindowsImage annotationWindowsImage = field.getAnnotation(WindowsImage.class);
 
         // *** Default the tag to primary
-        String tag = defaultString(annotationLinuxImage.imageTag(), "PRIMARY").toUpperCase();
+        String tag = defaultString(annotationWindowsImage.imageTag(), "PRIMARY").toUpperCase();
 
         // *** Have we already generated this tag
         if (taggedImages.containsKey(tag)) {
             return taggedImages.get(tag);
         }
 
-        // *** Need a new linux image, lets ask the provisioners for one
-        OperatingSystem operatingSystem = annotationLinuxImage.operatingSystem();
-        if (operatingSystem == null) {
-            operatingSystem = OperatingSystem.any;
-        }
-
-        String[] capabilities = annotationLinuxImage.capabilities();
+        String[] capabilities = annotationWindowsImage.capabilities();
         if (capabilities == null) {
             capabilities = new String[0];
         }
         List<String> capabilitiesTrimmed = AbstractManager.trim(capabilities);
 
-        ILinuxImage image = null;
+        IWindowsImage image = null;
         boolean resourceUnavailable = false;
-        for (ILinuxProvisioner provisioner : this.provisioners) {
+        for (IWindowsProvisioner provisioner : this.provisioners) {
             try {
-                image = provisioner.provisionLinux(tag, operatingSystem, capabilitiesTrimmed);
+                image = provisioner.provisionWindows(tag, capabilitiesTrimmed);
             } catch (ResourceUnavailableException e) {
                 // *** one of the provisioners could have provisioned if there was enough resources
                 resourceUnavailable = true;
@@ -246,9 +239,9 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         if (image == null) {
             if (resourceUnavailable) {
                 throw new ResourceUnavailableException(
-                        "There are no linux images available for provisioning the @LinuxImage tagged " + tag);
+                        "There are no windows images available for provisioning the @WindowsImage tagged " + tag);
             } else {
-                throw new LinuxManagerException("Unable to provision a Linux image for tag " + tag + " as no provisioners configured with suitable images");
+                throw new WindowsManagerException("Unable to provision a Windows image for tag " + tag + " as no provisioners configured with suitable images");
             }
         }
 
@@ -265,9 +258,9 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         // annotation for
 
         // *** Get all our annotated fields
-        List<AnnotatedField> annotatedFields = findAnnotatedFields(LinuxManagerField.class);
+        List<AnnotatedField> annotatedFields = findAnnotatedFields(WindowsManagerField.class);
 
-        // *** First, locate all the ILinuxImage fields
+        // *** First, locate all the IWindowsImage fields
         // *** And then generate them
         Iterator<AnnotatedField> annotatedFieldIterator = annotatedFields.iterator();
         while (annotatedFieldIterator.hasNext()) {
@@ -283,17 +276,17 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     }
 
-    public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws LinuxManagerException {
-        LinuxIpHost annotationHost = field.getAnnotation(LinuxIpHost.class);
+    public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws WindowsManagerException {
+        WindowsIpHost annotationHost = field.getAnnotation(WindowsIpHost.class);
 
         // *** Default the tag to primary
         String tag = defaultString(annotationHost.imageTag(), "primary");
 
         // *** Ensure we have this tagged host
-        ILinuxImage image = taggedImages.get(tag);
+        IWindowsImage image = taggedImages.get(tag);
         if (image == null) {
-            throw new LinuxManagerException("Unable to provision an IP Host for field " + field.getName()
-            + " as no @LinuxImage for the tag '" + tag + "' was present");
+            throw new WindowsManagerException("Unable to provision an IP Host for field " + field.getName()
+            + " as no @WindowsImage for the tag '" + tag + "' was present");
         }
 
         return image.getIpHost();

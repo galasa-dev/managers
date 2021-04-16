@@ -12,30 +12,31 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Linux Key Pair
+ * OpenStack Windows Credentials
  * <p>
- * Provide the registered Key Pair that OpenStack will use when deploying the image
+ * Provide the credentials necessary to SSH to the openstack image.  This is normally related 
+ * to the openstack.windows.keypair property  
  * </p>
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].keypair=galasa<br>
- * openstack.linux.default.keypair=galasa<br>
- * Where imagename is that provided in {@link LinuxImages}<br>
+ * openstack.windows.[imagename].credentials.id=OPENSTACKSSH<br>
+ * openstack.windows.credentials.id=OPENSTACKSSH<br>
+ * Where imagename is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
- * There is no default
+ * The default is OPENSTACKSSH
  * </p>
  * 
  * @author Michael Baylis
  *
  */
-public class LinuxKeyPair extends CpsProperties {
+public class WindowsCredentials extends CpsProperties {
 
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "keypair", image);
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "OPENSTACKSSH", "windows", "credentials.id", image);
 
     }
 
