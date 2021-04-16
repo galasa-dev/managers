@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * Represents a zOS Image that has been provisioned for the test
+ * Represents a Linux that has been provisioned for the test
  * 
  * <p>
  * Used to populate a {@link ILinuxImage} field
@@ -46,7 +46,7 @@ public @interface LinuxImage {
     String[] capabilities() default {};
 
     /**
-     * Set a variable prefix to be filled in for this zOS Image TODO: ****** TO BE
+     * Set a variable prefix to be filled in for this Linux TODO: ****** TO BE
      * SPECED OUT FURTHER *****
      */
     String variablePrefix() default "";
