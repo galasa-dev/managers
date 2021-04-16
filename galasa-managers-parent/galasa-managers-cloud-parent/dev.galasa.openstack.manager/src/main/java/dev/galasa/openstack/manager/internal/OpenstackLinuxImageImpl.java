@@ -29,8 +29,10 @@ import dev.galasa.openstack.manager.internal.json.Network;
 import dev.galasa.openstack.manager.internal.json.Port;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
-import dev.galasa.openstack.manager.internal.properties.GenerateTimeout;
+import dev.galasa.openstack.manager.internal.properties.BuildTimeout;
+import dev.galasa.openstack.manager.internal.properties.LinuxAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
+import dev.galasa.openstack.manager.internal.properties.LinuxFlavor;
 import dev.galasa.openstack.manager.internal.properties.LinuxKeyPair;
 
 public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
@@ -92,7 +94,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
     public void discard() {
         try {
-            // *** TODO delete the instance in Openstack
+            // *** delete the instance in Openstack
             if (this.openstackServer != null) {
                 try {
                     deleteServer(this.openstackServer, this.openstackServer.name,
@@ -123,15 +125,15 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         logger.info("Building OpenStack Linux instance " + this.instanceName + " with image " + this.image + " for tag "
                 + this.tag);
 
-        String flavor = "m1.medium";
-        int generateTimeout = GenerateTimeout.get();
+        String flavor = LinuxFlavor.get(this.image);
+        int generateTimeout = BuildTimeout.get();
         generateTimeout = 1;
 
         Server server = new Server();
         server.name = this.instanceName;
         server.imageRef = this.openstackHttpClient.getImageId(this.image);
         server.flavorRef = this.openstackHttpClient.getFlavourId(flavor);
-        server.availability_zone = "nova"; // TODO cps
+        server.availability_zone = LinuxAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
         server.key_name = LinuxKeyPair.get(this.image);
@@ -153,6 +155,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
             Instant expire = Instant.now();
             expire = expire.plus(generateTimeout, ChronoUnit.MINUTES);
+            Instant poll = Instant.now().plus(30, ChronoUnit.SECONDS);
 
             String serverJson = "";
             String state = null;
@@ -175,8 +178,16 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
                     }
                 }
 
-                logger.trace("Still waiting for OpenStack Linux instance " + this.instanceName + " to be built, task="
-                        + state);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Still waiting for OpenStack Linux instance " + this.instanceName + " to be built, task="
+                            + state);
+                } else {
+                    if (Instant.now().isAfter(poll)) {
+                        logger.debug("Still waiting for OpenStack Linux instance " + this.instanceName + " to be built, task="
+                                + state);
+                        poll = Instant.now().plus(30, ChronoUnit.SECONDS);
+                    }
+                }
             }
 
             if (!up) {
