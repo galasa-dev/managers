@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -523,17 +525,14 @@ public class BundleResourcesImpl implements IBundleResources {
     @Override
     public String streamAsString(InputStream inputStream) throws IOException {
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        String line = null;
+        char [] buffer = new char[1024];
         StringBuilder sb = new StringBuilder();
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
-            sb.append('\n');
+        Reader input = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        for(int read; (read = input.read(buffer,0,buffer.length)) > 0; ){
+            sb.append(buffer,0,read);
         }
 
         inputStream.close();
-
         return sb.toString();
     }
 

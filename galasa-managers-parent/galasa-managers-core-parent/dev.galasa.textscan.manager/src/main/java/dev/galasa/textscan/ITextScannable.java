@@ -1,13 +1,11 @@
 /*
- * Licensed Materials - Property of IBM
+ * Licensed Materials Property of IBM
  * 
  * (c) Copyright IBM Corp. 2020.
  */
 package dev.galasa.textscan;
 
 import java.io.InputStream;
-
-import dev.galasa.ManagerException;
 
 /**
  * This interface provides a access to a text resource that can be repeatedly updated and scanned for text.
@@ -25,14 +23,14 @@ public interface ITextScannable {
      * 
      * @return true if is an inputstream
      */
-    boolean isScannableInputStream();
+	public boolean isScannableInputStream();
     
     /**
      * Used for normal logs that fit easily in a standard String
      * 
      * @return true if it is a simple String object
      */
-    boolean isScannableString();
+	public boolean isScannableString();
     
     
     /**
@@ -40,30 +38,29 @@ public interface ITextScannable {
      * 
      * @return a string to uniquely identify the scannable
      */
-    String getScannableName();
+	public String getScannableName();
     
     /**
      * Update/Refresh the scannable text,  likely to be a no-op if this is an inputstream scannable. 
      * 
      * @return this scannable for fluent use
-     * @throws ManagerException - If the update fails
+     * @throws TextScanException If the update fails
      */
-    ITextScannable updateScannable() throws ManagerException;
+	public ITextScannable updateScannable() throws TextScanException;
     
     /**
      * Fetch the InputStream for the scannable
      * 
      * @return The latest inputstream
-     * @throws ManagerException - If there is an error fetching the inputstream or it is not an inputstream
+     * @throws TextScanException If there is an error fetching the inputstream or it is not an inputstream
      */
-    InputStream getScannableInputStream() throws ManagerException;
+	public InputStream getScannableInputStream() throws TextScanException;
     
     /**
      * Fetch the latest scannable text
      * 
      * @return The latest scannable text
-     * @throws ManagerException if there is an error retrieving the text
+     * @throws TextScanException if there is an error retrieving the text
      */
-    String getScannableString() throws ManagerException;
-
+	public String getScannableString() throws TextScanException;
 }

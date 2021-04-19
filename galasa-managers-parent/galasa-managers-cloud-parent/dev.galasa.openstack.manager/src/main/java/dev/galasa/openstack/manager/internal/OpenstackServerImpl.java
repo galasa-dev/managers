@@ -10,18 +10,58 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.ICredentials;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
+import dev.galasa.ipnetwork.ICommandShell;
+import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.Floatingip;
+import dev.galasa.openstack.manager.internal.json.Network;
+import dev.galasa.openstack.manager.internal.json.Port;
 import dev.galasa.openstack.manager.internal.json.Server;
+import dev.galasa.openstack.manager.internal.json.ServerRequest;
+import dev.galasa.openstack.manager.internal.properties.BuildTimeout;
 
-public class OpenstackServerImpl {
+public abstract class OpenstackServerImpl {
 
     private final static Log logger = LogFactory.getLog(OpenstackServerImpl.class);
+    
+    private final String osType;
+    public final OpenstackManagerImpl manager;
+    private final OpenstackHttpClient openstackHttpClient;
+    public final String               instanceName;
+    public final String               image;
+    public final String               tag;
+    
+    private String                    id;
+
+    private String                    hostname;
+
+    private Server                    openstackServer;
+    private Port                      openstackPort;
+    private Floatingip                openstackFloatingip;
+
+    private OpenstackIpHost           ipHost;
+
+    private ICommandShell             commandShell;
+
+    protected OpenstackServerImpl(@NotNull String osType, @NotNull OpenstackManagerImpl manager,
+            @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
+            @NotNull String tag) {
+        this.osType = osType;
+        this.manager = manager;
+        this.openstackHttpClient = openstackHttpClient;
+        this.instanceName = instanceName;
+        this.image = image;
+        this.tag = tag;
+    }
 
     public static void deleteServerByName(String serverName, String runName, IDynamicStatusStoreService dss,
             OpenstackHttpClient openstackHttpClient) throws OpenstackManagerException {
@@ -191,5 +231,136 @@ public class OpenstackServerImpl {
         fipProperties.put(prefix, runName);
         dss.put(fipProperties);
     }
+    
+    protected void discard() {
+        try {
+            // *** delete the instance in Openstack
+            if (this.openstackServer != null) {
+                try {
+                    deleteServer(this.openstackServer, this.openstackServer.name,
+                            this.manager.getFramework().getTestRunName(), this.manager.getDSS(),
+                            this.openstackHttpClient);
+                } catch (Exception e) {
+                    logger.warn("Failed to delete the server", e);
+                }
+            }
+
+            // *** Delete the Floating IP
+            if (this.openstackFloatingip != null) {
+                try {
+                    deleteFloatingIp(this.openstackFloatingip, this.openstackFloatingip.floating_ip_address,
+                            this.manager.getFramework().getTestRunName(), this.manager.getDSS(),
+                            this.openstackHttpClient);
+                } catch (Exception e) {
+                    logger.warn("Failed to delete the floating ip", e);
+                }
+            }
+            logger.info("OpenStack " + this.osType + " instance " + this.instanceName + " for tag " + tag + " has been discarded");
+        } catch (Exception e) {
+            logger.warn("Unable to discard OpenStack " + this.osType + " instance " + this.instanceName, e);
+        }
+    }
+    
+    protected void createServer(ServerRequest serverRequest) throws OpenstackManagerException {
+        try {
+            this.openstackServer = this.openstackHttpClient.createServer(serverRequest);
+            this.id = this.openstackServer.id;
+
+            Instant expire = Instant.now();
+            expire = expire.plus(BuildTimeout.get(), ChronoUnit.MINUTES);
+            Instant poll = Instant.now().plus(30, ChronoUnit.SECONDS);
+
+            String serverJson = "";
+            String state = null;
+            boolean up = false;
+            while (expire.compareTo(Instant.now()) > 0) {
+                Thread.sleep(5000);
+
+                Server checkServer = this.openstackHttpClient.getServer(this.id);
+                if (checkServer != null) {
+                    serverJson = this.manager.getGson().toJson(checkServer);
+                    if (checkServer.power_state != null) {
+                        if (checkServer.power_state == 1) {
+                            logger.info("OpenStack " + this.osType + " instance " + this.instanceName
+                                    + " has been built and is running, compute server id = " + this.openstackServer.id);
+                            this.openstackServer = checkServer;
+                            up = true;
+                            break;
+                        }
+                        state = checkServer.task_state;
+                    }
+                }
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Still waiting for OpenStack " + this.osType + " instance " + this.instanceName + " to be built, task="
+                            + state);
+                } else {
+                    if (Instant.now().isAfter(poll)) {
+                        logger.debug("Still waiting for OpenStack " + this.osType + " instance " + this.instanceName + " to be built, task="
+                                + state);
+                        poll = Instant.now().plus(30, ChronoUnit.SECONDS);
+                    }
+                }
+            }
+
+            if (!up) {
+                throw new OpenstackManagerException(
+                        "OpenStack failed to build the server in time, last response was:-\n" + serverJson);
+            }
+
+            // *** Get the network port details
+            this.openstackPort = this.openstackHttpClient.retrievePort(this.openstackServer.id);
+            if (this.openstackPort == null) {
+                throw new OpenstackManagerException("OpenStack did not allocate a port for this instance");
+            }
+
+            // *** Locate the external network
+            Network network = this.openstackHttpClient.findExternalNetwork(null); // TODO provide means to specify
+            // network
+
+            if (network == null) {
+                throw new OpenstackManagerException("Unable to select an external network to allocate a floatingip on");
+            }
+
+            // *** Assign a floating IPv4 address
+            this.openstackFloatingip = this.openstackHttpClient.allocateFloatingip(this.openstackPort, network);
+            logger.info("OpenStack " + this.osType + " Server " + this.instanceName + " assigned IP address "
+                    + this.openstackFloatingip.floating_ip_address);
+
+            // *** Create the DSS properties to manager the Floating IP Address
+            registerFloatingIp(this.manager.getDSS(), this.manager.getFramework().getTestRunName(),
+                    this.openstackFloatingip);
+
+            // *** Default hostname to the floatingip
+            this.hostname = this.openstackFloatingip.floating_ip_address;
+
+            // *** Create the IPHost
+            this.ipHost = new OpenstackIpHost(this.hostname, getServerCredentials());
+
+            // *** Create the Commandshell
+            this.commandShell = this.manager.getIpNetworkManager().getCommandShell(this.ipHost,
+                    this.ipHost.getDefaultCredentials());
+        } catch (OpenstackManagerException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new OpenstackManagerException("Unable to start OpenStack " + this.osType + " server", e);
+        }
+    }
+    
+    public @NotNull IIpHost getIpHost() {
+        return this.ipHost;
+    }
+    
+    protected OpenstackHttpClient getOpenstackHttpClient() {
+        return this.openstackHttpClient;
+    }
+    
+    protected ICommandShell getServerCommandShell() {
+        return this.commandShell;
+    }
+    
+    protected abstract void build() throws OpenstackManagerException, ConfigurationPropertyStoreException;
+
+    protected abstract ICredentials getServerCredentials() throws OpenstackManagerException;
 
 }
