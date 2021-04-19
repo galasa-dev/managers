@@ -110,7 +110,7 @@ public class WindowsManagerImpl extends AbstractManager implements IWindowsManag
         }
 
         // *** Ensure our DSE Provisioner is at the top of the list
-        this.provisioners.add(new WindowsDSEProvisioner(this));
+        this.provisioners.add(0, new WindowsDSEProvisioner(this));
     }
 
     @Override

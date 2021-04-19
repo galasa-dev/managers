@@ -111,7 +111,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
         // *** Ensure our DSE Provisioner is at the top of the list
-        this.provisioners.add(new LinuxDSEProvisioner(this));
+        this.provisioners.add(0, new LinuxDSEProvisioner(this));
     }
 
     @Override
