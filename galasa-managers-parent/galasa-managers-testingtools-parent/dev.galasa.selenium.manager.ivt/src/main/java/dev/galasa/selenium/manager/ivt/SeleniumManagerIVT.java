@@ -12,9 +12,6 @@ import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.kubernetes.IKubernetesNamespace;
-import dev.galasa.kubernetes.KubernetesNamespace;
-import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
