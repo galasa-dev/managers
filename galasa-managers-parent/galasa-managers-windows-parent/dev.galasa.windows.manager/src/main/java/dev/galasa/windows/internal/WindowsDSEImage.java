@@ -14,11 +14,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ICredentials;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsProvisionedImage;
 
@@ -58,10 +58,11 @@ public class WindowsDSEImage implements IWindowsProvisionedImage {
         this.pathTemp = this.fileSystem.getPath("C:/tmp");
 
         try {
-            String homeDir = this.commandShell.issueCommand("pwd");
+            String homeDir = this.commandShell.issueCommand("echo %cd%");
             if (homeDir == null) {
                 throw new WindowsManagerException("Unable to determine home directory, response null");
             }
+            
             homeDir = homeDir.replaceAll("\\r\\n?|\\n", "");
             this.pathHome = this.fileSystem.getPath(homeDir);
             logger.info("Home directory for windows image tagged " + tag + " is " + homeDir);
@@ -81,8 +82,10 @@ public class WindowsDSEImage implements IWindowsProvisionedImage {
 
     private ICommandShell createCommandShell() throws WindowsManagerException {
         try {
-            return this.windowsManager.getIpNetworkManager().getCommandShell(this.ipHost,
+            ICommandShell commandShell =  this.windowsManager.getIpNetworkManager().getCommandShell(this.ipHost,
                     this.ipHost.getDefaultCredentials());
+            commandShell.setRemoveAnsiEscapeCodes(true);
+            return commandShell;
         } catch (Exception e) {
             throw new WindowsManagerException("Unable to initialise the command shell", e);
         }

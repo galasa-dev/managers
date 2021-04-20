@@ -1,14 +1,8 @@
 -snapshot: ${tstamp}
 Bundle-Name: IP Network Manager
-Export-Package: dev.galasa.ipnetwork, dev.galasa.ipnetwork.spi
-Import-Package: com.jcraft.jsch,\
-    dev.galasa,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.creds,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.ipnetwork,\
-    dev.galasa.ipnetwork.spi,\
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.logging
+Export-Package: dev.galasa.ipnetwork, \
+                dev.galasa.ipnetwork.spi
+Import-Package: !javax.validation.constraints, \
+                *
 
 
