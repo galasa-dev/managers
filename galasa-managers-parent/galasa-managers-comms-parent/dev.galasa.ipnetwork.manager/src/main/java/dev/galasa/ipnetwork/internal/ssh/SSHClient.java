@@ -35,6 +35,7 @@ import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.SSHAuthFailException;
 import dev.galasa.ipnetwork.SSHException;
+import dev.galasa.ipnetwork.spi.AnsiEscapeSequences;
 
 /**
  * SSH client for Galasa
@@ -62,6 +63,8 @@ public class SSHClient implements ICommandShell {
     private long                lastCommandTimestamp;
 
     private boolean             logShellResults;
+    
+    private boolean             removeAnsiEscapeCodes = false;
 
     private final static String specialPrompt = "[GalasaPrompt]";
 
@@ -286,7 +289,7 @@ public class SSHClient implements ICommandShell {
             lastCommandTimestamp = System.currentTimeMillis();
             String response = retrieveOutputFromShell(channel, command, timeout);
             lastCommandTimestamp = System.currentTimeMillis();
-
+            
             return response;
 
         } catch (IOException e) {
@@ -478,9 +481,17 @@ public class SSHClient implements ICommandShell {
                 channel.disconnect();
             }
         }
+        
+        if (this.removeAnsiEscapeCodes) {
+            return new String(removeAnsiEscapeCodes(sb.toString().getBytes()));
+        }
 
         return sb.toString();
 
+    }
+
+    private byte[] removeAnsiEscapeCodes(byte[] bytes) throws IOException {
+        return AnsiEscapeSequences.stripAnsiEscapeSequences(bytes);
     }
 
     /**
@@ -625,6 +636,11 @@ public class SSHClient implements ICommandShell {
     @Override
     public void reportResultStrings(boolean report) {
         this.logShellResults = report;
+    }
+
+    @Override
+    public void setRemoveAnsiEscapeCodes(boolean remoteAnsiEscapeCodes) {
+        this.removeAnsiEscapeCodes = remoteAnsiEscapeCodes;
     }
 
 }
