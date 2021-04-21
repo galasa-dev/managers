@@ -62,6 +62,10 @@ include 'galasa-managers-cloud-parent:dev.galasa.docker.manager.ivt'
 include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager'
 include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager.ivt'
 include 'galasa-managers-cloud-parent:dev.galasa.liberty.manager'
+// galasa-managers-languages-parent
+include 'galasa-managers-languages-parent:dev.galasa.java.manager'
+include 'galasa-managers-languages-parent:dev.galasa.java.ubuntu.manager'
+include 'galasa-managers-languages-parent:dev.galasa.java.windows.manager'
 // galasa-managers-testingtools-parent
 include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager'
 include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager.ivt'
