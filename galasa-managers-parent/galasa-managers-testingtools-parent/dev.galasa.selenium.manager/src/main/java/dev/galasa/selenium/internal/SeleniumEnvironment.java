@@ -16,6 +16,7 @@ import dev.galasa.framework.spi.DssSwap;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDssAction;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
@@ -56,7 +57,7 @@ public class SeleniumEnvironment {
 	 * @return
 	 * @throws SeleniumManagerException
 	 */
-	public ISeleniumManager allocateDriver(Browser browser) throws SeleniumManagerException {
+	public ISeleniumManager allocateDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		ISeleniumManager driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
 		// Get a slot or fail
@@ -89,7 +90,7 @@ public class SeleniumEnvironment {
 	 * @return
 	 * @throws SeleniumManagerException
 	 */
-	private String allocateSlot() throws SeleniumManagerException {
+	private String allocateSlot() throws ResourceUnavailableException, SeleniumManagerException {
 		String slotKey = "driver.current.slots";
 		String slots = "";
 		String slotName = "";
@@ -101,7 +102,7 @@ public class SeleniumEnvironment {
 			}
 			
 			if (currentSlots >= SeleniumDriverMaxSlots.get()) {
-				throw new SeleniumManagerException("Failed to provsion. No slots avilable");
+				throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
 			}			
 			
 			String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
@@ -119,7 +120,7 @@ public class SeleniumEnvironment {
 			}
 			
 		} catch (DynamicStatusStoreException | ConfigurationPropertyStoreException e) {
-			throw new SeleniumManagerException("Failed ot allocate slot", e);
+			throw new SeleniumManagerException("Failed to allocate slot", e);
 		}
 		
 		try {
@@ -167,7 +168,7 @@ public class SeleniumEnvironment {
 				actions.add(new DssDeletePrefix("driver.slot."+slot));
 			}
 			String currentSlots = dss.get("driver.current.slots");
-			int newSlots = Integer.valueOf(currentSlots)-1;
+			int newSlots = Integer.valueOf(currentSlots)-actions.size();
 			
 			actions.add(new DssSwap("driver.current.slots", currentSlots, String.valueOf(newSlots)));
 			

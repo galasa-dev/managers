@@ -40,7 +40,6 @@ import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.SeleniumManagerField;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
 import dev.galasa.selenium.internal.properties.SeleniumScreenshotFailure;
-import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 
 @Component(service = { IManager.class })
 public class SeleniumManagerImpl extends AbstractManager {
@@ -116,7 +115,7 @@ public class SeleniumManagerImpl extends AbstractManager {
         }
 		this.dockerManager = this.addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
 		if (this.dockerManager == null) {
-	        throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
+			throw new SeleniumManagerException("Unable to locate the Docker Manager");
 	    }
         this.httpManager = this.addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
         if (this.httpManager == null) {
@@ -148,7 +147,7 @@ public class SeleniumManagerImpl extends AbstractManager {
     }
 
     @GenerateAnnotatedField(annotation = SeleniumManager.class)
-    public ISeleniumManager generateSeleniumManager(Field field, List<Annotation> annotations) throws SeleniumManagerException {
+    public ISeleniumManager generateSeleniumManager(Field field, List<Annotation> annotations) throws ResourceUnavailableException, SeleniumManagerException {
     	SeleniumManager annoation = field.getAnnotation(SeleniumManager.class);
         Browser browser = annoation.browser();
        return this.seleniumEnvironment.allocateDriver(browser);

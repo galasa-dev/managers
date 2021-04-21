@@ -9,11 +9,16 @@ Import-Package: dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.cps,\
     dev.galasa.framework.spi.language,\
+    dev.galasa.http.manager,\
+	dev.galasa.docker.manager,\
+	dev.galasa.kubernetes.manager,\
+	dev.galasa.artifact.manager,\
     dev.galasa.selenium,\
     javax.net,\
     javax.net.ssl,\
     org.apache.commons.logging,\
-    org.openqa.selenium
+    org.openqa.selenium,\
+    org.openqa.selenium.*
 Embed-Transitive: true
 Embed-Dependency: *;scope=compile
 -includeresource: animal-sniffer-annotations-1.14.jar; lib:=true,\
