@@ -3,9 +3,11 @@ package dev.galasa.http.manager.ivt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URI;
 
 import com.google.gson.JsonObject;
@@ -15,8 +17,15 @@ import org.apache.commons.logging.Log;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.http.HttpClient;
+import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+
 
 @Test
 public class HttpManagerIVT {
@@ -32,6 +41,13 @@ public class HttpManagerIVT {
         assertThat(logger).isNotNull();
         assertThat(client).isNotNull();
     }
+    
+    @Test
+    public void SSLContextTest() throws HttpClientException {
+    	client.setTrustingSSLContext();
+    	assertThat(client.getSSLContext()).isNotNull();
+    }
+    
     @Test
     public void getTests() throws Exception{
         client.setURI(new URI("https://httpbin.org"));
@@ -41,8 +57,6 @@ public class HttpManagerIVT {
 
         JsonObject jResponse = client.getJson("/get").getContent();
         assertThat(jResponse.get("url").getAsString()).isEqualTo("https://httpbin.org/get");
-
-
     }
 
     @Test
@@ -68,8 +82,7 @@ public class HttpManagerIVT {
         assertThat(response.getStatusCode()).isEqualTo(200);
         
         assertThat(response.getContent().get("authenticated").getAsBoolean()).isTrue();
-        assertThat(response.getContent().get("user").getAsString()).isEqualTo(user);
-        
+        assertThat(response.getContent().get("user").getAsString()).isEqualTo(user);  
     }
 
     @Test
@@ -117,6 +130,30 @@ public class HttpManagerIVT {
         assertThat(fileExists).isTrue();
 
         f.delete();
+    }
+    
+    @Test
+    public void buildURITest() {
+    	HttpClientException expected = null;
+    	
+    	try {
+    		// dummy request
+    		client.getText("http://httpbin.org/anything?should==fail");
+    	} catch (HttpClientException e) {
+    		logger.info("Caught expected exception: " + e.getMessage());
+    		expected = e;
+    	}
+    	assertThat(expected).isNotNull();
+    	
+    	expected = null;
+    	try {
+    		// dummy request
+    		client.getText("http://httpbin.org/anything?thisparam=ok&&oops=yes");
+    	} catch (HttpClientException e) {
+    		logger.info("Caught expected exception: " + e.getMessage());
+    		expected = e;
+    	}
+    	assertThat(expected).isNotNull();
     }
     
 }
