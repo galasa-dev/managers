@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zos.internal;
 
@@ -36,6 +36,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
+import dev.galasa.ICredentials;
 import dev.galasa.ManagerException;
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.framework.spi.AbstractManager;
@@ -46,6 +47,8 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.framework.spi.utils.DssUtils;
 import dev.galasa.ipnetwork.IIpPort;
@@ -69,6 +72,7 @@ import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
+import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
@@ -102,6 +106,12 @@ public class TestZosManagerImpl {
     private IFramework frameworkMock;
     
     @Mock
+    private ICredentialsService credentialsServiceMock;
+    
+    @Mock
+    private ICredentials credentialsMock;
+    
+    @Mock
     private IResultArchiveStore resultArchiveStoreMock;
 
     @Mock
@@ -121,6 +131,9 @@ public class TestZosManagerImpl {
 
     @Mock
     private IZosImage zosImageMock;
+    
+    @Mock
+    private IZosBatchJob zosBatchJobMock;
     
     @Mock
     private Log logMock;
@@ -593,6 +606,32 @@ public class TestZosManagerImpl {
     }
     
     @Test
+    public void testGetCredentials() throws ZosManagerException, CredentialsException {
+    	Mockito.when(frameworkMock.getCredentialsService()).thenReturn(credentialsServiceMock);
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID)).thenReturn(credentialsMock);
+    	Assert.assertEquals("getImage() should return the expected credentials", credentialsMock, zosManagerSpy.getCredentials(DEFAULT_CREDENTIALS_ID, IMAGE_ID));
+
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID)).thenReturn(null);
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID.toUpperCase())).thenReturn(credentialsMock);
+    	Assert.assertEquals("getImage() should return the expected credentials", credentialsMock, zosManagerSpy.getCredentials(DEFAULT_CREDENTIALS_ID, IMAGE_ID));
+
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID)).thenReturn(null);
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID.toUpperCase())).thenReturn(null);
+        String expectedMessage = "zOS Credentials missing for image " + IMAGE_ID + " id " + DEFAULT_CREDENTIALS_ID;
+        ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	zosManagerSpy.getCredentials(DEFAULT_CREDENTIALS_ID, IMAGE_ID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+
+    	Mockito.when(credentialsServiceMock.getCredentials(DEFAULT_CREDENTIALS_ID)).thenThrow(new CredentialsException());
+    	expectedMessage = "Unable to acquire the credentials for id " + DEFAULT_CREDENTIALS_ID;
+        expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
+        	zosManagerSpy.getCredentials(DEFAULT_CREDENTIALS_ID, IMAGE_ID);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    }
+    
+    @Test
     public void testGetImage() throws ZosManagerException {
         HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
         ZosBaseImageImpl zosBaseImageMock = Mockito.mock(ZosBaseImageImpl.class);
@@ -755,9 +794,15 @@ public class TestZosManagerImpl {
     }
     
     @Test
+    public void testNewZosBatchJobOutputSpoolFile() throws ZosBatchException {
+    	String jobname = "JOBNAME";
+    	Assert.assertEquals("newZosBatchJobOutputSpoolFile() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutputSpoolFile(zosBatchJobMock, jobname, "jobid", "stepname", "procstep", "ddname", "id", "records").getJobname());
+    }
+    
+    @Test
     public void testNewZosBatchJobOutput() throws ZosBatchException {
     	String jobname = "JOBNAME";
-    	Assert.assertEquals("newZosBatchJobOutput() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutput(jobname, "jobid").getJobname());
+    	Assert.assertEquals("newZosBatchJobOutput() should return the expected value", jobname, zosManagerSpy.newZosBatchJobOutput(zosBatchJobMock, jobname, "jobid").getJobname());
     }
 
     @Test

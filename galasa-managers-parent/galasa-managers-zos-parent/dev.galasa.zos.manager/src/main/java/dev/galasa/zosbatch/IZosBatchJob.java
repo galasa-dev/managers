@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosbatch;
 
@@ -108,6 +108,14 @@ public interface IZosBatchJob {
      * @throws ZosBatchException
      */
     public int waitForJob() throws ZosBatchException;
+
+    /**
+     * Provides a list of the batch job spool files as an {@link IZosBatchJobOutput} object without retrieving spool file content
+     * 
+     * @return The job output 
+     * @throws ZosBatchException
+     */
+    public IZosBatchJobOutput listSpoolFiles() throws ZosBatchException;
 
     /**
      * Retrieve the batch job output as an {@link IZosBatchJobOutput} object
