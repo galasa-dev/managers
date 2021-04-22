@@ -3,11 +3,9 @@ package dev.galasa.http.manager.ivt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 
 import com.google.gson.JsonObject;
@@ -20,11 +18,6 @@ import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlType;
 
 
 @Test
