@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosunixcommand;
 
@@ -99,6 +99,47 @@ public class TestZosUNIXCommandEnumsAndExceptions {
     public void testZosUNIXCommandManagerException5() throws ZosUNIXCommandManagerException {
     	ZosUNIXCommandManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandManagerException.class, ()->{
     		throw new ZosUNIXCommandManagerException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
+    }
+    
+    @Test
+    public void testZosUNIXCommandAuthFailException1() throws ZosUNIXCommandAuthFailException {
+    	Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandAuthFailException.class, ()->{
+    		throw new ZosUNIXCommandAuthFailException();
+    	});
+    }
+    
+    @Test
+    public void testZosUNIXCommandAuthFailException2() throws ZosUNIXCommandAuthFailException {
+    	ZosUNIXCommandAuthFailException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandAuthFailException.class, ()->{
+    		throw new ZosUNIXCommandAuthFailException(EXCEPTION_MESSAGE);
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    }
+    
+    @Test
+    public void testZosUNIXCommandAuthFailException3() throws ZosUNIXCommandAuthFailException {
+    	ZosUNIXCommandAuthFailException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandAuthFailException.class, ()->{
+    		throw new ZosUNIXCommandAuthFailException(new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
+    }
+    
+    @Test
+    public void testZosUNIXCommandAuthFailException4() throws ZosUNIXCommandAuthFailException {
+    	ZosUNIXCommandAuthFailException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandAuthFailException.class, ()->{
+    		throw new ZosUNIXCommandAuthFailException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE));
+    	});
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
+    	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());
+    }
+    
+    @Test
+    public void testZosUNIXCommandAuthFailException5() throws ZosUNIXCommandAuthFailException {
+    	ZosUNIXCommandAuthFailException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXCommandAuthFailException.class, ()->{
+    		throw new ZosUNIXCommandAuthFailException(EXCEPTION_MESSAGE, new Exception(EXCEPTION_CAUSE), false, false);
     	});
     	Assert.assertEquals("exception should contain expected message", EXCEPTION_MESSAGE, expectedException.getMessage());
     	Assert.assertEquals("exception should contain expected message", EXCEPTION_CAUSE, expectedException.getCause().getMessage());

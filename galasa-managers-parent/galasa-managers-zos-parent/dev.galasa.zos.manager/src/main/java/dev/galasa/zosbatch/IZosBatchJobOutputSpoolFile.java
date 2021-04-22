@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zosbatch;
 
@@ -37,9 +37,20 @@ public interface IZosBatchJobOutputSpoolFile {
     
     /**
      * Return the DD name associated with this zOS batch job spool file
-     * @return the zOs batch job DD name
+     * @return the zOS batch job DD name
      */
     public String getDdname();
+
+    /**
+     * Return the id associated with this zOS batch job spool file
+     * @return the zOS batch job spool file ID
+     */
+	public String getId();
+    
+    /**
+     * Retrieve current content of spool file from zOS
+     */
+    public void retrieve() throws ZosBatchException;
     
     /**
      * Return the content of this zOS batch job spool file
