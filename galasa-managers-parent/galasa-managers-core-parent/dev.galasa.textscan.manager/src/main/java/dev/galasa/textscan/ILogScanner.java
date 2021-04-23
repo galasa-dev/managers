@@ -55,6 +55,14 @@ public interface ILogScanner {
     ILogScanner checkpoint() throws TextScanException;
     
     /**
+	 * Manually set a checkpoint to the supplied value 
+	 * 
+	 * @return this interface for fluent use
+	 * @throws TextScanException 
+	 */
+	ILogScanner setCheckpoint(long checkpoint) throws TextScanException;
+
+	/**
      * Resets the checkpoint back to zero
      * 
      * @return this interface for fluent use
@@ -67,7 +75,6 @@ public interface ILogScanner {
      * @return the current checkpoint
      */
     long getCheckpoint();
-    
     
     
     /**

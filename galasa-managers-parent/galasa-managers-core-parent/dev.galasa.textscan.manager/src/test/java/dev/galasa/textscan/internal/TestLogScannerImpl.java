@@ -10,11 +10,11 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScannable;
@@ -80,12 +79,12 @@ public class TestLogScannerImpl {
 	
 	@Test
 	public void testSetScannable() throws TextScanException {
-		assertSame(logScanner, logScanner.setScannable(textScannableMock));
+		assertSame(logScannerSpy, logScannerSpy.setScannable(textScannableMock));
 	}
 	
 	@Test
 	public void testUpdateScannable() throws TextScanException {
-		assertSame(logScanner.setScannable(textScannableMock), logScanner.updateScannable());
+		assertSame(logScannerSpy.setScannable(textScannableMock), logScannerSpy.updateScannable());
 	}
 	
 	@Test
@@ -98,7 +97,7 @@ public class TestLogScannerImpl {
 	
 	@Test
 	public void testReset() throws TextScanException {
-		((LogScannerImpl) logScanner.setScannable(textScannableMock)).checkScannableNoNull();
+		((LogScannerImpl) logScannerSpy.setScannable(textScannableMock)).checkScannableNoNull();
 		logScanner.reset();
 		TextScanException expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
 			logScanner.checkScannableNoNull();
@@ -111,22 +110,22 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableString()).thenReturn(true);
 		when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 
 		reset(textScannableMock);
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableInputStream()).thenReturn(true);
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 		
 		PowerMockito.mockStatic(IOUtils.class);
 		when(IOUtils.toByteArray((InputStream) any())).thenThrow(new IOException());
 		TextScanException expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScanner.checkpoint();
+			logScannerSpy.checkpoint();
         });
         assertEquals("exception should contain expected cause", "Unable to checkpoint scannable '" + SCANNABLE_NAME + QUOTE, expectedException.getMessage());
 		
@@ -135,7 +134,7 @@ public class TestLogScannerImpl {
 		PowerMockito.mockStatic(IOUtils.class);
 		when(IOUtils.toByteArray((InputStream) any())).thenThrow(new IOException());
 		expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScanner.checkpoint();
+			logScannerSpy.checkpoint();
         });
         assertEquals("exception should contain expected cause", "Unable to checkpoint scannable '" + SCANNABLE_NAME + QUOTE + ", unknown scannable type", expectedException.getMessage());
 	}
@@ -145,12 +144,12 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableString()).thenReturn(true);
 		when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 
-		logScanner.resetCheckpoint();
-		assertEquals(-1, logScanner.getCheckpoint());		
+		logScannerSpy.resetCheckpoint();
+		assertEquals(-1, logScannerSpy.getCheckpoint());		
 	}
 	
 	// scanSinceCheckpoint() ----------------------------------------------------------------------------------------
@@ -800,11 +799,11 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
 		logScannerSpy.setScannable(textScannableMock);
 
-		Whitebox.setInternalState(logScannerSpy, "checkpoint", 11);		
+		logScannerSpy.setCheckpoint(11);		
 		logScannerSpy.skipToCheckpoint();
 
 		textInputStream.reset();
-		Whitebox.setInternalState(logScannerSpy, "checkpoint", 99);	
+		logScannerSpy.setCheckpoint(99);	
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
 			logScannerSpy.skipToCheckpoint();			
         });

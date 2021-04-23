@@ -72,6 +72,12 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
+	public ILogScanner setCheckpoint(long checkpoint) throws TextScanException {
+    	this.checkpoint = checkpoint;
+		return this;
+	}
+
+	@Override
     public ILogScanner resetCheckpoint() {
     	this.checkpoint = -1;
         return this;
