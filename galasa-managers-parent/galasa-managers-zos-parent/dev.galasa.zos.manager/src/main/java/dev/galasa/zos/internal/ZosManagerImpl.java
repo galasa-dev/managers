@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zos.internal;
 
@@ -66,10 +66,13 @@ import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
+import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.internal.ZosBatchJobOutputImpl;
+import dev.galasa.zosbatch.internal.ZosBatchJobOutputSpoolFileImpl;
 import dev.galasa.zosbatch.internal.ZosBatchJobnameImpl;
 import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
@@ -571,8 +574,13 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 	}
 
 	@Override
-	public IZosBatchJobOutputSpi newZosBatchJobOutput(String jobname, String jobid) {
-		return new ZosBatchJobOutputImpl(jobname, jobid);
+	public IZosBatchJobOutputSpi newZosBatchJobOutput(IZosBatchJob batchJob, String jobname, String jobid) {
+		return new ZosBatchJobOutputImpl(batchJob, jobname, jobid);
+	}
+
+	@Override
+	public IZosBatchJobOutputSpoolFile newZosBatchJobOutputSpoolFile(IZosBatchJob batchJob, String jobname, String jobid, String stepname, String procstep, String ddname, String id, String records) throws ZosBatchException {
+		return new ZosBatchJobOutputSpoolFileImpl(batchJob, jobname, jobid, stepname, procstep, ddname, id, records);
 	}
 
 	@Override
