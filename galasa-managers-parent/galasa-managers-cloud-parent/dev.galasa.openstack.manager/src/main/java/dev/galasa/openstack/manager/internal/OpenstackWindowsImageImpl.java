@@ -6,6 +6,7 @@
 package dev.galasa.openstack.manager.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import dev.galasa.ICredentials;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
+import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.OpenstackWindowsManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
@@ -38,6 +40,7 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
     private Path                      pathRoot;
     private Path                      pathTemp;
     private Path                      pathHome;
+    private Path                      pathRunDirectory;
 
     public OpenstackWindowsImageImpl(@NotNull OpenstackManagerImpl manager,
             @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
@@ -140,6 +143,27 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
     @Override
     public @NotNull Path getTmp() throws WindowsManagerException {
         return this.pathTemp;
+    }
+
+    @Override
+    public @NotNull Path getRunDirectory() throws WindowsManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.manager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new WindowsManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        // Assuming that the provisioned image will be deleted, so not cleaning up
     }
 
 }
