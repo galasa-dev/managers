@@ -7,5 +7,5 @@ description = 'Galasa Java Windows Manager'
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
-    implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
-}
+    implementation project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
+    api project(':galasa-managers-languages-parent:dev.galasa.java.manager')}
