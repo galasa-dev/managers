@@ -25,8 +25,8 @@ public class SeleniumManagerIVT {
     public Log logger;
 
     @SeleniumManager
-    public ISeleniumManager SeleniumManager;
-    
+    public ISeleniumManager seleniumManager;
+
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";
     public static final String VALUE = "value";
@@ -34,8 +34,8 @@ public class SeleniumManagerIVT {
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
-    	SeleniumManager.getEdgeOptions();
-        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
+    	seleniumManager.getEdgeOptions();
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.takeScreenShot();
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
@@ -49,7 +49,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void clickingFields() throws SeleniumManagerException {
-        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
@@ -61,7 +61,7 @@ public class SeleniumManagerIVT {
 
     @Test
     public void navigateGalasaGithub() throws SeleniumManagerException {
-        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE);
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.sendKeysToElementById(SEARCHID, "galasa dev github")
@@ -74,9 +74,9 @@ public class SeleniumManagerIVT {
 
     @Test
     public void testOptionsCanBeUsed() throws SeleniumManagerException {
-        IFirefoxOptions options = SeleniumManager.getFirefoxOptions();
+        IFirefoxOptions options = seleniumManager.getFirefoxOptions();
         options.setHeadless(true);
-        IWebPage page = SeleniumManager.allocateWebPage(WEBSITE, options);
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
         page.maximize().takeScreenShot();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();

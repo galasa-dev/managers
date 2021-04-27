@@ -110,29 +110,22 @@ public class SeleniumEnvironment {
 			int counter = 0;
 			while ("".equals(slotName)) {
 				String slotNameAttempt = slotNamePrefix + counter;
-				if (dss.get("driver.slot." + slotNameAttempt)==null) {
-					// Found a slot name;
+				try {
+					dss.performActions(
+					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
+					new DssSwap(slotKey, slots, String.valueOf(currentSlots+1))
+					);
 					slotName = slotNameAttempt;
 					break;
+				} catch (DynamicStatusStoreException e) {
+					counter++;
 				}
-				
-				counter++;
-			}
-			
+			}	
 		} catch (DynamicStatusStoreException | ConfigurationPropertyStoreException e) {
 			throw new SeleniumManagerException("Failed to allocate slot", e);
 		}
+		this.slots.add(slotName);
 		
-		try {
-			dss.performActions(
-					new DssSwap(slotKey, slots, String.valueOf(currentSlots+1)),
-					new DssAdd("driver.slot." + slotName, runName)
-					);
-			this.slots.add(slotName);
-		} catch (DynamicStatusStoreException e) {
-			// Failed to set with race conditions, try again
-			allocateSlot();
-		}
 		return slotName;
 	}
 

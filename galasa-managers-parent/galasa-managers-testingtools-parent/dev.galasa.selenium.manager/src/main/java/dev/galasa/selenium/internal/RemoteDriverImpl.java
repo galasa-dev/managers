@@ -130,12 +130,12 @@ public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
             client.setURI(remoteDriverEndpoint.toURI());
             for (int i=0;i<5;i++) {
             	try {
+                    Thread.sleep(2000);
             		HttpClientResponse<JsonObject> resp = client.getJson("/status");
                 	if (resp.getStatusCode() < 202) {
                 		break;
                 	}
             	} catch (HttpClientException e) {
-            		Thread.sleep(2000);
             		continue;
             	}
             	throw new SeleniumManagerException("Selenium node failed to become ready");
