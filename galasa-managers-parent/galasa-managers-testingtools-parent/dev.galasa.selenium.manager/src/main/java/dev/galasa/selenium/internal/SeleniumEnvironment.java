@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DssDeletePrefix;
@@ -33,6 +36,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
  *
  */
 public class SeleniumEnvironment {
+	private static final Log logger = LogFactory.getLog(SeleniumEnvironment.class);
 	
 	private SeleniumManagerImpl seleniumManager;
 	private Path screenshotRasDirectory;
@@ -42,6 +46,8 @@ public class SeleniumEnvironment {
 	
 	private IDynamicStatusStoreService dss;
 	private String runName;
+	
+	private int sessions = 0;
 	
 	public SeleniumEnvironment(SeleniumManagerImpl seleleniumManager, Path screenshotRasDirectory) throws SeleniumManagerException {
 		this.seleniumManager = seleleniumManager;
@@ -96,20 +102,19 @@ public class SeleniumEnvironment {
 		String slotName = "";
 		int currentSlots = 0;
 		try {
-			slots = dss.get(slotKey);
-			if (slots != null) {
-				currentSlots = Integer.valueOf(slots);
-			}
-			
-			if (currentSlots >= SeleniumDriverMaxSlots.get()) {
-				throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
-			}			
-			
-			String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
-			
-			int counter = 0;
 			while ("".equals(slotName)) {
-				String slotNameAttempt = slotNamePrefix + counter;
+				slots = dss.get(slotKey);
+				if (slots != null) {
+					currentSlots = Integer.valueOf(slots);
+				}
+				
+				if (currentSlots >= SeleniumDriverMaxSlots.get()) {
+					throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
+				}			
+				
+				String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
+			
+				String slotNameAttempt = slotNamePrefix + sessions;
 				try {
 					dss.performActions(
 					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
@@ -118,13 +123,15 @@ public class SeleniumEnvironment {
 					slotName = slotNameAttempt;
 					break;
 				} catch (DynamicStatusStoreException e) {
-					counter++;
+					logger.warn("Failed to get slot: " + slotNameAttempt + ". Retrying... ");
 				}
 			}	
+			
 		} catch (DynamicStatusStoreException | ConfigurationPropertyStoreException e) {
 			throw new SeleniumManagerException("Failed to allocate slot", e);
 		}
 		this.slots.add(slotName);
+		sessions++;
 		
 		return slotName;
 	}
