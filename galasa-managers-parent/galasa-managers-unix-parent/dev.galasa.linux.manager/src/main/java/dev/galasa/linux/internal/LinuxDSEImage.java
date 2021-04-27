@@ -1,11 +1,12 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.linux.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,7 @@ import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.linux.LinuxManagerException;
+import dev.galasa.linux.internal.properties.RetainRunDirectory;
 import dev.galasa.linux.spi.ILinuxProvisionedImage;
 
 public class LinuxDSEImage implements ILinuxProvisionedImage {
@@ -37,6 +39,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
     private final Path                               pathHome;
     private final Path                               pathTemp;
     private final Path                               pathRoot;
+    private Path                                     pathRunDirectory;
 
     public LinuxDSEImage(LinuxManagerImpl manager, IConfigurationPropertyStoreService cps, String tag, String hostid)
             throws LinuxManagerException, ConfigurationPropertyStoreException {
@@ -51,6 +54,8 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
             throw new LinuxManagerException("Unable to create the IP Host for host " + this.hostid, e);
         }
 
+        logger.debug("Linux DSE host " + this.hostid + " has hostname of " + this.ipHost.getHostname());
+
         this.commandShell = createCommandShell();
         this.fileSystem = createFileSystem();
 
@@ -58,6 +63,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
         this.pathTemp = this.fileSystem.getPath("/tmp");
 
         try {
+            logger.trace("Checking access to Linux DSE host " + this.hostid);
             String homeDir = this.commandShell.issueCommand("pwd");
             if (homeDir == null) {
                 throw new LinuxManagerException("Unable to determine home directory, response null");
@@ -126,6 +132,39 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
     @Override
     public @NotNull Path getTmp() throws LinuxManagerException {
         return this.pathTemp;
+    }
+
+    @Override
+    public @NotNull Path getRunDirectory() throws LinuxManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.linuxManager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new LinuxManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        if (this.pathRunDirectory != null) {
+            try {
+                if (RetainRunDirectory.get(this)) {
+                    logger.warn("Retaining the run directory instead of discarding as requested");
+                    return;
+                }
+
+                commandShell.issueCommand("rm -rf " + this.pathRunDirectory);
+            } catch(Exception e) {
+                logger.trace("Problem discarding the run directory");
+            }
+        }
+
     }
 
 }

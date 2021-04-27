@@ -7,4 +7,6 @@ description = 'Galasa Java Manager'
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    
+    implementation  project(':galasa-managers-comms-parent:dev.galasa.http.manager')
 }
