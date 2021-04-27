@@ -116,9 +116,10 @@ public class SeleniumEnvironment {
 			
 				String slotNameAttempt = slotNamePrefix + sessions;
 				try {
+					currentSlots++;
 					dss.performActions(
 					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
-					new DssSwap(slotKey, slots, String.valueOf(currentSlots+1))
+					new DssSwap(slotKey, slots, String.valueOf(currentSlots))
 					);
 					slotName = slotNameAttempt;
 					break;
