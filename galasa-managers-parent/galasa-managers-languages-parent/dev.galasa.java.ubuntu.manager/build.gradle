@@ -7,5 +7,6 @@ description = 'Galasa Java Ubuntu Manager'
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
-    implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
+    implementation project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
+    api project(':galasa-managers-languages-parent:dev.galasa.java.manager')
 }
