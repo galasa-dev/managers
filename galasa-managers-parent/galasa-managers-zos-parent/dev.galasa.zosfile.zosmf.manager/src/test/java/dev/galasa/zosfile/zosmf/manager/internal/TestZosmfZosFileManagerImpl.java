@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -131,7 +131,7 @@ public class TestZosmfZosFileManagerImpl {
     
     @Test
     public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosFileManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
     }
@@ -148,12 +148,12 @@ public class TestZosmfZosFileManagerImpl {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
         allManagers.add(zosUNIXCommandManagerMock);
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(3)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(3)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosFileManagerSpy);        
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Assert.assertEquals("Method should return expected object", zosUNIXCommandManagerMock, zosFileManagerSpy.getZosUnixCommandManager());
     }
@@ -164,7 +164,7 @@ public class TestZosmfZosFileManagerImpl {
         allManagers.add(zosUNIXCommandManagerMock);
         String expectedMessage = "The zOS Manager is not available";
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -176,7 +176,7 @@ public class TestZosmfZosFileManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The zOSMF Manager is not available";
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -187,7 +187,7 @@ public class TestZosmfZosFileManagerImpl {
         allManagers.add(zosmfManagerMock);
         String expectedMessage = "The zOS UNIX Command Manager is not available";
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }

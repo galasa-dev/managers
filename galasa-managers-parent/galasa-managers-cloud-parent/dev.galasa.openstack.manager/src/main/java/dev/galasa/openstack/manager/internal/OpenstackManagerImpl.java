@@ -93,7 +93,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -102,19 +102,19 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         activeManagers.add(this);
 
         // *** Absolutely need the IP Network manager
-        this.ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        this.ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (this.ipManager == null) {
             throw new LinuxManagerException("The IP Network Manager is not available");
         }
 
         // *** Check if Linux is loaded
-        this.linuxManager = addDependentManager(allManagers, activeManagers, ILinuxManagerSpi.class);
+        this.linuxManager = addDependentManager(allManagers, activeManagers, galasaTest, ILinuxManagerSpi.class);
         if (this.linuxManager != null) {
             this.linuxManager.registerProvisioner(this);
         }
 
         // *** Check if Windows is loaded
-        this.windowsManager = addDependentManager(allManagers, activeManagers, IWindowsManagerSpi.class);
+        this.windowsManager = addDependentManager(allManagers, activeManagers, galasaTest, IWindowsManagerSpi.class);
         if (this.windowsManager != null) {
             this.windowsManager.registerProvisioner(this);
         }

@@ -49,7 +49,7 @@ public class TestTextScanManagerImpl {
         allManagers.add(this.textScanManager);
         
     	textScanManager.initialise(framework, allManagers, activeManagers, new GalasaTest(testClass.getClass()));
-    	textScanManager.youAreRequired(allManagers, activeManagers);
+    	textScanManager.youAreRequired(allManagers, activeManagers, null);
         textScanManager.provisionGenerate();
         textScanManager.provisionBuild();
         

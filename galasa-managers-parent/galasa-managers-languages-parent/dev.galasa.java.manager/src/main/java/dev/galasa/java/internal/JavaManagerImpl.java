@@ -62,7 +62,7 @@ public class JavaManagerImpl extends AbstractManager implements IJavaManagerSpi 
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -70,7 +70,7 @@ public class JavaManagerImpl extends AbstractManager implements IJavaManagerSpi 
 
         activeManagers.add(this);
         
-        this.httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        this.httpManager = addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (this.httpManager == null) {
             throw new JavaManagerException("The HTTP Manager is not available");
         }

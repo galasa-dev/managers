@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.tests;
 
@@ -76,7 +76,7 @@ public class TestGoldenPath {
         
         cicstsManager.extraBundles(framework);
         cicstsManager.initialise(framework, allManagers, activeManagers, new GalasaTest(testClass.getClass()));
-        cicstsManager.youAreRequired(allManagers, activeManagers);
+        cicstsManager.youAreRequired(allManagers, activeManagers, null);
         boolean dependentOnZos = cicstsManager.areYouProvisionalDependentOn(zosManager);
         assertThat(dependentOnZos).as("CICS TS must be dependent on zOS").isTrue();
         cicstsManager.provisionGenerate();

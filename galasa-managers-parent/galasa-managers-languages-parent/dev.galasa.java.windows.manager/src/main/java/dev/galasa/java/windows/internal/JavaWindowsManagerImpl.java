@@ -62,14 +62,14 @@ public class JavaWindowsManagerImpl extends AbstractManager implements IJavaWind
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(JavaWindowsManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -77,12 +77,12 @@ public class JavaWindowsManagerImpl extends AbstractManager implements IJavaWind
 
         activeManagers.add(this);
         
-        this.javaManager = addDependentManager(allManagers, activeManagers, IJavaManagerSpi.class);
+        this.javaManager = addDependentManager(allManagers, activeManagers, galasaTest, IJavaManagerSpi.class);
         if (this.javaManager == null) {
             throw new JavaWindowsManagerException("The Java Manager is not available");
         }
         
-        this.windowsManager = addDependentManager(allManagers, activeManagers, IWindowsManagerSpi.class);
+        this.windowsManager = addDependentManager(allManagers, activeManagers, galasaTest, IWindowsManagerSpi.class);
         if (this.windowsManager == null) {
             throw new JavaWindowsManagerException("The Windows Manager is not available");
         }
