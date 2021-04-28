@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.selenium;
 
@@ -17,5 +17,5 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @SeleniumManagerField
 @ValidAnnotatedFields({ ISeleniumManager.class })
 public @interface SeleniumManager {
-
+    public Browser browser() default Browser.NOTSPECIFIED;
 }
