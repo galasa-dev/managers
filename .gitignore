@@ -12,3 +12,4 @@ javacore*.txt
 Snap*.trc
 **/build
 **/.gradle
+**/gradle/wrapper

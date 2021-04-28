@@ -12,7 +12,7 @@
  * openstack.server.domain.name - {@link OpenStackDomainName}<br>
  * openstack.server.identity.uri - {@link OpenStackIdentityUri}<br>
  * openstack.server.project.name - {@link OpenStackProjectName}<br>
- * openstack.timeout.generate - {@link GenerateTimeout}<br>
+ * openstack.build.timeout - {@link BuildTimeout}<br>
  * </p>
  */
 package dev.galasa.openstack.manager.internal.properties;

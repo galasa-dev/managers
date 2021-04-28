@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: k8-selenium-node-<RUNNAME>
+  labels:
+    app: k8-selenium-node-<RUNNAME>
+spec:
+<NODE_SELECTOR>
+  containers:
+    - name: web
+      image: <IMAGE_NAME>
+      ports:
+        - name: web
+          containerPort: 4444
+          protocol: TCP

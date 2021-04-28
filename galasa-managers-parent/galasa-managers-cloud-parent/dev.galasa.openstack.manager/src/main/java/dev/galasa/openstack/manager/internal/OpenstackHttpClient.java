@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -101,6 +101,25 @@ public class OpenstackHttpClient {
         }
 
         try {
+            String identityEndpoint = OpenStackIdentityUri.get();
+            String domain = OpenStackDomainName.get();
+            String project = OpenStackProjectName.get();
+
+            if (identityEndpoint == null) {
+                logger.warn("Openstack is not available due to identity property missing in CPS");
+                return false;
+            }
+
+            if (domain == null) {
+                logger.warn("Openstack is not available due to domain property is missing in CPS");
+                return false;
+            }
+
+            if (project == null) {
+                logger.warn("Openstack is not available due to project property is missing in CPS");
+                return false;
+            }
+
             String credentialsId = OpenStackCredentialsId.get();
 
             ICredentials credentials = null;
@@ -108,6 +127,11 @@ public class OpenstackHttpClient {
                 credentials = this.framework.getCredentialsService().getCredentials(credentialsId);
             } catch (Exception e) {
                 logger.warn("OpenStack is not available due to missing credentials " + credentialsId);
+                return false;
+            }
+            
+            if (credentials == null) {
+                logger.warn("OpenStack credentials are missing");
                 return false;
             }
 
@@ -118,14 +142,6 @@ public class OpenstackHttpClient {
 
             ICredentialsUsernamePassword usernamePassword = (ICredentialsUsernamePassword) credentials;
 
-            String identityEndpoint = OpenStackIdentityUri.get();
-            String domain = OpenStackDomainName.get();
-            String project = OpenStackProjectName.get();
-
-            if (identityEndpoint == null || domain == null || project == null) {
-                logger.warn("Openstack is unavailable due to identity, domain or project is missing in CPS");
-                return false;
-            }
 
             AuthTokens authTokens = new AuthTokens();
             authTokens.auth = new Auth();
@@ -208,6 +224,8 @@ public class OpenstackHttpClient {
                 ZonedDateTime zdt = ZonedDateTime.parse(tokenResponse.token.expires_at);
 
                 this.openstackToken = new OpenstackToken(tokenString, zdt.toInstant());
+                
+                logger.debug("Connected to the OpenStack server");
 
                 return true;
             }
@@ -505,7 +523,6 @@ public class OpenstackHttpClient {
 
             try (CloseableHttpResponse response = httpClient.execute(get)) {
                 StatusLine status = response.getStatusLine();
-                String entity = EntityUtils.toString(response.getEntity());
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
                     throw new OpenstackManagerException("OpenStack list os password failed - " + status);
                 }

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosliberty.internal;
 
@@ -68,25 +68,25 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosLibertyField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers,galasaTest);
             }
         }
     }
 
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosLibertyManagerException("The zOS Manager is not available");
         }
-        this.zosFileManager = addDependentManager(allManagers, activeManagers, IZosFileSpi.class);
+        this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFileManager == null) {
             throw new ZosLibertyManagerException("The zOS File Manager is not available");
         }

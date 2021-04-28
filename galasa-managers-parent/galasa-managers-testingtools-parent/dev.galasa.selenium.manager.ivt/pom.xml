@@ -9,7 +9,6 @@
 	</parent>
 
 	<artifactId>dev.galasa.selenium.manager.ivt</artifactId>
-	<version>0.15.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>Galasa Selenium Manager IVT</name>
@@ -37,6 +36,16 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.core.manager</artifactId>
+			<version>0.15.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.kubernetes.manager</artifactId>
+			<version>0.15.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.galasa</groupId>
+			<artifactId>dev.galasa.http.manager</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
 
