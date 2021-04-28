@@ -37,9 +37,9 @@ import dev.galasa.windows.WindowsImage;
 import dev.galasa.windows.WindowsIpHost;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.WindowsManagerField;
+import dev.galasa.windows.internal.properties.WindowsPropertiesSingleton;
 import dev.galasa.windows.spi.IWindowsManagerSpi;
 import dev.galasa.windows.spi.IWindowsProvisioner;
-import dev.galasa.windows.internal.properties.WindowsPropertiesSingleton;
 
 @Component(service = { IManager.class })
 public class WindowsManagerImpl extends AbstractManager implements IWindowsManagerSpi {
@@ -303,5 +303,14 @@ public class WindowsManagerImpl extends AbstractManager implements IWindowsManag
     protected IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
     }
+
+    @Override
+    public IWindowsImage getImageForTag(@NotNull String imageTag) throws WindowsManagerException {
+        IWindowsImage image = this.taggedImages.get(imageTag);
+        if (image == null) {
+            throw new WindowsManagerException("Unable to locate Windows image tagged '" + imageTag + "'");
+        }
+        return image;
+     }
 
 }

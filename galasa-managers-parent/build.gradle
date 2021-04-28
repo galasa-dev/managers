@@ -47,9 +47,11 @@ subprojects {
     
     tasks.withType(Javadoc) {
         failOnError = false
+    //    enabled = false
     }
 
     repositories {
+        mavenLocal()
         maven {
             url mavenrepo
         }

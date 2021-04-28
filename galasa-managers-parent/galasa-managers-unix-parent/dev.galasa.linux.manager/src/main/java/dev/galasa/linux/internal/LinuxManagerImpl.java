@@ -40,6 +40,7 @@ import dev.galasa.linux.LinuxManagerField;
 import dev.galasa.linux.OperatingSystem;
 import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
+import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 @Component(service = { IManager.class })
@@ -282,6 +283,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
     }
+    
+    @Override
+    public void provisionDiscard() {
+        for(ILinuxImage image : this.taggedImages.values()) {
+            if (image instanceof ILinuxProvisionedImage) {
+                ((ILinuxProvisionedImage)image).discard();
+            }
+        }
+    }
 
     public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws LinuxManagerException {
         LinuxIpHost annotationHost = field.getAnnotation(LinuxIpHost.class);
@@ -309,6 +319,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
+    }
+
+    @Override
+    public ILinuxImage getImageForTag(@NotNull String imageTag) throws LinuxManagerException {
+        ILinuxImage image = this.taggedImages.get(imageTag);
+        if (image == null) {
+            throw new LinuxManagerException("Unable to locate Linux image tagged '" + imageTag + "'");
+        }
+        return image;
     }
 
 }

@@ -6,6 +6,7 @@
 package dev.galasa.openstack.manager.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     private Path                      pathRoot;
     private Path                      pathTemp;
     private Path                      pathHome;
+    private Path                      pathRunDirectory;
 
     public OpenstackLinuxImageImpl(@NotNull OpenstackManagerImpl manager,
             @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
@@ -154,5 +156,27 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     public @NotNull Path getTmp() throws LinuxManagerException {
         return this.pathTemp;
     }
+    
+    @Override
+    public @NotNull Path getRunDirectory() throws LinuxManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.manager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new LinuxManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        // Assuming that the provisioned image will be deleted, so not cleaning up
+    }
+
 
 }

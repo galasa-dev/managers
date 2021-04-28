@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DssDeletePrefix;
@@ -33,6 +36,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
  *
  */
 public class SeleniumEnvironment {
+	private static final Log logger = LogFactory.getLog(SeleniumEnvironment.class);
 	
 	private SeleniumManagerImpl seleniumManager;
 	private Path screenshotRasDirectory;
@@ -42,6 +46,8 @@ public class SeleniumEnvironment {
 	
 	private IDynamicStatusStoreService dss;
 	private String runName;
+	
+	private int sessions = 0;
 	
 	public SeleniumEnvironment(SeleniumManagerImpl seleleniumManager, Path screenshotRasDirectory) throws SeleniumManagerException {
 		this.seleniumManager = seleleniumManager;
@@ -95,44 +101,46 @@ public class SeleniumEnvironment {
 		String slots = "";
 		String slotName = "";
 		int currentSlots = 0;
+		
+		Exception lastPerformActionsException = null;
 		try {
-			slots = dss.get(slotKey);
-			if (slots != null) {
-				currentSlots = Integer.valueOf(slots);
-			}
-			
-			if (currentSlots >= SeleniumDriverMaxSlots.get()) {
-				throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
-			}			
-			
-			String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
-			
-			int counter = 0;
-			while ("".equals(slotName)) {
-				String slotNameAttempt = slotNamePrefix + counter;
-				if (dss.get("driver.slot." + slotNameAttempt)==null) {
-					// Found a slot name;
-					slotName = slotNameAttempt;
-					break;
+			for (int i=0; i<1000;i++) {
+				slots = dss.get(slotKey);
+				if (slots != null) {
+					currentSlots = Integer.valueOf(slots);
 				}
 				
-				counter++;
+				if (currentSlots >= SeleniumDriverMaxSlots.get()) {
+					throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
+				}			
+				
+				String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
+			
+				String slotNameAttempt = slotNamePrefix + sessions;
+				try {
+					currentSlots++;
+					dss.performActions(
+					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
+					new DssSwap(slotKey, slots, String.valueOf(currentSlots))
+					);
+					slotName = slotNameAttempt;
+					break;
+				} catch (DynamicStatusStoreException e) {
+					logger.trace("Failed to get slot: " + slotNameAttempt + ". Retrying... ");
+					lastPerformActionsException = e;
+				}
+			}
+
+			if ("".equals(slotName)) {
+				throw new SeleniumManagerException("Unable to resolve a slot name", lastPerformActionsException);
 			}
 			
 		} catch (DynamicStatusStoreException | ConfigurationPropertyStoreException e) {
 			throw new SeleniumManagerException("Failed to allocate slot", e);
 		}
+		this.slots.add(slotName);
+		sessions++;
 		
-		try {
-			dss.performActions(
-					new DssSwap(slotKey, slots, String.valueOf(currentSlots+1)),
-					new DssAdd("driver.slot." + slotName, runName)
-					);
-			this.slots.add(slotName);
-		} catch (DynamicStatusStoreException e) {
-			// Failed to set with race conditions, try again
-			allocateSlot();
-		}
 		return slotName;
 	}
 
