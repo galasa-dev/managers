@@ -8,4 +8,5 @@ dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation ‘org.assertj:assertj-core:3.11.1’
 }
