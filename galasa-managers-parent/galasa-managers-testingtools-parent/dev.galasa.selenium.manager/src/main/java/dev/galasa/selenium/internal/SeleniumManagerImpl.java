@@ -72,7 +72,7 @@ public class SeleniumManagerImpl extends AbstractManager {
         if (galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
             if (!ourFields.isEmpty() || this.required) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -100,7 +100,7 @@ public class SeleniumManagerImpl extends AbstractManager {
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         this.required = true;
 
@@ -109,19 +109,19 @@ public class SeleniumManagerImpl extends AbstractManager {
         }
 
         activeManagers.add(this);
-    	this.k8Manager = this.addDependentManager(allManagers, activeManagers, IKubernetesManagerSpi.class);
+    	this.k8Manager = this.addDependentManager(allManagers, activeManagers, galasaTest, IKubernetesManagerSpi.class);
     	if (this.k8Manager == null) {
             throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
         }
-		this.dockerManager = this.addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
+		this.dockerManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IDockerManagerSpi.class);
 		if (this.dockerManager == null) {
 			throw new SeleniumManagerException("Unable to locate the Docker Manager");
 	    }
-        this.httpManager = this.addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        this.httpManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (this.httpManager == null) {
             throw new SeleniumManagerException("Unable to locate the Http Manager");
         }
-        this.artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);        
+        this.artifactManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);        
         if (this.artifactManager == null) {
             throw new SeleniumManagerException("Unable to locate the Artifact Manager");
         }

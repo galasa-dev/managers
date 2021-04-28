@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosunixcommand.ssh.manager.internal;
 
@@ -101,7 +101,7 @@ public class TestZosUNIXCommandManagerImpl {
     
     @Test
     public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(zosUnixCommandManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosUnixCommandManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosUnixCommandManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosUnixCommandManagerSpy.getFramework(), frameworkMock);
     }
@@ -127,19 +127,19 @@ public class TestZosUNIXCommandManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(ipNetworkManagerMock);
-        zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosUnixCommandManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosUnixCommandManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosUnixCommandManagerSpy);
-        zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosUnixCommandManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosUnixCommandManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         String expectedMessage = "The zOS Manager is not available";
         ManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ManagerException.class, ()->{
-        	zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -149,7 +149,7 @@ public class TestZosUNIXCommandManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The IP Network Manager is not available";
         ManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ManagerException.class, ()->{
-        	zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosUnixCommandManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }

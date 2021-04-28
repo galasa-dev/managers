@@ -99,7 +99,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -116,14 +116,14 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new LinuxManagerException("The IP Network Manager is not available");
         }
@@ -142,7 +142,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
                     if (linuxProvisioner instanceof IManager) {
                         logger.trace("Found Linux provisioner " + linuxProvisioner.getClass().getName());
                         // *** Tell the provisioner it is required,  does not necessarily mean it will register.
-                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers);
+                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers, galasaTest);
                     }
                 }
             }

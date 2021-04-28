@@ -65,14 +65,14 @@ public class JavaUbuntuManagerImpl extends AbstractManager implements IJavaUbunt
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(JavaUbuntuManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -80,12 +80,12 @@ public class JavaUbuntuManagerImpl extends AbstractManager implements IJavaUbunt
 
         activeManagers.add(this);
         
-        this.javaManager = addDependentManager(allManagers, activeManagers, IJavaManagerSpi.class);
+        this.javaManager = addDependentManager(allManagers, activeManagers, galasaTest, IJavaManagerSpi.class);
         if (this.javaManager == null) {
             throw new JavaUbuntuManagerException("The Java Manager is not available");
         }
         
-        this.linuxManager = addDependentManager(allManagers, activeManagers, ILinuxManagerSpi.class);
+        this.linuxManager = addDependentManager(allManagers, activeManagers, galasaTest, ILinuxManagerSpi.class);
         if (this.linuxManager == null) {
             throw new JavaUbuntuManagerException("The Linux Manager is not available");
         }

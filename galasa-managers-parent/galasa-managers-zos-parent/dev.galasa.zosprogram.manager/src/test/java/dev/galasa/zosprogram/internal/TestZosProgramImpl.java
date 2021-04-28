@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosprogram.internal;
 
@@ -250,12 +250,4 @@ public class TestZosProgramImpl {
     	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
     
-    @Test
-    public void testLogForField() {
-        Whitebox.setInternalState(fieldMock, "name", NAME);
-        Assert.assertEquals("Error in logForField()", " for field \"" + NAME + "\"", zosProgramSpy.logForField());
-        
-        Whitebox.setInternalState(zosProgramSpy, "field", (Field) null);
-        Assert.assertEquals("Error in logForField()", "", zosProgramSpy.logForField());
-    }
 }

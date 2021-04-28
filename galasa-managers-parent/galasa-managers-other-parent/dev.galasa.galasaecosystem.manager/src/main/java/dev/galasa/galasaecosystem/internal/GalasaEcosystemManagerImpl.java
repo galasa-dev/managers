@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.galasaecosystem.internal;
 
@@ -92,7 +92,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
             }
         }
 
-        youAreRequired(allManagers, activeManagers);
+        youAreRequired(allManagers, activeManagers, galasaTest);
         
         try {
             GalasaEcosystemPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
@@ -113,18 +113,18 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
      * This or another manager has indicated that this manager is required
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
-        super.youAreRequired(allManagers, activeManagers);
+        super.youAreRequired(allManagers, activeManagers, galasaTest);
 
         if (activeManagers.contains(this)) {
             return;
         }
 
         //*** Add dependent managers
-        this.k8sManager = this.addDependentManager(allManagers, activeManagers, IKubernetesManagerSpi.class);
-        this.artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);
-        this.httpManager = this.addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        this.k8sManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IKubernetesManagerSpi.class);
+        this.artifactManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
+        this.httpManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
 
         if (this.k8sManager == null) {
             throw new GalasaEcosystemManagerException("Unable to locate the Kubernetes Manager");
