@@ -124,7 +124,7 @@ public class SeleniumEnvironment {
 					slotName = slotNameAttempt;
 					break;
 				} catch (DynamicStatusStoreException e) {
-					logger.warn("Failed to get slot: " + slotNameAttempt + ". Retrying... ");
+					logger.trace("Failed to get slot: " + slotNameAttempt + ". Retrying... ");
 				}
 			}	
 			
