@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.docker.internal;
 
@@ -85,7 +85,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         if(galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(DockerManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
         try {
@@ -108,7 +108,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @throws ManagerException
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         this.required = true;
 
@@ -116,11 +116,11 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
 			return;
 		}
         activeManagers.add(this);
-        httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        httpManager = addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (httpManager == null) {
             throw new DockerManagerException("The http manager is not available");
         }
-        artifactManager = this.addDependentManager(allManagers, activeManagers, IArtifactManager.class);
+        artifactManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (artifactManager == null) {
             throw new DockerManagerException("The Artifact manager is not available");
         }

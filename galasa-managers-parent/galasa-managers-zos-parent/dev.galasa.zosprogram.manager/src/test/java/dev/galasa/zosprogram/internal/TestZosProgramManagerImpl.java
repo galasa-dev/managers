@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosprogram.internal;
 
@@ -157,7 +157,7 @@ public class TestZosProgramManagerImpl {
     
     @Test
     public void testInitialise() throws ManagerException {
-        Mockito.doNothing().when(zosProgramManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosProgramManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         GalasaTest galasaTestMock = Mockito.mock(GalasaTest.class);
         Mockito.doReturn(false).when(galasaTestMock).isJava();
         zosProgramManagerSpy.initialise(frameworkMock, allManagers, activeManagers, galasaTestMock);
@@ -166,7 +166,7 @@ public class TestZosProgramManagerImpl {
     
     @Test
     public void testInitialise2() throws ManagerException {
-        Mockito.doNothing().when(zosProgramManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosProgramManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosProgramManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosProgramManagerSpy.getFramework(), frameworkMock);
         zosProgramManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(String.class));
@@ -217,19 +217,19 @@ public class TestZosProgramManagerImpl {
         allManagers.add(new DummyBatch());
         allManagers.add(new DummyFile());
         allManagers.add(artifactManagerMock);
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosProgramManagerSpy, Mockito.times(4)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosProgramManagerSpy, Mockito.times(4)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosProgramManagerSpy);
-        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosProgramManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosProgramManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         String expectedMessage = "The zOS Manager is not available";
         ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
-        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -239,7 +239,7 @@ public class TestZosProgramManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The zOS Batch Manager is not available";
         ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
-        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -250,7 +250,7 @@ public class TestZosProgramManagerImpl {
         allManagers.add(new DummyBatch());
         String expectedMessage = "The zOS File Manager is not available";
         ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
-        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -262,7 +262,7 @@ public class TestZosProgramManagerImpl {
         allManagers.add(new DummyFile());
         String expectedMessage = "The Artifact Manager is not available";
         ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
-        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosProgramManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }

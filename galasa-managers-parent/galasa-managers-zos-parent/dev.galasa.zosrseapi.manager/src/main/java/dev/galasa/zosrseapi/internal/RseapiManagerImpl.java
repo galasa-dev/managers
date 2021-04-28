@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -86,25 +86,25 @@ public class RseapiManagerImpl extends AbstractManager implements IRseapiManager
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(RseapiManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
     }
     
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        setZosManager(addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class));
         if (zosManager == null) {
             throw new RseapiManagerException("The zOS Manager is not available");
         }
-        setHttpManager(addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class));
+        setHttpManager(addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class));
         if (httpManager == null) {
             throw new RseapiManagerException("The HTTP Manager is not available");
         }
