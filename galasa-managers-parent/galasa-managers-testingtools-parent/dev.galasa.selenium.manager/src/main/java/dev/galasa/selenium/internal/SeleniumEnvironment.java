@@ -101,6 +101,8 @@ public class SeleniumEnvironment {
 		String slots = "";
 		String slotName = "";
 		int currentSlots = 0;
+		
+		Exception lastPerformActionsException = new Exception();
 		try {
 			for (int i=0; i<1000;i++) {
 				slots = dss.get(slotKey);
@@ -125,11 +127,12 @@ public class SeleniumEnvironment {
 					break;
 				} catch (DynamicStatusStoreException e) {
 					logger.trace("Failed to get slot: " + slotNameAttempt + ". Retrying... ");
+					lastPerformActionsException = e;
 				}
 			}
 
 			if ("".equals(slotName)) {
-				throw new SeleniumManagerException("Unable to resolve a slot name");
+				throw new SeleniumManagerException("Unable to resolve a slot name", lastPerformActionsException);
 			}
 			
 		} catch (DynamicStatusStoreException | ConfigurationPropertyStoreException e) {
