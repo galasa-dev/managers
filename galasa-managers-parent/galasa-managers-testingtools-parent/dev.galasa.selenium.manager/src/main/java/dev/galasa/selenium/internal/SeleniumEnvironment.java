@@ -102,7 +102,7 @@ public class SeleniumEnvironment {
 		String slotName = "";
 		int currentSlots = 0;
 		
-		Exception lastPerformActionsException = new Exception();
+		Exception lastPerformActionsException = null;
 		try {
 			for (int i=0; i<1000;i++) {
 				slots = dss.get(slotKey);
