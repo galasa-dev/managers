@@ -38,11 +38,7 @@ public class WindowsSecurityGroups extends CpsProperties {
     public static @NotNull List<String> get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        String groups = getStringNulled(OpenstackPropertiesSingleton.cps(), "windows", "securitygroups", image);
-        if (groups == null) {
-            return null;
-        }
-        return Arrays.asList(groups.split(","));
+        return getStringList(OpenstackPropertiesSingleton.cps(), "windows", "securitygroups", image);
     }
 
 }

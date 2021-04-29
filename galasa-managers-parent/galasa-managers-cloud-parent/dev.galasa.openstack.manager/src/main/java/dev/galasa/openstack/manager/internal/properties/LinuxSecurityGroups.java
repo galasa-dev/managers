@@ -37,12 +37,8 @@ public class LinuxSecurityGroups extends CpsProperties {
 
     public static @NotNull List<String> get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
-
-        String groups = getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "securitygroups", image);
-        if (groups == null) {
-            return null;
-        }
-        return Arrays.asList(groups.split(","));
+         
+        return getStringList(OpenstackPropertiesSingleton.cps(), "linux", "securitygroups", image);
     }
 
 }
