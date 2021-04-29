@@ -41,13 +41,13 @@ subprojects {
     }
 
     java {
-        withJavadocJar()
-        withSourcesJar()
+    //    withJavadocJar()
+    //    withSourcesJar()
     }
     
     tasks.withType(Javadoc) {
         failOnError = false
-    //    enabled = false
+        enabled = false
     }
 
     repositories {

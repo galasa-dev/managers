@@ -8,6 +8,8 @@ package dev.galasa.openstack.manager.internal;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,10 +26,12 @@ import dev.galasa.openstack.manager.OpenstackWindowsManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
+import dev.galasa.openstack.manager.internal.json.SecurityGroup;
 import dev.galasa.openstack.manager.internal.properties.WindowsAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.WindowsCredentials;
 import dev.galasa.openstack.manager.internal.properties.WindowsFlavor;
 import dev.galasa.openstack.manager.internal.properties.WindowsKeyPair;
+import dev.galasa.openstack.manager.internal.properties.WindowsSecurityGroups;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsProvisionedImage;
 
@@ -87,6 +91,15 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
         server.key_name = WindowsKeyPair.get(this.image);
+
+        List<String> groups = WindowsSecurityGroups.get(this.image);
+        List<SecurityGroup> securityGroups = new ArrayList<>();
+        for (String group : groups) {
+            SecurityGroup sGroup = new SecurityGroup();
+            sGroup.name = group;
+            securityGroups.add(sGroup);
+        }
+        server.security_groups = securityGroups;
 
         if (server.imageRef == null) {
             throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
