@@ -150,7 +150,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -164,14 +164,14 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new ZosManagerException("The IP Network Manager is not available");
         }

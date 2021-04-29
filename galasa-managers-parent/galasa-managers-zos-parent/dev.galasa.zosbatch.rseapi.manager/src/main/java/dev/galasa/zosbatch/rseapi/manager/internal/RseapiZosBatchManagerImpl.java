@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosbatch.rseapi.manager.internal;
 
@@ -94,7 +94,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosBatchField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
         
@@ -117,18 +117,18 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosBatchManagerException("The zOS Manager is not available");
         }
-        this.rseapiManager = addDependentManager(allManagers, activeManagers, IRseapiManagerSpi.class);
+        this.rseapiManager = addDependentManager(allManagers, activeManagers, galasaTest, IRseapiManagerSpi.class);
         if (rseapiManager == null) {
             throw new ZosBatchManagerException("The RSE API Manager is not available");
         }

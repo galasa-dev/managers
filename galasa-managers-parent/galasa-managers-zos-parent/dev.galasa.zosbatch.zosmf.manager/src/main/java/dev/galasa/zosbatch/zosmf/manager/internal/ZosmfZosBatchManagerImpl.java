@@ -94,7 +94,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosBatchField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
         
@@ -117,18 +117,18 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosBatchManagerException("The zOS Manager is not available");
         }
-        this.zosmfManager = addDependentManager(allManagers, activeManagers, IZosmfManagerSpi.class);
+        this.zosmfManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosmfManagerSpi.class);
         if (zosmfManager == null) {
             throw new ZosBatchManagerException("The zOSMF Manager is not available");
         }

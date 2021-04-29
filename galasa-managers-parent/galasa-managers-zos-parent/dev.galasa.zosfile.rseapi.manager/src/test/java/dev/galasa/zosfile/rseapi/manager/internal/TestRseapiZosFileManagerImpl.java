@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -130,7 +130,7 @@ public class TestRseapiZosFileManagerImpl {
     
     @Test
     public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(zosFileManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosFileManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosFileManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosFileManagerSpy.getFramework(), frameworkMock);
     }
@@ -146,12 +146,12 @@ public class TestRseapiZosFileManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(rseapiManagerMock);
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosFileManagerSpy);        
-        zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosFileManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
@@ -159,7 +159,7 @@ public class TestRseapiZosFileManagerImpl {
         allManagers.add(rseapiManagerMock);
         String expectedMessage = "The zOS Manager is not available";
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -170,7 +170,7 @@ public class TestRseapiZosFileManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The RSE API Manager is not available";
         ZosFileManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosFileManagerException.class, ()->{
-        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosFileManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }

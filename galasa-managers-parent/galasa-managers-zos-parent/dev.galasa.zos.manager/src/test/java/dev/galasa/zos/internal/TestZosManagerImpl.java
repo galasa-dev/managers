@@ -258,7 +258,7 @@ public class TestZosManagerImpl {
     
     @Test
     public void testInitialise() throws ManagerException {
-        Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", frameworkMock, zosManagerSpy.getFramework());
         
@@ -282,19 +282,19 @@ public class TestZosManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(ipNetworkManagerMock);
         Mockito.clearInvocations(zosManagerSpy);        
-        zosManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(1)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(1)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosManagerSpy);
-        zosManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
     public void testYouAreRequiredException() throws ManagerException {
         String expectedMessage = "The IP Network Manager is not available";
         ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
-        	zosManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }

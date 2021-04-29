@@ -52,7 +52,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         super.initialise(framework, allManagers, activeManagers, galasaTest);
 
         if(galasaTest.isJava()) {
-            youAreRequired(allManagers, activeManagers);
+            youAreRequired(allManagers, activeManagers, galasaTest);
         }
     }
 
@@ -61,26 +61,26 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException {
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
         
-        this.cicstsManager = addDependentManager(allManagers, activeManagers, ICicstsManagerSpi.class);
+        this.cicstsManager = addDependentManager(allManagers, activeManagers, galasaTest, ICicstsManagerSpi.class);
         if(cicstsManager == null) {
            throw new CicstsManagerException("The CICS Manager is not available");
         }
-        this.zosBatchManager = addDependentManager(allManagers, activeManagers, IZosBatchSpi.class);
+        this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
         if (this.zosBatchManager == null) {
             throw new CicstsManagerException("The zOS Batch Manager is not available");
         }
-        this.zosFileManager = addDependentManager(allManagers, activeManagers, IZosFileSpi.class);
+        this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFileManager == null) {
             throw new CicstsManagerException("The zOS File Manager is not available");
         }
-        this.zosLibertyManager = addDependentManager(allManagers, activeManagers, IZosLibertySpi.class);
+        this.zosLibertyManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosLibertySpi.class);
         if (this.zosLibertyManager == null) {
             throw new CicstsManagerException("The zOS Liberty Manager is not available");
         }

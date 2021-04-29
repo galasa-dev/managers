@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.core.manager.internal;
 
@@ -72,7 +72,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 			IStatementOwner[] statementOwners = { coreOwner };
 
 			if(registerStatements(galasaTest.getGherkinTest(), statementOwners)) {
-				youAreRequired(allManagers, activeManagers);
+				youAreRequired(allManagers, activeManagers, galasaTest);
 			}
 		} else {
 		    this.testClass = galasaTest.getJavaTestClass();

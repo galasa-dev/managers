@@ -84,12 +84,12 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
                 return;
             }
 
-            youAreRequired(allManagers, activeManagers);
+            youAreRequired(allManagers, activeManagers, galasaTest);
         }
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -98,7 +98,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         this.required = true;
         activeManagers.add(this);
 
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (this.zosManager == null) {
             throw new CicstsManagerException("Unable to locate the zOS Manager, required for the CICS TS Manager");
         }

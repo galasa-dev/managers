@@ -97,7 +97,7 @@ public class WindowsManagerImpl extends AbstractManager implements IWindowsManag
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(WindowsManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -114,14 +114,14 @@ public class WindowsManagerImpl extends AbstractManager implements IWindowsManag
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new WindowsManagerException("The IP Network Manager is not available");
         }
@@ -140,7 +140,7 @@ public class WindowsManagerImpl extends AbstractManager implements IWindowsManag
                     if (windowsProvisioner instanceof IManager) {
                         logger.trace("Found Windows provisioner " + windowsProvisioner.getClass().getName());
                         // *** Tell the provisioner it is required,  does not necessarily mean it will register.
-                        ((IManager)windowsProvisioner).youAreRequired(allManagers, activeManagers);
+                        ((IManager)windowsProvisioner).youAreRequired(allManagers, activeManagers, galasaTest);
                     }
                 }
             }
