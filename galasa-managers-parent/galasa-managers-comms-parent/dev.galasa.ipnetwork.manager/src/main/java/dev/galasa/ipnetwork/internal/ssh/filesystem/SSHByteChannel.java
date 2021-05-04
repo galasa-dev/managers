@@ -108,6 +108,11 @@ public class SSHByteChannel implements SeekableByteChannel {
         
         byte[] data = new byte[dst.capacity()];
         int len = this.inputStream.read(data);
+        if (len < 0) {
+            return len;
+        }
+        
+        dst.put(data, 0, len);
         
         position = position + len;
         

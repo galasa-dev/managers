@@ -128,8 +128,10 @@ public class SSHPath implements Path {
 
     @Override
     public Path getFileName() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        if (nameElements.isEmpty()) {
+            return new SSHPath(fileSystem, "");
+        }
+        return new SSHPath(fileSystem, false, nameElements, nameElements.size() - 1, nameElements.size());
     }
 
     @Override
