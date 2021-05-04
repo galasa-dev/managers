@@ -6,16 +6,17 @@
 package dev.galasa.selenium.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+// import static org.junit.Assert.assertThat;
 
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
-import dev.galasa.selenium.IFirefoxOptions;
 
 @Test
 public class SeleniumManagerIVT {
@@ -33,7 +34,9 @@ public class SeleniumManagerIVT {
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
+    	seleniumManager.getEdgeOptions();
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        page.takeScreenShot();
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
@@ -50,7 +53,7 @@ public class SeleniumManagerIVT {
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
-            .clickElementByLinkText("Twitter")
+            .clickElementByLinkText("Twitter").takeScreenShot()
             .waitForElementByLinkText("duckduckgo.com");
         assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
         page.quit();
@@ -74,7 +77,7 @@ public class SeleniumManagerIVT {
         IFirefoxOptions options = seleniumManager.getFirefoxOptions();
         options.setHeadless(true);
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
-        page.maximize();
+        page.maximize().takeScreenShot();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();
     }

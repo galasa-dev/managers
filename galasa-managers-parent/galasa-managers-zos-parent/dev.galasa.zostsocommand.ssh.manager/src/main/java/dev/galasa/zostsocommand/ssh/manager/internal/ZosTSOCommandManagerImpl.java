@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zostsocommand.ssh.manager.internal;
 
@@ -75,7 +75,7 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosTSOCommandField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
     }
@@ -94,18 +94,18 @@ public class ZosTSOCommandManagerImpl extends AbstractManager implements IZosTSO
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        setZosManager(addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class));
         if (zosManager == null) {
             throw new ZosTSOCommandManagerException("The zOS Manager is not available");
         }
-        setZosUnixCommandManager(addDependentManager(allManagers, activeManagers, IZosUNIXCommandSpi.class));
+        setZosUnixCommandManager(addDependentManager(allManagers, activeManagers, galasaTest, IZosUNIXCommandSpi.class));
         if (zosUnixCommandManager == null) {
             throw new ZosTSOCommandManagerException("The zOS UNIX Command Manager is not available");
         }

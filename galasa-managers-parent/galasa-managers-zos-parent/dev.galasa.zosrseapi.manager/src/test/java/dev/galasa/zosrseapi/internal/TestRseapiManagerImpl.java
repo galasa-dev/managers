@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -127,7 +127,7 @@ public class TestRseapiManagerImpl {
     
     @Test
     public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(rseapiManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(rseapiManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         rseapiManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", rseapiManagerSpy.getFramework(), frameworkMock);
     }
@@ -153,19 +153,19 @@ public class TestRseapiManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(httpManagerMock);
-        rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(rseapiManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        rseapiManagerSpy.youAreRequired(allManagers, activeManagers ,null);
+        PowerMockito.verifyPrivate(rseapiManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(rseapiManagerSpy);
-        rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(rseapiManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        rseapiManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(rseapiManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         String expectedMessage = "The zOS Manager is not available";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
-        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
@@ -175,7 +175,7 @@ public class TestRseapiManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The HTTP Manager is not available";
         RseapiManagerException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiManagerException.class, ()->{
-        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers);
+        	rseapiManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
     	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }

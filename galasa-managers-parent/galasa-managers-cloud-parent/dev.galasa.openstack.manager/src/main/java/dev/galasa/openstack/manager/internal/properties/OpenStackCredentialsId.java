@@ -30,7 +30,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
 public class OpenStackCredentialsId extends CpsProperties {
 
     public static String get() throws OpenstackManagerException, LogConfigurationException {
-        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "openstack", "server", "credentials.id");
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), "OPENSTACK", "server", "credentials.id");
     }
 
 }

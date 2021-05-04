@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.selenium.internal;
 
@@ -35,13 +35,13 @@ public class WebPageImpl implements IWebPage {
 
     private WebDriver driver;
 
-    private List<WebPageImpl> webPages;
+    private List<IWebPage> webPages;
 
     private Path screenshotRasDirectory;
 
     public static final int DEFAULT_SECONDS_TIMEOUT = 30;
 
-    public WebPageImpl(WebDriver driver, List<WebPageImpl> webPages, Path screenshotRasDirectory) {
+    public WebPageImpl(WebDriver driver, List<IWebPage> webPages, Path screenshotRasDirectory) {
         this.driver = driver;
         this.webPages = webPages;
         this.screenshotRasDirectory = screenshotRasDirectory;

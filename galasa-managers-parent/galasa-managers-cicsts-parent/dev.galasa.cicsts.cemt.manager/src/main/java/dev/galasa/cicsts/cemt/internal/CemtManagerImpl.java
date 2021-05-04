@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 
 package dev.galasa.cicsts.cemt.internal;
@@ -47,13 +47,13 @@ public class CemtManagerImpl extends AbstractManager implements ICemtManagerSpi,
       }
        
        if(galasaTest.isJava()) {
-          youAreRequired(allManagers, activeManagers);
+          youAreRequired(allManagers, activeManagers, galasaTest);
        }
    }
    
    
    @Override
-   public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException{
+   public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException{
       
       if(activeManagers.contains(this)) {
          return;
@@ -61,7 +61,7 @@ public class CemtManagerImpl extends AbstractManager implements ICemtManagerSpi,
       
       activeManagers.add(this);
       
-      cicstsManager = addDependentManager(allManagers, activeManagers, ICicstsManagerSpi.class);
+      cicstsManager = addDependentManager(allManagers, activeManagers, galasaTest, ICicstsManagerSpi.class);
       
       if(cicstsManager == null) {
          throw new CicstsManagerException("CICS Manager is not available");

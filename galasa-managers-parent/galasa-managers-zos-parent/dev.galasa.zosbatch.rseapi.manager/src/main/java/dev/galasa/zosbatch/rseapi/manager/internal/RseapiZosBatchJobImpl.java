@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosbatch.rseapi.manager.internal;
 
@@ -12,8 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -143,7 +141,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
     }
     
-    public @NotNull IZosBatchJob submitJob() throws ZosBatchException {
+    public IZosBatchJob submitJob() throws ZosBatchException {
         HashMap<String, String> headers = new HashMap<>();
         IRseapiResponse response;
         try {
@@ -279,12 +277,21 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             }
         }
         return Integer.MIN_VALUE;
-    }    
+    }
+    
+    @Override
+	public IZosBatchJobOutput listSpoolFiles() throws ZosBatchException {
+        if (!this.outputComplete) {
+            getOutput(false);
+        }
+        
+        return jobOutput();
+	}
     
     @Override
     public IZosBatchJobOutput retrieveOutput() throws ZosBatchException {
         if (!this.outputComplete) {
-            getOutput();
+            getOutput(true);
         }
         
         return jobOutput();
@@ -312,12 +319,16 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     }
     
     @Override
-    public IZosBatchJobOutputSpoolFile getSpoolFile(@NotNull String ddname) throws ZosBatchException {
-        Iterator<IZosBatchJobOutputSpoolFile> spoolFilesIterator = retrieveOutput().iterator();
+    public IZosBatchJobOutputSpoolFile getSpoolFile(String ddname) throws ZosBatchException {
+        Iterator<IZosBatchJobOutputSpoolFile> spoolFilesIterator = listSpoolFiles().iterator();
         while (spoolFilesIterator.hasNext()) {
             IZosBatchJobOutputSpoolFile spoolFile = spoolFilesIterator.next();
             if (spoolFile.getDdname().equals(ddname)) {
-                return spoolFile;
+            	String records = getOutputFileContent(this.jobFilesPath + "/" + spoolFile.getId() + "/content"); 
+            	if (records != null) {
+            		return this.zosBatchManager.getZosManager().newZosBatchJobOutputSpoolFile(this, spoolFile.getJobname(), spoolFile.getJobid(), spoolFile.getStepname(), spoolFile.getProcstep(), ddname, spoolFile.getId(), records);
+            	}
+                throw new ZosBatchException("DDNAME " + ddname + " is empty or not found");
             }
         }
         return null;
@@ -380,7 +391,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 		return this.shouldCleanup;
 	}
 
-	protected void getOutput() throws ZosBatchException {
+	protected void getOutput(boolean retrieveRecords) throws ZosBatchException {
     
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
@@ -391,7 +402,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this.jobname.getName(), this.jobid);
+        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         IRseapiResponse response;
@@ -418,7 +429,11 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
                 String stepname = jsonNull(responseBody, "step name");
                 String procstep = jsonNull(responseBody, "proc step");
                 String ddname = responseBody.get("ddName").getAsString();
-                this.jobOutput.addSpoolFile(stepname, procstep, ddname, getOutputFileContent(this.jobFilesPath + "/" + id + "/content"));
+                String records = null;
+                if (retrieveRecords) {
+                	records = getOutputFileContent(this.jobFilesPath + "/" + id + "/content");
+                }
+            	this.jobOutput.addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else {            
             // Error case
@@ -600,7 +615,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         
             logger.debug(responseBody);
             fileOutput = jsonNull(responseBody, PROP_CONTENT);
-        } else if(response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
+        } else if (response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
         	return null;
         } else {            
             // Error case

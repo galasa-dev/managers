@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.elasticlog.internal;
 
@@ -93,7 +93,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 		}
 		
 		if(!framework.getTestRun().isLocal() || ElasticLogLocalRun.get().equals("true"))
-			youAreRequired(allManagers, activeManagers);
+			youAreRequired(allManagers, activeManagers, galasaTest);
 		
 		this.otherManagers = activeManagers;
 	}
@@ -106,13 +106,13 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	 * @throws ManagerException
 	 */
 	@Override
-	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+	public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
 			throws ManagerException {
 		if (activeManagers.contains(this))
 			return;
 		activeManagers.add(this);
 
-		httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+		httpManager = addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
 	}
 	
     @Override

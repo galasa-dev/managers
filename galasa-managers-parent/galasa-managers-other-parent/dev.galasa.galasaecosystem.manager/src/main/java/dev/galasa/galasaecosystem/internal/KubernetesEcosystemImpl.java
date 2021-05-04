@@ -74,7 +74,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * @author Michael Baylis
  *
  */
-public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
+public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalEcosystem {
 
     private final Log                        logger = LogFactory.getLog(getClass());
 
@@ -1024,7 +1024,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem {
 
     public static void loadEcosystemsFromRun(GalasaEcosystemManagerImpl manager,
             IDynamicStatusStoreService dss,     
-            HashMap<String, KubernetesEcosystemImpl> taggedEcosystems, 
+            HashMap<String, IInternalEcosystem> taggedEcosystems, 
             IRun testRun) throws GalasaEcosystemManagerException {
 
         String tagPrefix = "run." + testRun.getName() + ".kubernetes.ecosystem.";
