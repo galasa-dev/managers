@@ -75,7 +75,7 @@ public interface IGenericEcosystem {
      */
     public void setCredsProperty(@NotNull String property, String value)  throws GalasaEcosystemManagerException;
     
-    public void submitRun(String runType,
+    public String submitRun(String runType,
                           String requestor,
                           String groupName,
                           @NotNull String bundleName,
@@ -84,5 +84,8 @@ public interface IGenericEcosystem {
                           String obr,
                           String stream,
                           Properties overrides) throws GalasaEcosystemManagerException;
+    
+    public JsonObject waitForRun(String run) throws GalasaEcosystemManagerException;
+    public JsonObject waitForRun(String run, int minutes) throws GalasaEcosystemManagerException;
     
 }

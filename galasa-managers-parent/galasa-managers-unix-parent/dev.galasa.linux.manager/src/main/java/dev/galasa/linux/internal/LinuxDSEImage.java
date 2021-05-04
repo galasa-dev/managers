@@ -96,7 +96,7 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
 
     @Override
     public @NotNull String getImageID() {
-        return "dse" + tag;
+        return "dse " + tag;
     }
 
     @Override
