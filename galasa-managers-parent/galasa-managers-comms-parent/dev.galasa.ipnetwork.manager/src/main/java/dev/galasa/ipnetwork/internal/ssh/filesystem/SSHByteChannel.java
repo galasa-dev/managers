@@ -64,7 +64,7 @@ public class SSHByteChannel implements SeekableByteChannel {
                 inputStream = this.channel.get(this.path.toString());
             }
         } catch (SftpException e) {
-            throw new SSHException("Unable to open SSH file", e);
+            throw new SSHException("Unable to open SSH file " + this.path, e);
         }
     }
 
