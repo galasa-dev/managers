@@ -34,7 +34,6 @@ import dev.galasa.galasaecosystem.ILocalEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
 import dev.galasa.galasaecosystem.internal.properties.MavenUseDefaultLocalRepository;
 import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
-import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.java.IJavaInstallation;
 
 public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implements ILocalEcosystem {
@@ -63,9 +62,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     public LocalEcosystemImpl(GalasaEcosystemManagerImpl manager, 
             String tag,
-            IJavaInstallation javaInstallation,
-            ICommandShell commandShell) {
-        super(manager, tag, javaInstallation, commandShell);
+            IJavaInstallation javaInstallation) {
+        super(manager, tag, javaInstallation);
     }
 
 
@@ -140,7 +138,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             fetchCommand.append("mvn");
             fetchCommand.append(" -B");
             fetchCommand.append(" -U");
-            fetchCommand.append(" --ntp");
+            //            fetchCommand.append(" --ntp");  18.04 of ubuntu doesn't have this,  suspect windows as well
             fetchCommand.append(" --settings ");
             fetchCommand.append(settingsXml.toString());
             fetchCommand.append(" -f ");

@@ -57,6 +57,7 @@ import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.kubernetes.IConfigMap;
 import dev.galasa.kubernetes.IDeployment;
 import dev.galasa.kubernetes.IKubernetesNamespace;
@@ -119,7 +120,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankManagementFacilityUrl;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
-        super(manager, tag, null, null);
+        super(manager, tag, null);
         this.namespace = namespace;
     }
 
@@ -1189,6 +1190,11 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     public JsonObject waitForRun(String run, int minutes) throws GalasaEcosystemManagerException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+        throw new GalasaEcosystemManagerException("Command shell is not relevant in the Kubernetes Ecosystem"); 
     }
 
 
