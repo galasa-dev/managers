@@ -43,10 +43,19 @@ import dev.galasa.galasaecosystem.LocalEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesSingleton;
 import dev.galasa.galasaecosystem.internal.properties.KubernetesEcosystemTagSharedEnvironment;
 import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.java.IJavaInstallation;
+import dev.galasa.java.JavaManagerException;
+import dev.galasa.java.spi.IJavaManagerSpi;
+import dev.galasa.java.ubuntu.spi.IJavaUbuntuManagerSpi;
+import dev.galasa.java.windows.spi.IJavaWindowsManagerSpi;
 import dev.galasa.kubernetes.IKubernetesNamespace;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
+import dev.galasa.linux.ILinuxImage;
+import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
+import dev.galasa.windows.IWindowsImage;
+import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsManagerSpi;
 
 /**
@@ -68,6 +77,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
     private IKubernetesManagerSpi               k8sManager;
     private ILinuxManagerSpi                    linuxManager;
     private IWindowsManagerSpi                  windowsManager;
+    private IJavaManagerSpi                     javaManager;
 
     private boolean                             required           = false;
     private boolean                             requiresK8s        = false;
@@ -131,7 +141,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
             }
             if (field.getField().getType() == ILocalEcosystem.class) {
                 requiresLocal = true;
-                
+
                 LocalEcosystem localEcosystem = field.getField().getAnnotation(LocalEcosystem.class);
                 if (localEcosystem != null) {
                     if (localEcosystem.linuxImageTag() != null && !localEcosystem.linuxImageTag().trim().isEmpty()) {
@@ -170,22 +180,29 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
                 throw new GalasaEcosystemManagerException("Unable to locate the Kubernetes Manager");
             }
         }
-        
+
         if (this.requiresLinux) {
             this.linuxManager = this.addDependentManager(allManagers, activeManagers, galasaTest, ILinuxManagerSpi.class);
             if (this.linuxManager == null) {
                 throw new GalasaEcosystemManagerException("Unable to locate the Linux Manager");
             }
         }
-        
+
         if (this.requiresWindows) {
             this.windowsManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IWindowsManagerSpi.class);
             if (this.windowsManager == null) {
                 throw new GalasaEcosystemManagerException("Unable to locate the Windows Manager");
             }
         }
-        
-        
+
+        if (this.requiresLocal) {
+            this.javaManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IJavaManagerSpi.class);
+            if (this.javaManager == null) {
+                throw new GalasaEcosystemManagerException("Unable to locate the Java Manager");
+            }
+        }
+
+
         this.artifactManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (this.artifactManager == null) {
             throw new GalasaEcosystemManagerException("Unable to locate the Artifact Manager");
@@ -204,13 +221,28 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         if (otherManager == k8sManager) {
             return true;
         }
+        if (otherManager == linuxManager) {
+            return true;
+        }
+        if (otherManager == windowsManager) {
+            return true;
+        }
+        if (otherManager == javaManager) {
+            return true;
+        }
+        if (otherManager instanceof IJavaUbuntuManagerSpi) {
+            return true;
+        }
+        if (otherManager instanceof IJavaWindowsManagerSpi) {
+            return true;
+        }
 
         return super.areYouProvisionalDependentOn(otherManager);
     }
 
     @Override
     public boolean doYouSupportSharedEnvironments() {
-        
+
         if (this.requiresDocker
                 || this.requiresLinux
                 || this.requiresWindows
@@ -218,7 +250,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
                 || this.requiresStandalone) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -337,6 +369,82 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         return k8sEcosystem;
     }
 
+    /**
+     * Generate a Galasa Local Ecosystem
+     * 
+     * @param field The test field
+     * @param annotations any annotations with the ecosystem
+     * @return a {@link IKubernetesEcosystem} ecosystem
+     * @throws KubernetesManagerException if there is a problem generating a ecosystem
+     */
+    @GenerateAnnotatedField(annotation = LocalEcosystem.class)
+    public ILocalEcosystem generateLocalEcosystem(Field field, List<Annotation> annotations) throws GalasaEcosystemManagerException {
+        LocalEcosystem annotation = field.getAnnotation(LocalEcosystem.class);
+
+        String tag = annotation.ecosystemTag().trim().toUpperCase();
+        if (tag.isEmpty()) {
+            tag = "PRIMARY";
+        }
+
+        //*** Check to see if we already have it
+        IInternalEcosystem ecosystem = this.taggedEcosystems.get(tag);
+        if (ecosystem != null) {
+            if (!(ecosystem instanceof ILocalEcosystem)) {
+                throw new GalasaEcosystemManagerException("Tag " + tag + " is being used for multiple types of Ecosystems");
+            }
+            return (ILocalEcosystem)ecosystem;
+        }
+
+        //*** Currently, this Manager does not support shared environments for local ecosystems
+
+        //*** locate the Java Installation
+
+        String javaTag = annotation.javaInstallationTag().trim().toUpperCase();
+        if (javaTag.isEmpty()) {
+            javaTag = "PRIMARY";
+        }
+
+        IJavaInstallation javaInstallation = null;
+        try {
+            javaInstallation = this.javaManager.getInstallationForTag(javaTag);
+        } catch(JavaManagerException e) {
+            throw new GalasaEcosystemManagerException("Problem locating Java installation for Ecosystem tag " + tag, e);
+        }
+
+        LocalEcosystemImpl localEcosystem = null;
+
+        //*** check which OS we are deploying to
+        String linuxImageTag = annotation.linuxImageTag().trim().toUpperCase();
+        String windowsImageTag = annotation.windowsImageTag().trim().toUpperCase();
+
+        if (!linuxImageTag.isEmpty() && !windowsImageTag.isEmpty()) {
+            throw new GalasaEcosystemManagerException("Galasa Ecosystem tag " + tag + " references both a Linux and Windows image tag");
+        }
+        if (linuxImageTag.isEmpty() && windowsImageTag.isEmpty()) {
+            throw new GalasaEcosystemManagerException("Galasa Ecosystem tag " + tag + " does not refere to either a Linux and Windows image tag");
+        }
+
+        if (!linuxImageTag.isEmpty()) {
+            try {
+                ILinuxImage linuxImage = this.linuxManager.getImageForTag(linuxImageTag);
+                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation);
+            } catch (LinuxManagerException e) {
+                throw new GalasaEcosystemManagerException("Problem locating Linux image for Ecosystem tag " + tag, e);
+            }
+        } else if (!windowsImageTag.isEmpty()) {
+            try {
+                IWindowsImage windowsImage = this.windowsManager.getImageForTag(windowsImageTag);
+                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation);
+            } catch (WindowsManagerException e) {
+                throw new GalasaEcosystemManagerException("Problem locating Windows image for Ecosystem tag " + tag, e);
+            }
+        }
+
+        taggedEcosystems.put(tag, localEcosystem);
+
+        return localEcosystem;
+    }
+
     @Override
     public void provisionBuild() throws ManagerException, ResourceUnavailableException {
         super.provisionBuild();
@@ -397,6 +505,14 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
 
     protected IKubernetesManagerSpi getKubernetesManager() {
         return this.k8sManager;
+    }
+
+    protected ILinuxManagerSpi getLinuxManager() {
+        return this.linuxManager;
+    }
+
+    protected IWindowsManagerSpi getWindowsManager() {
+        return this.windowsManager;
     }
 
     public Gson getGson() {

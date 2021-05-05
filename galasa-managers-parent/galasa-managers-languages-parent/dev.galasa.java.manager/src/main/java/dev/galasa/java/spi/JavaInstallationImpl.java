@@ -59,6 +59,8 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
         this.javaJvm         = javaJvm;
         this.javaTag         = javaTag;
         
+        this.javaManager.registerJavaInstallationForTag(javaTag, this);
+        
         if (javaVersion == JavaVersion.vDefault) {
             this.javaVersion = DefaultVersion.get();
             logger.info("Using default Java version " + this.javaVersion + " for installation tag " + this.javaTag);
