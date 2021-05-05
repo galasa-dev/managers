@@ -32,7 +32,6 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
     private final static Pattern runnamePattern = Pattern.compile("Allocated Run Name (\\w+) to this run");
 
     private final ILinuxImage linuxImage;
-    private final ICommandShell commandShell;
 
     private int internalRunNumber = 0;
 
@@ -40,10 +39,9 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
 
     public LocalLinuxEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag,
             ILinuxImage linuxImage, IJavaInstallation javaInstallation) throws LinuxManagerException {
-        super(manager, tag, javaInstallation, linuxImage.getCommandShell());
+        super(manager, tag, javaInstallation);
 
         this.linuxImage = linuxImage;
-        this.commandShell = this.linuxImage.getCommandShell();
     }
 
     @Override
@@ -70,7 +68,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             InputStream is = bundleResources.retrieveSkeletonFile("local/run.sh", parameters);
             Files.copy(is, this.scriptFile);
             
-            this.commandShell.issueCommand("chmod +x " + this.scriptFile.toString());
+            getCommandShell().issueCommand("chmod +x " + this.scriptFile.toString());
         } catch (Exception e) {
             throw new GalasaEcosystemManagerException("Problem building the Local Ecosystem on Linux", e); 
         }
@@ -125,7 +123,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             runCommand.append(testName);
             runCommand.append("\"");
 
-            String response = this.commandShell.issueCommand(runCommand.toString());
+            String response = getCommandShell().issueCommand(runCommand.toString());
             
             Matcher matcher = processPattern.matcher(response);
             if (!matcher.find()) {
@@ -160,6 +158,15 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             throw new GalasaEcosystemManagerException("Failed to submit run to local ecosystem", e);
         }
         
+    }
+
+    @Override
+    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+        try {
+            return this.linuxImage.getCommandShell();
+        } catch (LinuxManagerException e) {
+            throw new GalasaEcosystemManagerException("Problem obtaining command shell", e);
+        }
     }
 
 }
