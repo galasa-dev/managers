@@ -126,12 +126,14 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
             throw new JavaManagerException("Invalid Java archive download location", e);
         }
         
-        String fileName = url.getFile();
-        while(fileName.startsWith("/") || fileName.startsWith("\\")) {
-            fileName = fileName.substring(1);
+        String fileName = url.getPath();
+        fileName = fileName.replaceAll("\\\\", "/");
+        int pos = fileName.lastIndexOf("/");
+        if (pos < 0) {
+            return fileName;
         }
         
-        return fileName;
+        return fileName.substring(pos + 1);
     }
 
     private String getDownloadLocation() throws JavaManagerException {
