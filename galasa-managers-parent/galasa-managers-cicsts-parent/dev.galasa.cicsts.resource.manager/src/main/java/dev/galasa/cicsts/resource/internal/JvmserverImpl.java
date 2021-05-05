@@ -31,6 +31,8 @@ import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
 import dev.galasa.cicsts.cicsresource.CicsResourceStatus;
 import dev.galasa.cicsts.cicsresource.IJvmprofile;
 import dev.galasa.cicsts.cicsresource.IJvmserver;
+import dev.galasa.cicsts.cicsresource.IJvmserverLog;
+import dev.galasa.textscan.ILogScanner;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosbatch.IZosBatchJob;
@@ -88,10 +90,10 @@ public class JvmserverImpl implements IJvmserver {
 	private IZosUNIXFile javaHome;
 
 	private IZosUNIXFile logsDirectory;	
-	private IZosUNIXFile jvmLogFile;	
-	private IZosUNIXFile stdOutFile;	
-	private IZosUNIXFile stdErrFile;	
-	private IZosUNIXFile jvmTraceFile;
+	private IJvmserverLog jvmLogLog;	
+	private IJvmserverLog stdOutLog;	
+	private IJvmserverLog stdErrLog;	
+	private IJvmserverLog jvmTraceLog;
 	
 	private IZosLibertyServer zosLibertyServer;
 	private IZosUNIXFile wlpInstallDir;
@@ -168,6 +170,10 @@ public class JvmserverImpl implements IJvmserver {
 			}
 			this.zosLibertyServer = newZosLibertyServerFromCicsSuppliedServerXml();
 		}
+	}
+
+	private ILogScanner newLogScanner() throws CicsResourceManagerException {
+		return this.cicsResourceManager.getLogScanner();
 	}
 
 	public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException {
@@ -719,196 +725,55 @@ public class JvmserverImpl implements IJvmserver {
 	}
 
 	@Override
-	public IZosUNIXFile getJvmLogFile() throws CicsJvmserverResourceException {
+	public IJvmserverLog getJvmLog() throws CicsJvmserverResourceException {
 		//TODO: JVM restarted?
-		if (this.jvmLogFile == null) {
-			this.jvmLogFile = getLogFile(LOG_CEMT_PARAMETER, LOG_PROFILE_OPTION, LOG_FILE_SUFFIX);
+		if (this.jvmLogLog == null) {
+			this.jvmLogLog = getLog(LOG_CEMT_PARAMETER, LOG_PROFILE_OPTION, LOG_FILE_SUFFIX);
 		}
-		return this.jvmLogFile;
+		return this.jvmLogLog;
 	}
 
 	@Override
-	public IZosUNIXFile getStdOutFile() throws CicsJvmserverResourceException {
+	public IJvmserverLog getStdOut() throws CicsJvmserverResourceException {
 		//TODO: JVM restarted?
-		if (this.stdOutFile == null) {
-			this.stdOutFile = getLogFile(STDOUT_CEMT_PARAMETER, STDOUT_PROFILE_OPTION, STDOUT_FILE_SUFFIX);
+		if (this.stdOutLog == null) {
+			this.stdOutLog = getLog(STDOUT_CEMT_PARAMETER, STDOUT_PROFILE_OPTION, STDOUT_FILE_SUFFIX);
 		}
-		return this.stdOutFile;
+		return this.stdOutLog;
 	}
 
 	@Override
-	public IZosUNIXFile getStdErrFile() throws CicsJvmserverResourceException {
+	public IJvmserverLog getStdErr() throws CicsJvmserverResourceException {
 		//TODO: JVM restarted?
-		if (this.stdErrFile == null) {
-			this.stdErrFile = getLogFile(STDERR_CEMT_PARAMETER, STDERR_PROFILE_OPTION, STDERR_FILE_SUFFIX);
+		if (this.stdErrLog == null) {
+			this.stdErrLog = getLog(STDERR_CEMT_PARAMETER, STDERR_PROFILE_OPTION, STDERR_FILE_SUFFIX);
 		}
-		return this.stdErrFile;
+		return this.stdErrLog;
 	}
 
 	@Override
-	public IZosUNIXFile getJvmTraceFile() throws CicsJvmserverResourceException {
+	public IJvmserverLog getJvmTrace() throws CicsJvmserverResourceException {
 		//TODO: JVM restarted?
-		if (this.jvmTraceFile == null) {
-			this.jvmTraceFile = getLogFile(TRACE_CEMT_PARAMETER, TRACE_PROFILE_OPTION, TRACE_FILE_SUFFIX);
+		if (this.jvmTraceLog == null) {
+			this.jvmTraceLog = getLog(TRACE_CEMT_PARAMETER, TRACE_PROFILE_OPTION, TRACE_FILE_SUFFIX);
 		}
-		return this.jvmTraceFile;
+		return this.jvmTraceLog;
 	}
 
 	@Override
-	public OutputStream getJvmLog(boolean binary) throws CicsJvmserverResourceException {
-		String logFileName = getLogFileName(LOG_CEMT_PARAMETER, LOG_PROFILE_OPTION, LOG_FILE_SUFFIX);
-		if (isDdname(logFileName)) {
-			//TODO: migt not be there!!
-			return getOutputFromJob(logFileName.substring(5));
-		} else {
-			if (this.jvmLogFile == null || this.jvmLogFile.getUnixPath().equals(logFileName)) {
-				this.jvmLogFile = getLogFile(LOG_CEMT_PARAMETER, LOG_PROFILE_OPTION, LOG_FILE_SUFFIX);
-				if (binary) {
-					this.jvmLogFile.setDataType(UNIXFileDataType.BINARY);
-				} else {
-					this.jvmLogFile.setDataType(UNIXFileDataType.TEXT);
-				}
-			}
-			return newOutputStream(this.jvmLogFile);
+	public void checkpointLogs() throws CicsJvmserverResourceException {	
+		if (this.jvmLogLog != null) {
+			this.jvmLogLog.checkpoint();
 		}
-	}
-
-	@Override
-	public OutputStream getStdOut(boolean binary) throws CicsJvmserverResourceException {
-		String logFileName = getLogFileName(STDOUT_CEMT_PARAMETER, STDOUT_PROFILE_OPTION, STDOUT_FILE_SUFFIX);
-		if (isDdname(logFileName)) {
-			return getOutputFromJob(logFileName);
-		} else {
-			if (this.stdOutFile == null || this.jvmLogFile.getUnixPath().equals(logFileName)) {
-				this.stdOutFile = getLogFile(STDOUT_CEMT_PARAMETER, STDOUT_PROFILE_OPTION, STDOUT_FILE_SUFFIX);
-				if (binary) {
-					this.stdOutFile.setDataType(UNIXFileDataType.BINARY);
-				} else {
-					this.stdOutFile.setDataType(UNIXFileDataType.TEXT);
-				}
-			}
-			return newOutputStream(this.stdOutFile);
+		if (this.stdOutLog != null) {
+			this.stdOutLog.checkpoint();
 		}
-	}
-
-	@Override
-	public OutputStream getStdErr(boolean binary) throws CicsJvmserverResourceException {
-		String logFileName = getLogFileName(STDERR_CEMT_PARAMETER, STDERR_PROFILE_OPTION, STDERR_FILE_SUFFIX);
-		if (isDdname(logFileName)) {
-			return getOutputFromJob(logFileName);
-		} else {
-			if (this.stdErrFile == null || this.jvmLogFile.getUnixPath().equals(logFileName)) {
-				this.stdErrFile = getLogFile(STDERR_CEMT_PARAMETER, STDERR_PROFILE_OPTION, STDERR_FILE_SUFFIX);
-				if (binary) {
-					this.stdErrFile.setDataType(UNIXFileDataType.BINARY);
-				} else {
-					this.stdErrFile.setDataType(UNIXFileDataType.TEXT);
-				}
-			}
-			return newOutputStream(this.stdErrFile);
+		if (this.stdErrLog != null) {
+			this.stdErrLog.checkpoint();
 		}
-	}
-
-	@Override
-	public OutputStream getJvmTrace(boolean binary) throws CicsJvmserverResourceException {
-		String logFileName = getLogFileName(TRACE_CEMT_PARAMETER, TRACE_PROFILE_OPTION, TRACE_FILE_SUFFIX);
-		if (isDdname(logFileName)) {
-			return getOutputFromJob(logFileName);
-		} else {
-			if (this.jvmTraceFile == null || this.jvmTraceFile.getUnixPath().equals(logFileName)) {
-				this.jvmTraceFile = getLogFile(TRACE_CEMT_PARAMETER, TRACE_PROFILE_OPTION, TRACE_FILE_SUFFIX);
-				if (binary) {
-					this.jvmTraceFile.setDataType(UNIXFileDataType.BINARY);
-				} else {
-					this.jvmTraceFile.setDataType(UNIXFileDataType.TEXT);
-				}
-			}
-			return newOutputStream(this.jvmTraceFile);
+		if (this.jvmTraceLog != null) {
+			this.jvmTraceLog.checkpoint();
 		}
-	}
-
-	@Override
-	public String checkpointLogs() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public OutputStream getLogFileSinceCheckpoint(IZosUNIXFile logFile, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean searchLogFileForText(IZosUNIXFile logFile, String searchText) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean searchLogFileForTextSinceCheckpoint(IZosUNIXFile logFile, String searchText, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean searchLogFileForPattern(IZosUNIXFile logFile, Pattern searchPattern) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean searchLogFileForPatternSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean waitForTextInLogFile(IZosUNIXFile logFile, String searchText, long millisecondTimeout) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String waitForTextInLogFile(IZosUNIXFile logFile, String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean waitForTextLogFileSinceCheckpoint(IZosUNIXFile logFile, String searchText, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String waitForTextLogFileSinceCheckpoint(IZosUNIXFile logFile, String searchText, String failText, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean waitForPatternInLogFile(IZosUNIXFile logFile, Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String waitForPatternInLogFile(IZosUNIXFile logFile, Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean waitForPatternLogFileSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String waitForPatternLogFileSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, Pattern failPattern, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -960,21 +825,25 @@ public class JvmserverImpl implements IJvmserver {
 		return this.defaultTimout ;
 	}
 
-	protected IZosUNIXFile getLogFile(String cemtParameter, String jvmprofileOption, String fileSuffix) throws CicsJvmserverResourceException {
-		String logFileName = getLogFileName(cemtParameter, jvmprofileOption, fileSuffix);
-		if (isDdname(logFileName)) {
-			throw new CicsJvmserverResourceException(cemtParameter + " is assigned to " + logFileName);
-		} else {
-			try {
-				return this.zosFileHandler.newUNIXFile(logFileName, this.cicsZosImage);
-			} catch (ZosUNIXFileException e) {
-				throw new CicsJvmserverResourceException("Problem creating IZosUNIXFile object for " + cemtParameter, e);
+	protected IJvmserverLog getLog(String cemtParameter, String jvmprofileOption, String fileSuffix) throws CicsJvmserverResourceException {
+		String logName = getLogName(cemtParameter, jvmprofileOption, fileSuffix);
+		try {
+			if (isDdname(logName)) {
+				return new JvmserverLogImpl(getCicsRegionJob().getSpoolFile(getDdname(logName)), newLogScanner());
+			} else {
+				return new JvmserverLogImpl(this.zosFileHandler.newUNIXFile(logName, this.cicsZosImage), newLogScanner());
 			}
+		} catch (ZosBatchException | ZosUNIXFileException | CicsResourceManagerException e) {
+			throw new CicsJvmserverResourceException("Problem creating IJvmserverLog object for " + cemtParameter, e);
 		}
 		
 	}
 
-	protected String getLogFileName(String cemtParameter, String jvmprofileOption, String fileSuffix) throws CicsJvmserverResourceException {
+	private String getDdname(String logName) {
+		return logName.substring(5);
+	}
+
+	protected String getLogName(String cemtParameter, String jvmprofileOption, String fileSuffix) throws CicsJvmserverResourceException {
 		// First try CEMT
 		CicstsHashMap cemtMap = cemtInquire();
 		if (cemtMap != null && cemtMap.containsKey(cemtParameter)) {
@@ -1017,18 +886,21 @@ public class JvmserverImpl implements IJvmserver {
 		return outputStream;
 	}
 
-	private OutputStream newOutputStream(IZosUNIXFile unixFile) throws CicsJvmserverResourceException {
+	private OutputStream newOutputStream(IJvmserverLog log) throws CicsJvmserverResourceException {
 		OutputStream outputStream =  new ByteArrayOutputStream();
-		try {
-			outputStream.write(unixFile.retrieve().getBytes());
-		} catch (ZosUNIXFileException | IOException e) {
-			throw new CicsJvmserverResourceException("Unable to read file " + unixFile.getUnixPath());
+		//TODO: spool file
+		if (log.isZosUNIXFile()) {
+			try {
+				outputStream.write(log.getZosUNIXFile().retrieve().getBytes());
+			} catch (ZosUNIXFileException | IOException e) {
+				throw new CicsJvmserverResourceException("Unable to read file " + log.getZosUNIXFile().getUnixPath());
+			}
 		}
 		return outputStream;
 	}
 
-	private boolean isDdname(String logFileName) {
-		return logFileName.startsWith("//DD:");
+	private boolean isDdname(String logName) {
+		return logName.startsWith("//DD:");
 	}
 
 	private void getSystemValues() throws CicsJvmserverResourceException {
@@ -1045,7 +917,8 @@ public class JvmserverImpl implements IJvmserver {
 
 	private IZosBatchJob getCicsRegionJob() throws CicsJvmserverResourceException {
 		if (this.cicsRegionJob == null) {
-			try {
+			try { 
+				//TODO: Get from properties?
 				List<IZosBatchJob> jobs = this.cicsResourceManager.getBatch(this.cicsZosImage).getJobs(getCicsJobname(), getCicsRegionUserid());
 				for (IZosBatchJob job : jobs) {
 					if (job.getStatus().equals(JobStatus.ACTIVE)) {
@@ -1053,7 +926,7 @@ public class JvmserverImpl implements IJvmserver {
 						Pattern pattern = Pattern.compile("DFHSI1517\\s(\\w+)");
 				    	Matcher matcher = pattern.matcher(jesmsglg);
 				    	if (matcher.find() && matcher.groupCount() == 1 && this.cicsApplid.equals(matcher.group(1))) {
-			    			this.cicsRegionJob = job;
+			    			this.cicsRegionJob = job; //TODO Return here and what if null
 			    			break;
 				    	}
 					}

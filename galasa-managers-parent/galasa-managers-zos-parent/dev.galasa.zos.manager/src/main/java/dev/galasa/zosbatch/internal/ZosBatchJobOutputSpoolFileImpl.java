@@ -22,6 +22,7 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
     private String procstep;
     private String ddname;
     private String id;
+    private long size;
     private String records;
     
     /**
@@ -41,6 +42,11 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
         this.ddname = ddname;
         this.id = id;
         this.records = records;
+        if (this.records != null) {
+        	this.size = this.records.length();
+        } else {
+        	this.size = 0;
+        }
     }
 
     @Override
@@ -73,6 +79,14 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
 		return this.id;
 	}
 
+    @Override
+	public long getSize() throws ZosBatchException {
+    	if (this.records == null) {
+    		return retrieve();
+    	}
+		return this.size;
+	}
+
 	@Override
     public String getRecords() {
         return this.records;        
@@ -84,7 +98,13 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
     }
 
 	@Override
-	public void retrieve() throws ZosBatchException {
+	public long retrieve() throws ZosBatchException {
 		this.records = this.batchJob.getSpoolFile(this.ddname).getRecords();
+        if (this.records != null) {
+        	this.size = this.records.length();
+        } else {
+        	this.size = 0;
+        }
+        return this.size;
 	}
 }
