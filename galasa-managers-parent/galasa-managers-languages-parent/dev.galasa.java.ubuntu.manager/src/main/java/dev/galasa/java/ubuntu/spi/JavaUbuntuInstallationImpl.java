@@ -36,7 +36,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
     private final String javaDirectoryName;
     private Path javaHome;
 
-    private static final Pattern findHome = Pattern.compile("^(([a-zA-Z0-9\\-_/ \\\\]*)?/)?\\Qbin/java\\E$", Pattern.MULTILINE);
+    private static final Pattern findHome = Pattern.compile("^(([a-zA-Z0-9\\-\\+\\._/ \\\\]*)?/)?\\Qbin/java\\E$", Pattern.MULTILINE);
 
 
 
