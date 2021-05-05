@@ -1,6 +1,8 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Text Scan Manager
-Export-Package: dev.galasa.textscan
+Export-Package: \
+	dev.galasa.textscan,\
+	dev.galasa.textscan.spi
 Import-Package: dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.language,\
