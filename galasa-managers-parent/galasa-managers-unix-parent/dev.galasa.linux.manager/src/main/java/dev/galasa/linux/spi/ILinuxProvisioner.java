@@ -10,12 +10,13 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ManagerException;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.linux.OperatingSystem;
 
 public interface ILinuxProvisioner {
 
     ILinuxProvisionedImage provisionLinux(@NotNull String tag, @NotNull OperatingSystem operatingSystem,
-            @NotNull List<String> capabilities) throws ManagerException, ResourceUnavailableException;
+            @NotNull List<String> capabilities) throws ManagerException, ResourceUnavailableException, InsufficientResourcesAvailableException;
 
 }

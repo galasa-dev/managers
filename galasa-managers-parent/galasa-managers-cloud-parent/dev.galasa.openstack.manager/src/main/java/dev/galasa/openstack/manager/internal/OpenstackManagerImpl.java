@@ -149,7 +149,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
-            throws OpenstackManagerException {
+            throws OpenstackManagerException, InsufficientResourcesAvailableException {
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -188,11 +188,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             // *** See if we have capacity for a new Instance on Openstack
             String instanceName = reserveInstance();
 
-            if (instanceName == null) {
-                // *** No room, return gracefully and allow someone else a chance
-                return null;
-            }
-
             // *** We have one, return it
             OpenstackLinuxImageImpl instance = new OpenstackLinuxImageImpl(this, this.openstackHttpClient, instanceName,
                     selectedImage, tag);
@@ -206,9 +201,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             throw new OpenstackManagerException("Problem accessing the CPS", e);
         } catch (DynamicStatusStoreException e) {
             throw new OpenstackManagerException("Problem accessing the DSS", e);
-        } catch (InsufficientResourcesAvailableException e) {
-            // *** We don't have any spare capacity, so return gracefully
-            return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OpenstackManagerException("Processing interrupted", e);
@@ -217,7 +209,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public IWindowsProvisionedImage provisionWindows(String tag, List<String> capabilities)
-            throws OpenstackManagerException {
+            throws OpenstackManagerException, InsufficientResourcesAvailableException {
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -256,11 +248,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             // *** See if we have capacity for a new Instance on Openstack
             String instanceName = reserveInstance();
 
-            if (instanceName == null) {
-                // *** No room, return gracefully and allow someone else a chance
-                return null;
-            }
-
             // *** We have one, return it
             OpenstackWindowsImageImpl instance = new OpenstackWindowsImageImpl(this, this.openstackHttpClient, instanceName,
                     selectedImage, tag);
@@ -274,15 +261,13 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             throw new OpenstackManagerException("Problem accessing the CPS", e);
         } catch (DynamicStatusStoreException e) {
             throw new OpenstackManagerException("Problem accessing the DSS", e);
-        } catch (InsufficientResourcesAvailableException e) {
-            // *** We don't have any spare capacity, so return gracefully
-            return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OpenstackManagerException("Processing interrupted", e);
         }
     }
 
+    @NotNull
     private String reserveInstance() throws DynamicStatusStoreException, InterruptedException,
             InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
 
@@ -298,7 +283,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
         // *** Is there room?
         if (maxInstances <= currentInstances) {
-            return null;
+            throw new InsufficientResourcesAvailableException("At max slots");
         }
 
         // *** Reserve a instance
