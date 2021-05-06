@@ -14,5 +14,6 @@ public enum JavaVersion {
     v12,
     v13,
     v14,
-    v15
+    v15,
+    v16
 }

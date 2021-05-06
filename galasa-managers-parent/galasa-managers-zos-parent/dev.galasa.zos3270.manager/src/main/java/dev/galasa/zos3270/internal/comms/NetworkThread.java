@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zos3270.internal.comms;
 
@@ -114,13 +114,21 @@ public class NetworkThread extends Thread {
     private ByteArrayOutputStream    commandSoFar;
 
     public NetworkThread(Terminal terminal, Screen screen, Network network, InputStream inputStream) {
+        this(terminal, screen, network, inputStream, null);
+    }
+
+    public NetworkThread(Terminal terminal, Screen screen, Network network, InputStream inputStream, List<String> deviceTypes) {
         this.screen = screen;
         this.network = network;
         this.inputStream = inputStream;
         this.terminal = terminal;
 
-        this.possibleDeviceTypes.add("IBM-DYNAMIC");
-        this.possibleDeviceTypes.add("IBM-3278-2");
+        if (deviceTypes == null || deviceTypes.isEmpty()) {
+            this.possibleDeviceTypes.add("IBM-DYNAMIC");
+            this.possibleDeviceTypes.add("IBM-3278-2");
+        } else {
+            this.possibleDeviceTypes.addAll(deviceTypes);
+        }
     }
 
     @Override

@@ -57,6 +57,7 @@ import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.kubernetes.IConfigMap;
 import dev.galasa.kubernetes.IDeployment;
 import dev.galasa.kubernetes.IKubernetesNamespace;
@@ -74,13 +75,11 @@ import dev.galasa.kubernetes.KubernetesManagerException;
  * @author Michael Baylis
  *
  */
-public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalEcosystem {
+public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IKubernetesEcosystem {
 
     private final Log                        logger = LogFactory.getLog(getClass());
 
-    private final GalasaEcosystemManagerImpl manager;
     private final IKubernetesNamespace       namespace;
-    private final String                     tag;
 
     private final HashMap<ResourceType, Resource> resources = new HashMap<>();
 
@@ -121,8 +120,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
     private URL                              simbankManagementFacilityUrl;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
-        this.manager   = manager;
-        this.tag       = tag;
+        super(manager, tag, null);
         this.namespace = namespace;
     }
 
@@ -147,7 +145,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
 
         //*** Load all the yaml files ready for searching and processing
         try {
-            IArtifactManager artifactManager = this.manager.getArtifactManager();
+            IArtifactManager artifactManager = getEcosystemManager().getArtifactManager();
             IBundleResources managerBundleResources = artifactManager.getBundleResources(getClass());
             Map<String, InputStream> directoryContents = managerBundleResources.retrieveDirectoryContents("/k8s");
 
@@ -251,7 +249,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
 
 
     public void build() throws GalasaEcosystemManagerException {
-        logger.info("Starting the build of Galasa Ecosystem " + this.tag + " Kubernetes namespace " + this.namespace.getFullId());
+        logger.info("Starting the build of Galasa Ecosystem " + getTag() + " Kubernetes namespace " + this.namespace.getFullId());
 
         Instant buildStart = Instant.now();
         try {
@@ -409,7 +407,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
                 this.namespace.saveNamespaceConfiguration();
                 throw e;
             } catch (KubernetesManagerException e1) {
-                logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + this.tag);
+                logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + getTag());
                 throw e;
             }
         }
@@ -566,7 +564,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }
 
         try {
-            this.etcdHttpClient = this.manager.getHttpManager().newHttpClient(30000);
+            this.etcdHttpClient = getEcosystemManager().getHttpManager().newHttpClient(30000);
             this.etcdHttpClient.setURI(this.cpsUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -581,7 +579,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }
 
         try {
-            this.apiHttpClient = this.manager.getHttpManager().newHttpClient(30000);
+            this.apiHttpClient = getEcosystemManager().getHttpManager().newHttpClient(30000);
             this.apiHttpClient.setURI(this.apiUrl.toURI());
         } catch (URISyntaxException e) {
             throw new KubernetesManagerException("Problem creating the HTTP Client", e);
@@ -655,29 +653,25 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }        
     }
 
-    public String getTag() {
-        return this.tag;
-    }
-
     public void stop() {
         try {
             this.namespace.saveNamespaceConfiguration();
         } catch (KubernetesManagerException e1) {
-            logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + this.tag);
+            logger.error("Failed to save the Kubernetes namespace configuration for Galasa Ecosystem " + getTag());
         }
     }
 
     public void discard() {
         // Do not discard, we will leave this for the Kubernetes Manager to clean up
-        logger.debug("Not discarding Galasa Ecosystem " + this.tag + ", leaving for the Kubernetes Manager to do it");
+        logger.debug("Not discarding Galasa Ecosystem " + getTag() + ", leaving for the Kubernetes Manager to do it");
 
 
         //*** But clean up the DSS
-        String runName = this.manager.getFramework().getTestRunName();
-        String prefix = "run." + runName + ".kubernetes.ecosystem." + this.tag + ".";
+        String runName = getEcosystemManager().getFramework().getTestRunName();
+        String prefix = "run." + runName + ".kubernetes.ecosystem." + getTag() + ".";
 
         try {
-            this.manager.getDss().deletePrefix(prefix);
+            getEcosystemManager().getDss().deletePrefix(prefix);
         } catch(Exception e) {
             logger.error("Unable to discard the ecosystem",e);
         }       
@@ -991,8 +985,8 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
 
     private void saveEcosystemInDss() throws GalasaEcosystemManagerException {
 
-        String runName = this.manager.getFramework().getTestRunName();
-        String prefix = "run." + runName + ".kubernetes.ecosystem." + this.tag;
+        String runName = getEcosystemManager().getFramework().getTestRunName();
+        String prefix = "run." + runName + ".kubernetes.ecosystem." + getTag();
 
         HashMap<String, String> ecosystemProperties = new HashMap<String, String>();
         ecosystemProperties.put(prefix + ".namespace.tag", this.namespace.getTag());
@@ -1010,7 +1004,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }
 
         try {
-            this.manager.getDss().put(ecosystemProperties);
+            getEcosystemManager().getDss().put(ecosystemProperties);
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Unable to save the ecosystem in the DSS",e);
         }
@@ -1076,7 +1070,7 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
     }
 
     @Override
-    public void submitRun(String runType, 
+    public String submitRun(String runType, 
             String requestor, 
             String groupName, 
             @NotNull String bundleName,
@@ -1110,7 +1104,6 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }
 
         //*** submit the test
-
         try {
             IHttpClient apiClient = getApiHttpClient();
 
@@ -1124,6 +1117,8 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         } catch(KubernetesManagerException | UnsupportedEncodingException | HttpClientException e) {
             throw new GalasaEcosystemManagerException("Failed to submit test", e);
         }
+        
+        return null;
     }
 
     @Override
@@ -1184,6 +1179,22 @@ public class KubernetesEcosystemImpl implements IKubernetesEcosystem, IInternalE
         }
 
         throw new GalasaEcosystemManagerException("Run Group " + groupName + " did not finish in time:-\n" + response);
+    }
+
+    @Override
+    public JsonObject waitForRun(String run) throws GalasaEcosystemManagerException {
+        throw new GalasaEcosystemManagerException("This method needs to be written");
+    }
+
+    @Override
+    public JsonObject waitForRun(String run, int minutes) throws GalasaEcosystemManagerException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+        throw new GalasaEcosystemManagerException("Command shell is not relevant in the Kubernetes Ecosystem"); 
     }
 
 

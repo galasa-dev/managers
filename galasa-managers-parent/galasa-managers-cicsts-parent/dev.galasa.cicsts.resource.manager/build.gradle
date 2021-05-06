@@ -11,6 +11,7 @@ dependencies {
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zosliberty.manager')
+    implementation project (':galasa-managers-core-parent:dev.galasa.textscan.manager')
     testImplementation 'org.powermock:powermock-module-junit4:2.0.4'
     testImplementation 'org.powermock:powermock-api-mockito2:2.0.4'
 }

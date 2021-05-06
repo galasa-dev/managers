@@ -1,12 +1,13 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.zos3270.spi;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -39,6 +40,8 @@ public class Terminal implements ITerminal {
     private Log           logger          = LogFactory.getLog(getClass());
     
     private boolean       autoReconnect   = false;
+    
+    private List<String>  deviceTypes;
 
     public Terminal(String id, String host, int port) throws TerminalInterruptedException {
         this(id, host, port, false, 80, 24, 0, 0);
@@ -57,11 +60,15 @@ public class Terminal implements ITerminal {
     public void setAutoReconnect(boolean newAutoReconnect) {
         this.autoReconnect = newAutoReconnect;
     }
+    
+    public void setDeviceTypes(List<String> deviceTypes) {
+        this.deviceTypes = deviceTypes;
+    }
 
     @Override
     public synchronized void connect() throws NetworkException {
         connected = network.connectClient();
-        networkThread = new NetworkThread(this, screen, network, network.getInputStream());
+        networkThread = new NetworkThread(this, screen, network, network.getInputStream(), this.deviceTypes);
         networkThread.start();
         
         Instant expire = Instant.now().plus(60, ChronoUnit.SECONDS);
