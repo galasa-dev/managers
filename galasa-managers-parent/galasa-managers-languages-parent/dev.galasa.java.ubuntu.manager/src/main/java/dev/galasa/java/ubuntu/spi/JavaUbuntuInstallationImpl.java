@@ -88,7 +88,9 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 Path possibleJavaHome = javasHome.resolve(this.javaDirectoryName);
                 if (Files.exists(possibleJavaHome)) {
                     this.javaHome = possibleJavaHome;
-                    logger.info("Java installation for tag '" + getTag() + "' is preinstalled at " + this.javaHome);
+                    ICommandShell commandShell = image.getCommandShell();
+                    String response = commandShell.issueCommand(getJavaCommand() + " -version");
+                    logger.info("Java installation for tag " + getTag() + " is preinstalled at " + this.javaHome + " with version information:-\n" + response);
                     return;
                 }
             }
@@ -101,14 +103,15 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 Path possibleArchive = archivesHome.resolve(actualFilename);
                 if (Files.exists(possibleArchive)) {
                     remoteArchive = possibleArchive;
-                    logger.trace("Java archive for tag '" + getTag() + "' is located at " + possibleArchive);
+                    logger.trace("Java archive for tag " + getTag() + " is located at " + possibleArchive);
                 }
             }
 
             // Not installed and no archive,  need to download
             if (remoteArchive == null) {
+                logger.debug("Java archive for tag " + getTag() + " is being retrieved");
                 Path localArchive = retrieveArchive();
-                logger.trace("Java archive for tag '" + getTag() + "' retrieved");
+                logger.trace("Java archive for tag " + getTag() + " retrieved");
 
                 // Make sure runhome is there, // TODO move to the linux manager
                 if (!Files.exists(runhome)) {
@@ -118,7 +121,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
 
                 remoteArchive = runhome.resolve(actualFilename);
                 Files.copy(localArchive, remoteArchive);
-                logger.trace("Java archive for tag '" + getTag() + "' has been transferred to the linux image");
+                logger.debug("Java archive for tag " + getTag() + " has been transferred to the linux image");
             }
 
 
@@ -131,6 +134,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
 
             ICommandShell commandShell = image.getCommandShell();
             if (actualFilename.endsWith(".tgz") || actualFilename.endsWith(".tar.gz")) {
+                logger.debug("Extracting Java archive for tag " + getTag());
                 String response = commandShell.issueCommand("cd " + tempExtractDirectory + ";tar -xvzf " + remoteArchive + ";echo response=$?");
 
                 if (!response.contains("response=0")) {
@@ -161,7 +165,10 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 }
 
                 this.javaHome = targetHome;
-                logger.info("Java installation for tag '" + getTag() + "' has been installed at " + this.javaHome);
+                
+                response = commandShell.issueCommand(getJavaCommand() + " -version");
+                logger.info("Java installation for tag " + getTag() + " has been installed at " + this.javaHome + " with version information:-\n" + response);
+                
             } else {
                 throw new JavaUbuntuManagerException("Unable to support uncompressing of archive, unknown type");
             }
