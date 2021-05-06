@@ -55,7 +55,6 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             
             // copy our script file for running galasa tests and servers
             this.scriptFile = getGalasaConfigDirectory().resolve("run.sh");
-            System.out.println(this.scriptFile);
             IBundleResources bundleResources = getEcosystemManager().getArtifactManager().getBundleResources(getClass());
             
             HashMap<String, Object> parameters = new HashMap<>();
