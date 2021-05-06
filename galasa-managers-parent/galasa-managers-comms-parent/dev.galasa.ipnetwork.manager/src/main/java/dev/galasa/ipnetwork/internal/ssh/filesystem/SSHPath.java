@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -128,8 +128,10 @@ public class SSHPath implements Path {
 
     @Override
     public Path getFileName() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        if (nameElements.isEmpty()) {
+            return new SSHPath(fileSystem, "");
+        }
+        return new SSHPath(fileSystem, false, nameElements, nameElements.size() - 1, nameElements.size());
     }
 
     @Override
@@ -165,14 +167,18 @@ public class SSHPath implements Path {
 
     @Override
     public boolean isAbsolute() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        return this.absolute;
     }
 
     @Override
     public Iterator<Path> iterator() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        ArrayList<Path> paths = new ArrayList<>(this.nameElements.size());
+        
+        for(String element : this.nameElements) {
+            paths.add(new SSHPath(this.fileSystem, element));
+        }
+        
+        return paths.iterator();
     }
 
     @Override
@@ -195,8 +201,36 @@ public class SSHPath implements Path {
 
     @Override
     public Path relativize(Path other) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        
+        // TODO at the moment we don't support .. so can only
+        // relativize with the same parent.
+        
+        if (this.absolute != other.isAbsolute()) {
+            return other; // cannot relativize, so return as other
+        }
+        
+        if (!(other instanceof SSHPath)) {
+            return other; // TODO cannot support cross filesystems
+        }
+        
+        SSHPath spother = (SSHPath) other;
+        
+        int i = 0;
+        for(; i < this.nameElements.size(); i++) {
+            if (spother.nameElements.size() <= i) {
+                return other;
+            }
+            
+            if (!this.nameElements.get(i).equals(spother.nameElements.get(i))) {
+                break;
+            }
+        }
+        
+        boolean newAbsolute = (spother.absolute && (i == 0));
+
+        
+        SSHPath path = new SSHPath(fileSystem, newAbsolute, spother.nameElements, i, spother.nameElements.size());
+        return path;
     }
 
     /*

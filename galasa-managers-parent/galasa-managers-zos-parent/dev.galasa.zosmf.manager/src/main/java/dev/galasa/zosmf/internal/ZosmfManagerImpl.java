@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zosmf.internal;
 
@@ -72,25 +72,25 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosmfManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
     }
 
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new ZosmfManagerException("The zOS Manager is not available");
         }
-        this.httpManager = addDependentManager(allManagers, activeManagers, IHttpManagerSpi.class);
+        this.httpManager = addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (httpManager == null) {
             throw new ZosmfManagerException("The HTTP Manager is not available");
         }

@@ -1,9 +1,8 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
-
 package dev.galasa.jmeter.internal;
 
 import java.lang.annotation.Annotation;
@@ -101,7 +100,7 @@ public class JMeterManagerImpl extends AbstractManager {
             if (ourFields.isEmpty() && this.required) {
                 return;
             }
-            youAreRequired(allManagers, activeManagers);
+            youAreRequired(allManagers, activeManagers, galasaTest);
         }
 
         this.framework = framework;
@@ -123,7 +122,7 @@ public class JMeterManagerImpl extends AbstractManager {
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         this.required = true;
 
@@ -132,7 +131,7 @@ public class JMeterManagerImpl extends AbstractManager {
         }
 
         activeManagers.add(this);
-        dockerManager = addDependentManager(allManagers, activeManagers, IDockerManagerSpi.class);
+        dockerManager = addDependentManager(allManagers, activeManagers, galasaTest, IDockerManagerSpi.class);
     }
 
     @Override

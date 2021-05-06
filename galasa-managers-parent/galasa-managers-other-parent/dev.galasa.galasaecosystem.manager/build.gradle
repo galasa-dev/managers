@@ -12,6 +12,11 @@ dependencies {
     implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
     implementation project(':galasa-managers-cloud-parent:dev.galasa.kubernetes.manager')
+    implementation project(':galasa-managers-languages-parent:dev.galasa.java.ubuntu.manager')
+    implementation project(':galasa-managers-languages-parent:dev.galasa.java.windows.manager')
+    implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
+    api project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
+    api project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
     implementation 'org.yaml:snakeyaml:1.19'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    api 'com.google.code.gson:gson:2.8.5'
 }

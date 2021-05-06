@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -140,9 +140,9 @@ public class SSHFileSystemProvider extends FileSystemProvider {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 throw new NoSuchFileException(path.toAbsolutePath().toString());
             }
-            throw new IOException("Unable to delete via SFTP", e);
+            throw new IOException("Unable to delete via SFTP for path " + path, e);
         } catch (Exception e) {
-            throw new IOException("Unable to delete via SFTP", e);
+            throw new IOException("Unable to delete via SFTP for path " + path, e);
         } finally {
             if (channel != null) {
                 channel.disconnect();
@@ -204,7 +204,7 @@ public class SSHFileSystemProvider extends FileSystemProvider {
         try {
             return new SSHByteChannel(path, options, this.fileSystem);
         } catch (SSHException e) {
-            throw new IOException("Unable to create byte channel", e);
+            throw new IOException("Unable to create byte channel for " + path, e);
         }
     }
 

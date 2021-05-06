@@ -44,6 +44,7 @@ public class ExtraBundles extends CpsProperties {
                 list.add("dev.galasa.cicsts.cemt.manager");
                 list.add("dev.galasa.cicsts.resource.manager");
                 list.add("dev.galasa.zosliberty.manager");
+                list.add("dev.galasa.textscan.manager");
             } else if (list.size() == 1) {
                 if (list.get(0).equalsIgnoreCase("none")) {
                     return new ArrayList<>(0);

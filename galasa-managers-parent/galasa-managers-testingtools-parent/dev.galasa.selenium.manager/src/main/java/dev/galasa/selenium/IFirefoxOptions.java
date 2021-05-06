@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2020.
+ */
 package dev.galasa.selenium;
 
 import java.nio.file.Path;
@@ -7,6 +12,12 @@ import java.util.logging.Level;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
+/**
+ * A Options pass through interface for the Selenium Options object
+ * 
+ * @author jamesdavies
+ *
+ */
 public interface IFirefoxOptions {
     public void addPreference(String key, String value);
 

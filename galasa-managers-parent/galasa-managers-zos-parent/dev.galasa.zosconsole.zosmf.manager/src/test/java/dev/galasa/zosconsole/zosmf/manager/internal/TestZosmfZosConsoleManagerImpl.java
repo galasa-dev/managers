@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosconsole.zosmf.manager.internal;
 
@@ -88,7 +88,7 @@ public class TestZosmfZosConsoleManagerImpl {
     
     @Test
     public void testInitialise1() throws ManagerException {
-        Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(zosConsoleManagerSpy).youAreRequired(Mockito.any(), Mockito.any(), Mockito.any());
         zosConsoleManagerSpy.initialise(frameworkMock, allManagers, activeManagers, new GalasaTest(DummyTestClass.class));
         Assert.assertEquals("Error in initialise() method", zosConsoleManagerSpy.getFramework(), frameworkMock);
     }
@@ -104,19 +104,19 @@ public class TestZosmfZosConsoleManagerImpl {
     public void testYouAreRequired() throws Exception {
         allManagers.add(zosManagerMock);
         allManagers.add(zosmfManagerMock);
-        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(2)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         
         Mockito.clearInvocations(zosConsoleManagerSpy);
-        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
-        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+        zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers, null);
+        PowerMockito.verifyPrivate(zosConsoleManagerSpy, Mockito.times(0)).invoke("addDependentManager", Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
     
     @Test
     public void testYouAreRequiredException1() throws ManagerException {
         String expectedMessage = "The zOS Manager is not available";
         ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
-        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }
@@ -126,7 +126,7 @@ public class TestZosmfZosConsoleManagerImpl {
         allManagers.add(zosManagerMock);
         String expectedMessage = "The zOSMF Manager is not available";
         ZosConsoleManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosConsoleManagerException.class, ()->{
-        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers);
+        	zosConsoleManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
     }

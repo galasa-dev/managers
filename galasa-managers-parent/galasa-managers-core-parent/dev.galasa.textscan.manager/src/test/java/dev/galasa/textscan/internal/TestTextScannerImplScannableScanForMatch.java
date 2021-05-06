@@ -44,14 +44,23 @@ public class TestTextScannerImplScannableScanForMatch {
 		Pattern searchPattern = Pattern.compile("[c]");
 		scanner = new TextScannerImpl();
 		int count = 1;
-		assertEquals("c", scanner.scanForMatch(scannableString, searchPattern, count));
+		assertEquals("c", scanner.scanForMatch(scannableString, searchPattern, null, count));
+	}
+	
+	@Test
+	public void testScanForMachForScannableStringInputWithFailPatternFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
+		Pattern searchPattern = Pattern.compile("[z]");
+		Pattern failPattern = Pattern.compile("[c]");
+		scanner = new TextScannerImpl();
+		int count = 1;
+		assertEquals("c", scanner.scanForMatch(scannableString, searchPattern, failPattern, count));
 	}
 	
 	@Test(expected = MissingTextException.class)
 	public void testScanForMachForScannableStringInputWithSearchPatternNotFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("\\d");
 		int count = 1;
-		scanner.scanForMatch(scannableString, searchPattern, count);
+		scanner.scanForMatch(scannableString, searchPattern, null, count);
 	
 	}
 	
@@ -59,14 +68,14 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableStringInputWithIncorrectOccurancesPattern() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("[c]");
 		int count = 10;
-		scanner.scanForMatch(scannableString, searchPattern, count);
+		scanner.scanForMatch(scannableString, searchPattern, null, count);
 	}
 	
 	@Test (expected = TextScanException.class)
 	public void testScanScannableInvalidOccurancesPattern() throws IncorrectOccurrencesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("[a]");
 		int count = 0;
-		scanner.scanForMatch(scannableString, searchPattern, count);
+		scanner.scanForMatch(scannableString, searchPattern, null, count);
 	}
 
 	// scanForMatch() with scannable InputStream and search Pattern
@@ -74,7 +83,7 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableInputStreamInputWithSearchPatternFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("[a]");
 		int count = 1;
-		assertEquals("a", scanner.scanForMatch(scannableStream, searchPattern, count));
+		assertEquals("a", scanner.scanForMatch(scannableStream, searchPattern, null, count));
 	
 	}
 	
@@ -82,7 +91,7 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableInputStreamInputWithSearchPatternNotFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("\\d");
 		int count = 1;
-		scanner.scanForMatch(scannableStream, searchPattern, count);
+		scanner.scanForMatch(scannableStream, searchPattern, null, count);
 	
 	}
 	
@@ -90,7 +99,7 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableInputStreamInputWithIncorrectOccurancesPattern() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("[i]");
 		int count = 10;
-		scanner.scanForMatch(scannableStream, searchPattern, count);
+		scanner.scanForMatch(scannableStream, searchPattern, null, count);
 	}
 
 	// scanForMatch with scannable String and search String
@@ -98,7 +107,7 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableStringInputWithSearchStringFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 1;
-		assertEquals(searchString, scanner.scanForMatch(scannableString, searchString, count));
+		assertEquals(searchString, scanner.scanForMatch(scannableString, searchString, null, count));
 	
 	}
 	
@@ -106,21 +115,21 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableStringInputWithSearchStringNotFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "lemon";
 		int count = 1;
-		scanner.scanForMatch(scannableString, searchString, count);
+		scanner.scanForMatch(scannableString, searchString, null, count);
 	}
 	
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForMachForScannableInputStringWithIncorrectOccurancesString() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 10;
-		scanner.scanForMatch(scannableString, searchString, count);
+		scanner.scanForMatch(scannableString, searchString, null, count);
 	}
 	
 	@Test (expected = TextScanException.class)
 	public void testScanScannableInvalidOccurancesString() throws IncorrectOccurrencesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 0;
-		scanner.scanForMatch(scannableString, searchString, count);
+		scanner.scanForMatch(scannableString, searchString, null, count);
 	}
 
 	// scanForMatch with scannable InputStream and search String
@@ -128,21 +137,21 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMachForScannableInputStreamInputWithSearchStringFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 1;
-		assertEquals("dummy", scanner.scanForMatch(scannableStream, searchString, count));
+		assertEquals("dummy", scanner.scanForMatch(scannableStream, searchString, null, count));
 	}
 	
 	@Test(expected = MissingTextException.class)
 	public void testScanForMachForScannableInputStreamInputWithSearchStringNotFound() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "lemon";
 		int count = 1;
-		scanner.scanForMatch(scannableStream, searchString, count);
+		scanner.scanForMatch(scannableStream, searchString, null, count);
 	}
 	
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForMachForScannableInputStreamInputWithIncorrectOccurancesString() throws IncorrectOccurrencesException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 5;
-		scanner.scanForMatch(scannableStream, searchString, count);
+		scanner.scanForMatch(scannableStream, searchString, null, count);
 	}
 	
 	// scanForMatch with invalid scannable
@@ -150,14 +159,14 @@ public class TestTextScannerImplScannableScanForMatch {
 	public void testScanForMatchScannableEmptyString() throws IncorrectOccurrencesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		String searchString = "dummy";
 		int count = 1;
-		scanner.scanForMatch(scannableEmpty, searchString, count);
+		scanner.scanForMatch(scannableEmpty, searchString, null, count);
 	}
 	
 	@Test (expected = TextScanManagerException.class)
 	public void testScanForMatchScannableEmptyPattern() throws IncorrectOccurrencesException, FailTextFoundException, MissingTextException, ManagerException, IOException {
 		Pattern searchPattern = Pattern.compile("[^abc]");
 		int count = 1;
-		scanner.scanForMatch(scannableEmpty, searchPattern, count);
+		scanner.scanForMatch(scannableEmpty, searchPattern, null, count);
 	}
 
 }

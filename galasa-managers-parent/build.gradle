@@ -41,15 +41,17 @@ subprojects {
     }
 
     java {
-        withJavadocJar()
-        withSourcesJar()
+    //    withJavadocJar()
+    //    withSourcesJar()
     }
     
     tasks.withType(Javadoc) {
         failOnError = false
+        enabled = false
     }
 
     repositories {
+        mavenLocal()
         maven {
             url mavenrepo
         }

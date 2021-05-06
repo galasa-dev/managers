@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.selenium.internal;
 
@@ -15,65 +15,74 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.ProfilesIni;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
+import org.openqa.selenium.opera.OperaDriver;
+import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.CapabilityType;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.internal.properties.SeleniumDefaultDriver;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoPreferences;
 import dev.galasa.selenium.internal.properties.SeleniumGeckoProfile;
-import dev.galasa.selenium.internal.properties.SeleniumWebDriver;
-import dev.galasa.selenium.internal.properties.SeleniumWebDriverPath;
+import dev.galasa.selenium.internal.properties.SeleniumLocalDriverPath;
 
-public enum Browser {
-  GECKO, IE, CHROME, EDGE;
+/**
+ * Interactions with a different browser types for local Selenium drivers.
+ * 
+ * @author jamesdavies
+ *
+ */
+public enum LocalBrowser {
+  GECKO, IE, CHROME, EDGE, OPERA;
 
-  static final Log logger = LogFactory.getLog(Browser.class);
+  static final Log logger = LogFactory.getLog(LocalBrowser.class);
 
-  public static WebDriver getWebDriver(String instance) throws SeleniumManagerException {
+  public static WebDriver getWebDriver(Browser browser) throws SeleniumManagerException {
     try {
-      String driver = SeleniumWebDriver.get(instance);
-      switch (getBrowser(driver)) {
-        case GECKO:
-          return getGeckoDriver(instance);
+      switch (browser) {
+        case FIREFOX:
+          return getGeckoDriver();
         case CHROME:
-          return getChromeDriver(instance);
+          return getChromeDriver();
+        case OPERA:
+          return getOperaDriver();
         case EDGE:
-          return getEdgeDriver(instance);
+          return getEdgeDriver();
         case IE:
-          return getIEDriver(instance);
+          return getIEDriver();    
         default:
-          throw new SeleniumManagerException("Unknown/Unsupported driver instance: " + driver);
+          throw new SeleniumManagerException("Unknown/Unsupported driver instance: " + browser.getDriverName());
       }
     } catch (Exception e) {
       throw new SeleniumManagerException("Unable to get driver instance", e);
     }
   }
 
-  private static WebDriver getGeckoDriver(String instance) throws SeleniumManagerException {
+  private static WebDriver getGeckoDriver() throws SeleniumManagerException {
     IFirefoxOptions ffOptions = new FirefoxOptionsImpl();
     ffOptions.setAcceptInsecureCerts(true);
-    return getGeckoDriver(instance, ffOptions);
+    return getGeckoDriver(ffOptions);
   }
 
-  public static WebDriver getGeckoDriver(String instance, IFirefoxOptions capabilities) throws SeleniumManagerException {
+  public static WebDriver getGeckoDriver(IFirefoxOptions capabilities) throws SeleniumManagerException {
     try {
-      System.setProperty("webdriver.gecko.driver", SeleniumWebDriverPath.get(instance, "gecko"));
+      System.setProperty("webdriver.gecko.driver", SeleniumLocalDriverPath.get("FIREFOX"));
     } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get Gecko path from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get Gecko path from CPS for instance: " + e);
     }
 
     ProfilesIni profile = new ProfilesIni();
     String geckoProfile = null;
     try {
-      geckoProfile = SeleniumGeckoProfile.get(instance);
+      geckoProfile = SeleniumGeckoProfile.get();
     } catch (ConfigurationPropertyStoreException e) {
-      throw new SeleniumManagerException("Unable to get Gecko profile from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get Gecko profile from CPS for instance: " + e);
     }
 
     FirefoxProfile ffProfile = null;
@@ -93,7 +102,7 @@ public enum Browser {
     capabilities.setProfile(ffProfile);
 
     try {
-      String cpsPreferences = SeleniumGeckoPreferences.get(instance);
+      String cpsPreferences = SeleniumGeckoPreferences.get();
       if(cpsPreferences != null) {
         String[] preferences = cpsPreferences.split(",");
         for(String preference : preferences) {
@@ -113,62 +122,78 @@ public enum Browser {
         }
       }
     } catch (ConfigurationPropertyStoreException e) {
-      throw new SeleniumManagerException("Unable to get Gecko preferences from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get Gecko preferences from CPS", e);
     }
 
     return new FirefoxDriver(capabilities.getOptions());
   }
 
-  private static WebDriver getChromeDriver(String instance) throws SeleniumManagerException {
+  private static WebDriver getChromeDriver() throws SeleniumManagerException {
     ChromeOptions cOptions = new ChromeOptions();
     cOptions.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-    return getChromeDriver(instance, cOptions);
+    return getChromeDriver(cOptions);
   }
 
-  public static WebDriver getChromeDriver(String instance, ChromeOptions capabilities) throws SeleniumManagerException {
+  public static WebDriver getChromeDriver(ChromeOptions capabilities) throws SeleniumManagerException {
     try {
-      System.setProperty("webdriver.chrome.driver", SeleniumWebDriverPath.get(instance, "chrome"));
+      System.setProperty("webdriver.chrome.driver", SeleniumLocalDriverPath.get("CHROME"));
     } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get Chrome path from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get Chrome path from CPS", e);
     }
     return new ChromeDriver(capabilities);
   }
 
-  private static WebDriver getEdgeDriver(String instance) throws SeleniumManagerException {
+  private static WebDriver getEdgeDriver() throws SeleniumManagerException {
     EdgeOptions eOptions = new EdgeOptions();
     eOptions.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-    return getEdgeDriver(instance, eOptions);
+    return getEdgeDriver(eOptions);
   }
 
-  public static WebDriver getEdgeDriver(String instance, EdgeOptions capabilities) throws SeleniumManagerException {
+  public static WebDriver getEdgeDriver(EdgeOptions capabilities) throws SeleniumManagerException {
     try {
-      System.setProperty("webdriver.edge.driver", SeleniumWebDriverPath.get(instance, "edge"));
+      System.setProperty("webdriver.edge.driver", SeleniumLocalDriverPath.get("EDGE"));
     } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get Edge path from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get Edge path from CPS",e);
     }
     return new EdgeDriver(capabilities);
   }
 
-  private static WebDriver getIEDriver(String instance) throws SeleniumManagerException {
+  private static WebDriver getIEDriver() throws SeleniumManagerException {
     InternetExplorerOptions ieOptions = new InternetExplorerOptions();
     ieOptions.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-    return getIEDriver(instance, ieOptions);
+    return getIEDriver(ieOptions);
   }
 
-  public static WebDriver getIEDriver(String instance, InternetExplorerOptions capabilities) throws SeleniumManagerException {
+  public static WebDriver getIEDriver(InternetExplorerOptions capabilities) throws SeleniumManagerException {
     try {
-      System.setProperty("webdriver.ie.driver", SeleniumWebDriverPath.get(instance, "ie"));
+      System.setProperty("webdriver.ie.driver", SeleniumLocalDriverPath.get("IE"));
     } catch (Exception e) {
-      throw new SeleniumManagerException("Unable to get IE path from CPS for instance: " + instance, e);
+      throw new SeleniumManagerException("Unable to get IE path from CPS", e);
     }
 
     return new InternetExplorerDriver(capabilities);
   }
 
-  public static @NotNull Browser getBrowser(@NotNull String browser) throws SeleniumManagerException {
+  private static WebDriver getOperaDriver() throws SeleniumManagerException {
+    OperaOptions operaOptions = new OperaOptions();
+    operaOptions.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+    return getOperaDriver(operaOptions);
+  }
+
+  public static WebDriver getOperaDriver(OperaOptions capabilities) throws SeleniumManagerException {
+    try {
+      System.setProperty("webdriver.opera.driver", SeleniumLocalDriverPath.get("OPERA"));
+    } catch (Exception e) {
+      throw new SeleniumManagerException("Unable to get Opera path from CPS", e);
+    }
+
+    return new OperaDriver(capabilities);
+  }
+
+  public static @NotNull LocalBrowser getBrowser(@NotNull String browser) throws SeleniumManagerException {
     browser = browser.trim();
 
-    for (Browser d : values()) {
+    for (LocalBrowser d : values()) {
       if (browser.equalsIgnoreCase(d.name())) {
         return d;
       }

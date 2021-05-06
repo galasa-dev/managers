@@ -6,7 +6,10 @@
 package dev.galasa.openstack.manager.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,15 +20,18 @@ import dev.galasa.ICredentials;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
+import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.OpenstackWindowsManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
+import dev.galasa.openstack.manager.internal.json.SecurityGroup;
 import dev.galasa.openstack.manager.internal.properties.WindowsAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.WindowsCredentials;
 import dev.galasa.openstack.manager.internal.properties.WindowsFlavor;
 import dev.galasa.openstack.manager.internal.properties.WindowsKeyPair;
+import dev.galasa.openstack.manager.internal.properties.WindowsSecurityGroups;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsProvisionedImage;
 
@@ -38,6 +44,7 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
     private Path                      pathRoot;
     private Path                      pathTemp;
     private Path                      pathHome;
+    private Path                      pathRunDirectory;
 
     public OpenstackWindowsImageImpl(@NotNull OpenstackManagerImpl manager,
             @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
@@ -84,6 +91,15 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
         server.key_name = WindowsKeyPair.get(this.image);
+
+        List<String> groups = WindowsSecurityGroups.get(this.image);
+        List<SecurityGroup> securityGroups = new ArrayList<>();
+        for (String group : groups) {
+            SecurityGroup sGroup = new SecurityGroup();
+            sGroup.name = group;
+            securityGroups.add(sGroup);
+        }
+        server.security_groups = securityGroups;
 
         if (server.imageRef == null) {
             throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
@@ -140,6 +156,27 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
     @Override
     public @NotNull Path getTmp() throws WindowsManagerException {
         return this.pathTemp;
+    }
+
+    @Override
+    public @NotNull Path getRunDirectory() throws WindowsManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.manager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new WindowsManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        // Assuming that the provisioned image will be deleted, so not cleaning up
     }
 
 }
