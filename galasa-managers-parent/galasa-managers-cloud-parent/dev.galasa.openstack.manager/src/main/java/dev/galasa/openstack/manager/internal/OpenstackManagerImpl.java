@@ -149,7 +149,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
-            throws OpenstackManagerException, InsufficientResourcesAvailableException {
+            throws OpenstackManagerException, ResourceUnavailableException {
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -201,6 +201,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             throw new OpenstackManagerException("Problem accessing the CPS", e);
         } catch (DynamicStatusStoreException e) {
             throw new OpenstackManagerException("Problem accessing the DSS", e);
+        } catch (InsufficientResourcesAvailableException e) {
+            throw new ResourceUnavailableException("Ran out of slot names", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OpenstackManagerException("Processing interrupted", e);
@@ -209,7 +211,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public IWindowsProvisionedImage provisionWindows(String tag, List<String> capabilities)
-            throws OpenstackManagerException, InsufficientResourcesAvailableException {
+            throws OpenstackManagerException, ResourceUnavailableException {
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -261,6 +263,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             throw new OpenstackManagerException("Problem accessing the CPS", e);
         } catch (DynamicStatusStoreException e) {
             throw new OpenstackManagerException("Problem accessing the DSS", e);
+        } catch (InsufficientResourcesAvailableException e) {
+            throw new ResourceUnavailableException("Ran out of slot names", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OpenstackManagerException("Processing interrupted", e);
