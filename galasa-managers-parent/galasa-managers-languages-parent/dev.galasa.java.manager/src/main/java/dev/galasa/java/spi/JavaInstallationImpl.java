@@ -59,6 +59,8 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
         this.javaJvm         = javaJvm;
         this.javaTag         = javaTag;
         
+        this.javaManager.registerJavaInstallationForTag(javaTag, this);
+        
         if (javaVersion == JavaVersion.vDefault) {
             this.javaVersion = DefaultVersion.get();
             logger.info("Using default Java version " + this.javaVersion + " for installation tag " + this.javaTag);
@@ -124,12 +126,14 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
             throw new JavaManagerException("Invalid Java archive download location", e);
         }
         
-        String fileName = url.getFile();
-        while(fileName.startsWith("/") || fileName.startsWith("\\")) {
-            fileName = fileName.substring(1);
+        String fileName = url.getPath();
+        fileName = fileName.replaceAll("\\\\", "/");
+        int pos = fileName.lastIndexOf("/");
+        if (pos < 0) {
+            return fileName;
         }
         
-        return fileName;
+        return fileName.substring(pos + 1);
     }
 
     private String getDownloadLocation() throws JavaManagerException {

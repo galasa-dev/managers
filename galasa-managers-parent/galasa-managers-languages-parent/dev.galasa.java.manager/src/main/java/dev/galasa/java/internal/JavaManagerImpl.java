@@ -5,6 +5,7 @@
  */
 package dev.galasa.java.internal;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.spi.IHttpManagerSpi;
+import dev.galasa.java.IJavaInstallation;
 import dev.galasa.java.JavaManagerException;
 import dev.galasa.java.internal.properties.JavaPropertiesSingleton;
 import dev.galasa.java.spi.IJavaManagerSpi;
@@ -31,6 +33,8 @@ public class JavaManagerImpl extends AbstractManager implements IJavaManagerSpi 
     private final static Log                   logger       = LogFactory.getLog(JavaManagerImpl.class);
     
     private IHttpManagerSpi    httpManager;
+    
+    private final HashMap<String, IJavaInstallation> registeredInstallations = new HashMap<>();
     
     /*
      * (non-Javadoc)
@@ -79,6 +83,25 @@ public class JavaManagerImpl extends AbstractManager implements IJavaManagerSpi 
     
     public IHttpManagerSpi getHttpManager() {
         return this.httpManager;
+    }
+
+    @Override
+    public IJavaInstallation getInstallationForTag(String tag) throws JavaManagerException {
+        IJavaInstallation installation = this.registeredInstallations.get(tag);
+        if (installation == null) {
+            throw new JavaManagerException("Unable to locate Java installation with tag " + tag);
+        }
+        return installation;
+    }
+
+    @Override
+    public void registerJavaInstallationForTag(String tag, IJavaInstallation javaInstallation)
+            throws JavaManagerException {
+        if (this.registeredInstallations.containsKey(tag)) {
+            throw new JavaManagerException("Java installation tag " + tag + " has already been registered");
+        }
+        
+        this.registeredInstallations.put(tag, javaInstallation);
     }
     
 }

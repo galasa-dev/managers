@@ -47,10 +47,19 @@ public interface IZosBatchJobOutputSpoolFile {
      */
 	public String getId();
     
-    /**
+	/**
+	 * Return the size of this zOS batch job spool file
+	 * @return the zOS batch job spool file size
+	 * @throws ZosBatchException 
+	 */
+    public long getSize() throws ZosBatchException;
+
+	/**
      * Retrieve current content of spool file from zOS
+	 * @return the size of the data retrieved
+	 * @throws ZosBatchException 
      */
-    public void retrieve() throws ZosBatchException;
+    public long retrieve() throws ZosBatchException;
     
     /**
      * Return the content of this zOS batch job spool file

@@ -55,11 +55,26 @@ public class TestZosBatchJobOutputSpoolFileImpl {
     }
     
     @Test
+    public void testGetSize() throws ZosBatchException {
+    	ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(zosBatchJobMock, JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, ID, RECORDS);
+        Assert.assertEquals("getSize() should return the expected value", RECORDS.length(), zosBatchJobOutputSpoolFile.getSize());
+        
+    	zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(zosBatchJobMock, JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, ID, null);
+    	ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFileSpy = Mockito.spy(zosBatchJobOutputSpoolFile);
+    	Mockito.doReturn(9999L).when(zosBatchJobOutputSpoolFileSpy).retrieve();
+        Assert.assertEquals("getSize() should return the expected value", 9999L, zosBatchJobOutputSpoolFileSpy.getSize());
+    }
+    
+    @Test
     public void testRetrieve() throws ZosBatchException {
     	Mockito.when(zosBatchJobMock.getSpoolFile(Mockito.any())).thenReturn(zosBatchJobOutputSpoolFileMock);
     	Mockito.when(zosBatchJobOutputSpoolFileMock.getRecords()).thenReturn(RECORDS);
     	ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(zosBatchJobMock, JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, ID, RECORDS);
-        zosBatchJobOutputSpoolFile.retrieve();
+        Assert.assertEquals("getRecords() should return the supplied value", RECORDS.length(), zosBatchJobOutputSpoolFile.retrieve());
         Assert.assertEquals("getRecords() should return the supplied value", RECORDS, zosBatchJobOutputSpoolFile.getRecords());
+
+    	Mockito.when(zosBatchJobOutputSpoolFileMock.getRecords()).thenReturn(null);
+        Assert.assertEquals("getRecords() should return the supplied value", 0, zosBatchJobOutputSpoolFile.retrieve());
+        Assert.assertNull("getRecords() should return the supplied value", zosBatchJobOutputSpoolFile.getRecords());
     }
 }
