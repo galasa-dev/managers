@@ -29,6 +29,7 @@ import dev.galasa.framework.spi.FrameworkException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.ResourceUnavailableException;
@@ -40,8 +41,10 @@ import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
 import dev.galasa.galasaecosystem.KubernetesEcosystem;
 import dev.galasa.galasaecosystem.LocalEcosystem;
+import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
 import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesSingleton;
 import dev.galasa.galasaecosystem.internal.properties.KubernetesEcosystemTagSharedEnvironment;
+import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
 import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.java.IJavaInstallation;
 import dev.galasa.java.JavaManagerException;
@@ -65,7 +68,7 @@ import dev.galasa.windows.spi.IWindowsManagerSpi;
  *
  */
 @Component(service = { IManager.class })
-public class GalasaEcosystemManagerImpl extends AbstractManager {
+public class GalasaEcosystemManagerImpl extends AbstractManager implements ILoggingManager {
 
     protected final static String               NAMESPACE = "galasaecosystem";
     private final Log                           logger = LogFactory.getLog(getClass());
@@ -523,5 +526,52 @@ public class GalasaEcosystemManagerImpl extends AbstractManager {
         return this.dss;
     }
 
+    @Override
+    public String getTestTooling() {
+        return null;
+    }
+
+    @Override
+    public String getTestType() {
+        return null;
+    }
+
+    @Override
+    public String getTestingEnvironment() {
+        return "galasa:" + getBuildLevel();
+    }
+
+    @Override
+    public String getProductRelease() {
+        try {
+            return "galasa:" + MavenVersion.get();
+        } catch (GalasaEcosystemManagerException e) {
+            return "galasa:unknown";
+        }
+    }
+
+    @Override
+    public String getBuildLevel() {
+        try {
+            return DockerVersion.get();
+        } catch (GalasaEcosystemManagerException e) {
+            return "unknown";
+        }
+    }
+
+    @Override
+    public String getCustomBuild() {
+        return null;
+    }
+
+    @Override
+    public List<String> getTestingAreas() {
+        return null;
+    }
+
+    @Override
+    public List<String> getTags() {
+        return null;
+    }
 
 }

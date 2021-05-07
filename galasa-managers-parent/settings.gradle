@@ -22,6 +22,7 @@ include 'galasa-managers-comms-parent:dev.galasa.http.manager.ivt'
 // galasa-managers-logging-parent
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager'
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
+include 'galasa-managers-logging-parent:dev.galasa.phoenix2.manager'
 // galasa-managers-zos-parent
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager.ivt'
