@@ -997,6 +997,13 @@ public class TestRseapiZosBatchJobImpl {
     	zosBatchJobSpy.setShouldCleanup(false);
     	Assert.assertFalse("shouldCleanup() should return false", zosBatchJobSpy.shouldCleanup());
     }
+    
+    @Test
+    public void testSaveSpoolFileToResultsArchive() throws ZosBatchException {
+    	Mockito.doNothing().when(zosBatchJobSpy).saveSpoolFile(Mockito.any(), Mockito.any());
+    	zosBatchJobSpy.saveSpoolFileToResultsArchive(zosBatchJobOutputSpoolFileMock, "path");
+    	Mockito.verify(zosBatchJobSpy, Mockito.times(1)).saveSpoolFile(Mockito.any(), Mockito.any());
+    }
                  
     private Path newMockedPath(boolean fileExists) throws IOException {
         Path pathMock = Mockito.mock(Path.class);

@@ -107,4 +107,9 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
         }
         return this.size;
 	}
+
+	@Override
+	public void saveToResultsArchive(String rasPath) throws ZosBatchException {
+        this.batchJob.saveSpoolFileToResultsArchive(this, rasPath);
+	}
 }

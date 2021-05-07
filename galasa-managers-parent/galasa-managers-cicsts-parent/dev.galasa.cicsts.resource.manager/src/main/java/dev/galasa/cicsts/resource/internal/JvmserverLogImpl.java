@@ -90,6 +90,33 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 	}
 	
 	@Override
+	public void delete() throws CicsJvmserverResourceException {
+		if (!isZosUNIXFile()) {
+			throw new CicsJvmserverResourceException("Log is not a zOS UNIX File");
+		}
+		try {
+			this.zosUnixFile.delete();
+		} catch (ZosUNIXFileException e) {
+			throw new CicsJvmserverResourceException("Unable to delete Log", e);
+		}
+	}
+
+	@Override
+	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
+		try {
+			if (isZosUNIXFile()) {
+				this.zosUnixFile.saveToResultsArchive(rasPath);
+			} else if (isZosBatchJobSpoolFile()) {
+				this.getZosBatchJobOutputSpoolFile().saveToResultsArchive(rasPath);
+			} else {
+				throw new CicsJvmserverResourceException("Log is not a zOS UNIX File or zOS Batch Job spool file");
+			}
+		} catch (ZosUNIXFileException | ZosBatchException e) {
+			throw new CicsJvmserverResourceException("Unable to store Log to RAS", e);
+		}
+	}
+
+	@Override
 	public long checkpoint() throws CicsJvmserverResourceException {
 		try {
 			if (isZosUNIXFile()) {
@@ -349,6 +376,4 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 			throw new TextScanException("Problem retrieving " + getScannableName(), e);
 		}
 	}
-
-
 }

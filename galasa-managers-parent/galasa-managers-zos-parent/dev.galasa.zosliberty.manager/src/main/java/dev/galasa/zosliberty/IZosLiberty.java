@@ -27,4 +27,8 @@ public interface IZosLiberty {
 	 * @return the zOS Liberty server object
 	 */
 	public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir) throws ZosLibertyServerException;
+
+	public void saveToResultsArchive(String rasPath);
+
+	public void deleteLogs();
 }
