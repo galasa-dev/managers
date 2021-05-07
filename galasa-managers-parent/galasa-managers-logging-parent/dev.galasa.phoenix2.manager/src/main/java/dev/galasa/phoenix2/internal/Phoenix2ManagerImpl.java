@@ -34,6 +34,10 @@ import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.phoenix2.internal.properties.Phoenix2Credentials;
+import dev.galasa.phoenix2.internal.properties.Phoenix2DefaultBuildLevel;
+import dev.galasa.phoenix2.internal.properties.Phoenix2DefaultCustomBuild;
+import dev.galasa.phoenix2.internal.properties.Phoenix2DefaultProductRelease;
+import dev.galasa.phoenix2.internal.properties.Phoenix2DefaultTestingEnvironment;
 import dev.galasa.phoenix2.internal.properties.Phoenix2Enabled;
 import dev.galasa.phoenix2.internal.properties.Phoenix2Endpoint;
 import dev.galasa.phoenix2.internal.properties.Phoenix2LocalRun;
@@ -141,10 +145,10 @@ public class Phoenix2ManagerImpl extends AbstractManager {
 
         String testTooling        = "Galasa";
         String testType           = "Galasa";
-        String testingEnvironment = "NOT_ASSIGNED";
-        String productRelease     = null;
-        String buildLevel         = null;
-        String customBuild        = null;
+        String testingEnvironment = Phoenix2DefaultTestingEnvironment.get();
+        String productRelease     = Phoenix2DefaultProductRelease.get();
+        String buildLevel         = Phoenix2DefaultBuildLevel.get();
+        String customBuild        = Phoenix2DefaultCustomBuild.get();
         List<String> testingAreas = new ArrayList<String>();
         List<String> tags         = new ArrayList<String>();
 
@@ -220,7 +224,7 @@ public class Phoenix2ManagerImpl extends AbstractManager {
             }
 
 
-            System.out.println(testexec.toString());
+            logger.trace("Sending json to PME -\n" + testexec.toString());
 
             URI endpoint = new URI(Phoenix2Endpoint.get());
             String credsId  = Phoenix2Credentials.get();
