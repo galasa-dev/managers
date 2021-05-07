@@ -77,4 +77,12 @@ public class TestZosBatchJobOutputSpoolFileImpl {
         Assert.assertEquals("getRecords() should return the supplied value", 0, zosBatchJobOutputSpoolFile.retrieve());
         Assert.assertNull("getRecords() should return the supplied value", zosBatchJobOutputSpoolFile.getRecords());
     }
+    
+    @Test
+    public void testSaveToResultsArchive() throws ZosBatchException {
+    	ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFile = new ZosBatchJobOutputSpoolFileImpl(zosBatchJobMock, JOBNAME, JOBID, STEPNAME, PROCSTEP, DDNAME, ID, RECORDS);
+    	ZosBatchJobOutputSpoolFileImpl zosBatchJobOutputSpoolFileSpy = Mockito.spy(zosBatchJobOutputSpoolFile);
+        zosBatchJobOutputSpoolFileSpy.saveToResultsArchive("path");
+        Mockito.verify(zosBatchJobOutputSpoolFileSpy, Mockito.times(1)).saveToResultsArchive("path");
+    }
 }

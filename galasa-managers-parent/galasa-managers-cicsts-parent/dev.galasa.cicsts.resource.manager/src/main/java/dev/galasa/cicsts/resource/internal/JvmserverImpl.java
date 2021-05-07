@@ -126,6 +126,7 @@ public class JvmserverImpl implements IJvmserver {
 	private static final String TRACE_CEMT_PARAMETER = "Trace";
 	private static final String TRACE_PROFILE_OPTION = "JVMTRACE";
 	private static final String TRACE_FILE_SUFFIX = "dfhjvmtrc";
+	private static final String SLASH = "/";
 
 	public JvmserverImpl(CicsResourceManagerImpl cicsResourceManager, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException {
 		this.cicsResourceManager = cicsResourceManager;
@@ -777,27 +778,62 @@ public class JvmserverImpl implements IJvmserver {
 	}
 
 	@Override
-	public void saveToResultsArchive() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+	public void saveToResultsArchive() throws CicsJvmserverResourceException {	
+		String rasPath = getApplid() + SLASH + getName() + SLASH;
+		saveToResultsArchive(rasPath);
 	}
 
 	@Override
-	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {	
+		if (this.jvmprofile != null) {
+			this.jvmprofile.saveToResultsArchive(rasPath);
+		}	
+		if (this.jvmLogLog != null) {
+			this.jvmLogLog.saveToResultsArchive(rasPath);
+		}
+		if (this.stdOutLog != null) {
+			this.stdOutLog.saveToResultsArchive(rasPath);
+		}
+		if (this.stdErrLog != null) {
+			this.stdErrLog.saveToResultsArchive(rasPath);
+		}
+		if (this.jvmTraceLog != null) {
+			this.jvmTraceLog.saveToResultsArchive(rasPath);
+		}
+		if (isLiberty()) {
+			this.zosLiberty.saveToResultsArchive(rasPath);
+		}
 	}
 
 	@Override
 	public void deleteJvmserverLogs() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
+		if (this.jvmLogLog != null) {
+			this.jvmLogLog.delete();
+		}
+		if (this.stdOutLog != null) {
+			this.stdOutLog.delete();
+		}
+		if (this.stdErrLog != null) {
+			this.stdErrLog.delete();
+		}
+		if (this.jvmTraceLog != null) {
+			this.jvmTraceLog.delete();
+		}
+		if (isLiberty()) {
+			this.zosLiberty.deleteLogs();
+		}
+	}
 
+	@Override
+	public void clearJvmLogs() throws CicsJvmserverResourceException {		
+		String rasPath = getApplid() + SLASH + getName() + SLASH;
+		clearJvmLogs(rasPath);
 	}
 
 	@Override
 	public void clearJvmLogs(String rasPath) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		saveToResultsArchive();
+		deleteJvmserverLogs();
 	}
 
 	@Override

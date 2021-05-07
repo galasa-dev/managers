@@ -185,4 +185,12 @@ public interface IZosBatchJob {
      * Return flag that controls if the job output should be automatically purged from zOS
      */    
     public boolean shouldCleanup();
+
+    /**
+     * Save the supplied spool file to the Results Archive Store
+     * @param spoolFile the spool file to save
+     * @param rasPath path in Results Archive Store  
+     * @throws ZosBatchException
+     */
+	public void saveSpoolFileToResultsArchive(IZosBatchJobOutputSpoolFile spoolFile, String rasPath) throws ZosBatchException;
 }

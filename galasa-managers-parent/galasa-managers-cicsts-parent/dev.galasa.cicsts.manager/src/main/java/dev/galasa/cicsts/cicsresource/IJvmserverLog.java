@@ -47,6 +47,19 @@ public interface IJvmserverLog {
 	public OutputStream retrieve() throws CicsJvmserverResourceException;
 	
 	/**
+	 * Delete the {@link IZosUNIXFile} if it exists. Will throw {@link CicsJvmserverResourceException} if the log is a {@link IZosBatchJobOutputSpoolFile}
+	 * @throws CicsJvmserverResourceException 
+	 */
+	public void delete() throws CicsJvmserverResourceException;
+
+	/**
+	 * Save the log to the Results Archive Store
+	 * @param rasPath
+	 * @throws CicsJvmserverResourceException
+	 */
+	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
+
+	/**
 	 * Checkpoint this {@link IJvmserverLog}
 	 * @return checkpoint
 	 * @throws CicsJvmserverResourceException 
