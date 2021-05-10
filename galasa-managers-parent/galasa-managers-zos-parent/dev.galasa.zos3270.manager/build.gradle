@@ -8,10 +8,10 @@ dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
     implementation project(':galasa-managers-zos-parent:dev.galasa.zos3270.common')
-    implementation project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
+    api project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation project(':galasa-managers-comms-parent:dev.galasa.ipnetwork.manager')
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-codec:commons-codec:1.11'
     implementation 'commons-io:commons-io:2.6'
     
-                    }
+}
