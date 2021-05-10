@@ -1,8 +1,3 @@
-/*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
- */
 package dev.galasa.selenium;
 
 import java.util.List;
@@ -12,15 +7,8 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.opera.OperaOptions;
 
-/**
- * This interface is being deprecated and replaced with a more appropriately named IWebDriver interface.
- * 
- * @author jamesdavies
- *
- */
-@Deprecated
-public interface ISeleniumManager {
-	 /**
+public interface IWebDriver extends ISeleniumManager {
+    /**
      * Allocate a new WebPage
      * @throws SeleniumManagerException
      */
