@@ -19,8 +19,8 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.windows.[imagename].name=aname<br>
- * openstack.windows.name=bname<br>
+ * openstack.windows.image.[imagename].name=aname<br>
+ * openstack.windows.image.name=bname<br>
  * Where imagename is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
@@ -35,7 +35,7 @@ public class WindowsName extends CpsProperties {
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), image, "windows", "name", image);
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), image, "windows.image", "name", image);
 
     }
 

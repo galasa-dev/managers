@@ -19,8 +19,8 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].name=aname<br>
- * openstack.linux.name=bname<br>
+ * openstack.linux.image.[imagename].name=aname<br>
+ * openstack.linux.image.name=bname<br>
  * Where imagename is that provided in {@link LinuxImages}<br>
  * </p>
  * <p>
@@ -35,7 +35,7 @@ public class LinuxName extends CpsProperties {
     public static @NotNull String get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), image, "linux", "name", image);
+        return getStringWithDefault(OpenstackPropertiesSingleton.cps(), image, "linux.image", "name", image);
 
     }
 
