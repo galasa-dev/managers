@@ -249,8 +249,6 @@ public class Phoenix2ManagerImpl extends AbstractManager {
             }
             
             logger.debug("Emitted Phoenix 2 PME record");
-            Exception x = new Phoenix2ManagerException("where was this emitted");
-            logger.debug("callstack for emitted event",x);
         } catch(Exception e) {
             logger.warn("Problem writing DevOps PME testcaseexecution JSON event ",e);
         }

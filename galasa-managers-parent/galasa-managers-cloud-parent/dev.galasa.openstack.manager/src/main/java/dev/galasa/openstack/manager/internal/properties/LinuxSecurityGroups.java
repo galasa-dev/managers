@@ -22,8 +22,8 @@ import java.util.Arrays;
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].securitygroup=default,galasa<br>
- * openstack.linux.default.securitygroup=default<br>
+ * openstack.linux.image.[imagename].securitygroups=default,galasa<br>
+ * openstack.linux.image.securitygroups=default<br>
  * Where securitygroup is that provided in {@link LinuxImages}<br>
  * </p>
  * <p>
@@ -38,7 +38,7 @@ public class LinuxSecurityGroups extends CpsProperties {
     public static @NotNull List<String> get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
          
-        return getStringList(OpenstackPropertiesSingleton.cps(), "linux", "securitygroups", image);
+        return getStringList(OpenstackPropertiesSingleton.cps(), "linux.image", "securitygroups", image);
     }
 
 }

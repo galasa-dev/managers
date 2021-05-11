@@ -5,14 +5,13 @@
  */
 package dev.galasa.openstack.manager.internal.properties;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * OpenStack windows Security Groups
@@ -22,8 +21,8 @@ import java.util.List;
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.windows.[imagename].securitygroup=default,galasa<br>
- * openstack.windows.default.securitygroup=galasa<br>
+ * openstack.windows.image.[imagename].securitygroups=default,galasa<br>
+ * openstack.windows.image.securitygroups=galasa<br>
  * Where securitygroup is that provided in {@link WindowsImages}<br>
  * </p>
  * <p>
@@ -38,7 +37,7 @@ public class WindowsSecurityGroups extends CpsProperties {
     public static @NotNull List<String> get(@NotNull String image)
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
 
-        return getStringList(OpenstackPropertiesSingleton.cps(), "windows", "securitygroups", image);
+        return getStringList(OpenstackPropertiesSingleton.cps(), "windows.image", "securitygroups", image);
     }
 
 }
