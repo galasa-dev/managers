@@ -32,6 +32,7 @@ import dev.galasa.openstack.manager.internal.properties.LinuxAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
 import dev.galasa.openstack.manager.internal.properties.LinuxFlavor;
 import dev.galasa.openstack.manager.internal.properties.LinuxKeyPair;
+import dev.galasa.openstack.manager.internal.properties.LinuxName;
 import dev.galasa.openstack.manager.internal.properties.LinuxSecurityGroups;
 
 public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
@@ -84,7 +85,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
         Server server = new Server();
         server.name = this.instanceName;
-        server.imageRef = getOpenstackHttpClient().getImageId(this.image);
+        server.imageRef = getOpenstackHttpClient().getImageId(LinuxName.get(this.image));
         server.flavorRef = getOpenstackHttpClient().getFlavourId(flavor);
         server.availability_zone = LinuxAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();
