@@ -145,7 +145,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             fetchCommand.append(pomXml.toString());
             fetchCommand.append(" process-sources");
 
-            String response = this.getCommandShell().issueCommand(fetchCommand.toString());
+            String response = this.getCommandShell().issueCommand(fetchCommand.toString(), 300000);
             if (!response.contains("BUILD SUCCESS")) {
                 throw new GalasaEcosystemManagerException("Problem installing the required artifacts from Maven:-\n" + response);
             }
