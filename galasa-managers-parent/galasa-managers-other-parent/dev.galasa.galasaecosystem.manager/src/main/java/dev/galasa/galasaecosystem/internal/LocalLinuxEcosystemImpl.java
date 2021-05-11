@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
+import dev.galasa.galasaecosystem.IsolationInstallation;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.java.IJavaInstallation;
 import dev.galasa.linux.ILinuxImage;
@@ -38,8 +39,8 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
     private Path scriptFile;
 
     public LocalLinuxEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag,
-            ILinuxImage linuxImage, IJavaInstallation javaInstallation) throws LinuxManagerException {
-        super(manager, tag, javaInstallation);
+            ILinuxImage linuxImage, IJavaInstallation javaInstallation, IsolationInstallation isolationInstallation) throws LinuxManagerException {
+        super(manager, tag, javaInstallation, isolationInstallation);
 
         this.linuxImage = linuxImage;
     }
