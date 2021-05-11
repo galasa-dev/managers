@@ -39,6 +39,7 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerField;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
+import dev.galasa.galasaecosystem.IsolationInstallation;
 import dev.galasa.galasaecosystem.KubernetesEcosystem;
 import dev.galasa.galasaecosystem.LocalEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
@@ -413,6 +414,11 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         } catch(JavaManagerException e) {
             throw new GalasaEcosystemManagerException("Problem locating Java installation for Ecosystem tag " + tag, e);
         }
+        
+        IsolationInstallation isolationInstallation = annotation.isolationInstallation();
+        if (isolationInstallation == null) {
+            isolationInstallation = IsolationInstallation.None;
+        }
 
         LocalEcosystemImpl localEcosystem = null;
 
@@ -430,14 +436,14 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         if (!linuxImageTag.isEmpty()) {
             try {
                 ILinuxImage linuxImage = this.linuxManager.getImageForTag(linuxImageTag);
-                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation);
+                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation, isolationInstallation);
             } catch (LinuxManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Linux image for Ecosystem tag " + tag, e);
             }
         } else if (!windowsImageTag.isEmpty()) {
             try {
                 IWindowsImage windowsImage = this.windowsManager.getImageForTag(windowsImageTag);
-                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation);
+                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation, isolationInstallation);
             } catch (WindowsManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Windows image for Ecosystem tag " + tag, e);
             }
