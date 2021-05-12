@@ -206,7 +206,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
         }
         
-        this.mavenRepo = new URL("file:" + isolatedRepoDirectory.toString());
+        this.mavenRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
     }
 
 
