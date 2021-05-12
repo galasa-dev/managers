@@ -212,7 +212,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     private Path locateReleaseJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException {
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
@@ -230,7 +230,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private Path locateSnapshotJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException, IOException {
 
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);

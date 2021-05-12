@@ -171,6 +171,11 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
                 Thread.sleep(2000);
 
                 String consoleContents = new String(Files.readAllBytes(consoleFile), StandardCharsets.UTF_8);
+                if (consoleContents.contains("Exiting launcher due to exception")) {
+                    logger.error("Run terminatated early");
+                    break;
+                }
+                
                 matcher = runnamePattern.matcher(consoleContents);
                 if (matcher.find()) {
                     runName = matcher.group(1);
