@@ -43,8 +43,7 @@ task jacocoMerge(type: JacocoMerge) {
     enabled = jacocoEnabled.toBoolean()
 }
 
-//def mavenrepo = System.getenv('MAVEN_REPO') ?: "https://nexus.galasa.dev/repository/maven-development"
-def mavenrepo = "/Users/mikebyls/repo"
+def mavenrepo = System.getenv('MAVEN_REPO') ?: "https://nexus.galasa.dev/repository/maven-development"
 
 repositories {
     mavenLocal()
@@ -65,10 +64,10 @@ publishing {
     }
     repositories {
         maven {
-   //         credentials {
-    //            username System.getenv('MAVENUSERNAME')
-     //           password System.getenv('MAVENPASSWORD')
-      //      }
+            credentials {
+                username System.getenv('MAVENUSERNAME')
+                password System.getenv('MAVENPASSWORD')
+            }
             url = mavenrepo
         }
     }
