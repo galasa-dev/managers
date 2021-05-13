@@ -9,13 +9,13 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 java {
-    withJavadocJar()
-    withSourcesJar()
+ //   withJavadocJar()
+ //   withSourcesJar()
 }
     
 tasks.withType(Javadoc) {
     failOnError = false
-    enabled = true
+    enabled = false
 }
 
 def mavenrepo = System.getenv('MAVEN_REPO') ?: "https://nexus.galasa.dev/repository/maven-development"
@@ -101,8 +101,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username System.getenv('MAVENUSERNAME')
-                password System.getenv('MAVENPASSWORD')
+                username 'michaelbaylis'
+                password 'oTSxHewMFDuiTb8sM3EUBHhd'
             }
             url = mavenrepo
         }

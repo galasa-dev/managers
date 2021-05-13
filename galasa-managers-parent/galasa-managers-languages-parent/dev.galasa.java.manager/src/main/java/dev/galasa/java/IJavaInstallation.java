@@ -10,6 +10,7 @@ import java.nio.file.Path;
 public interface IJavaInstallation {
     
     Path retrieveArchive() throws JavaManagerException;
+    Path retrieveJacocoAgent() throws JavaManagerException;
     String getArchiveFilename() throws JavaManagerException;
     
     String getJavaCommand() throws JavaManagerException;

@@ -8,7 +8,6 @@ public class LocalRun {
     private final String testname;
     private final String group;
     private final String runName;
-    private final int    procnumber;
     private final Path   log;
     private final Path   overrides;
 
@@ -17,7 +16,6 @@ public class LocalRun {
             String testname,
             String group,
             String runName,
-            int    procnumber,
             Path   log,
             Path   overrides
             ) {
@@ -25,7 +23,6 @@ public class LocalRun {
         this.testname   = testname;
         this.group      = group;
         this.runName    = runName;
-        this.procnumber = procnumber;
         this.log        = log;
         this.overrides  = overrides;
     }
@@ -36,10 +33,6 @@ public class LocalRun {
 
     public String getGroup() {
         return group;
-    }
-
-    public int getProcnumber() {
-        return procnumber;
     }
 
     public Path getLog() {

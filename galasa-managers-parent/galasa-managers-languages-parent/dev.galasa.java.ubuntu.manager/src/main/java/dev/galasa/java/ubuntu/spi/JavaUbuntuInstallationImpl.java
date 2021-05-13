@@ -7,6 +7,8 @@ package dev.galasa.java.ubuntu.spi;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +17,8 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.CpuArchitecture;
 import dev.galasa.OperatingSystem;
+import dev.galasa.ResultArchiveStoreContentType;
+import dev.galasa.SetContentType;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.java.JavaManagerException;
 import dev.galasa.java.JavaType;
@@ -31,14 +35,19 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
     private final static Log                   logger       = LogFactory.getLog(JavaUbuntuInstallationImpl.class);
 
     private final JavaUbuntuManagerImpl javaUbuntuManager;
-    private final String imageTag;
 
     private final String javaDirectoryName;
     private Path javaHome;
+    private Path jacocoAgent;
 
     private static final Pattern findHome = Pattern.compile("^(([a-zA-Z0-9\\-\\+\\._/ \\\\]*)?/)?\\Qbin/java\\E$", Pattern.MULTILINE);
 
+    private final ArrayList<Path> jacocoExecs = new ArrayList<>();
+    private int execFileNumber;
 
+    private final ILinuxImage image;
+    private final Path home;
+    private final Path runHome;
 
     public JavaUbuntuInstallationImpl(JavaUbuntuManagerImpl javaUbuntuManager, 
             JavaType javaType, 
@@ -55,27 +64,34 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 javaTag);
 
         this.javaUbuntuManager = javaUbuntuManager;
-        this.imageTag          = imageTag;
 
         this.javaDirectoryName = javaType.name() 
                 + "_" 
                 + javaVersion.name()
                 + "_"
                 + javaJvm;
-    }
-
-    public void build() throws JavaManagerException {
-
-        String actualFilename = getArchiveFilename();
 
         try {
             ILinuxManagerSpi linuxManager = this.javaUbuntuManager.getLinuxManager();
 
-            ILinuxImage image = linuxManager.getImageForTag(imageTag);
+            this.image = linuxManager.getImageForTag(imageTag);
+            this.home = this.image.getHome();
+            this.runHome = this.image.getRunDirectory();
+        } catch(Exception e) {
+            throw new JavaManagerException("Unable to determine home and run home directories", e);
+        }
 
-            Path home = image.getHome();
-            Path runhome = image.getRunDirectory();
+    }
 
+    public void build() throws JavaManagerException {
+        buildJavaHome();
+        buildJacocoAgent();
+    }
+
+    private void buildJavaHome() throws JavaManagerException {
+        String actualFilename = getArchiveFilename();
+
+        try {
             Path managerHome  = home.resolve(JavaUbuntuManagerImpl.NAMESPACE);
             Path javasHome    = managerHome.resolve("javas");
             Path archivesHome = managerHome.resolve("archives");         
@@ -89,7 +105,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 if (Files.exists(possibleJavaHome)) {
                     this.javaHome = possibleJavaHome;
                     ICommandShell commandShell = image.getCommandShell();
-                    String response = commandShell.issueCommand(getJavaCommand() + " -version");
+                    String response = commandShell.issueCommand(this.javaHome.resolve("bin/java").toString() + " -version");
                     logger.info("Java installation for tag " + getTag() + " is preinstalled at " + this.javaHome + " with version information:-\n" + response);
                     return;
                 }
@@ -114,21 +130,21 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 logger.trace("Java archive for tag " + getTag() + " retrieved");
 
                 // Make sure runhome is there, // TODO move to the linux manager
-                if (!Files.exists(runhome)) {
-                    Files.createDirectory(runhome);
+                if (!Files.exists(runHome)) {
+                    Files.createDirectory(runHome);
                 }
 
 
-                remoteArchive = runhome.resolve(actualFilename);
+                remoteArchive = runHome.resolve(actualFilename);
                 Files.copy(localArchive, remoteArchive);
                 logger.debug("Java archive for tag " + getTag() + " has been transferred to the linux image");
             }
 
 
             // Install it into the run directory
-            Path possibleJavaHomes = runhome.resolve(JavaUbuntuManagerImpl.NAMESPACE + "/javas");
+            Path possibleJavaHomes = runHome.resolve(JavaUbuntuManagerImpl.NAMESPACE + "/javas");
             Files.createDirectories(possibleJavaHomes);
-            Path tempExtractDirectory = runhome.resolve(JavaUbuntuManagerImpl.NAMESPACE + "/extract/" + this.javaDirectoryName);
+            Path tempExtractDirectory = runHome.resolve(JavaUbuntuManagerImpl.NAMESPACE + "/extract/" + this.javaDirectoryName);
             Files.createDirectories(tempExtractDirectory);
 
 
@@ -165,26 +181,96 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 }
 
                 this.javaHome = targetHome;
-                
-                response = commandShell.issueCommand(getJavaCommand() + " -version");
+
+                response = commandShell.issueCommand(this.javaHome.resolve("bin/java").toString() + " -version");
                 logger.info("Java installation for tag " + getTag() + " has been installed at " + this.javaHome + " with version information:-\n" + response);
-                
+
             } else {
                 throw new JavaUbuntuManagerException("Unable to support uncompressing of archive, unknown type");
             }
+        } catch(Exception e) {
+            throw new JavaUbuntuManagerException("Problem installing Java on server", e);
+        }
+    }
 
+    private void buildJacocoAgent() throws JavaUbuntuManagerException {
+        try {
+            if (isCodeCoverageRequested()) {
+                Path managerHome  = home.resolve(JavaUbuntuManagerImpl.NAMESPACE);
+                Path javasHome    = managerHome.resolve("javas");
+                Path possibleJacoco = javasHome.resolve("jacocoagent.jar");
+
+                if (Files.exists(possibleJacoco)) {
+                    this.jacocoAgent = possibleJacoco;
+                    logger.info("Jacoco agent is preinstalled at " + this.jacocoAgent);
+                } else {
+                    Path localJacoco = retrieveJacocoAgent();
+
+                    if (!Files.exists(runHome)) {
+                        Files.createDirectory(runHome);
+                    }
+
+                    this.jacocoAgent = runHome.resolve("jacocoagent.jar");
+                    Files.copy(localJacoco, this.jacocoAgent);
+                    logger.info("Jacoco agent has been copied to " + this.jacocoAgent);
+                }
+            }
         } catch(Exception e) {
             throw new JavaUbuntuManagerException("Problem installing Java on server", e);
         }
     }
 
     public void discard() {
+        // save any jacoco exec files we may have
+        
+        Path saRoot = this.javaUbuntuManager.getFramework().getResultArchiveStore().getStoredArtifactsRoot();        
+        Path jacocoDir = saRoot.resolve("java").resolve("jacoco");
+        
+        for(Path exec : this.jacocoExecs) {
+            Path targetExec = jacocoDir.resolve(exec.getFileName().toString());
+            
+            try {
+                if (Files.exists(exec)) {
+                    ResultArchiveStoreContentType type = ResultArchiveStoreContentType.BINARY;
+                    Files.copy(exec, Files.newOutputStream(targetExec, StandardOpenOption.CREATE_NEW, new SetContentType(type)));
+                }
+            } catch(Exception e) {
+                logger.warn("Failed to save jacoco exec file " + exec,e);
+            }
+        }
+        
+        
         super.discard();
     }
 
     @Override
     public String getJavaCommand() throws JavaManagerException {
-        return this.javaHome.resolve("bin/java").toString();
+        if (isCodeCoverageRequested()) {
+            this.execFileNumber++;
+            
+            String testClassName = this.javaUbuntuManager.getTestClassName();
+
+            Path execFile = this.runHome.resolve("jacoco" + this.execFileNumber + ".exec");
+
+            jacocoExecs.add(execFile);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(this.javaHome.resolve("bin/java").toString());
+            sb.append(" ");
+            sb.append("-javaagent:");
+            sb.append(this.jacocoAgent.toString());
+            sb.append("=destfile=");
+            sb.append(execFile.toString());
+            sb.append(",sessionid=");
+            sb.append(this.javaUbuntuManager.getFramework().getTestRunName());
+            sb.append("_");
+            sb.append(testClassName);
+            sb.append(Integer.toString(this.execFileNumber));
+
+            return sb.toString();
+        } else {
+            return this.javaHome.resolve("bin/java").toString();
+        }
     }
 
 }
