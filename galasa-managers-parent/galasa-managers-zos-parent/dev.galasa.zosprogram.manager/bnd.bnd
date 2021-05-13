@@ -1,6 +1,7 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa zOS Program Manager
-Export-Package: dev.galasa.zosprogram.manager, dev.galasa.zosprogram.spi
+Export-Package: dev.galasa.zosprogram,\
+    dev.galasa.zosprogram.spi
 Import-Package: dev.galasa,\
     dev.galasa.artifact,\
     dev.galasa.framework.spi,\
