@@ -1,7 +1,6 @@
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +18,6 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dev.galasa.artifact.IBundleResources;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IsolationInstallation;
 import dev.galasa.ipnetwork.ICommandShell;
@@ -58,22 +56,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             Path home = this.linuxImage.getHome();
             Path runHome = this.linuxImage.getRunDirectory();
             build(runHome, home);
-
-            // copy our script file for running galasa tests and servers
-            this.scriptFile = getGalasaConfigDirectory().resolve("run.sh");
-            IBundleResources bundleResources = getEcosystemManager().getArtifactManager().getBundleResources(getClass());
-
-            HashMap<String, Object> parameters = new HashMap<>();
-            parameters.put("MAVEN_REPO", getMavenRepo().toString());
-            parameters.put("MAVEN_LOCAL", "file:" + getMavenLocal().toString());
-            parameters.put("MAVEN_VERSION", getMavenVersion());
-            parameters.put("JAVA_CMD", getJavaInstallation().getJavaCommand());
-            parameters.put("BOOT_JAR", getBootJar().toString());
-            parameters.put("BOOTSTRAP", "file:" + getBootstrapFile().toString());
-            InputStream is = bundleResources.retrieveSkeletonFile("local/run.sh", parameters);
-            Files.copy(is, this.scriptFile);
-
-            getCommandShell().issueCommand("chmod +x " + this.scriptFile.toString());
+            this.scriptFile = getGalasaConfigDirectory().resolve("galasaboot.sh");
         } catch (Exception e) {
             throw new GalasaEcosystemManagerException("Problem building the Local Ecosystem on Linux", e); 
         }
@@ -143,10 +126,20 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
 
 
             StringBuilder runCommand = new StringBuilder();
-            runCommand.append(this.scriptFile.toString());
-            runCommand.append(" ");
-            runCommand.append(consoleFile.toString());
-            runCommand.append(" \"");
+            runCommand.append("#!/bin/bash\nnohup ");
+            runCommand.append(getJavaInstallation().getJavaCommand());
+            runCommand.append(" -jar ");
+            runCommand.append(getBootJar().toString());
+            runCommand.append(" --bootstrap file:");
+            runCommand.append(getBootstrapFile().toString());
+            runCommand.append(" --remotemaven ");
+            runCommand.append(getMavenRepo().toString());
+            runCommand.append(" --localmaven file:");
+            runCommand.append(getMavenLocal().toString());
+            runCommand.append(" --obr  mvn:dev.galasa/dev.galasa.uber.obr/");
+            runCommand.append(getMavenVersion());
+            runCommand.append("/obr ");
+            runCommand.append(" --trace ");
             if (overridesFile != null) {
                 runCommand.append(" --overrides ");
                 runCommand.append(overridesFile.toString());
@@ -155,16 +148,19 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             runCommand.append(bundleName);
             runCommand.append("/");
             runCommand.append(testName);
-            runCommand.append("\"");
-
-            String response = getCommandShell().issueCommand(runCommand.toString());
-
+            runCommand.append(" > ");
+            runCommand.append(consoleFile.toString());
+            runCommand.append(" &\necho PROCESS=$!\nsleep 2");
+            
+            
+            Files.write(this.scriptFile, runCommand.toString().getBytes(StandardCharsets.UTF_8));
+            String response = getCommandShell().issueCommand("sh " + this.scriptFile.toString());
+            
             Matcher matcher = processPattern.matcher(response);
             if (!matcher.find()) {
                 throw new GalasaEcosystemManagerException("Unexpected response for the run.sh script:-\n" + response);
             }
 
-            int processNumber = Integer.parseInt(matcher.group(1));
             String runName = null;
             Instant expire = Instant.now().plus(2, ChronoUnit.MINUTES);
             while(expire.isAfter(Instant.now())) {
@@ -188,7 +184,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
                 throw new GalasaEcosystemManagerException("Unable to locate the assigned run name to the submitted run");
             }
 
-            LocalRun localRun = new LocalRun(bundleName, testName, groupName, runName, processNumber, consoleFile, overridesFile);
+            LocalRun localRun = new LocalRun(bundleName, testName, groupName, runName, consoleFile, overridesFile);
             addLocalRun(localRun);
             this.runNameFiles.put(consoleFile, runName);
             if (overridesFile != null) {

@@ -29,6 +29,8 @@ import dev.galasa.java.JavaVersion;
 import dev.galasa.java.internal.JavaManagerImpl;
 import dev.galasa.java.internal.properties.DefaultVersion;
 import dev.galasa.java.internal.properties.DownloadLocation;
+import dev.galasa.java.internal.properties.JacocoAgentLocation;
+import dev.galasa.java.internal.properties.UseCodeCoverage;
 
 public abstract class JavaInstallationImpl implements IJavaInstallation {
     
@@ -43,6 +45,7 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
     private final String          javaTag; 
     
     private Path archive;
+    private Path agent;
     private String downloadLocation;
     
     public JavaInstallationImpl(IJavaManagerSpi javaManager, 
@@ -116,6 +119,44 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
     }
     
     @Override
+    public Path retrieveJacocoAgent() throws JavaManagerException {
+        
+        String downloadLocation = JacocoAgentLocation.get();
+        if (downloadLocation == null) {
+            throw new JavaManagerException("The location of the Jacoco Agent has not been provided");
+        }
+        
+        logger.trace("Retrieving Jacoco Agent from " + downloadLocation);
+        
+        URI uri;
+        try {
+            uri = new URI(downloadLocation);
+        } catch (URISyntaxException e) {
+            throw new JavaManagerException("Invalid Java archive download location", e);
+        }
+        
+        IHttpManagerSpi httpManager = this.javaManager.getHttpManager();
+        IHttpClient client = httpManager.newHttpClient();
+        client.setURI(uri);
+        
+        try (CloseableHttpResponse response = client.getFile(uri.getPath())) {
+           
+            Path agent = Files.createTempFile("galasa.jacoco.", ".agent");
+            agent.toFile().deleteOnExit();
+            
+            HttpEntity entity = response.getEntity();
+            
+            Files.copy(entity.getContent(), agent, StandardCopyOption.REPLACE_EXISTING);
+            
+            this.agent = agent;
+            
+            return agent;
+        } catch (Exception e) {
+            throw new JavaManagerException("Unable to download jacoco agent " + downloadLocation, e);
+        }
+    }
+    
+    @Override
     public String getArchiveFilename() throws JavaManagerException {
         String downloadLocation = getDownloadLocation();
         
@@ -171,11 +212,22 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
                 logger.trace("Failed to delete downloaded Java archive at " + this.archive);
             }
         }
+        
+        if (this.agent != null) {
+            try {
+                Files.delete(agent);
+            } catch(Exception e) {
+                logger.trace("Failed to delete downloaded Jacoco Agent at " + this.archive);
+            }
+        }
     }
     
     public String getTag() {
         return this.javaTag;
     }
     
+    protected boolean isCodeCoverageRequested() throws JavaManagerException {
+        return UseCodeCoverage.get();
+    }
 
 }
