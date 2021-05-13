@@ -2,5 +2,3 @@
 Bundle-Name: Galasa Phoenix 2 PME Manager
 Import-Package: !javax.validation.constraints, \
                 *
-
-
