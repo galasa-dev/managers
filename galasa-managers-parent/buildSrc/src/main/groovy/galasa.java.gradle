@@ -9,8 +9,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 java {
- //   withJavadocJar()
- //   withSourcesJar()
+      withJavadocJar()
+      withSourcesJar()
 }
     
 tasks.withType(Javadoc) {
@@ -100,9 +100,9 @@ publishing {
     }
     repositories {
         maven {
-            credentials {
-                username 'michaelbaylis'
-                password 'oTSxHewMFDuiTb8sM3EUBHhd'
+           credentials {
+                username System.getenv('MAVENUSERNAME')
+                password System.getenv('MAVENPASSWORD')
             }
             url = mavenrepo
         }

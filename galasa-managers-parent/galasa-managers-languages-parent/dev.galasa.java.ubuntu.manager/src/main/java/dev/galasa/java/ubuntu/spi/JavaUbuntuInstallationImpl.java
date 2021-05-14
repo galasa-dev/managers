@@ -45,9 +45,10 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
     private final ArrayList<Path> jacocoExecs = new ArrayList<>();
     private int execFileNumber;
 
-    private final ILinuxImage image;
-    private final Path home;
-    private final Path runHome;
+    private final String imageTag;
+    private ILinuxImage image;
+    private Path home;
+    private Path runHome;
 
     public JavaUbuntuInstallationImpl(JavaUbuntuManagerImpl javaUbuntuManager, 
             JavaType javaType, 
@@ -63,6 +64,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 javaJvm, 
                 javaTag);
 
+        this.imageTag = imageTag;
         this.javaUbuntuManager = javaUbuntuManager;
 
         this.javaDirectoryName = javaType.name() 
@@ -71,19 +73,19 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 + "_"
                 + javaJvm;
 
+    }
+
+    public void build() throws JavaManagerException {
         try {
             ILinuxManagerSpi linuxManager = this.javaUbuntuManager.getLinuxManager();
 
-            this.image = linuxManager.getImageForTag(imageTag);
+            this.image = linuxManager.getImageForTag(this.imageTag);
             this.home = this.image.getHome();
             this.runHome = this.image.getRunDirectory();
         } catch(Exception e) {
             throw new JavaManagerException("Unable to determine home and run home directories", e);
         }
 
-    }
-
-    public void build() throws JavaManagerException {
         buildJavaHome();
         buildJacocoAgent();
     }
