@@ -14,7 +14,11 @@
 	<packaging>galasa-obr</packaging>
 
 	<name>Galasa Managers OBR</name>
-
+	
+	<properties>
+	   <galasa.skip.bundletestcatatlog>false</galasa.skip.bundletestcatatlog>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>

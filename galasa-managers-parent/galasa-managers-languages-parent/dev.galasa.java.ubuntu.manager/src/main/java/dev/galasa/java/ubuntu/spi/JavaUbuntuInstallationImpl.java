@@ -224,24 +224,34 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
 
     public void discard() {
         // save any jacoco exec files we may have
-        
+
         Path saRoot = this.javaUbuntuManager.getFramework().getResultArchiveStore().getStoredArtifactsRoot();        
         Path jacocoDir = saRoot.resolve("java").resolve("jacoco");
+
+        ArrayList<Path> savePaths = new ArrayList<>();
         
         for(Path exec : this.jacocoExecs) {
             Path targetExec = jacocoDir.resolve(exec.getFileName().toString());
-            
+
             try {
                 if (Files.exists(exec)) {
                     ResultArchiveStoreContentType type = ResultArchiveStoreContentType.BINARY;
                     Files.copy(exec, Files.newOutputStream(targetExec, StandardOpenOption.CREATE_NEW, new SetContentType(type)));
+                    savePaths.add(exec);
                 }
             } catch(Exception e) {
                 logger.warn("Failed to save jacoco exec file " + exec,e);
             }
         }
-        
-        
+
+        // Save them to a target location if requested
+
+        try {
+            saveCodeCoverageExecs(savePaths);
+        } catch(Exception e) {
+            logger.warn("Failed to save jacoco execs to save location",e);
+        }
+
         super.discard();
     }
 
@@ -249,7 +259,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
     public String getJavaCommand() throws JavaManagerException {
         if (isCodeCoverageRequested()) {
             this.execFileNumber++;
-            
+
             String testClassName = this.javaUbuntuManager.getTestClassName();
 
             Path execFile = this.runHome.resolve("jacoco" + this.execFileNumber + ".exec");
