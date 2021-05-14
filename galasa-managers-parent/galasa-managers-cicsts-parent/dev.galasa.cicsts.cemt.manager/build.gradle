@@ -4,6 +4,8 @@ plugins {
 
 description = 'Galasa CICS/TS CECI Manager'
 
+version = '0.15.0-SNAPSHOT'
+
 dependencies {
     api            project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
