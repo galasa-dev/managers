@@ -26,7 +26,19 @@ public class ZosLibertyImpl implements IZosLiberty {
 		return null;
 	}
 
-	public IZosFileHandler getZosFileHandler() throws ZosLibertyManagerException {
+	@Override
+	public void saveToResultsArchive(String rasPath) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteLogs() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected IZosFileHandler getZosFileHandler() throws ZosLibertyManagerException {
 		return this.zosLibertyManager.getZosFileHandler();
 	}
 

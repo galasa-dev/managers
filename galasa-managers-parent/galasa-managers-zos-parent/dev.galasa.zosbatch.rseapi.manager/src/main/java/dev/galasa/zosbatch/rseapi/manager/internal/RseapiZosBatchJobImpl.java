@@ -342,29 +342,9 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
 		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
-        Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
+		Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
-            IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
-            StringBuilder name = new StringBuilder();
-            name.append(spoolFile.getJobname());
-            name.append("_");
-            name.append(spoolFile.getJobid());
-            if (!spoolFile.getStepname().isEmpty()){
-                name.append("_");
-                name.append(spoolFile.getStepname());
-            }
-            if (!spoolFile.getProcstep().isEmpty()){
-                name.append("_");
-                name.append(spoolFile.getProcstep());
-            }
-            name.append("_");
-            name.append(spoolFile.getDdname());
-            String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
-            try {
-            	this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
-			} catch (ZosManagerException e) {
-				throw new ZosBatchException(e);
-			}
+            saveSpoolFile(iterator.next(), artifactPath);
         }
         if (isComplete()) {
         	this.jobArchived = true;
@@ -389,6 +369,36 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public boolean shouldCleanup() {
 		return this.shouldCleanup;
+	}
+
+	@Override
+	public void saveSpoolFileToResultsArchive(IZosBatchJobOutputSpoolFile spoolFile, String rasPath) throws ZosBatchException {
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+		logger.info("Archiving spool file " + spoolFile.getDdname() + " to " + artifactPath.toString());
+		saveSpoolFile(spoolFile, artifactPath);
+	}
+
+	protected void saveSpoolFile(IZosBatchJobOutputSpoolFile spoolFile, Path artifactPath) throws ZosBatchException {
+        StringBuilder name = new StringBuilder();
+        name.append(spoolFile.getJobname());
+        name.append("_");
+        name.append(spoolFile.getJobid());
+        if (!spoolFile.getStepname().isEmpty()){
+            name.append("_");
+            name.append(spoolFile.getStepname());
+        }
+        if (!spoolFile.getProcstep().isEmpty()){
+            name.append("_");
+            name.append(spoolFile.getProcstep());
+        }
+        name.append("_");
+        name.append(spoolFile.getDdname());
+        String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
+        try {
+			this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
+		} catch (ZosManagerException e) {
+			throw new ZosBatchException(e);
+		}
 	}
 
 	protected void getOutput(boolean retrieveRecords) throws ZosBatchException {
@@ -514,27 +524,27 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
     	return this.jobname.getName() + "(" + this.getJobId() + ")";
     }
 
-    public boolean submitted() {
+    protected boolean submitted() {
     	return !getJobId().contains("?");
     }
     
-    public boolean isComplete() {
+    protected boolean isComplete() {
         return this.jobComplete;
     }
 
-    public boolean isArchived() {
+    protected boolean isArchived() {
         return this.jobArchived;
     }
 
-    public boolean isPurged() {
+    protected boolean isPurged() {
         return this.jobPurged;
     }
 
-    public IZosBatchJobOutput jobOutput() {
+    protected IZosBatchJobOutput jobOutput() {
         return this.jobOutput;
     }
 
-    private String jobStatus() {
+    protected String jobStatus() {
         return "JOBID=" + this.jobid + 
               " JOBNAME=" + this.jobname.getName() + 
               " OWNER=" + this.owner + 

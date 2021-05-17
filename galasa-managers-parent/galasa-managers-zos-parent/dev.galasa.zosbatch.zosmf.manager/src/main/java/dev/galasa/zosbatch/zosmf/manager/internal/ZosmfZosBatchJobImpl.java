@@ -343,27 +343,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
         while (iterator.hasNext()) {
-            IZosBatchJobOutputSpoolFile spoolFile = iterator.next();
-            StringBuilder name = new StringBuilder();
-            name.append(spoolFile.getJobname());
-            name.append("_");
-            name.append(spoolFile.getJobid());
-            if (!spoolFile.getStepname().isEmpty()){
-                name.append("_");
-                name.append(spoolFile.getStepname());
-            }
-            if (!spoolFile.getProcstep().isEmpty()){
-                name.append("_");
-                name.append(spoolFile.getProcstep());
-            }
-            name.append("_");
-            name.append(spoolFile.getDdname());
-            String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
-            try {
-				this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
-			} catch (ZosManagerException e) {
-				throw new ZosBatchException(e);
-			}
+            saveSpoolFile(iterator.next(), artifactPath);
         }
         if (isComplete()) {
         	this.jobArchived = true;
@@ -388,6 +368,36 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 	@Override
 	public boolean shouldCleanup() {
 		return this.shouldCleanup;
+	}
+
+	@Override
+	public void saveSpoolFileToResultsArchive(IZosBatchJobOutputSpoolFile spoolFile, String rasPath) throws ZosBatchException {
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+		logger.info("Archiving spool file " + spoolFile.getDdname() + " to " + artifactPath.toString());
+		saveSpoolFile(spoolFile, artifactPath);
+	}
+
+	protected void saveSpoolFile(IZosBatchJobOutputSpoolFile spoolFile, Path artifactPath) throws ZosBatchException {
+        StringBuilder name = new StringBuilder();
+        name.append(spoolFile.getJobname());
+        name.append("_");
+        name.append(spoolFile.getJobid());
+        if (!spoolFile.getStepname().isEmpty()){
+            name.append("_");
+            name.append(spoolFile.getStepname());
+        }
+        if (!spoolFile.getProcstep().isEmpty()){
+            name.append("_");
+            name.append(spoolFile.getProcstep());
+        }
+        name.append("_");
+        name.append(spoolFile.getDdname());
+        String fileName = this.zosBatchManager.getZosManager().buildUniquePathName(artifactPath, name.toString());
+        try {
+			this.zosBatchManager.getZosManager().storeArtifact(artifactPath.resolve(fileName), spoolFile.getRecords(), ResultArchiveStoreContentType.TEXT);
+		} catch (ZosManagerException e) {
+			throw new ZosBatchException(e);
+		}
 	}
 
 	protected void getOutput(boolean retrieveRecords) throws ZosBatchException {
@@ -526,28 +536,28 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     public String toString() {
     	return this.jobname.getName() + "(" + this.getJobId() + ")";
     }
-
-    public boolean submitted() {
+    
+    protected boolean submitted() {
     	return !getJobId().contains("?");
     }
     
-    public boolean isComplete() {
+    protected boolean isComplete() {
         return this.jobComplete;
     }
 
-    public boolean isArchived() {
+    protected boolean isArchived() {
         return this.jobArchived;
     }
 
-    public boolean isPurged() {
+    protected boolean isPurged() {
         return this.jobPurged;
     }
 
-    public IZosBatchJobOutput jobOutput() {
+    protected IZosBatchJobOutput jobOutput() {
         return this.jobOutput;
     }
 
-    private String jobStatus() {
+    protected String jobStatus() {
         return "JOBID=" + this.jobid + 
               " JOBNAME=" + this.jobname.getName() + 
               " OWNER=" + this.owner + 
@@ -675,7 +685,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
     }
 
-    private String truncateJcl(List<String> jclRecords) {
+    protected String truncateJcl(List<String> jclRecords) {
         List<String> recordsOut = new LinkedList<>();
         List<Integer> truncatedRecords = new ArrayList<>();
         for (int i=0; i < jclRecords.size(); i++) {
@@ -695,7 +705,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         return String.join("\n", recordsOut);
     }
 
-    private void parseJclForVaryingRecordLength(List<String> jclRecords) {
+    protected void parseJclForVaryingRecordLength(List<String> jclRecords) {
         int minRecordLength = 0;
         for (int i=0; i < jclRecords.size(); i++) {
             int recordLength = jclRecords.get(i).length();
