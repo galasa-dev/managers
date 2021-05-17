@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IsolationInstallation;
 import dev.galasa.ipnetwork.ICommandShell;
@@ -169,6 +170,14 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
                 String consoleContents = new String(Files.readAllBytes(consoleFile), StandardCharsets.UTF_8);
                 if (consoleContents.contains("Exiting launcher due to exception")) {
                     logger.error("Run terminatated early");
+                    
+                    if (consoleContents.contains("java.net.SocketException: Network is unreachable (connect failed)")) {
+                        logger.error("Network blip, marking as resource unavailable");
+                        saveConsoleLog(consoleFile);
+                        this.runFiles.remove(consoleFile);
+                        throw new ResourceUnavailableException("Unable to complete installation of ecosystem, due to network blip");
+                    }
+                    
                     break;
                 }
                 
