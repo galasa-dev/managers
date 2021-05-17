@@ -66,4 +66,7 @@ public interface IWindowsImage {
     @NotNull
     Path getTmp() throws WindowsManagerException;
 
+    @NotNull
+    Path getRunDirectory() throws WindowsManagerException;
+
 }

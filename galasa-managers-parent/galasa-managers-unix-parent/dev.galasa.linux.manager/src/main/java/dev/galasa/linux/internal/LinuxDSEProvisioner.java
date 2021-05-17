@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.linux.internal;
 
@@ -40,7 +40,7 @@ public class LinuxDSEProvisioner implements ILinuxProvisioner {
                 return null;
             }
 
-            logger.info("Loading DSE for Linux Image tagged " + tag);
+            logger.info("Loading DSE for Linux Image tagged " + tag + ", host ID is " + hostid);
 
             return new LinuxDSEImage(manager, this.cps, tag, hostid);
         } catch (Exception e) {

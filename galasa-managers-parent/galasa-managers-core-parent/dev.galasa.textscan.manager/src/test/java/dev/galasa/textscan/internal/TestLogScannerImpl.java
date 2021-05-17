@@ -10,11 +10,11 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ITextScannable;
@@ -80,12 +79,12 @@ public class TestLogScannerImpl {
 	
 	@Test
 	public void testSetScannable() throws TextScanException {
-		assertSame(logScanner, logScanner.setScannable(textScannableMock));
+		assertSame(logScannerSpy, logScannerSpy.setScannable(textScannableMock));
 	}
 	
 	@Test
 	public void testUpdateScannable() throws TextScanException {
-		assertSame(logScanner.setScannable(textScannableMock), logScanner.updateScannable());
+		assertSame(logScannerSpy.setScannable(textScannableMock), logScannerSpy.updateScannable());
 	}
 	
 	@Test
@@ -98,7 +97,7 @@ public class TestLogScannerImpl {
 	
 	@Test
 	public void testReset() throws TextScanException {
-		((LogScannerImpl) logScanner.setScannable(textScannableMock)).checkScannableNoNull();
+		((LogScannerImpl) logScannerSpy.setScannable(textScannableMock)).checkScannableNoNull();
 		logScanner.reset();
 		TextScanException expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
 			logScanner.checkScannableNoNull();
@@ -111,22 +110,22 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableString()).thenReturn(true);
 		when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 
 		reset(textScannableMock);
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableInputStream()).thenReturn(true);
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 		
 		PowerMockito.mockStatic(IOUtils.class);
 		when(IOUtils.toByteArray((InputStream) any())).thenThrow(new IOException());
 		TextScanException expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScanner.checkpoint();
+			logScannerSpy.checkpoint();
         });
         assertEquals("exception should contain expected cause", "Unable to checkpoint scannable '" + SCANNABLE_NAME + QUOTE, expectedException.getMessage());
 		
@@ -135,7 +134,7 @@ public class TestLogScannerImpl {
 		PowerMockito.mockStatic(IOUtils.class);
 		when(IOUtils.toByteArray((InputStream) any())).thenThrow(new IOException());
 		expectedException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScanner.checkpoint();
+			logScannerSpy.checkpoint();
         });
         assertEquals("exception should contain expected cause", "Unable to checkpoint scannable '" + SCANNABLE_NAME + QUOTE + ", unknown scannable type", expectedException.getMessage());
 	}
@@ -145,12 +144,12 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableName()).thenReturn(SCANNABLE_NAME);
 		when(textScannableMock.isScannableString()).thenReturn(true);
 		when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING);
-		logScanner.setScannable(textScannableMock);
-		logScanner.checkpoint();
-		assertEquals((long) TEXT_STRING.length(), logScanner.getCheckpoint());
+		logScannerSpy.setScannable(textScannableMock);
+		logScannerSpy.checkpoint();
+		assertEquals((long) TEXT_STRING.length(), logScannerSpy.getCheckpoint());
 
-		logScanner.resetCheckpoint();
-		assertEquals(-1, logScanner.getCheckpoint());		
+		logScannerSpy.resetCheckpoint();
+		assertEquals(-1, logScannerSpy.getCheckpoint());		
 	}
 	
 	// scanSinceCheckpoint() ----------------------------------------------------------------------------------------
@@ -341,7 +340,7 @@ public class TestLogScannerImpl {
 		
 		// MissingTextException
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search Pattern '" + SEARCH_PATTERN + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -349,13 +348,13 @@ public class TestLogScannerImpl {
         // IncorrectOccurrencesException
         when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING + "\n" + TEXT_STRING);
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 2);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '" + SEARCH_PATTERN + "'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getMessage());
         
         // text found 
-        assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 1));
+        assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 1));
 	}
 	
 	@Test
@@ -369,7 +368,7 @@ public class TestLogScannerImpl {
 		// MissingTextException
 		textInputStream.reset();
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search Pattern '" + SEARCH_PATTERN + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -378,14 +377,14 @@ public class TestLogScannerImpl {
         textInputStream = new ByteArrayInputStream((TEXT_STRING + "\n" + TEXT_STRING).getBytes());
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 2);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '" + SEARCH_PATTERN + "'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getMessage());
         
         // Text found 
 		textInputStream.reset();
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 1));
 	}
 	
 	@Test
@@ -393,7 +392,7 @@ public class TestLogScannerImpl {
 		logScannerSpy.setScannable(textScannableMock);
 		doReturn(logScannerSpy).when(logScannerSpy).checkpoint();
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_PATTERN, null, 1);
         });
         assertEquals("Problem scanning 'null'", expectedTextScanException.getMessage());
         assertEquals("Unknown scannable type", expectedTextScanException.getCause().getMessage());
@@ -409,7 +408,7 @@ public class TestLogScannerImpl {
 		
 		// MissingTextException
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search String '" + SEARCH_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -418,14 +417,14 @@ public class TestLogScannerImpl {
         // IncorrectOccurrencesException
         when(textScannableMock.getScannableString()).thenReturn(TEXT_STRING + "\n" + TEXT_STRING);
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 2);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Wrong number of occurrences of String '" + SEARCH_STRING + "' found", expectedIncorrectOccurrencesException.getCause().getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '\\Q" + SEARCH_STRING + "\\E'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getCause().getMessage());
         
         // text found 
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 1));
 	}
 	
 	@Test
@@ -439,7 +438,7 @@ public class TestLogScannerImpl {
 		// MissingTextException
 		textInputStream.reset();
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search String '" + SEARCH_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -449,7 +448,7 @@ public class TestLogScannerImpl {
         textInputStream = new ByteArrayInputStream((TEXT_STRING + "\n" + TEXT_STRING).getBytes());
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 2);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Wrong number of occurrences of String '" + SEARCH_STRING + "' found", expectedIncorrectOccurrencesException.getCause().getMessage());
@@ -457,7 +456,7 @@ public class TestLogScannerImpl {
         
         // Text found 
 		textInputStream.reset();
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 1));
 	}
 	
 	@Test
@@ -465,7 +464,7 @@ public class TestLogScannerImpl {
 		logScannerSpy.setScannable(textScannableMock);
 		doReturn(logScannerSpy).when(logScannerSpy).checkpoint();
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, 1);
+			logScannerSpy.scanForMatchSinceCheckpoint(SEARCH_STRING, null, 1);
         });
         assertEquals("Problem scanning 'null'", expectedTextScanException.getMessage());
         assertEquals("Unknown scannable type", expectedTextScanException.getCause().getMessage());
@@ -651,20 +650,20 @@ public class TestLogScannerImpl {
 		
 		// MissingTextException
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatch(ABSENT_PATTERN, 1);
+			logScannerSpy.scanForMatch(ABSENT_PATTERN, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search Pattern '" + ABSENT_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
 
         // IncorrectOccurrencesException
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_PATTERN, 2);
+			logScannerSpy.scanForMatch(SEARCH_PATTERN, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '" + SEARCH_PATTERN + "'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getMessage());
         
         // text found 
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_PATTERN, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_PATTERN, null, 1));
 	}
 	
 	@Test
@@ -678,7 +677,7 @@ public class TestLogScannerImpl {
 		// MissingTextException
 		textInputStream.reset();
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatch(ABSENT_PATTERN, 1);
+			logScannerSpy.scanForMatch(ABSENT_PATTERN, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search Pattern '" + ABSENT_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -686,14 +685,14 @@ public class TestLogScannerImpl {
         // IncorrectOccurrencesException
 		textInputStream.reset();
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_PATTERN, 2);
+			logScannerSpy.scanForMatch(SEARCH_PATTERN, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '" + SEARCH_PATTERN + "'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getMessage());
         
         // Text found 
 		textInputStream.reset();
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_PATTERN, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_PATTERN, null, 1));
 	}
 	
 	@Test
@@ -701,7 +700,7 @@ public class TestLogScannerImpl {
 		logScannerSpy.setScannable(textScannableMock);
 		doReturn(logScannerSpy).when(logScannerSpy).checkpoint();
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_PATTERN, 1);
+			logScannerSpy.scanForMatch(SEARCH_PATTERN, null, 1);
         });
         assertEquals("Problem scanning 'null'", expectedTextScanException.getMessage());
         assertEquals("Unknown scannable type", expectedTextScanException.getCause().getMessage());
@@ -716,7 +715,7 @@ public class TestLogScannerImpl {
 		
 		// MissingTextException
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatch(ABSENT_STRING, 1);
+			logScannerSpy.scanForMatch(ABSENT_STRING, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search String '" + ABSENT_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -724,14 +723,14 @@ public class TestLogScannerImpl {
 
         // IncorrectOccurrencesException
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_STRING, 2);
+			logScannerSpy.scanForMatch(SEARCH_STRING, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Wrong number of occurrences of String '" + SEARCH_STRING + "' found", expectedIncorrectOccurrencesException.getCause().getMessage());
         assertEquals("Unable to find occurrence 2 of Pattern '\\Q" + SEARCH_STRING + "\\E'. Occurrences found: 1", expectedIncorrectOccurrencesException.getCause().getCause().getMessage());
         
         // text found 
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_STRING, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_STRING, null, 1));
 	}
 	
 	@Test
@@ -745,7 +744,7 @@ public class TestLogScannerImpl {
 		// MissingTextException
 		textInputStream.reset();
 		MissingTextException expectedMissingTextException = assertThrows("expected exception should be thrown", MissingTextException.class, ()->{
-			logScannerSpy.scanForMatch(ABSENT_STRING, 1);
+			logScannerSpy.scanForMatch(ABSENT_STRING, null, 1);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedMissingTextException.getMessage());
         assertEquals("Search String '" + ABSENT_STRING + "' not found", expectedMissingTextException.getCause().getMessage());
@@ -754,7 +753,7 @@ public class TestLogScannerImpl {
         // IncorrectOccurrencesException
 		textInputStream.reset();
         IncorrectOccurrencesException expectedIncorrectOccurrencesException = assertThrows("expected exception should be thrown", IncorrectOccurrencesException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_STRING, 2);
+			logScannerSpy.scanForMatch(SEARCH_STRING, null, 2);
         });
         assertEquals("Problem scanning '" + SCANNABLE_NAME + QUOTE, expectedIncorrectOccurrencesException.getMessage());
         assertEquals("Wrong number of occurrences of String '" + SEARCH_STRING + "' found", expectedIncorrectOccurrencesException.getCause().getMessage());
@@ -762,7 +761,7 @@ public class TestLogScannerImpl {
         
         // Text found 
 		textInputStream.reset();
-		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_STRING, 1));
+		assertEquals(SEARCH_STRING, logScannerSpy.scanForMatch(SEARCH_STRING, null, 1));
 	}
 	
 	@Test
@@ -770,7 +769,7 @@ public class TestLogScannerImpl {
 		logScannerSpy.setScannable(textScannableMock);
 		doReturn(logScannerSpy).when(logScannerSpy).checkpoint();
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
-			logScannerSpy.scanForMatch(SEARCH_STRING, 1);
+			logScannerSpy.scanForMatch(SEARCH_STRING, null, 1);
         });
         assertEquals("Problem scanning 'null'", expectedTextScanException.getMessage());
         assertEquals("Unknown scannable type", expectedTextScanException.getCause().getMessage());
@@ -800,11 +799,11 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
 		logScannerSpy.setScannable(textScannableMock);
 
-		Whitebox.setInternalState(logScannerSpy, "checkpoint", 11);		
+		logScannerSpy.setCheckpoint(11);		
 		logScannerSpy.skipToCheckpoint();
 
 		textInputStream.reset();
-		Whitebox.setInternalState(logScannerSpy, "checkpoint", 99);	
+		logScannerSpy.setCheckpoint(99);	
 		TextScanException expectedTextScanException = assertThrows("expected exception should be thrown", TextScanException.class, ()->{
 			logScannerSpy.skipToCheckpoint();			
         });

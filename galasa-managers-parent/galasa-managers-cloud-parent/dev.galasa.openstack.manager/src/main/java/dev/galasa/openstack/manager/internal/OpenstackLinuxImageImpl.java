@@ -6,7 +6,10 @@
 package dev.galasa.openstack.manager.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,10 +27,13 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
+import dev.galasa.openstack.manager.internal.json.SecurityGroup;
 import dev.galasa.openstack.manager.internal.properties.LinuxAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
 import dev.galasa.openstack.manager.internal.properties.LinuxFlavor;
 import dev.galasa.openstack.manager.internal.properties.LinuxKeyPair;
+import dev.galasa.openstack.manager.internal.properties.LinuxName;
+import dev.galasa.openstack.manager.internal.properties.LinuxSecurityGroups;
 
 public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILinuxProvisionedImage {
 
@@ -38,6 +44,7 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     private Path                      pathRoot;
     private Path                      pathTemp;
     private Path                      pathHome;
+    private Path                      pathRunDirectory;
 
     public OpenstackLinuxImageImpl(@NotNull OpenstackManagerImpl manager,
             @NotNull OpenstackHttpClient openstackHttpClient, @NotNull String instanceName, @NotNull String image,
@@ -78,12 +85,21 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
         Server server = new Server();
         server.name = this.instanceName;
-        server.imageRef = getOpenstackHttpClient().getImageId(this.image);
+        server.imageRef = getOpenstackHttpClient().getImageId(LinuxName.get(this.image));
         server.flavorRef = getOpenstackHttpClient().getFlavourId(flavor);
         server.availability_zone = LinuxAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();
         server.metadata.galasa_run = this.manager.getFramework().getTestRunName();
         server.key_name = LinuxKeyPair.get(this.image);
+
+        List<String> groups = LinuxSecurityGroups.get(this.image);
+        List<SecurityGroup> securityGroups = new ArrayList<>();
+        for (String group : groups) {
+            SecurityGroup sGroup = new SecurityGroup();
+            sGroup.name = group;
+            securityGroups.add(sGroup);
+        }
+        server.security_groups = securityGroups;
 
         if (server.imageRef == null) {
             throw new OpenstackManagerException("Image " + this.image + " is missing in OpenStack");
@@ -93,8 +109,6 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
             throw new OpenstackManagerException("Flavor " + flavor + " is missing in OpenStack");
         }
 
-        
-        logger.info("hello there ********2");
         ServerRequest serverRequest = new ServerRequest();
         serverRequest.server = server;
 
@@ -143,5 +157,27 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
     public @NotNull Path getTmp() throws LinuxManagerException {
         return this.pathTemp;
     }
+    
+    @Override
+    public @NotNull Path getRunDirectory() throws LinuxManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.manager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new LinuxManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        // Assuming that the provisioned image will be deleted, so not cleaning up
+    }
+
 
 }

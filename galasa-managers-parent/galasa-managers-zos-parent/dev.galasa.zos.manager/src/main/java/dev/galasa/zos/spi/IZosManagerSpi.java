@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zos.spi;
 
@@ -14,6 +14,8 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.ZosBatchManagerException;
@@ -127,11 +129,27 @@ public interface IZosManagerSpi extends IZosManager {
 
 	/**
 	 * Create a new batch job output object
+	 * @param batchJob
 	 * @param name
 	 * @param jobid
 	 * @return
 	 */
-	IZosBatchJobOutputSpi newZosBatchJobOutput(String name, String jobid);
+	IZosBatchJobOutputSpi newZosBatchJobOutput(IZosBatchJob batchJob, String name, String jobid);
+    
+    /**
+     * Create a new zOS Batch job spool file object  
+     * @param batchJob
+     * @param jobname
+     * @param jobid
+     * @param stepname
+     * @param procstep
+     * @param ddname
+     * @param id
+     * @param records
+     * @return
+     * @throws ZosBatchException
+     */
+    public IZosBatchJobOutputSpoolFile newZosBatchJobOutputSpoolFile(IZosBatchJob batchJob, String jobname, String jobid, String stepname, String procstep, String ddname, String id, String records) throws ZosBatchException;
 
 	/**
 	 * Build a unique results archive artifact name 

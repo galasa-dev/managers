@@ -6,6 +6,7 @@
 package dev.galasa.windows.internal;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
@@ -20,7 +21,9 @@ import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.windows.WindowsManagerException;
+import dev.galasa.windows.internal.properties.RetainRunDirectory;
 import dev.galasa.windows.spi.IWindowsProvisionedImage;
+
 
 public class WindowsDSEImage implements IWindowsProvisionedImage {
 
@@ -37,6 +40,8 @@ public class WindowsDSEImage implements IWindowsProvisionedImage {
     private final Path                               pathHome;
     private final Path                               pathTemp;
     private final Path                               pathRoot;
+    private Path                                     pathRunDirectory;
+
 
     public WindowsDSEImage(WindowsManagerImpl manager, IConfigurationPropertyStoreService cps, String tag, String hostid)
             throws WindowsManagerException, ConfigurationPropertyStoreException {
@@ -131,4 +136,36 @@ public class WindowsDSEImage implements IWindowsProvisionedImage {
         return this.pathTemp;
     }
 
+    @Override
+    public @NotNull Path getRunDirectory() throws WindowsManagerException {
+        if (this.pathRunDirectory != null) {
+            return this.pathRunDirectory;
+        }
+
+        this.pathRunDirectory = this.pathHome.resolve(this.windowsManager.getFramework().getTestRunName());
+
+        try {
+            Files.createDirectories(pathRunDirectory);
+        } catch(Exception e) {
+            throw new WindowsManagerException("Unable to create the run directory on server", e);
+        }
+
+        return this.pathRunDirectory;
+    }
+
+    public void discard() {
+        if (this.pathRunDirectory != null) {
+            try {
+                if (RetainRunDirectory.get(this)) {
+                    logger.warn("Retaining the run directory instead of discarding as requested");
+                    return;
+                }
+
+                commandShell.issueCommand("rm -rf " + this.pathRunDirectory);
+            } catch(Exception e) {
+                logger.trace("Problem discarding the run directory");
+            }
+        }
+
+    }
 }

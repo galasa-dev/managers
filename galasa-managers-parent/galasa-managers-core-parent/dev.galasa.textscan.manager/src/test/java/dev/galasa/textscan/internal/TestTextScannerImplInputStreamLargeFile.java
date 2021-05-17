@@ -101,28 +101,28 @@ public class TestTextScannerImplInputStreamLargeFile {
 	public void testScanForMatchForInputStreamInputWithSearchPatternFound() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("100");
 		int count = 3;
-		assertEquals("100", scanner.scanForMatch(textInputStream, searchPattern, count));
+		assertEquals("100", scanner.scanForMatch(textInputStream, searchPattern, null, count));
 	}
 	
 	@Test(expected = MissingTextException.class) 
 	public void testScanForForMatchInputStreamInputWithSearchPatternNotFound() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("He carefully landed into the willage and silently lifted the roof");
 		int count = 1;
-		scanner.scanForMatch(textInputStream, searchPattern, count);
+		scanner.scanForMatch(textInputStream, searchPattern, null, count);
 	}
 	
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForForMatchInputStreamInputWithIncorrectOccurancesPattern() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("77");
 		int count = 10;
-		scanner.scanForMatch(textInputStream, searchPattern, count);
+		scanner.scanForMatch(textInputStream, searchPattern, null, count);
 	}
 	
 	@Test(expected = TextScanException.class)
 	public void testScanInputStreamIOException() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("[c]");
 		int count = 1;
-		scanner.scanForMatch(new DummyInputStream(), searchPattern, count);
+		scanner.scanForMatch(new DummyInputStream(), searchPattern, null, count);
 	}
 
 
@@ -131,21 +131,21 @@ public class TestTextScannerImplInputStreamLargeFile {
 	public void testScanForMatchForInputStreamInputWithSearchStringFound() throws TextScanManagerException {
 		String searchString = "Line 76 M";
 		int count = 3;
-		assertEquals(searchString, scanner.scanForMatch(textInputStream, searchString, count));
+		assertEquals(searchString, scanner.scanForMatch(textInputStream, searchString, null, count));
 	}
 	
 	@Test(expected = MissingTextException.class) 
 	public void testScanForForMatchInputStreamInputWithSearchStringNotFound() throws TextScanManagerException {
 		String searchString = "In the house he found five sleeping pigs in blankets and he ate them all.";
 		int count = 1;
-		scanner.scanForMatch(textInputStream, searchString, count);
+		scanner.scanForMatch(textInputStream, searchString, null, count);
 	}
 	
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForForMatchInputStreamInputWithIncorrectOccurancesString() throws TextScanManagerException {
 		String searchString = "10";
 		int count = 10;
-		scanner.scanForMatch(textInputStream, searchString, count);
+		scanner.scanForMatch(textInputStream, searchString, null, count);
 	}
 	
 	// scanForMatch() with InputStream text and search String - incorrect Occurrences
@@ -153,13 +153,13 @@ public class TestTextScannerImplInputStreamLargeFile {
 	public void testScanForForMatchInputStreamInputCheckDubleAccountingString() throws TextScanManagerException {
 		String searchString = "Q";
 		int count = 2;
-		scanner.scanForMatch(textInputStream, searchString, count);
+		scanner.scanForMatch(textInputStream, searchString, null, count);
 	}
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForForMatchInputStreamInputCheckDubleAccountingString2() throws TextScanManagerException {
 		String searchString = "Line 7\nLine 8\nLine 7";
 		int count = 3;
-		scanner.scanForMatch(textInputStream, searchString, count);
+		scanner.scanForMatch(textInputStream, searchString, null, count);
 	}
 	
 	// scanForMatch() with InputStream text and search Pattern - incorrect Occurrences
@@ -167,13 +167,13 @@ public class TestTextScannerImplInputStreamLargeFile {
 	public void testScanForForMatchInputStreamInputCheckDoubleAccountingPattern() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("Q");
 		int count = 2;
-		scanner.scanForMatch(textInputStream, searchPattern, count);
+		scanner.scanForMatch(textInputStream, searchPattern, null, count);
 	}
 	
 	@Test(expected = IncorrectOccurrencesException.class)
 	public void testScanForForMatchInputStreamInputCheckDoubleAccountingPattern2() throws TextScanManagerException {
 		Pattern searchPattern = Pattern.compile("Line 7\nLine 8\nLine 7");
 		int count = 3;
-		scanner.scanForMatch(textInputStream, searchPattern, count);
+		scanner.scanForMatch(textInputStream, searchPattern, null, count);
 	}
 }

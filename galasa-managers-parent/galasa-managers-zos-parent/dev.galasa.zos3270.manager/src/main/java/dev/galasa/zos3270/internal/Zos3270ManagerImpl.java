@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.zos3270.internal;
 
@@ -75,12 +75,12 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(Zos3270ManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers,galasaTest);
             }
         } else if (galasaTest.isGherkin()) {
             this.gherkinCoordinator = new Gherkin3270Coordinator(this, galasaTest.getGherkinTest());
             if (this.gherkinCoordinator.registerStatements()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers,galasaTest);
             }
         }
 
@@ -94,14 +94,14 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (zosManager == null) {
             throw new Zos3270ManagerException("The zOS Manager is not available");
         }
@@ -149,7 +149,7 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework(), autoConnect);
+                    host.isTelnetPortTls(), getFramework(), autoConnect, image);
 
             this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + imageTag);

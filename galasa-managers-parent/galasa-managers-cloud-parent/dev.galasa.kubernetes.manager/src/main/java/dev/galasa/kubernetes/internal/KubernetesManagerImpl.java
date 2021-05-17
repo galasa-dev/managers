@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.kubernetes.internal;
 
@@ -92,7 +92,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
             }
         }
 
-        youAreRequired(allManagers, activeManagers);
+        youAreRequired(allManagers, activeManagers, galasaTest);
 
         //*** Initialise the CPS and DSS fields
         try {
@@ -123,9 +123,9 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
      * This or another manager has indicated that this manager is required
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
-        super.youAreRequired(allManagers, activeManagers);
+        super.youAreRequired(allManagers, activeManagers, galasaTest);
 
         if (activeManagers.contains(this)) {
             return;

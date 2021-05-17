@@ -55,6 +55,14 @@ public interface ILogScanner {
     ILogScanner checkpoint() throws TextScanException;
     
     /**
+	 * Manually set a checkpoint to the supplied value 
+	 * 
+	 * @return this interface for fluent use
+	 * @throws TextScanException 
+	 */
+	ILogScanner setCheckpoint(long checkpoint) throws TextScanException;
+
+	/**
      * Resets the checkpoint back to zero
      * 
      * @return this interface for fluent use
@@ -69,8 +77,37 @@ public interface ILogScanner {
     long getCheckpoint();
     
     
-    
     /**
+	 * Search the log for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+	 * The search will find at least "count" number of searchPatterns in the text.
+	 * <br>NOTE: This method will scan from the start of the log,  it will not use the checkpoint
+	 * 
+	 * @param searchPattern The regex to search for
+	 * @param failPattern Failure regex to search for, can be null meaning no fail search
+	 * @param count at least how many occurrences of the searchPattern must exist
+	 * @return This log scanner for fluent calls
+	 * @throws FailTextFoundException If the failurePattern was found
+	 * @throws MissingTextException If no occurrences of the searchPattern was found 
+	 * @throws IncorrectOccurrencesException If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
+	 * @throws TextScanException If any other problem found 
+	 */
+	ILogScanner scan(Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
+
+	/**
+	 * Convenience method for scan(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
+	 * 
+	 * @param searchText The text to search for
+	 * @param failText Failure text to search for, can be null meaning no fail search
+	 * @param count at least how many occurrences of the searchText must exist
+	 * @return This log scanner for fluent calls
+	 * @throws FailTextFoundException If the failText was found
+	 * @throws MissingTextException If no occurrences of the searchText was found 
+	 * @throws IncorrectOccurrencesException If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
+	 * @throws TextScanException If any other problem found 
+	 */
+	ILogScanner scan(String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
+
+	/**
      * Search the log for regex patterns, from the last checkpoint.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
      * The search will find at least "count" number of searchPatterns in the text.
      * <br>NOTE: This method will scan from the start of the log,  it will not use the checkpoint
@@ -91,7 +128,7 @@ public interface ILogScanner {
      * 
      * @param searchString The text to search for
      * @param failString Failure text to search for, can be null meaning no fail search
-     * @param count Atleast how many occurrences of the searchString must exist
+     * @param count at least how many occurrences of the searchString must exist
      * @return This log scanner for fluent calls
      * @throws FailTextFoundException If the failString was found
      * @throws MissingTextException If no occurrences of the searchString was found 
@@ -101,83 +138,59 @@ public interface ILogScanner {
     ILogScanner scanSinceCheckpoint(String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Will search the log from the checkpoint looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
+	 * Search the log for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+	 * The search will find at least "count" number of searchPatterns in the text.
+	 * Useful for returning the actual value of the searchPattern
+	 * 
+	 * @param searchPattern The regex to search for
+	 * @param failPattern Failure regex to search for, can be null meaning no fail search
+	 * @param occurrence The occurrence to be returned
+	 * @return The text of the searchPattern found
+	 * @throws MissingTextException The searchPattern was not found at all
+	 * @throws IncorrectOccurrencesException If the specified occurrence was not found
+	 * @throws TextScanException If any other problem found 
+	 */
+	String scanForMatch(Pattern searchPattern, Pattern failPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+
+	/**
+	 * Convenience method for scanForMatch(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
+	 * 
+	 * @param searchText The text to search for
+	 * @param failText Failure text to search for, can be null meaning no fail search
+	 * @param occurrence The occurrence to be returned
+	 * @return The text of the searchPattern found
+	 * @throws MissingTextException The searchPattern was not found at all
+	 * @throws IncorrectOccurrencesException If the specified occurrence was not found
+	 * @throws TextScanException If any other problem found 
+	 */
+	String scanForMatch(String searchString, String failString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+
+	/**
+     * Search the log for regex patterns, from the last checkpoint.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+     * The search will find at least "count" number of searchPatterns in the text.
      * Useful for returning the actual value of the searchPattern
      * 
-     * @param searchPattern The searchPattern to look for
+     * @param searchPattern The regex to search for
+	 * @param failPattern Failure regex to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException The searchPattern was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found 
      */
-    String scanForMatchSinceCheckpoint(Pattern searchPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatchSinceCheckpoint(Pattern searchPattern, Pattern failPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Convenience method for scanForMatchSinceCheckpoint(Pattern.Compile("\Q" + searchString + "\E"), occurrence)
+     * Convenience method for scanForMatchSinceCheckpoint(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
      * 
-     * @param searchString The searchString to look for
+     * @param searchText The text to search for
+	 * @param failText Failure text to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException The searchString was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found 
      */
-    String scanForMatchSinceCheckpoint(String searchString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
-    
-    /**
-     * Search the log for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
-     * The search will find atleast "count" number of searchPatterns in the text.
-     * <br>NOTE: This method will scan from the start of the log,  it will not use the checkpoint
-     * 
-     * @param searchPattern The regex to search for
-     * @param failPattern Failure regex to search for, can be null meaning no fail search
-     * @param count Atleast how many occurrences of the searchPattern must exist
-     * @return This log scanner for fluent calls
-     * @throws FailTextFoundException If the failurePattern was found
-     * @throws MissingTextException If no occurrences of the searchPattern was found 
-     * @throws IncorrectOccurrencesException If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws TextScanException If any other problem found 
-     */
-    ILogScanner scan(Pattern searchPattern, Pattern failPattern, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
-    
-    /**
-     * Convenience method for scan(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
-     * 
-     * @param searchText The text to search for
-     * @param failText Failure text to search for, can be null meaning no fail search
-     * @param count Atleast how many occurrences of the searchText must exist
-     * @return This log scanner for fluent calls
-     * @throws FailTextFoundException If the failText was found
-     * @throws MissingTextException If no occurrences of the searchText was found 
-     * @throws IncorrectOccurrencesException If insufficient occurrences were found, if there are zero occurrences, then MissingTextException will be thrown
-     * @throws TextScanException If any other problem found 
-     */
-    ILogScanner scan(String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
-    
-    /**
-     * Will search the log looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
-     * Useful for returning the actual value of the searchPattern
-     * 
-     * @param searchPattern The searchPattern to look for
-     * @param occurrence The occurrence to be returned
-     * @return The text of the searchPattern found
-     * @throws MissingTextException The searchPattern was not found at all
-     * @throws IncorrectOccurrencesException If the specified occurrence was not found
-     * @throws TextScanException If any other problem found 
-     */
-    String scanForMatch(Pattern searchPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
-    
-    /**
-     * Convenience method for scanForMatch(Pattern.Compile("\Q" + searchString + "\E"), occurrence)
-     * 
-     * @param searchString The searchString to look for
-     * @param occurrence The occurrence to be returned
-     * @return The text of the searchPattern found
-     * @throws MissingTextException The searchPattern was not found at all
-     * @throws IncorrectOccurrencesException If the specified occurrence was not found
-     * @throws TextScanException If any other problem found 
-     */
-    String scanForMatch(String searchString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatchSinceCheckpoint(String searchString, String failString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
         
 }

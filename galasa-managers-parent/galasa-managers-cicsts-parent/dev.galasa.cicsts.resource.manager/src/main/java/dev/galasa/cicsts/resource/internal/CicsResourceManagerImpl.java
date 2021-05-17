@@ -23,6 +23,9 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.textscan.ILogScanner;
+import dev.galasa.textscan.TextScanManagerException;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
@@ -40,10 +43,10 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     private ICicstsManagerSpi cicstsManager;    
     private IZosBatchSpi zosBatchManager;    
     private IZosFileSpi zosFileManager;
-	private IZosLibertySpi zosLibertyManager;
-    
-	private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
+	private IZosLibertySpi zosLibertyManager;    
+	private ITextScannerManagerSpi textScannerManager;
 	
+	private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
 	/* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
      */
@@ -52,7 +55,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         super.initialise(framework, allManagers, activeManagers, galasaTest);
 
         if(galasaTest.isJava()) {
-            youAreRequired(allManagers, activeManagers);
+            youAreRequired(allManagers, activeManagers, galasaTest);
         }
     }
 
@@ -61,28 +64,32 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException {
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
         
-        this.cicstsManager = addDependentManager(allManagers, activeManagers, ICicstsManagerSpi.class);
+        this.cicstsManager = addDependentManager(allManagers, activeManagers, galasaTest, ICicstsManagerSpi.class);
         if(cicstsManager == null) {
            throw new CicstsManagerException("The CICS Manager is not available");
         }
-        this.zosBatchManager = addDependentManager(allManagers, activeManagers, IZosBatchSpi.class);
+        this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
         if (this.zosBatchManager == null) {
             throw new CicstsManagerException("The zOS Batch Manager is not available");
         }
-        this.zosFileManager = addDependentManager(allManagers, activeManagers, IZosFileSpi.class);
+        this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFileManager == null) {
             throw new CicstsManagerException("The zOS File Manager is not available");
         }
-        this.zosLibertyManager = addDependentManager(allManagers, activeManagers, IZosLibertySpi.class);
+        this.zosLibertyManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosLibertySpi.class);
         if (this.zosLibertyManager == null) {
             throw new CicstsManagerException("The zOS Liberty Manager is not available");
+        }
+        this.textScannerManager = addDependentManager(allManagers, activeManagers, galasaTest, ITextScannerManagerSpi.class);
+        if (this.textScannerManager == null) {
+            throw new CicstsManagerException("The Text Scan Manager is not available");
         }
         
         cicstsManager.registerCicsResourceProvider(this);
@@ -119,6 +126,14 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
 			return this.zosLibertyManager.getZosLiberty();
 		} catch (ZosLibertyManagerException e) {
 			throw new CicsResourceManagerException("Problem getting IZosLiberty", e);
+		}
+	}
+	
+	protected ILogScanner getLogScanner() throws CicsResourceManagerException {
+		try {
+			return this.textScannerManager.getLogScanner();
+		} catch (TextScanManagerException e) {
+			throw new CicsResourceManagerException("Problem getting ILogScanner", e);
 		}
 	}
 }

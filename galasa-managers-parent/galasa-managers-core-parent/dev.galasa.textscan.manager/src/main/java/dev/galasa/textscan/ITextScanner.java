@@ -122,87 +122,96 @@ public interface ITextScanner {
     ITextScanner scan(InputStream inputStream, String searchLiteral, String failLiteral, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Will search the text looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
-     * Useful for returning the actual value of the searchPattern
+     * Search a String for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+     * The search will find at least "count" number of searchPatterns in the text.
+     * <br>Useful for returning the actual value of the searchPattern or failPattern
      * 
      * @param text the text being searched
-     * @param searchPattern The searchPattern to look for
+     * @param searchPattern The regex to search for
+     * @param failPattern Failure regex to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchPattern found
+     * @return The text of the searchPattern or failPattern found
      * @throws MissingTextException The searchPattern was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(String text, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(String text, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Convenience method for scanForMatch(text, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
+     * Convenience method for scanForMatch(text, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
      * 
      * @param text the text being searched
-     * @param searchLiteral The exact text to look for
+     * @param searchLiteral The exact text to search for
+     * @param failLiteral The exact failure text to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchLiteral found
+     * @return The text of the searchLiteral or failLiteral found
      * @throws MissingTextException The searchLiteral was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(String text, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(String text, String searchLiteral, String failLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Will search the scannable looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
-     * Useful for returning the actual value of the searchPattern
+     * Search a IScannable for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+     * The search will find at least "count" number of searchPatterns in the text.
+     * <br>Useful for returning the actual value of the searchPattern or failPattern.
      * 
      * @param scannable the scannable being searched
-     * @param searchPattern The searchPattern to look for
+     * @param searchPattern The regex to search for
+     * @param failPattern Failure regex to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchPattern found
+     * @return The text of the searchPattern or failPattern found
      * @throws MissingTextException The searchPattern was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Convenience method for scanForMatch(scannable, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
+     * Convenience method for scanForMatch(scannable, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
      * 
      * @param scannable the text being searched
-     * @param searchLiteral The exact string to look for
+     * @param searchLiteral The exact text to search for
+     * @param failLiteral The exact failure text to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchLiteral found
+     * @return The text of the searchLiteral or failLiteral found
      * @throws MissingTextException The searchLiteral was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(ITextScannable scannable, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(ITextScannable scannable, String searchLiteral, String failLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Will search the inputStream looking for the searchPattern.  When it finds the "occurrence" of the string, it will return the found text.
-     * Useful for returning the actual value of the searchPattern
-     * 
-     * NOTE: unlike the scannable/string scanForMatch, this method will scan the text on a line by line basis, using a BufferedReader, to prevent the JVM Heap from being exceeded.
-     * therefore you will not be able to use multiline patterns
+     * Search an InputStream for regex patterns.  It will search initially search for any occurrence of the failPattern before searching for the searchPattern.
+     * The search will find at least "count" number of searchPatterns in the text.
+     * <br>
+     * NOTE: unlike the scannable/string scans, this method will scan the text on a line by line basis, using a BufferedReader, to prevent the JVM Heap from being exceeded.
+     * therefore you will not be able to use multiline patterns.
+     * <br>Useful for returning the actual value of the searchPattern or failPattern.
      * 
      * @param inputStream the inputStream being searched
-     * @param searchPattern The searchPattern to look for
+     * @param searchPattern The regex to search for
+     * @param failPattern Failure regex to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchPattern found
+     * @return The text of the searchPattern or failPattern found
      * @throws MissingTextException The searchPattern was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
     /**
-     * Convenience method for scanForMatch(inputStream, Pattern.Compile("\Q" + searchString + "\E"), occurrence)
+     * Convenience method for scanForMatch(inputStream, Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
      * 
      * @param inputStream the text being searched
-     * @param searchLieteral The exact text to look for
+     * @param searchLiteral The exact text to search for
+     * @param failLiteral The exact failure text to search for, can be null meaning no fail search
      * @param occurrence The occurrence to be returned
-     * @return The text of the searchLiteral found
+     * @return The text of the searchLiteral or failLiteral found
      * @throws MissingTextException The searchLiteral was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
      * @throws TextScanException If any other problem found
      */
-    String scanForMatch(InputStream inputStream, String searchLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
+    String scanForMatch(InputStream inputStream, String searchLiteral, String failLiteral, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException;
     
 }

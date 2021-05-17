@@ -1,11 +1,23 @@
 plugins {
+<<<<<<< HEAD
     id 'biz.aQute.bnd.builder' version '5.3.0'
+=======
+    id 'galasa.manager'
+>>>>>>> 5c14cf17e8c2f4b37389a4adac579b874b72791b
 }
 
 description = 'Galasa Java Windows Manager'
 
+<<<<<<< HEAD
 dependencies {
     implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
     implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
 }
+=======
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    api project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
+    api project(':galasa-managers-languages-parent:dev.galasa.java.manager')}
+>>>>>>> 5c14cf17e8c2f4b37389a4adac579b874b72791b

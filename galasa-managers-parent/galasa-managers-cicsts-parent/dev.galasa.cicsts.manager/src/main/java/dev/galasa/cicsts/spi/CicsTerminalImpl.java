@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.spi;
 
@@ -29,7 +29,7 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup)
             throws TerminalInterruptedException, Zos3270ManagerException {
-        super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false);
+        super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage());
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;

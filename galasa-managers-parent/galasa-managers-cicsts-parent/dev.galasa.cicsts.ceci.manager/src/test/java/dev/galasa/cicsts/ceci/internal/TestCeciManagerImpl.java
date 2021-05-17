@@ -82,9 +82,9 @@ public class TestCeciManagerImpl {
     
     @Test
     public void testYouAreRequired() throws Exception {
-    	PowerMockito.doReturn(null).when(ceciManagerSpy, "addDependentManager", Mockito.any(), Mockito.any(), Mockito.any());
+    	PowerMockito.doReturn(null).when(ceciManagerSpy, "addDependentManager", Mockito.any(),  Mockito.any(), Mockito.any(), Mockito.any());
     	ManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ManagerException.class, ()->{
-        	ceciManagerSpy.youAreRequired(allManagers, activeManagers);
+        	ceciManagerSpy.youAreRequired(allManagers, activeManagers, null);
         });
         Assert.assertEquals("exception should contain expected cause", "CICS Manager is not available", expectedException.getMessage());
     }

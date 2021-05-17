@@ -45,13 +45,13 @@ public class TextScanManagerImpl extends AbstractManager implements ITextScanner
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(TextScanManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException {
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }

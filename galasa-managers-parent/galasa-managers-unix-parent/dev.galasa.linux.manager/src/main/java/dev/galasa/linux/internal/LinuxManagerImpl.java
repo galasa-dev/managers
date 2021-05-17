@@ -28,6 +28,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
@@ -40,6 +41,7 @@ import dev.galasa.linux.LinuxManagerField;
 import dev.galasa.linux.OperatingSystem;
 import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
+import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 @Component(service = { IManager.class })
@@ -98,7 +100,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -115,14 +117,14 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new LinuxManagerException("The IP Network Manager is not available");
         }
@@ -141,7 +143,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
                     if (linuxProvisioner instanceof IManager) {
                         logger.trace("Found Linux provisioner " + linuxProvisioner.getClass().getName());
                         // *** Tell the provisioner it is required,  does not necessarily mean it will register.
-                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers);
+                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers, galasaTest);
                     }
                 }
             }
@@ -282,6 +284,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
     }
+    
+    @Override
+    public void provisionDiscard() {
+        for(ILinuxImage image : this.taggedImages.values()) {
+            if (image instanceof ILinuxProvisionedImage) {
+                ((ILinuxProvisionedImage)image).discard();
+            }
+        }
+    }
 
     public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws LinuxManagerException {
         LinuxIpHost annotationHost = field.getAnnotation(LinuxIpHost.class);
@@ -309,6 +320,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
+    }
+
+    @Override
+    public ILinuxImage getImageForTag(@NotNull String imageTag) throws LinuxManagerException {
+        ILinuxImage image = this.taggedImages.get(imageTag);
+        if (image == null) {
+            throw new LinuxManagerException("Unable to locate Linux image tagged '" + imageTag + "'");
+        }
+        return image;
     }
 
 }

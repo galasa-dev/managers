@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosprogram.internal;
 
@@ -121,7 +121,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosProgramManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
         this.runId = getFramework().getTestRunName();
@@ -129,26 +129,26 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
     
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers) throws ManagerException {
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
         
-        this.zosManager = addDependentManager(allManagers, activeManagers, IZosManagerSpi.class);
+        this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (this.zosManager == null) {
             throw new ZosProgramManagerException("The zOS Manager is not available");
         }
-        this.zosBatch = addDependentManager(allManagers, activeManagers, IZosBatchSpi.class);
+        this.zosBatch = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
         if (this.zosBatch == null) {
             throw new ZosProgramManagerException("The zOS Batch Manager is not available");
         }
-        this.zosFile = addDependentManager(allManagers, activeManagers, IZosFileSpi.class);
+        this.zosFile = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFile == null) {
             throw new ZosProgramManagerException("The zOS File Manager is not available");
         }
-        this.artifactManager = addDependentManager(allManagers, activeManagers, IArtifactManager.class);
+        this.artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (this.artifactManager == null) {
             throw new ZosProgramManagerException("The Artifact Manager is not available");
         }
