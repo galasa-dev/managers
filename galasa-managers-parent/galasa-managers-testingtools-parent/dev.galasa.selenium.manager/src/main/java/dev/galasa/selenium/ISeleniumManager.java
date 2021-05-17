@@ -1,18 +1,19 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.selenium;
+
+import java.util.List;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-
+import org.openqa.selenium.opera.OperaOptions;
 
 public interface ISeleniumManager {
-
-    /**
+	 /**
      * Allocate a new WebPage
      * @throws SeleniumManagerException
      */
@@ -49,6 +50,12 @@ public interface ISeleniumManager {
     public IWebPage allocateWebPage(String url, InternetExplorerOptions options) throws SeleniumManagerException;
 
     /**
+     * Allocate a new WebPage for a provided URL with Opera Options
+     * @throws SeleniumManagerException
+     */
+    public IWebPage allocateWebPage(String url, OperaOptions options) throws SeleniumManagerException;
+
+    /**
      * Creates a new interface to the Firefox properties that can be set.
      * @return IFirefoxOptions
      */
@@ -70,6 +77,16 @@ public interface ISeleniumManager {
      * Creates a new interface to the InternetExplorer properties that can be set.
      * @return IInternetExplorerOptions
      */
-    public IInternetExplorerOptions getInternetExplorerOptions();
-
+    public IInternetExplorerOptions getInternetExplorerOptions();  
+    
+    /**
+     * Return the active pages
+     * @return List<IWebPage>
+     */
+    public List<IWebPage> getPages();
+    
+    /**
+     * Cycle through any pages and quit
+     */
+    public void discard();
 }

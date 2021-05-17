@@ -1,0 +1,6 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Ecosystem Manager
+Export-Package: dev.galasa.galasaecosystem
+Import-Package: !javax.validation.constraints,\
+    *
+

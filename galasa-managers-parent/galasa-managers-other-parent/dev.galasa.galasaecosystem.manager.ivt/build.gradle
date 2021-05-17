@@ -1,0 +1,15 @@
+plugins {
+    id 'galasa.manager.ivt'
+}
+
+description = 'Galasa Ecosystem Manager IVTs'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    implementation project(':galasa-managers-cloud-parent:dev.galasa.kubernetes.manager')
+    implementation project(':galasa-managers-other-parent:dev.galasa.galasaecosystem.manager')
+}

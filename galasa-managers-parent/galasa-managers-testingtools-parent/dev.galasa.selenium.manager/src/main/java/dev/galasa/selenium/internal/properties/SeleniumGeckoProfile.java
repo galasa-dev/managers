@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.selenium.internal.properties;
 
@@ -14,7 +14,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name selenium.instance.INSTANCE.gecko.profile
+ * @galasa.name selenium.local.gecko.profile
  * 
  * @galasa.description Provides a profile to use when using the gecko driver for extensions
  * 
@@ -23,13 +23,13 @@ import dev.galasa.selenium.SeleniumManagerException;
  * @galasa.valid_values A valid String name of a profile
  * 
  * @galasa.examples 
- * <code>selenium.instance.PRIMARY.gecko.profile=default</code>
+ * <code>selenium.local.gecko.profile=default</code>
  * 
  */
 public class SeleniumGeckoProfile extends CpsProperties {
 
-    public static String get(String instance) throws ConfigurationPropertyStoreException, SeleniumManagerException {
-        return getStringNulled(SeleniumPropertiesSingleton.cps(), "instance", "gecko.profile", instance);
+    public static String get() throws ConfigurationPropertyStoreException, SeleniumManagerException {
+        return getStringNulled(SeleniumPropertiesSingleton.cps(), "local", "gecko.profile");
     }
 
 }

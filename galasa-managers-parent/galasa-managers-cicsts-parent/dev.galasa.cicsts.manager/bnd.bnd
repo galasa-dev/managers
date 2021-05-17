@@ -1,17 +1,7 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa CICS/TS Manager
-Export-Package: dev.galasa.cicsts, dev.galasa.cicsts.spi
-Import-Package: dev.galasa,\
-    dev.galasa.cicsts,\
+Export-Package: dev.galasa.cicsts,\
     dev.galasa.cicsts.spi,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.cps,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.ipnetwork,\
-    dev.galasa.zos,\
-    dev.galasa.zos.spi,\
-    dev.galasa.zos3270,\
-    dev.galasa.zos3270.spi,\
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.logging
-
+    dev.galasa.cicsts.cicsresource
+Import-Package: !javax.validation.constraints, \
+                *

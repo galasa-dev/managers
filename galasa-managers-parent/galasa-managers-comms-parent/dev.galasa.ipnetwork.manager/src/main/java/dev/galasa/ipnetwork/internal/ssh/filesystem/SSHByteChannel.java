@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -64,7 +64,7 @@ public class SSHByteChannel implements SeekableByteChannel {
                 inputStream = this.channel.get(this.path.toString());
             }
         } catch (SftpException e) {
-            throw new SSHException("Unable to open SSH file", e);
+            throw new SSHException("Unable to open SSH file " + this.path, e);
         }
     }
 
@@ -105,19 +105,32 @@ public class SSHByteChannel implements SeekableByteChannel {
             throw new ClosedChannelException();
         }
 
-        int count = 0;
-        byte[] buffer = new byte[1];
-        for (int i = 0; i < dst.remaining(); i++) {
-            int len = this.inputStream.read(buffer);
-            if (len < 1) {
-                break;
-            }
-            dst.put(buffer);
-            count++;
-            position++;
+        
+        byte[] data = new byte[dst.remaining()];
+        int len = this.inputStream.read(data);
+        if (len < 0) {
+            return len;
         }
+        
+        dst.put(data, 0, len);
+        
+        position = position + len;
+        
+        
+        
+//        int count = 0;
+//        byte[] buffer = new byte[1];
+//        for (int i = 0; i < dst.remaining(); i++) {
+//            int len = this.inputStream.read(buffer);
+//            if (len < 1) {
+//                break;
+//            }
+//            dst.put(buffer, 0, len);
+//            count = count + len;
+//            position = position + len;
+//        }
 
-        return count;
+        return len;
     }
 
     /*
@@ -131,15 +144,25 @@ public class SSHByteChannel implements SeekableByteChannel {
             throw new ClosedChannelException();
         }
 
-        int count = 0;
-        while (src.remaining() > 0) { // TODO there has got be a more efficient way of doing this
-            outputStream.write(src.get());
-            count++;
-            size++;
-            position++;
-        }
-
-        return count;
+        int len = src.remaining();
+        byte[] data = new byte[len];
+        src.get(data, 0, len);
+        
+        outputStream.write(data, 0, len);
+        size = size + len;
+        position = position + len;
+        
+        return len;
+        
+//        int count = 0;
+//        while (src.remaining() > 0) { // TODO there has got be a more efficient way of doing this
+//            outputStream.write(lsrc.get());
+//            count++;
+//            size++;
+//            position++;
+//        }
+//
+//        return count;
     }
 
     /*

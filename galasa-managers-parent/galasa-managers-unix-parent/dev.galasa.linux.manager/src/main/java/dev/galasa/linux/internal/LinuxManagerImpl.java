@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.linux.internal;
 
@@ -16,27 +16,32 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
-import dev.galasa.ipnetwork.IIpHost;
-import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.linux.ILinuxImage;
 import dev.galasa.linux.LinuxImage;
 import dev.galasa.linux.LinuxIpHost;
 import dev.galasa.linux.LinuxManagerException;
+import dev.galasa.linux.LinuxManagerField;
 import dev.galasa.linux.OperatingSystem;
 import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
+import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 @Component(service = { IManager.class })
@@ -54,6 +59,8 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     private final HashMap<String, ILinuxImage> taggedImages = new HashMap<>();
 
+    private BundleContext                      bundleContext;
+
     /*
      * By default we need to load any managers that could provision linux images for
      * us, eg OpenStack
@@ -69,6 +76,11 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         if (!provisioners.contains(provisioner)) {
             this.provisioners.add(provisioner);
         }
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
     }
 
     /*
@@ -88,7 +100,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             // *** If there is, we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(LinuxManagerField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
 
@@ -101,21 +113,47 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
         // *** Ensure our DSE Provisioner is at the top of the list
-        this.provisioners.add(new LinuxDSEProvisioner(this));
+        this.provisioners.add(0, new LinuxDSEProvisioner(this));
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new LinuxManagerException("The IP Network Manager is not available");
         }
+
+        // *** Need to find all the Managers that could provision a Linux image on behalf of us
+
+        try {
+            final ServiceReference<?>[] lpServiceReferences = bundleContext
+                    .getAllServiceReferences(ILinuxProvisioner.class.getName(), null);
+
+            if (lpServiceReferences == null || lpServiceReferences.length == 0) {
+                logger.debug("No Linux provisioners have been found");
+            } else {
+                for(ServiceReference<?> lpServiceReference : lpServiceReferences) {
+                    ILinuxProvisioner linuxProvisioner = (ILinuxProvisioner) this.bundleContext.getService(lpServiceReference);
+                    if (linuxProvisioner instanceof IManager) {
+                        logger.trace("Found Linux provisioner " + linuxProvisioner.getClass().getName());
+                        // *** Tell the provisioner it is required,  does not necessarily mean it will register.
+                        ((IManager)linuxProvisioner).youAreRequired(allManagers, activeManagers, galasaTest);
+                    }
+                }
+            }
+
+        } catch(Throwable t) {
+            throw new LinuxManagerException("Problem looking for Linux provisioners", t);
+        }
+
+
+
     }
 
     @Override
@@ -167,7 +205,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     }
 
     private ILinuxImage generateLinuxImage(Field field, List<Annotation> annotations)
-            throws ResourceUnavailableException {
+            throws ResourceUnavailableException, LinuxManagerException {
         LinuxImage annotationLinuxImage = field.getAnnotation(LinuxImage.class);
 
         // *** Default the tag to primary
@@ -191,9 +229,13 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         List<String> capabilitiesTrimmed = AbstractManager.trim(capabilities);
 
         ILinuxImage image = null;
+        boolean resourceUnavailable = false;
         for (ILinuxProvisioner provisioner : this.provisioners) {
             try {
-                image = provisioner.provision(tag, operatingSystem, capabilitiesTrimmed);
+                image = provisioner.provisionLinux(tag, operatingSystem, capabilitiesTrimmed);
+            } catch (ResourceUnavailableException e) {
+                // *** one of the provisioners could have provisioned if there was enough resources
+                resourceUnavailable = true;
             } catch (ManagerException e) {
                 // *** There must be an error somewhere, put the run into resource wait
                 throw new ResourceUnavailableException("Error during resource generate", e);
@@ -204,8 +246,12 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
         if (image == null) {
-            throw new ResourceUnavailableException(
-                    "There are no linux images available for provisioning the @LinuxImage tagged " + tag);
+            if (resourceUnavailable) {
+                throw new ResourceUnavailableException(
+                        "There are no linux images available for provisioning the @LinuxImage tagged " + tag);
+            } else {
+                throw new LinuxManagerException("Unable to provision a Linux image for tag " + tag + " as no provisioners configured with suitable images");
+            }
         }
 
         taggedImages.put(tag, image);
@@ -238,6 +284,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         }
 
     }
+    
+    @Override
+    public void provisionDiscard() {
+        for(ILinuxImage image : this.taggedImages.values()) {
+            if (image instanceof ILinuxProvisionedImage) {
+                ((ILinuxProvisionedImage)image).discard();
+            }
+        }
+    }
 
     public IIpHost generateIpHost(Field field, List<Annotation> annotations) throws LinuxManagerException {
         LinuxIpHost annotationHost = field.getAnnotation(LinuxIpHost.class);
@@ -249,7 +304,7 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         ILinuxImage image = taggedImages.get(tag);
         if (image == null) {
             throw new LinuxManagerException("Unable to provision an IP Host for field " + field.getName()
-                    + " as no @LinuxImage for the tag '" + tag + "' was present");
+            + " as no @LinuxImage for the tag '" + tag + "' was present");
         }
 
         return image.getIpHost();
@@ -265,6 +320,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
+    }
+
+    @Override
+    public ILinuxImage getImageForTag(@NotNull String imageTag) throws LinuxManagerException {
+        ILinuxImage image = this.taggedImages.get(imageTag);
+        if (image == null) {
+            throw new LinuxManagerException("Unable to locate Linux image tagged '" + imageTag + "'");
+        }
+        return image;
     }
 
 }

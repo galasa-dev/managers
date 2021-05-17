@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Phoenix 2 PME Manager'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+}

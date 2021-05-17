@@ -1,11 +1,12 @@
 plugins {
-    id 'biz.aQute.bnd.builder' version '5.3.0'
+    id 'galasa.manager'
 }
 
 description = 'IP Network Manager'
 
+version = '0.15.0-SNAPSHOT'
+
 dependencies {
-    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
     implementation 'dev.galasa:com.jcraft.jsch:0.1.55'
+    implementation 'commons-codec:commons-codec:1.11'
 }

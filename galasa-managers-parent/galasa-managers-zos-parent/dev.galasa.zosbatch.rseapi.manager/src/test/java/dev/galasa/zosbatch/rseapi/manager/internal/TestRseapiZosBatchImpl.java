@@ -184,8 +184,7 @@ public class TestRseapiZosBatchImpl {
         Mockito.when(rseapiResponseMockSubmit.getStatusCode()).thenReturn(HttpStatus.SC_CREATED);
         
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
-        Mockito.when(rseapiResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
-        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
+        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonArray());
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(zosBatchManagerMock.getZosManager()).thenReturn(zosManagerMock);
         Mockito.when(zosManagerMock.buildUniquePathName(Mockito.any(), Mockito.any())).thenReturn(FIXED_PATH_NAME);
@@ -197,7 +196,7 @@ public class TestRseapiZosBatchImpl {
     @Test
     public void testSubmitJob() throws Exception {
         IZosBatchJob zosBatchJob = zosBatchSpy.submitJob("JCL", null);
-        Assert.assertEquals("getJobId() should return FIXED_JOBID", "????????", zosBatchJob.getJobId());
+        Assert.assertEquals("getJobId() should return FIXED_JOBID", FIXED_JOBID, zosBatchJob.getJobId());
         
         zosBatchJob = zosBatchSpy.submitJob("JCL", zosJobnameMock, zosBatchJobcardMock);
         Assert.assertEquals("getJobname() should return mocked mocked ZosJobnameImpl", zosJobnameMock, zosBatchJob.getJobname());
@@ -298,7 +297,7 @@ public class TestRseapiZosBatchImpl {
     
     @Test
     public void testGetBatchJobsException4() throws Exception {
-        Mockito.when(rseapiResponseMockStatus.getJsonArrayContent()).thenThrow(new RseapiException(EXCEPTION));
+        Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenThrow(new RseapiException(EXCEPTION));
 		ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
 			zosBatchSpy.getJobs(null, null);
 		});
@@ -466,7 +465,7 @@ public class TestRseapiZosBatchImpl {
     private JsonObject getJsonObject() {
         JsonObject responseBody = new JsonObject();
         responseBody.addProperty("jobName", FIXED_JOBNAME);
-        responseBody.addProperty("jobID", FIXED_JOBID);
+        responseBody.addProperty("jobId", FIXED_JOBID);
         responseBody.addProperty("owner", FIXED_OWNER);
         responseBody.addProperty("type", FIXED_TYPE);
         responseBody.addProperty("retcode", FIXED_RETCODE_0000);
@@ -483,9 +482,11 @@ public class TestRseapiZosBatchImpl {
         return responseBody;
     }
     
-    private JsonArray getJsonArray() {
-        JsonArray fileArray = new JsonArray();
-        fileArray.add(getJsonObject());
-        return fileArray;
+    private JsonObject getJsonArray() {
+        JsonArray jsonArray = new JsonArray();
+        jsonArray.add(getJsonObject());
+        JsonObject responseBody = new JsonObject();
+        responseBody.add("items", jsonArray);
+        return responseBody;
     }
 }

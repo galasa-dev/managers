@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -23,12 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import dev.galasa.ManagerException;
-import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
-import dev.galasa.linux.LinuxManagerException;
-import dev.galasa.linux.OperatingSystem;
-import dev.galasa.linux.spi.ILinuxManagerSpi;
-import dev.galasa.linux.spi.ILinuxProvisionedImage;
-import dev.galasa.linux.spi.ILinuxProvisioner;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
@@ -39,15 +33,26 @@ import dev.galasa.framework.spi.IResourcePoolingService;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
+import dev.galasa.linux.LinuxManagerException;
+import dev.galasa.linux.OperatingSystem;
+import dev.galasa.linux.spi.ILinuxManagerSpi;
+import dev.galasa.linux.spi.ILinuxProvisionedImage;
+import dev.galasa.linux.spi.ILinuxProvisioner;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.properties.LinuxImageCapabilities;
 import dev.galasa.openstack.manager.internal.properties.LinuxImages;
 import dev.galasa.openstack.manager.internal.properties.MaximumInstances;
 import dev.galasa.openstack.manager.internal.properties.NamePool;
 import dev.galasa.openstack.manager.internal.properties.OpenstackPropertiesSingleton;
+import dev.galasa.openstack.manager.internal.properties.WindowsImageCapabilities;
+import dev.galasa.openstack.manager.internal.properties.WindowsImages;
+import dev.galasa.windows.spi.IWindowsManagerSpi;
+import dev.galasa.windows.spi.IWindowsProvisionedImage;
+import dev.galasa.windows.spi.IWindowsProvisioner;
 
-@Component(service = { IManager.class })
-public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvisioner {
+@Component(service = { IManager.class, ILinuxProvisioner.class, IWindowsProvisioner.class })
+public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvisioner, IWindowsProvisioner {
     protected final static String                    NAMESPACE = "openstack";
 
     private final static Log                         logger    = LogFactory.getLog(OpenstackManagerImpl.class);
@@ -55,8 +60,9 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     private IDynamicStatusStoreService               dss;
     private IIpNetworkManagerSpi                     ipManager;
     private ILinuxManagerSpi                         linuxManager;
+    private IWindowsManagerSpi                       windowsManager;
 
-    private final ArrayList<OpenstackLinuxImageImpl> instances = new ArrayList<>();
+    private final ArrayList<OpenstackServerImpl> instances = new ArrayList<>();
 
     private CloseableHttpClient                      httpClient;
     private OpenstackHttpClient                      openstackHttpClient;
@@ -75,11 +81,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
 
-        // *** If this bundle was loaded, it means it was specifically requested.
-        // *** Therefore mark as youAreRequired and if linux is present register as a
-        // provisioner
-        youAreRequired(allManagers, activeManagers);
-
         try {
             this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
             OpenstackPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
@@ -92,7 +93,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     }
 
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
@@ -101,22 +102,28 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         activeManagers.add(this);
 
         // *** Absolutely need the IP Network manager
-        this.ipManager = addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class);
+        this.ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (this.ipManager == null) {
             throw new LinuxManagerException("The IP Network Manager is not available");
         }
 
         // *** Check if Linux is loaded
-        this.linuxManager = addDependentManager(allManagers, activeManagers, ILinuxManagerSpi.class);
+        this.linuxManager = addDependentManager(allManagers, activeManagers, galasaTest, ILinuxManagerSpi.class);
         if (this.linuxManager != null) {
             this.linuxManager.registerProvisioner(this);
+        }
+
+        // *** Check if Windows is loaded
+        this.windowsManager = addDependentManager(allManagers, activeManagers, galasaTest, IWindowsManagerSpi.class);
+        if (this.windowsManager != null) {
+            this.windowsManager.registerProvisioner(this);
         }
 
     }
 
     @Override
     public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-        for (OpenstackLinuxImageImpl instance : instances) {
+        for (OpenstackServerImpl instance : instances) {
             try {
                 instance.build();
             } catch (ConfigurationPropertyStoreException e) {
@@ -128,7 +135,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     @Override
     public void provisionDiscard() {
 
-        for (OpenstackLinuxImageImpl instance : instances) {
+        for (OpenstackServerImpl instance : instances) {
             instance.discard();
         }
 
@@ -141,8 +148,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     }
 
     @Override
-    public ILinuxProvisionedImage provision(String tag, OperatingSystem operatingSystem, List<String> capabilities)
-            throws OpenstackManagerException {
+    public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
+            throws OpenstackManagerException, ResourceUnavailableException {
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -181,11 +188,6 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             // *** See if we have capacity for a new Instance on Openstack
             String instanceName = reserveInstance();
 
-            if (instanceName == null) {
-                // *** No room, return gracefully and allow someone else a chance
-                return null;
-            }
-
             // *** We have one, return it
             OpenstackLinuxImageImpl instance = new OpenstackLinuxImageImpl(this, this.openstackHttpClient, instanceName,
                     selectedImage, tag);
@@ -200,14 +202,76 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         } catch (DynamicStatusStoreException e) {
             throw new OpenstackManagerException("Problem accessing the DSS", e);
         } catch (InsufficientResourcesAvailableException e) {
-            // *** We don't have any spare capacity, so return gracefully
-            return null;
+            throw new ResourceUnavailableException("Ran out of slot names", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OpenstackManagerException("Processing interrupted", e);
         }
     }
 
+    @Override
+    public IWindowsProvisionedImage provisionWindows(String tag, List<String> capabilities)
+            throws OpenstackManagerException, ResourceUnavailableException {
+
+        // *** Check that we can connect to openstack before we attempt to provision, if
+        // we can't end gracefully and give someone else a chance
+        if (!openstackHttpClient.connectToOpenstack()) {
+            return null;
+        }
+
+        // *** Locate the possible images that are available for selection
+        try {
+            List<String> possibleImages = WindowsImages.get(null);
+
+            // *** Filter out those that don't have the necessary capabilities
+            if (!capabilities.isEmpty()) {
+                Iterator<String> imageIterator = possibleImages.iterator();
+                imageSearch: while (imageIterator.hasNext()) {
+                    String image = imageIterator.next();
+                    List<String> imageCapabilities = WindowsImageCapabilities.get(image);
+                    for (String requestedCapability : capabilities) {
+                        if (!imageCapabilities.contains(requestedCapability)) {
+                            imageIterator.remove();
+                            continue imageSearch;
+                        }
+                    }
+                }
+            }
+
+            // *** Are there any images left? if not return gracefully as some other
+            // provisioner may be able to support it
+            if (possibleImages.isEmpty()) {
+                return null;
+            }
+
+            // *** Select the first image as they will be listed in preference order
+            String selectedImage = possibleImages.get(0);
+
+            // *** See if we have capacity for a new Instance on Openstack
+            String instanceName = reserveInstance();
+
+            // *** We have one, return it
+            OpenstackWindowsImageImpl instance = new OpenstackWindowsImageImpl(this, this.openstackHttpClient, instanceName,
+                    selectedImage, tag);
+            this.instances.add(instance);
+
+            logger.info("Reserved OpenStack Windows instance " + instanceName + " with image " + selectedImage
+                    + " for tag " + tag);
+
+            return instance;
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new OpenstackManagerException("Problem accessing the CPS", e);
+        } catch (DynamicStatusStoreException e) {
+            throw new OpenstackManagerException("Problem accessing the DSS", e);
+        } catch (InsufficientResourcesAvailableException e) {
+            throw new ResourceUnavailableException("Ran out of slot names", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OpenstackManagerException("Processing interrupted", e);
+        }
+    }
+
+    @NotNull
     private String reserveInstance() throws DynamicStatusStoreException, InterruptedException,
             InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
 
@@ -223,7 +287,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
         // *** Is there room?
         if (maxInstances <= currentInstances) {
-            return null;
+            throw new InsufficientResourcesAvailableException("At max slots");
         }
 
         // *** Reserve a instance

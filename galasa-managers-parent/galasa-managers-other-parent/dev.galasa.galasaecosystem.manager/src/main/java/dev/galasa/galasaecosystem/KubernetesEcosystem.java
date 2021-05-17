@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.galasaecosystem;
 
@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
-import dev.galasa.galasaecosystem.internal.GalasaEcosystemManagerField;
 
 /**
  * Kubernetes Ecosystem

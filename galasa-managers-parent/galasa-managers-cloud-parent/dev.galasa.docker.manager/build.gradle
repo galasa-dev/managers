@@ -1,0 +1,14 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Docker Manager'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.commons:commons-compress:1.19'
+}

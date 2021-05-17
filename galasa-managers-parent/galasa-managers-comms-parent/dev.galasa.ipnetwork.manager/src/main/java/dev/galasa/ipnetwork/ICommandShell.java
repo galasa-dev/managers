@@ -115,4 +115,9 @@ public interface ICommandShell {
      */
     public void reportResultStrings(boolean report);
 
+    /**
+     * Instruct the command shell to remove ANSI escape codes from the output of commands to the shell
+     */
+    public void setRemoveAnsiEscapeCodes(boolean remoteAnsiEscapeCodes);
+
 }

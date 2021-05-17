@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosbatch;
 
@@ -110,6 +110,14 @@ public interface IZosBatchJob {
     public int waitForJob() throws ZosBatchException;
 
     /**
+     * Provides a list of the batch job spool files as an {@link IZosBatchJobOutput} object without retrieving spool file content
+     * 
+     * @return The job output 
+     * @throws ZosBatchException
+     */
+    public IZosBatchJobOutput listSpoolFiles() throws ZosBatchException;
+
+    /**
      * Retrieve the batch job output as an {@link IZosBatchJobOutput} object
      * 
      * @return The job output 
@@ -177,4 +185,12 @@ public interface IZosBatchJob {
      * Return flag that controls if the job output should be automatically purged from zOS
      */    
     public boolean shouldCleanup();
+
+    /**
+     * Save the supplied spool file to the Results Archive Store
+     * @param spoolFile the spool file to save
+     * @param rasPath path in Results Archive Store  
+     * @throws ZosBatchException
+     */
+	public void saveSpoolFileToResultsArchive(IZosBatchJobOutputSpoolFile spoolFile, String rasPath) throws ZosBatchException;
 }

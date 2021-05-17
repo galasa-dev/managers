@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>dev.galasa</groupId>
-		<artifactId>galasa-managers-parent</artifactId>
+		<artifactId>galasa-parent</artifactId>
 		<version>0.15.0-SNAPSHOT</version>
 	</parent>
 
@@ -14,7 +14,11 @@
 	<packaging>galasa-obr</packaging>
 
 	<name>Galasa Managers OBR</name>
-
+	
+	<properties>
+	   <galasa.skip.bundletestcatatlog>false</galasa.skip.bundletestcatatlog>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
@@ -130,6 +134,12 @@
         </dependency>
         <dependency>
             <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.zosliberty.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.manager</artifactId>
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
@@ -158,9 +168,15 @@
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.ceda.manager.ivt</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.cicsts.resource.manager</artifactId>
             <version>0.15.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
@@ -182,6 +198,12 @@
 			<version>0.15.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.windows.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.openstack.manager</artifactId>
@@ -218,11 +240,16 @@
 			<artifactId>dev.galasa.docker.manager.ivt</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>dev.galasa</groupId>
-			<artifactId>dev.galasa.elasticlog.manager</artifactId>
-			<version>0.15.0-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.elasticlog.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.phoenix2.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.elasticlog.manager.ivt</artifactId>
@@ -238,6 +265,11 @@
 			<artifactId>dev.galasa.kubernetes.manager.ivt</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.liberty.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
@@ -268,6 +300,21 @@
 			<artifactId>dev.galasa.selenium.manager.ivt</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.java.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.java.ubuntu.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.java.windows.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>

@@ -1,12 +1,5 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Core Manager
 Export-Package: dev.galasa.core.manager
-Import-Package: dev.galasa,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.creds,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.framework.spi.language.gherkin,\
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.logging
-
-
+Import-Package: !javax.validation.constraints, \
+                *

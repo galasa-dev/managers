@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Java Windows Manager'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    api project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
+    api project(':galasa-managers-languages-parent:dev.galasa.java.manager')}

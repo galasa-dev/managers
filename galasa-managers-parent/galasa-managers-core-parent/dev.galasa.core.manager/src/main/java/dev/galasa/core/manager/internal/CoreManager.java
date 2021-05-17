@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.core.manager.internal;
 
@@ -20,6 +20,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ICredentials;
 import dev.galasa.ManagerException;
 import dev.galasa.Tags;
+import dev.galasa.TestAreas;
 import dev.galasa.core.manager.CoreManagerException;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
@@ -72,7 +73,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 			IStatementOwner[] statementOwners = { coreOwner };
 
 			if(registerStatements(galasaTest.getGherkinTest(), statementOwners)) {
-				youAreRequired(allManagers, activeManagers);
+				youAreRequired(allManagers, activeManagers, galasaTest);
 			}
 		} else {
 		    this.testClass = galasaTest.getJavaTestClass();
@@ -226,7 +227,36 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 
     @Override
     public List<String> getTestingAreas() {
-        return null;
+        if(this.testClass == null) {
+            return null;
+        }
+        
+        TestAreas annotationAreas = this.testClass.getAnnotation(TestAreas.class);
+        if (annotationAreas == null || annotationAreas.value() == null) {
+            return null;
+        }
+        
+        ArrayList<String> testingAreas = new ArrayList<>();
+        
+        for(String testingArea : annotationAreas.value()) {
+            if (testingArea == null) {
+                continue;
+            }
+            
+            testingArea = testingArea.trim();
+            if (testingArea.isEmpty()) {
+                continue;
+            }
+            
+            testingAreas.add(testingArea);
+        }
+        
+        if (testingAreas.isEmpty()) {
+            return null;
+        }
+        
+        
+        return testingAreas;
     }
 
     @Override

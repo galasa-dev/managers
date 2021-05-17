@@ -66,7 +66,7 @@ public class OeconsolZosConsoleCommandImpl implements IZosConsoleCommand {
 
     @Override
     public String requestResponse() throws ZosConsoleException {
-    	throw new ZosConsoleException("oeconsol does not provide support delayed response");
+    	throw new ZosConsoleException("oeconsol does not provide support for delayed response");
     }
 
     @Override

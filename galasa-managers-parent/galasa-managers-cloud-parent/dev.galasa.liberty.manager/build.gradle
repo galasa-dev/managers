@@ -1,0 +1,10 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Liberty Manager'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+}

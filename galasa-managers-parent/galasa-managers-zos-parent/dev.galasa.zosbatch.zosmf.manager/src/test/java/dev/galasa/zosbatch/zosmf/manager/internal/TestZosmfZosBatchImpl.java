@@ -305,13 +305,35 @@ public class TestZosmfZosBatchImpl {
     public void testGetBatchJobsException5() throws Exception {
         Mockito.when(zosmfResponseMockStatus.getContent()).thenReturn(getJsonObject());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        String expectedMessage = "Error List jobs output, category:0, rc:0, reason:0, message:message\n" + 
+        String expectedMessage = "Error List jobs, category:0, rc:0, reason:0, message:message\n" + 
         		"stack:\n" + 
         		"stack";
 		ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
 			zosBatchSpy.getJobs(null, null);
 		});
         Assert.assertEquals("exception should contain expected cause", expectedMessage, expectedException.getMessage());
+    }
+    
+    @Test
+    public void testGetBatchJobsException6() throws Exception {
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(zosmfResponseMockStatus.getTextContent()).thenReturn(EXCEPTION);
+		ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+			zosBatchSpy.getJobs(null, null);
+		});
+    	Assert.assertEquals("exception should contain expected cause", "Error with List jobs. Output: " + EXCEPTION, expectedException.getMessage());
+    }
+    
+    @Test
+    public void testGetBatchJobsException7() throws Exception {
+        Mockito.when(zosmfResponseMockStatus.getJsonContent()).thenThrow(new ZosmfException(EXCEPTION));
+        Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        Mockito.when(zosmfResponseMockStatus.getTextContent()).thenThrow(new ZosmfException(EXCEPTION));
+		ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
+			zosBatchSpy.getJobs(null, null);
+		});
+    	Assert.assertEquals("exception should contain expected cause", "Error with List jobs", expectedException.getMessage());
     }
     
     @Test

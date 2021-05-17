@@ -11,6 +11,10 @@
 	<version>0.15.0-SNAPSHOT</version>
 	<packaging>galasa-obr</packaging>
 
+    <properties>
+        <galasa.test.stream>ivt</galasa.test.stream>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>

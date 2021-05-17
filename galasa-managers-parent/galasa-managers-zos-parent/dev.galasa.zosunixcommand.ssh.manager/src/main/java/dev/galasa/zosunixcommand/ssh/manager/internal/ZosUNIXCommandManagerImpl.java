@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosunixcommand.ssh.manager.internal;
 
@@ -73,7 +73,7 @@ public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUN
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosUNIXCommandField.class);
             if (!ourFields.isEmpty()) {
-                youAreRequired(allManagers, activeManagers);
+                youAreRequired(allManagers, activeManagers, galasaTest);
             }
         }
     }
@@ -92,18 +92,18 @@ public class ZosUNIXCommandManagerImpl extends AbstractManager implements IZosUN
      * @see dev.galasa.framework.spi.AbstractManager#youAreRequired()
      */
     @Override
-    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers)
+    public void youAreRequired(@NotNull List<IManager> allManagers, @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest)
             throws ManagerException {
         if (activeManagers.contains(this)) {
             return;
         }
 
         activeManagers.add(this);
-        setZosManager(addDependentManager(allManagers, activeManagers, IZosManagerSpi.class));
+        setZosManager(addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class));
         if (zosManager == null) {
             throw new ZosUNIXCommandManagerException("The zOS Manager is not available");
         }
-        setIpNetworkManager(addDependentManager(allManagers, activeManagers, IIpNetworkManagerSpi.class));
+        setIpNetworkManager(addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class));
         if (ipNetworkManager == null) {
             throw new ZosUNIXCommandManagerException("The IP Network Manager is not available");
         }

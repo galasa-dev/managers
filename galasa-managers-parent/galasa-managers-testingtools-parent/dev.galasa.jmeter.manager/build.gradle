@@ -1,0 +1,12 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa JMeter Manager'
+
+version = '0.15.0-SNAPSHOT'
+
+dependencies {
+    implementation project(':galasa-managers-cloud-parent:dev.galasa.docker.manager')
+    implementation 'org.apache.velocity:velocity:1.7'
+}

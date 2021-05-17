@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
         maven {
-            url "https://nexus.galasa.dev/repository/maven-gradle"
+            url "https://nexus.galasa.dev/repository/maven-development"
         }
         gradlePluginPortal()
     }
@@ -22,10 +22,12 @@ include 'galasa-managers-comms-parent:dev.galasa.http.manager.ivt'
 // galasa-managers-logging-parent
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager'
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
+include 'galasa-managers-logging-parent:dev.galasa.phoenix2.manager'
 // galasa-managers-zos-parent
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager.ivt'
 include 'galasa-managers-zos-parent:dev.galasa.zosmf.manager'
+include 'galasa-managers-zos-parent:dev.galasa.zosliberty.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosprogram.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosbatch.zosmf.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosconsole.zosmf.manager'
@@ -36,8 +38,6 @@ include 'galasa-managers-zos-parent:dev.galasa.zosconsole.oeconsol.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.common'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.manager.ivt'
-// include 'galasa-managers-zos-parent:dev.galasa.zos3270.ui' // Leaving as Maven build for now
-// include 'galasa-managers-zos-parent:dev.galasa.zos.feature' // Leaving as Maven build for now
 include 'galasa-managers-zos-parent:dev.galasa.zosrseapi.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosbatch.rseapi.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosfile.rseapi.manager'
@@ -46,6 +46,30 @@ include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceci.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager'
+include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.resource.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager.ivt'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager.ivt'
-
+// galasa-managers-unix-parent
+include 'galasa-managers-unix-parent:dev.galasa.linux.manager'
+include 'galasa-managers-unix-parent:dev.galasa.linux.manager.ivt'
+// galasa-managers-windows-parent
+include 'galasa-managers-windows-parent:dev.galasa.windows.manager'
+// galasa-managers-cloud-parent
+include 'galasa-managers-cloud-parent:dev.galasa.openstack.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.docker.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.docker.manager.ivt'
+include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager'
+include 'galasa-managers-cloud-parent:dev.galasa.kubernetes.manager.ivt'
+include 'galasa-managers-cloud-parent:dev.galasa.liberty.manager'
+// galasa-managers-languages-parent
+include 'galasa-managers-languages-parent:dev.galasa.java.manager'
+include 'galasa-managers-languages-parent:dev.galasa.java.ubuntu.manager'
+include 'galasa-managers-languages-parent:dev.galasa.java.windows.manager'
+// galasa-managers-testingtools-parent
+include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager'
+include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager.ivt'
+include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager'
+include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager.ivt'
+// galasa-managers-other-parent
+include 'galasa-managers-other-parent:dev.galasa.galasaecosystem.manager'
+include 'galasa-managers-other-parent:dev.galasa.galasaecosystem.manager.ivt'
