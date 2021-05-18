@@ -67,4 +67,6 @@ public @interface LocalEcosystem {
     public String javaInstallationTag() default "PRIMARY";
     
     public IsolationInstallation isolationInstallation() default IsolationInstallation.None;
+    
+    public boolean startSimPlatform() default false;
 }
