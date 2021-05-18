@@ -255,7 +255,6 @@ public class ArtifactManagerIVT {
     	    
     	assertThat(text).contains("zipTest.txt");  	
     }
-   
-    
+      
 
 }
