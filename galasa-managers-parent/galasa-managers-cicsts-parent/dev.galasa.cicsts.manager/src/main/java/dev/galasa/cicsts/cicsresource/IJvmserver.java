@@ -5,16 +5,13 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
-import java.io.OutputStream;
-import java.util.regex.Pattern;
-
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosliberty.IZosLibertyServer;
 
 /**
  * Represents a CICS JVM server resource. In addition to methods provided by {@link ICicsResourceBase}, provides methods to
  * set JVM server specific attributes on the resource (via CEDA) and to manage and set attributes in CEMT. Methods are 
- * provided to manage the logs files associated with the JVM server.<p>
+ * provided to manage the logs associated with the JVM server.<p>
  * JVM profile options should be managed via the {@link IJvmprofile} JVM profile object
  */
 public interface IJvmserver {
@@ -334,269 +331,68 @@ public interface IJvmserver {
 	public IZosUNIXFile getWorkingDirectory() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Returns the JVM server JVMLOG file
-	 * @return JVMLOG {@link IZosUNIXFile}
+	 * Returns the JVM server JVMLOG
+	 * @return JVMLOG {@link IJvmserverLog}
 	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getJvmLogFile() throws CicsJvmserverResourceException;
+	public IJvmserverLog getJvmLog() throws CicsJvmserverResourceException;
 
 	/**
-	 * Returns the JVM server STDOUT file
-	 * @return STDOUT {@link IZosUNIXFile}
+	 * Returns the JVM server STDOUT
+	 * @return STDOUT {@link IJvmserverLog}
 	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getStdOutFile() throws CicsJvmserverResourceException;
+	public IJvmserverLog getStdOut() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Returns the JVM server STDERR file
-	 * @return STDERR {@link IZosUNIXFile}
+	 * Returns the JVM server STDERR
+	 * @return STDERR {@link IJvmserverLog}
 	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getStdErrFile() throws CicsJvmserverResourceException;
+	public IJvmserverLog getStdErr() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Returns the JVM server JVMTRACE file
-	 * @return JVMTRACE {@link IZosUNIXFile}
+	 * Returns the JVM server JVMTRACE
+	 * @return JVMTRACE {@link IJvmserverLog}
 	 * @throws CicsJvmserverResourceException
 	 */
-	public IZosUNIXFile getJvmTraceFile() throws CicsJvmserverResourceException;
+	public IJvmserverLog getJvmTrace() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Returns the contents of the JVM server JVMLOG file
-	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC 
-	 * @return contents of JVMLOG
+	 * Save a checkpoint of the current state of the JVM server logs
 	 * @throws CicsJvmserverResourceException 
 	 */
-	public OutputStream getJvmLog(boolean binary) throws CicsJvmserverResourceException;
+	public void checkpointLogs() throws CicsJvmserverResourceException;
 
 	/**
-	 * Returns the contents of JVM server STDOUT file
-	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
-	 * @return contents of STDOUT
-	 * @throws CicsJvmserverResourceException
-	 */
-	public OutputStream getStdOut(boolean binary) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Returns the contents of JVM server STDERR file
-	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
-	 * @return contents of STDERR
-	 * @throws CicsJvmserverResourceException
-	 */
-	public OutputStream getStdErr(boolean binary) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Returns the contents of JVM server JVMTRACE file
-	 * @param binary if true, return content in binary, i.e. do not convert from EBCDIC
-	 * @return contents of JVMTRACE
-	 * @throws CicsJvmserverResourceException
-	 */
-	public OutputStream getJvmTrace(boolean binary) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Save a checkpoint of the current state of the JVM server log files
-	 * @return the key to the checkpoint
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public String checkpointLogs() throws CicsJvmserverResourceException;
-
-	/**
-	 * Returns the contents of a specified log file since the supplied checkpoint
-	 * @param logFile the logFile retrieve
-	 * @param checkpoint value
-	 * @return contents of logFile
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public OutputStream getLogFileSinceCheckpoint(IZosUNIXFile logFile, String checkpoint) throws CicsJvmserverResourceException;
-
-	/**
-	 * Searches contents of supplied log file for specified text
-	 * @param logFile the logFile retrieve
-	 * @param text the text to search
-	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public boolean searchLogFileForText(IZosUNIXFile logFile, String searchText) throws CicsJvmserverResourceException;
-
-	/**
-	 * Searches contents of supplied log file for specified text since the supplied checkpoint
-	 * @param logFile the logFile retrieve
-	 * @param searchText the text to search
-	 * @param checkpoint value
-	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public boolean searchLogFileForTextSinceCheckpoint(IZosUNIXFile logFile, String searchText, String checkpoint) throws CicsJvmserverResourceException;
-
-	/**
-	 * Searches contents of supplied log file for specified Pattern
-	 * @param logFile the logFile retrieve
-	 * @param searchPattern the Pattern to search
-	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public boolean searchLogFileForPattern(IZosUNIXFile logFile, Pattern searchPattern) throws CicsJvmserverResourceException;
-
-	/**
-	 * Searches contents of supplied log file for specified text since the supplied checkpoint
-	 * @param logFile the logFile retrieve
-	 * @param searchPattern the Pattern to search
-	 * @param checkpoint value
-	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public boolean searchLogFileForPatternSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, String checkpoint) throws CicsJvmserverResourceException;
-
-	/**
-	 * Wait for a search text to appear in specified log file. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul> 
-	 * @param logFile the logFile to search
-	 * @param searchString the text to search
-	 * @param millisecondTimeout timeout value
-	 * @return true if the string is found
-	 * @throws CicsJvmserverResourceException
-	 */
-	public boolean waitForTextInLogFile(IZosUNIXFile logFile, String searchText, long millisecondTimeout) throws CicsJvmserverResourceException;
-
-	/**
-	 * Wait for a search text or fail text to appear in specified log file. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul> 
-	 * @param logFile the logFile to search
-	 * @param searchString the text to search
-	 * @param failString the failure text to search
-	 * @param millisecondTimeout timeout value
-	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
-	 */
-	public String waitForTextInLogFile(IZosUNIXFile logFile, String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Wait for a search text to appear in specified log file since the supplied checkpoint. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchText the text to search
-	 * @param millisecondTimeout timeout value
-	 * @param checkpoint the checkpoint key
-	 * @return true if the string is found
-	 * @throws CicsJvmserverResourceException
-	 */
-	public boolean waitForTextLogFileSinceCheckpoint(IZosUNIXFile logFile, String searchText, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Wait for a search text to appear in specified log file since the supplied checkpoint. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchText the text to search
-	 * @param failText the failure text to search
-	 * @param millisecondTimeout timeout value
-	 * @param checkpoint the checkpoint key
-	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
-	 */
-	public String waitForTextLogFileSinceCheckpoint(IZosUNIXFile logFile, String searchText, String failText, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException;
-
-	/**
-	 * Wait for a search Pattern to appear in specified log file. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchPattern the Pattern to search
-	 * @param millisecondTimeout timeout value
-	 * @return true if the string is found
-	 * @throws CicsJvmserverResourceException
-	 */
-	public boolean waitForPatternInLogFile(IZosUNIXFile logFile, Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
-
-	/**
-	 * Wait for a search Pattern or fail Pattern to appear in specified log file. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchPattern the Pattern to search
-	 * @param failPattern the failure pattern to search
-	 * @param millisecondTimeout timeout value
-	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
-	 */
-	public String waitForPatternInLogFile(IZosUNIXFile logFile, Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Wait for a search Pattern to appear in specified log file since the supplied checkpoint. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchPattern the Pattern to search
-	 * @param millisecondTimeout timeout value
-	 * @param checkpoint the checkpoint key
-	 * @return true if the string is found
-	 * @throws CicsJvmserverResourceException
-	 */
-	public boolean waitForPatternLogFileSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Wait for a search Pattern or fail Pattern to appear in specified log file since the supplied checkpoint. Will check every 3 seconds until one of:
-	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified millisecondTimeout is reached.</li>
-	 * </ul>
-	 * @param logFile the logFile to search
-	 * @param searchPattern the Pattern to search
-	 * @param failPattern the failure pattern to search
-	 * @param millisecondTimeout timeout value
-	 * @param checkpoint the checkpoint key
-	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
-	 */
-	public String waitForPatternLogFileSinceCheckpoint(IZosUNIXFile logFile, Pattern searchPattern, Pattern failPattern, long millisecondTimeout, String checkpoint) throws CicsJvmserverResourceException;
-
-	/**
-     * Store the content of the JVM server log files to the default location in the Results Archive Store
+     * Store the content of the JVM server logs to the default location in the Results Archive Store
      * @throws CicsJvmserverResourceException
      */
     public void saveToResultsArchive() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Store the content of the JVM server log files to the Results Archive Store
+	 * Store the content of the JVM server logs to the Results Archive Store
 	 * @param rasPath path in Results Archive Store
 	 * @throws CicsJvmserverResourceException
 	 */
 	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
 
 	/**
-	 * Store the content of the JVM server log files to the default location in the Results Archive Store and delete the files
+	 * Store the content of the JVM server logs to the default location in the Results Archive Store and if appropriate, delete the files
      * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
 	 */
 	public void deleteJvmserverLogs() throws CicsJvmserverResourceException;
 
 	/**
-	 * Store the content of the JVM server log files to the Results Archive Store and delete the files
+	 * Store the content of the JVM server logs to the default location in the Results Archive Store and if appropriate, delete the files
+     * @param rasPath path in Results Archive Store
+     * @throws CicsJvmserverResourceException
+	 */
+	public void clearJvmLogs() throws CicsJvmserverResourceException;
+
+	/**
+	 * Store the content of the JVM server logs to the Results Archive Store and if appropriate, delete the files
      * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
 	 */
@@ -604,14 +400,14 @@ public interface IJvmserver {
 	
 	/**
 	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and save to the default location in the Results Archive Store 
+	 * added to a tar file and saved to the default location in the Results Archive Store 
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void gatherDiagnostics() throws CicsJvmserverResourceException;	
 	
 	/**
 	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and save to the default location in the Results Archive Store
+	 * added to a tar file and save to the Results Archive Store
 	 * @param rasPath path in Results Archive Store
 	 * @throws CicsJvmserverResourceException 
 	 */

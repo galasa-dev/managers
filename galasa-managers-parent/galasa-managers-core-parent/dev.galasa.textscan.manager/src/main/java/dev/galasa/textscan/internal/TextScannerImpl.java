@@ -65,7 +65,10 @@ public class TextScannerImpl implements ITextScanner {
 	@Override
 	public ITextScanner scan(String text, String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException {
 
-		Pattern fp = Pattern.compile("\\Q" + failString + "\\E");
+		Pattern fp = null;
+		if (failString != null) {
+			fp = Pattern.compile("\\Q" + failString + "\\E");
+		}
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
 		
 		ITextScanner textScanner;
@@ -165,7 +168,10 @@ public class TextScannerImpl implements ITextScanner {
 	public ITextScanner scan(InputStream inputStream, String searchString, String failString, int count) throws FailTextFoundException, MissingTextException, IncorrectOccurrencesException, TextScanException {
 
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
-		Pattern fp = Pattern.compile("\\Q" + failString + "\\E");
+		Pattern fp = null;
+		if (failString != null) {
+			fp = Pattern.compile("\\Q" + failString + "\\E");
+		}
 		ITextScanner textScanner;
 		try {
 			textScanner = scan(inputStream,p,fp,count);
@@ -180,14 +186,21 @@ public class TextScannerImpl implements ITextScanner {
 	}
 
 	@Override
-	public String scanForMatch(String text, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+	public String scanForMatch(String text, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
 
 		if(occurrence < 1) {
 			throw new TextScanException(MSG_INVALID_COUNT);
 		}
 
+		if (failPattern != null) {
+			Matcher fm = failPattern.matcher(text);
+			if (fm.find()) {
+				return fm.group(); 
+			}
+		}
+
 		Matcher m = searchPattern.matcher(text);
-		int found =0;
+		int found = 0;
 		String searchText = "";
 
 		while (m.find()) {
@@ -206,12 +219,16 @@ public class TextScannerImpl implements ITextScanner {
 	}
 
 	@Override
-	public String scanForMatch(String text, String searchString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+	public String scanForMatch(String text, String searchString, String failString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
 
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
+		Pattern fp = null;
+		if (failString != null) {
+			fp = Pattern.compile("\\Q" + failString + "\\E");
+		}
 		String match;
 		try {
-			match = scanForMatch(text, p, occurrence);
+			match = scanForMatch(text, p, fp, occurrence);
 		} catch (MissingTextException e) {
 			throw new MissingTextException(String.format(MSG_SEARCH_NOT_FOUND, STRING, searchString), e);
 		} catch (IncorrectOccurrencesException e) {
@@ -222,29 +239,29 @@ public class TextScannerImpl implements ITextScanner {
 	}
 
 	@Override
-	public String scanForMatch(ITextScannable scannable, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException{
+	public String scanForMatch(ITextScannable scannable, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException{
 		if(scannable.isScannableInputStream()) {
-			return scanForMatch(scannable.getScannableInputStream(),searchPattern,occurrence);		
+			return scanForMatch(scannable.getScannableInputStream(), searchPattern, failPattern, occurrence);		
 		} else if(scannable.isScannableString()) {
-			return scanForMatch(scannable.getScannableString(),searchPattern,occurrence);	
+			return scanForMatch(scannable.getScannableString(), searchPattern, failPattern, occurrence);	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
 		throw new TextScanException(MSG_INCORRECT_SCANNABLE_TYPE);
 	}
 
 	@Override
-	public String scanForMatch(ITextScannable scannable, String searchString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+	public String scanForMatch(ITextScannable scannable, String searchString, String failString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
 		if(scannable.isScannableInputStream()) {
-			return scanForMatch(scannable.getScannableInputStream(),searchString,occurrence);		
+			return scanForMatch(scannable.getScannableInputStream(), searchString, failString, occurrence);		
 		} else if(scannable.isScannableString()) {
-			return scanForMatch(scannable.getScannableString(),searchString,occurrence);	
+			return scanForMatch(scannable.getScannableString(),searchString, failString, occurrence);	
 		}
 		/** It should never reach this line, it should either be an Input Steam or String **/
 		throw new TextScanException(MSG_INCORRECT_SCANNABLE_TYPE);
 	}
 
 	@Override
-	public String scanForMatch(InputStream inputStream, Pattern searchPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+	public String scanForMatch(InputStream inputStream, Pattern searchPattern, Pattern failPattern, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
 
 		if (occurrence < 1) {
 			throw new TextScanException(MSG_INVALID_COUNT);
@@ -272,6 +289,14 @@ public class TextScannerImpl implements ITextScanner {
 				}
 
 				String currentBuffer = sb.toString();
+
+				if (failPattern != null) {
+					Matcher fm = failPattern.matcher(currentBuffer);
+					if (fm.find()) {
+						return fm.group(); 
+					}
+				}
+				
 				Matcher m = searchPattern.matcher(currentBuffer);
 
 				while (m.find()) {
@@ -297,11 +322,15 @@ public class TextScannerImpl implements ITextScanner {
 	}
 
 	@Override
-	public String scanForMatch(InputStream inputStream, String searchString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+	public String scanForMatch(InputStream inputStream, String searchString, String failString, int occurrence) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
 		Pattern p = Pattern.compile("\\Q" + searchString + "\\E");
+		Pattern fp = null;
+		if (failString != null) {
+			fp = Pattern.compile("\\Q" + failString + "\\E");
+		}
 		String match;
 		try {
-			match = scanForMatch(inputStream, p, occurrence);
+			match = scanForMatch(inputStream, p, fp, occurrence);
 		} catch (MissingTextException e) {
 			throw new MissingTextException(String.format(MSG_SEARCH_NOT_FOUND, STRING, searchString), e);
 		} catch (IncorrectOccurrencesException e) {

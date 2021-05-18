@@ -137,14 +137,14 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatchSinceCheckpoint(Pattern searchPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+    public String scanForMatchSinceCheckpoint(Pattern searchPattern, Pattern failPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
     	checkIsCheckpointed();
     	try {
     		if (this.scannable.isScannableInputStream()) {
     			skipToCheckpoint();
-    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchPattern, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchPattern, failPattern, occurrance);
     		} else if (this.scannable.isScannableString()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableString().substring((int) this.checkpoint), searchPattern, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableString().substring((int) this.checkpoint), searchPattern, failPattern, occurrance);
     		} else {
     			throw new TextScanException(MESSAGE_UNKNOWN_SCANNABLE_TYPE);
     		}
@@ -158,14 +158,14 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatchSinceCheckpoint(String searchString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+    public String scanForMatchSinceCheckpoint(String searchString, String failString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
     	checkIsCheckpointed();
     	try {
     		if (this.scannable.isScannableInputStream()) {
     			skipToCheckpoint();
-    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchString, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchString, failString, occurrance);
     		} else if (this.scannable.isScannableString()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableString().substring((int) this.checkpoint), searchString, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableString().substring((int) this.checkpoint), searchString, failString, occurrance);
     		} else {
     			throw new TextScanException(MESSAGE_UNKNOWN_SCANNABLE_TYPE);
     		}
@@ -225,13 +225,13 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatch(Pattern searchPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+    public String scanForMatch(Pattern searchPattern, Pattern failPattern, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
     	checkScannableNoNull();
     	try {
     		if (this.scannable.isScannableInputStream()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchPattern, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchPattern, failPattern, occurrance);
     		} else if (this.scannable.isScannableString()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableString(), searchPattern, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableString(), searchPattern, failPattern, occurrance);
     		} else {
     			throw new TextScanException(MESSAGE_UNKNOWN_SCANNABLE_TYPE);
     		}
@@ -245,13 +245,13 @@ public class LogScannerImpl implements ILogScanner {
     }
 
     @Override
-    public String scanForMatch(String searchString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
+    public String scanForMatch(String searchString, String failString, int occurrance) throws MissingTextException, IncorrectOccurrencesException, TextScanException {
     	checkScannableNoNull();
     	try {
     		if (this.scannable.isScannableInputStream()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchString, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableInputStream(), searchString, failString, occurrance);
     		} else if (this.scannable.isScannableString()) {
-    			return this.textScanner.scanForMatch(this.scannable.getScannableString(), searchString, occurrance);
+    			return this.textScanner.scanForMatch(this.scannable.getScannableString(), searchString, failString, occurrance);
     		} else {
     			throw new TextScanException(MESSAGE_UNKNOWN_SCANNABLE_TYPE);
     		}

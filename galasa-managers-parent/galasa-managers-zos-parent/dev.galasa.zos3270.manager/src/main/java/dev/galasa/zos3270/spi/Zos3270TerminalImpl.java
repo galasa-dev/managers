@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.zos3270.spi;
 
@@ -32,6 +32,7 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.zos.IZosImage;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -43,6 +44,7 @@ import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
 import dev.galasa.zos3270.internal.properties.LiveTerminalUrl;
 import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
+import dev.galasa.zos3270.internal.properties.TerminalDeviceTypes;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
@@ -66,7 +68,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean                        logConsoleTerminals;
     private boolean                        autoConnect;
 
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image)
             throws Zos3270ManagerException, TerminalInterruptedException {
         super(id, host, port, tls);
         this.terminalId = id;
@@ -105,6 +107,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
+        
+        setDeviceTypes(TerminalDeviceTypes.get(image));
 
         logConsoleTerminals = LogConsoleTerminals.get();
     }

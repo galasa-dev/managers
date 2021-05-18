@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>dev.galasa</groupId>
-		<artifactId>galasa-managers-parent</artifactId>
+		<artifactId>galasa-parent</artifactId>
 		<version>0.15.0-SNAPSHOT</version>
 	</parent>
 
@@ -14,7 +14,11 @@
 	<packaging>galasa-obr</packaging>
 
 	<name>Galasa Managers OBR</name>
-
+	
+	<properties>
+	   <galasa.skip.bundletestcatatlog>false</galasa.skip.bundletestcatatlog>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>dev.galasa</groupId>
@@ -236,11 +240,16 @@
 			<artifactId>dev.galasa.docker.manager.ivt</artifactId>
 			<version>0.15.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>dev.galasa</groupId>
-			<artifactId>dev.galasa.elasticlog.manager</artifactId>
-			<version>0.15.0-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.elasticlog.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.galasa</groupId>
+            <artifactId>dev.galasa.phoenix2.manager</artifactId>
+            <version>0.15.0-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.elasticlog.manager.ivt</artifactId>

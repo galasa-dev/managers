@@ -1,1 +1,3 @@
 rootProject.name = 'dev.galasa.artifact.manager'
+
+rootProject.jacocoEnabled = false

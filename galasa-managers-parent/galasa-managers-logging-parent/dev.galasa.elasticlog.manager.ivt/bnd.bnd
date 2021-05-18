@@ -1,8 +1,5 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa ElasticLog Manager IVT
 Export-Package: dev.galasa.elasticlog.manager.ivt
-Import-Package: dev.galasa,\
-    dev.galasa.core.manager,\
-    org.apache.commons.logging
-
-
+Import-Package: !javax.validation.constraints, \
+                *

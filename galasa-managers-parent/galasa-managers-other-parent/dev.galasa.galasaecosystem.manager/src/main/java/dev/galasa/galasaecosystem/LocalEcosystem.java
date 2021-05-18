@@ -65,4 +65,6 @@ public @interface LocalEcosystem {
      * The <code>javaInstallationTag</code> to which Java installation on the image is to be used to run the Galasa tests and services.
      */
     public String javaInstallationTag() default "PRIMARY";
+    
+    public IsolationInstallation isolationInstallation() default IsolationInstallation.None;
 }

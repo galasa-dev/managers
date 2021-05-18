@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
         maven {
-            url "https://nexus.galasa.dev/repository/maven-gradle"
+            url "https://nexus.galasa.dev/repository/maven-development"
         }
         gradlePluginPortal()
     }
@@ -22,6 +22,7 @@ include 'galasa-managers-comms-parent:dev.galasa.http.manager.ivt'
 // galasa-managers-logging-parent
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager'
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
+include 'galasa-managers-logging-parent:dev.galasa.phoenix2.manager'
 // galasa-managers-zos-parent
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos.manager.ivt'
@@ -37,8 +38,6 @@ include 'galasa-managers-zos-parent:dev.galasa.zosconsole.oeconsol.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.common'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zos3270.manager.ivt'
-// include 'galasa-managers-zos-parent:dev.galasa.zos3270.ui' // Leaving as Maven build for now
-// include 'galasa-managers-zos-parent:dev.galasa.zos.feature' // Leaving as Maven build for now
 include 'galasa-managers-zos-parent:dev.galasa.zosrseapi.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosbatch.rseapi.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zosfile.rseapi.manager'
