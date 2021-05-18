@@ -70,6 +70,10 @@ public class SeleniumGridSessionMonitor implements Runnable {
 		logger.info("Starting search for stale sessions.");
 		try {
 			this.gridEndpoint = cps.getProperty("grid","endpoint");
+			if (gridEndpoint == null) {
+				logger.info("No Selenium grid defined, finishing.");
+				return;
+			}
 		} catch (ConfigurationPropertyStoreException e) {
 			logger.error("Failed to retrieve grid endpoint, ending.");
 			return;

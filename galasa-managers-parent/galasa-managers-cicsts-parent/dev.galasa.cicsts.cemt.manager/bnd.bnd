@@ -1,11 +1,5 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa CICS/TS CEMT Manager
 Export-Package: dev.galasa.cicsts.cemt.spi.spi
-Import-Package: dev.galasa,\
-    dev.galasa.cicsts,\
-    dev.galasa.cicsts.cemt.spi.spi,\
-    dev.galasa.cicsts.spi,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.zos3270,\
-    javax.validation.constraints;resolution:=optional
+Import-Package: !javax.validation.constraints, \
+                *

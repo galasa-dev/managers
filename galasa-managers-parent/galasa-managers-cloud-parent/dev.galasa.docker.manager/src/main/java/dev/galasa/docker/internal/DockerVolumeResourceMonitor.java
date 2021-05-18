@@ -152,8 +152,14 @@ public class DockerVolumeResourceMonitor implements Runnable {
     private void updateDockerEngines() {
         try { 
             // This will have to be changed if we support engine clusters
-            String[] enginesTags = cps.getProperty("default", "engines").split(",");
-            for (String engine : enginesTags) {
+        	String[] tags;
+            String enginesTags = cps.getProperty("default", "engines");
+            if (enginesTags == null) {
+            	logger.info("No default docker engines defined, moving on");
+            	return;
+            }
+            tags = enginesTags.split(",");
+            for (String engine : tags) {
                 if (this.dockerEngines.get(engine) == null) {
                     String hostname = cps.getProperty("engine", "hostname", engine);
                     String port = cps.getProperty("engine", "port", engine);

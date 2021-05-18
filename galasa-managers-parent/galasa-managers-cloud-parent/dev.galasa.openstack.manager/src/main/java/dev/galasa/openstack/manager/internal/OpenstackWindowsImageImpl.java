@@ -31,6 +31,7 @@ import dev.galasa.openstack.manager.internal.properties.WindowsAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.WindowsCredentials;
 import dev.galasa.openstack.manager.internal.properties.WindowsFlavor;
 import dev.galasa.openstack.manager.internal.properties.WindowsKeyPair;
+import dev.galasa.openstack.manager.internal.properties.WindowsName;
 import dev.galasa.openstack.manager.internal.properties.WindowsSecurityGroups;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsProvisionedImage;
@@ -85,7 +86,7 @@ public class OpenstackWindowsImageImpl extends OpenstackServerImpl implements IW
 
         Server server = new Server();
         server.name = this.instanceName;
-        server.imageRef = getOpenstackHttpClient().getImageId(this.image);
+        server.imageRef = getOpenstackHttpClient().getImageId(WindowsName.get(this.image));
         server.flavorRef = getOpenstackHttpClient().getFlavourId(flavor);
         server.availability_zone = WindowsAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();

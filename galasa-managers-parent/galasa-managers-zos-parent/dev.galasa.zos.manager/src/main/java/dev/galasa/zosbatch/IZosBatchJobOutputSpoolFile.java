@@ -66,5 +66,14 @@ public interface IZosBatchJobOutputSpoolFile {
      * @return the zOS batch job spool file content
      */
     public String getRecords();
+    
+    /**
+     * Save this zOS batch job spool file to the Results Archive Store. Will only store records retrieved since the {@link IZosBatchJobOutputSpoolFile}
+     * object was created or the last {@link #retrieve()} was issued 
+     * 
+     * @param rasPath path in Results Archive Store  
+     * @throws ZosBatchException
+     */
+	public void saveToResultsArchive(String rasPath) throws ZosBatchException;
 
 }

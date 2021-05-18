@@ -385,6 +385,13 @@ public interface IJvmserver {
 	public void deleteJvmserverLogs() throws CicsJvmserverResourceException;
 
 	/**
+	 * Store the content of the JVM server logs to the default location in the Results Archive Store and if appropriate, delete the files
+     * @param rasPath path in Results Archive Store
+     * @throws CicsJvmserverResourceException
+	 */
+	public void clearJvmLogs() throws CicsJvmserverResourceException;
+
+	/**
 	 * Store the content of the JVM server logs to the Results Archive Store and if appropriate, delete the files
      * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
@@ -393,14 +400,14 @@ public interface IJvmserver {
 	
 	/**
 	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and save to the default location in the Results Archive Store 
+	 * added to a tar file and saved to the default location in the Results Archive Store 
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void gatherDiagnostics() throws CicsJvmserverResourceException;	
 	
 	/**
 	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and save to the default location in the Results Archive Store
+	 * added to a tar file and save to the Results Archive Store
 	 * @param rasPath path in Results Archive Store
 	 * @throws CicsJvmserverResourceException 
 	 */

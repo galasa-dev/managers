@@ -1,13 +1,11 @@
 plugins {
-    id 'biz.aQute.bnd.builder' version '5.3.0'
+    id 'galasa.manager'
 }
 
 description = 'Galasa Text Scan Manager'
 
+version = '0.15.0-SNAPSHOT'
+
 dependencies {
-    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
     implementation 'commons-io:commons-io:2.6'
-    testImplementation 'org.powermock:powermock-module-junit4:2.0.4'
-    testImplementation 'org.powermock:powermock-api-mockito2:2.0.4'
 }
