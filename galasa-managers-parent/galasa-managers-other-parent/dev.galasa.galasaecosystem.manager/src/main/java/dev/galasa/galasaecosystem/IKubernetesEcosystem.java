@@ -5,8 +5,6 @@
  */
 package dev.galasa.galasaecosystem;
 
-import javax.validation.constraints.NotNull;
-
 import com.google.gson.JsonObject;
 
 /**
@@ -18,14 +16,7 @@ import com.google.gson.JsonObject;
  *
  */
 public interface IKubernetesEcosystem extends IGenericEcosystem {
-    
-    /**
-     * @param endpoint {@link EcosystemEndpoint} Which endpoint is required
-     * @return Object of the endpoint, never null, URL, URI or InetSocketAddress
-     * @throws GalasaEcosystemManagerException If the endpoint is unsupported
-     */
-    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException;
-        
+           
     public JsonObject getSubmittedRuns(String groupName) throws GalasaEcosystemManagerException;
 
     public JsonObject waitForGroupNames(String groupName, long timeout) throws GalasaEcosystemManagerException; 
