@@ -436,14 +436,14 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         if (!linuxImageTag.isEmpty()) {
             try {
                 ILinuxImage linuxImage = this.linuxManager.getImageForTag(linuxImageTag);
-                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation, isolationInstallation);
+                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation, isolationInstallation, annotation.startSimPlatform());
             } catch (LinuxManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Linux image for Ecosystem tag " + tag, e);
             }
         } else if (!windowsImageTag.isEmpty()) {
             try {
                 IWindowsImage windowsImage = this.windowsManager.getImageForTag(windowsImageTag);
-                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation, isolationInstallation);
+                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation, isolationInstallation, annotation.startSimPlatform());
             } catch (WindowsManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Windows image for Ecosystem tag " + tag, e);
             }

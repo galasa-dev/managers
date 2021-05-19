@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
+import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
 import dev.galasa.galasaecosystem.IsolationInstallation;
@@ -69,6 +71,9 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private Path mavenLocal;
 
     private final IsolationInstallation isolationInstallation;
+    private final boolean               startSimPlatform;
+
+    private SimPlatformInstance         simPlatformInstance;
 
     private final Gson gson = GalasaGsonBuilder.build();
 
@@ -77,9 +82,11 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
             @NotNull String tag,
             @NotNull IJavaInstallation javaInstallation, 
-            @NotNull IsolationInstallation isolationInstallation) {
+            @NotNull IsolationInstallation isolationInstallation,
+            boolean startSimPlatform) {
         super(manager, tag, javaInstallation);
         this.isolationInstallation = isolationInstallation;
+        this.startSimPlatform      = startSimPlatform;
     }
 
 
@@ -145,10 +152,13 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
                     throw new GalasaEcosystemManagerException("Unrecognised isolation installation enum " + this.isolationInstallation);
             }
 
-            logger.info("Galasa local ecosystem has been installed");
-
+            logger.info("Galasa local ecosystem has been installed");           
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem building the Local Ecosystem",e);
+        }
+
+        if (this.startSimPlatform) {
+            startSimPlatform();
         }
     }
 
@@ -205,7 +215,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             this.bootJar = locateReleaseJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
             this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
         }
-        
+
         this.mavenRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
     }
 
@@ -217,12 +227,12 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
-        
+
         Path file = artifactDirectory.resolve(artifactId + "-" + this.mavenVersion + ".jar");
         if (!Files.exists(file)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact " + file);
         }
-        
+
         return file;
     }
 
@@ -238,8 +248,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         String actualVersion = this.mavenVersion.substring(0, this.mavenVersion.indexOf("-SNAPSHOT"));
         String fileNamePrefix = artifactId + "-" + actualVersion;
-        
-        
+
+
         //******  THIS IS VERY CHEATY,  ASSUMING NEVER MORE THAT -9 SNAPSHOT VERSION.
         //****** TODO, COME UP WITH A BETTER WAY
 
@@ -370,42 +380,6 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         }
     }
 
-    @Override
-    public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setCpsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setDssProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getCredsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setCredsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
     protected Path getBootJar() {
         return this.bootJar;
     }
@@ -420,6 +394,10 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     protected Path getGalasaConfigDirectory() {
         return this.galasaDirectory;
+    }
+
+    protected Path getRunHome() {
+        return this.runHome;
     }
 
     protected URL getMavenRepo() {
@@ -514,26 +492,28 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
                 Properties artifacts = new Properties();
                 Path artifactsFile = rasRun.resolve("artifacts.properties");
                 Path artifactsDirectory = rasRun.resolve("artifacts");
-                artifacts.load(Files.newInputStream(artifactsFile));
+                if (Files.exists(artifactsFile) && Files.exists(artifactsDirectory)) {
+                    artifacts.load(Files.newInputStream(artifactsFile));
 
-                for(Entry<Object, Object> entry : artifacts.entrySet()) {
-                    String key = (String) entry.getKey();
-                    String value = (String) entry.getValue();
+                    for(Entry<Object, Object> entry : artifacts.entrySet()) {
+                        String key = (String) entry.getKey();
+                        String value = (String) entry.getValue();
 
-                    try {
-                        String artifactPath = key.substring(1);
+                        try {
+                            String artifactPath = key.substring(1);
 
-                        Path saArtifact = saRun.resolve(artifactPath);
-                        Files.createDirectories(saArtifact.getParent());
-                        Path rasArtifact = artifactsDirectory.resolve(artifactPath);
-                        ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(value);
+                            Path saArtifact = saRun.resolve(artifactPath);
+                            Files.createDirectories(saArtifact.getParent());
+                            Path rasArtifact = artifactsDirectory.resolve(artifactPath);
+                            ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(value);
 
-                        try (InputStream is = Files.newInputStream(rasArtifact); 
-                                OutputStream os = Files.newOutputStream(saArtifact, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
-                            IOUtils.copy(is, os);
+                            try (InputStream is = Files.newInputStream(rasArtifact); 
+                                    OutputStream os = Files.newOutputStream(saArtifact, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
+                                IOUtils.copy(is, os);
+                            }
+                        } catch(Exception e) {
+                            logger.warn("Failed to copy run " + runName + " artifact " + key,e);
                         }
-                    } catch(Exception e) {
-                        logger.warn("Failed to copy run " + runName + " artifact " + key,e);
                     }
                 }
             } catch(Exception e) {
@@ -541,4 +521,178 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             }
         }
     }
+
+    @Override
+    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        try {
+            switch(endpoint) {
+                case CPS:
+                    return new URL("file:" + this.cpsFile.toString());
+                case CREDS:
+                    return new URL("file:" + this.credentialsFile.toString());
+                case DSS:
+                    return new URL("file:" + this.dssFile.toString());
+                case RAS:
+                    return new URL("file:" + this.rasDirectory.toString());
+                case API:
+                case ENGINE_CONTROLLER_HEALTH:
+                case ENGINE_CONTROLLER_METRICS:
+                case GRAFANA:
+                case METRICS_HEALTH:
+                case METRICS_METRICS:
+                case PROMETHEUS:
+                case RESOURCE_MANAGEMENT_HEALTH:
+                case RESOURCE_MANAGEMENT_METRICS:
+                    throw new GalasaEcosystemManagerException("unavailable in local ecosystem");
+                case SIMBANK_DATABASE:
+                case SIMBANK_MANAGEMENT_FACILITY:
+                case SIMBANK_TELNET:
+                case SIMBANK_WEBSERVICE:
+                    return getSimPlatformEndpoint(endpoint);
+                default:
+                    throw new GalasaEcosystemManagerException("Unrecognised endpoint " + endpoint);
+            }
+        } catch(GalasaEcosystemManagerException e) {
+            throw e;
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem resolving endpoint", e);
+        }
+    }
+
+    private Object getSimPlatformEndpoint(EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        if (this.simPlatformInstance == null) {
+            throw new GalasaEcosystemManagerException("SimPlatform is not running at this point");
+        }
+
+        return this.simPlatformInstance.getSimPlatformEndpoint(endpoint);
+
+    }
+
+    protected SimPlatformInstance getSimPlatformInstance() {
+        return this.simPlatformInstance;
+    }
+
+    protected void setSimPlatformInstance(SimPlatformInstance simPlatformInstance) throws GalasaEcosystemManagerException {
+        this.simPlatformInstance = simPlatformInstance;
+
+        if (this.simPlatformInstance == null) {
+            return;
+        }
+
+        // Update the CPS with the properties for this instance
+
+        //*** Set up streams
+        setCpsProperty("framework.test.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + this.mavenVersion + "/obr");
+        setCpsProperty("framework.test.stream.simbank.repo", this.mavenRepo.toString());
+
+        //*** Set up SimBank
+        setCredsProperty("secure.credentials.SIMBANK.username", "IBMUSER");
+        setCredsProperty("secure.credentials.SIMBANK.password", "SYS1");
+
+        setCpsProperty("zos.dse.tag.SIMBANK.imageid", "SIMBANK");
+        setCpsProperty("zos.dse.tag.SIMBANK.clusterid", "SIMBANK");
+        setCpsProperty("zos.image.SIMBANK.ipv4.hostname", ((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_TELNET)).getHostString());
+        setCpsProperty("zos.image.SIMBANK.telnet.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_TELNET)).getPort()));
+        setCpsProperty("zos.image.SIMBANK.telnet.tls", "false");
+        setCpsProperty("zos.image.SIMBANK.credentials", "SIMBANK");
+
+        setCpsProperty("zosmf.image.SIMBANK.servers", "MFSIMBANK");
+        setCpsProperty("zosmf.server.MFSIMBANK.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_MANAGEMENT_FACILITY)).getPort()));
+        setCpsProperty("zosmf.server.MFSIMBANK.https", "false");
+        setCpsProperty("zosmf.server.MFSIMBANK.image", "SIMBANK");
+
+        setCpsProperty("simbank.dse.instance.name","SIMBANK");
+        setCpsProperty("simbank.instance.SIMBANK.zos.image","SIMBANK");
+        setCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_DATABASE)).getPort()));
+        setCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_WEBSERVICE)).getPort()));
+    }
+
+    @Override
+    public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        try {
+            Properties currentCps = new Properties();
+            try (InputStream isCps = Files.newInputStream(this.cpsFile)) {
+                currentCps.load(isCps);
+            }
+            
+            return currentCps.getProperty(property);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem inspecting the CPS", e);
+        }
+    }
+
+    @Override
+    public void setCpsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+
+        try {
+            Properties currentCps = new Properties();
+            try (InputStream isCps = Files.newInputStream(this.cpsFile)) {
+                currentCps.load(isCps);
+            }
+
+            if (value == null) {
+                currentCps.remove(property);
+            } else {
+                currentCps.put(property, value);
+            }
+
+            try (OutputStream osCps = Files.newOutputStream(this.cpsFile)) {
+                currentCps.store(osCps, "Galasa ecosystem manager");
+            }
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem updating the CPS", e);
+        }
+    }
+
+    @Override
+    public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setDssProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getCredsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        try {
+            Properties currentCreds = new Properties();
+            try (InputStream isCreds = Files.newInputStream(this.credentialsFile)) {
+                currentCreds.load(isCreds);
+            }
+            
+            return currentCreds.getProperty(property);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem inspecting the CREDS", e);
+        }
+    }
+
+    @Override
+    public void setCredsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+
+        try {
+            Properties currentCreds = new Properties();
+            try (InputStream isCreds = Files.newInputStream(this.credentialsFile)) {
+                currentCreds.load(isCreds);
+            }
+
+            if (value == null) {
+                currentCreds.remove(property);
+            } else {
+                currentCreds.put(property, value);
+            }
+
+            try (OutputStream osCreds = Files.newOutputStream(this.credentialsFile)) {
+                currentCreds.store(osCreds, "Galasa ecosystem manager");
+            }
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem updating the CREDS", e);
+        }
+    }
+
+
+
 }
