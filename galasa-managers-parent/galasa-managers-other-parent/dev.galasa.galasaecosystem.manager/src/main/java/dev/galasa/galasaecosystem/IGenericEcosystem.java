@@ -22,6 +22,13 @@ import com.google.gson.JsonObject;
 public interface IGenericEcosystem {
            
     /**
+     * @param endpoint {@link EcosystemEndpoint} Which endpoint is required
+     * @return Object of the endpoint, never null, URL, URI or InetSocketAddress
+     * @throws GalasaEcosystemManagerException If the endpoint is unsupported
+     */
+    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException;
+ 
+    /**
      * Retrieve a CPS property
      * 
      * @param property The property to retrieve

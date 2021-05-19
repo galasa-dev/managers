@@ -15,4 +15,9 @@ package dev.galasa.galasaecosystem;
  */
 public interface ILocalEcosystem extends IGenericEcosystem {
     
+    
+    void startSimPlatform() throws GalasaEcosystemManagerException;
+    
+    void stopSimPlatform() throws GalasaEcosystemManagerException;
+    
 }
