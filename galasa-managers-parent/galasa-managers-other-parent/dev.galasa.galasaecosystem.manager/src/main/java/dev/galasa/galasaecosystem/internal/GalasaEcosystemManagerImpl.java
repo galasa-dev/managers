@@ -92,6 +92,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     private boolean                             requiresStandalone = false;
     private boolean                             requiresLinux      = false;
     private boolean                             requiresWindows    = false;
+    private boolean                             requiresZos        = false;
 
     private HashMap<String, IInternalEcosystem> taggedEcosystems = new HashMap<>();
     private HashSet<String> sharedEnvironmentEcosystemTags = new HashSet<>();
@@ -156,6 +157,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
                     if (localEcosystem.windowsImageTag() != null && !localEcosystem.windowsImageTag().trim().isEmpty()) {
                         this.requiresWindows = true;
                     }
+                    if (localEcosystem.addDefaultZosImage() != null && !localEcosystem.addDefaultZosImage().trim().isEmpty()) {
+                        this.requiresZos = true;
+                    }
                 }
             }
         }
@@ -208,6 +212,13 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
             }
         }
 
+        if (this.requiresZos) {
+            this.zosManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
+            if (this.zosManager == null) {
+                throw new GalasaEcosystemManagerException("Unable to locate the zOS Manager");
+            }
+        }
+
 
         this.artifactManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (this.artifactManager == null) {
@@ -217,11 +228,6 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         this.httpManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (this.httpManager == null) {
             throw new GalasaEcosystemManagerException("Unable to locate the Http Manager");
-        }
-
-        this.zosManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
-        if (this.zosManager == null) {
-            throw new GalasaEcosystemManagerException("Unable to locate the zOS Manager");
         }
 
         activeManagers.add(this);
