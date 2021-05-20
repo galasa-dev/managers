@@ -61,6 +61,7 @@ import dev.galasa.linux.spi.ILinuxManagerSpi;
 import dev.galasa.windows.IWindowsImage;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsManagerSpi;
+import dev.galasa.zos.spi.IZosManagerSpi;
 
 /**
  * The Galasa Ecosystem Manager
@@ -82,6 +83,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     private ILinuxManagerSpi                    linuxManager;
     private IWindowsManagerSpi                  windowsManager;
     private IJavaManagerSpi                     javaManager;
+    private IZosManagerSpi                      zosManager;
 
     private boolean                             required           = false;
     private boolean                             requiresK8s        = false;
@@ -217,6 +219,11 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
             throw new GalasaEcosystemManagerException("Unable to locate the Http Manager");
         }
 
+        this.zosManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
+        if (this.zosManager == null) {
+            throw new GalasaEcosystemManagerException("Unable to locate the zOS Manager");
+        }
+
         activeManagers.add(this);
     }
 
@@ -232,6 +239,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
             return true;
         }
         if (otherManager == javaManager) {
+            return true;
+        }
+        if (otherManager == zosManager) {
             return true;
         }
         if (otherManager instanceof IJavaUbuntuManagerSpi) {
@@ -506,6 +516,10 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
 
     protected IArtifactManager getArtifactManager() {
         return this.artifactManager;
+    }
+
+    protected IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
 
     protected IHttpManagerSpi getHttpManager() {
