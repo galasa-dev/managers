@@ -12,17 +12,10 @@ import java.lang.annotation.Target;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
-/**
- * This annotation is being deprecated and replaced with a more appropriately named @WebDriver. There is no functionality differences between the two
- * 
- * @author jamesdavies
- *
- */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @SeleniumManagerField
-@ValidAnnotatedFields({ ISeleniumManager.class })
-public @interface SeleniumManager {
+@ValidAnnotatedFields({ IWebDriver.class })
+public @interface WebDriver {
     public Browser browser() default Browser.NOTSPECIFIED;
 }
