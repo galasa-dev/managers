@@ -61,6 +61,7 @@ import dev.galasa.linux.spi.ILinuxManagerSpi;
 import dev.galasa.windows.IWindowsImage;
 import dev.galasa.windows.WindowsManagerException;
 import dev.galasa.windows.spi.IWindowsManagerSpi;
+import dev.galasa.zos.spi.IZosManagerSpi;
 
 /**
  * The Galasa Ecosystem Manager
@@ -82,6 +83,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     private ILinuxManagerSpi                    linuxManager;
     private IWindowsManagerSpi                  windowsManager;
     private IJavaManagerSpi                     javaManager;
+    private IZosManagerSpi                      zosManager;
 
     private boolean                             required           = false;
     private boolean                             requiresK8s        = false;
@@ -217,6 +219,11 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
             throw new GalasaEcosystemManagerException("Unable to locate the Http Manager");
         }
 
+        this.zosManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
+        if (this.zosManager == null) {
+            throw new GalasaEcosystemManagerException("Unable to locate the zOS Manager");
+        }
+
         activeManagers.add(this);
     }
 
@@ -232,6 +239,9 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
             return true;
         }
         if (otherManager == javaManager) {
+            return true;
+        }
+        if (otherManager == zosManager) {
             return true;
         }
         if (otherManager instanceof IJavaUbuntuManagerSpi) {
@@ -436,14 +446,14 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         if (!linuxImageTag.isEmpty()) {
             try {
                 ILinuxImage linuxImage = this.linuxManager.getImageForTag(linuxImageTag);
-                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation, isolationInstallation, annotation.startSimPlatform());
+                localEcosystem = new LocalLinuxEcosystemImpl(this, tag, linuxImage, javaInstallation, isolationInstallation, annotation.startSimPlatform(), annotation.addDefaultZosImage());
             } catch (LinuxManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Linux image for Ecosystem tag " + tag, e);
             }
         } else if (!windowsImageTag.isEmpty()) {
             try {
                 IWindowsImage windowsImage = this.windowsManager.getImageForTag(windowsImageTag);
-                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation, isolationInstallation, annotation.startSimPlatform());
+                localEcosystem = new LocalWindowsEcosystemImpl(this, tag, windowsImage, javaInstallation, isolationInstallation, annotation.startSimPlatform(), annotation.addDefaultZosImage());
             } catch (WindowsManagerException e) {
                 throw new GalasaEcosystemManagerException("Problem locating Windows image for Ecosystem tag " + tag, e);
             }
@@ -506,6 +516,10 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
 
     protected IArtifactManager getArtifactManager() {
         return this.artifactManager;
+    }
+
+    protected IZosManagerSpi getZosManager() {
+        return this.zosManager;
     }
 
     protected IHttpManagerSpi getHttpManager() {

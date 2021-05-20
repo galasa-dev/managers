@@ -83,8 +83,9 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             @NotNull String tag,
             @NotNull IJavaInstallation javaInstallation, 
             @NotNull IsolationInstallation isolationInstallation,
-            boolean startSimPlatform) {
-        super(manager, tag, javaInstallation);
+            boolean startSimPlatform,
+            String defaultZosImage) {
+        super(manager, tag, javaInstallation, defaultZosImage);
         this.isolationInstallation = isolationInstallation;
         this.startSimPlatform      = startSimPlatform;
     }
@@ -160,6 +161,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         if (this.startSimPlatform) {
             startSimPlatform();
         }
+        
+        super.build();
     }
 
     private void installIsolatedZip() throws GalasaEcosystemManagerException, URISyntaxException, HttpClientException, IOException, IpNetworkManagerException {
