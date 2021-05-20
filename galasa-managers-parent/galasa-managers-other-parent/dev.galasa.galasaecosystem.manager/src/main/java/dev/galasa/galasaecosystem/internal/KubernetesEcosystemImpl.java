@@ -120,7 +120,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankManagementFacilityUrl;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
-        super(manager, tag, null);
+        super(manager, tag, null, null);
         this.namespace = namespace;
     }
 
