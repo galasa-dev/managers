@@ -247,6 +247,8 @@ public class Phoenix2ManagerImpl extends AbstractManager {
             if (response.getStatusCode() != 200) {
                 throw new Phoenix2ManagerException("Error sending PME record - " + response.getStatusLine() + "\n" + response.getContent()); 
             }
+            
+            logger.debug("Emitted Phoenix 2 PME record");
         } catch(Exception e) {
             logger.warn("Problem writing DevOps PME testcaseexecution JSON event ",e);
         }

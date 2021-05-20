@@ -1,0 +1,17 @@
+plugins {
+    id 'galasa.java'
+    id 'dev.galasa.githash'
+    id 'biz.aQute.bnd.builder' 
+}
+
+dependencies {
+    implementation 'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
+    
+    implementation 'commons-logging:commons-logging:1.2'
+    
+    implementation 'org.assertj:assertj-core:3.11.1'
+}
+
+hashes {
+    gitHash = System.getenv('GIT_COMMIT')
+}

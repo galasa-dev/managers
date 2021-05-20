@@ -1,8 +1,11 @@
 package dev.galasa.galasaecosystem.internal;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,14 +14,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -28,12 +34,20 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
+import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
+import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
+import dev.galasa.galasaecosystem.IsolationInstallation;
+import dev.galasa.galasaecosystem.internal.properties.IsolatedFullZip;
+import dev.galasa.galasaecosystem.internal.properties.IsolatedMvpZip;
 import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
 import dev.galasa.galasaecosystem.internal.properties.MavenUseDefaultLocalRepository;
 import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
+import dev.galasa.http.HttpClientException;
+import dev.galasa.http.IHttpClient;
+import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.java.IJavaInstallation;
 
 public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implements ILocalEcosystem {
@@ -56,14 +70,23 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private String mavenVersion;
     private Path mavenLocal;
 
+    private final IsolationInstallation isolationInstallation;
+    private final boolean               startSimPlatform;
+
+    private SimPlatformInstance         simPlatformInstance;
+
     private final Gson gson = GalasaGsonBuilder.build();
 
     private final ArrayList<LocalRun> localRuns = new ArrayList<>();
 
-    public LocalEcosystemImpl(GalasaEcosystemManagerImpl manager, 
-            String tag,
-            IJavaInstallation javaInstallation) {
+    public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
+            @NotNull String tag,
+            @NotNull IJavaInstallation javaInstallation, 
+            @NotNull IsolationInstallation isolationInstallation,
+            boolean startSimPlatform) {
         super(manager, tag, javaInstallation);
+        this.isolationInstallation = isolationInstallation;
+        this.startSimPlatform      = startSimPlatform;
     }
 
 
@@ -109,56 +132,207 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             Properties overridesProperties = new Properties();
             overridesProperties.store(Files.newOutputStream(this.overridesFile, StandardOpenOption.CREATE_NEW), "Galasa Ecosystem Manager");
 
-            // Download all the artifacts we need from Maven
 
-            this.mavenRepo = MavenRepo.get();
             this.mavenVersion = MavenVersion.get();
-
-            HashMap<String, Object> parameters = new HashMap<>();
-            parameters.put("MAVEN_REPO", this.mavenRepo.toString());
-            parameters.put("MAVEN_VERSION", this.mavenVersion);
-
             if (!MavenUseDefaultLocalRepository.get()) {
                 this.mavenLocal = this.galasaDirectory.resolve("repository");
             } else {
                 this.mavenLocal = homeDirectory.resolve(".m2/repository");
             }
-            parameters.put("MAVEN_LOCAL", this.mavenLocal.toString());
 
-            IArtifactManager artifactManager = getEcosystemManager().getArtifactManager();
-            IBundleResources bundleResources = artifactManager.getBundleResources(this.getClass());
-
-            Path settingsXml = this.galasaDirectory.resolve("settings.xml");
-            Path pomXml = this.galasaDirectory.resolve("pom.xml");
-
-            Files.copy(bundleResources.retrieveSkeletonFile("maven/settings.xml", parameters), settingsXml);
-            Files.copy(bundleResources.retrieveSkeletonFile("maven/pom.xml", parameters), pomXml);
-
-            StringBuilder fetchCommand = new StringBuilder();
-            fetchCommand.append("mvn");
-            fetchCommand.append(" -B");
-            fetchCommand.append(" -U");
-            //            fetchCommand.append(" --ntp");  18.04 of ubuntu doesn't have this,  suspect windows as well
-            fetchCommand.append(" --settings ");
-            fetchCommand.append(settingsXml.toString());
-            fetchCommand.append(" -f ");
-            fetchCommand.append(pomXml.toString());
-            fetchCommand.append(" process-sources");
-
-            String response = this.getCommandShell().issueCommand(fetchCommand.toString());
-            if (!response.contains("BUILD SUCCESS")) {
-                throw new GalasaEcosystemManagerException("Problem installing the required artifacts from Maven:-\n" + response);
+            switch(this.isolationInstallation) {
+                case Full:
+                case Mvp:
+                    installIsolatedZip();
+                    break;
+                case None:
+                    downloadArtifactsViaMaven(homeDirectory);
+                    break;
+                default:
+                    throw new GalasaEcosystemManagerException("Unrecognised isolation installation enum " + this.isolationInstallation);
             }
 
-            this.bootJar = this.galasaDirectory.resolve("boot.jar");
-            this.simplatformJar = this.galasaDirectory.resolve("simplatform.jar");
-
-            logger.info("Galasa local ecosystem has been installed");
-
+            logger.info("Galasa local ecosystem has been installed");           
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem building the Local Ecosystem",e);
         }
+
+        if (this.startSimPlatform) {
+            startSimPlatform();
+        }
     }
+
+    private void installIsolatedZip() throws GalasaEcosystemManagerException, URISyntaxException, HttpClientException, IOException, IpNetworkManagerException {
+        URL isolatedZipLocation = null;
+        switch(this.isolationInstallation) {
+            case Full:
+                isolatedZipLocation = IsolatedFullZip.get();
+                break;
+            case Mvp:
+                isolatedZipLocation = IsolatedMvpZip.get();
+                break;
+            default:
+                throw new GalasaEcosystemManagerException("Unrecognised isolation installation enum " + this.isolationInstallation);
+        }
+
+        if (isolatedZipLocation == null) {
+            throw new GalasaEcosystemManagerException("The isolated zip location has not been provided");
+        }
+
+        Path targetZip = this.galasaDirectory.resolve("isolated.zip");
+
+        IHttpClient httpClient = this.getEcosystemManager().getHttpManager().newHttpClient();
+        httpClient.setURI(isolatedZipLocation.toURI());
+
+        try (CloseableHttpResponse response = httpClient.getFile(isolatedZipLocation.getPath())) {
+            Files.copy(response.getEntity().getContent(), targetZip);
+            logger.debug("Downloaded the isolated zip from " + isolatedZipLocation);
+        }
+
+        // unzip it 
+
+        Path isolatedRepoDirectory = this.galasaDirectory.resolve("isolatedrepo");
+        Files.createDirectories(isolatedRepoDirectory);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("cd ");
+        sb.append(isolatedRepoDirectory.toString());
+        sb.append("; unzip ");
+        sb.append(targetZip);
+
+
+        String response = this.getCommandShell().issueCommand(sb.toString(), 300000);
+        if (!response.contains("inflating")) {
+            throw new GalasaEcosystemManagerException("unzip of isolated zip did not inflate anything:-\n" + response); 
+        }
+
+        //*** find the latest boot and simplatform files
+
+        if (this.mavenVersion.endsWith("-SNAPSHOT")) {
+            this.bootJar = locateSnapshotJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
+            this.simplatformJar = locateSnapshotJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
+        } else {
+            this.bootJar = locateReleaseJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
+            this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
+        }
+
+        this.mavenRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
+    }
+
+
+    private Path locateReleaseJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException {
+        groupId = groupId.replace(".", "/");
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+
+        if (!Files.exists(artifactDirectory)) {
+            throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
+        }
+
+        Path file = artifactDirectory.resolve(artifactId + "-" + this.mavenVersion + ".jar");
+        if (!Files.exists(file)) {
+            throw new GalasaEcosystemManagerException("Unable to locate the maven artifact " + file);
+        }
+
+        return file;
+    }
+
+
+    private Path locateSnapshotJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException, IOException {
+
+        groupId = groupId.replace(".", "/");
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+
+        if (!Files.exists(artifactDirectory)) {
+            throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
+        }
+
+        String actualVersion = this.mavenVersion.substring(0, this.mavenVersion.indexOf("-SNAPSHOT"));
+        String fileNamePrefix = artifactId + "-" + actualVersion;
+
+
+        //******  THIS IS VERY CHEATY,  ASSUMING NEVER MORE THAT -9 SNAPSHOT VERSION.
+        //****** TODO, COME UP WITH A BETTER WAY
+
+        try (Stream<Path> stream = Files.list(artifactDirectory)) {
+            Iterator<Path> iStream = stream.iterator();
+            Path latestVersion = null;
+
+            while(iStream.hasNext()) {
+                Path path = iStream.next();
+                String name = path.getFileName().toString();
+
+                if (!name.startsWith(fileNamePrefix)) {
+                    continue;
+                }
+
+                if (!name.endsWith(".jar")) {
+                    continue;
+                }
+
+                if (name.endsWith("-javadoc.jar")) {
+                    continue;
+                }
+
+                if (name.endsWith("-sources.jar")) {
+                    continue;
+                }
+
+                if (latestVersion == null) {
+                    latestVersion = path;
+                } else {
+                    if (latestVersion.getFileName().toString().compareTo(path.getFileName().toString()) < 0) {
+                        latestVersion = path;
+                    }
+                }
+            }
+
+            if (latestVersion == null) {
+                throw new GalasaEcosystemManagerException("Unable to locate the jar file in directory " + isolatedRepoDirectory);
+            }
+            return latestVersion;
+        }
+    }
+
+
+    private void downloadArtifactsViaMaven(Path homeDirectory) throws GalasaEcosystemManagerException, TestBundleResourceException, IOException, IpNetworkManagerException {
+        // Download all the artifacts we need from Maven
+
+        this.mavenRepo = MavenRepo.get();
+
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("MAVEN_REPO", this.mavenRepo.toString());
+        parameters.put("MAVEN_VERSION", this.mavenVersion);
+        parameters.put("MAVEN_LOCAL", this.mavenLocal.toString());
+
+        IArtifactManager artifactManager = getEcosystemManager().getArtifactManager();
+        IBundleResources bundleResources = artifactManager.getBundleResources(this.getClass());
+
+        Path settingsXml = this.galasaDirectory.resolve("settings.xml");
+        Path pomXml = this.galasaDirectory.resolve("pom.xml");
+
+        Files.copy(bundleResources.retrieveSkeletonFile("maven/settings.xml", parameters), settingsXml);
+        Files.copy(bundleResources.retrieveSkeletonFile("maven/pom.xml", parameters), pomXml);
+
+        StringBuilder fetchCommand = new StringBuilder();
+        fetchCommand.append("mvn");
+        fetchCommand.append(" -B");
+        fetchCommand.append(" -U");
+        //            fetchCommand.append(" --ntp");  18.04 of ubuntu doesn't have this,  suspect windows as well
+        fetchCommand.append(" --settings ");
+        fetchCommand.append(settingsXml.toString());
+        fetchCommand.append(" -f ");
+        fetchCommand.append(pomXml.toString());
+        fetchCommand.append(" process-sources");
+
+        String response = this.getCommandShell().issueCommand(fetchCommand.toString(), 300000);
+        if (!response.contains("BUILD SUCCESS")) {
+            throw new GalasaEcosystemManagerException("Problem installing the required artifacts from Maven:-\n" + response);
+        }
+
+        this.bootJar = this.galasaDirectory.resolve("boot.jar");
+        this.simplatformJar = this.galasaDirectory.resolve("simplatform.jar");
+    }
+
 
     @Override
     public JsonObject waitForRun(String runName) throws GalasaEcosystemManagerException {
@@ -206,51 +380,6 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         }
     }
 
-    private String convertInstant(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-
-        return Instant.parse(value).toString();
-    }
-
-
-    @Override
-    public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setCpsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setDssProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getCredsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setCredsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-
-    }
-
     protected Path getBootJar() {
         return this.bootJar;
     }
@@ -265,6 +394,10 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     protected Path getGalasaConfigDirectory() {
         return this.galasaDirectory;
+    }
+
+    protected Path getRunHome() {
+        return this.runHome;
     }
 
     protected URL getMavenRepo() {
@@ -359,26 +492,28 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
                 Properties artifacts = new Properties();
                 Path artifactsFile = rasRun.resolve("artifacts.properties");
                 Path artifactsDirectory = rasRun.resolve("artifacts");
-                artifacts.load(Files.newInputStream(artifactsFile));
+                if (Files.exists(artifactsFile) && Files.exists(artifactsDirectory)) {
+                    artifacts.load(Files.newInputStream(artifactsFile));
 
-                for(Entry<Object, Object> entry : artifacts.entrySet()) {
-                    String key = (String) entry.getKey();
-                    String value = (String) entry.getValue();
+                    for(Entry<Object, Object> entry : artifacts.entrySet()) {
+                        String key = (String) entry.getKey();
+                        String value = (String) entry.getValue();
 
-                    try {
-                        String artifactPath = key.substring(1);
+                        try {
+                            String artifactPath = key.substring(1);
 
-                        Path saArtifact = saRun.resolve(artifactPath);
-                        Files.createDirectories(saArtifact.getParent());
-                        Path rasArtifact = artifactsDirectory.resolve(artifactPath);
-                        ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(value);
+                            Path saArtifact = saRun.resolve(artifactPath);
+                            Files.createDirectories(saArtifact.getParent());
+                            Path rasArtifact = artifactsDirectory.resolve(artifactPath);
+                            ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(value);
 
-                        try (InputStream is = Files.newInputStream(rasArtifact); 
-                                OutputStream os = Files.newOutputStream(saArtifact, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
-                            IOUtils.copy(is, os);
+                            try (InputStream is = Files.newInputStream(rasArtifact); 
+                                    OutputStream os = Files.newOutputStream(saArtifact, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
+                                IOUtils.copy(is, os);
+                            }
+                        } catch(Exception e) {
+                            logger.warn("Failed to copy run " + runName + " artifact " + key,e);
                         }
-                    } catch(Exception e) {
-                        logger.warn("Failed to copy run " + runName + " artifact " + key,e);
                     }
                 }
             } catch(Exception e) {
@@ -386,4 +521,178 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             }
         }
     }
+
+    @Override
+    public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        try {
+            switch(endpoint) {
+                case CPS:
+                    return new URL("file:" + this.cpsFile.toString());
+                case CREDS:
+                    return new URL("file:" + this.credentialsFile.toString());
+                case DSS:
+                    return new URL("file:" + this.dssFile.toString());
+                case RAS:
+                    return new URL("file:" + this.rasDirectory.toString());
+                case API:
+                case ENGINE_CONTROLLER_HEALTH:
+                case ENGINE_CONTROLLER_METRICS:
+                case GRAFANA:
+                case METRICS_HEALTH:
+                case METRICS_METRICS:
+                case PROMETHEUS:
+                case RESOURCE_MANAGEMENT_HEALTH:
+                case RESOURCE_MANAGEMENT_METRICS:
+                    throw new GalasaEcosystemManagerException("unavailable in local ecosystem");
+                case SIMBANK_DATABASE:
+                case SIMBANK_MANAGEMENT_FACILITY:
+                case SIMBANK_TELNET:
+                case SIMBANK_WEBSERVICE:
+                    return getSimPlatformEndpoint(endpoint);
+                default:
+                    throw new GalasaEcosystemManagerException("Unrecognised endpoint " + endpoint);
+            }
+        } catch(GalasaEcosystemManagerException e) {
+            throw e;
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem resolving endpoint", e);
+        }
+    }
+
+    private Object getSimPlatformEndpoint(EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException {
+        if (this.simPlatformInstance == null) {
+            throw new GalasaEcosystemManagerException("SimPlatform is not running at this point");
+        }
+
+        return this.simPlatformInstance.getSimPlatformEndpoint(endpoint);
+
+    }
+
+    protected SimPlatformInstance getSimPlatformInstance() {
+        return this.simPlatformInstance;
+    }
+
+    protected void setSimPlatformInstance(SimPlatformInstance simPlatformInstance) throws GalasaEcosystemManagerException {
+        this.simPlatformInstance = simPlatformInstance;
+
+        if (this.simPlatformInstance == null) {
+            return;
+        }
+
+        // Update the CPS with the properties for this instance
+
+        //*** Set up streams
+        setCpsProperty("framework.test.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + this.mavenVersion + "/obr");
+        setCpsProperty("framework.test.stream.simbank.repo", this.mavenRepo.toString());
+
+        //*** Set up SimBank
+        setCredsProperty("secure.credentials.SIMBANK.username", "IBMUSER");
+        setCredsProperty("secure.credentials.SIMBANK.password", "SYS1");
+
+        setCpsProperty("zos.dse.tag.SIMBANK.imageid", "SIMBANK");
+        setCpsProperty("zos.dse.tag.SIMBANK.clusterid", "SIMBANK");
+        setCpsProperty("zos.image.SIMBANK.ipv4.hostname", ((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_TELNET)).getHostString());
+        setCpsProperty("zos.image.SIMBANK.telnet.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_TELNET)).getPort()));
+        setCpsProperty("zos.image.SIMBANK.telnet.tls", "false");
+        setCpsProperty("zos.image.SIMBANK.credentials", "SIMBANK");
+
+        setCpsProperty("zosmf.image.SIMBANK.servers", "MFSIMBANK");
+        setCpsProperty("zosmf.server.MFSIMBANK.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_MANAGEMENT_FACILITY)).getPort()));
+        setCpsProperty("zosmf.server.MFSIMBANK.https", "false");
+        setCpsProperty("zosmf.server.MFSIMBANK.image", "SIMBANK");
+
+        setCpsProperty("simbank.dse.instance.name","SIMBANK");
+        setCpsProperty("simbank.instance.SIMBANK.zos.image","SIMBANK");
+        setCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_DATABASE)).getPort()));
+        setCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_WEBSERVICE)).getPort()));
+    }
+
+    @Override
+    public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        try {
+            Properties currentCps = new Properties();
+            try (InputStream isCps = Files.newInputStream(this.cpsFile)) {
+                currentCps.load(isCps);
+            }
+            
+            return currentCps.getProperty(property);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem inspecting the CPS", e);
+        }
+    }
+
+    @Override
+    public void setCpsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+
+        try {
+            Properties currentCps = new Properties();
+            try (InputStream isCps = Files.newInputStream(this.cpsFile)) {
+                currentCps.load(isCps);
+            }
+
+            if (value == null) {
+                currentCps.remove(property);
+            } else {
+                currentCps.put(property, value);
+            }
+
+            try (OutputStream osCps = Files.newOutputStream(this.cpsFile)) {
+                currentCps.store(osCps, "Galasa ecosystem manager");
+            }
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem updating the CPS", e);
+        }
+    }
+
+    @Override
+    public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setDssProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getCredsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
+        try {
+            Properties currentCreds = new Properties();
+            try (InputStream isCreds = Files.newInputStream(this.credentialsFile)) {
+                currentCreds.load(isCreds);
+            }
+            
+            return currentCreds.getProperty(property);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem inspecting the CREDS", e);
+        }
+    }
+
+    @Override
+    public void setCredsProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
+
+        try {
+            Properties currentCreds = new Properties();
+            try (InputStream isCreds = Files.newInputStream(this.credentialsFile)) {
+                currentCreds.load(isCreds);
+            }
+
+            if (value == null) {
+                currentCreds.remove(property);
+            } else {
+                currentCreds.put(property, value);
+            }
+
+            try (OutputStream osCreds = Files.newOutputStream(this.credentialsFile)) {
+                currentCreds.store(osCreds, "Galasa ecosystem manager");
+            }
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem updating the CREDS", e);
+        }
+    }
+
+
+
 }

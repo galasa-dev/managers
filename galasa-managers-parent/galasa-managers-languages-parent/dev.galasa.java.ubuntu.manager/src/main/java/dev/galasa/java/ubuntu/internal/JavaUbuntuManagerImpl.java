@@ -7,8 +7,6 @@ package dev.galasa.java.ubuntu.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,6 +46,8 @@ public class JavaUbuntuManagerImpl extends AbstractManager implements IJavaUbunt
     
     private final HashMap<String, JavaUbuntuInstallationImpl> installations = new HashMap<>();
     
+    private Class<?> test;
+    
     /*
      * (non-Javadoc)
      * 
@@ -67,6 +67,7 @@ public class JavaUbuntuManagerImpl extends AbstractManager implements IJavaUbunt
             if (!ourFields.isEmpty()) {
                 youAreRequired(allManagers, activeManagers, galasaTest);
             }
+            this.test = galasaTest.getJavaTestClass();
         }
 
     }
@@ -159,6 +160,13 @@ public class JavaUbuntuManagerImpl extends AbstractManager implements IJavaUbunt
 
     public ILinuxManagerSpi getLinuxManager() {
         return this.linuxManager;
+    }
+
+    public String getTestClassName() {
+        if (this.test == null) {
+            return "unknown";
+        }
+        return this.test.getName();
     }
 
 }

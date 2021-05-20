@@ -25,7 +25,6 @@ import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
-import dev.galasa.core.manager.internal.CoreManager;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IResultArchiveStore;
