@@ -24,14 +24,16 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
     private final GalasaEcosystemManagerImpl manager;
     private final String                     tag;
     private IJavaInstallation                javaInstallation;
+    private String                           defaultZosImageTag;
 
     public AbstractEcosystemImpl(GalasaEcosystemManagerImpl manager, 
             String tag,
-            IJavaInstallation javaInstallation) {
-        this.manager          = manager;
-        this.tag              = tag;
-        this.javaInstallation = javaInstallation;
-
+            IJavaInstallation javaInstallation,
+            String            defaultZosImageTag) {
+        this.manager           = manager;
+        this.tag               = tag;
+        this.javaInstallation  = javaInstallation;
+        this.defaultZosImageTag = defaultZosImageTag;
     }
 
     @Override
@@ -47,6 +49,19 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
 
     protected IJavaInstallation getJavaInstallation() {
         return this.javaInstallation;
+    }
+    
+    @Override
+    public void build() throws GalasaEcosystemManagerException {
+        if (this.defaultZosImageTag != null && !this.defaultZosImageTag.isEmpty()) {
+            try {
+                IZosImage zosImage = this.manager.getZosManager().getImageForTag(this.defaultZosImageTag);
+                addZosImageToCpsAsDefault(zosImage);
+            } catch(Exception e) {
+                throw new GalasaEcosystemManagerException("Unable to set the default zos image tagged " + this.defaultZosImageTag);
+            }
+        }
+        
     }
     
     @Override
