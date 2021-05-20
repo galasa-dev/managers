@@ -22,6 +22,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.internal.properties.SeleniumDefaultDriver;
@@ -65,6 +66,40 @@ public class SeleniumEnvironment {
 	 */
 	public ISeleniumManager allocateDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		ISeleniumManager driver;
+		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
+		// Get a slot or fail
+		String slotName = allocateSlot();
+		
+		try {
+			if (browser.equals(Browser.NOTSPECIFIED)) {
+				browser = Browser.valueOf(SeleniumDefaultDriver.get());
+			}
+			
+			switch(SeleniumWebDriverType.get()) {
+		    case ("local"):
+		    	driver = new LocalDriverImpl(browser, driverRasDir);
+		    	break;
+		    default:
+		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
+		    	break;
+			}
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new SeleniumManagerException("Failed to fetch Driver type", e);
+		}
+		drivers.add(driver);
+		return driver;
+
+	}
+	
+	/**
+	 * Allocate the driver based on CPS configurations.
+	 * 
+	 * @param browser
+	 * @return
+	 * @throws SeleniumManagerException
+	 */
+	public IWebDriver allocateWebDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
+		IWebDriver driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
 		// Get a slot or fail
 		String slotName = allocateSlot();
