@@ -12,7 +12,6 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.logging.Log;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
@@ -20,6 +19,7 @@ import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.http.StandAloneHttpClient;
 
 
 @Test
@@ -35,6 +35,12 @@ public class HttpManagerIVT {
     public void checkNotNull(){
         assertThat(logger).isNotNull();
         assertThat(client).isNotNull();
+    }
+    
+    @Test
+    public void testStandalone() {
+    	IHttpClient standaloneClient = StandAloneHttpClient.getHttpClient(10, logger);
+    	assertThat(standaloneClient).isInstanceOf(IHttpClient.class);
     }
     
     @Test
@@ -117,6 +123,17 @@ public class HttpManagerIVT {
         logger.info(sResponse.getContent().toString());
         assertThat(sResponse.getContent()).contains(key);
         assertThat(sResponse.getContent()).contains(value);
+    }
+    
+    @Test
+    public void testBinary() throws HttpClientException {
+    	byte[] bytes = "bytes".getBytes();
+    	
+    	HttpClientResponse<byte[]> response = client.getBinary("/bytes/8", bytes);
+    	
+    	assertThat(response.getHeader("Content-Length")).isEqualTo("8");
+    	assertThat(response.getContent().length).isEqualTo(8);
+    	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
 
     @Test
