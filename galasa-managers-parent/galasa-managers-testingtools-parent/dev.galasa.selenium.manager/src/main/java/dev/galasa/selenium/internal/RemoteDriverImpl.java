@@ -51,6 +51,7 @@ import dev.galasa.selenium.IEdgeOptions;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.IInternetExplorerOptions;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.internal.properties.SeleniumGridEndpoint;
@@ -58,7 +59,7 @@ import dev.galasa.selenium.internal.properties.SeleniumKubernetesNamespace;
 import dev.galasa.selenium.internal.properties.SeleniumKubernetesNodeSelector;
 import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 
-public class RemoteDriverImpl extends DriverImpl implements ISeleniumManager {
+public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
 	private static final Log logger = LogFactory.getLog(RemoteDriverImpl.class);
 	
     private List<WebPageImpl>   webPages = new ArrayList<>();

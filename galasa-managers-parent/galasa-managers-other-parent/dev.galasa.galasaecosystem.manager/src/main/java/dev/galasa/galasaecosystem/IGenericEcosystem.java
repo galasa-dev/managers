@@ -11,6 +11,8 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.zos.IZosImage;
+
 /**
  * Generic Ecosystem TPI
  * 
@@ -94,5 +96,9 @@ public interface IGenericEcosystem {
     
     public JsonObject waitForRun(String run) throws GalasaEcosystemManagerException;
     public JsonObject waitForRun(String run, int minutes) throws GalasaEcosystemManagerException;
-    
+
+    public void addZosImageToCpsAsDefault(@NotNull IZosImage image) throws GalasaEcosystemManagerException;
+    public void addZosImageToCps(@NotNull IZosImage image) throws GalasaEcosystemManagerException;
+    public void setZosImageDseTag(@NotNull String tag, @NotNull IZosImage image) throws GalasaEcosystemManagerException;
+    public void setZosClusterImages(@NotNull String cluserId, @NotNull IZosImage... images)  throws GalasaEcosystemManagerException;
 }

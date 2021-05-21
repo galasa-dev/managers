@@ -200,7 +200,7 @@ public class ArtifactManagerIVT {
     	assertThat(jarContent).contains("HelloGalasa.class");
     }
     
-    /* -- These tests currently fail due to a bug with Galasa
+   
     @Test
     public void retrieveJarTestNoVersion() throws Exception {
 
@@ -221,7 +221,7 @@ public class ArtifactManagerIVT {
     	assertThat(jarContent).contains("HelloGalasa.class");	
     }
     
-    */
+
     
     @Test
     public void zipDirectoryTestGZIP() throws TestBundleResourceException, IOException {
