@@ -20,6 +20,7 @@ import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.http.StandAloneHttpClient;
 
 
 @Test
@@ -35,6 +36,13 @@ public class HttpManagerIVT {
     public void checkNotNull(){
         assertThat(logger).isNotNull();
         assertThat(client).isNotNull();
+    }
+    
+    @Test
+    public void testStandalone() {
+    	
+    	IHttpClient standaloneClient = StandAloneHttpClient.getHttpClient(10, logger);
+    	assertThat(standaloneClient).isInstanceOf(IHttpClient.class);
     }
     
     @Test
