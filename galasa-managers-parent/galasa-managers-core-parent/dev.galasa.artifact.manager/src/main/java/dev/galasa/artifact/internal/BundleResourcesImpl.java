@@ -449,9 +449,10 @@ public class BundleResourcesImpl implements IBundleResources {
                     fileExtension = "." + fileExtension.toLowerCase();
                     if (entryPath.toLowerCase().endsWith(fileExtension)) {
                         directoryContents.add(entryPath);
-                        fileExtension = fileExtension.substring(1);
                     }
-                } else {
+                    fileExtension = fileExtension.substring(1);
+                } 
+                else {
                     directoryContents.add(entryPath);
                 }
             }
