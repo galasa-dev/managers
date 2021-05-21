@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
@@ -40,7 +41,6 @@ public class HttpManagerIVT {
     
     @Test
     public void testStandalone() {
-    	
     	IHttpClient standaloneClient = StandAloneHttpClient.getHttpClient(10, logger);
     	assertThat(standaloneClient).isInstanceOf(IHttpClient.class);
     }
@@ -125,6 +125,17 @@ public class HttpManagerIVT {
         logger.info(sResponse.getContent().toString());
         assertThat(sResponse.getContent()).contains(key);
         assertThat(sResponse.getContent()).contains(value);
+    }
+    
+    @Test
+    public void testBinary() throws HttpClientException {
+    	byte[] bytes = "bytes".getBytes();
+    	
+    	HttpClientResponse<byte[]> response = client.getBinary("/bytes/8", bytes);
+    	
+    	assertThat(response.getHeader("Content-Length")).isEqualTo("8");
+    	assertThat(response.getContent().length).isEqualTo(8);
+    	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
 
     @Test
