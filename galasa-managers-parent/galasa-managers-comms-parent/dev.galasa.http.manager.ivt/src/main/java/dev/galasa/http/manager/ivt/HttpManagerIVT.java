@@ -7,13 +7,11 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
 
 import org.apache.commons.logging.Log;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
