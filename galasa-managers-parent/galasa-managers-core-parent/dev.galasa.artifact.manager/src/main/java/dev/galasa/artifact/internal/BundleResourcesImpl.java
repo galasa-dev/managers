@@ -423,7 +423,7 @@ public class BundleResourcesImpl implements IBundleResources {
 
     private List<String> listDirectory(Bundle bundle, String directory, String fileExtension) {
     	
-    	if(fileExtension != null && !fileExtension.contains(".")){
+    	if(fileExtension != null && !fileExtension.startsWith(".")){
     		fileExtension = "." + fileExtension.toLowerCase();
     	}
 
