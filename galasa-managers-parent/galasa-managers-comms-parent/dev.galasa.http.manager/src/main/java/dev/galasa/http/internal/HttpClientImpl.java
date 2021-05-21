@@ -807,9 +807,6 @@ public class HttpClientImpl implements IHttpClient {
     }
 
     private CloseableHttpResponse execute(HttpUriRequest request) throws HttpClientException {
-        for (Header header : commonHeaders) {
-            request.addHeader(header);
-        }
         this.build();
         try {
             return httpClient.execute(request, httpContext);
