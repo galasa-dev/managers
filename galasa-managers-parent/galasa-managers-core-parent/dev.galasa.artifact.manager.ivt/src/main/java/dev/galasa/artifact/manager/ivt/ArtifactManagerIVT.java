@@ -21,6 +21,7 @@ import dev.galasa.artifact.ArtifactManager;
 import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
+import dev.galasa.artifact.ISkeletonProcessor.SkeletonType;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
 
@@ -55,6 +56,7 @@ public class ArtifactManagerIVT {
         logger.info("Received the following from the skeleton file: " + textContent);
         assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
     }
+   
 
     @Test
     public void readTextFileArtifactManager() throws Exception, TestBundleResourceException, IOException {
@@ -82,6 +84,13 @@ public class ArtifactManagerIVT {
     @Test
     public void readSkeletonBundleResources() throws TestBundleResourceException, Exception, IOException {
         String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/resources/skeletons/test1.skel", buildHashMap()));
+        logger.info("Received the following from the skeleton file: " + textContent);
+        assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
+    }
+    
+    @Test
+    public void readSkeletonBundleResourcesVelocity() throws TestBundleResourceException, Exception, IOException {
+        String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/resources/velocity/velocityTest.skel", buildHashMap(), SkeletonType.VELOCITY));
         logger.info("Received the following from the skeleton file: " + textContent);
         assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
     }
