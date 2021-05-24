@@ -19,6 +19,7 @@ import dev.galasa.selenium.IEdgeOptions;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.IInternetExplorerOptions;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
@@ -29,7 +30,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * @author jamesdavies
  *
  */
-public class LocalDriverImpl extends DriverImpl implements ISeleniumManager{
+public class LocalDriverImpl extends DriverImpl implements IWebDriver{
     private Path screenshotRasDirectory;
     private Browser browser;
 

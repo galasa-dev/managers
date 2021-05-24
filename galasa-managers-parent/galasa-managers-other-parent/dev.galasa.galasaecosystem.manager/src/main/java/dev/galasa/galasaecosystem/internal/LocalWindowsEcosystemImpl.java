@@ -20,15 +20,15 @@ public class LocalWindowsEcosystemImpl extends LocalEcosystemImpl {
             IWindowsImage windowsImage, 
             IJavaInstallation javaInstallation, 
             IsolationInstallation isolationInstallation,
-            boolean startSimPlatform) throws WindowsManagerException {
-        super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform);
+            boolean startSimPlatform,
+            String defaultZosImage) throws WindowsManagerException {
+        super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform, defaultZosImage);
         this.windowsImage = windowsImage;
     }
 
     @Override
     public void build() throws GalasaEcosystemManagerException {
         // TODO Auto-generated method stub
-        
     }
 
     @Override

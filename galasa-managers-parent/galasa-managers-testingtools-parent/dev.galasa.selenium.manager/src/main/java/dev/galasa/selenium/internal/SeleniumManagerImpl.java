@@ -35,14 +35,17 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.kubernetes.spi.IKubernetesManagerSpi;
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
 import dev.galasa.selenium.SeleniumManagerField;
+import dev.galasa.selenium.WebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
 import dev.galasa.selenium.internal.properties.SeleniumScreenshotFailure;
+import dev.galasa.selenium.spi.ISeleniumManagerSpi;
 
 @Component(service = { IManager.class })
-public class SeleniumManagerImpl extends AbstractManager {
+public class SeleniumManagerImpl extends AbstractManager implements ISeleniumManagerSpi {
 	
 	private static final Log logger = LogFactory.getLog(SeleniumManagerImpl.class);
 
@@ -152,6 +155,13 @@ public class SeleniumManagerImpl extends AbstractManager {
         Browser browser = annoation.browser();
        return this.seleniumEnvironment.allocateDriver(browser);
     }
+    
+    @GenerateAnnotatedField(annotation = WebDriver.class)
+    public IWebDriver generateWebDriver(Field field, List<Annotation> annotations) throws ResourceUnavailableException, SeleniumManagerException {
+    	WebDriver annoation = field.getAnnotation(WebDriver.class);
+        Browser browser = annoation.browser();
+       return this.seleniumEnvironment.allocateWebDriver(browser);
+    }
 
     @Override
     public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
@@ -166,6 +176,11 @@ public class SeleniumManagerImpl extends AbstractManager {
 
         }
         return null;
+    }
+    
+    @Override
+    public IWebDriver provisionWebDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
+    	return this.seleniumEnvironment.allocateWebDriver(browser);
     }
     
     
