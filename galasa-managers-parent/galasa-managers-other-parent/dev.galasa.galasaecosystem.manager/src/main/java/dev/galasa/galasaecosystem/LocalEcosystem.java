@@ -65,6 +65,11 @@ public @interface LocalEcosystem {
      * The <code>javaInstallationTag</code> to which Java installation on the image is to be used to run the Galasa tests and services.
      */
     public String javaInstallationTag() default "PRIMARY";
+
+    /**
+     * The <code>addDefaultZosImage</code> add the zOS image to the ecosystem as part of the default cluster
+     */
+    public String addDefaultZosImage() default "";
     
     public IsolationInstallation isolationInstallation() default IsolationInstallation.None;
     

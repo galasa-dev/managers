@@ -422,6 +422,10 @@ public class BundleResourcesImpl implements IBundleResources {
     }
 
     private List<String> listDirectory(Bundle bundle, String directory, String fileExtension) {
+    	
+    	if(fileExtension != null && !fileExtension.startsWith(".")){
+    		fileExtension = "." + fileExtension.toLowerCase();
+    	}
 
         List<String> directoryContents = new ArrayList<>();
 
@@ -446,11 +450,11 @@ public class BundleResourcesImpl implements IBundleResources {
                 }
 
                 if (fileExtension != null) {
-                    fileExtension = "." + fileExtension.toLowerCase();
                     if (entryPath.toLowerCase().endsWith(fileExtension)) {
                         directoryContents.add(entryPath);
                     }
-                } else {
+                } 
+                else {
                     directoryContents.add(entryPath);
                 }
             }

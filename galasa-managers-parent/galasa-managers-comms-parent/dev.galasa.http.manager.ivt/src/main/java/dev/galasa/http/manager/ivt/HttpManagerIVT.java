@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Map;
 
 import com.google.gson.JsonObject;
 
@@ -18,6 +19,7 @@ import dev.galasa.http.HttpClient;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.http.StandAloneHttpClient;
 
 
 @Test
@@ -33,6 +35,12 @@ public class HttpManagerIVT {
     public void checkNotNull(){
         assertThat(logger).isNotNull();
         assertThat(client).isNotNull();
+    }
+    
+    @Test
+    public void testStandalone() {
+    	IHttpClient standaloneClient = StandAloneHttpClient.getHttpClient(10, logger);
+    	assertThat(standaloneClient).isInstanceOf(IHttpClient.class);
     }
     
     @Test
@@ -59,9 +67,23 @@ public class HttpManagerIVT {
 
         client.setURI(new URI("https://httpbin.org"));
         client.addCommonHeader(headerName, headerValue);
-        JsonObject response = client.getJson("/get").getContent();
-        assertThat(response.toString()).contains(headerName);
-        assertThat(response.toString()).contains(headerValue);
+
+        HttpClientResponse<JsonObject> response = client.getJson("/get");
+        
+        Map<String, String> headers = response.getheaders();
+        logger.info("Response headers: " + headers);
+        assertThat(headers).isNotNull();
+        assertThat(headers).containsKey("Content-Type");
+        
+        assertThat(response.getHeader("Content-Type")).isEqualTo("application/json");
+        assertThat(response.getProtocolVersion()).contains("HTTP");
+        assertThat(response.getStatusCode()).isEqualTo(200);
+        assertThat(response.getStatusMessage()).isEqualTo("OK");
+        assertThat(response.getStatusLine()).contains("HTTP", "200 OK");
+        
+        JsonObject json = response.getContent();
+        assertThat(json.toString()).contains(headerName);
+        assertThat(json.toString()).contains(headerValue);
     }
 
     @Test
@@ -70,7 +92,13 @@ public class HttpManagerIVT {
         String pword = "passw0rd";
         String path = "/basic-auth/" + user + "/" + pword;
 
+        URI httpbin = new URI("https://httpbin.org");
+        
         client.setAuthorisation(user, pword);
+        client.setAuthorisation(user, pword, httpbin);
+        assertThat(client.getUsername()).isEqualTo(user);
+        assertThat(client.getUsername(httpbin)).isEqualTo(user);
+        
         HttpClientResponse<JsonObject> response = client.getJson(path);
         assertThat(response.getStatusCode()).isEqualTo(200);
         
@@ -95,6 +123,17 @@ public class HttpManagerIVT {
         logger.info(sResponse.getContent().toString());
         assertThat(sResponse.getContent()).contains(key);
         assertThat(sResponse.getContent()).contains(value);
+    }
+    
+    @Test
+    public void testBinary() throws HttpClientException {
+    	byte[] bytes = "bytes".getBytes();
+    	
+    	HttpClientResponse<byte[]> response = client.getBinary("/bytes/8", bytes);
+    	
+    	assertThat(response.getHeader("Content-Length")).isEqualTo("8");
+    	assertThat(response.getContent().length).isEqualTo(8);
+    	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
 
     @Test

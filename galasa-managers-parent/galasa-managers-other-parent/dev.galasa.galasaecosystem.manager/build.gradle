@@ -16,6 +16,7 @@ dependencies {
     api project(':galasa-managers-languages-parent:dev.galasa.java.manager')
     api project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
     api project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
+    api project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation 'org.yaml:snakeyaml:1.19'
     implementation 'com.google.code.gson:gson:2.8.5'
 }

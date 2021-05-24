@@ -48,8 +48,9 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
     public LocalLinuxEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag,
             ILinuxImage linuxImage, IJavaInstallation javaInstallation, 
             IsolationInstallation isolationInstallation,
-            boolean startSimPlatform) throws LinuxManagerException {
-        super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform);
+            boolean startSimPlatform,
+            String defaultZosImage) throws LinuxManagerException {
+        super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform, defaultZosImage);
 
         this.linuxImage = linuxImage;
     }
