@@ -82,6 +82,7 @@ public class HttpManagerIVT {
         assertThat(response.getStatusLine()).contains("HTTP", "200 OK");
         
         JsonObject json = response.getContent();
+        logger.info(json.toString());
         assertThat(json.toString()).contains(headerName);
         assertThat(json.toString()).contains(headerValue);
     }
@@ -123,6 +124,28 @@ public class HttpManagerIVT {
         logger.info(sResponse.getContent().toString());
         assertThat(sResponse.getContent()).contains(key);
         assertThat(sResponse.getContent()).contains(value);
+    }
+    
+    @Test
+    public void deleteTests() throws HttpClientException {
+    	HttpClientResponse<String> textResponse = client.deleteText("/anything");
+    	assertThat(textResponse.getContent()).contains("DELETE");
+    	assertThat(textResponse.getStatusCode()).isEqualTo(200);
+
+    	byte[] bytes = "bytes".getBytes();
+    	HttpClientResponse<byte[]> binResponse = client.deleteBinary("/delete", bytes);
+    	assertThat(binResponse.getStatusCode()).isEqualTo(200);
+    }
+    
+    @Test
+    public void putTests() throws HttpClientException {
+    	HttpClientResponse<String> textResponse = client.putText("/anything", "");
+    	assertThat(textResponse.getContent()).contains("PUT");
+    	assertThat(textResponse.getStatusCode()).isEqualTo(200);
+
+    	byte[] bytes = "bytes".getBytes();
+    	HttpClientResponse<byte[]> binResponse = client.putBinary("/put", bytes);
+    	assertThat(binResponse.getStatusCode()).isEqualTo(200);
     }
     
     @Test

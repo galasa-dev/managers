@@ -9,8 +9,7 @@ version = '0.15.0-SNAPSHOT'
 dependencies {
     api            project(':galasa-managers-zos-parent:dev.galasa.zos3270.common')
     api            project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
-    api            'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-codec:commons-codec:1.11'
     implementation 'commons-io:commons-io:2.6'
-    
 }
