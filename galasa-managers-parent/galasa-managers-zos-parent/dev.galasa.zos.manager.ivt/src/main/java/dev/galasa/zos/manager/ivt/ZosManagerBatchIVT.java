@@ -5,6 +5,7 @@
  */
 package dev.galasa.zos.manager.ivt;
 
+import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -15,10 +16,8 @@ import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
-import dev.galasa.zos.ZosIpHost;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatch;
@@ -37,28 +36,18 @@ public class ZosManagerBatchIVT {
     public IZosBatch batch;
     
     @BundleResources
-    public IBundleResources resources;
-    
-//    @ZosIpHost
-//    public IIpHost hostPrimary;
-    
-    
+    public IBundleResources resources;    
     
     @Test
     public void preFlightTests() throws Exception {
-        if (imagePrimary == null) {
-            throw new Exception("Primary Image is null, should have been filled by the zOS Manager");
-        }
-//        if (hostPrimary == null) {
-//            throw new Exception("Primary Image Host is null, should have been filled by the zOS Manager");
-//        }
+        assertThat(imagePrimary).isNotNull();
+        assertThat(batch).isNotNull();
+        assertThat(resources).isNotNull();
+        assertThat(logger).isNotNull();
         
-        logger.info("The Primary Image field has been correctly initialised");
+        logger.info("All provisioned objects have been correctly initialised");
         
-        ICredentials creds = imagePrimary.getDefaultCredentials();
-        if (creds == null) {
-            throw new Exception("Primary Credentials is null");
-        }
+        assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
         logger.info("The Primary Credentials are being returned");
     }
 
@@ -73,7 +62,9 @@ public class ZosManagerBatchIVT {
     public void submitJCLDoNothing() throws TestBundleResourceException, IOException, ZosBatchException {
     	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
-    	job.waitForJob();
+    	int returnCode = job.waitForJob();
+    	assertThat(returnCode).isEqualTo(0);
     }
+ 
 
 }

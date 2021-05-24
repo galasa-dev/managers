@@ -7,4 +7,5 @@ Import-Package: dev.galasa,\
     dev.galasa.zos,\
     dev.galasa.zosbatch,\
     dev.galasa.artifact,\
+    org.assertj.core.api,\
     org.apache.commons.logging
