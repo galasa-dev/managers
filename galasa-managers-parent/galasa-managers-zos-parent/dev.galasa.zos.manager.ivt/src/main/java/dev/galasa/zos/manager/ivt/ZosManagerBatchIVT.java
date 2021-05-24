@@ -7,6 +7,11 @@ package dev.galasa.zos.manager.ivt;
 
 import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 
@@ -17,10 +22,13 @@ import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.CoreManager;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJobOutput;
+import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.IZosBatchJobname;
 import dev.galasa.zosbatch.ZosBatch;
 import dev.galasa.zosbatch.ZosBatchException;
@@ -50,6 +58,10 @@ public class ZosManagerBatchIVT {
     
     @CoreManager
     public ICoreManager coreManager;
+    
+    @StoredArtifactRoot
+    public Path rasRoot;
+    
     
     @Test
     public void preFlightTestsBasic() {
@@ -118,5 +130,49 @@ public class ZosManagerBatchIVT {
     	int returnCode = job.waitForJob();
     	assertThat(job.getJobname().getName()).isEqualTo(jobName2.getName());
     	assertThat(returnCode).isEqualTo(0);
+    }
+    
+    /*
+     * Runs a Batch Job and checks the output in the RAS
+     */
+    @Test
+    public void checkOutputIsStoredInRAS() throws TestBundleResourceException, IOException, ZosBatchException {
+    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	IZosBatchJob job = batch.submitJob(jclInput, null);
+    	job.setShouldArchive(true);
+    	job.waitForJob();
+    	Path jobOutput = rasRoot.resolve("/zosBatchJobs/checkOutputIsStoredinRAS");
+    	assertThat(Files.exists(jobOutput)).isTrue();
+    	
+    }
+    
+    /*
+     * Runs a batch job and interrogates the output
+     */
+    @Test
+    public void retrieveAndCheckOutput() throws TestBundleResourceException, IOException, ZosBatchException {
+    	//prepare the input JCL with our message
+    	String message = "HELLO WORLD FROM GALASA";
+    	Map<String,Object> parameters = new HashMap<>();
+    	parameters.put("MESSAGE", message);
+    	String jclInput = resources.retrieveSkeletonFileAsString("resources/jcl/helloWorld.jcl", parameters);
+    	assertThat(jclInput).contains(message);
+    	
+    	//submit the job, check that it completes and we got some output
+    	IZosBatchJob job = batch.submitJob(jclInput, null);
+    	assertThat(job.waitForJob()).isEqualTo(0);
+    	IZosBatchJobOutput output = job.retrieveOutput();
+    	assertThat(output.isEmpty()).isFalse();
+    	
+    	//Find the SYSUT2 output and check the message was output
+    	List<IZosBatchJobOutputSpoolFile> files = output.getSpoolFiles();
+    	for(IZosBatchJobOutputSpoolFile f : files) {
+    		if(f.getDdname().equals("SYSUT2")) {
+    			assertThat(f.getRecords()).isEqualToIgnoringWhitespace(message);
+    			assertThat(f.getStepname()).isEqualTo("HELLO");
+    			//length is message+1 to account for a new line break
+    			assertThat(f.getSize()).isEqualTo(message.length()+1);
+    		}
+    	}
     }
 }
