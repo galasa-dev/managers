@@ -9,4 +9,5 @@ version = '0.15.0-SNAPSHOT'
 dependencies {
     implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
