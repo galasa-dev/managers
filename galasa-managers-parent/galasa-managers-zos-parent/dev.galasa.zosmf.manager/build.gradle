@@ -11,5 +11,5 @@ dependencies {
     api              project(':galasa-managers-comms-parent:dev.galasa.http.manager')
     implementation   'commons-io:commons-io:2.8.0' 
     api              'org.apache.commons:commons-lang3:3.8.1'
-    
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
