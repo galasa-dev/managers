@@ -5,6 +5,6 @@ Import-Package: dev.galasa,\
     dev.galasa.core.manager,\
     dev.galasa.ipnetwork,\
     dev.galasa.zos,\
+    dev.galasa.zosbatch,\
+    dev.galasa.artifact,\
     org.apache.commons.logging
-
-
