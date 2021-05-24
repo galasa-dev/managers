@@ -42,6 +42,9 @@ public class ZosManagerBatchIVT {
     @ZosBatchJobname(imageTag = "PRIMARY")
     public IZosBatchJobname jobName;
     
+    @ZosBatchJobname(imageTag = "PRIMARY")
+    public IZosBatchJobname jobName2;
+    
     @BundleResources
     public IBundleResources resources;    
     
@@ -64,7 +67,10 @@ public class ZosManagerBatchIVT {
     public void preFlightTestsBatch() {
     	assertThat(batch).isNotNull();
         assertThat(jobName).isNotNull();
+        assertThat(jobName2).isNotNull();
         assertThat(jobName.getName()).isUpperCase();
+        assertThat(jobName2.getName()).isUpperCase();
+        assertThat(jobName.getName()).isNotEqualTo(jobName2.getName());
     }
 
     //@Test - currently causes an NPE #711
@@ -100,8 +106,17 @@ public class ZosManagerBatchIVT {
     	assertThat(returnCode).isEqualTo(0);
     }
     
-
-
- 
-
+    /*
+     * Submits the basic job but with a provisioned
+     * job name and a job card
+     */
+    @Test
+    public void submitJCLDoNothingJobNameAndBlankCard() throws TestBundleResourceException, IOException, ZosBatchException {
+    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");  	
+    	ZosBatchJobcard jobCard = new ZosBatchJobcard();
+    	IZosBatchJob job = batch.submitJob(jclInput, jobName2, jobCard);
+    	int returnCode = job.waitForJob();
+    	assertThat(job.getJobname().getName()).isEqualTo(jobName2.getName());
+    	assertThat(returnCode).isEqualTo(0);
+    }
 }
