@@ -17,9 +17,10 @@ pipeline {
       // Set up the workspace, clear the git directories and setup the manve settings.xml files
       stage('prep-workspace') { 
          steps {
-            configFileProvider([configFile(fileId: '86dde059-684b-4300-b595-64e83c2dd217', targetLocation: 'settings.xml'),
-            configFileProvider([configFile(fileId: 'galasa-init-gradle', targetLocation: '.gradle/init.gradle'),
-            configFile(fileId: 'galasa-gradle-properties', targetLocation: '.gradle/gradle.properties')]) {
+            configFileProvider([
+                 configFile(fileId: '86dde059-684b-4300-b595-64e83c2dd217', targetLocation: 'settings.xml'),
+                 configFile(fileId: 'galasa-init-gradle', targetLocation: '.gradle/init.gradle'),
+                 configFile(fileId: 'galasa-gradle-properties', targetLocation: '.gradle/gradle.properties')]) {
             }
             dir('repository/dev.galasa') {
                deleteDir()
