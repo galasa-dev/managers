@@ -184,6 +184,7 @@ public class BundleResourcesImpl implements IBundleResources {
 				Boolean matchingNames = false;
 				String bundleSymbolicName = attributes.getValue("Bundle-SymbolicName");
 				
+				//Checks if the symbolic name is listed in the manifest 
 				if (bundleSymbolicName != null) {
 					if (bundleSymbolicName.equals(symbolicName)) {
 					matchingNames = true;
@@ -193,7 +194,6 @@ public class BundleResourcesImpl implements IBundleResources {
                 // the exact contents,
                 // but if the contents contain the passed symbolic name it's a fair bet it's the
                 // right name
-				// Also checks if the symbolic name is mentioned in the manifest 
                 if (jarContents.contains(symbolicName) || matchingNames == true){
 
                     // If we were passed a version let's inspect all the attributes to see if one of
