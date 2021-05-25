@@ -269,8 +269,8 @@ public class ArtifactManagerIVT {
     public void zipDirectoryTestNoEncoding() throws TestBundleResourceException, IOException {
     	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), null, false);  	    	    	
     	
-    	//Decode zip using no encoding"
-    	String text = "Decoded Zip: ";
+    	//Read zip using no encoding"
+    	String text = "Zip: ";
     	int data = is.read();
     	while(data != -1){
     		char ch = (char) data;
