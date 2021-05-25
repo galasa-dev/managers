@@ -12,13 +12,11 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.validation.constraints.NotEmpty;
-
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -105,7 +103,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + "must be absolute not be relative");
         }        
         this.image = image;
-        this.unixPath = unixPath;
+        this.unixPath = FilenameUtils.normalize(unixPath, true);
         this.zosFileHandler = zosFileHandler;
         this.testMethodArchiveFolder = this.zosFileHandler.getZosFileManager().getUnixPathCurrentTestMethodArchiveFolder();
         splitUnixPath();
@@ -312,7 +310,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException {
 		if (this.filePermissions == null) {
-			retrieveAttibutes();
+			retrieveAttributes();
 		}
 		return this.filePermissions;
 	}
@@ -321,7 +319,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public int getSize() throws ZosUNIXFileException {
 		if (this.fileSize == -1) {
-			retrieveAttibutes();
+			retrieveAttributes();
 		}
 		return this.fileSize;
 	}
@@ -330,7 +328,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public String getLastModified() throws ZosUNIXFileException {
 		if (this.lastModified == null) {
-			retrieveAttibutes();
+			retrieveAttributes();
 		}
 		return this.lastModified;
 	}
@@ -339,7 +337,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public String getUser() throws ZosUNIXFileException {
 		if (this.user == null) {
-			retrieveAttibutes();
+			retrieveAttributes();
 		}
 		return this.user;
 	}
@@ -348,14 +346,14 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	@Override
 	public String getGroup() throws ZosUNIXFileException {
 		if (this.group == null) {
-			retrieveAttibutes();
+			retrieveAttributes();
 		}
 		return this.group;
 	}
 
 
 	@Override
-	public void retrieveAttibutes() throws ZosUNIXFileException {
+	public void retrieveAttributes() throws ZosUNIXFileException {
 		getAttributes(this.unixPath);
 	}
 
@@ -477,7 +475,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
-    private void setAttributeValues(JsonObject responseBody) {
+    protected void setAttributeValues(JsonObject responseBody) {
 		JsonElement element = responseBody.get(PROP_PERMISSIONS_SYMBOLIC);
         if (element != null) {
         	this.filePermissions = PosixFilePermissions.fromString(element.getAsString().substring(1));
@@ -597,10 +595,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         Map<String, String> headers = new HashMap<>();
         boolean convert;
         if (getDataType().equals(UNIXFileDataType.TEXT)) {
-        	urlPath = RESTFILES_FILE_PATH + this.unixPath;
+        	urlPath = RESTFILES_FILE_PATH + path;
         	convert = true;
         } else {        	
-        	urlPath = RESTFILES_FILE_PATH + this.unixPath + RESTFILES_FILE_PATH_RAW_CONTENT;
+        	urlPath = RESTFILES_FILE_PATH + path + RESTFILES_FILE_PATH_RAW_CONTENT;
         	convert = false;
         }
     	headers.put(HEADER_CONVERT, String.valueOf(convert));
@@ -647,19 +645,29 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
         if (isDirectory(path)) {
             Map<String, IZosUNIXFile> paths = listDirectory(path, true);
-            for (Entry<String, IZosUNIXFile> entry : paths.entrySet()) {
-                String entryPath = entry.getKey();
-                UNIXFileType entryType = entry.getValue().getFileType();
-                if (entryType.equals(UNIXFileType.FILE)) {
-                	String archiveLocation = storeArtifact(rasPath, retrieve(entryPath), false, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
-                    logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
-                } else if (entryType.equals(UNIXFileType.DIRECTORY)) {
-                	String archiveLocation = storeArtifact(rasPath, null, true, StringUtils.stripStart(entryPath, SLASH).split(SLASH));
-                    logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
-                }
+            for (Map.Entry<String, IZosUNIXFile> entry : paths.entrySet()) {
+            	IZosUNIXFile entryUnixFile = entry.getValue();
+	            String entryPath = entryUnixFile.getUnixPath();
+	            if (!entryPath.contains("~")) {
+	                String directoryName = entryPath.substring(path.length());
+	                UNIXFileType entryFileType = entryUnixFile.getFileType();
+	                if (entryFileType.equals(UNIXFileType.FILE)) {
+	                	String fileName = entry.getValue().getFileName();
+	                	if (directoryName.contains(SLASH)) {
+	                		directoryName = SLASH + directoryName.substring(0,directoryName.length()-fileName.length()-1);
+	                	} else {
+	                		directoryName = SLASH;
+	                	}
+	                    String archiveLocation = storeArtifact(rasPath + directoryName, retrieve(entryPath), false, fileName);
+	                    logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
+	                } else if (entryFileType.equals(UNIXFileType.DIRECTORY)) {
+	                    String archiveLocation = storeArtifact(rasPath, null, true, directoryName);
+	                    logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
+	                }
+            	}
             }
         } else {
-        	String archiveLocation = storeArtifact(rasPath, retrieve(path), false, this.unixPath);
+            String archiveLocation = storeArtifact(rasPath, retrieve(path), false, this.fileName);
             logger.info(quoted(this.unixPath) + LOG_ARCHIVED_TO + archiveLocation);
         }
     }
@@ -678,9 +686,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(path) + " is not a directory");
         }
 
-        if (path.endsWith(SLASH)) {
-            path = path.substring(0, path.length()-1);
-        }
+        path.replaceAll("/[\\/\\/]+", "/").replaceAll("\\/$", "");
         Map<String, String> headers = new HashMap<>();
         String urlPath = RESTFILES_FILE_PATH + PATH_EQUALS + path;
         IRseapiResponse response;
@@ -719,9 +725,8 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 				JsonObject child = childElement.getAsJsonObject();
 				String path = root + child.get(PROP_NAME).getAsString();
 				if (!(path.endsWith("/.") || path.endsWith("/.."))) {
-                	RseapiZosUNIXFileImpl unixFile = new RseapiZosUNIXFileImpl(this.zosFileHandler, this.image, path);
-                	unixFile.setAttributeValues(unixFile.getAttributes(path));
-				   	paths.put(path, unixFile);
+				   	IZosUNIXFile unixFile = newUnixFile(path);
+					paths.put(path, unixFile);
 					if (recursive && unixFile.getFileType().equals(UNIXFileType.DIRECTORY)) {
 						paths.putAll(listDirectory(path, recursive));
 					}
@@ -729,9 +734,15 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 			}
 		}
         return paths;
-    }
+    } 
 
-    protected UNIXFileType determineType(String mode) {
+    protected IZosUNIXFile newUnixFile(String path) throws ZosUNIXFileException {
+    	RseapiZosUNIXFileImpl unixFile = new RseapiZosUNIXFileImpl(this.zosFileHandler, this.image, path);
+    	unixFile.setAttributeValues(unixFile.getAttributes(path));
+    	return unixFile;
+	}
+
+	protected UNIXFileType determineType(String mode) {
         String typeChar = mode.substring(0, 1);
         switch(typeChar) {
             case "-": return UNIXFileType.FILE;
@@ -745,18 +756,20 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
     
-    protected String storeArtifact(String rasPath, Object content, boolean directory, @NotEmpty String ... artifactPathElements) throws ZosUNIXFileException {
-        Path artifactPath;
-        try {
-        	artifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath);
+    protected String storeArtifact(String rasPath, Object content, boolean directory, String artifactPath) throws ZosUNIXFileException {
+        Path rasArtifactPath;
+		try {
             if (directory) {
-                Files.createDirectories(artifactPath);
+            	rasArtifactPath = this.zosFileHandler.getArtifactsRoot().resolve(StringUtils.stripStart(rasPath, SLASH)).resolve(StringUtils.stripStart(artifactPath, SLASH));
+                Files.createDirectories(rasArtifactPath);
             } else {
-                Files.createFile(artifactPath, ResultArchiveStoreContentType.TEXT);
+            	String uniqueArtifactPath = this.zosFileHandler.getZosManager().buildUniquePathName(this.zosFileHandler.getArtifactsRoot().resolve(StringUtils.stripStart(rasPath, SLASH)), StringUtils.stripStart(artifactPath, SLASH));
+            	rasArtifactPath = this.zosFileHandler.getArtifactsRoot().resolve(rasPath).resolve(uniqueArtifactPath);
+                Files.createFile(rasArtifactPath, ResultArchiveStoreContentType.TEXT);
                 if (content instanceof String) {
-                    Files.write(artifactPath, ((String) content).getBytes()); 
+                    Files.write(rasArtifactPath, ((String) content).getBytes()); 
                 } else if (content instanceof byte[]) {
-                    Files.write(artifactPath, (byte[]) content);
+                    Files.write(rasArtifactPath, (byte[]) content);
                 } else {
                     throw new ZosUNIXFileException("Unable to store artifact. Invalid content object type: " + content.getClass().getName());
                 }
@@ -764,7 +777,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         } catch (IOException e) {
             throw new ZosUNIXFileException("Unable to store artifact", e);
         }
-        return artifactPath.toString();
+        return rasArtifactPath.toString();
     }
     
     protected void splitUnixPath() {

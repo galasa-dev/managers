@@ -28,7 +28,11 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     private final String        defaultCredentialsId;
     private final ZosIpHostImpl ipHost;
 
+    private final String        runTemporaryUNIXPath;
+
     private ICredentials defaultCedentials;
+
+    private static final String SLASH = "/";
 
     public ZosBaseImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) throws ZosManagerException {
         this.zosManager = zosManager;
@@ -49,6 +53,8 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         } catch(Exception e) {
             throw new ZosManagerException("Unable to create the IP Host for the image " + this.imageId, e);
         }
+        
+        this.runTemporaryUNIXPath = this.zosManager.getRunUNIXPathPrefix(this) + SLASH + this.zosManager.getRunId();
     }
 
     protected IConfigurationPropertyStoreService getCPS() {
@@ -113,6 +119,10 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 
     public ZosIpHostImpl getIpHost() {
         return this.ipHost;
+    }
+
+    public String getRunTemporaryUNIXPath() {
+        return this.runTemporaryUNIXPath;
     }
 
     @Override

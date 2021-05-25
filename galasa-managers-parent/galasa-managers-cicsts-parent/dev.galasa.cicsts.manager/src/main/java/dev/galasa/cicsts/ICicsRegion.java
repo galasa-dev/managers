@@ -60,4 +60,8 @@ public interface ICicsRegion {
     void shutdown() throws CicstsManagerException;
     
     boolean isProvisionStart();
+
+    public String getUssHome() throws CicstsManagerException;
+
+    public String getJvmProfileDir() throws CicstsManagerException;
 }

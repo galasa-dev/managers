@@ -13,6 +13,7 @@ Import-Package: com.google.gson,\
     dev.galasa.zosunixcommand,\
     dev.galasa.zosunixcommand.spi,\
     javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.io,\
     org.apache.commons.lang3,\
     org.apache.commons.lang3.math,\
     org.apache.commons.logging,\

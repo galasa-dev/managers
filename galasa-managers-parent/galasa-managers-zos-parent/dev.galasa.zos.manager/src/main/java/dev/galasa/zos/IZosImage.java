@@ -74,4 +74,11 @@ public interface IZosImage {
      */
     @NotNull
     IIpHost getIpHost();
+    
+    /**
+     * Get the path to the temporary zOS UNIX directory on this zOS Image for this run  
+     * @return the Run Temporary UNIX Path location
+     * @throws ZosManagerException
+     */
+    public String getRunTemporaryUNIXPath() throws ZosManagerException;
 }

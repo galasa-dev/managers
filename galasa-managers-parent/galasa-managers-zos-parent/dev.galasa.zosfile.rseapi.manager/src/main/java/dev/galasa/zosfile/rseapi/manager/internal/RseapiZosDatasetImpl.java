@@ -90,12 +90,12 @@ public class RseapiZosDatasetImpl implements IZosDataset {
 
     private RseapiZosDatasetAttributesListdsi rseapiZosDatasetAttributesListdsi;
 
-	private Path testMethodArchiveFolder;
+    private Path testMethodArchiveFolder;
 
-	private RseapiZosFileHandlerImpl zosFileHandler;
-	public RseapiZosFileHandlerImpl getZosFileHandler() {
-		return zosFileHandler;
-	}
+    private RseapiZosFileHandlerImpl zosFileHandler;
+    public RseapiZosFileHandlerImpl getZosFileHandler() {
+        return zosFileHandler;
+    }
 
     private static final String PROP_NAME = "name";
     private static final String PROP_VOLUME_SERIAL = "volumeSerial";     
@@ -111,8 +111,8 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     private static final String PROP_RECORD_LENGTH = "recordLength";
     private static final String PROP_DSN_TYPE = "dsnType";
 	private static final String PROP_DATA_SET_ORGANIZATION = "dataSetOrganization";     
-    private static final String PROP_STOR_CLASS = "storClass";
-    private static final String PROP_MGMT_CLASS = "mgmtClass";
+    private static final String PROP_STOR_CLASS = "storageClass";
+    private static final String PROP_MGMT_CLASS = "managementClass";
     private static final String PROP_DATA_CLASS = "dataClass";
 	private static final String PROP_EXTENTS = "extents";
 	private static final String PROP_CREATION_DATE = "creationDate";
@@ -341,14 +341,14 @@ public class RseapiZosDatasetImpl implements IZosDataset {
         String emptyFileName;
         IZosUNIXFile emptyFile;
 		try {
-			emptyFileName = zosFileHandler.getZosFileManager().getRunUNIXPathPrefix(image) + SLASH + zosFileHandler.getZosFileManager().getRunId() + "/emptyFile";
+			emptyFileName = this.image.getRunTemporaryUNIXPath() + SLASH + "/emptyFile";
 			emptyFile = zosFileHandler.getZosFileManager().newZosFileHandler().newUNIXFile(emptyFileName, image);
 			emptyFile.setShouldArchive(false);
 			if (!emptyFile.exists()) {
 				emptyFile.create();
 			}			
-		} catch (ZosFileManagerException e) {
-			throw new ZosDatasetException(e);
+		} catch (ZosManagerException e) {
+			throw new ZosDatasetException("Unable to create member " + memberName, e);
 		}
     	String command = "> " + emptyFileName + ";cp " + emptyFileName + " \"//'" + joinDSN(memberName) +"'\"";
     	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);

@@ -211,7 +211,7 @@ public interface IZosUNIXFile {
      * Retrieve the attributes of an existing data set to make the values available in the getter methods
      * @throws ZosUNIXFileException
      */
-    public void retrieveAttibutes() throws ZosUNIXFileException;
+    public void retrieveAttributes() throws ZosUNIXFileException;
 
     /**
      * Return the attributes of the zOS UNIX file or directory as a {@link String} 

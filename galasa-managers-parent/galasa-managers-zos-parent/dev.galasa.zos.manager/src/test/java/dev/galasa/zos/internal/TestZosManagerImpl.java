@@ -182,6 +182,8 @@ public class TestZosManagerImpl {
 
     private static final String RUN_UNIX_PATH_PREFIX = "/run/path/prefix";
 
+    private static final String RUNID = "RUNID";
+
     @Before
     public void setup() throws Exception {
         PowerMockito.mockStatic(LogFactory.class);
@@ -351,6 +353,8 @@ public class TestZosManagerImpl {
         PowerMockito.mockStatic(DseClusterIdForTag.class);
         PowerMockito.doReturn(CLUSTER_ID).when(DseClusterIdForTag.class, "get", Mockito.anyString());        
         PowerMockito.doReturn(IMAGE_ID).when(DseImageIdForTag.class, "get", Mockito.anyString());
+        Mockito.doReturn(RUN_UNIX_PATH_PREFIX).when(zosManagerSpy).getRunUNIXPathPrefix(Mockito.any());
+        Mockito.doReturn(RUNID).when(zosManagerSpy).getRunId();
         
         IZosImage returnedImage = zosManagerSpy.generateZosImage(field);
         Assert.assertTrue("generateZosImage() should return the expected value", returnedImage instanceof ZosDseImageImpl);
@@ -482,6 +486,8 @@ public class TestZosManagerImpl {
         PowerMockito.when(dssMock.get(ArgumentMatchers.contains(".current.slots"))).thenReturn("-2");  
         PowerMockito.when(dssMock.putSwap(ArgumentMatchers.contains(".current.slots"), Mockito.any(), Mockito.anyString())).thenReturn(true);
         PowerMockito.when(dssMock.putSwap(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true);
+        Mockito.doReturn(RUN_UNIX_PATH_PREFIX).when(zosManagerSpy).getRunUNIXPathPrefix(Mockito.any());
+        Mockito.doReturn(RUNID).when(zosManagerSpy).getRunId();
         
         ZosProvisionedImageImpl returnedImage = zosManagerSpy.selectNewImage(TAG);
         Assert.assertTrue("selectNewImage() should return the expected value", returnedImage instanceof ZosProvisionedImageImpl);        
@@ -524,6 +530,8 @@ public class TestZosManagerImpl {
         PowerMockito.mockStatic(ImageMaxSlots.class);
         PowerMockito.doReturn(-1).when(ImageMaxSlots.class, "get", Mockito.anyString());         
         PowerMockito.mockStatic(DssUtils.class);
+        Mockito.doReturn(RUN_UNIX_PATH_PREFIX).when(zosManagerSpy).getRunUNIXPathPrefix(Mockito.any());
+        Mockito.doReturn(RUNID).when(zosManagerSpy).getRunId();
         String expectedMessage = "Insufficent capacity for images in cluster " + CLUSTER_ID.toUpperCase();
         ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
         	zosManagerSpy.selectNewImage(TAG);
@@ -733,7 +741,9 @@ public class TestZosManagerImpl {
         Whitebox.setInternalState(zosManagerSpy, "images", images);
         setupZosImage();
         PowerMockito.mockStatic(DseClusterIdForTag.class);
-        PowerMockito.doReturn(CLUSTER_ID).when(DseClusterIdForTag.class, "get", Mockito.anyString());        
+        PowerMockito.doReturn(CLUSTER_ID).when(DseClusterIdForTag.class, "get", Mockito.anyString());
+        Mockito.doReturn(RUN_UNIX_PATH_PREFIX).when(zosManagerSpy).getRunUNIXPathPrefix(Mockito.any());
+        Mockito.doReturn(RUNID).when(zosManagerSpy).getRunId();        
         Assert.assertTrue("getUnmanagedImage() should return the expected value",  zosManagerSpy.getUnmanagedImage(IMAGE_ID) instanceof ZosDseImageImpl);
     }
     
@@ -866,6 +876,13 @@ public class TestZosManagerImpl {
     	Assert.assertEquals("newZosBatchJobname() should return the expected value", "XX", zosManagerSpy.buildUniquePathName(archivePathMock, "XX"));
     	Assert.assertEquals("newZosBatchJobname() should return the expected value", "XX_3", zosManagerSpy.buildUniquePathName(archivePathMock, "XX_2"));
     	Assert.assertEquals("newZosBatchJobname() should return the expected value", "YY_1", zosManagerSpy.buildUniquePathName(archivePathMock, "YY"));
+    }
+    
+    @Test
+    public void testGetRunid() {
+    	Mockito.when(zosManagerSpy.getFramework()).thenReturn(frameworkMock);
+    	Mockito.when(frameworkMock.getTestRunName()).thenReturn(RUNID);
+    	Assert.assertEquals("getRunId() should return the expected value", RUNID, zosManagerSpy.getRunId());
     }
     
     private Path newMockedPath(boolean fileExists) throws IOException {
