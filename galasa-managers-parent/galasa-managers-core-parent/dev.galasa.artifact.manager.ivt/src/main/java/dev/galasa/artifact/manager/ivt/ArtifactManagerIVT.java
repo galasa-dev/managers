@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
@@ -207,6 +209,17 @@ public class ArtifactManagerIVT {
     	String jarContent = resources.streamAsString(is);
     	//If the class file is found then the jar has been retrieved successfully
     	assertThat(jarContent).contains("HelloGalasa.class");
+    }
+    
+    @Test
+    public void retrieveJarTestWithVersionCompare() throws Exception {
+
+    	InputStream is = resources.retrieveJar("dev.galasa", "0.15.0.202105120649", "/resources/jars/");
+    	    	
+    	String jarContent = resources.streamAsString(is);
+    	
+    	//If this string is found within the contents then the jar has been retrieved successfully
+    	assertThat(jarContent).contains("dev/galasa");
     }
     
    

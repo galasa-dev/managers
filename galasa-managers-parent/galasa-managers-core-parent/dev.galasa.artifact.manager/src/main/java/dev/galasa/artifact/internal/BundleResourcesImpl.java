@@ -180,12 +180,21 @@ public class BundleResourcesImpl implements IBundleResources {
 				} catch (IOException e) {
                     throw new TestBundleResourceException("Unable to store InputStream as string", e);
 				}
-								                
+							
+				Boolean matchingNames = false;
+				String bundleSymbolicName = attributes.getValue("Bundle-SymbolicName");
+				
+				if (bundleSymbolicName != null) {
+					if (bundleSymbolicName.equals(symbolicName)) {
+					matchingNames = true;
+					}
+				}
                 // We don't know exactly what type of jar this is, so we don't know the names of
                 // the exact contents,
                 // but if the contents contain the passed symbolic name it's a fair bet it's the
                 // right name
-                if (jarContents.contains(symbolicName)) {
+				// Also checks if the symbolic name is mentioned in the manifest 
+                if (jarContents.contains(symbolicName) || matchingNames == true){
 
                     // If we were passed a version let's inspect all the attributes to see if one of
                     // them looks like a version
