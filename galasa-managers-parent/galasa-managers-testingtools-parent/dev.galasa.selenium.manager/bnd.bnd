@@ -1,6 +1,7 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Selenium Manager
 Export-Package: dev.galasa.selenium,\
+    dev.galasa.selenium.spi,\
     org.openqa.selenium,\
     org.openqa.selenium.interactions,\
     org.openqa.selenium.support.ui
@@ -17,6 +18,7 @@ Import-Package: dev.galasa,\
 	dev.galasa.kubernetes.spi,\
 	dev.galasa.artifact,\
     dev.galasa.selenium,\
+    dev.galasa.selenium.spi,\
     javax.net,\
     javax.net.ssl,\
     org.apache.commons.logging,\
