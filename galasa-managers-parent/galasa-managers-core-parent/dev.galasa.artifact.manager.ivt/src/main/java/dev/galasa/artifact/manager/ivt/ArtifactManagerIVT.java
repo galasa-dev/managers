@@ -264,6 +264,22 @@ public class ArtifactManagerIVT {
     	    
     	assertThat(text).contains("zipTest.txt");  	
     }
+    
+    @Test
+    public void zipDirectoryTestNoEncoding() throws TestBundleResourceException, IOException {
+    	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), null, false);  	    	    	
+    	
+    	//Read zip using no encoding"
+    	String text = "Zip: ";
+    	int data = is.read();
+    	while(data != -1){
+    		char ch = (char) data;
+    		text = text + ch;
+    	    data = is.read();
+    	}    	
+    	    
+    	assertThat(text).contains("zipTest.txt");  	
+    }
       
 
 }
