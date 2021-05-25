@@ -12,8 +12,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.JarInputStream;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
