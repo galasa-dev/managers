@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
 group = 'dev.galasa'
@@ -26,6 +27,16 @@ repositories {
         url mavenrepo
     }
     mavenCentral()
+}
+
+signing {
+    sign publishing.publications
+}
+
+
+
+tasks.withType(Sign) {
+    onlyIf { isRelease.toBoolean() }
 }
 
 publishing {
