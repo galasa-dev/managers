@@ -105,7 +105,7 @@ public class ZosManagerFileIVT {
         
         // Create File With Permissions
         unixFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
-                
+        
         // Check file was created
         assertThat(unixFile.exists()).isTrue(); // Using fileManager
         assertThat(zosUNIXCommand.issueCommand(commandTestExist))
