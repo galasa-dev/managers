@@ -63,5 +63,29 @@ public class ZosManagerFileIVT {
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
     }
+    
+    @Test
+    public void createUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    	// Tests file creation using ZosFileHandler and UNIX File(s)
+    	// Establish file name and location
+    	String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+    	String fileName = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
+    	IZosUNIXFile unixFile = fileHandler.newUNIXFile(fileName, imagePrimary);
+
+    	String commandTestExist = "test -f " + fileName + " && echo \"File Exists\"";
+    	
+    	// Check file doesn't exist
+    	assertThat(unixFile.exists()).isFalse(); // Using fileManager
+    	assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
+    	
+    	// Create File
+		unixFile.create();
+		unixFile.store("Hello World");
+		
+		// Check file was created
+		assertThat(unixFile.exists()).isTrue(); // Using fileManager
+		assertThat(zosUNIXCommand.issueCommand(commandTestExist))
+			.isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
+	}
 
 }
