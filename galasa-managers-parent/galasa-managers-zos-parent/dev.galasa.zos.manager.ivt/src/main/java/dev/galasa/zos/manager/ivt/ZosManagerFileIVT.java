@@ -141,5 +141,37 @@ public class ZosManagerFileIVT {
         // Check file doesn't exist / was deleted
         assertThat(unixFile.exists()).isFalse(); // Using fileManager
         assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
-    } 
+    }
+    
+    @Test
+    public void deleteUnixDirectoryNonEmpty() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests directory deletion using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() 
+            + "/deleteThisDir/ThisToo";
+        String deletePath = filePath.substring(0, filePath.indexOf("ThisToo"));
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        IZosUNIXFile unixDirectoryToDelete = fileHandler.newUNIXFile(deletePath, imagePrimary);
+        
+        String commandTestFileExists = "test -f " + filePath + " && echo \"File Exists\"";
+        String commandTestDirExists = "test -f " + deletePath + " && echo \"File Exists\"";
+        
+        // Create File
+        unixFile.create();
+        
+        // Check file was created
+        assertThat(unixFile.exists()).isTrue(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestFileExists))
+            .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
+        
+        // Delete Directory
+        unixDirectoryToDelete.directoryDeleteNonEmpty();
+        
+        // Check file doesn't exist / was deleted
+        assertThat(unixFile.exists()).isFalse(); // Using fileManager
+        assertThat(unixDirectoryToDelete.exists()).isFalse(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestFileExists)).isEqualTo(""); // Using commandManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestDirExists)).isEqualTo(""); // Using commandManager
+    }
 }
