@@ -5,9 +5,6 @@
  */
 package dev.galasa.cicsts.resource.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,6 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJob.JobStatus;
-import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
@@ -85,8 +81,9 @@ public class JvmserverImpl implements IJvmserver {
 	private String defaultJavaHomeValue;
 	private String defaultWlpInstallDirValue;
 	private String defaultWlpUserDirValue;
-	
+
 	private IZosUNIXFile workingDirectory;
+	private IZosUNIXFile diagnosticsDirectory;
 	private IZosUNIXFile javaHome;
 
 	private IZosUNIXFile logsDirectory;	
@@ -173,10 +170,6 @@ public class JvmserverImpl implements IJvmserver {
 		}
 	}
 
-	private ILogScanner newLogScanner() throws CicsResourceManagerException {
-		return this.cicsResourceManager.getLogScanner();
-	}
-
 	public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException {
 		this.cicsResourceManager = cicsResourceManagerImpl;
 		this.cicsRegion = cicsRegion;
@@ -196,6 +189,10 @@ public class JvmserverImpl implements IJvmserver {
 		this.resourceDefinitionJvmprofile = jvmprofile.getProfileName();
 		this.jvmserverType = JvmserverType.LIBERTY;
 		this.zosLibertyServer = libertyServer;
+	}
+
+	protected ILogScanner newLogScanner() throws CicsResourceManagerException {
+		return this.cicsResourceManager.getLogScanner();
 	}
 
 	protected boolean isLiberty() {
@@ -255,10 +252,13 @@ public class JvmserverImpl implements IJvmserver {
 		return path;
 	}
 
-	//TODO: get from property?
 	protected String getDefaultWorkingDirectoryValue() throws CicsJvmserverResourceException {
 		if (this.defaultWorkingDirectoryValue == null) {
-			this.defaultWorkingDirectoryValue = SLASH_SYBMOL + "u" + SLASH_SYBMOL + getCicsZosImageDefaultCredentialsUserid().toLowerCase() + SLASH_SYBMOL + "Galasa" + SLASH_SYBMOL;
+			try {
+				this.defaultWorkingDirectoryValue = this.cicsZosImage.getRunTemporaryUNIXPath() + SLASH_SYBMOL + "";
+			} catch (ZosManagerException e) {
+				throw new CicsJvmserverResourceException("Unable to get the run temporary UNIX directory for image " + this.cicsZosImage.getImageID(), e);
+			}
 		}
 		return this.defaultWorkingDirectoryValue;
 	}
@@ -778,9 +778,8 @@ public class JvmserverImpl implements IJvmserver {
 	}
 
 	@Override
-	public void saveToResultsArchive() throws CicsJvmserverResourceException {	
-		String rasPath = getApplid() + SLASH + getName() + SLASH;
-		saveToResultsArchive(rasPath);
+	public void saveToResultsArchive() throws CicsJvmserverResourceException {
+		saveToResultsArchive(getDefaultRasPath());
 	}
 
 	@Override
@@ -800,6 +799,7 @@ public class JvmserverImpl implements IJvmserver {
 		if (this.jvmTraceLog != null) {
 			this.jvmTraceLog.saveToResultsArchive(rasPath);
 		}
+		saveDiagnosticsToResultsArchive(rasPath);
 		if (isLiberty()) {
 			this.zosLiberty.saveToResultsArchive(rasPath);
 		}
@@ -835,22 +835,14 @@ public class JvmserverImpl implements IJvmserver {
 		saveToResultsArchive();
 		deleteJvmserverLogs();
 	}
-
-	@Override
-	public void gatherDiagnostics() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void gatherDiagnostics(String rasPath) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
 	
 	@Override
 	public String toString() {
 		return "[JVM server] " + getName();
+	}
+
+	protected String getDefaultRasPath() {
+		return this.cicsResourceManager.getCurrentTestMethodArchiveFolder().toString() + SLASH + getApplid() + SLASH + getName() + SLASH;
 	}
 
 	// TODO: get from property
@@ -875,7 +867,7 @@ public class JvmserverImpl implements IJvmserver {
 		
 	}
 
-	private String getDdname(String logName) {
+	protected String getDdname(String logName) {
 		return logName.substring(5);
 	}
 
@@ -907,39 +899,12 @@ public class JvmserverImpl implements IJvmserver {
 		throw new CicsJvmserverResourceException("Unable to establish JVM server " + cemtParameter + " log file");
 		    
 	}
-
-	private OutputStream getOutputFromJob(String ddname) throws CicsJvmserverResourceException {
-		OutputStream outputStream =  new ByteArrayOutputStream();
-		try {
-			IZosBatchJobOutputSpoolFile spoolFile = getCicsRegionJob().getSpoolFile(ddname);
-			if (spoolFile == null) {
-				throw new IOException("Unable to find DDNAME " + ddname + " in CICS job");
-			}
-			outputStream.write(spoolFile.getRecords().getBytes());
-		} catch (ZosBatchException | IOException e) {
-			throw new CicsJvmserverResourceException("Unable to retrieve " + ddname + " from CICS region job " + getCicsRegionJob(), e);
-		}
-		return outputStream;
-	}
-
-	private OutputStream newOutputStream(IJvmserverLog log) throws CicsJvmserverResourceException {
-		OutputStream outputStream =  new ByteArrayOutputStream();
-		//TODO: spool file
-		if (log.isZosUNIXFile()) {
-			try {
-				outputStream.write(log.getZosUNIXFile().retrieve().getBytes());
-			} catch (ZosUNIXFileException | IOException e) {
-				throw new CicsJvmserverResourceException("Unable to read file " + log.getZosUNIXFile().getUnixPath());
-			}
-		}
-		return outputStream;
-	}
-
-	private boolean isDdname(String logName) {
+	
+	protected boolean isDdname(String logName) {
 		return logName.startsWith("//DD:");
 	}
 
-	private void getSystemValues() throws CicsJvmserverResourceException {
+	protected void getSystemValues() throws CicsJvmserverResourceException {
 		try {
 			this.cicsRegion.ceci().startCECISession(this.cicsTerminal);
 			this.cicsRegion.ceci().issueCommand(this.cicsTerminal, "INQUIRE SYSTEM JOBNAME(&JOBNAME)", false).getResponseOutputValues();
@@ -951,7 +916,7 @@ public class JvmserverImpl implements IJvmserver {
 		}
 	}
 
-	private IZosBatchJob getCicsRegionJob() throws CicsJvmserverResourceException {
+	protected IZosBatchJob getCicsRegionJob() throws CicsJvmserverResourceException {
 		if (this.cicsRegionJob == null) {
 			try { 
 				//TODO: Get from properties?
@@ -961,7 +926,7 @@ public class JvmserverImpl implements IJvmserver {
 						String jesmsglg = job.getSpoolFile("JESMSGLG").getRecords();
 						Pattern pattern = Pattern.compile("DFHSI1517\\s(\\w+)");
 				    	Matcher matcher = pattern.matcher(jesmsglg);
-				    	if (matcher.find() && matcher.groupCount() == 1 && this.cicsApplid.equals(matcher.group(1))) {
+				    	if (matcher.find() && matcher.groupCount() == 1 && getApplid().equals(matcher.group(1))) {
 			    			this.cicsRegionJob = job; //TODO Return here and what if null
 			    			break;
 				    	}
@@ -974,14 +939,14 @@ public class JvmserverImpl implements IJvmserver {
 		return this.cicsRegionJob;
 	}
 
-	private String getCicsJobname() throws CicsJvmserverResourceException {
+	protected String getCicsJobname() throws CicsJvmserverResourceException {
 		if (this.cicsRegionJobname == null) {
 			getSystemValues();
 		}
 		return this.cicsRegionJobname;
 	}
 
-	private String getCicsRegionUserid() throws CicsJvmserverResourceException {
+	protected String getCicsRegionUserid() throws CicsJvmserverResourceException {
 		if (this.cicsRegionUserid == null) {
 			getSystemValues();
 		}
@@ -1021,50 +986,76 @@ public class JvmserverImpl implements IJvmserver {
 		return cemtMap;
 	}
 	
-	protected String parseJvmprofileSymbols(String value) {
+	protected String parseJvmprofileSymbols(String value) throws CicsJvmserverResourceException {
+		if (value.contains(SYMBOL_DATE) || value.contains(SYMBOL_TIME)) {
+			throw new CicsJvmserverResourceException("JVM profile options \"" + SYMBOL_DATE + "\" and \"" + SYMBOL_TIME + "\" not supported by JVM server Manager");
+		}
 		String parsedValue = StringUtils.replace(value, SYMBOL_APPLID, getApplid());
 		parsedValue = StringUtils.replace(parsedValue, SYMBOL_USSHOME, getUsshome());
 		parsedValue = StringUtils.replace(parsedValue, SYMBOL_CONFIGROOT, getUsshome());
 		parsedValue = StringUtils.replace(parsedValue, SYMBOL_JVMSERVER, getName());
 		parsedValue = StringUtils.replace(parsedValue, SYMBOL_USSHOME, getUsshome());
-
-		//TODO: SYMBOL_DATE and SYMBOL_TIME
 		
 		return parsedValue;
 	}
 	
-	protected String getUsshome() {
-		//TOODO: get USSHOME
+	protected String getUsshome() throws CicsJvmserverResourceException {
 		if (this.cicsUsshome == null) {
-			this.cicsUsshome = "/cics/cics730";
+			try {
+				this.cicsUsshome = this.cicsRegion.getUssHome();
+			} catch (CicstsManagerException e) {
+				throw new CicsJvmserverResourceException("Unable to get value of USSHOME", e);
+			}
 		}
 		return this.cicsUsshome;
 	}
 	
 	protected String getApplid() {
 		if (this.cicsApplid == null) {
-			
-		}
-		//TOODO: get APPLID
-		if (this.cicsApplid == null) {
-			this.cicsApplid = "IYK3ZDRJ";
+			this.cicsApplid = this.cicsRegion.getApplid();
 		}
 		return this.cicsApplid;
 	}
 	
-	protected String getJvmProfileDir() {
-		//TOODO: get JVMPROFILEDIR
+	protected String getJvmProfileDir() throws CicsJvmserverResourceException {
 		if (this.cicsJvmprofileDir == null) {
-			this.cicsJvmprofileDir = "/u/robertd/Galasa";
+			try {
+				this.cicsJvmprofileDir = this.cicsRegion.getJvmProfileDir();
+			} catch (CicstsManagerException e) {
+				throw new CicsJvmserverResourceException("Unable to get value of JVMPROFILEDIR", e);
+			}
 		}
 		return this.cicsJvmprofileDir;
 	}
 	
-	protected String getConfigRoot() {
-		//TOODO: get CONFIGROOT
+	protected String getConfigRoot() throws CicsJvmserverResourceException {
 		if (this.cicsConfigroot == null) {
-			this.cicsConfigroot = this.cicsJvmprofileDir;
+			//TOODO: get CONFIGROOT
+			this.cicsConfigroot = getJvmProfileDir();
 		}
 		return this.cicsConfigroot;
+	}
+	
+	protected IZosUNIXFile getDiagnosticsDirectory() throws CicsJvmserverResourceException {
+		if (this.diagnosticsDirectory == null) {
+			try {
+				this.diagnosticsDirectory = this.zosFileHandler.newUNIXFile(getWorkingDirectory() + SLASH + "diagnostics" + SLASH + getApplid() + SLASH + getName() + SLASH, cicsZosImage);
+			} catch (ZosUNIXFileException | CicsJvmserverResourceException e) {
+				throw new CicsJvmserverResourceException("Unable to get diagnostics directory", e);
+			}
+		}
+		return this.diagnosticsDirectory;
+	}
+
+	protected void saveDiagnosticsToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
+		try {
+			String diagnostics = "diagnostics";
+			if (!rasPath.endsWith(SLASH)) {
+				diagnostics = SLASH + diagnostics;
+			}
+			getDiagnosticsDirectory().saveToResultsArchive(rasPath + diagnostics);
+		} catch (ZosUNIXFileException e) {
+			throw new CicsJvmserverResourceException("Unable to archive diagnostics directory", e);
+		}
 	}
 }

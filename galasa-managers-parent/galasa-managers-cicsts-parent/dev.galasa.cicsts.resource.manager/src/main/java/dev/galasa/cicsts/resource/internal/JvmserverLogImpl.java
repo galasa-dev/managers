@@ -376,4 +376,15 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 			throw new TextScanException("Problem retrieving " + getScannableName(), e);
 		}
 	}
+	
+	@Override
+	public String toString() {
+		if (isZosUNIXFile()) {
+			return "[IZosUNIXFile] " + this.getScannableName();
+		} else if (isZosBatchJobSpoolFile()) {
+			return "[IZosBatchJobOutputSpoolFile] " + this.getScannableName();
+		} else {
+			return "[UNKNOWN_TYPE] " + this.getScannableName();
+		}
+	}
 }
