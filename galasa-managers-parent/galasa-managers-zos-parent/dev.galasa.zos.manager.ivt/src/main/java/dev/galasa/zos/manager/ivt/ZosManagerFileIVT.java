@@ -32,8 +32,8 @@ import dev.galasa.zosunixcommand.ZosUNIXCommandException;
 
 @Test
 public class ZosManagerFileIVT {
-	
-	private final String IMG_TAG = "PRIMARY";
+    
+    private final String IMG_TAG = "PRIMARY";
     
     @Logger
     public Log logger;
@@ -41,7 +41,7 @@ public class ZosManagerFileIVT {
     @ZosImage(imageTag =  IMG_TAG)
     public IZosImage imagePrimary;
         
-	@ZosFileHandler
+    @ZosFileHandler
     public IZosFileHandler fileHandler;
 
     @BundleResources
@@ -55,7 +55,7 @@ public class ZosManagerFileIVT {
 
     @Test
     public void preFlightTests() throws Exception {
-    	// Ensure we have the resources we need for testing
+        // Ensure we have the resources we need for testing
         assertThat(imagePrimary).isNotNull();
         assertThat(fileHandler).isNotNull();
         assertThat(coreManager).isNotNull();
@@ -66,25 +66,54 @@ public class ZosManagerFileIVT {
     
     @Test
     public void createUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
-    	// Tests file creation using ZosFileHandler and UNIX File(s)
-    	// Establish file name and location
-    	String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
-    	String fileName = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
-    	IZosUNIXFile unixFile = fileHandler.newUNIXFile(fileName, imagePrimary);
+        // Tests file creation using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String fileName = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(fileName, imagePrimary);
 
-    	String commandTestExist = "test -f " + fileName + " && echo \"File Exists\"";
-    	
-    	// Check file doesn't exist
-    	assertThat(unixFile.exists()).isFalse(); // Using fileManager
-    	assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
-    	
-    	// Create File
-		unixFile.create();
-		
-		// Check file was created
-		assertThat(unixFile.exists()).isTrue(); // Using fileManager
-		assertThat(zosUNIXCommand.issueCommand(commandTestExist))
-			.isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
-	}
+        String commandTestExist = "test -f " + fileName + " && echo \"File Exists\"";
+        
+        // Check file doesn't exist
+        assertThat(unixFile.exists()).isFalse(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
+        
+        // Create File
+        unixFile.create();
+        
+        // Check file was created
+        assertThat(unixFile.exists()).isTrue(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist))
+            .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
+    }
     
+    @Test
+    public void createUnixFileWithAccessPermissions() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests file creation (with Specified Access Permissions) using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String fileName = "createMeWithPermissions";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/" + fileName;
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+
+        String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
+        String commandCheckPermissions = "ls -l " + filePath + " | grep " + fileName;
+        
+        // Check file doesn't exist
+        assertThat(unixFile.exists()).isFalse(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
+        
+        // Create File With Permissions
+        unixFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
+                
+        // Check file was created
+        assertThat(unixFile.exists()).isTrue(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist))
+            .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
+        
+        // Check file has relevant permissions
+        assertThat(unixFile.getAttributesAsString()).contains("Mode=-rwxrwxrwx"); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandCheckPermissions))
+            .startsWith("-rwxrwxrwx"); // Using commandManager
+    }
 }
