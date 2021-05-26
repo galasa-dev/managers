@@ -12,6 +12,13 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.opera.OperaOptions;
 
+/**
+ * This interface is being deprecated and replaced with a more appropriately named IWebDriver interface.
+ * 
+ * @author jamesdavies
+ *
+ */
+@Deprecated
 public interface ISeleniumManager {
 	 /**
      * Allocate a new WebPage

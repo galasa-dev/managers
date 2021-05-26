@@ -18,15 +18,17 @@ public class LocalWindowsEcosystemImpl extends LocalEcosystemImpl {
     public LocalWindowsEcosystemImpl(GalasaEcosystemManagerImpl manager, 
             String tag,
             IWindowsImage windowsImage, 
-            IJavaInstallation javaInstallation, IsolationInstallation isolationInstallation) throws WindowsManagerException {
-        super(manager, tag, javaInstallation, isolationInstallation);
+            IJavaInstallation javaInstallation, 
+            IsolationInstallation isolationInstallation,
+            boolean startSimPlatform,
+            String defaultZosImage) throws WindowsManagerException {
+        super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform, defaultZosImage);
         this.windowsImage = windowsImage;
     }
 
     @Override
     public void build() throws GalasaEcosystemManagerException {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
@@ -56,6 +58,16 @@ public class LocalWindowsEcosystemImpl extends LocalEcosystemImpl {
         } catch (WindowsManagerException e) {
             throw new GalasaEcosystemManagerException("Problem obtaining command shell", e);
         }
+    }
+
+    @Override
+    public void startSimPlatform() throws GalasaEcosystemManagerException {
+        throw new GalasaEcosystemManagerException("This code needs writing");
+    }
+
+    @Override
+    public void stopSimPlatform() throws GalasaEcosystemManagerException {
+        throw new GalasaEcosystemManagerException("This code needs writing");
     }
 
 

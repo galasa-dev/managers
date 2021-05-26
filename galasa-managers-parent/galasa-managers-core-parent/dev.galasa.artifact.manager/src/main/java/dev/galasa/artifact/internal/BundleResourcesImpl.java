@@ -117,21 +117,32 @@ public class BundleResourcesImpl implements IBundleResources {
         }
 
         // If we have a version then hopefully the jar is neatly named
-        // <symbolicName>_<version>.jar and we can do a simple file locate
+        // <symbolicName>_<version>.jar or <symbolicName>-<version>.jar 
+        // and we can do a simple file locate
         InputStream jis = null;
         if (!"".equals(version)) {
             String expectedJarName = directory + symbolicName + "_" + version + ".jar";
+            String expectedJarNameHyphen = directory + symbolicName + "-" + version + ".jar";
+
             try {
                 jis = retrieveFile(expectedJarName);
                 return jis;
             } catch (TestBundleResourceException e) {
-                logger.debug("Failed to find jar under expected name. Will inspect manifests to locate it.", e);
+                logger.debug("Failed to find jar under expected name with underscore separator. Will check for hyphen separator");
+            }
+            try {
+                jis = retrieveFile(expectedJarNameHyphen);
+                return jis;
+            } catch (TestBundleResourceException e) {
+                logger.debug("Failed to find jar under expected name with hyphen separator. Will inspect manifests to locate it.", e);
             }
         }
 
         // If that didn't work we call listJars to find all the jars in the directory
         // and bundle given
         List<String> foundJars = listDirectory(bundle, directory, "jar");
+        
+        logger.info("Found Jars:" + foundJars);
 
         // Assuming we have some jars to inspect, lets inspect them
         if (!foundJars.isEmpty()) {
@@ -150,20 +161,31 @@ public class BundleResourcesImpl implements IBundleResources {
                 } catch (IOException e) {
                     throw new TestBundleResourceException("Unable to open a stream into " + jar, e);
                 }
-
+                
                 // Grab the attributes from the manifest
                 Attributes attributes = jaris.getManifest().getMainAttributes();
+                
                 try {
                     jaris.close();
                 } catch (IOException e) {
                     logger.warn("Unable to close jar input stream", e);
                 }
-
+                
+                // Convert JarInputStream to InputStream and store contents as string 
+                InputStream is = retrieveFile(jar);
+                
+				String jarContents = null;
+				try {
+					jarContents = streamAsString(is);
+				} catch (IOException e) {
+                    throw new TestBundleResourceException("Unable to store InputStream as string", e);
+				}
+								                
                 // We don't know exactly what type of jar this is, so we don't know the names of
-                // the attributes,
-                // but if one has the value of the passed symbolic name it's a fair bet it's the
+                // the exact contents,
+                // but if the contents contain the passed symbolic name it's a fair bet it's the
                 // right name
-                if (attributes.containsValue(symbolicName)) {
+                if (jarContents.contains(symbolicName)) {
 
                     // If we were passed a version let's inspect all the attributes to see if one of
                     // them looks like a version
@@ -400,6 +422,10 @@ public class BundleResourcesImpl implements IBundleResources {
     }
 
     private List<String> listDirectory(Bundle bundle, String directory, String fileExtension) {
+    	
+    	if(fileExtension != null && !fileExtension.startsWith(".")){
+    		fileExtension = "." + fileExtension.toLowerCase();
+    	}
 
         List<String> directoryContents = new ArrayList<>();
 
@@ -424,11 +450,11 @@ public class BundleResourcesImpl implements IBundleResources {
                 }
 
                 if (fileExtension != null) {
-                    fileExtension = "." + fileExtension.toLowerCase();
                     if (entryPath.toLowerCase().endsWith(fileExtension)) {
                         directoryContents.add(entryPath);
                     }
-                } else {
+                } 
+                else {
                     directoryContents.add(entryPath);
                 }
             }

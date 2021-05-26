@@ -14,9 +14,11 @@ import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManager;
 import dev.galasa.selenium.SeleniumManagerException;
+import dev.galasa.selenium.WebDriver;
 
 @Test
 public class SeleniumManagerIVT {
@@ -26,6 +28,9 @@ public class SeleniumManagerIVT {
 
     @SeleniumManager
     public ISeleniumManager seleniumManager;
+    
+    @WebDriver
+    public IWebDriver driver;
 
     public static final String WEBSITE = "https://duckduckgo.com";
     public static final String TITLE = "DuckDuckGo";
@@ -34,8 +39,21 @@ public class SeleniumManagerIVT {
 
     @Test
     public void sendingKeysAndClearingFields() throws SeleniumManagerException {
-    	seleniumManager.getEdgeOptions();
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        page.takeScreenShot();
+        page.maximize();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
+        page.sendKeysToElementById(SEARCHID, "galasa");
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEqualTo("galasa");
+        page.clearElementById(SEARCHID);
+        assertThat(page.findElementById(SEARCHID).getAttribute(VALUE)).isEmpty();
+        page.quit();
+    }
+    
+    @Test
+    public void sendingKeysAndClearingFieldsWithNewDriver() throws SeleniumManagerException {
+        IWebPage page = driver.allocateWebPage(WEBSITE);
         page.takeScreenShot();
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);

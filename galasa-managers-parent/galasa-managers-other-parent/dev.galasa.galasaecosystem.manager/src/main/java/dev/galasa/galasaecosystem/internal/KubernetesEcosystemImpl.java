@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.galasaecosystem.internal;
 
@@ -120,7 +120,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankManagementFacilityUrl;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
-        super(manager, tag, null);
+        super(manager, tag, null, null);
         this.namespace = namespace;
     }
 
@@ -352,8 +352,6 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
             storeCpsProperty("framework.resource.management.finished.timeout", "40");
 
             //*** Set up streams
-            storeCpsProperty("framework.stream.int.obr", "mvn:dev.galasa/dev.galasa.inttests.obr/" + this.mavenVersion + "/obr");
-            storeCpsProperty("framework.stream.int.repo", this.mavenRepository.toString());
             storeCpsProperty("framework.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + this.mavenVersion + "/obr");
             storeCpsProperty("framework.stream.simbank.repo", this.mavenRepository.toString());
 

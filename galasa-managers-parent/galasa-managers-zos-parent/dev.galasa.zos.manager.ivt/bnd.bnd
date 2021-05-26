@@ -1,10 +1,6 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa zOS Manager IVTs
 Export-Package: dev.galasa.zos.manager.ivt
-Import-Package: dev.galasa,\
-    dev.galasa.core.manager,\
-    dev.galasa.ipnetwork,\
-    dev.galasa.zos,\
+Import-Package: dev.galasa.*,\
+    org.assertj.core.api,\
     org.apache.commons.logging
-
-
