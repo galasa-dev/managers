@@ -5,6 +5,8 @@
  */
 package dev.galasa.linux.manager.ivt;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
@@ -30,13 +32,8 @@ public class LinuxManagerIVT {
 
     @Test
     public void checkPrimaryImage() throws Exception {
-        if (linuxPrimary == null) {
-            throw new Exception("Primary Image is null, should have been filled by the Linux Manager");
-        }
-        if (linuxHost == null) {
-            throw new Exception("Primary Image Host is null, should have been filled by the Linux Manager");
-        }
-        logger.info("The Primary Image field has been correctly initialised");
+    	assertThat(linuxPrimary).isNotNull();
+    	assertThat(linuxHost).isNotNull();
     }
 
     @Test
