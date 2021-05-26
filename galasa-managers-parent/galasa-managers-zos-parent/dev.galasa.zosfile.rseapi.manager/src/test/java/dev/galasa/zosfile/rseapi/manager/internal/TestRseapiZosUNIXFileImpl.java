@@ -66,6 +66,9 @@ public class TestRseapiZosUNIXFileImpl {
     private IZosUNIXFile zosUnixFileMockFile;
     
     @Mock
+    private IZosUNIXFile zosUnixFileMockFile2;
+    
+    @Mock
     private IZosUNIXFile zosUnixFileMockUnknown;
     
     @Mock
@@ -97,15 +100,19 @@ public class TestRseapiZosUNIXFileImpl {
     
     private static String logMessage;
 
-    private static final String UNIX_DIRECTORY = "/path1/path2/path3/path4";
+    private static final String UNIX_DIRECTORY = "/path1/path2/path3/path4/";
+
+    private static final String UNIX_DIRECTORY_PATH = UNIX_DIRECTORY.substring(0, UNIX_DIRECTORY.length()-1);
 
     private static final String UNIX_FILE = "file";
 
-    private static final String UNIX_PATH = UNIX_DIRECTORY + "/" + UNIX_FILE;
+    private static final String UNIX_PATH = UNIX_DIRECTORY + UNIX_FILE;
 
-    private static final String UNIX_UNKNOWN = UNIX_DIRECTORY + "/unknown";   
+    private static final String UNIX_PATH2 = "/" + UNIX_PATH;
 
-    private static final String UNIX_TILDE_FILE = UNIX_PATH + "/~" + UNIX_FILE;    
+    private static final String UNIX_UNKNOWN = UNIX_DIRECTORY + "unknown";   
+
+    private static final String UNIX_TILDE_FILE = UNIX_PATH + "~" + UNIX_FILE;    
     
     private static final String TYPE_FILE = "FILE";
     
@@ -135,12 +142,26 @@ public class TestRseapiZosUNIXFileImpl {
     public void setup() throws Exception {
 		Mockito.when(zosUnixFileMockDirectory.getFileType()).thenReturn(UNIXFileType.DIRECTORY);
 		Mockito.when(zosUnixFileMockFile.getFileType()).thenReturn(UNIXFileType.FILE);
-		Mockito.when(zosUnixFileMockUnknown.getFileType()).thenReturn(UNIXFileType.UNKNOWN);
+		Mockito.when(zosUnixFileMockFile2.getFileType()).thenReturn(UNIXFileType.FILE);
+		Mockito.when(zosUnixFileMockUnknown.getFileType()).thenReturn(UNIXFileType.UNKNOWN);		
 		Mockito.when(zosUnixFileMockTilde.getFileType()).thenReturn(UNIXFileType.FILE);
+		
+		Mockito.when(zosUnixFileMockDirectory.getUnixPath()).thenReturn(UNIX_DIRECTORY);
+		Mockito.when(zosUnixFileMockFile.getUnixPath()).thenReturn(UNIX_PATH);
+		Mockito.when(zosUnixFileMockFile2.getUnixPath()).thenReturn(UNIX_PATH2);
+		Mockito.when(zosUnixFileMockUnknown.getUnixPath()).thenReturn(UNIX_UNKNOWN);		
+		Mockito.when(zosUnixFileMockTilde.getUnixPath()).thenReturn(UNIX_TILDE_FILE);
+		
+		Mockito.when(zosUnixFileMockFile.getFileName()).thenReturn(UNIX_FILE);
+		Mockito.when(zosUnixFileMockFile2.getFileName()).thenReturn(UNIX_FILE);
+		Mockito.when(zosUnixFileMockUnknown.getFileName()).thenReturn(UNIX_PATH);		
+		Mockito.when(zosUnixFileMockTilde.getFileName()).thenReturn(UNIX_PATH);
+		
 		Mockito.when(zosUnixFileMockDirectory.toString()).thenReturn(UNIX_DIRECTORY);
 		Mockito.when(zosUnixFileMockFile.toString()).thenReturn(UNIX_PATH);
-		Mockito.when(zosUnixFileMockUnknown.toString()).thenReturn(UNIX_UNKNOWN);
-		Mockito.when(zosUnixFileMockUnknown.toString()).thenReturn(UNIX_TILDE_FILE);
+		Mockito.when(zosUnixFileMockFile2.toString()).thenReturn(UNIX_PATH2);
+		Mockito.when(zosUnixFileMockUnknown.toString()).thenReturn("unknown");
+		Mockito.when(zosUnixFileMockTilde.toString()).thenReturn(UNIX_TILDE_FILE);
 		
         PowerMockito.mockStatic(LogFactory.class);
         Mockito.when(LogFactory.getLog(Mockito.any(Class.class))).thenReturn(logMock);
@@ -266,12 +287,12 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(jsonObject);
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         zosUNIXFileSpy.store(CONTENT);
-        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
+        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY_PATH + "' updated on image " + IMAGE, logMessage);
 
         zosUNIXFileSpy.setDataType(UNIXFileDataType.BINARY);
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_TEXT), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMock);
         zosUNIXFileSpy.store(CONTENT);
-        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY + "' updated on image " + IMAGE, logMessage);
+        Assert.assertEquals("store() should log expected message", "UNIX path '" + UNIX_DIRECTORY_PATH + "' updated on image " + IMAGE, logMessage);
     }
     
     @Test
@@ -336,7 +357,7 @@ public class TestRseapiZosUNIXFileImpl {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Mockito.when(rseapiResponseMock.getStatusLine()).thenReturn("NOT_FOUND");
         Mockito.when(zosFileHandlerMock.buildErrorString(Mockito.any(), Mockito.any())).thenCallRealMethod();
-        String expectedMessage = "Error writing to '" + UNIX_DIRECTORY + "/" + UNIX_FILE + "', HTTP Status Code " + HttpStatus.SC_NOT_FOUND + " : NOT_FOUND";
+        String expectedMessage = "Error writing to '" + UNIX_PATH + "', HTTP Status Code " + HttpStatus.SC_NOT_FOUND + " : NOT_FOUND";
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.store(CONTENT);
         });
@@ -393,7 +414,7 @@ public class TestRseapiZosUNIXFileImpl {
 
         Assert.assertEquals("getFileName() should return the expected value", UNIX_FILE, zosUNIXFileSpy.getFileName());
 
-        Assert.assertEquals("getDirectoryPath() should return the expected value", UNIX_DIRECTORY, zosUNIXFileSpy.getDirectoryPath());
+        Assert.assertEquals("getDirectoryPath() should return the expected value", UNIX_DIRECTORY_PATH, zosUNIXFileSpy.getDirectoryPath());
         
         PowerMockito.doReturn(MODE).when(zosUNIXFileSpy).getAttributesAsString(Mockito.any());
         Assert.assertEquals("getAttributesAsString() should return the expected value", MODE, zosUNIXFileSpy.getAttributesAsString());
@@ -796,17 +817,25 @@ public class TestRseapiZosUNIXFileImpl {
         zosUNIXFileSpy.saveToResultsArchive(RAS_PATH);
         Assert.assertEquals("saveToResultsArchive() should log expected message", "'" + UNIX_PATH + "' archived to " + RAS_PATH, logMessage);
 
-        PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
+        Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_DIRECTORY);
+        Whitebox.setInternalState(zosUNIXFileSpy, "directoryPath", (String) null);
+        Whitebox.setInternalState(zosUNIXFileSpy, "fileType", (String) null);
+        zosUNIXFileSpy.splitUnixPath();
+        PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(UNIX_DIRECTORY);
+        PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(UNIX_PATH);
+        PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(UNIX_TILDE_FILE);
+        PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(UNIX_UNKNOWN);
         SortedMap<String, IZosUNIXFile> paths = new TreeMap<>();
         paths.put(UNIX_DIRECTORY, zosUnixFileMockDirectory);
         paths.put(UNIX_PATH, zosUnixFileMockFile);
         paths.put(UNIX_TILDE_FILE, zosUnixFileMockTilde);
         paths.put(UNIX_UNKNOWN, zosUnixFileMockUnknown);
+        paths.put(UNIX_PATH2, zosUnixFileMockFile2);
         PowerMockito.doReturn(paths).when(zosUNIXFileSpy).listDirectory(Mockito.any(), Mockito.anyBoolean());
         zosUNIXFileSpy.saveToResultsArchive(RAS_PATH);
 
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
-        String expectedMessage = "UNIX path '" + UNIX_PATH + "' does not exist on image " + IMAGE;
+        String expectedMessage = "UNIX path '" + UNIX_DIRECTORY + "' does not exist on image " + IMAGE;
         ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
         	zosUNIXFileSpy.saveToResultsArchive(RAS_PATH);
         });
@@ -1019,7 +1048,7 @@ public class TestRseapiZosUNIXFileImpl {
         
         zosUNIXFileSpy.splitUnixPath();
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_FILE, Whitebox.getInternalState(zosUNIXFileSpy, "fileName"));
-        Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
+        Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY_PATH, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIXFileType.FILE, Whitebox.getInternalState(zosUNIXFileSpy, "fileType"));
 
         Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_DIRECTORY + "/");
