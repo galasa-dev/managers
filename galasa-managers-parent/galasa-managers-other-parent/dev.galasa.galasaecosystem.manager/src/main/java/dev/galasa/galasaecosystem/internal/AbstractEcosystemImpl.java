@@ -120,7 +120,7 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
             //*** Check for a zosmf definition for the image,  via the sysplex
             String sysplexId = image.getSysplexID();
             
-            String sysplexZosmfs = zosMfCps.getProperty("sysplex." + sysplexId, ".default.servers");
+            String sysplexZosmfs = zosMfCps.getProperty("sysplex." + sysplexId, "default.servers");
             if (sysplexZosmfs != null) {
                 String[] zosmfImageIds = sysplexZosmfs.split(",");
                 for(String zosmfImageId : zosmfImageIds) {
@@ -132,12 +132,12 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
                         }
                         
                         
-                        String port = zosMfCps.getProperty("server." + zosmfImageId, ".port");
+                        String port = zosMfCps.getProperty("server." + zosmfImageId, "port");
                         if (port != null) {
                             setCpsProperty("zosmf.server." + zosmfImageId + ".port", port);
                         }
                         
-                        String https = zosMfCps.getProperty("server." + zosmfImageId, ".https");
+                        String https = zosMfCps.getProperty("server." + zosmfImageId, "https");
                         if (https != null) {
                             setCpsProperty("zosmf.server." + zosmfImageId + ".https", https);
                         }
