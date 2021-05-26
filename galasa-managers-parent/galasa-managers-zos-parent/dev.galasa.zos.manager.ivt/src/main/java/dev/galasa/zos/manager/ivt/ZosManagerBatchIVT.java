@@ -85,11 +85,12 @@ public class ZosManagerBatchIVT {
         assertThat(jobName.getName()).isNotEqualTo(jobName2.getName());
     }
 
-    //@Test - currently causes an NPE #711
+    @Test //- currently causes an NPE #711
     public void submitJCLNoSteps() throws TestBundleResourceException, IOException, ZosBatchException {
     	String jclInput = resources.retrieveFileAsString("/resources/jcl/noSteps.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	job.waitForJob();
+    	job.getSpoolFile("COBOL");
     }
     
     /*
