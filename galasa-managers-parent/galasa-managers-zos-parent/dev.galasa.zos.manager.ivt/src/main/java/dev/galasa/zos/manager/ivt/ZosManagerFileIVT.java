@@ -116,4 +116,30 @@ public class ZosManagerFileIVT {
         assertThat(zosUNIXCommand.issueCommand(commandCheckPermissions))
             .startsWith("-rwxrwxrwx"); // Using commandManager
     }
+    
+    @Test
+    public void deleteUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests file deletion using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/deleteMe";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+
+        String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
+        
+        // Create File
+        unixFile.create();
+        
+        // Check file was created
+        assertThat(unixFile.exists()).isTrue(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist))
+            .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
+        
+        // Delete File
+        unixFile.delete();
+        
+        // Check file doesn't exist / was deleted
+        assertThat(unixFile.exists()).isFalse(); // Using fileManager
+        assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
+    } 
 }
