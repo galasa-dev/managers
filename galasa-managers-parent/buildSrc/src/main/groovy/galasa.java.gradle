@@ -45,8 +45,8 @@ publishing {
             from components.java
 
             pom {
-                name = 'Galasa Testers Programmer Interface (TPI)'
                 url = 'https://galasa.dev'
+                description = 'A Galasa project'
                 licenses {
                     license {
                         name = 'Eclipse Public License - v 2.0'

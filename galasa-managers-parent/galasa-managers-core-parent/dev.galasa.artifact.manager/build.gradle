@@ -2,7 +2,10 @@ plugins {
     id 'galasa.manager'
 }
 
-description = 'Artifact Manager'
+//name = 'Galasa Artifact Manager'
+
+description = 'Handles the retrieval of artifacts from the OSGi bundles'
+
 version = '0.15.0'
 
 dependencies {
