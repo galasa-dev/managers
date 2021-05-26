@@ -69,10 +69,10 @@ public class ZosManagerFileIVT {
         // Tests file creation using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
-        String fileName = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
-        IZosUNIXFile unixFile = fileHandler.newUNIXFile(fileName, imagePrimary);
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
 
-        String commandTestExist = "test -f " + fileName + " && echo \"File Exists\"";
+        String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
         
         // Check file doesn't exist
         assertThat(unixFile.exists()).isFalse(); // Using fileManager
