@@ -80,12 +80,11 @@ public class ZosManagerFileIVT {
     	
     	// Create File
 		unixFile.create();
-		unixFile.store("Hello World");
 		
 		// Check file was created
 		assertThat(unixFile.exists()).isTrue(); // Using fileManager
 		assertThat(zosUNIXCommand.issueCommand(commandTestExist))
 			.isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
 	}
-
+    
 }
