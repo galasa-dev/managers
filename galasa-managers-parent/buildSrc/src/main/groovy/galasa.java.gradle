@@ -46,6 +46,7 @@ publishing {
 
             pom {
                 url = 'https://galasa.dev'
+                name = 'A Galasa project'
                 description = 'A Galasa project'
                 licenses {
                     license {
