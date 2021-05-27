@@ -67,7 +67,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void createUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileCreate() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -90,7 +90,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void createUnixFileWithAccessPermissions() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileCreateWithPermissions() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation (with Specified Access Permissions) using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -120,7 +120,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void deleteUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileDelete() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -146,7 +146,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void deleteUnixDirectoryNonEmpty() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileDeleteNonEmptyDirectory() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -178,7 +178,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void listDirectories() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileListDirectories() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -203,7 +203,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void listDirectoriesRecursive() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileListDirectoriesRecursively() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests recursive directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -232,7 +232,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void correctAtributes() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileGetAttributes() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests reading file attributes using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -253,7 +253,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void identifyTextFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileTypeIsText() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests reading file attributes using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -262,7 +262,7 @@ public class ZosManagerFileIVT {
         
         // Create File
         unixFile.create();
-        unixFile.store("Hello World");
+        unixFile.store("Hello World"); // Text
         
         // Test file type
         assertThat(unixFile.getDataType()).isEqualTo(UNIXFileDataType.TEXT);
