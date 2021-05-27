@@ -134,19 +134,19 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
                         
                         String port = zosMfCps.getProperty("server." + zosmfImageId, "port");
                         if (port != null) {
-                            setCpsProperty("zosmf.server." + zosmfImageId + "port", port);
+                            setCpsProperty("zosmf.server." + zosmfImageId + ".port", port);
                         }
                         
                         String https = zosMfCps.getProperty("server." + zosmfImageId, "https");
                         if (https != null) {
-                            setCpsProperty("zosmf.server." + zosmfImageId + "https", https);
+                            setCpsProperty("zosmf.server." + zosmfImageId + ".https", https);
                         }
                         
                         logger.info("zOS/MF server " + zosmfImageId + " copied to ecosystem");
                     }
                 }
                 
-                setCpsProperty("zosmf.sysplex." + sysplexId + "default.servers", sysplexZosmfs);
+                setCpsProperty("zosmf.sysplex." + sysplexId + ".default.servers", sysplexZosmfs);
             }
             
         } catch(Exception e) {

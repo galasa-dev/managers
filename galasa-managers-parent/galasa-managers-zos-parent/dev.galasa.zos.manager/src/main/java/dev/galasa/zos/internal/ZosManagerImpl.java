@@ -111,6 +111,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     private final HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
+    
+    private String runid;
 
     /* 
      * We need to load the default implementations, but provide the ability for them to be overridden
@@ -640,5 +642,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 		} catch (IOException e) {
 			throw new ZosManagerException("Unable to create artifact directory", e);
 		}
+	}
+
+	public String getRunId() {
+		if (this.runid == null) {
+			this.runid = getFramework().getTestRunName();
+		}
+		return this.runid;
 	}
 }

@@ -1206,8 +1206,8 @@ public class TestRseapiZosDatasetImpl {
         jsonObject.addProperty("recordFormat", "FB");
         jsonObject.addProperty("recordLength", 5);
         jsonObject.addProperty("dataClass", "DATACLASS");
-        jsonObject.addProperty("storClass", "STORECLASS");
-        jsonObject.addProperty("mgmtClass", "MGNTCLASS");        
+        jsonObject.addProperty("storageClass", "STORECLASS");
+        jsonObject.addProperty("managementClass", "MGNTCLASS");        
         jsonObject.addProperty("dsnType", "PDSE");
         jsonObject.addProperty("used", 6);
         jsonObject.addProperty("extents", 7);

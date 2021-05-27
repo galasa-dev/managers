@@ -209,6 +209,17 @@ public class ArtifactManagerIVT {
     	assertThat(jarContent).contains("HelloGalasa.class");
     }
     
+    @Test
+    public void retrieveJarTestWithVersionCompare() throws Exception {
+
+    	InputStream is = resources.retrieveJar("dev.galasa", "0.15.0.202105120649", "/resources/jars/");
+    	    	
+    	String jarContent = resources.streamAsString(is);
+    	
+    	//If this string is found within the contents then the jar has been retrieved successfully
+    	assertThat(jarContent).contains("dev/galasa");
+    }
+    
    
     @Test
     public void retrieveJarTestNoVersion() throws Exception {
@@ -255,6 +266,22 @@ public class ArtifactManagerIVT {
     	
     	//Decode zip using "US-ASCII"
     	String text = "Decoded Zip: ";
+    	int data = is.read();
+    	while(data != -1){
+    		char ch = (char) data;
+    		text = text + ch;
+    	    data = is.read();
+    	}    	
+    	    
+    	assertThat(text).contains("zipTest.txt");  	
+    }
+    
+    @Test
+    public void zipDirectoryTestNoEncoding() throws TestBundleResourceException, IOException {
+    	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), null, false);  	    	    	
+    	
+    	//Read zip using no encoding"
+    	String text = "Zip: ";
     	int data = is.read();
     	while(data != -1){
     		char ch = (char) data;

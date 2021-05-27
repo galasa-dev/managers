@@ -318,7 +318,7 @@ public class JvmprofileImpl implements IJvmprofile {
 	@Override
 	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
 		try {
-			this.profileUnixFile.saveToResultsArchive(rasPath);;
+			this.profileUnixFile.saveToResultsArchive(rasPath);
 		} catch (ZosUNIXFileException e) {
 			throw new CicsJvmserverResourceException("Problem saving the JVM profile from zOS UNIX file system", e);
 		}
