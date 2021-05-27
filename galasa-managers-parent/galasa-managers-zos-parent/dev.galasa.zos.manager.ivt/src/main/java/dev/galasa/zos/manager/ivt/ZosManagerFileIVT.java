@@ -8,6 +8,7 @@ package dev.galasa.zos.manager.ivt;
 import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.SortedMap;
 
 import org.apache.commons.logging.Log;
 
@@ -64,7 +65,7 @@ public class ZosManagerFileIVT {
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
     }
     
-    @Test
+//    @Test
     public void createUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -87,7 +88,7 @@ public class ZosManagerFileIVT {
             .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
     }
     
-    @Test
+//    @Test
     public void createUnixFileWithAccessPermissions() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation (with Specified Access Permissions) using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -117,7 +118,7 @@ public class ZosManagerFileIVT {
             .startsWith("-rwxrwxrwx"); // Using commandManager
     }
     
-    @Test
+//    @Test
     public void deleteUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -143,7 +144,7 @@ public class ZosManagerFileIVT {
         assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
     }
     
-    @Test
+//    @Test
     public void deleteUnixDirectoryNonEmpty() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -168,10 +169,61 @@ public class ZosManagerFileIVT {
         // Delete Directory
         unixDirectoryToDelete.directoryDeleteNonEmpty();
         
-        // Check file doesn't exist / was deleted
+        // Check that the directory doesn't exist / was deleted
         assertThat(unixFile.exists()).isFalse(); // Using fileManager
         assertThat(unixDirectoryToDelete.exists()).isFalse(); // Using fileManager
         assertThat(zosUNIXCommand.issueCommand(commandTestFileExists)).isEqualTo(""); // Using commandManager
         assertThat(zosUNIXCommand.issueCommand(commandTestDirExists)).isEqualTo(""); // Using commandManager
+    }
+    
+//    @Test
+    public void listDirectories() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests directory listing using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/testDir/";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
+        
+        String commandCreateDirectories = "mkdir -p " + dirPath + "dirFoo";
+        String commandCreateFiles = "touch " + dirPath + "fileBar";
+        
+        // Create Directory / File
+        assertThat(zosUNIXCommand.issueCommand(commandCreateDirectories)).isEmpty();
+        assertThat(zosUNIXCommand.issueCommand(commandCreateFiles)).isEmpty();
+
+        // List files
+        SortedMap<String, IZosUNIXFile> fileMap = unixFile.directoryList();
+        assertThat(fileMap.containsKey(dirPath + "dirFoo"));
+        assertThat(fileMap.containsKey(dirPath + "fileBar"));
+        assertThat(fileMap.get(dirPath + "dirFoo").isDirectory()).isTrue();
+        assertThat(fileMap.get(dirPath + "dirFoo").getUnixPath()).isEqualTo(dirPath + "dirFoo");
+        assertThat(fileMap.get(dirPath + "fileBar").isDirectory()).isFalse();
+        assertThat(fileMap.get(dirPath + "fileBar").getUnixPath()).isEqualTo(dirPath + "fileBar");
+    }
+    
+    @Test // Not passing - 
+    public void listDirectoriesRecursive() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests recursive directory listing using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/testRecDir/";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
+        
+        String commandCreateDirectories = "mkdir -p " + dirPath + "dirFoo " + dirPath + "dirBar";
+        String commandCreateFiles = "touch " + dirPath + "dirFoo/fileFoo "  + dirPath + "dirBar/fileBar" ;
+        
+        // Create Directory / File
+        zosUNIXCommand.issueCommand(commandCreateDirectories);
+        zosUNIXCommand.issueCommand(commandCreateFiles);
+                
+        // List files
+        SortedMap<String, IZosUNIXFile> fileMap = unixFile.directoryListRecursive();
+        
+        // Test not passing
+        logger.info(fileMap);
+        assertThat(fileMap.containsKey(dirPath + "/dirFoo"));
+        assertThat(fileMap.containsKey(dirPath + "/fileBar"));
+        assertThat(fileMap.get(dirPath + "/dirFoo").getUnixPath()).isEqualTo(dirPath + "/dirFoo");
+        assertThat(fileMap.get(dirPath + "/fileBar").getUnixPath()).isEqualTo(dirPath + "/fileBar");
     }
 }
