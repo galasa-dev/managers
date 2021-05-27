@@ -27,6 +27,7 @@ import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.IZosUNIXFile;
+import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
@@ -235,8 +236,8 @@ public class ZosManagerFileIVT {
         // Tests reading file attributes using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
-        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
-        IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File With Permissions (to ensure permissions are known)
         unixFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
@@ -244,10 +245,26 @@ public class ZosManagerFileIVT {
         // Test Attributes
         String attributes = unixFile.getAttributesAsString();
         assertThat(attributes).isNotEmpty();
-        assertThat(attributes).contains("Name=" + dirPath);
+        assertThat(attributes).contains("Name=" + filePath);
         assertThat(attributes).contains("Type=file");
         assertThat(attributes).contains("Mode=-rwxrwxrwx");
         assertThat(attributes).contains("Size=0");
         assertThat(attributes).containsIgnoringCase("User=" + userName);
+    }
+    
+    @Test
+    public void identifyTextFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests reading file attributes using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        unixFile.store("Hello World");
+        
+        // Test file type
+        assertThat(unixFile.getDataType()).isEqualTo(UNIXFileDataType.TEXT);
     }
 }
