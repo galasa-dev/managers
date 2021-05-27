@@ -62,6 +62,7 @@ public class DseProvisioningImpl implements ICicsRegionProvisioner {
         
         String applid = DseApplid.get(cicsTag);
         if (applid == null) {
+            logger.warn("Unable to get APPLID for CICS region tagged " + cicsTag);
             return null;
         }
         

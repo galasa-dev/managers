@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>dev.galasa.managers.obr</artifactId>
-	<version>0.15.0</version>
+	<version>0.16.0</version>
 	<!-- If updating version, reflect change in build/docker/testcatalogs/pom.xml -->
 	<packaging>galasa-obr</packaging>
 
@@ -41,13 +41,13 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos.manager.ivt</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zos3270.manager.ivt</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.zosfile.zosmf.manager</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<scope>compile</scope>
 		</dependency>
         <dependency>
@@ -123,7 +123,7 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.zosfile.rseapi.manager</artifactId>
-            <version>0.15.0</version>
+            <version>0.16.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -141,7 +141,7 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.manager</artifactId>
-            <version>0.15.0</version>
+            <version>0.16.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -177,7 +177,7 @@
         <dependency>
             <groupId>dev.galasa</groupId>
             <artifactId>dev.galasa.cicsts.resource.manager</artifactId>
-            <version>0.15.0</version>
+            <version>0.16.0</version>
             <scope>compile</scope>
         </dependency>
 		<dependency>
@@ -195,7 +195,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.linux.manager.ivt</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<scope>compile</scope>
 		</dependency>
         <dependency>
@@ -223,12 +223,12 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.artifact.manager.ivt</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
@@ -273,7 +273,7 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.galasaecosystem.manager</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>

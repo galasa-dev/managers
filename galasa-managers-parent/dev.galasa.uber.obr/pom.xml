@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>dev.galasa.uber.obr</artifactId>
-	<version>0.15.0</version>
+	<version>0.16.0</version>
 	<packaging>galasa-obr</packaging>
 
     <properties>
@@ -19,21 +19,21 @@
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.framework.obr</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.extensions.obr</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>dev.galasa</groupId>
 			<artifactId>dev.galasa.managers.obr</artifactId>
-			<version>0.15.0</version>
+			<version>0.16.0</version>
 			<type>obr</type>
 			<scope>compile</scope>
 		</dependency>

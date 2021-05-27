@@ -11,6 +11,7 @@ Import-Package: com.google.gson,\
     dev.galasa.zosrseapi,\
     dev.galasa.zosrseapi.spi,\
     javax.validation.constraints;resolution:=optional,\
+    org.apache.commons.io,\
     org.apache.commons.lang3,\
     org.apache.commons.lang3.math,\
     org.apache.commons.logging,\
