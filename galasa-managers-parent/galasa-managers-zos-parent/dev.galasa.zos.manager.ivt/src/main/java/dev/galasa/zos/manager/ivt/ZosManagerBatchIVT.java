@@ -142,7 +142,7 @@ public class ZosManagerBatchIVT {
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	job.setShouldArchive(true);
     	job.waitForJob();
-    	Path jobOutput = rasRoot.resolve("zosBatchJobs").resolve("checkOutputIsStoredinRAS");
+    	Path jobOutput = rasRoot.resolve("zosBatchJobs").resolve("checkOutputIsStoredInRAS");
     	logger.info("Checking that the path: " + jobOutput.toString() + " exists");
     	assertThat(Files.exists(jobOutput)).isTrue();
     	
