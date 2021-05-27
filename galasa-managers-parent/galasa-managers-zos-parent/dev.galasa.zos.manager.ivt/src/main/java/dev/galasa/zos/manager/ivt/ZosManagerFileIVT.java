@@ -282,4 +282,19 @@ public class ZosManagerFileIVT {
         // Test Directory Path
         assertThat(unixFile.getDirectoryPath()).isEqualTo(filePath.substring(0, filePath.indexOf("/childFile")));
     }
+    
+    @Test
+    public void unixFileGetFileName() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests file name retrieval using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/uniqueFileName";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        
+        // Test file name
+        assertThat(unixFile.getFileName()).isEqualTo("uniqueFileName");
+    }
 }
