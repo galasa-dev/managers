@@ -7,7 +7,9 @@ package dev.galasa.zos.manager.ivt;
 
 import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.apache.commons.logging.Log;
@@ -115,6 +117,16 @@ public class ZosManagerFileIVT {
         
         // Check file has relevant permissions
         assertThat(unixFile.getAttributesAsString()).contains("Mode=-rwxrwxrwx"); // Using fileManager
+        Set<PosixFilePermission> permissions = unixFile.getFilePermissions();
+        assertThat(permissions).contains(PosixFilePermission.OWNER_READ);
+        assertThat(permissions).contains(PosixFilePermission.OWNER_WRITE);
+        assertThat(permissions).contains(PosixFilePermission.OWNER_EXECUTE);
+        assertThat(permissions).contains(PosixFilePermission.GROUP_READ);
+        assertThat(permissions).contains(PosixFilePermission.GROUP_WRITE);
+        assertThat(permissions).contains(PosixFilePermission.GROUP_EXECUTE);
+        assertThat(permissions).contains(PosixFilePermission.OTHERS_READ);
+        assertThat(permissions).contains(PosixFilePermission.OTHERS_WRITE);
+        assertThat(permissions).contains(PosixFilePermission.OTHERS_EXECUTE);
         assertThat(zosUNIXCommand.issueCommand(commandCheckPermissions))
             .startsWith("-rwxrwxrwx"); // Using commandManager
     }
