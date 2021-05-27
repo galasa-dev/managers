@@ -238,11 +238,12 @@ public class ZosManagerFileIVT {
         String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
         
-        // Create File With Permissions
+        // Create File With Permissions (to ensure permissions are known)
         unixFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
         
         // Test Attributes
         String attributes = unixFile.getAttributesAsString();
+        assertThat(attributes).isNotEmpty();
         assertThat(attributes).contains("Name=" + dirPath);
         assertThat(attributes).contains("Type=file");
         assertThat(attributes).contains("Mode=-rwxrwxrwx");
