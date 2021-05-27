@@ -33,7 +33,8 @@ public class DseApplid extends CpsProperties {
 
     public static String get(String tag) throws CicstsManagerException {
         try {
-            return getStringNulled(CicstsPropertiesSingleton.cps(), "dse.tag." + tag, "applid").toUpperCase();
+            String applid = getStringNulled(CicstsPropertiesSingleton.cps(), "dse.tag." + tag, "applid");
+            return applid != null? applid.toUpperCase(): applid;
         } catch (ConfigurationPropertyStoreException e) {
             throw new CicstsManagerException("Problem asking CPS for the DSE applid for tag " + tag, e); 
         }

@@ -397,19 +397,4 @@ public interface IJvmserver {
      * @throws CicsJvmserverResourceException
 	 */
 	public void clearJvmLogs(String rasPath) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and saved to the default location in the Results Archive Store 
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public void gatherDiagnostics() throws CicsJvmserverResourceException;	
-	
-	/**
-	 * Run the JVM gather diagnostics script on zOS UNIX to gather diagnostics for the JVM server. The diagnostics are
-	 * added to a tar file and save to the Results Archive Store
-	 * @param rasPath path in Results Archive Store
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public void gatherDiagnostics(String rasPath) throws CicsJvmserverResourceException;
 }
