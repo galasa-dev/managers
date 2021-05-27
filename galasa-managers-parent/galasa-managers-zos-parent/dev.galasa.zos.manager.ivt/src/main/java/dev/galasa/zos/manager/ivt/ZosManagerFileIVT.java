@@ -254,10 +254,10 @@ public class ZosManagerFileIVT {
     
     @Test
     public void unixFileTypeIsText() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
-        // Tests reading file attributes using ZosFileHandler and UNIX File(s)
+        // Tests file type using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/textFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -266,5 +266,20 @@ public class ZosManagerFileIVT {
         
         // Test file type
         assertThat(unixFile.getDataType()).isEqualTo(UNIXFileDataType.TEXT);
+    }
+    
+    @Test
+    public void unixFileGetDirectoryPath() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests directory path using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/childFile";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        
+        // Test Directory Path
+        assertThat(unixFile.getDirectoryPath()).isEqualTo(filePath.substring(0, filePath.indexOf("/childFile")));
     }
 }
