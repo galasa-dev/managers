@@ -248,5 +248,5 @@ public class ZosManagerFileIVT {
         assertThat(attributes).contains("Mode=-rwxrwxrwx");
         assertThat(attributes).contains("Size=0");
         assertThat(attributes).containsIgnoringCase("User=" + userName);
-        }
+    }
 }
