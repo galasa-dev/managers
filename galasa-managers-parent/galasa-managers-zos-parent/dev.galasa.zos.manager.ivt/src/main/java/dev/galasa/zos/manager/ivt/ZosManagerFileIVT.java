@@ -336,4 +336,22 @@ public class ZosManagerFileIVT {
         assertThat(unixDir.getFileType()).isEqualTo(UNIXFileType.DIRECTORY);
         assertThat(unixFile.getFileType()).isEqualTo(UNIXFileType.FILE);
     }
+    
+    @Test
+    public void unixFileGetGroup() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests group using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/textFile";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        
+        logger.info(unixFile.getGroup());
+        String machineGroupId = zosUNIXCommand.issueCommand("ls -ld " + filePath + " | awk '{print $4}'");
+        
+        // Test file type
+        assertThat(unixFile.getGroup()).isEqualToIgnoringWhitespace(machineGroupId);
+    }
 }
