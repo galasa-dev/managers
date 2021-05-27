@@ -54,7 +54,7 @@ public class ZosManagerFileIVT {
     @ZosUNIXCommand(imageTag = IMG_TAG)
     public IZosUNIXCommand zosUNIXCommand;
 
-    // @Test
+    @Test
     public void preFlightTests() throws Exception {
         // Ensure we have the resources we need for testing
         assertThat(imagePrimary).isNotNull();
@@ -65,7 +65,7 @@ public class ZosManagerFileIVT {
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
     }
     
-    // @Test
+    @Test
     public void createUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -88,7 +88,7 @@ public class ZosManagerFileIVT {
             .isEqualToIgnoringWhitespace("File Exists"); // Using commandManager
     }
     
-    // @Test
+    @Test
     public void createUnixFileWithAccessPermissions() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation (with Specified Access Permissions) using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -118,7 +118,7 @@ public class ZosManagerFileIVT {
             .startsWith("-rwxrwxrwx"); // Using commandManager
     }
     
-    // @Test
+    @Test
     public void deleteUnixFile() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -144,7 +144,7 @@ public class ZosManagerFileIVT {
         assertThat(zosUNIXCommand.issueCommand(commandTestExist)).isEqualTo(""); // Using commandManager
     }
     
-    // @Test
+    @Test
     public void deleteUnixDirectoryNonEmpty() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -176,7 +176,7 @@ public class ZosManagerFileIVT {
         assertThat(zosUNIXCommand.issueCommand(commandTestDirExists)).isEqualTo(""); // Using commandManager
     }
     
-    // @Test
+    @Test
     public void listDirectories() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -201,7 +201,7 @@ public class ZosManagerFileIVT {
         assertThat(fileMap.get(dirPath + "fileBar").getUnixPath()).isEqualTo(dirPath + "fileBar");
     }
     
-    // @Test
+    @Test
     public void listDirectoriesRecursive() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests recursive directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
