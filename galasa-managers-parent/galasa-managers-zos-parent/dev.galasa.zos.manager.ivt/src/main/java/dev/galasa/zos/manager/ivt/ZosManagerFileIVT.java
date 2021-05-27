@@ -30,6 +30,7 @@ import dev.galasa.zosfile.ZosFileHandler;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
+import dev.galasa.zosfile.IZosUNIXFile.UNIXFileType;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
@@ -265,7 +266,7 @@ public class ZosManagerFileIVT {
     }
     
     @Test
-    public void unixFileTypeIsText() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+    public void unixFileDataTypeIsText() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file type using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
@@ -308,5 +309,29 @@ public class ZosManagerFileIVT {
         
         // Test file name
         assertThat(unixFile.getFileName()).isEqualTo("uniqueFileName");
+    }
+    
+    @Test
+    public void unixFileGetFileDirType() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests file/directory type retrieval using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName();
+        String filePath = dirPath + "/aFile";
+        
+        IZosUNIXFile unixDir = fileHandler.newUNIXFile(dirPath, imagePrimary);
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        if (!unixDir.exists()) {
+            unixDir.create();
+        }
+        unixFile.create();
+        
+        // Test file type
+        UNIXFileType dirType = unixDir.getFileType();
+        assertThat(dirType).isEqualTo(UNIXFileType.DIRECTORY);
+        UNIXFileType fileType = unixFile.getFileType();
+        assertThat(fileType).isEqualTo(UNIXFileType.FILE);
     }
 }
