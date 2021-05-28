@@ -6,8 +6,8 @@ plugins {
 }
 
 dependencies {
-    api            'dev.galasa:dev.galasa:0.15.0-SNAPSHOT'
-    implementation 'dev.galasa:dev.galasa.framework:0.15.0-SNAPSHOT'
+    api            'dev.galasa:dev.galasa:0.15.0'
+    implementation 'dev.galasa:dev.galasa.framework:0.15.0'
     implementation 'commons-logging:commons-logging:1.2'
     implementation 'org.osgi:org.osgi.core:6.0.0'
     implementation 'org.osgi:org.osgi.service.component.annotations:1.3.0'
@@ -19,7 +19,7 @@ dependencies {
     testImplementation 'org.powermock:powermock-api-mockito2:2.0.4'
     testImplementation 'org.awaitility:awaitility:3.0.0'
     testImplementation 'org.assertj:assertj-core:3.16.1'
-    testImplementation 'dev.galasa:galasa-testharness:0.15.0-SNAPSHOT'
+    testImplementation 'dev.galasa:galasa-testharness:0.15.0'
     testCompileOnly    'javax.validation:validation-api:2.0.1.Final'
 }
 
