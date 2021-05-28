@@ -5,7 +5,7 @@ FROM ${dockerRepository}/galasadev/galasa-maven-extensions:${extensionsVersion}-
 
 ARG gitHash
 
-RUN sed -i 's/\/framework"/\/managers"/' /usr/local/apache2/conf/httpd.conf
+RUN sed -i 's/\/extensions"/\/managers"/' /usr/local/apache2/conf/httpd.conf
 
 COPY repo/ /usr/local/apache2/htdocs/
 RUN echo -n ${gitHash} > /usr/local/apache2/htdocs/managers.githash
