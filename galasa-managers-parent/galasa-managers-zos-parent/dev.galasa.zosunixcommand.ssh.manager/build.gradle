@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa zOS File Manager - zOS/MF Implementation'
 
-version = '0.15.0-SNAPSHOT'
+version = '0.15.0'
 
 dependencies {
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos.manager')

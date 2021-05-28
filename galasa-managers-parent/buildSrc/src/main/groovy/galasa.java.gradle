@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
 group = 'dev.galasa'
@@ -9,8 +10,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 java {
-      withJavadocJar()
-      withSourcesJar()
+    withJavadocJar()
+    withSourcesJar()
 }
     
 tasks.withType(Javadoc) {
@@ -28,14 +29,25 @@ repositories {
     mavenCentral()
 }
 
+signing {
+    sign publishing.publications
+}
+
+
+
+tasks.withType(Sign) {
+    onlyIf { isRelease.toBoolean() }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
 
             pom {
-                name = 'Galasa Testers Programmer Interface (TPI)'
                 url = 'https://galasa.dev'
+                name = 'A Galasa project'
+                description = 'A Galasa project'
                 licenses {
                     license {
                         name = 'Eclipse Public License - v 2.0'
