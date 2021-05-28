@@ -9,8 +9,16 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 
@@ -348,10 +356,53 @@ public class ZosManagerFileIVT {
         // Create File
         unixFile.create();
         
-        logger.info(unixFile.getGroup());
         String machineGroupId = zosUNIXCommand.issueCommand("ls -ld " + filePath + " | awk '{print $4}'");
+        assertThat(machineGroupId).isNotEmpty();
         
         // Test file type
         assertThat(unixFile.getGroup()).isEqualToIgnoringWhitespace(machineGroupId);
+    }
+    
+    @Test
+    public void unixFileGetLastModified() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException, ParseException {
+        // Tests group using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/datedFile";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        
+        // Fetch modified time/date using ls
+        // Then regex for month/date/time (e.g. "Mar 23 12:34")
+        String machineFileModified = zosUNIXCommand
+            .issueCommand("ls -ld " + filePath);
+        assertThat(machineFileModified).isNotEmpty();
+        final String regex = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s(\\d{2})\\s(\\d{2}:\\d{2})";
+        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(machineFileModified);
+        assertThat(matcher.find()).isTrue();
+        String month = matcher.group(1);
+        String day = matcher.group(2);
+        String time = matcher.group(3);
+        
+        // Convert scraped date from machine into usable epoch date
+        SimpleDateFormat lsDateFormat = new SimpleDateFormat("yyyy MMM dd HH:mm");
+        String dateToBeParsed = Integer.toString(Calendar.getInstance().get(Calendar.YEAR)) + " " + month + " " + day + " " + time;
+        Date machineDate = lsDateFormat.parse(dateToBeParsed);
+        // Add an offset because `zosUNIXCommand.issueCommand` always returns a time at GMT+0 
+        // (Whereas getLastModified accounts for BST etc.)
+        machineDate.setTime(machineDate.getTime() + 
+                Calendar.getInstance().getTimeZone().getOffset(machineDate.getTime()));
+        
+        // Get date from getLastModified (method being tested) and convert to a comparable format
+        // (Ignore seconds because scraped date/time doesn't have seconds)
+        String actualModified = unixFile.getLastModified().replaceAll("T", " ");
+        SimpleDateFormat methodDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); 
+        Date methodDate = methodDateFormat.parse(actualModified.substring(0, actualModified.lastIndexOf(":")));
+        
+        // Test file modification date
+        assertThat(methodDate).isEqualTo(machineDate);
     }
 }
