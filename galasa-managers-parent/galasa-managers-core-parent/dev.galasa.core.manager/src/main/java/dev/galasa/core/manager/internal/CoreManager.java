@@ -60,7 +60,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, galasaTest);
-xxxxxxx
+int mike = 0;
 		try {
 			this.cpsTest = framework.getConfigurationPropertyService("test");
 		} catch (ConfigurationPropertyStoreException e) {
