@@ -7,7 +7,7 @@
 
     <groupId>dev.galasa</groupId>
     <artifactId>install</artifactId>
-    <version>++MAVEN_VERSION++</version>
+    <version>++RUNTIME_VERSION++</version>
     <packaging>pom</packaging>
 
     <build>
@@ -29,7 +29,7 @@
                         <artifactItem>
                             <groupId>dev.galasa</groupId>
                             <artifactId>galasa-boot</artifactId>
-                            <version>++MAVEN_VERSION++</version>
+                            <version>++BOOT_VERSION++</version>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <destFileName>boot.jar</destFileName>
@@ -37,7 +37,7 @@
                         <artifactItem>
                             <groupId>dev.galasa</groupId>
                             <artifactId>galasa-simplatform</artifactId>
-                            <version>++MAVEN_VERSION++</version>
+                            <version>++SIMPLATFORM_VERSION++</version>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <destFileName>simplatform.jar</destFileName>

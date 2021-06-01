@@ -19,6 +19,17 @@
             </configuration>
         </server>
         <server>
+            <id>simbank.repo</id>
+            <configuration>
+                <httpConfiguration>
+                    <all>
+                        <connectionTimeout>120000</connectionTimeout>
+                        <readTimeout>120000</readTimeout>
+                    </all>
+                </httpConfiguration>
+            </configuration>
+        </server>
+        <server>
             <id>central</id>
             <configuration>
                 <httpConfiguration>
@@ -38,16 +49,28 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<repositories>
-				<repository>
-					<id>galasa.repo</id>
-					<url>++MAVEN_REPO++</url>
-				</repository>
+                <repository>
+                    <id>galasa.repo</id>
+                    <url>++RUNTIME_REPO++</url>
+                </repository>
+                <repository>
+                    <id>simbank.repo</id>
+                    <url>++SIMPLATFORM_REPO++</url>
+                </repository>
+                <repository>
+                    <id>central</id>
+                    <url>++CENTRAL_REPO++</url>
+                </repository>
 			</repositories>
 			<pluginRepositories>
-				<pluginRepository>
-					<id>galasa.repo</id>
-					<url>++MAVEN_REPO++</url>
-				</pluginRepository>
+                <pluginRepository>
+                    <id>galasa.repo</id>
+                    <url>++RUNTIME_REPO++</url>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>central</id>
+                    <url>++CENTRAL_REPO++</url>
+                </pluginRepository>
 			</pluginRepositories>
 		</profile>
 	</profiles>
