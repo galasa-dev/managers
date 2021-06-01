@@ -319,7 +319,7 @@ public class ZosManagerFileIVT {
         assertThat(unixFile.getFileName()).isEqualTo("uniqueFileName");
     }
     
-    // @Test // Fails because getFileType doesn't return the type from the machine
+    // // @Test // Fails because getFileType doesn't return the type from the machine
     public void unixFileGetFileDirType() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file/directory type retrieval using ZosFileHandler and UNIX File(s)
         // Establish file name and location
@@ -350,7 +350,7 @@ public class ZosManagerFileIVT {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/textFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/groupFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -379,7 +379,7 @@ public class ZosManagerFileIVT {
         String machineFileModified = zosUNIXCommand
             .issueCommand("ls -ld " + filePath);
         assertThat(machineFileModified).isNotEmpty();
-        final String regex = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s(\\d{2})\\s(\\d{2}:\\d{2})";
+        final String regex = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s+(\\d{1,2})\\s(\\d{2}:\\d{2})";
         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(machineFileModified);
         assertThat(matcher.find()).isTrue();
@@ -404,5 +404,22 @@ public class ZosManagerFileIVT {
         
         // Test file modification date
         assertThat(methodDate).isEqualTo(machineDate);
+    }
+    
+    // // @Test // Fails because getSize doesn't return the size from the machine
+    public void unixFileGetSize() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
+        // Tests group using ZosFileHandler and UNIX File(s)
+        // Establish file name and location
+        String userName = ((ICredentialsUsernamePassword) coreManager.getCredentials("ZOS")).getUsername();
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/sizedFile";
+        IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
+        
+        // Create File
+        unixFile.create();
+        unixFile.store("This file will be more than one byte.");
+        
+        int size = unixFile.getSize();
+        
+        assertThat(size).isGreaterThan(0);
     }
 }
