@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.IOException;
@@ -40,11 +45,16 @@ import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
 import dev.galasa.galasaecosystem.IsolationInstallation;
+import dev.galasa.galasaecosystem.internal.properties.CentralRepo;
+import dev.galasa.galasaecosystem.internal.properties.GalasaBootVersion;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedFullZip;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedMvpZip;
-import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
 import dev.galasa.galasaecosystem.internal.properties.MavenUseDefaultLocalRepository;
-import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
+import dev.galasa.galasaecosystem.internal.properties.RuntimeRepo;
+import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
+import dev.galasa.galasaecosystem.internal.properties.SimBankTestsVersion;
+import dev.galasa.galasaecosystem.internal.properties.SimplatformRepo;
+import dev.galasa.galasaecosystem.internal.properties.SimplatformVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
@@ -66,8 +76,9 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private Path bootJar;
     private Path simplatformJar;
 
-    private URL mavenRepo;
-    private String mavenVersion;
+    private URL runtimeRepo;
+    private String runtimeVersion;
+    private String galasaBootVersion;
     private Path mavenLocal;
 
     private final IsolationInstallation isolationInstallation;
@@ -134,13 +145,15 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             overridesProperties.store(Files.newOutputStream(this.overridesFile, StandardOpenOption.CREATE_NEW), "Galasa Ecosystem Manager");
 
 
-            this.mavenVersion = MavenVersion.get();
+            this.runtimeVersion = RuntimeVersion.get();
             if (!MavenUseDefaultLocalRepository.get()) {
                 this.mavenLocal = this.galasaDirectory.resolve("repository");
             } else {
                 this.mavenLocal = homeDirectory.resolve(".m2/repository");
             }
 
+            this.galasaBootVersion = GalasaBootVersion.get();
+            
             switch(this.isolationInstallation) {
                 case Full:
                 case Mvp:
@@ -211,7 +224,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         //*** find the latest boot and simplatform files
 
-        if (this.mavenVersion.endsWith("-SNAPSHOT")) {
+        if (this.runtimeVersion.endsWith("-SNAPSHOT")) {
             this.bootJar = locateSnapshotJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
             this.simplatformJar = locateSnapshotJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
         } else {
@@ -219,19 +232,19 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
         }
 
-        this.mavenRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
+        this.runtimeRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
     }
 
 
     private Path locateReleaseJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException {
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.runtimeVersion);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        Path file = artifactDirectory.resolve(artifactId + "-" + this.mavenVersion + ".jar");
+        Path file = artifactDirectory.resolve(artifactId + "-" + this.runtimeVersion + ".jar");
         if (!Files.exists(file)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact " + file);
         }
@@ -243,13 +256,13 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private Path locateSnapshotJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException, IOException {
 
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.mavenVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.runtimeVersion);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        String actualVersion = this.mavenVersion.substring(0, this.mavenVersion.indexOf("-SNAPSHOT"));
+        String actualVersion = this.runtimeVersion.substring(0, this.runtimeVersion.indexOf("-SNAPSHOT"));
         String fileNamePrefix = artifactId + "-" + actualVersion;
 
 
@@ -300,12 +313,16 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private void downloadArtifactsViaMaven(Path homeDirectory) throws GalasaEcosystemManagerException, TestBundleResourceException, IOException, IpNetworkManagerException {
         // Download all the artifacts we need from Maven
 
-        this.mavenRepo = MavenRepo.get();
+        this.runtimeRepo = RuntimeRepo.get();
 
         HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("MAVEN_REPO", this.mavenRepo.toString());
-        parameters.put("MAVEN_VERSION", this.mavenVersion);
+        parameters.put("RUNTIME_REPO", this.runtimeRepo.toString());
+        parameters.put("RUNTIME_VERSION", this.runtimeVersion);
         parameters.put("MAVEN_LOCAL", this.mavenLocal.toString());
+        parameters.put("BOOT_VERSION", this.galasaBootVersion);
+        parameters.put("SIMPLATFORM_REPO", SimplatformRepo.get().toString());
+        parameters.put("SIMPLATFORM_VERSION", SimplatformVersion.get());
+        parameters.put("CENTRAL_REPO", CentralRepo.get().toString());
 
         IArtifactManager artifactManager = getEcosystemManager().getArtifactManager();
         IBundleResources bundleResources = artifactManager.getBundleResources(this.getClass());
@@ -404,7 +421,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     }
 
     protected URL getMavenRepo() {
-        return this.mavenRepo;
+        return this.runtimeRepo;
     }
 
     protected Path getMavenLocal() {
@@ -412,7 +429,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     }
 
     protected String getMavenVersion() {
-        return this.mavenVersion;
+        return this.runtimeVersion;
     }
 
     protected void addLocalRun(@NotNull LocalRun localRun) {
@@ -585,8 +602,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         // Update the CPS with the properties for this instance
 
         //*** Set up streams
-        setCpsProperty("framework.test.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + this.mavenVersion + "/obr");
-        setCpsProperty("framework.test.stream.simbank.repo", this.mavenRepo.toString());
+        setCpsProperty("framework.test.stream.simbank.obr", "mvn:dev.galasa/dev.galasa.simbank.obr/" + SimBankTestsVersion.get() + "/obr");
+        setCpsProperty("framework.test.stream.simbank.repo", removeHttps(SimplatformRepo.get().toString()));
 
         //*** Set up SimBank
         setCredsProperty("secure.credentials.SIMBANK.username", "IBMUSER");
@@ -609,6 +626,20 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         setCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_DATABASE)).getPort()));
         setCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_WEBSERVICE)).getPort()));
     }
+    
+    // TODO - Hacky to get round cacerts issue in java manager, ie functionality not there yet
+    private String removeHttps(String url) {
+        if (url.startsWith("https://cicscit.hursley.ibm.com")) {
+            return url.replace("https://cicscit.hursley.ibm.com", "http://cicscit.hursley.ibm.com");
+        }
+        if (url.startsWith("https://nexus.cics-ts.hur.hdclab.intranet.ibm.com/")) {
+            return url.replace("https://nexus.cics-ts.hur.hdclab.intranet.ibm.com/", "http://nexus.cics-ts.hur.hdclab.intranet.ibm.com:81/");
+        }
+        
+        return url;
+    }
+
+
 
     @Override
     public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {

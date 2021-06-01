@@ -19,14 +19,13 @@ tasks.withType(Javadoc) {
     enabled = true
 }
 
-def mavenrepo = System.getenv('MAVEN_REPO') ?: "https://nexus.galasa.dev/repository/maven-development"
-
 repositories {
-    mavenLocal()
     maven {
-        url mavenrepo
+        url "$sourceMaven"
     }
-    mavenCentral()
+    maven {
+        url "$centralMaven"
+    }
 }
 
 signing {
@@ -112,11 +111,14 @@ publishing {
     }
     repositories {
         maven {
-           credentials {
-                username System.getenv('MAVENUSERNAME')
-                password System.getenv('MAVENPASSWORD')
+            url  = "$targetMaven"
+            
+            if ("$targetMaven".startsWith('http')) {
+                credentials {
+                    username System.getenv('MAVENUSERNAME')
+                    password System.getenv('MAVENPASSWORD')
+                }
             }
-            url = mavenrepo
         }
     }
 }
