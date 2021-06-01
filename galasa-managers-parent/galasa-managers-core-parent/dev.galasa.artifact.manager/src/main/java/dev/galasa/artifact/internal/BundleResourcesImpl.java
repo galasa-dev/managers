@@ -307,7 +307,7 @@ public class BundleResourcesImpl implements IBundleResources {
         }
 
         /*
-         * Regex with 4 groups: ^([\\[\\(]) - beginning of string: '[' or '('1
+         * Regex with 4 groups: ^([\\[\\(]) - beginning of string: '[' or '('
          * ([\\d+\\.]+) - some quantity of numbers and '.'s. should be the lower bound
          * (,[\\d+\\.]+)? - as above, prefixed with ',' and optional. should be the
          * upper bound if there is one ([\\)\\]])$ - reverse of the first group: ']' or
