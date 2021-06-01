@@ -220,6 +220,17 @@ public class ArtifactManagerIVT {
     	assertThat(jarContent).contains("dev/galasa");
     }
     
+    @Test
+    public void retrieveJarTestWithinRange() throws Exception {
+
+    	InputStream is = resources.retrieveJar("dev.galasa", "(0.14.0.202105120649,0.16.0.202105120649)", "/resources/jars/");
+    	    	
+    	String jarContent = resources.streamAsString(is);
+    	
+    	//If this string is found within the contents then the jar has been retrieved successfully
+    	assertThat(jarContent).contains("dev/galasa");
+    }
+    
    
     @Test
     public void retrieveJarTestNoVersion() throws Exception {
