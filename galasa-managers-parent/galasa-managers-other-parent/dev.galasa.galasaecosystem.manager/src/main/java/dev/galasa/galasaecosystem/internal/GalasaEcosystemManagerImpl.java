@@ -45,7 +45,7 @@ import dev.galasa.galasaecosystem.LocalEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
 import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesSingleton;
 import dev.galasa.galasaecosystem.internal.properties.KubernetesEcosystemTagSharedEnvironment;
-import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
+import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
 import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.java.IJavaInstallation;
 import dev.galasa.java.JavaManagerException;
@@ -570,7 +570,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     @Override
     public String getProductRelease() {
         try {
-            return "galasa:" + MavenVersion.get();
+            return "galasa:" + RuntimeVersion.get();
         } catch (GalasaEcosystemManagerException e) {
             return "galasa:unknown";
         }
