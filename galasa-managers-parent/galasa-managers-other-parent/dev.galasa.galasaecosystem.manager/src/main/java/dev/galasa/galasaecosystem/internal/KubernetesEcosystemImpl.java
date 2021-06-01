@@ -52,8 +52,8 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
 import dev.galasa.galasaecosystem.internal.properties.DockerRegistry;
 import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
-import dev.galasa.galasaecosystem.internal.properties.MavenRepo;
-import dev.galasa.galasaecosystem.internal.properties.MavenVersion;
+import dev.galasa.galasaecosystem.internal.properties.RuntimeRepo;
+import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -131,8 +131,8 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
      */
     protected void loadYamlResources() throws GalasaEcosystemManagerException {
 
-        this.mavenVersion = MavenVersion.get();
-        this.mavenRepository = MavenRepo.get();
+        this.mavenVersion = RuntimeVersion.get();
+        this.mavenRepository = RuntimeRepo.get();
         this.dockerVersion = DockerVersion.get();
         this.dockerRegistry = DockerRegistry.get();
 

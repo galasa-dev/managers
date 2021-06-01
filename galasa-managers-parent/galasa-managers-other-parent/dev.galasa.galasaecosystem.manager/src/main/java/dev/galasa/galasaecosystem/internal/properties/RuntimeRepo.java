@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.galasaecosystem.internal.properties;
 
@@ -14,13 +14,13 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 
 
 /**
- * Maven Repository URL
+ * Runtime Repository URL
  * 
  * @galasa.cps.property
  * 
- * @galasa.name galasaecosystem.maven.repository
+ * @galasa.name galasaecosystem.runtime.repository
  * 
- * @galasa.description The location of the Maven Repository all artifacts will be downloaded from
+ * @galasa.description The location of the Maven Repository all runtime artifacts will be downloaded from
  * 
  * @galasa.required Yes
  * 
@@ -29,20 +29,20 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * @galasa.valid_values Value URL
  * 
  * @galasa.examples 
- * <code>galasaecosystem.maven.repository=https://nexus.galasa.dev/repository/maven-development</code>
+ * <code>galasaecosystem.runtime.repository=https://nexus.galasa.dev/repository/maven-development</code>
  * 
  */
-public class MavenRepo extends CpsProperties {
+public class RuntimeRepo extends CpsProperties {
 
     public static URL get() throws GalasaEcosystemManagerException {
         try {
-            String url = getStringNulled(GalasaEcosystemPropertiesSingleton.cps(), "maven", "repository") ;
+            String url = getStringNulled(GalasaEcosystemPropertiesSingleton.cps(), "runtime", "repository") ;
             if (url == null) {
-                throw new GalasaEcosystemManagerException("Property galasaecosystem.maven.repository is missing");
+                throw new GalasaEcosystemManagerException("Property galasaecosystem.runtime.repository is missing");
             }
             return new URL(url);
         } catch (ConfigurationPropertyStoreException | MalformedURLException e) {
-            throw new GalasaEcosystemManagerException("Problem retrieving the maven artifact repository", e);
+            throw new GalasaEcosystemManagerException("Problem retrieving the runtime artifact repository", e);
         }
     }
 }
