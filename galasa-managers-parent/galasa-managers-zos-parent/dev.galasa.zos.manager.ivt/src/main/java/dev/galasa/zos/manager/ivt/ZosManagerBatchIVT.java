@@ -63,6 +63,7 @@ public class ZosManagerBatchIVT {
     public Path rasRoot;
     
     
+    
     @Test
     public void preFlightTestsBasic() {
     	assertThat(resources).isNotNull();
@@ -146,6 +147,36 @@ public class ZosManagerBatchIVT {
     	logger.info("Checking that the path: " + jobOutput.toString() + " exists");
     	assertThat(Files.exists(jobOutput)).isTrue();
     	
+    }
+    
+    /*
+     * Retrieve the output for a job 
+     */
+    @Test
+    public void retrieveJobs() throws TestBundleResourceException, IOException, ZosBatchException {
+    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	IZosBatchJob job = batch.submitJob(jclInput, null);
+    	job.waitForJob();
+    	List<IZosBatchJob> jobs = batch.getJobs(job.getJobname().getName(), job.getOwner());
+    	assertThat(jobs).asList().size().isEqualTo(1);
+    }
+    
+    //@Test
+    public void getAsString() throws TestBundleResourceException, IOException, ZosBatchException {
+    	String message = "HELLO WORLD FROM GALASA";
+    	Map<String,Object> parameters = new HashMap<>();
+    	parameters.put("MESSAGE", message);
+    	String jclInput = resources.retrieveSkeletonFileAsString("resources/jcl/helloWorld.jcl", parameters);
+    	assertThat(jclInput).contains(message);
+    	
+    	//submit the job, check that it completes and we got some output
+    	IZosBatchJob job = batch.submitJob(jclInput, null);
+    	String output = job.retrieveOutputAsString();
+    	assertThat(output).contains(job.getJobId());
+    	assertThat(output).contains(job.getJobname().getName());
+    	assertThat(output).contains(job.getOwner());
+    	assertThat(output).contains(job.getStatus().toString());
+    	assertThat(output).contains(job.getStatusString());
     }
     
     /*
