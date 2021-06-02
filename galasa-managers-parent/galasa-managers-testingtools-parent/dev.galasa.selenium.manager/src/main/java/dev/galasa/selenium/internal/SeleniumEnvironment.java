@@ -67,8 +67,6 @@ public class SeleniumEnvironment {
 	public ISeleniumManager allocateDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		ISeleniumManager driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
-		// Get a slot or fail
-		String slotName = allocateSlot();
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -80,6 +78,8 @@ public class SeleniumEnvironment {
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
 		    	break;
 		    default:
+				// Get a slot or fail
+				String slotName = allocateSlot();
 		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
 		    	break;
 			}
@@ -101,8 +101,6 @@ public class SeleniumEnvironment {
 	public IWebDriver allocateWebDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		IWebDriver driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
-		// Get a slot or fail
-		String slotName = allocateSlot();
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -114,6 +112,8 @@ public class SeleniumEnvironment {
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
 		    	break;
 		    default:
+				// Get a slot or fail
+				String slotName = allocateSlot();
 		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
 		    	break;
 			}
@@ -146,7 +146,7 @@ public class SeleniumEnvironment {
 				}
 				
 				if (currentSlots >= SeleniumDriverMaxSlots.get()) {
-					throw new ResourceUnavailableException("Failed to provsion. No slots avilable");
+					throw new ResourceUnavailableException("Failed to provsion. No slots avilable. " + SeleniumDriverMaxSlots.get() + " slots in use.");
 				}			
 				
 				String slotNamePrefix = "SeleniumSlot_" + this.runName + "_";
@@ -155,8 +155,8 @@ public class SeleniumEnvironment {
 				try {
 					currentSlots++;
 					dss.performActions(
-					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
-					new DssSwap(slotKey, slots, String.valueOf(currentSlots))
+						new DssAdd("driver.slot." + slotNameAttempt, runName),
+						new DssSwap(slotKey, slots, String.valueOf(currentSlots))
 					);
 					slotName = slotNameAttempt;
 					break;
