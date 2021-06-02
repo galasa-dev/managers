@@ -177,7 +177,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 	}
 
 	@Override
-	public ICredentials getCredentials(@NotNull String credentialsId) throws CoreManagerException {
+	public ICredentials getCredentials(@NotNull String credentialsId) throws CoreManagerException { //testing
 		try {
 			return getFramework().getCredentialsService().getCredentials(credentialsId);
 		} catch (CredentialsException e) {
@@ -186,7 +186,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 	}
 
 	@Override
-	public void registerConfidentialText(String confidentialString, String comment) {
+	public void registerConfidentialText(String confidentialString, String comment) { /// need testing
 		ctf.registerText(confidentialString, comment);
 	}
 
@@ -226,7 +226,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
     }
 
     @Override
-    public List<String> getTestingAreas() {
+    public List<String> getTestingAreas() { // needs testing not IVT
         if(this.testClass == null) {
             return null;
         }
@@ -260,7 +260,7 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
     }
 
     @Override
-    public List<String> getTags() {
+    public List<String> getTags() { // needs testing not IVT?
         if(this.testClass == null) {
             return null;
         }

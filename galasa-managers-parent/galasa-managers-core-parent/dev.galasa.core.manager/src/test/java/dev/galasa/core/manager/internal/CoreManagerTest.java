@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.apache.commons.logging.Log;
@@ -21,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import dev.galasa.ManagerException;
+import dev.galasa.Tags;
+import dev.galasa.TestAreas;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.RunName;
@@ -81,7 +84,8 @@ public class CoreManagerTest {
         Assert.assertEquals("Logger field not valid", Paths.get("a", "root", "dir").toString(), testClass.root.toString());
     }
     
-    
+    @TestAreas({"test1", "","    ","test"})
+    @Tags({"tag1", "","     "})
     public static class TestClass {
         @dev.galasa.core.manager.CoreManager
         public ICoreManager coreManager;
@@ -94,6 +98,30 @@ public class CoreManagerTest {
         
         @StoredArtifactRoot
         public Path root;
+        
+    }
+    
+   
+    
+    @Test
+    public void testGetTeastingAreas() throws ManagerException {
+    	CoreManager coreManager = new CoreManager();
+    	TestClass testClass = new TestClass();
+    	
+    	ArrayList<IManager> activeManagers = new ArrayList<>();
+        coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
+    	Assert.assertEquals(new ArrayList<>(Arrays.asList("test1","test")),coreManager.getTestingAreas());
+    }
+    
+    @Test
+    public void testGetTags() throws ManagerException {
+    	CoreManager coreManager = new CoreManager();
+    	TestClass testClass = new TestClass();
+    	
+    	ArrayList<IManager> activeManagers = new ArrayList<>();
+        coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
+        Assert.assertEquals(new ArrayList<>(Arrays.asList("tag1")),coreManager.getTags());
+    	
     }
     
 
