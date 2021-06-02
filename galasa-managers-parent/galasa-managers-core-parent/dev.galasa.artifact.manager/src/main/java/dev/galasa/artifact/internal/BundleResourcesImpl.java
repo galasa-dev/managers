@@ -259,8 +259,8 @@ public class BundleResourcesImpl implements IBundleResources {
         // Work through the arrays from left to right comparing the values
         int maxLength = Math.max(version1Array.length, version2Array.length);
         for (int i = 0; i < maxLength; i++) {
-            int n1 = getIntAtIndex(version1Array, i);
-            int n2 = getIntAtIndex(version2Array, i);
+            long n1 = getLongtAtIndex(version1Array, i);
+            long n2 = getLongtAtIndex(version2Array, i);
 
             if (n2 > n1) {
                 return -1;
@@ -275,17 +275,19 @@ public class BundleResourcesImpl implements IBundleResources {
     }
 
     /**
-     * Get the integer from a given index in a string array assume zero if we are
+     * Get the long from a given index in a string array assume zero if we are
      * out of bounds
      */
-    private int getIntAtIndex(String[] arr, int index) {
+  
+    private long getLongtAtIndex(String[] arr, int index) {
 
-        if (arr.length <= index) {
+    	if (arr.length <= index) {
             return 0;
         }
-
-        return Integer.parseInt(arr[index]);
+        
+        return Long.parseLong(arr[index]);
     }
+    
 
     /**
      * return true if a given version lies within a given range

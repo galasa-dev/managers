@@ -161,7 +161,7 @@ public class ZosManagerBatchIVT {
     	assertThat(jobs).asList().size().isEqualTo(1);
     }
     
-    @Test
+    //@Test
     public void getAsString() throws TestBundleResourceException, IOException, ZosBatchException {
     	String message = "HELLO WORLD FROM GALASA";
     	Map<String,Object> parameters = new HashMap<>();
