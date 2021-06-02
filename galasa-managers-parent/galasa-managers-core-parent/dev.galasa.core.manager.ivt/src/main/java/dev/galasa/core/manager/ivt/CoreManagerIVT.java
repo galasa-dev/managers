@@ -8,6 +8,8 @@ package dev.galasa.core.manager.ivt;
 import org.apache.commons.logging.Log;
 import static org.assertj.core.api.Assertions.assertThat;
 
+
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Summary;
 import dev.galasa.Test;
 import dev.galasa.core.manager.CoreManager;
@@ -65,12 +67,15 @@ public class CoreManagerIVT {
     
     
     @Test
-    public void checkGetCredentials() throws CoreManagerException { // dev.galasa.framework.spi.creds.CredentialsUsernamePassword@4b7dc788  eh????
-    	System.out.println(coreManager.getCredentials("SIMBANK").toString());
+    public void checkGetCredentials() throws CoreManagerException { 
+    	ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword) coreManager.getCredentials("SIMBANK");
+    	assertThat(creds).isNotNull();
+    	assertThat(creds.getUsername()).isEqualTo("IBMUSER");
     }
     
     @Test
     public void testRegisterConfidentialtext() {
     	coreManager.registerConfidentialText("SYS1", "IBM user password");
+    	//assertThat()
     }
 }
