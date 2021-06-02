@@ -58,6 +58,7 @@ public class NetworkThread extends Thread {
 
     public static final byte    ASSOCIATE       = 0;
     public static final byte    TELNET_BINARY   = 0;
+    public static final byte    FUNC_BIND_IMAGE = 0;
     public static final byte    CONNECT         = 1;
     public static final byte    TT_SEND         = 1;
     public static final byte    FOLLOWS         = 1;
@@ -65,6 +66,7 @@ public class NetworkThread extends Thread {
     public static final byte    RESPONSES       = 2;
     public static final byte    FUNCTIONS       = 3;
     public static final byte    IS              = 4;
+    public static final byte    FUNC_SYSREQ     = 4;
     public static final byte    REASON          = 5;
     public static final byte    REJECT          = 6;
     public static final byte    TIMING_MARK     = 6;
@@ -191,7 +193,13 @@ public class NetworkThread extends Thread {
             }
 
             byte tn3270eHeader = buffer.get();
-            if (tn3270eHeader != 0) {
+            if (tn3270eHeader == DT_BIND_IMAGE) {
+                logger.trace("BIND_IMAGE received");
+                return;
+            } else if (tn3270eHeader == DT_UNBIND) {
+                logger.trace("UNBIND_IMAGE received");
+                return;
+            } else if (tn3270eHeader != 0) {
                 throw new NetworkException("Was expecting a TN3270E datastream header of zeros - " + reportCommandSoFar());
             }
 
@@ -466,13 +474,77 @@ public class NetworkThread extends Thread {
             doIacSbTn3270eFunctionsIs(remainingSb);
             return;
         }
+        if (sb == REQUEST) {
+            doIacSbTn3270eFunctionsRequest(remainingSb);
+            return;
+        }
 
         throw new NetworkException("Unrecognised IAC SB TN3270E FUNCTIONS Command - " + reportCommandSoFar());
     }
 
+    private void doIacSbTn3270eFunctionsRequest(ByteBuffer remainingSb) throws NetworkException, IOException {
+        logger.trace("TN3270E server renegoiating FUNCTIONS");
+        boolean bind   = false;
+        boolean sysreq = false;
+        boolean rerequest = false;
+        while(remainingSb.hasRemaining()) {
+            byte function = remainingSb.get();
+            if (function == FUNC_BIND_IMAGE) {
+                logger.trace("TN3270E function BIND_IMAGE requested");
+                bind = true;
+            } else if (function == FUNC_SYSREQ) {
+                logger.trace("TN3270E function SYSREQ requested");
+                sysreq = true;
+            } else {
+                logger.trace("Unexpected function on FUNCTIONS REQUEST = 0x" + Hex.encodeHexString(new byte[] { function }) + ", rejecting");
+                rerequest = true;
+            }
+        }
+
+        // need to indicate renegotiation,  or say we accept
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(IAC);
+        baos.write(SB);
+        baos.write(TN3270E);
+        baos.write(FUNCTIONS);
+        if (rerequest) {
+            logger.trace("Renegotiating FUNCTIONS with :-");
+            baos.write(REQUEST);
+        } else {
+            logger.trace("TN3270E FUNCTIONS accepted with :-");
+            baos.write(IS);
+        }
+        if (bind) {
+            baos.write(FUNC_BIND_IMAGE);
+            logger.trace("     BIND_IMAGE");
+        }
+        if (sysreq) {
+            baos.write(FUNC_SYSREQ);
+            logger.trace("     SYSREQ");
+        }
+        baos.write(IAC);
+        baos.write(SE);
+        this.network.sendIac(baos.toByteArray());
+    }
+
+
+
+
+
+
+
     private void doIacSbTn3270eFunctionsIs(ByteBuffer remainingSb) throws NetworkException, IOException {
-        if (remainingSb.hasRemaining()) {
-            throw new NetworkException("TN3270E, asked for no functions, but we seem to have got some anyway " + reportCommandSoFar());
+        logger.trace("TN3270E FUNCTIONS IS accepted with :-");
+        while(remainingSb.hasRemaining()) {
+            byte function = remainingSb.get();
+            if (function == FUNC_BIND_IMAGE) {
+                logger.trace("     BIND_IMAGE");
+            } else if (function == FUNC_SYSREQ) {
+                logger.trace("     SYSREQ");
+            } else {
+                throw new NetworkException("Unexpected function on FUNCTIONS IS = 0x" + Hex.encodeHexString(new byte[] { function }));
+            }
         }
 
         // At this point we should be fully negotiated, so mark thread ready
@@ -481,12 +553,17 @@ public class NetworkThread extends Thread {
     }
 
     private void negotiateFunctions() throws NetworkException {
+        logger.trace("Requesting TN3270E functions BIND_IMAGE, SYSREQ");
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(IAC);
         baos.write(SB);
         baos.write(TN3270E);
         baos.write(FUNCTIONS);
         baos.write(REQUEST);
+        baos.write(FUNC_BIND_IMAGE);
+        baos.write(FUNC_SYSREQ);
+    //    baos.write(0x34); // invalid function to drive negotiation
         baos.write(IAC);
         baos.write(SE);
         this.network.sendIac(baos.toByteArray());
