@@ -166,6 +166,8 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
             logger.info("JOB " + this.toString() + " Submitted");
+            
+            this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString("Submit job", responseBody); 
@@ -411,7 +413,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");
