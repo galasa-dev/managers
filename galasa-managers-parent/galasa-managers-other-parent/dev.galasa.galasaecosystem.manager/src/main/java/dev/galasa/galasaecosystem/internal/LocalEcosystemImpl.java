@@ -249,7 +249,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        Path file = artifactDirectory.resolve(artifactId + "-" + this.runtimeVersion + ".jar");
+        Path file = artifactDirectory.resolve(artifactId + "-" + version + ".jar");
         if (!Files.exists(file)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact " + file);
         }
@@ -267,7 +267,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        String actualVersion = this.runtimeVersion.substring(0, this.runtimeVersion.indexOf("-SNAPSHOT"));
+        String actualVersion = this.runtimeVersion.substring(0, version.indexOf("-SNAPSHOT"));
         String fileNamePrefix = artifactId + "-" + actualVersion;
 
 
