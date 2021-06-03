@@ -384,9 +384,9 @@ public class ZosManagerFileIVT {
         String machineFileModified = zosUNIXCommand
             .issueCommand("TZ=" + timeZoneFormatted + "; ls -ld " + filePath);
         assertThat(machineFileModified).isNotEmpty();
-        final String regex = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s+(\\d{1,2})\\s(\\d{2}:\\d{2})";
-        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(machineFileModified);
+        final String regexTimeFromLS = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s+(\\d{1,2})\\s(\\d{2}:\\d{2})";
+        final Pattern patternTimeFromLS = Pattern.compile(regexTimeFromLS, Pattern.MULTILINE);
+        Matcher matcher = patternTimeFromLS.matcher(machineFileModified);
         assertThat(matcher.find()).isTrue();
         String month = matcher.group(1);
         String day = matcher.group(2);
