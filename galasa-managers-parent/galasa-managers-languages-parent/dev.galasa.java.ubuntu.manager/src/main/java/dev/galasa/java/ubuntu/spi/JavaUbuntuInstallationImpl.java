@@ -19,6 +19,7 @@ import dev.galasa.CpuArchitecture;
 import dev.galasa.OperatingSystem;
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.java.JavaManagerException;
 import dev.galasa.java.JavaType;
@@ -75,7 +76,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
 
     }
 
-    public void build() throws JavaManagerException {
+    public void build() throws JavaManagerException, ResourceUnavailableException {
         try {
             ILinuxManagerSpi linuxManager = this.javaUbuntuManager.getLinuxManager();
 
@@ -90,7 +91,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
         buildJacocoAgent();
     }
 
-    private void buildJavaHome() throws JavaManagerException {
+    private void buildJavaHome() throws JavaManagerException, ResourceUnavailableException {
         String actualFilename = getArchiveFilename();
 
         try {

@@ -13,7 +13,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +21,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
@@ -30,6 +30,7 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.OperatingSystem;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -89,7 +90,7 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
     }
 
     @Override
-    public Path retrieveArchive() throws JavaManagerException {
+    public Path retrieveArchive() throws JavaManagerException, ResourceUnavailableException {
         if (archive != null) {
             return archive;
         }
@@ -102,7 +103,7 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
         }
     }
 
-    private Path downloadHttp(String downloadLocation) throws JavaManagerException {
+    private Path downloadHttp(String downloadLocation) throws JavaManagerException, ResourceUnavailableException {
 
         logger.trace("Retrieving Java archive from " + downloadLocation);
 
@@ -129,6 +130,9 @@ public abstract class JavaInstallationImpl implements IJavaInstallation {
             this.archive = archive;
 
             return archive;
+        } catch (ConnectionClosedException e) {
+            logger.error("Transfer connection closed early, usually caused by network instability, marking as resource unavailable so can try again later",e);
+            throw new ResourceUnavailableException("Network error downloading Java archive from " + uri.toString());
         } catch (Exception e) {
             throw new JavaManagerException("Unable to download Java archive " + downloadLocation, e);
         }
