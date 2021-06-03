@@ -47,7 +47,7 @@ public class Gherkin3270GivenTerminal  implements IStatementOwner {
         
         Zos3270TerminalImpl newTerminal = this.gerkinCoordinator.getTerminal(terminalId);
         if (newTerminal == null) {
-            newTerminal = this.manager.generateTerminal(imageTag, true);
+            newTerminal = this.manager.generateTerminal(imageTag, true, 80, 24, 0, 0);
             this.gerkinCoordinator.registerTerminal(terminalId, newTerminal, imageTag);
             logger.info("zOS 3270 Terminal id '" + terminalId + "' as been provisioned for image tag '" + imageTag + "'");
         }       
