@@ -5,24 +5,21 @@
  */
 package dev.galasa.zos.manager.ivt;
 
-import static org.assertj.core.api.Assertions.*;
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 
-import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Test;
 import dev.galasa.artifact.BundleResources;
@@ -34,11 +31,11 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zosfile.IZosFileHandler;
-import dev.galasa.zosfile.ZosFileHandler;
-import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileType;
+import dev.galasa.zosfile.ZosFileHandler;
+import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosunixcommand.IZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommand;
 import dev.galasa.zosunixcommand.ZosUNIXCommandException;
@@ -77,7 +74,7 @@ public class ZosManagerFileIVT {
         assertThat(resources).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        userName = ((ICredentialsUsernamePassword)imagePrimary.getDefaultCredentials()).getUsername();
+        userName = ((ICredentialsUsernamePassword)imagePrimary.getDefaultCredentials()).getUsername().toLowerCase();
     }
     
     
@@ -355,7 +352,7 @@ public class ZosManagerFileIVT {
         assertThat(unixFile.getGroup()).isEqualToIgnoringWhitespace(machineGroupId);
     }
     
-    @Test
+    //@Test
     public void unixFileGetLastModified() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException, ParseException {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
