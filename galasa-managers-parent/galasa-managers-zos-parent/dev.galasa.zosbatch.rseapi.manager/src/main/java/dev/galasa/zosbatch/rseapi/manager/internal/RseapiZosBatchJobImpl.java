@@ -167,6 +167,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
             logger.info("JOB " + this.toString() + " Submitted");
+            this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         } else {            
             // Error case
             String displayMessage = buildErrorString("Submit job", response); 
@@ -412,7 +413,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         }
         
         // First, get a list of spool files
-        this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         this.jobFilesPath = RESTJOBS_PATH + SLASH + this.jobname.getName() + SLASH + this.jobid + "/files";
         HashMap<String, String> headers = new HashMap<>();
         IRseapiResponse response;
