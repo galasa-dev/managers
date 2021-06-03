@@ -54,6 +54,7 @@ import dev.galasa.galasaecosystem.internal.properties.DockerRegistry;
 import dev.galasa.galasaecosystem.internal.properties.DockerVersion;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeRepo;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
+import dev.galasa.galasaecosystem.internal.properties.SimplatformDockerVersion;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -89,6 +90,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
 
     private String                           dockerVersion;
     private String                           dockerRegistry;
+    private String                           simplatformDockerVersion;
     private String                           mavenVersion;
     private URL                              mavenRepository;
     private final HashMap<String, String>    yamlReplacements = new HashMap<>();
@@ -135,6 +137,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
         this.mavenRepository = RuntimeRepo.get();
         this.dockerVersion = DockerVersion.get();
         this.dockerRegistry = DockerRegistry.get();
+        this.simplatformDockerVersion = SimplatformDockerVersion.get();
 
         ArrayList<Map<String, Object>>   managerYaml = new ArrayList<>();
         ArrayList<Map<String, Object>>   testYaml = new ArrayList<>();
@@ -142,6 +145,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
         //*** Setup the blanket replacements
         yamlReplacements.put("${dockerVersion}", dockerVersion);
         yamlReplacements.put("${dockerRegistry}", dockerRegistry);
+        yamlReplacements.put("${simplatformDockerVersion}", simplatformDockerVersion);
 
         //*** Load all the yaml files ready for searching and processing
         try {
