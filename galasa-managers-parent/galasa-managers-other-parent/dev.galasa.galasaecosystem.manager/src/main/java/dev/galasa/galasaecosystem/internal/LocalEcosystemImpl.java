@@ -79,6 +79,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private URL runtimeRepo;
     private String runtimeVersion;
     private String galasaBootVersion;
+    private String simplatformVersion;
     private Path mavenLocal;
 
     private final IsolationInstallation isolationInstallation;
@@ -153,6 +154,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             }
 
             this.galasaBootVersion = GalasaBootVersion.get();
+            this.simplatformVersion = SimplatformVersion.get();
             
             switch(this.isolationInstallation) {
                 case Full:
@@ -224,27 +226,30 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         //*** find the latest boot and simplatform files
 
-        if (this.runtimeVersion.endsWith("-SNAPSHOT")) {
-            this.bootJar = locateSnapshotJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
-            this.simplatformJar = locateSnapshotJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
+        if (this.galasaBootVersion.endsWith("-SNAPSHOT")) {
+            this.bootJar = locateSnapshotJar("dev.galasa", "galasa-boot", this.galasaBootVersion, isolatedRepoDirectory);
         } else {
-            this.bootJar = locateReleaseJar("dev.galasa", "galasa-boot", isolatedRepoDirectory);
-            this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", isolatedRepoDirectory);
+            this.bootJar = locateReleaseJar("dev.galasa", "galasa-boot", this.galasaBootVersion, isolatedRepoDirectory);
+        }
+        if (this.simplatformVersion.endsWith("-SNAPSHOT")) {
+            this.simplatformJar = locateSnapshotJar("dev.galasa", "galasa-simplatform", this.simplatformVersion, isolatedRepoDirectory);
+        } else {
+            this.simplatformJar = locateReleaseJar("dev.galasa", "galasa-simplatform", this.simplatformVersion, isolatedRepoDirectory);
         }
 
         this.runtimeRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
     }
 
 
-    private Path locateReleaseJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException {
+    private Path locateReleaseJar(String groupId, String artifactId, String version, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException {
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.runtimeVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(version);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        Path file = artifactDirectory.resolve(artifactId + "-" + this.runtimeVersion + ".jar");
+        Path file = artifactDirectory.resolve(artifactId + "-" + version + ".jar");
         if (!Files.exists(file)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact " + file);
         }
@@ -253,16 +258,16 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     }
 
 
-    private Path locateSnapshotJar(String groupId, String artifactId, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException, IOException {
+    private Path locateSnapshotJar(String groupId, String artifactId, String version, Path isolatedRepoDirectory) throws GalasaEcosystemManagerException, IOException {
 
         groupId = groupId.replace(".", "/");
-        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(this.runtimeVersion);
+        Path artifactDirectory = isolatedRepoDirectory.resolve("maven").resolve(groupId).resolve(artifactId).resolve(version);
 
         if (!Files.exists(artifactDirectory)) {
             throw new GalasaEcosystemManagerException("Unable to locate the maven artifact directory " + artifactDirectory);
         }
 
-        String actualVersion = this.runtimeVersion.substring(0, this.runtimeVersion.indexOf("-SNAPSHOT"));
+        String actualVersion = this.runtimeVersion.substring(0, version.indexOf("-SNAPSHOT"));
         String fileNamePrefix = artifactId + "-" + actualVersion;
 
 
