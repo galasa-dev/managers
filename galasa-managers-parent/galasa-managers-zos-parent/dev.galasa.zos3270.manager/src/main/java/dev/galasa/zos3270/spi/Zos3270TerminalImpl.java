@@ -68,9 +68,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean                        logConsoleTerminals;
     private boolean                        autoConnect;
 
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image,
+            int primaryColumns, int primaryRows, int alternateColumns, int alternateRows)
             throws Zos3270ManagerException, TerminalInterruptedException {
-        super(id, host, port, tls);
+        super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows);
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;

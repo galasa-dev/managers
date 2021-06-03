@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019,2021.
  */
 package dev.galasa.zos3270;
 
@@ -37,5 +37,11 @@ public @interface Zos3270Terminal {
      * Allow user to choose if the terminal autoconnects in provision start stage
      */
     boolean autoConnect() default true;
+    
+    int primaryColumns() default 80;
+    int primaryRows()    default 24;
+    
+    int alternateColumns() default 0;
+    int alternateRows()    default 0;
 
 }
