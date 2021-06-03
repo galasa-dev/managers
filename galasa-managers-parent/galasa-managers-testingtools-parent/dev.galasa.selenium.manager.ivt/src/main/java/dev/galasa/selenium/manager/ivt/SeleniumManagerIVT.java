@@ -76,10 +76,35 @@ public class SeleniumManagerIVT {
         assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
         page.quit();
     }
+    
+    @Test
+    public void clickingFieldsWithNewDriver() throws SeleniumManagerException {
+        IWebPage page = driver.allocateWebPage(WEBSITE);
+        page.maximize();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        page.clickElementByCssSelector("a.header__button--menu.js-side-menu-open")
+            .clickElementByLinkText("Twitter").takeScreenShot()
+            .waitForElementByLinkText("duckduckgo.com");
+        assertThat(page.getTitle()).contains("DuckDuckGo (@DuckDuckGo)");
+        page.quit();
+    }
 
     @Test
     public void navigateGalasaGithub() throws SeleniumManagerException {
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        page.maximize();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        page.sendKeysToElementById(SEARCHID, "galasa dev github")
+            .clickElementById("search_button_homepage")
+            .clickElementByLinkText("galasa · GitHub")
+            .clickElementByPartialLinkText("Repositories").takeScreenShot();
+        assertThat(page.findElementsByLinkText("framework")).isNotEmpty();
+        page.quit();
+    }
+    
+    @Test
+    public void navigateGalasaGithubWithNewDriver() throws SeleniumManagerException {
+        IWebPage page = driver.allocateWebPage(WEBSITE);
         page.maximize();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.sendKeysToElementById(SEARCHID, "galasa dev github")
@@ -95,6 +120,16 @@ public class SeleniumManagerIVT {
         IFirefoxOptions options = seleniumManager.getFirefoxOptions();
         options.setHeadless(true);
         IWebPage page = seleniumManager.allocateWebPage(WEBSITE, options);
+        page.maximize().takeScreenShot();
+        assertThat(page.getTitle()).containsOnlyOnce(TITLE);
+        page.quit();
+    }
+    
+    @Test
+    public void testOptionsCanBeUsedWithNewDriver() throws SeleniumManagerException {
+        IFirefoxOptions options = driver.getFirefoxOptions();
+        options.setHeadless(true);
+        IWebPage page = driver.allocateWebPage(WEBSITE, options);
         page.maximize().takeScreenShot();
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();

@@ -67,8 +67,6 @@ public class SeleniumEnvironment {
 	public ISeleniumManager allocateDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		ISeleniumManager driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
-		// Get a slot or fail
-		String slotName = allocateSlot();
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -80,6 +78,8 @@ public class SeleniumEnvironment {
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
 		    	break;
 		    default:
+		    	// Get a slot or fail
+				String slotName = allocateSlot();
 		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
 		    	break;
 			}
@@ -139,10 +139,16 @@ public class SeleniumEnvironment {
 		
 		Exception lastPerformActionsException = null;
 		try {
-			for (int i=0; i<1000;i++) {
+			for (int i=0; i<50;i++) {
 				slots = dss.get(slotKey);
 				if (slots != null) {
 					currentSlots = Integer.valueOf(slots);
+				} else {
+					slots = "0";
+					dss.performActions(
+						new DssAdd(slotKey, slots)
+					);
+					currentSlots = 0;
 				}
 				
 				if (currentSlots >= SeleniumDriverMaxSlots.get()) {
@@ -155,7 +161,7 @@ public class SeleniumEnvironment {
 				try {
 					currentSlots++;
 					dss.performActions(
-					new DssSwap("driver.slot." + slotNameAttempt, null, runName),
+					new DssAdd("driver.slot." + slotNameAttempt,runName),
 					new DssSwap(slotKey, slots, String.valueOf(currentSlots))
 					);
 					slotName = slotNameAttempt;
