@@ -8,6 +8,9 @@ package dev.galasa.core.manager.ivt;
 import org.apache.commons.logging.Log;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Summary;
@@ -71,11 +74,16 @@ public class CoreManagerIVT {
     	ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword) coreManager.getCredentials("SIMBANK");
     	assertThat(creds).isNotNull();
     	assertThat(creds.getUsername()).isEqualTo("IBMUSER");
+    	assertThat(creds.getPassword()).isEqualTo("SYS1");
     }
     
+    
     @Test
-    public void testRegisterConfidentialtext() {
+    public void testRegisterConfidentialtext() { // looking for a way to test it
+    	
     	coreManager.registerConfidentialText("SYS1", "IBM user password");
-    	//assertThat()
+    	
     }
+    
+
 }

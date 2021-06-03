@@ -101,27 +101,53 @@ public class CoreManagerTest {
         
     }
     
-   
+    
+    public static class TestClassNoAnnotation {
+        
+    }
+    
+    @TestAreas({})
+    @Tags({})
+    public static class TestClassEmptyAnnotation {
+        
+    }
+    
     
     @Test
     public void testGetTeastingAreas() throws ManagerException {
     	CoreManager coreManager = new CoreManager();
     	TestClass testClass = new TestClass();
+    	TestClassNoAnnotation testClass2 = new TestClassNoAnnotation();
+    	TestClassEmptyAnnotation testClass3 = new TestClassEmptyAnnotation();
     	
     	ArrayList<IManager> activeManagers = new ArrayList<>();
         coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
     	Assert.assertEquals(new ArrayList<>(Arrays.asList("test1","test")),coreManager.getTestingAreas());
+    	
+    	coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass2.getClass()));
+    	Assert.assertNull(coreManager.getTestingAreas());
+    	
+    	coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass3.getClass()));
+    	Assert.assertNull(coreManager.getTestingAreas());
+    	
     }
     
     @Test
     public void testGetTags() throws ManagerException {
     	CoreManager coreManager = new CoreManager();
     	TestClass testClass = new TestClass();
+    	TestClassNoAnnotation testClass2 = new TestClassNoAnnotation();
+    	TestClassEmptyAnnotation testClass3 = new TestClassEmptyAnnotation();
     	
     	ArrayList<IManager> activeManagers = new ArrayList<>();
         coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
         Assert.assertEquals(new ArrayList<>(Arrays.asList("tag1")),coreManager.getTags());
     	
+        coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass2.getClass()));
+    	Assert.assertNull(coreManager.getTags());
+    	
+    	coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass3.getClass()));
+    	Assert.assertNull(coreManager.getTags());
     }
     
 
