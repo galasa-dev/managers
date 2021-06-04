@@ -11,10 +11,15 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -352,24 +357,36 @@ public class ZosManagerFileIVT {
         assertThat(unixFile.getGroup()).isEqualToIgnoringWhitespace(machineGroupId);
     }
     
-    //@Test
+    @Test
     public void unixFileGetLastModified() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException, ParseException {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/datedFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
-        
+
         // Create File
         unixFile.create();
         
-        // Fetch modified time/date using ls
+        // Get TimeZone Shortcode for Z/OS TZ env var
+        // zosUNIXCommand does not set a TimeZone when issuing a command
+        // If we don't do this, the test will fail unless the machine running tests is in GMT+0
+        DateTimeFormatter zoneFormatter = DateTimeFormatter.ofPattern("zzz", Locale.forLanguageTag("en"));
+        final ZonedDateTime timestamp = ZonedDateTime.of(LocalDateTime.now(), Calendar.getInstance().getTimeZone().toZoneId());
+        String timeZoneFormatted = Calendar.getInstance().getTimeZone().getDisplayName(false, TimeZone.SHORT) 
+                + Integer.toString((Calendar.getInstance().getTimeZone().getRawOffset() / 60 / 1000))
+                + timestamp.format(zoneFormatter);
+        String regexTimeZone = "[A-Z]{3,5}\\-{0,1}\\d[A-Z]{3,5}";
+        Pattern patternTimeZone = Pattern.compile(regexTimeZone, Pattern.MULTILINE);
+        assertThat(timeZoneFormatted).containsPattern(patternTimeZone);
+        
+        // Set timezone, then fetch modified time/date using zosUNIXCommand
         // Then regex for month/date/time (e.g. "Mar 23 12:34")
         String machineFileModified = zosUNIXCommand
-            .issueCommand("ls -ld " + filePath);
+            .issueCommand("TZ=" + timeZoneFormatted + "; ls -ld " + filePath);
         assertThat(machineFileModified).isNotEmpty();
-        final String regex = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s+(\\d{1,2})\\s(\\d{2}:\\d{2})";
-        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(machineFileModified);
+        final String regexTimeFromLS = "[\\-rwdx]{10}\\s+\\d\\s[a-zA-Z0-9]+\\s+[a-zA-Z0-9]+\\s+0\\s([a-zA-Z]{3})\\s+(\\d{1,2})\\s(\\d{2}:\\d{2})";
+        final Pattern patternTimeFromLS = Pattern.compile(regexTimeFromLS, Pattern.MULTILINE);
+        Matcher matcher = patternTimeFromLS.matcher(machineFileModified);
         assertThat(matcher.find()).isTrue();
         String month = matcher.group(1);
         String day = matcher.group(2);
@@ -379,10 +396,6 @@ public class ZosManagerFileIVT {
         SimpleDateFormat lsDateFormat = new SimpleDateFormat("yyyy MMM dd HH:mm");
         String dateToBeParsed = Integer.toString(Calendar.getInstance().get(Calendar.YEAR)) + " " + month + " " + day + " " + time;
         Date machineDate = lsDateFormat.parse(dateToBeParsed);
-        // Add an offset because `zosUNIXCommand.issueCommand` always returns a time at GMT+0 
-        // (Whereas getLastModified accounts for BST etc.)
-        machineDate.setTime(machineDate.getTime() + 
-                Calendar.getInstance().getTimeZone().getOffset(machineDate.getTime()));
         
         // Get date from getLastModified (method being tested) and convert to a comparable format
         // (Ignore seconds because scraped date/time doesn't have seconds)
