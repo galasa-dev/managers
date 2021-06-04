@@ -166,8 +166,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
             logger.info("JOB " + this.toString() + " Submitted");
-            
-            this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         } else {            
             // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
             String displayMessage = buildErrorString("Submit job", responseBody); 
@@ -449,7 +447,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
                 if (retrieveRecords) {
                 	records = getSpoolFileContent(id, stepname, procstep, ddname);
                 }
-                this.jobOutput.addSpoolFile(stepname, procstep, ddname, id, records);
+                ((IZosBatchJobOutputSpi) jobOutput()).addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else if (response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
         	return;
@@ -555,6 +553,9 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected IZosBatchJobOutput jobOutput() {
+        if (this.jobOutput == null) {
+        	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
+        }
         return this.jobOutput;
     }
 

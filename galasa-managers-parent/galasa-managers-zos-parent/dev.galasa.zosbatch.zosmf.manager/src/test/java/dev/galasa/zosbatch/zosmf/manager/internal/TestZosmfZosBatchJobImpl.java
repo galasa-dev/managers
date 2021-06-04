@@ -710,8 +710,7 @@ public class TestZosmfZosBatchJobImpl {
         Mockito.when(zosmfResponseMockStatus.getJsonArrayContent()).thenReturn(getJsonArray());
         Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         PowerMockito.doReturn("").when(zosBatchJobSpy).getSpoolFileContent(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-        Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
-    	zosBatchJobSpy.getOutput(true);
+        zosBatchJobSpy.getOutput(true);
     	
     	PowerMockito.doReturn(JobStatus.ACTIVE).when(zosBatchJobSpy).getStatus();
     	Mockito.when(zosmfResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);

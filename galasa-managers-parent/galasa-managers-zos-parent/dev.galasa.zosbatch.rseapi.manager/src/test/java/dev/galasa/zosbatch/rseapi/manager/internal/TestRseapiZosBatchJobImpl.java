@@ -643,7 +643,6 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiResponseMockStatus.getContent()).thenReturn(getJsonObject());
         PowerMockito.doReturn(FIXED_CONTENT).when(zosBatchJobSpy).getOutputFileContent(Mockito.any());
-        Whitebox.setInternalState(zosBatchJobSpy, "jobOutput", zosBatchJobOutputMock);
     	zosBatchJobSpy.getOutput(true);
     	
     	Whitebox.setInternalState(zosBatchJobSpy, "jobNotFound", true);
