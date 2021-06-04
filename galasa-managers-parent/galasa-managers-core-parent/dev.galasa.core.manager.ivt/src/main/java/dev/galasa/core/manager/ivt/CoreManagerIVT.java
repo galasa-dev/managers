@@ -41,25 +41,20 @@ public class CoreManagerIVT {
     
     @Test
     public void checkLogger() throws Exception {
-        if (logger == null) {
-            throw new Exception("Logger field is null, should have been filled by the Core Manager");
-        }
+        assertThat(logger).isNotNull();
         logger.info("The Logger field has been correctly initialised");
     }
 
     @Test
     public void checkRunName() throws Exception {
-        if (runName == null || runName.trim().isEmpty()) {
-            throw new Exception("Run Name field is null, should have been filled by the Core Manager");
-        }
+        assertThat(runName).isNotNull();
+        assertThat(runName.trim().isEmpty()).isFalse();
         logger.info("The Run Name  field has been correctly initialised = '" + runName + "'");
     }
 
     @Test
     public void checkCoreManager() throws Exception {
-        if (coreManager == null) {
-            throw new Exception("Core Manager field is null, should have been filled by the Core Manager");
-        }
+        assertThat(coreManager).isNotNull();
         logger.info("The Core Manager field has been correctly initialised");
     }
 
