@@ -124,6 +124,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
 	        	if (this.k8Manager == null) {
 	                throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
 	            }
+	        	break;
 	        }
         } catch (ConfigurationPropertyStoreException e) {
         	throw new SeleniumManagerException("Unable to determine selenium driver type");
