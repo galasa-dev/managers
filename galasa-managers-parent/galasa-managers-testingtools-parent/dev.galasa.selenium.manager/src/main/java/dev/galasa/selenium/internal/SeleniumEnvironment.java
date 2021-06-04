@@ -204,10 +204,13 @@ public class SeleniumEnvironment {
 	 * @throws SeleniumManagerException
 	 */
 	public void discard() throws SeleniumManagerException {
+		freeSlots();
+	}
+	
+	public void closePages() throws SeleniumManagerException {
 		for (ISeleniumManager driver: drivers) {
 			driver.discard();
 		}
-		freeSlots();
 	}
 	
 	private void freeSlots() throws SeleniumManagerException {
