@@ -136,10 +136,10 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         // *** Default the tag to primary
         boolean autoConnect = terminalAnnotation.autoConnect();
         
-        return generateTerminal(tag, autoConnect);
+        return generateTerminal(tag, autoConnect, terminalAnnotation.primaryColumns(), terminalAnnotation.primaryRows(), terminalAnnotation.alternateColumns(), terminalAnnotation.alternateRows());
     }
     
-    public Zos3270TerminalImpl generateTerminal(String imageTag, boolean autoConnect) throws Zos3270ManagerException {
+    public Zos3270TerminalImpl generateTerminal(String imageTag, boolean autoConnect, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws Zos3270ManagerException {
         // *** Ask the zosManager for the image for the Tag
         try {
             IZosImage image = this.zosManager.provisionImageForTag(imageTag);
@@ -149,7 +149,7 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework(), autoConnect, image);
+                    host.isTelnetPortTls(), getFramework(), autoConnect, image,primaryColumns, primaryRows, alternateColumns, alternateRows);
 
             this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + imageTag);
