@@ -42,6 +42,7 @@ import dev.galasa.selenium.SeleniumManagerField;
 import dev.galasa.selenium.WebDriver;
 import dev.galasa.selenium.internal.properties.SeleniumPropertiesSingleton;
 import dev.galasa.selenium.internal.properties.SeleniumScreenshotFailure;
+import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
 import dev.galasa.selenium.spi.ISeleniumManagerSpi;
 
 @Component(service = { IManager.class })
@@ -71,14 +72,6 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
         this.framework = framework;
-
-        if (galasaTest.isJava()) {
-            List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
-            if (!ourFields.isEmpty() || this.required) {
-                youAreRequired(allManagers, activeManagers, galasaTest);
-            }
-        }
-
         try {
             this.cps = framework.getConfigurationPropertyService(NAMESPACE);
             this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
@@ -88,6 +81,13 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         }
         
         logger.info("Selenium manager has been succesfully initialised.");
+
+        if (galasaTest.isJava()) {
+            List<AnnotatedField> ourFields = findAnnotatedFields(SeleniumManagerField.class);
+            if (!ourFields.isEmpty() || this.required) {
+                youAreRequired(allManagers, activeManagers, galasaTest);
+            }
+        }
     }
 
     @Override
@@ -110,16 +110,28 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         if (activeManagers.contains(this)) {
             return;
         }
+        
+        try {
+	        switch (SeleniumWebDriverType.get()) {
+	        case "docker":
+	        	this.dockerManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IDockerManagerSpi.class);
+	    		if (this.dockerManager == null) {
+	    			throw new SeleniumManagerException("Unable to locate the Docker Manager");
+	    	    }
+	    		break;
+	        case "kubernetes":
+	        	this.k8Manager = this.addDependentManager(allManagers, activeManagers, galasaTest, IKubernetesManagerSpi.class);
+	        	if (this.k8Manager == null) {
+	                throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
+	            }
+	        }
+        } catch (ConfigurationPropertyStoreException e) {
+        	throw new SeleniumManagerException("Unable to determine selenium driver type");
+        }
 
         activeManagers.add(this);
-    	this.k8Manager = this.addDependentManager(allManagers, activeManagers, galasaTest, IKubernetesManagerSpi.class);
-    	if (this.k8Manager == null) {
-            throw new SeleniumManagerException("Unable to locate the Kubernetes Manager");
-        }
-		this.dockerManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IDockerManagerSpi.class);
-		if (this.dockerManager == null) {
-			throw new SeleniumManagerException("Unable to locate the Docker Manager");
-	    }
+    	
+		
         this.httpManager = this.addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
         if (this.httpManager == null) {
             throw new SeleniumManagerException("Unable to locate the Http Manager");
@@ -138,6 +150,15 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
         this.seleniumEnvironment = new SeleniumEnvironment(this, screenshotRasDirectory);
 
         generateAnnotatedFields(SeleniumManagerField.class);
+    }
+    
+    @Override
+    public void provisionStop() {
+    	try {
+    		seleniumEnvironment.closePages();
+		} catch (SeleniumManagerException e) {
+			logger.error("Failed to discard pages", e);
+		}
     }
     
     @Override

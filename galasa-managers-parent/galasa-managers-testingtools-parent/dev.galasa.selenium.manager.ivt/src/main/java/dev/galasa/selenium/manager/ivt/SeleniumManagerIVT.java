@@ -134,5 +134,12 @@ public class SeleniumManagerIVT {
         assertThat(page.getTitle()).containsOnlyOnce(TITLE);
         page.quit();
     }
+    
+    @Test
+    public void testNotCleaningUp() throws SeleniumManagerException {
+        IWebPage page = seleniumManager.allocateWebPage(WEBSITE);
+        page.takeScreenShot();
+        page.maximize();
+    }
 
 }
