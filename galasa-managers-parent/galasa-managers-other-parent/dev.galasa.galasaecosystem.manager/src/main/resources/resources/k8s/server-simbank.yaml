@@ -19,7 +19,7 @@ spec:
         beta.kubernetes.io/arch: amd64
       containers:
       - name: simbank
-        image: ${dockerRegistry}/galasa-boot-embedded-amd64:${dockerVersion}
+        image: ${dockerRegistry}/galasa-simplatform:${simplatformDockerVersion}
         imagePullPolicy: Always
         command: ["java"]
         args: 
