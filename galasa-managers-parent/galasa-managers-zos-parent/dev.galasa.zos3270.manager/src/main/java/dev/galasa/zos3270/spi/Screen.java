@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zos3270.spi;
 
@@ -59,6 +59,8 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderStartFieldExtended;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.QueryReplyCharactersets;
+import dev.galasa.zos3270.internal.datastream.QueryReplyColor;
+import dev.galasa.zos3270.internal.datastream.QueryReplyHighlite;
 import dev.galasa.zos3270.internal.datastream.QueryReplyImplicitPartition;
 import dev.galasa.zos3270.internal.datastream.QueryReplyNull;
 import dev.galasa.zos3270.internal.datastream.QueryReplySummary;
@@ -413,6 +415,8 @@ public class Screen {
         replies.add(new QueryReplyUsableArea(this));
         replies.add(new QueryReplyImplicitPartition(this));
         replies.add(new QueryReplyCharactersets());
+        replies.add(new QueryReplyColor());
+        replies.add(new QueryReplyHighlite());
         return replies;
     }
 

@@ -167,7 +167,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.retcode = jsonNull(responseBody, PROP_RETCODE);
             setJobPathValues();
             logger.info("JOB " + this.toString() + " Submitted");
-            this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
         } else {            
             // Error case
             String displayMessage = buildErrorString("Submit job", response); 
@@ -443,7 +442,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
                 if (retrieveRecords) {
                 	records = getOutputFileContent(this.jobFilesPath + "/" + id + "/content");
                 }
-            	this.jobOutput.addSpoolFile(stepname, procstep, ddname, id, records);
+            	((IZosBatchJobOutputSpi) jobOutput()).addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else {            
             // Error case
@@ -540,7 +539,10 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         return this.jobPurged;
     }
 
-    protected IZosBatchJobOutput jobOutput() {
+    protected IZosBatchJobOutput jobOutput() {        
+        if (this.jobOutput == null) {
+        	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
+        }
         return this.jobOutput;
     }
 

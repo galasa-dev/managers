@@ -101,8 +101,6 @@ public class SeleniumEnvironment {
 	public IWebDriver allocateWebDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		IWebDriver driver;
 		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
-		// Get a slot or fail
-		String slotName = allocateSlot();
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -114,6 +112,8 @@ public class SeleniumEnvironment {
 		    	driver = new LocalDriverImpl(browser, driverRasDir);
 		    	break;
 		    default:
+		    	// Get a slot or fail
+				String slotName = allocateSlot();
 		    	driver =  new RemoteDriverImpl(this, seleniumManager, browser, slotName, driverRasDir);
 		    	break;
 			}
@@ -204,10 +204,13 @@ public class SeleniumEnvironment {
 	 * @throws SeleniumManagerException
 	 */
 	public void discard() throws SeleniumManagerException {
+		freeSlots();
+	}
+	
+	public void closePages() throws SeleniumManagerException {
 		for (ISeleniumManager driver: drivers) {
 			driver.discard();
 		}
-		freeSlots();
 	}
 	
 	private void freeSlots() throws SeleniumManagerException {
