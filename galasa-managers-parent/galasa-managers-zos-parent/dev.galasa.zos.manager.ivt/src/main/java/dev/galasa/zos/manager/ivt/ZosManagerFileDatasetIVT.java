@@ -118,91 +118,95 @@ public class ZosManagerFileDatasetIVT {
     	return true;
     }
    
-   @Test
-   public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-	   String desiredDataSetName = "CTS.CICSCOG.JCL";
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
-	   assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isTrue();
-   }
+    //Test that an existing PDS exists
+    @Test
+    public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
+    	String desiredDataSetName = "CTS.CICSCOG.JCL";
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
+    	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isTrue();
+    }
    
-   @Test
-   public void testNonExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-	   String desiredDataSetName = "CTS.CICSCOG.JCJ";
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
-	   assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isFalse();
-   }
+    //Test that a non-existant PDS doesn't exist 
+    @Test
+    public void testNonExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
+    	String desiredDataSetName = "CTS.CICSCOG.JCJ";
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
+    	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isFalse();
+    }
    
-   private IZosDataset createBasicDataset(String name) throws ZosDatasetException {
-	   IZosDataset ds = fileHandler.newDataset(name, imagePrimary);
-	   ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
-	   ds.setRecordFormat(RecordFormat.FIXED_BLOCKED);
-	   ds.setRecordlength(80);
-	   ds.setBlockSize(32720);
-	   ds.setUnit("SYSDA");
-	   ds.setSpace(SpaceUnit.TRACKS, 1, 1);
-	   ds.create();
-	   return ds;
-   }
-    
-   @Test
-   public void testPDSCreate() throws Exception {
-	   String desiredDataSetName = "CTS.GALASA." + runName;
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
-	   logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
+    private IZosDataset createBasicDataset(String name) throws ZosDatasetException {
+    	IZosDataset ds = fileHandler.newDataset(name, imagePrimary);
+    	ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
+    	ds.setRecordFormat(RecordFormat.FIXED_BLOCKED);
+    	ds.setRecordlength(80);
+    	ds.setBlockSize(32720);
+    	ds.setUnit("SYSDA");
+    	ds.setSpace(SpaceUnit.TRACKS, 1, 1);
+    	ds.create();
+    	return ds;
+    }
+
+    //Test that the manager can create a new PDS that doesn't exist and delete it
+    //ensure that we always confirm that actions really have taken place
+    @Test
+    public void testPDSCreate() throws Exception {
+    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
+    	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
-	   IZosDataset ds = createBasicDataset(desiredDataSetName);
+    	IZosDataset ds = createBasicDataset(desiredDataSetName);
+    	
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
+    	assertThat(ds.exists()).isTrue();
+    	logger.info("Checked that " + desiredDataSetName + " now exists");
 	   
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
-	   assertThat(ds.exists()).isTrue();
-	   logger.info("Checked that " + desiredDataSetName + " now exists");
+    	ds.delete();
 	   
-	   ds.delete();
-	   
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
-	   logger.info("Checked that " + desiredDataSetName + " has been deleted");
-   }
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
+    	logger.info("Checked that " + desiredDataSetName + " has been deleted");
+    }
    
-   @Test
-   public void datasetAttributeCheck() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-	   String desiredDataSetName = "CTS.GALASA." + runName;
-	   assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
-	   logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
+    @Test
+    public void datasetAttributeCheck() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
+    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
+    	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
-	   createBasicDataset(desiredDataSetName);
+    	createBasicDataset(desiredDataSetName);
 	   
-	   IZosDataset ds = fileHandler.newDataset(desiredDataSetName, imagePrimary);
-	   assertThat(ds.exists()).isTrue();
+    	IZosDataset ds = fileHandler.newDataset(desiredDataSetName, imagePrimary);
+    	assertThat(ds.exists()).isTrue();
 	   
-	   assertThat(ds.getDatasetOrganization()).isEqualTo(DatasetOrganization.SEQUENTIAL);
-	   assertThat(ds.getRecordFormat()).isEqualTo(RecordFormat.FIXED_BLOCKED);
-	   assertThat(ds.getRecordlength()).isEqualTo(80);
-	   assertThat(ds.getBlockSize()).isEqualTo(32780);
-	   assertThat(ds.getUnit()).isEqualTo("SYSDA");
-	   assertThat(ds.getSpaceUnit()).isEqualTo(SpaceUnit.TRACKS);
+    	assertThat(ds.getDatasetOrganization()).isEqualTo(DatasetOrganization.SEQUENTIAL);
+    	assertThat(ds.getRecordFormat()).isEqualTo(RecordFormat.FIXED_BLOCKED);
+    	assertThat(ds.getRecordlength()).isEqualTo(80);
+    	assertThat(ds.getBlockSize()).isEqualTo(32780);
+    	assertThat(ds.getUnit()).isEqualTo("SYSDA");
+    	assertThat(ds.getSpaceUnit()).isEqualTo(SpaceUnit.TRACKS);
 	   
-   }
+    }	
    
-   @Test
-   public void testPDSMemberCreate() throws Exception {
-	   String desiredDataSetName = "CTS.GALASA." + runName;
-	   String memberName = "HOBBIT";
-	   String content = "Basic PDS Member test";
-	   String content2 = "a second line of content";
-	   IZosDataset ds = createBasicDataset(desiredDataSetName);
-	   ds.memberCreate(memberName);
-	   assertThat(ds.memberExists(memberName)).isTrue();
+    @Test
+   	public void testPDSMemberCreate() throws Exception {
+    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String memberName = "HOBBIT";
+    	String content = "Basic PDS Member test";
+    	String content2 = "a second line of content";
+    	IZosDataset ds = createBasicDataset(desiredDataSetName);
+    	ds.memberCreate(memberName);
+    	assertThat(ds.memberExists(memberName)).isTrue();
 	   
-	   ds.memberStoreText(memberName, content);
-	   ds.memberStoreText(memberName, content2);
+    	ds.memberStoreText(memberName, content);
+    	ds.memberStoreText(memberName, content2);
 	   
-	   //check through JCL that we wrote what we thought we wrote
-	   assertThat(checkContentWasWritten(desiredDataSetName, memberName, content, content2));
+    	//check through JCL that we wrote what we thought we wrote
+    	assertThat(checkContentWasWritten(desiredDataSetName, memberName, content, content2));
 	   
-	   String result = ds.memberRetrieveAsText(memberName);
-	   assertThat(result).startsWith(content);
-	   assertThat(result).endsWith(content2);
+    	String result = ds.memberRetrieveAsText(memberName);
+    	assertThat(result).startsWith(content);
+    	assertThat(result).endsWith(content2);
 	   
-	   ds.memberDelete(memberName);
-	   assertThat(ds.memberExists(memberName)).isFalse();
-	   }
+    	ds.memberDelete(memberName);
+    	assertThat(ds.memberExists(memberName)).isFalse();
+    }
 }
