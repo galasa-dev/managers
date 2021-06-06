@@ -266,7 +266,7 @@ public class ZosManagerFileIVT {
         String attributes = unixFile.getAttributesAsString();
         assertThat(attributes).isNotEmpty();
         assertThat(attributes).contains("Name=" + filePath);
-        assertThat(attributes).contains("Type=file");
+        assertThat(attributes).containsIgnoringCase("Type=file");
         assertThat(attributes).contains("Mode=-rwxrwxrwx");
         assertThat(attributes).contains("Size=0");
         assertThat(attributes).containsIgnoringCase("User=" + userName);
