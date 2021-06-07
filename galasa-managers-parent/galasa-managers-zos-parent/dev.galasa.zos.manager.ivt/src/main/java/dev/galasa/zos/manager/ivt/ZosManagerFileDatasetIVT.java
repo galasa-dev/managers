@@ -120,7 +120,7 @@ public class ZosManagerFileDatasetIVT {
     }
    
     //Test that an existing PDS exists
-    @Test
+    //@Test
     public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
     	String desiredDataSetName = "CTS.CICSCOG.JCL";
     	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
@@ -128,7 +128,7 @@ public class ZosManagerFileDatasetIVT {
     }
    
     //Test that a non-existant PDS doesn't exist 
-    @Test
+   //@Test
     public void testNonExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
     	String desiredDataSetName = "CTS.CICSCOG.JCJ";
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
@@ -155,7 +155,7 @@ public class ZosManagerFileDatasetIVT {
 
     //Test that the manager can create a new PDS that doesn't exist and delete it
     //ensure that we always confirm that actions really have taken place
-    @Test
+    //@Test
     public void testPDSCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
@@ -173,7 +173,7 @@ public class ZosManagerFileDatasetIVT {
     	logger.info("Checked that " + desiredDataSetName + " has been deleted");
     }
    
-    @Test
+    //@Test
     public void datasetAttributeCheck() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
     	String desiredDataSetName = "CTS.GALASA." + runName;
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
@@ -196,13 +196,14 @@ public class ZosManagerFileDatasetIVT {
 	   
     }	
    
-    @Test
+    //@Test
    	public void testPDSMemberCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
     	String memberName = "HOBBIT";
     	String content = "Basic PDS Member test";
     	String content2 = "a second line of content";
     	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
+    	assertThat(ds.memberList().size()).isEqualTo(0);
     	ds.memberCreate(memberName);
     	assertThat(ds.memberExists(memberName)).isTrue();
 	   
@@ -214,8 +215,22 @@ public class ZosManagerFileDatasetIVT {
     	String result = ds.memberRetrieveAsText(memberName).trim();
     	assertThat(result).startsWith(content);
     	assertThat(result).endsWith(content2);
+    	
+    	assertThat(ds.memberList().size()).isEqualTo(1);
+    	assertThat(ds.memberList()).contains(memberName);
 	   
     	ds.memberDelete(memberName);
     	assertThat(ds.memberExists(memberName)).isFalse();
+    	assertThat(ds.memberList().size()).isEqualTo(0);
+    }
+    
+    @Test
+    public void driveErrors() throws Exception {
+    	try {
+    		createBasicDataset("£$%^^&", true);
+    	}catch(Exception zde) {
+    		assertThat(zde).isInstanceOf(ZosDatasetException.class);
+    		assertThat(zde.getMessage()).contains("BAD_REQUEST");
+    	}
     }
 }
