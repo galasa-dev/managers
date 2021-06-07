@@ -112,7 +112,7 @@ public class ZosmfImpl implements IZosmf {
             if (!validStatusCodes.contains(zosmfResponse.getStatusCode())) {
                 throw new ZosmfException(logBadStatusCode(zosmfResponse.getStatusCode()));
             }
-        } catch (MalformedURLException | HttpClientException  e) {
+        } catch (MalformedURLException | HttpClientException | IllegalArgumentException e) {
             logger.error(e);
             throw new ZosmfException(logBadRequest(method), e);
         }

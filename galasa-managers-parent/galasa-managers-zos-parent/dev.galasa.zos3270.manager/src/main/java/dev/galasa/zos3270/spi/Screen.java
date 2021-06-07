@@ -1184,7 +1184,7 @@ public class Screen {
 
         this.screenCursor = this.screenCursor - this.columns;
         if (this.screenCursor < 0) {
-            this.screenCursor = this.screenSize - this.screenCursor;
+            this.screenCursor = this.screenSize - Math.abs(this.screenCursor);
         }
     }
 

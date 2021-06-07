@@ -223,14 +223,4 @@ public class ZosManagerFileDatasetIVT {
     	assertThat(ds.memberExists(memberName)).isFalse();
     	assertThat(ds.memberList().size()).isEqualTo(0);
     }
-    
-    @Test
-    public void driveErrors() throws Exception {
-    	try {
-    		createBasicDataset("£$%^^&", true);
-    	}catch(Exception zde) {
-    		assertThat(zde).isInstanceOf(ZosDatasetException.class);
-    		assertThat(zde.getMessage()).contains("BAD_REQUEST");
-    	}
-    }
 }
