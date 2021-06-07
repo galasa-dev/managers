@@ -214,7 +214,8 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
                 if (consoleContents.contains("Exiting launcher due to exception")) {
                     logger.error("Run terminatated early");
 
-                    if (consoleContents.contains("java.net.SocketException: Network is unreachable (connect failed)")) {
+                    if (consoleContents.contains("java.net.SocketException: Network is unreachable (connect failed)") || 
+                            consoleContents.contains("java.net.UnknownHostException")) {
                         logger.error("Network blip, marking as resource unavailable");
                         saveConsoleLog(consoleFile);
                         this.runFiles.remove(consoleFile);
