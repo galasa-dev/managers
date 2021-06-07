@@ -108,6 +108,7 @@ public class ZosManagerFileDatasetIVT {
     	HashMap<String, Object> parms = new HashMap<>();
     	parms.put("MEMBER_NAME",fullName);
     	IZosBatchJob job = batch.submitJob(resources.retrieveSkeletonFileAsString("/resources/jcl/list.jcl", parms),null);
+    	job.setShouldArchive(false);
     	if(job.waitForJob() > 0)
     		return false;
     	IZosBatchJobOutputSpoolFile output = job.getSpoolFile("SYSUT2");
@@ -134,9 +135,15 @@ public class ZosManagerFileDatasetIVT {
     	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isFalse();
     }
    
-    private IZosDataset createBasicDataset(String name) throws ZosDatasetException {
+    private IZosDataset createBasicDataset(String name, boolean pds) throws ZosDatasetException {
     	IZosDataset ds = fileHandler.newDataset(name, imagePrimary);
-    	ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
+    	if(pds) {
+    		ds.setDirectoryBlocks(10);
+    		ds.setDatasetOrganization(DatasetOrganization.PARTITIONED);
+    	}	
+    	else {
+    		ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
+    	}
     	ds.setRecordFormat(RecordFormat.FIXED_BLOCKED);
     	ds.setRecordlength(80);
     	ds.setBlockSize(32720);
@@ -154,7 +161,7 @@ public class ZosManagerFileDatasetIVT {
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
-    	IZosDataset ds = createBasicDataset(desiredDataSetName);
+    	IZosDataset ds = createBasicDataset(desiredDataSetName,false);
     	
     	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
     	assertThat(ds.exists()).isTrue();
@@ -172,7 +179,7 @@ public class ZosManagerFileDatasetIVT {
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
-    	createBasicDataset(desiredDataSetName);
+    	createBasicDataset(desiredDataSetName,false);
 	   
     	IZosDataset ds = fileHandler.newDataset(desiredDataSetName, imagePrimary);
     	assertThat(ds.exists()).isTrue();
@@ -189,18 +196,17 @@ public class ZosManagerFileDatasetIVT {
 	   
     }	
    
-    //@Test
+    @Test
    	public void testPDSMemberCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
     	String memberName = "HOBBIT";
     	String content = "Basic PDS Member test";
     	String content2 = "a second line of content";
-    	IZosDataset ds = createBasicDataset(desiredDataSetName);
+    	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
     	ds.memberCreate(memberName);
     	assertThat(ds.memberExists(memberName)).isTrue();
 	   
-    	ds.memberStoreText(memberName, content);
-    	ds.memberStoreText(memberName, content2);
+    	ds.memberStoreText(memberName, content+"\n"+content2);
 	   
     	//check through JCL that we wrote what we thought we wrote
     	assertThat(checkContentWasWritten(desiredDataSetName, memberName, content, content2));
