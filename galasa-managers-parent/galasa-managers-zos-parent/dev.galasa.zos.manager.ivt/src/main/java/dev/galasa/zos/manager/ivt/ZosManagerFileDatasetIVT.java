@@ -211,7 +211,7 @@ public class ZosManagerFileDatasetIVT {
     	//check through JCL that we wrote what we thought we wrote
     	assertThat(checkContentWasWritten(desiredDataSetName, memberName, content, content2));
 	   
-    	String result = ds.memberRetrieveAsText(memberName);
+    	String result = ds.memberRetrieveAsText(memberName).trim();
     	assertThat(result).startsWith(content);
     	assertThat(result).endsWith(content2);
 	   
