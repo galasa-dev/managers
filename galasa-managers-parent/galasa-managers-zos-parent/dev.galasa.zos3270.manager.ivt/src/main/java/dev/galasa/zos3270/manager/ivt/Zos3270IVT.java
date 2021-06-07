@@ -119,8 +119,4 @@ public class Zos3270IVT {
     	terminal.home().tab().tab().type("purge").enter().wfk().pf3().wfk().clear();
     }
     
-    @Test
-    public void newTest() {
-    	
-    }
 }
