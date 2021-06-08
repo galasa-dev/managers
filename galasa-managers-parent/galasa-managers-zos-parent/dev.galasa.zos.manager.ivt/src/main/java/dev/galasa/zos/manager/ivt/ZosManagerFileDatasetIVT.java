@@ -203,6 +203,7 @@ public class ZosManagerFileDatasetIVT {
     	String content = "Basic PDS Member test";
     	String content2 = "a second line of content";
     	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
+    	assertThat(ds.memberList().size()).isEqualTo(0);
     	ds.memberCreate(memberName);
     	assertThat(ds.memberExists(memberName)).isTrue();
 	   
@@ -214,8 +215,12 @@ public class ZosManagerFileDatasetIVT {
     	String result = ds.memberRetrieveAsText(memberName).trim();
     	assertThat(result).startsWith(content);
     	assertThat(result).endsWith(content2);
+    	
+    	assertThat(ds.memberList().size()).isEqualTo(1);
+    	assertThat(ds.memberList()).contains(memberName);
 	   
     	ds.memberDelete(memberName);
     	assertThat(ds.memberExists(memberName)).isFalse();
+    	assertThat(ds.memberList().size()).isEqualTo(0);
     }
 }
