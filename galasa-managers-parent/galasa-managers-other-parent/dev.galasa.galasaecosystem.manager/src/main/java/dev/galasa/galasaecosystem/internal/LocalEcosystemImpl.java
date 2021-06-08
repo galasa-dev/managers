@@ -34,6 +34,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
@@ -155,7 +156,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
             this.galasaBootVersion = GalasaBootVersion.get();
             this.simplatformVersion = SimplatformVersion.get();
-            
+
             switch(this.isolationInstallation) {
                 case Full:
                 case Mvp:
@@ -176,7 +177,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         if (this.startSimPlatform) {
             startSimPlatform();
         }
-        
+
         super.build();
     }
 
@@ -385,14 +386,17 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             while(expire.isAfter(Instant.now())) {
                 if (Files.exists(rasStructure)) {
                     try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(rasStructure))) {
-                        JsonObject jsonRun = gson.fromJson(reader, JsonObject.class);
-                        JsonElement oresult = jsonRun.get("status");
-                        if (oresult != null) {
-                            if ("finished".equals(oresult.getAsString())) {
-                                return jsonRun;
+                        try {
+                            JsonObject jsonRun = gson.fromJson(reader, JsonObject.class);
+                            JsonElement oresult = jsonRun.get("status");
+                            if (oresult != null) {
+                                if ("finished".equals(oresult.getAsString())) {
+                                    return jsonRun;
+                                }
                             }
+                        } catch (JsonSyntaxException e) {
+                            logger.trace("Received JsonSyntaxException, assuming the framework was writing it out as we were reading it, retrying");
                         }
-
                     }
                 }
 
@@ -631,7 +635,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         setCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(((InetSocketAddress)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_DATABASE)).getPort()));
         setCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(((URL)this.simPlatformInstance.getSimPlatformEndpoint(EcosystemEndpoint.SIMBANK_WEBSERVICE)).getPort()));
     }
-    
+
     // TODO - Hacky to get round cacerts issue in java manager, ie functionality not there yet
     private String removeHttps(String url) {
         if (url.startsWith("https://cicscit.hursley.ibm.com")) {
@@ -640,7 +644,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         if (url.startsWith("https://nexus.cics-ts.hur.hdclab.intranet.ibm.com/")) {
             return url.replace("https://nexus.cics-ts.hur.hdclab.intranet.ibm.com/", "http://nexus.cics-ts.hur.hdclab.intranet.ibm.com:81/");
         }
-        
+
         return url;
     }
 
@@ -653,7 +657,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             try (InputStream isCps = Files.newInputStream(this.cpsFile)) {
                 currentCps.load(isCps);
             }
-            
+
             return currentCps.getProperty(property);
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem inspecting the CPS", e);
@@ -702,7 +706,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
             try (InputStream isCreds = Files.newInputStream(this.credentialsFile)) {
                 currentCreds.load(isCreds);
             }
-            
+
             return currentCreds.getProperty(property);
         } catch(Exception e) {
             throw new GalasaEcosystemManagerException("Problem inspecting the CREDS", e);
