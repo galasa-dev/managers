@@ -19,6 +19,7 @@ import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.core.manager.CoreManager;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.TestProperty;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zosbatch.IZosBatch;
@@ -62,6 +63,9 @@ public class ZosManagerFileDatasetIVT {
     @ZosUNIXCommand(imageTag = IMG_TAG)
     public IZosUNIXCommand zosUNIXCommand;
     
+    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
+    public String providedRunName;
+    
     private String runName  = new String();
 
     @Test
@@ -73,7 +77,11 @@ public class ZosManagerFileDatasetIVT {
         assertThat(resources).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        runName = coreManager.getRunName().toUpperCase();
+        if(providedRunName != null)
+        	runName = providedRunName;
+        else
+        	runName = coreManager.getRunName();
+        logger.info("Using Run ID of: " + runName);
     }
     
     /**
@@ -200,6 +208,7 @@ public class ZosManagerFileDatasetIVT {
    	public void testPDSMemberCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
     	String memberName = "HOBBIT";
+    	String hidingMember = "DRAGON";
     	String content = "Basic PDS Member test";
     	String content2 = "a second line of content";
     	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
@@ -218,9 +227,31 @@ public class ZosManagerFileDatasetIVT {
     	
     	assertThat(ds.memberList().size()).isEqualTo(1);
     	assertThat(ds.memberList()).contains(memberName);
+    	
+    	//before we delete and clean up - delete a member that doesn't exist
+    	//we should still have 1 item in the PDS
+    	ds.memberDelete(hidingMember);
+    	assertThat(ds.memberList().size()).isEqualTo(1);
 	   
+    	ds.memberSaveToResultsArchive(memberName, "PDSOutput");
     	ds.memberDelete(memberName);
     	assertThat(ds.memberExists(memberName)).isFalse();
     	assertThat(ds.memberList().size()).isEqualTo(0);
+    	
+    	ds.delete();
+    }
+    
+    @Test
+    public void deleteNonExistingMember() throws ZosDatasetException {
+    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String memberName = "HOBBIT";
+    	String hidingMember = "DRAGON";
+    	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
+    	assertThat(ds.memberList().size()).isEqualTo(0);
+    	ds.memberCreate(memberName);
+    	assertThat(ds.memberExists(memberName)).isTrue();
+    	//this doesn't exist - but also shouldn't
+    	ds.memberDelete(hidingMember);
+    	
     }
 }

@@ -33,6 +33,7 @@ import dev.galasa.core.manager.CoreManager;
 import dev.galasa.core.manager.CoreManagerException;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.TestProperty;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -68,6 +69,11 @@ public class ZosManagerFileIVT {
     @ZosUNIXCommand(imageTag = IMG_TAG)
     public IZosUNIXCommand zosUNIXCommand;
     
+    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
+    public String providedRunName;
+    
+    private String runName  = new String();
+    
     private String userName = new String();
 
     @Test
@@ -80,6 +86,11 @@ public class ZosManagerFileIVT {
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
         userName = ((ICredentialsUsernamePassword)imagePrimary.getDefaultCredentials()).getUsername().toLowerCase();
+        if(providedRunName != null)
+        	runName = providedRunName;
+        else
+        	runName = coreManager.getRunName();
+        logger.info("Using Run ID of: " + runName);
     }
     
     
@@ -87,7 +98,7 @@ public class ZosManagerFileIVT {
     public void unixFileCreate() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file creation using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/createMe";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/createMe";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
 
         String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
@@ -110,7 +121,7 @@ public class ZosManagerFileIVT {
         // Tests file creation (with Specified Access Permissions) using ZosFileHandler and UNIX File(s)
         // Establish file name and location
         String fileName = "createMeWithPermissions";
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/" + fileName;
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/" + fileName;
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
 
         String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
@@ -148,7 +159,7 @@ public class ZosManagerFileIVT {
     public void unixFileDelete() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/deleteMe";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/deleteMe";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
 
         String commandTestExist = "test -f " + filePath + " && echo \"File Exists\"";
@@ -173,7 +184,7 @@ public class ZosManagerFileIVT {
     public void unixFileDeleteNonEmptyDirectory() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory deletion using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() 
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName 
             + "/deleteThisDir/ThisToo";
         String deletePath = filePath.substring(0, filePath.indexOf("ThisToo"));
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
@@ -204,7 +215,7 @@ public class ZosManagerFileIVT {
     public void unixFileListDirectories() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/testDir/";
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/testDir/";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
         
         String commandCreateDirectories = "mkdir -p " + dirPath + "dirFoo";
@@ -228,7 +239,7 @@ public class ZosManagerFileIVT {
     public void unixFileListDirectoriesRecursively() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests recursive directory listing using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/testRecDir/";
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/testRecDir/";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(dirPath, imagePrimary);
         
         String commandCreateDirectories = "mkdir -p " + dirPath + "dirFoo " + dirPath + "dirBar";
@@ -256,7 +267,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetAttributes() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests reading file attributes using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/attributes";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/attributes";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File With Permissions (to ensure permissions are known)
@@ -276,7 +287,7 @@ public class ZosManagerFileIVT {
     public void unixFileDataTypeIsText() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file type using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/textFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/textFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -291,7 +302,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetDirectoryPath() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests directory path using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/childFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/childFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -305,7 +316,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetFileName() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file name retrieval using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/uniqueFileName";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/uniqueFileName";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -319,7 +330,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetFileDirType() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests file/directory type retrieval using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName();
+        String dirPath = "/u/" + userName + "/GalasaTests/fileTest/" + runName;
         String filePath = dirPath + "/aFile";
         
         IZosUNIXFile unixDir = fileHandler.newUNIXFile(dirPath, imagePrimary);
@@ -344,7 +355,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetGroup() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/groupFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/groupFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
@@ -361,7 +372,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetLastModified() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException, ParseException {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/datedFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/datedFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
 
         // Create File
@@ -411,7 +422,7 @@ public class ZosManagerFileIVT {
     public void unixFileGetSize() throws ZosUNIXFileException, ZosUNIXCommandException, CoreManagerException {
         // Tests group using ZosFileHandler and UNIX File(s)
         // Establish file name and location
-        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + coreManager.getRunName() + "/sizedFile";
+        String filePath = "/u/" + userName + "/GalasaTests/fileTest/" + runName + "/sizedFile";
         IZosUNIXFile unixFile = fileHandler.newUNIXFile(filePath, imagePrimary);
         
         // Create File
