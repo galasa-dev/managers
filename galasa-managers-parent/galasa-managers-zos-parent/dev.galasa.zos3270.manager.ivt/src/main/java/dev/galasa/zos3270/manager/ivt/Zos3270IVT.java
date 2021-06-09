@@ -10,7 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.logging.Log;
 
 import dev.galasa.Test;
+import dev.galasa.core.manager.CoreManager;
+import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.TestProperty;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
 import dev.galasa.zos3270.ErrorTextFoundException;
@@ -36,6 +39,13 @@ public class Zos3270IVT {
     @Zos3270Terminal(imageTag = "PRIMARY")
     public ITerminal terminal;
     
+    @CoreManager
+    public ICoreManager coreManager;
+    
+    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
+    public String providedRunName;
+    private String runName  = new String();
+    
     private String applid = "IYK2ZNB5";
 
     @Test
@@ -44,6 +54,12 @@ public class Zos3270IVT {
         assertThat(image).as("zOS Image Field").isNotNull();
         assertThat(terminal).as("zOS 3270 Terminal Field").isNotNull();
         assertThat(terminal.isConnected()).isTrue();
+        if (providedRunName != null) {
+        	runName = providedRunName;
+        } else {
+        	runName = coreManager.getRunName();
+        }
+        logger.info("Using Run ID of: " + runName);
     }
 
     @Test
@@ -108,15 +124,20 @@ public class Zos3270IVT {
     public void mustBeABetterWayToTestEOF() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
     	//hear me out.........
     	//create a TSQ called Hobbit containing THE RING
-    	terminal.type("CECI WRITEQ TS QUEUE(HOBBIT) FROM('THE RING')").enter().wfk().enter().wfk().pf3().wfk().clear().wfk();
+    	terminal.type("CECI WRITEQ TS QNAME(HOBBIT" + runName + ") FROM('THE RING')").enter().wfk().enter().wfk().pf3().wfk().clear().wfk();
     	//try and browse the queue - but get the name wrong - no rings here
     	terminal.type("CEBR BILBOBAGGINS").enter().wfk();
     	assertThat(terminal.retrieveScreen()).doesNotContain("THE RING");
     	//so erase that and try the hobbit queue
-    	terminal.home().eraseEof().type("HOBBIT").enter().wfk();
+    	terminal.home().eraseEof().type("HOBBIT"+runName).enter().wfk();
     	assertThat(terminal.retrieveScreen()).contains("THE RING");
     	//purge the queue so we can run again (YES I KNOW THIS WILL NOT  RUN IN PARALELL
     	terminal.home().tab().tab().type("purge").enter().wfk().pf3().wfk().clear();
+    }
+    
+    @Test
+    public void reportScreenTests() {
+    	
     }
     
 }
