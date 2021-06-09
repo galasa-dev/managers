@@ -38,5 +38,5 @@ dependencies {
         }
     }
     implementation 'io.kubernetes:client-java:7.0.0'
-    implementation 'commons-io:commons-io:2.9'
+    implementation 'commons-io:commons-io:2.9.0'
 }

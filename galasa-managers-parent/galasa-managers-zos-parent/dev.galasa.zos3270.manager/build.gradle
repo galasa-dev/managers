@@ -11,6 +11,6 @@ dependencies {
     api            project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-codec:commons-codec:1.11'
-    implementation 'commons-io:commons-io:2.9'
+    implementation 'commons-io:commons-io:2.9.0'
     
 }
