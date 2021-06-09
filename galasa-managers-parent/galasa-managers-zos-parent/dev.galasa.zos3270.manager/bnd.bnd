@@ -1,20 +1,7 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa zOS 3270 Terminal Manager
 Export-Package: dev.galasa.zos3270,dev.galasa.zos3270.spi
-Import-Package: com.google.gson,\
-    dev.galasa,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.cps,\
-    dev.galasa.framework.spi.creds,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.framework.spi.language.gherkin,\
-    dev.galasa.ipnetwork,\
-    dev.galasa.zos,\
-    dev.galasa.zos.spi,\
-    dev.galasa.zos3270.common.screens,\
-    javax.net.ssl,\
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.codec.binary,\
-    org.apache.commons.io,\
-    org.apache.commons.logging
+Import-Package: !javax.validation.constraints,\
+                org.apache.commons.io;version="[2,3)",\
+                *
 

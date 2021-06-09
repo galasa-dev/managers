@@ -10,5 +10,5 @@ version = '0.16.0'
 
 dependencies {
     implementation 'org.apache.velocity:velocity:1.7'
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.9'
 }
