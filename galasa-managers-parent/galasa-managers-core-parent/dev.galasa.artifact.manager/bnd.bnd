@@ -1,14 +1,6 @@
 -snapshot: ${tstamp}
 Bundle-Name: Artifact Manager
 Export-Package: dev.galasa.artifact
-Import-Package: dev.galasa,\
-    dev.galasa.artifact,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.language,\
-    javax.validation.constraints;resolution:=optional,\
-    org.apache.commons.io,\
-    org.apache.commons.logging,\
-    org.apache.velocity,\
-    org.apache.velocity.app,\
-    org.apache.velocity.context,\
-    org.osgi.framework
+Import-Package: !javax.validation.constraints,\
+                org.apache.commons.io;version="[2,3)",\
+                *

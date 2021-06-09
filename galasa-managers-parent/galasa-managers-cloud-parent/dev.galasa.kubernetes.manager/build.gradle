@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.15.0'
+version = '0.16.0'
 
 dependencies {
     implementation ('org.bouncycastle:bcpkix-jdk15on') {
@@ -38,5 +38,5 @@ dependencies {
         }
     }
     implementation 'io.kubernetes:client-java:7.0.0'
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.9.0'
 }
