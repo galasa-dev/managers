@@ -15,7 +15,7 @@ Import-Package: com.google.gson,\
     javax.net,\
     javax.net.ssl,\
     javax.xml.parsers,\
-    org.apache.commons.io,\
+    org.apache.commons.io;version="[2,3)",\
     org.apache.commons.logging,\
     org.xml.sax,\
     org.xml.sax.helpers

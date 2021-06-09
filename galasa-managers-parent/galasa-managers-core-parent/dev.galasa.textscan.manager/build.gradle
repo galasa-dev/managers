@@ -4,8 +4,8 @@ plugins {
 
 description = 'Galasa Text Scan Manager'
 
-version = '0.15.0'
+version = '0.16.0'
 
 dependencies {
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.9.0'
 }
