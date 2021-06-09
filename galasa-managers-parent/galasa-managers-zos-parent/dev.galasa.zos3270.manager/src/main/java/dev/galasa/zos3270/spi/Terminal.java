@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos3270.spi;
 
@@ -213,16 +213,15 @@ public class Terminal implements ITerminal {
     }
 
     @Override
-    public ITerminal waitForTextInField(String[] ok, String[] error)
+    public int waitForTextInField(String[] ok, String[] error)
             throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
         return waitForTextInField(ok, error, this.defaultWaitTime);
     }
 
     @Override
-    public ITerminal waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds)
+    public int waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds)
             throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
-        screen.waitForTextInField(ok, error, timeoutInMilliseconds);
-        return this;
+        return screen.waitForTextInField(ok, error, timeoutInMilliseconds);
     }
 
     @Override

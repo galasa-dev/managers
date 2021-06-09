@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos3270.manager.ivt;
 
@@ -132,11 +132,42 @@ public class Zos3270IVT {
     	terminal.home().eraseEof().type("HOBBIT"+runName).enter().wfk();
     	assertThat(terminal.retrieveScreen()).contains("THE RING");
     	//purge the queue so we can run again (YES I KNOW THIS WILL NOT  RUN IN PARALELL
-    	terminal.home().tab().tab().type("purge").enter().wfk().pf3().wfk().clear();
+    	terminal.home().tab().tab().type("purge").enter().wfk().pf3().wfk().clear().wfk();
     }
     
     @Test
-    public void reportScreenTests() {
+    public void reportScreenTests() throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, KeyboardLockedException, NetworkException, FieldNotFoundException, Zos3270Exception {
+    	terminal.type("CEDA").enter().wfk().waitForTextInField("ENTER ONE OF THE FOLLOWING");
+    	terminal.reportScreen();
+    	assertThat(terminal.isTextInField("DSN=CTS.YATESW.CICSNB5.CSD")).isTrue();
+    	assertThat(terminal.retrieveScreen()).contains("DSN=CTS.YATESW.CICSNB5.CSD");
+    	terminal.pf3().wfk().clear().wfk();
+    	
+    }
+    
+    @Test
+    public void driveWaitForTextInField() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
+    	terminal.type("CEDA").enter().wfk();
+    	String [] okValues = {"FRODO","LOUIE","STATUS:","SESSION ENDED"};
+    	String [] emptyValues = {};
+    	int valueFound = terminal.pf3().waitForTextInField(okValues, emptyValues,5000);
+    	assertThat(valueFound).isEqualTo(2);
+    	String [] failValues = {"SESSION ENDED"};
+    	String [] newValues = {"FRODO","LOUIE","STATUS:"};
+    	try {
+    		terminal.waitForTextInField(newValues, failValues, 5000);
+    	}catch(ErrorTextFoundException etfe) {
+    		logger.info("error text was correctly driven");
+    		assertThat(etfe.getMessage()).contains("Found error text 'SESSION ENDED' on screen");
+    	}
+    	String [] thingsThatDontExist = {"Hello"};
+    	try {
+    		terminal.waitForTextInField(thingsThatDontExist, emptyValues,5000);
+    	} catch (TextNotFoundException tnfe) {
+    		logger.info("No text found exception correctly thrown");
+    		assertThat(tnfe.getMessage()).contains("Unable to find a field containing any of the request text");
+    	}
+    	
     	
     }
     
