@@ -77,10 +77,11 @@ public class ZosManagerFileDatasetIVT {
         assertThat(resources).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        if(providedRunName != null)
+        if (providedRunName != null) {
         	runName = providedRunName;
-        else
+        } else {
         	runName = coreManager.getRunName();
+        }
         logger.info("Using Run ID of: " + runName);
     }
     
