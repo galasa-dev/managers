@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos3270;
 
@@ -41,7 +41,7 @@ public interface ITerminal {
      * @throws ErrorTextFoundException - One of the error strings were found, index of which is in the exception
      * @throws Zos3270Exception - general zos 3270 error
      */
-    ITerminal waitForTextInField(String[] ok, String[] error) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
+    int waitForTextInField(String[] ok, String[] error) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
 
     /**
      * @param ok - An array of text strings to find on the screen
@@ -53,7 +53,7 @@ public interface ITerminal {
      * @throws ErrorTextFoundException - One of the error strings were found
      * @throws Zos3270Exception - general zos 3270 error
      */
-    ITerminal waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
+    int waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
 
     ITerminal verifyTextInField(String string) throws TextNotFoundException;
 

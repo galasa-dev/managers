@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zos3270.spi;
 
@@ -938,13 +938,15 @@ public class Screen {
         keyboardLock.release();
     }
 
-    public void waitForTextInField(String text, long maxWait) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
-        waitForTextInField(new String[] {text}, null, maxWait);
+    public int waitForTextInField(String text, long maxWait) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
+        return waitForTextInField(new String[] {text}, null, maxWait);
     }
 
-    public void waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
-        try {
-            if (ScreenUpdateTextListener.waitForText(this, ok, error, timeoutInMilliseconds) < 0) {
+    public int waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
+        int foundIndex = -1;
+    	try {
+        	foundIndex = ScreenUpdateTextListener.waitForText(this, ok, error, timeoutInMilliseconds);
+            if (foundIndex < 0) {
                 if (ok != null && ok.length == 1 && error == null) {
                     throw new TextNotFoundException(CANT_FIND_TEXT + ok[0] + "'");
                 }
@@ -953,6 +955,7 @@ public class Screen {
         } catch(InterruptedException e) {
             throw new TerminalInterruptedException("Wait for text was interrupted", e);
         }
+        return foundIndex;
     }
 
 
