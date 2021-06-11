@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -773,18 +773,18 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
         if (this.zosmfZosDatasetAttributesListdsi == null) {
             this.zosmfZosDatasetAttributesListdsi = new ZosmfZosDatasetAttributesListdsi(this.zosFileHandler.getZosFileManager(), this.image);
         }
-        JsonObject datasteAttributes = zosmfZosDatasetAttributesListdsi.get(this.dsname);
+        JsonObject datasetAttributes = zosmfZosDatasetAttributesListdsi.get(this.dsname);
         
-        int listdsiRc = datasteAttributes.get(PROP_LISTDSIRC).getAsInt();
+        int listdsiRc = datasetAttributes.get(PROP_LISTDSIRC).getAsInt();
         JsonElement value;
         if (listdsiRc != 0) {
-            value = datasteAttributes.get(PROP_SYSREASON);
+            value = datasetAttributes.get(PROP_SYSREASON);
             int sysreason = -1;
             if (value != null) {
                 sysreason = value.getAsInt();
             }
-            String sysmsglvl1 = emptyStringWhenNull(datasteAttributes, PROP_SYSMSGLVL1);
-            String sysmsglvl2 = emptyStringWhenNull(datasteAttributes, PROP_SYSMSGLVL2);
+            String sysmsglvl1 = emptyStringWhenNull(datasetAttributes, PROP_SYSMSGLVL1);
+            String sysmsglvl2 = emptyStringWhenNull(datasetAttributes, PROP_SYSMSGLVL2);
             String message;
             if (listdsiRc == 4) {
                 message = "Unable to get full attributes for data set " + quoted(this.dsname) + ". LISTDSI RC=" + listdsiRc +
@@ -801,7 +801,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             }
         }
         
-        setAttributes(datasteAttributes);
+        setAttributes(datasetAttributes);
     }
 
     @Override
