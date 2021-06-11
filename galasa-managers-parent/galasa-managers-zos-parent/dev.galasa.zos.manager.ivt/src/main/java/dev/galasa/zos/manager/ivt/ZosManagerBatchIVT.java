@@ -86,12 +86,20 @@ public class ZosManagerBatchIVT {
         assertThat(jobName.getName()).isNotEqualTo(jobName2.getName());
     }
 
-    //@Test //- currently causes an NPE #711
+    /**
+     * Running a piece of JCL with no steps will fail 
+     * as there is no job to find after execution, but we should not throw an exception
+     * @throws TestBundleResourceException
+     * @throws IOException
+     * @throws ZosBatchException
+     */
+    @Test 
     public void submitJCLNoSteps() throws TestBundleResourceException, IOException, ZosBatchException {
     	String jclInput = resources.retrieveFileAsString("/resources/jcl/noSteps.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
-    	job.waitForJob();
-    	job.getSpoolFile("COBOL");
+    	int returnCode = job.waitForJob();
+    	IZosBatchJobOutputSpoolFile spool = job.getSpoolFile("COBOL");
+    	logger.info("test" + returnCode);
     }
     
     /*
