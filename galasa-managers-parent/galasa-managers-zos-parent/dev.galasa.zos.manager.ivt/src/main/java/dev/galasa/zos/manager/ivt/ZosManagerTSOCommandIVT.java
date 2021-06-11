@@ -54,12 +54,7 @@ public class ZosManagerTSOCommandIVT {
         assertThat(coreManager).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        }
-        else {
-        	runName = coreManager.getRunName();
-        }
+        runName = coreManager.getRunName();
         logger.info("Using Run ID of: " + runName);
     }
     

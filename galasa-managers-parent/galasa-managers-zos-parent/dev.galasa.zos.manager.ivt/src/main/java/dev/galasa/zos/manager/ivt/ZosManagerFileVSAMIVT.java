@@ -74,12 +74,7 @@ public class ZosManagerFileVSAMIVT {
         assertThat(resources).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        }
-        else {
-        	runName = coreManager.getRunName();
-        }
+        runName = coreManager.getRunName();
         logger.info("Using Run ID of: " + runName);
     }
     

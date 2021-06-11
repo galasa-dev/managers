@@ -385,7 +385,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
             storeCpsProperty("simbank.instance.SIMBANK.zos.image","SIMBANK");
             storeCpsProperty("simbank.instance.SIMBANK.database.port", Integer.toString(this.simbankDatabasePort.getPort()));
             storeCpsProperty("simbank.instance.SIMBANK.webnet.port", Integer.toString(this.simbankWebUrl.getPort()));
-
+            insertLastRunIDIntoDSS();
 
             logger.info("Kubernetes Ecosystem successfully built on " + this.namespace.getFullId() + " in " + seconds + " seconds");
 
