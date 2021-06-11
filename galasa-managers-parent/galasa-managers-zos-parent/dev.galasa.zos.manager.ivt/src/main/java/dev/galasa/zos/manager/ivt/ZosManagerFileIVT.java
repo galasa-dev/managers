@@ -86,12 +86,7 @@ public class ZosManagerFileIVT {
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
         userName = ((ICredentialsUsernamePassword)imagePrimary.getDefaultCredentials()).getUsername().toLowerCase();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        }
-        else {
-        	runName = coreManager.getRunName();
-        }
+        runName = coreManager.getRunName();
         logger.info("Using Run ID of: " + runName);
     }
     

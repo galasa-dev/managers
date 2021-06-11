@@ -63,9 +63,6 @@ public class ZosManagerFileDatasetIVT {
     @ZosUNIXCommand(imageTag = IMG_TAG)
     public IZosUNIXCommand zosUNIXCommand;
     
-    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
-    public String providedRunName;
-    
     private String runName  = new String();
 
     @Test
@@ -77,11 +74,7 @@ public class ZosManagerFileDatasetIVT {
         assertThat(resources).isNotNull();
         assertThat(logger).isNotNull();
         assertThat(imagePrimary.getDefaultCredentials()).isNotNull();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        } else {
-        	runName = coreManager.getRunName();
-        }
+        runName = coreManager.getRunName();
         logger.info("Using Run ID of: " + runName);
     }
     
