@@ -1,5 +1,6 @@
 package dev.galasa.galasaecosystem.internal;
 
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -229,8 +230,12 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
     	//regex to extract the numeric part of a runID i.e RX109 will give us 109 in a group
     	Pattern p = Pattern.compile("[A-Za-z]*([0-9]+)");
     	Matcher m = p.matcher(this.manager.getFramework().getTestRunName());
-    	m.matches();
-    	int run = Integer.parseInt(m.group(1));
+    	int run = 0;
+    	if (!m.matches()) {
+    	    run = Integer.parseInt(m.group(1));
+    	} else {
+    	    run = new Random().nextInt(1000);
+    	}
     	String newRunNumber = ""+--run;
     	logger.info("inserting lastUsed runID into DSS with value: " + newRunNumber);
     	setDssProperty("dss.framework.request.prefix.U.lastused", newRunNumber);
