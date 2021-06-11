@@ -231,7 +231,7 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
     	Pattern p = Pattern.compile("[A-Za-z]*([0-9]+)");
     	Matcher m = p.matcher(this.manager.getFramework().getTestRunName());
     	int run = 0;
-    	if (!m.matches()) {
+    	if (m.matches()) {
     	    run = Integer.parseInt(m.group(1));
     	} else {
     	    run = new Random().nextInt(1000);
