@@ -1,4 +1,5 @@
 /*
+
  * Licensed Materials - Property of IBM
  * 
  * (c) Copyright IBM Corp. 2021.
@@ -133,6 +134,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
             // Create the dss file
             Properties dssProperties = new Properties();
+            insertLastRunIDIntoDSS();
             dssProperties.store(Files.newOutputStream(this.dssFile, StandardOpenOption.CREATE_NEW), "Galasa Ecosystem Manager");
 
             // create the ras directory

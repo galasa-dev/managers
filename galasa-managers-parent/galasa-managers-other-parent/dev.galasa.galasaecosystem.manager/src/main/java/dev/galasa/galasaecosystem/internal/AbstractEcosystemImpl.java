@@ -1,5 +1,8 @@
 package dev.galasa.galasaecosystem.internal;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
@@ -215,6 +218,22 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
         }
         
         logger.info("zOS Image " + image.getImageID() + " copied to ecosystem");
+    }
+    
+    /**
+     * Ideally we would like runs within the child ecosystem to have a similar run ID to the parent
+     * So we extract the current run ID - strip off the prefix and decrement it by 1
+     * @throws GalasaEcosystemManagerException
+     */
+    protected void insertLastRunIDIntoDSS() throws GalasaEcosystemManagerException {
+    	//regex to extract the numeric part of a runID i.e RX109 will give us 109 in a group
+    	Pattern p = Pattern.compile("[A-Za-z]*([0-9]+)");
+    	Matcher m = p.matcher(this.manager.getFramework().getTestRunName());
+    	m.matches();
+    	int run = Integer.parseInt(m.group(1));
+    	String newRunNumber = ""+--run;
+    	logger.info("inserting lastUsed runID into DSS with value: " + newRunNumber);
+    	setDssProperty("dss.framework.request.prefix.U.lastused", newRunNumber);
     }
 
 }
