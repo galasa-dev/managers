@@ -691,14 +691,38 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     @Override
     public String getDssProperty(@NotNull String property) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            Properties currentDss = new Properties();
+            try (InputStream isDss = Files.newInputStream(this.dssFile)) {
+                currentDss.load(isDss);
+            }
+
+            return currentDss.getProperty(property);
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem inspecting the DSS", e);
+        }
     }
 
     @Override
     public void setDssProperty(@NotNull String property, String value) throws GalasaEcosystemManagerException {
-        // TODO Auto-generated method stub
+        try {
+            Properties currentDss = new Properties();
+            try (InputStream isDss = Files.newInputStream(this.dssFile)) {
+                currentDss.load(isDss);
+            }
 
+            if (value == null) {
+                currentDss.remove(property);
+            } else {
+                currentDss.put(property, value);
+            }
+
+            try (OutputStream osDss = Files.newOutputStream(this.dssFile)) {
+                currentDss.store(osDss, "Galasa ecosystem manager");
+            }
+        } catch(Exception e) {
+            throw new GalasaEcosystemManagerException("Problem updating the DSS", e);
+        }
     }
 
     @Override
