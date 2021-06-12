@@ -134,8 +134,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
             // Create the dss file
             Properties dssProperties = new Properties();
-            insertLastRunIDIntoDSS();
             dssProperties.store(Files.newOutputStream(this.dssFile, StandardOpenOption.CREATE_NEW), "Galasa Ecosystem Manager");
+            insertLastRunIDIntoDSS();
 
             // create the ras directory
             Files.createDirectory(this.rasDirectory);
