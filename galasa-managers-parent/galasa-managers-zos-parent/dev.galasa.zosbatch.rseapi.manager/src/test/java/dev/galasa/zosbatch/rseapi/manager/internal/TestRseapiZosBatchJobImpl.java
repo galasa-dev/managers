@@ -880,6 +880,7 @@ public class TestRseapiZosBatchJobImpl {
     
     @Test
     public void testArchiveJobOutput() throws Exception {
+    	Mockito.doReturn(zosBatchJobOutputMock).when(zosBatchJobSpy).retrieveOutput();
     	Whitebox.setInternalState(zosBatchJobSpy, "jobid", FIXED_JOBID);
     	Whitebox.setInternalState(zosBatchJobSpy, "retcode", FIXED_RETCODE_0000);
     	Mockito.doNothing().when(zosBatchJobSpy).saveOutputToResultsArchive(Mockito.any());
