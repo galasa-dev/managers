@@ -808,6 +808,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
     protected void archiveJobOutput() throws ZosBatchException {
     	if (shouldArchive() && getStatus() != JobStatus.NOTFOUND && (!isArchived() || !this.jobComplete)) {
+    		retrieveOutput();
             String folderName = this.jobname.getName() + "_" + this.jobid + "_" + getRetcode().replace(" ", "-");
             Path rasPath = this.testMethodArchiveFolder.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(testMethodArchiveFolder, folderName));
             saveOutputToResultsArchive(rasPath.toString());

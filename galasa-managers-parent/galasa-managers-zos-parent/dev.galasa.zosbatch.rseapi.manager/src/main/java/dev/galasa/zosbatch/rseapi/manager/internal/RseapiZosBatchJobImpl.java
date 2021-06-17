@@ -695,6 +695,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 
     protected void archiveJobOutput() throws ZosBatchException {
         if (shouldArchive() && getStatus() != JobStatus.NOTFOUND && (!isArchived() || !this.jobComplete)) {
+        	retrieveOutput();
             Path rasPath = this.zosBatchManager.getCurrentTestMethodArchiveFolder();
             String folderName = this.jobname.getName() + "_" + this.jobid + "_" + this.retcode.replace(" ", "-").replace(StringUtils.repeat(QUERY, 4), "UNKNOWN");
             rasPath = rasPath.resolve(this.zosBatchManager.getZosManager().buildUniquePathName(rasPath, folderName));
