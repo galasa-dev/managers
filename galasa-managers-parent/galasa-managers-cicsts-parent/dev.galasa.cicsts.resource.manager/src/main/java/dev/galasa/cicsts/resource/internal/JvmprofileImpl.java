@@ -1,3 +1,8 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.cicsts.resource.internal;
 
 import java.nio.file.attribute.PosixFilePermissions;
@@ -59,6 +64,8 @@ public class JvmprofileImpl implements IJvmprofile {
 	protected static final String OPTION_PC_INCLUDE = "%INCLUDE";
 	protected static final String OPTION_SECURITY_TOKEN_SERVICE = "SECURITY_TOKEN_SERVICE";
 	protected static final String OPTION_WLP_INSTALL_DIR = "WLP_INSTALL_DIR";
+	protected static final String OPTION_WLP_USER_DIR = "WLP_USER_DIR";
+	protected static final String OPTION_WLP_OUTPUT_DIR = "WLP_OUTPUT_DIR";
 
 	public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
 		this.zosFileHandler = zosFileHandler;
@@ -309,7 +316,9 @@ public class JvmprofileImpl implements IJvmprofile {
 	@Override
 	public void delete() throws CicsJvmserverResourceException {
 		try {
-			this.profileUnixFile.delete();
+			if (this.profileUnixFile != null) {
+				this.profileUnixFile.delete();
+			}
 		} catch (ZosUNIXFileException e) {
 			throw new CicsJvmserverResourceException("Problem deleteing the JVM profile from zOS UNIX file system", e);
 		}
@@ -317,10 +326,12 @@ public class JvmprofileImpl implements IJvmprofile {
 
 	@Override
 	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
-		try {
-			this.profileUnixFile.saveToResultsArchive(rasPath);
-		} catch (ZosUNIXFileException e) {
-			throw new CicsJvmserverResourceException("Problem saving the JVM profile from zOS UNIX file system", e);
+		if (this.profileUnixFile != null) {
+			try {
+				this.profileUnixFile.saveToResultsArchive(rasPath);
+			} catch (ZosUNIXFileException e) {
+				throw new CicsJvmserverResourceException("Problem saving the JVM profile from zOS UNIX file system", e);
+			}
 		}
 	}
 
@@ -440,20 +451,18 @@ public class JvmprofileImpl implements IJvmprofile {
 
 	@Override
 	public void setWlpInstallDir(String wlpInstallDir) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
+		setProfileValue(OPTION_WLP_INSTALL_DIR, wlpInstallDir);
 
 	}
 
 	@Override
 	public void setWlpUserDir(String wlpUserDir) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_WLP_USER_DIR, wlpUserDir);
 	}
 
 	@Override
 	public void setWlpOutputDir(String wlpOutputDir) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_WLP_OUTPUT_DIR, wlpOutputDir);
 	}
 
 	@Override
@@ -504,18 +513,17 @@ public class JvmprofileImpl implements IJvmprofile {
 
 	@Override
 	public String getWlpInstallDir() throws CicsJvmserverResourceException {
-		return this.profileMap.get("WLP_INSTALL_DIR");
+		return getProfileValue(OPTION_WLP_INSTALL_DIR);
 	}
 
 	@Override
 	public String getWlpUserDir() {
-		return this.profileMap.get("WLP_USER_DIR");
+		return getProfileValue(OPTION_WLP_USER_DIR);
 	}
 
 	@Override
 	public String getWlpOutputDir() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_OUTPUT_DIR);
 	}
 
 	@Override

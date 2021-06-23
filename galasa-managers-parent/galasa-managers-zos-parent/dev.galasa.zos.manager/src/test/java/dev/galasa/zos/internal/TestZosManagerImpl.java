@@ -67,6 +67,7 @@ import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.ImageMaxSlots;
 import dev.galasa.zos.internal.properties.ImageSysname;
+import dev.galasa.zos.internal.properties.JavaHome;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
@@ -91,7 +92,7 @@ import dev.galasa.zosfile.internal.properties.ZosFilePropertiesSingleton;
 @PrepareForTest({LogFactory.class, BatchExtraBundle.class, ConsoleExtraBundle.class, FileExtraBundle.class, TSOCommandExtraBundle.class, UNIXCommandExtraBundle.class, 
                  DseImageIdForTag.class, ImageIdForTag.class, ImageSysname.class, DseClusterIdForTag.class, AbstractManager.class, ImageMaxSlots.class, DssUtils.class, 
                  ClusterIdForTag.class, ClusterImages.class, RunDatasetHLQ.class, RunUNIXPathPrefix.class, BatchRestrictToImage.class, UseSysaff.class, JobWaitTimeout.class, TruncateJCLRecords.class, 
-                 JobnamePrefix.class, DirectoryListMaxItems.class, FileRestrictToImage.class, ConsoleRestrictToImage.class, UnixFilePermissions.class})
+                 JobnamePrefix.class, DirectoryListMaxItems.class, FileRestrictToImage.class, ConsoleRestrictToImage.class, UnixFilePermissions.class, JavaHome.class})
 public class TestZosManagerImpl {
 
     private ZosManagerImpl zosManager;
@@ -182,6 +183,8 @@ public class TestZosManagerImpl {
 
     private static final String RUN_UNIX_PATH_PREFIX = "/run/path/prefix";
 
+    private static final String JAVA_HOME = "/java/home";
+
     private static final String RUNID = "RUNID";
 
     @Before
@@ -212,6 +215,8 @@ public class TestZosManagerImpl {
         zosConsolePropertiesSingleton.activate();
         PowerMockito.mockStatic(ImageSysname.class);
         PowerMockito.doReturn(IMAGE_ID).when(ImageSysname.class, "get", Mockito.anyString());
+        PowerMockito.mockStatic(JavaHome.class);
+        PowerMockito.doReturn(JAVA_HOME).when(JavaHome.class, "get", Mockito.any());
         
         Mockito.when(zosImageMock.getImageID()).thenReturn("image");
         

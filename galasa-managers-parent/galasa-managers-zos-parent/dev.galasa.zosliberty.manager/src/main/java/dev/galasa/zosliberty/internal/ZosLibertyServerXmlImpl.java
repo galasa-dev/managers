@@ -31,8 +31,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import dev.galasa.zos.IZosImage;
-import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.ZosUNIXFileException;
@@ -41,17 +39,12 @@ import dev.galasa.zosliberty.ZosLibertyServerException;
 
 public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 	
-	private static final String SLASH_SYBMOL = "/";
-	
-	private IZosFileHandler zosFileHandler;
-	private IZosImage zosImage;
 	private IZosUNIXFile serverXmlUnixfile;
 	private Document serverXmlDocument;
 
-	public ZosLibertyServerXmlImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, IZosUNIXFile serverXmlFile) {
-		this.zosFileHandler = zosFileHandler;
-		this.zosImage = zosImage;
+	public ZosLibertyServerXmlImpl(IZosUNIXFile serverXmlFile) {
 		this.serverXmlUnixfile = serverXmlFile;
+		this.serverXmlUnixfile.setDataType(UNIXFileDataType.BINARY);
 	}
 
 	protected Document stringToDocument(String content) throws ZosLibertyServerException {
@@ -90,8 +83,25 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 	}
 
 	@Override
+	public void setServerXmlFromZosUNIXFile(IZosUNIXFile content) throws ZosLibertyServerException {
+		// TODO Auto-generated method stub
+		throw new ZosLibertyServerException("Method not implemented");
+	}
+
+	@Override
+	public String getServerXmlAsString() throws ZosLibertyServerException {
+		// TODO Auto-generated method stub
+		throw new ZosLibertyServerException("Method not implemented");
+	}
+
+	@Override
 	public Document getServerXmlAsDocument() {
 		return this.serverXmlDocument;
+	}
+
+	@Override
+	public IZosUNIXFile getServerXmlAsZosUNIXFile() throws ZosLibertyServerException {
+		return this.serverXmlUnixfile;
 	}
 
 	@Override
@@ -107,7 +117,16 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 			throw new ZosLibertyServerException("Unable to build server.xml file on the zOS UNIX file system", e);
 		}
 	}
-
+	
+	@Override
+	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException {
+		try {
+			this.serverXmlUnixfile.saveToResultsArchive(rasPath);
+		} catch (ZosUNIXFileException e) {
+			throw new ZosLibertyServerException("Unable to store the content of the Liberty server.xml to the Results Archive Store", e);
+		}
+	}
+	
 	@Override
 	public void addXmlElement(String elementName, String elementId, Map<String, String> elementAttributes) throws ZosLibertyServerException {
 		Element element = this.serverXmlDocument.createElement(elementName);
@@ -118,6 +137,21 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 				element.setAttribute(entry.getKey(), entry.getValue());
 			}
 		}
+	}
+
+	@Override
+	public void removeXmlElement(String elementName) throws ZosLibertyServerException {
+		NodeList elements = this.serverXmlDocument.getElementsByTagName(elementName);
+		for (int i = 0; i < elements.getLength(); i++) {
+			Node element = elements.item(i);
+			element.getParentNode().removeChild(element);
+		}		
+	}
+
+	@Override
+	public void removeXmlElement(String elementName, String elementId) throws ZosLibertyServerException {
+		// TODO Auto-generated method stub
+		throw new ZosLibertyServerException("Method not implemented");		
 	}
 
 	private Node getServerParentNode() throws ZosLibertyServerException {
@@ -160,6 +194,12 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 		// TODO Auto-generated method stub
 
 	}
+	
+	
+	
+	
+	
+	
 
 	@Override
 	public void addApplicationTag(String path, String id, String name, String type) throws ZosLibertyServerException {
@@ -168,15 +208,13 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
 	}
 
 	@Override
-	public void updateDefaultHttpEndpoint(String host, String httpPort, String httpsPort)
-			throws ZosLibertyServerException {
+	public void updateDefaultHttpEndpoint(String host, String httpPort, String httpsPort) throws ZosLibertyServerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void addCompoundXmlElement(String parent, String elementName, String elementId,
-			Map<String, String> elementAttributes, IxmlElementList subElements) throws ZosLibertyServerException {
+	public void addCompoundXmlElement(String parent, String elementName, String elementId, Map<String, String> elementAttributes, IxmlElementList subElements) throws ZosLibertyServerException {
 		// TODO Auto-generated method stub
 
 	}

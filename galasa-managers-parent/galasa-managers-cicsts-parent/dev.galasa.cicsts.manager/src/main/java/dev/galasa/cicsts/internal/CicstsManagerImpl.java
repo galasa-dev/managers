@@ -49,6 +49,8 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zosbatch.IZosBatch;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 
 @Component(service = { IManager.class })
 public class CicstsManagerImpl extends AbstractManager implements ICicstsManagerSpi {
@@ -58,6 +60,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private boolean required;
 
     private IZosManagerSpi zosManager;
+	private IZosBatchSpi zosBatchManager;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -101,6 +104,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         this.zosManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosManagerSpi.class);
         if (this.zosManager == null) {
             throw new CicstsManagerException("Unable to locate the zOS Manager, required for the CICS TS Manager");
+        }
+        this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
+        if (this.zosBatchManager == null) {
+            throw new CicstsManagerException("The zOS Batch Manager is not available");
         }
 
         this.provisionType = ProvisionType.get();
@@ -370,5 +377,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             }
         }
     }
+
+	@Override
+	public IZosBatch getZosBatch(ICicsRegion region) throws CicstsManagerException {
+		return this.zosBatchManager.getZosBatch(region.getZosImage());
+	}
 
 }

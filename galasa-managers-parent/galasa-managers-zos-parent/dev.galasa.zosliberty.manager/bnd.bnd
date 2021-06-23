@@ -5,6 +5,7 @@ Export-Package: dev.galasa.zosliberty,\
 Import-Package: dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.language,\
+    dev.galasa.textscan,\
     dev.galasa.zos,\
     dev.galasa.zos.spi,\
     dev.galasa.zosfile,\

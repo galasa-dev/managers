@@ -25,6 +25,7 @@ import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.testharness.TestHarnessFramework;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 
 @RunWith(PowerMockRunner.class)
 public class TestGoldenPath {
@@ -37,6 +38,9 @@ public class TestGoldenPath {
 
     @Mock
     private IZosManagerInt zosManager;
+
+    @Mock
+    private IZosBatchManagerInt zosBatchManager;
     
     @Mock
     private IZosImage zosImage;
@@ -64,6 +68,7 @@ public class TestGoldenPath {
         // Add dependent Managers
         ArrayList<IManager> activeManagers = new ArrayList<>();
         allManagers.add(zosManager);
+        allManagers.add(zosBatchManager);
         
         // Setup calls to zosManager
         when(zosManager.getImageForTag("PRIMARY")).thenReturn(zosImage);
@@ -89,6 +94,10 @@ public class TestGoldenPath {
     }
     
     private interface IZosManagerInt extends IZosManagerSpi, IManager {
+        
+    }
+    
+    private interface IZosBatchManagerInt extends IZosBatchSpi, IManager {
         
     }
 

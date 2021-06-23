@@ -1,7 +1,11 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2021.
+ */
 package dev.galasa.zosliberty.internal;
 
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosliberty.IZosLiberty;
 import dev.galasa.zosliberty.IZosLibertyServer;
@@ -17,29 +21,18 @@ public class ZosLibertyImpl implements IZosLiberty {
 	}
 
 	@Override
-	public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir) throws ZosLibertyServerException {
-		return new ZosLibertyServerImpl(this, zosImage, wlpInstallDir, wlpUserDir);
+	public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir, IZosUNIXFile wlpOutputDir) throws ZosLibertyServerException {
+		return  new ZosLibertyServerImpl(this, zosImage, wlpInstallDir, wlpUserDir, wlpOutputDir);
 	}
 
 	@Override
 	public IZosLibertyServer newZosLibertyServer() throws ZosLibertyServerException {
-		return null;
+		//TODO: Create server
+		throw new ZosLibertyServerException("Method not implemented");
 	}
 
-	@Override
-	public void saveToResultsArchive(String rasPath) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void deleteLogs() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	protected IZosFileHandler getZosFileHandler() throws ZosLibertyManagerException {
-		return this.zosLibertyManager.getZosFileHandler();
+	protected ZosLibertyManagerImpl getZosLibertyManager() throws ZosLibertyManagerException {
+		return this.zosLibertyManager;
 	}
 
 }

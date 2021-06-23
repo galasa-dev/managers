@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.ceda.manager.ivt;
 
@@ -92,7 +92,11 @@ public class CedaManagerIVT {
 		boolean response = false;
 		try {
 			// testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
+			
 			cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
 
 			cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
 
@@ -137,8 +141,11 @@ public class CedaManagerIVT {
 		try {
 
 			// testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
-
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
+			
 			cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
 
 			cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
 
@@ -185,8 +192,11 @@ public class CedaManagerIVT {
 		try {
 
 			// testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
-
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
+			
 			cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+
+			assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
 
 			cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
 

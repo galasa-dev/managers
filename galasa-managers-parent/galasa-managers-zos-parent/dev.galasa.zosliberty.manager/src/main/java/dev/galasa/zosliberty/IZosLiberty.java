@@ -24,11 +24,8 @@ public interface IZosLiberty {
 	 * @param zosImage the zOS image for this Liberty server
 	 * @param wlpInstallDir the Liberty install directory ($WLP_INSTALL_DIR)
 	 * @param wlpUserDir the Liberty user directory ($WLP_USER_DIR)
+	 * @param wlpUserDir the Liberty output directory ($WLP_OUTPUT_DIR)
 	 * @return the zOS Liberty server object
 	 */
-	public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir) throws ZosLibertyServerException;
-
-	public void saveToResultsArchive(String rasPath);
-
-	public void deleteLogs();
+	public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir, IZosUNIXFile wlpOutputDir) throws ZosLibertyServerException;
 }

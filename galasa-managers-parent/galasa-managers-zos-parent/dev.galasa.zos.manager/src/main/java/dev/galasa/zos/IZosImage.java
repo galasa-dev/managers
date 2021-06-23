@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zos;
 
@@ -81,4 +81,10 @@ public interface IZosImage {
      * @throws ZosManagerException
      */
     public String getRunTemporaryUNIXPath() throws ZosManagerException;
+
+    /**
+     * Get the value of Java home for the image
+     * @return value of Java home
+     */
+	public String getJavaHome() throws ZosManagerException;
 }

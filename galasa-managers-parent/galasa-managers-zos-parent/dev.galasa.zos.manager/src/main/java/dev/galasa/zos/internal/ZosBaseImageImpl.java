@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * (c) Copyright IBM Corp. 2019,2020,2021.
  */
 package dev.galasa.zos.internal;
 
@@ -29,6 +29,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     private final ZosIpHostImpl ipHost;
 
     private final String        runTemporaryUNIXPath;
+    private final String 		javaHome;
 
     private ICredentials defaultCedentials;
 
@@ -55,6 +56,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         }
         
         this.runTemporaryUNIXPath = this.zosManager.getRunUNIXPathPrefix(this) + SLASH + this.zosManager.getRunId();
+        this.javaHome = this.zosManager.getJavaHome(this);
     }
 
     protected IConfigurationPropertyStoreService getCPS() {
@@ -123,6 +125,10 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 
     public String getRunTemporaryUNIXPath() {
         return this.runTemporaryUNIXPath;
+    }
+
+    public String getJavaHome() {
+        return this.javaHome;
     }
 
     @Override

@@ -59,6 +59,7 @@ import dev.galasa.zos.internal.properties.DseClusterIdForTag;
 import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
+import dev.galasa.zos.internal.properties.JavaHome;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
@@ -113,6 +114,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
     
     private String runid;
+	private String javaHome;
 
     /* 
      * We need to load the default implementations, but provide the ability for them to be overridden
@@ -649,5 +651,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 			this.runid = getFramework().getTestRunName();
 		}
 		return this.runid;
+	}
+
+	public String getJavaHome(ZosBaseImageImpl image) throws ZosManagerException {
+		if (this.javaHome == null) {
+			JavaHome.get(image);
+		}
+		return this.javaHome;
 	}
 }

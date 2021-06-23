@@ -148,10 +148,12 @@ public interface IZosLibertyServer {
 	/**
 	 * Returns a string containing the full path to the directory used to store logs
 	 * for this Liberty JVM server.
-	 * 
+	 *
 	 * @return String - String containing the full path to the server's logs directory
+	 * @throws ZosLibertyServerException 
 	 */
-	public String getLogsDirectory();
+	//TODO Javadoc
+	public IZosUNIXFile getLogsDirectory() throws ZosLibertyServerException;
 	
 	/**
 	 * Returns a string containing the full path to the server.xml config file for 
@@ -654,11 +656,10 @@ public interface IZosLibertyServer {
 	 * @throws ZosLibertyServerException 
 	 */
 	public void clearWorkarea() throws ZosLibertyServerException;
-	
+
 	/**
-	 * Clear the logs
-	 * 
-	 * @throws ZosLibertyServerException 
+	 * Delete the Liberty server logs
+     * @throws ZosLibertyServerException
 	 */
 	public void clearLogs() throws ZosLibertyServerException;
 	
@@ -742,63 +743,12 @@ public interface IZosLibertyServer {
 	 */
 	public boolean waitForLibertyStart() throws ZosLibertyServerException;
 	
-	
-	/**
-	 * An IWLPServerLogs contain an array of Liberty server logs
-	 */
-	public interface IWLPServerLogs {
-
-		/**
-		 * Does this Liberty server have any FFDC lofs
-		 * @return true or false
-		 */
-		public boolean hasFFDC();
-
-		/**
-		 * The number of Liberty log files
-		 * @return the number
-		 */
-		public int numberOfFiles();
-
-		/**
-		 * Get a log file by name
-		 * @param fileName the log file name
-		 * @return the log file
-		 */
-		public OutputStream getLog(String fileName);
-
-		/**
-		 * Get the Liberty messages.log
-		 * @return the log file
-		 */
-		public OutputStream getMessagesLog();
-
-		/**
-		 * Get the next FFDC log file
-		 * @return the next FFDC log 
-		 */
-		public OutputStream getNextFfdc();
-
-		/**
-		 * Get the next log file
-		 * @return the next log file
-		 */
-		public OutputStream getNext();
-
-		/**
-		 * The the name of the current log file
-		 * @return the log file name
-		 */
-		public String getCurrentLogName();
-		
-	}
-	
 	/**
 	 * Get the contents of the Liberty servers logs directory
 	 * @return the Liberty server logs
 	 * @throws ZosLibertyServerException
 	 */
-	public IWLPServerLogs getWlpServerLogs() throws ZosLibertyServerException ;
+	public IZosLibertyServerLogs getWlpServerLogs() throws ZosLibertyServerException ;
 	
 	/**
 	 * Use the Liberty securityUtility command to encode a password
@@ -834,4 +784,17 @@ public interface IZosLibertyServer {
 	 * @throws ZosLibertyServerException
 	 */
 	public void addBundleToRepository(String dir, String includes) throws ZosLibertyServerException;
+	
+	/**
+     * Store the content of the Liberty server logs and configuration to the default location in the Results Archive Store
+     * @throws ZosLibertyServerException
+     */
+    public void saveToResultsArchive() throws ZosLibertyServerException;
+	
+	/**
+	 * Store the content of the Liberty server logs and configuration to the Results Archive Store
+	 * @param rasPath path in Results Archive Store
+	 * @throws ZosLibertyServerException
+	 */
+	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException;
 }
