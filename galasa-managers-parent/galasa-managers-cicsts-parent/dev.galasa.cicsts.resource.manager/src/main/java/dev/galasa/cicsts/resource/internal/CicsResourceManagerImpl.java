@@ -6,6 +6,7 @@
 package dev.galasa.cicsts.resource.internal;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,9 +21,11 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
+import dev.galasa.cicsts.resource.internal.properties.CicstsResourcePropertiesSingleton;
 import dev.galasa.cicsts.spi.ICicsResourceProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaMethod;
@@ -31,9 +34,6 @@ import dev.galasa.textscan.ILogScanner;
 import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zosbatch.IZosBatch;
-import dev.galasa.zosbatch.ZosBatchException;
-import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
@@ -49,18 +49,19 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     private static final Log logger = LogFactory.getLog(CicsResourceManagerImpl.class);
     
     protected static final String NAMESPACE = "cicsresource";
-    private ICicstsManagerSpi cicstsManager;    
-    private IZosBatchSpi zosBatchManager;    
+    private ICicstsManagerSpi cicstsManager;
     private IZosFileSpi zosFileManager;
 	private IZosLibertySpi zosLibertyManager;
     protected IZosUNIXCommandSpi zosUnixCommandManager;
 	private ITextScannerManagerSpi textScannerManager;
 
-    private static final String JVMSERVERS = "JVMServers";
+    private static final String JVMSERVERS = "JVM_servers";
 
     private static final String PROVISIONING = "provisioning";
 	
 	private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
+	private List<JvmserverImpl> jvmServers = new ArrayList<>();
+	
 
     private Path artifactsRoot;
     public Path getArtifactsRoot() {
@@ -73,6 +74,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     }
     
     private String currentTestMethodArchiveFolderName;
+
     public Path getCurrentTestMethodArchiveFolder() {
         return archivePath.resolve(currentTestMethodArchiveFolderName);
     }
@@ -87,10 +89,29 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         if(galasaTest.isJava()) {
             youAreRequired(allManagers, activeManagers, galasaTest);
         }
+        try {
+        	CicstsResourcePropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new CicsResourceManagerException("Unable to request framework services", e);
+        }
         
         this.artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "preTest";
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#areYouProvisionalDependentOn(dev.galasa.framework.spi.IManager)
+     */
+    @Override
+    public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
+        return otherManager instanceof ICicstsManagerSpi ||
+               otherManager instanceof IZosFileSpi ||
+               otherManager instanceof IZosLibertySpi ||
+               otherManager instanceof IZosUNIXCommandSpi ||
+               otherManager instanceof ITextScannerManagerSpi;
     }
 
 
@@ -108,10 +129,6 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         this.cicstsManager = addDependentManager(allManagers, activeManagers, galasaTest, ICicstsManagerSpi.class);
         if(cicstsManager == null) {
            throw new CicstsManagerException("The CICS Manager is not available");
-        }
-        this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
-        if (this.zosBatchManager == null) {
-            throw new CicstsManagerException("The zOS Batch Manager is not available");
         }
         this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFileManager == null) {
@@ -139,25 +156,12 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      */
     @Override
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
-        cleanup(false);
         this.archivePath = artifactsRoot.resolve(JVMSERVERS);
         if (galasaMethod.getJavaTestMethod() != null) {
         	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
         	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
-     */
-    @Override
-    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
-        cleanup(false);
-        
-        return null;
     }
 
     /* (non-Javadoc)
@@ -169,41 +173,25 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "postTest";
-        cleanup(false);
+        try {
+            cleanup(true);
+        } catch (CicsResourceManagerException e) {
+            logger.error("Problem in endOfTestClass()", e);
+        }
         
         return null;
     }
-
-    /* (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
-     */
-    @Override
-    public void endOfTestRun() {
-        try {
-            cleanup(true);
-        } catch (ZosBatchException e) {
-            logger.error("Problem in endOfTestRun()", e);
-        }
-    }
     
-    protected void cleanup(boolean endOfTest) throws ZosBatchException {
-    	//TODO
-//        for (Entry<String, JvmserverImpl> entry : this.jvmServers.entrySet()) {
-//            entry.getValue().cleanup(endOfTest);
-//        }
-    }
-
-	@Override
+    @Override
 	public @NotNull ICicsResource getCicsResource(ICicsRegion cicsRegion) throws CicsResourceManagerException {
 		ICicsResource cicsResources = this.regionCicsResources.get(cicsRegion);
-        if (cicsResources == null) {
-            cicsResources = new CicsResourceImpl(this, cicsRegion);
-            this.regionCicsResources.put(cicsRegion, cicsResources);
-        }
-        return cicsResources;
+	    if (cicsResources == null) {
+	        cicsResources = new CicsResourceImpl(this, cicsRegion);
+	        this.regionCicsResources.put(cicsRegion, cicsResources);
+	    }
+	    return cicsResources;
 	}
-	
+
 	protected ICicstsManagerSpi getCicsManager() {
 		return this.cicstsManager;
 	}
@@ -214,10 +202,6 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
 		} catch (ZosFileManagerException e) {
 			throw new CicsResourceManagerException("Problem getting IZosFileHandler", e);
 		}
-	}
-	
-	protected IZosBatch getBatch(IZosImage zosImage) {
-		return this.zosBatchManager.getZosBatch(zosImage);
 	}
 	
 	protected IZosLiberty getZosLiberty() throws CicsResourceManagerException {
@@ -238,5 +222,15 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
 		} catch (TextScanManagerException e) {
 			throw new CicsResourceManagerException("Problem getting ILogScanner", e);
 		}
+	}
+
+	protected void registerJvmserver(JvmserverImpl jvmserver) {
+		this.jvmServers.add(jvmserver);
+	}
+
+	protected void cleanup(boolean endOfTest) throws CicsResourceManagerException {
+	    for (JvmserverImpl jvmserver : this.jvmServers) {
+	        jvmserver.cleanup(endOfTest);
+	    }
 	}
 }

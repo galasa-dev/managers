@@ -15,6 +15,7 @@ import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosliberty.IZosLibertyServer;
+import dev.galasa.zosliberty.IZosLibertyServerLogs;
 import dev.galasa.zosliberty.IZosLibertyServerXml;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
 import dev.galasa.zosliberty.ZosLibertyServerException;
@@ -26,21 +27,33 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	private IZosImage zosImage;
 	private IZosUNIXFile wlpInstallDir;
 	private IZosUNIXFile wlpUserDir;
+	private IZosUNIXFile wlpOutputDir;
+	private IZosUNIXFile logsDir;
 	private String serverName = "defaultServer";
 	private IZosLibertyServerXml serverXml;
+	private IZosLibertyServerLogs libertyServerLogs;
 
 	private static final String SLASH_SYBMOL = "/";
 	
-	public ZosLibertyServerImpl(ZosLibertyImpl zosLiberty, IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir) throws ZosLibertyServerException {
+	public ZosLibertyServerImpl(ZosLibertyImpl zosLiberty, IZosImage zosImage, IZosUNIXFile wlpInstallDir, IZosUNIXFile wlpUserDir, IZosUNIXFile wlpOutputDir) throws ZosLibertyServerException {
 		this.zosLiberty = zosLiberty;
 		try {
-			this.zosFileHandler = this.zosLiberty.getZosFileHandler();
+			this.zosFileHandler = this.zosLiberty.getZosLibertyManager().getZosFileHandler();
 		} catch (ZosLibertyManagerException e) {
 			throw new ZosLibertyServerException("Unable to get zOS File Handler", e);
 		}
 		this.zosImage = zosImage;
 		this.wlpInstallDir = wlpInstallDir;
 		this.wlpUserDir = wlpUserDir;
+		if (wlpOutputDir == null) {
+			this.wlpOutputDir = getWlpOutputDir();
+		} else {
+			this.wlpOutputDir = wlpOutputDir;
+		}
+		this.serverXml = new ZosLibertyServerXmlImpl(getServerXmlUnixFile());
+	}
+	
+	private IZosUNIXFile getServerXmlUnixFile() throws ZosLibertyServerException {
 		IZosUNIXFile serverXmlUnixFile;
 		try {
 			StringBuilder path = new StringBuilder();
@@ -55,9 +68,9 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 		} catch (ZosUNIXFileException e) {
 			throw new ZosLibertyServerException("Unable to create server.xml object", e);
 		}
-		this.serverXml = new ZosLibertyServerXmlImpl(this.zosFileHandler, this.zosImage, serverXmlUnixFile);
+		return serverXmlUnixFile;
 	}
-	
+
 	@Override
 	public void setServerName(String serverName) {
 		this.serverName = serverName;
@@ -155,9 +168,34 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	}
 
 	@Override
-	public String getLogsDirectory() {
-		// TODO Auto-generated method stub
-		return null;
+	public IZosUNIXFile getLogsDirectory() throws ZosLibertyServerException {
+		if (this.logsDir == null) {
+			try {
+				this.logsDir = this.zosFileHandler.newUNIXFile(getWlpOutputDir().getUnixPath() + SLASH_SYBMOL + "logs/", this.zosImage);
+			} catch (ZosUNIXFileException e) {
+				throw new ZosLibertyServerException("Unable to get logs directory", e);
+			}
+
+		}
+		return this.logsDir;
+	}
+
+	private IZosUNIXFile getWlpOutputDir() throws ZosLibertyServerException {
+		if (this.wlpOutputDir == null) {
+			StringBuilder path = new StringBuilder();
+			path.append(this.wlpUserDir.getUnixPath());
+			path.append(SLASH_SYBMOL);
+			path.append("servers");
+			path.append(SLASH_SYBMOL);
+			path.append(getServerName());
+			path.append(SLASH_SYBMOL);
+			try {
+				this.wlpOutputDir = this.zosFileHandler.newUNIXFile(path.toString(), zosImage);
+			} catch (ZosUNIXFileException e) {
+				throw new ZosLibertyServerException("Unable to create liberty user directory object", e);
+			}  
+		}
+		return this.wlpOutputDir;
 	}
 
 	@Override
@@ -517,7 +555,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	}
 
 	@Override
-	public IWLPServerLogs getWlpServerLogs() throws ZosLibertyServerException {
+	public IZosLibertyServerLogs getWlpServerLogs() throws ZosLibertyServerException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -549,5 +587,35 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	@Override
 	public String toString() {
 		return "[zOS Liberty Server] " + this.serverName;
+	}
+
+	@Override
+	public void saveToResultsArchive() throws ZosLibertyServerException {
+		saveToResultsArchive(getDefaultRasPath());
+	}
+
+	@Override
+	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException {
+		getLibertyServerLogs().saveToResultsArchive(rasPath);
+		this.serverXml.saveToResultsArchive(rasPath);
+	}
+
+	private IZosLibertyServerLogs getLibertyServerLogs() throws ZosLibertyServerException {
+		if (this.libertyServerLogs == null) {
+			try {
+				this.libertyServerLogs = new ZosLibertyServerLogsImpl(getLogsDirectory());
+			} catch (ZosLibertyServerException e) {
+				throw new ZosLibertyServerException("Unable to get server logs", e);
+			}
+		}
+		return this.libertyServerLogs;
+	}
+
+	private String getDefaultRasPath() throws ZosLibertyServerException {
+		try {
+			return this.zosLiberty.getZosLibertyManager().getCurrentTestMethodArchiveFolder().toString();
+		} catch (ZosLibertyManagerException e) {
+			throw new ZosLibertyServerException("Unable to get default RAS path", e);
+		}
 	}
 }

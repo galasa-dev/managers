@@ -1,25 +1,35 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.internal.dse;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.MasType;
 import dev.galasa.cicsts.internal.CicstsManagerImpl;
+import dev.galasa.cicsts.internal.properties.DseJavaHome;
 import dev.galasa.cicsts.internal.properties.DseJvmProfileDir;
 import dev.galasa.cicsts.internal.properties.DseUssHome;
 import dev.galasa.cicsts.internal.properties.DseVersion;
 import dev.galasa.cicsts.spi.BaseCicsImpl;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.IZosBatchJob.JobStatus;
+import dev.galasa.zosbatch.ZosBatchException;
 
 public class DseCicsImpl extends BaseCicsImpl {
 
     private ProductVersion version;
 	private String usshome;
 	private String jvmProfileDir;
+	private String javaHome;
+	private IZosBatchJob regionJob;
 
     public DseCicsImpl(CicstsManagerImpl cicstsManager, String cicsTag, IZosImage image, String applid)
             throws CicstsManagerException {
@@ -70,6 +80,17 @@ public class DseCicsImpl extends BaseCicsImpl {
     }
 
     @Override
+	public String getJavaHome() throws CicstsManagerException {
+    	if (this.javaHome == null) {
+    		this.javaHome = DseJavaHome.get(this);
+    		if (this.javaHome == null) {
+    			throw new CicstsManagerException("A value for Java home was missing for DSE tag " + this.getTag());
+    		}
+    	}
+        return this.javaHome;
+	}
+
+	@Override
     public boolean isProvisionStart() {
         return true;  // DSE regions are assumed to be started before the test runs
     }
@@ -94,5 +115,31 @@ public class DseCicsImpl extends BaseCicsImpl {
     public boolean hasRegionStarted() throws CicstsManagerException {
         throw new CicstsManagerException("Unable to check DSE CICS TS regions has started");
     }
+
+	@Override
+	public IZosBatchJob getRegionJob() throws CicstsManagerException {
+		if (this.regionJob == null) {
+			try {
+				List<IZosBatchJob> jobs = this.cicstsManager.getZosBatch(this).getJobs(getApplid(), null);
+				for (IZosBatchJob job : jobs) {
+					if (job.getStatus().equals(JobStatus.ACTIVE)) {
+						String jesmsglg = job.getSpoolFile("JESMSGLG").getRecords();
+						Pattern pattern = Pattern.compile("DFHSI1517\\s(\\w+)");
+				    	Matcher matcher = pattern.matcher(jesmsglg);
+				    	if (matcher.find() && matcher.groupCount() == 1 && getApplid().equals(matcher.group(1))) {
+			    			this.regionJob = job;
+			    			break;
+				    	}
+					}
+				}
+			} catch (ZosBatchException e) {
+				throw new CicstsManagerException("Unable to get CICS job", e);
+			}
+		}
+		if (this.regionJob == null) {
+			throw new CicstsManagerException("Unable to get DSE CICS job matching APPLID " + getApplid());
+		}
+		return this.regionJob;
+	}
 
 }

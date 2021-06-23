@@ -16,29 +16,54 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import dev.galasa.zosfile.IZosUNIXFile;
+
 /**
  * Represents the server.xml configuration file in a zOS Liberty Server
  */
+//TODO: doc when file is updated on file system
 public interface IZosLibertyServerXml {
 
 	/**
 	 * Replace the Liberty server.xml from {@link Document} content
-	 * @param content the server.xml content
+	 * @param serverXml the server.xml content
+	 * @throws ZosLibertyServerException 
 	 */
-	public void setServerXmlFromDocument(Document content);
+	public void setServerXmlFromDocument(Document serverXml) throws ZosLibertyServerException;
 
 	/**
 	 * Replace the Liberty server.xml from {@link String} content
-	 * @param content the server.xml content
+	 * @param serverXml the server.xml content
 	 * @throws ZosLibertyServerException 
 	 */
-	public void setServerXmlFromString(String content) throws ZosLibertyServerException;
+	public void setServerXmlFromString(String serverXml) throws ZosLibertyServerException;
+
+	/**
+	 * Replace the Liberty server.xml from {@link IZosUNIXFile} content
+	 * @param serverXml the server.xml content
+	 * @throws ZosLibertyServerException 
+	 */
+	public void setServerXmlFromZosUNIXFile(IZosUNIXFile serverXml) throws ZosLibertyServerException;
 
 	/**
 	 * Get the Liberty server.xml as a {@link Document}
 	 * @return the content of the Liberty server.xml
 	 */
 	public Document getServerXmlAsDocument();
+
+	/**
+	 * Get the Liberty server.xml as a {@link String}
+	 * @return the content of the Liberty server.xml
+	 * @throws ZosLibertyServerException 
+	 */
+	public String getServerXmlAsString() throws ZosLibertyServerException;
+
+	/**
+	 * Get the Liberty server.xml as a {@link IZosUNIXFile}
+	 * @return the Liberty server.xml file
+	 * @throws ZosLibertyServerException 
+	 */
+	public IZosUNIXFile getServerXmlAsZosUNIXFile() throws ZosLibertyServerException;
 	
 	/**
 	 * Create the server.xml file on the zOS UNIX file system
@@ -46,6 +71,13 @@ public interface IZosLibertyServerXml {
 	 */
 	public void build() throws ZosLibertyServerException;
 	
+	/**
+	 * Store the content of the Liberty server.xml to the Results Archive Store
+	 * @param rasPath path in Results Archive
+	 * @throws ZosLibertyServerException
+	 */
+	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException;
+
 	/**
 	 * Add a simple XML element to the Liberty serverXml Document object
 	 * 
@@ -55,6 +87,24 @@ public interface IZosLibertyServerXml {
 	 * @throws ZosLibertyServerException
 	 */
 	public void addXmlElement(String elementName, String elementId, Map<String, String> elementAttributes) throws ZosLibertyServerException;
+
+	/**
+	 * Remove all XML elements with specified name from the Liberty serverXml Document object
+	 * 
+	 * @param elementName the XML element name
+	 * @param elementId the XML element id
+	 * @throws ZosLibertyServerException
+	 */
+	public void removeXmlElement(String elementName) throws ZosLibertyServerException;
+
+	/**
+	 * Remove all XML elements with specified name with specific id from the Liberty serverXml Document object
+	 * 
+	 * @param elementName the XML element name
+	 * @param elementId the XML element id
+	 * @throws ZosLibertyServerException
+	 */
+	public void removeXmlElement(String elementName, String elementId) throws ZosLibertyServerException;
 
 	/**
 	 * Update the content of the {@link IZosLibertyServerXml) with the content of the server.xml file from the zOS UNIX file system 

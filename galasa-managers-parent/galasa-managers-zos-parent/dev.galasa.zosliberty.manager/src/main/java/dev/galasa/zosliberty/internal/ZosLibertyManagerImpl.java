@@ -7,6 +7,7 @@ package dev.galasa.zosliberty.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,18 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.GenerateAnnotatedField;
+import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaMethod;
+import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.textscan.ILogScanner;
+import dev.galasa.textscan.TextScanManagerException;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -28,14 +41,6 @@ import dev.galasa.zosliberty.ZosLiberty;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
 import dev.galasa.zosliberty.internal.properties.ZosLibertyPropertiesSingleton;
 import dev.galasa.zosliberty.spi.IZosLibertySpi;
-import dev.galasa.framework.spi.AbstractManager;
-import dev.galasa.framework.spi.AnnotatedField;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.GenerateAnnotatedField;
-import dev.galasa.framework.spi.IFramework;
-import dev.galasa.framework.spi.IManager;
-import dev.galasa.framework.spi.ResourceUnavailableException;
-import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class })
 public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibertySpi {
@@ -44,11 +49,31 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
 
     protected static final String NAMESPACE = "zosliberty";
 
+    private static final String LIBERTY_SERVERS = "LibertyServers";
+
+    private static final String PROVISIONING = "provisioning";
+
     private IZosManagerSpi  zosManager;
 	private IZosFileSpi zosFileManager;
+	private ITextScannerManagerSpi textScannerManager;
 
-    private final HashMap<String, IZosLiberty> taggedZosLibertys = new HashMap<>();
-    private final HashMap<String, IZosLiberty> zosLibertys = new HashMap<>();
+//    private final HashMap<String, IZosLiberty> taggedZosLibertys = new HashMap<>();
+//    private final HashMap<String, IZosLiberty> zosLibertys = new HashMap<>();
+
+    private Path artifactsRoot;
+    public Path getArtifactsRoot() {
+    	return artifactsRoot;
+    }
+    
+    private Path archivePath;
+    public Path getArchivePath() {
+        return this.archivePath;
+    }
+    
+    private String currentTestMethodArchiveFolderName;
+    public Path getCurrentTestMethodArchiveFolder() {
+        return archivePath.resolve(currentTestMethodArchiveFolderName);
+    }
 
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -71,6 +96,9 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
                 youAreRequired(allManagers, activeManagers,galasaTest);
             }
         }
+        this.artifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(LIBERTY_SERVERS);
+        this.currentTestMethodArchiveFolderName = "preTest";
     }
 
 
@@ -101,6 +129,42 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
         return otherManager instanceof IZosManagerSpi;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#startOfTestMethod()
+     */
+    @Override
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
+        cleanup(false);
+        this.archivePath = artifactsRoot.resolve(LIBERTY_SERVERS);
+        if (galasaMethod.getJavaTestMethod() != null) {
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
+        } else {
+        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
+        }
+    }
+
+    /* (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
+     */
+    @Override
+    public void endOfTestRun() {
+        try {
+            cleanup(true);
+        } catch (ZosLibertyManagerException e) {
+            logger.error("Problem in endOfTestRun()", e);
+        }
+    }
+    
+    protected void cleanup(boolean endOfTest) throws ZosLibertyManagerException {
+    	//TODO
+//        for (Entry<String, JvmserverImpl> entry : this.jvmServers.entrySet()) {
+//            entry.getValue().cleanup(endOfTest);
+//        }
     }
 
 
@@ -197,4 +261,11 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
 		}
 	}
 
+	protected ILogScanner getLogScanner() throws ZosLibertyManagerException {
+		try {
+			return this.textScannerManager.getLogScanner();
+		} catch (TextScanManagerException e) {
+			throw new ZosLibertyManagerException("Problem getting ILogScanner", e);
+		}
+	}
 }

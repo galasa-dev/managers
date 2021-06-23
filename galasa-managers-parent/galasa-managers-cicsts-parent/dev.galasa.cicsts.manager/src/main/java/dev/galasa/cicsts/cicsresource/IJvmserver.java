@@ -5,6 +5,8 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
+import java.util.List;
+
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosliberty.IZosLibertyServer;
 
@@ -139,7 +141,19 @@ public interface IJvmserver {
 	 * Install the CICS JVMSERVER resource definition
 	 * @throws CicsJvmserverResourceException
 	 */
-	public void installResourceDefinition() throws CicsJvmserverResourceException;
+	public void installResourceDefinition() throws CicsJvmserverResourceException;	
+	
+	/**
+	 * Check if the CICS JVMSERVER resource definition exist via CEDA DISPLAY  
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean resourceDefined() throws CicsJvmserverResourceException;	
+	
+	/**
+	 * Check if the CICS JVMSERVER resource has been installed via CEMT INQUIRE  
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean resourceInstalled() throws CicsJvmserverResourceException;
 
 	/**
 	 * Enable the CICS JVMSERVER resource
@@ -363,6 +377,13 @@ public interface IJvmserver {
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void checkpointLogs() throws CicsJvmserverResourceException;
+	
+	/**
+	 * Get a <@link List} of Java log files, i.e Snap.*.trc, javacore.*.txt etc.
+	 * @return
+	 * @throws CicsJvmserverResourceException
+	 */
+	public List<IZosUNIXFile> getJavaLogs() throws CicsJvmserverResourceException;
 
 	/**
      * Store the content of the JVM server logs to the default location in the Results Archive Store
@@ -378,23 +399,29 @@ public interface IJvmserver {
 	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
 
 	/**
-	 * Store the content of the JVM server logs to the default location in the Results Archive Store and if appropriate, delete the files
-     * @param rasPath path in Results Archive Store
-     * @throws CicsJvmserverResourceException
-	 */
-	public void deleteJvmserverLogs() throws CicsJvmserverResourceException;
-
-	/**
-	 * Store the content of the JVM server logs to the default location in the Results Archive Store and if appropriate, delete the files
+	 * Delete the JVM server logs
      * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
 	 */
 	public void clearJvmLogs() throws CicsJvmserverResourceException;
 
-	/**
-	 * Store the content of the JVM server logs to the Results Archive Store and if appropriate, delete the files
-     * @param rasPath path in Results Archive Store
-     * @throws CicsJvmserverResourceException
-	 */
-	public void clearJvmLogs(String rasPath) throws CicsJvmserverResourceException;
+    /**
+     * Set flag to control if the JVM server should be automatically stored to the test output. Defaults to true
+     */    
+    public void setShouldArchive(boolean shouldArchive);
+
+    /**
+     * Return flag that controls if the JVM server should be automatically stored to the test output
+     */    
+    public boolean shouldArchive();
+
+    /**
+     * Set flag to control if the JVM server should be automatically purged from zOS. Defaults to true
+     */    
+    public void setShouldCleanup(boolean shouldCleanup);
+
+    /**
+     * Return flag that controls if the JVM server should be automatically purged from zOS
+     */    
+    public boolean shouldCleanup();
 }

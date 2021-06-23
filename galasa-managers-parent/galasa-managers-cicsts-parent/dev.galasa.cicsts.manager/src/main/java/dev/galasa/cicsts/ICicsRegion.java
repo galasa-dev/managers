@@ -1,13 +1,14 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts;
 
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zosbatch.IZosBatchJob;
 
 public interface ICicsRegion {
 
@@ -64,4 +65,13 @@ public interface ICicsRegion {
     public String getUssHome() throws CicstsManagerException;
 
     public String getJvmProfileDir() throws CicstsManagerException;
+    
+	public String getJavaHome() throws CicstsManagerException;
+
+    /**
+     * Return the CICS region {@link IZosBatchJob}
+     * @return the CICS region job
+     * @throws CicstsManagerException
+     */
+	public IZosBatchJob getRegionJob() throws CicstsManagerException;
 }

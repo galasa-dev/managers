@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.cicsts.internal.properties;
 
@@ -25,7 +25,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A value for USSHOME that matches the value supplied to the DSE CICS region.
  * 
  * @galasa.examples 
- * <code>cicsts.dse.tag.PRIMARY.applid=/cics/cics730</code><br>
+ * <code>cicsts.dse.tag.PRIMARY.usshome=/cics/cics730</code><br>
  *
  */
 public class DseUssHome extends CpsProperties {

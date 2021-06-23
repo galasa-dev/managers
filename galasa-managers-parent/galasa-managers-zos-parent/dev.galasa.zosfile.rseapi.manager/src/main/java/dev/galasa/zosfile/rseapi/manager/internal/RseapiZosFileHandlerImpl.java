@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -141,24 +141,34 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
     }
 
     public void cleanupUnixFiles() throws ZosFileManagerException {
-        Iterator<RseapiZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
-        while (unixFileIterator.hasNext()) {
-            RseapiZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
-            try {
+        try {
+	        Iterator<RseapiZosUNIXFileImpl> unixFileIterator = this.zosUnixFiles.iterator();
+	        while (unixFileIterator.hasNext()) {
+	            RseapiZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
 				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
 					if (zosUnixFile.shouldArchive()) {
 						zosUnixFile.archiveContent();
 					}
-	                if (zosUnixFile.shouldCleanup()) {
-	                	zosUnixFile.delete();
-			            zosUnixFile.cleanCreatedPath();
-	                }
-	            }
-			} catch (ZosUNIXFileException e) {
-				logger.error("Problem in UNIX file cleanup phase", e);
-			}
-            unixFileIterator.remove();
-        }
+				}
+	        }
+	        unixFileIterator = this.zosUnixFiles.iterator();
+	        while (unixFileIterator.hasNext()) {
+	            RseapiZosUNIXFileImpl zosUnixFile = unixFileIterator.next();
+				if (zosUnixFile.created() && !zosUnixFile.deleted() && zosUnixFile.exists()) {
+					if (zosUnixFile.shouldCleanup()) {
+						if (zosUnixFile.isDirectory()) {
+							zosUnixFile.directoryDeleteNonEmpty();
+						} else {
+		                	zosUnixFile.delete();
+		                }
+				        zosUnixFile.cleanCreatedPath();
+		            }
+		        }
+	            unixFileIterator.remove();
+	        }			
+		} catch (ZosUNIXFileException e) {
+			logger.error("Problem in UNIX file cleanup phase", e);
+		}
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.spi;
 
@@ -15,7 +15,7 @@ import dev.galasa.zos.IZosImage;
 
 public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
 
-    private final ICicstsManagerSpi cicstsManager;
+    protected final ICicstsManagerSpi cicstsManager;
     private final String cicsTag;
     private final String applid;
     private final IZosImage zosImage;

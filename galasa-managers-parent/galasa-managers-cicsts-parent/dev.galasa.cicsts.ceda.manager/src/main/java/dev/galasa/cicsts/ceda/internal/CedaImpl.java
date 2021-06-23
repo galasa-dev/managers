@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.ceda.internal;
 
@@ -272,6 +272,54 @@ public class CedaImpl implements ICeda{
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
 
+	}
+
+
+	@Override
+	public boolean resourceExists(@NotNull ICicsTerminal terminal, @NotNull String resourceType, @NotNull String resourceName, @NotNull String groupName) throws CedaException {
+		if (cicsRegion != terminal.getCicsRegion()) {
+			throw new CedaException("The provided terminal is not from the correct CICS Region");
+		}
+
+        if (!terminal.isClearScreen()) {
+            try {
+                terminal.resetAndClear();
+            } catch (CicstsManagerException e) {
+                throw new CedaException("Problem reset and clearing screen for ceda transaction", e);
+            }
+        }
+
+
+		try {
+			terminal.waitForKeyboard();
+			terminal.type("CEDA DISPLAY " + resourceType + "(" + resourceName + ") GROUP(" + groupName + ")").enter();
+			terminal.waitForKeyboard();
+		} catch(Exception e) {
+			throw new CedaException("Problem with starting the CEDA transaction", e);
+		}
+
+		boolean exists = false;
+		try {
+			if (terminal.retrieveScreen().contains("RESULTS: 1 TO 1 OF 1"))	{
+				exists = true;
+			} else if (!terminal.retrieveScreen().contains("DISPLAY UNSUCCESSFUL")) {
+				terminal.pf9().pf3().clear().waitForKeyboard();
+				throw new CedaException("Errors detected whilst displaying resource");
+			}
+		} catch(Exception e) {
+			throw new CedaException("Problem determinign the result from the CEDA command)", e);
+
+		}
+		try {
+			terminal.pf3();
+			terminal.waitForKeyboard();
+			terminal.clear();
+			terminal.waitForKeyboard();
+		} catch(Exception e) {
+			throw new CedaException("Unable to return terminal back into reset state", e);
+		}
+
+		return exists;
 	}
 
 }

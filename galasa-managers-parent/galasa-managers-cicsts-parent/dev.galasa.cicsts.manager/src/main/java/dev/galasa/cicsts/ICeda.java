@@ -22,5 +22,6 @@ public interface ICeda {
       public void deleteResource(@NotNull ICicsTerminal terminal, @NotNull String resourceType, 
             @NotNull String resourceName, @NotNull String groupName) throws CedaException;
 
+      public boolean resourceExists(@NotNull ICicsTerminal terminal, @NotNull String resourceType, @NotNull String resourceName, @NotNull String groupName) throws CedaException;
 
 }

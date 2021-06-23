@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.cicsts.spi;
 
@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.zosbatch.IZosBatch;
 
 public interface ICicstsManagerSpi {
 
@@ -85,5 +86,7 @@ public interface ICicstsManagerSpi {
 
     
     public void cicstsRegionStarted(ICicsRegion region) throws CicstsManagerException;
+
+	public IZosBatch getZosBatch(ICicsRegion region) throws CicstsManagerException;
 
 }
