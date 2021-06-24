@@ -58,6 +58,7 @@ public class JvmserverImpl implements IJvmserver {
 	private ICicsTerminal cicsTerminal;
 	private String cicsApplid;
 	private IZosImage cicsZosImage;
+	private IZosUNIXFile cicsZosImageRunTemporaryUNIXPath;
 	private ICredentials cicsZosImageDefaultCredentials;
 	private String cicsZosImageDefaultCredentialsUserid;
 	private String cicsConfigroot;
@@ -140,6 +141,7 @@ public class JvmserverImpl implements IJvmserver {
 		}
 		this.cicsRegion = cicsRegion;
 		this.cicsZosImage = cicsRegion.getZosImage();
+		setRunTemporaryUNIXPath();
 		this.cicsTerminal = cicsTerminal;
 		this.resourceDefinitionName = name;
 		this.resourceDefinitionGroup = group;
@@ -188,6 +190,8 @@ public class JvmserverImpl implements IJvmserver {
 		this.cicsResourceManager = cicsResourceManagerImpl;
 		this.cicsResourceManager.registerJvmserver(this);
 		this.cicsRegion = cicsRegion;
+		this.cicsZosImage = cicsRegion.getZosImage();
+		setRunTemporaryUNIXPath();
 		this.cicsTerminal = cicsTerminal;
 		this.resourceDefinitionName = name;
 		this.resourceDefinitionGroup = group;
@@ -199,12 +203,22 @@ public class JvmserverImpl implements IJvmserver {
 		this.cicsResourceManager = cicsResourceManagerImpl;
 		this.cicsResourceManager.registerJvmserver(this);
 		this.cicsRegion = cicsRegion;
+		this.cicsZosImage = cicsRegion.getZosImage();
+		setRunTemporaryUNIXPath();
 		this.cicsTerminal = cicsTerminal;
 		this.resourceDefinitionName = name;
 		this.resourceDefinitionGroup = group;
 		this.resourceDefinitionJvmprofile = jvmprofile.getProfileName();
 		this.jvmserverType = JvmserverType.LIBERTY;
 		this.zosLibertyServer = libertyServer;
+	}
+
+	private void setRunTemporaryUNIXPath() throws CicsJvmserverResourceException {
+		try {
+			this.cicsZosImageRunTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(this.cicsZosImage.getRunTemporaryUNIXPath() + SLASH_SYBMOL, this.cicsZosImage);
+		} catch (ZosManagerException e) {
+			throw new CicsJvmserverResourceException("Unable to get Run Temporary UNIX Path for image" + this.cicsZosImage.getImageID(), e);
+		}
 	}
 
 	protected ILogScanner newLogScanner() throws CicsResourceManagerException {
@@ -270,11 +284,7 @@ public class JvmserverImpl implements IJvmserver {
 
 	protected String getDefaultWorkingDirectoryValue() throws CicsJvmserverResourceException {
 		if (this.defaultWorkingDirectoryValue == null) {
-			try {
-				this.defaultWorkingDirectoryValue = this.cicsZosImage.getRunTemporaryUNIXPath() + SLASH_SYBMOL + "";
-			} catch (ZosManagerException e) {
-				throw new CicsJvmserverResourceException("Unable to get the run temporary UNIX directory for image " + this.cicsZosImage.getImageID(), e);
-			}
+			this.defaultWorkingDirectoryValue = this.cicsZosImageRunTemporaryUNIXPath.getUnixPath();
 		}
 		return this.defaultWorkingDirectoryValue;
 	}
@@ -683,12 +693,24 @@ public class JvmserverImpl implements IJvmserver {
 				throw new CicsJvmserverResourceException(message, e);
 			}
 		}
+		try {
+			if (getDefaultLogsDiretory() != null && getDefaultLogsDiretory().exists()) {
+				getDefaultLogsDiretory().directoryDeleteNonEmpty();
+			}
+		} catch (CicsJvmserverResourceException | ZosUNIXFileException e) {
+			String message = "Problem deleteing logs directory for JVMSERVER " + getName();
+			if (ignoreErrors) {
+				logger.warn(message + " - " + e.getMessage());
+			} else {
+				throw new CicsJvmserverResourceException(message, e);
+			}
+		}
 	}
 
 	@Override
 	public void discard() throws CicsJvmserverResourceException {
 		try {
-			if (!resourceInstalled()) {
+			if (resourceInstalled()) {
 				this.cicsRegion.cemt().discardResource(cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName());
 			}
 		} catch (CicstsManagerException e) {
@@ -1184,8 +1206,8 @@ public class JvmserverImpl implements IJvmserver {
 		}
 	}
 	
-	protected void cleanup(boolean endOfTest) {
-		if (endOfTest) {
+	protected void cleanup(boolean endOfTestRun) {
+		if (!endOfTestRun) {
 			if (shouldArchive()) {
 				try {
 					saveToResultsArchive();
@@ -1216,7 +1238,15 @@ public class JvmserverImpl implements IJvmserver {
 					delete(true);
 				} catch (CicsJvmserverResourceException e) {
 					logger.error("Problem in cleanup phase", e);
-				}				
+				}
+			}
+		} else {
+			try {
+				if (this.cicsZosImageRunTemporaryUNIXPath.exists()) {
+					this.cicsZosImageRunTemporaryUNIXPath.directoryDeleteNonEmpty();
+				}
+			} catch (ZosUNIXFileException e) {
+				logger.error("Problem in cleanup phase", e);
 			}
 		}
 	}
