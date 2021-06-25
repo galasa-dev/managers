@@ -173,13 +173,19 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "postTest";
-        try {
-            cleanup(true);
-        } catch (CicsResourceManagerException e) {
-            logger.error("Problem in endOfTestClass()", e);
-        }
+        
+        cleanup(false);
         
         return null;
+    }
+
+    /* (non-Javadoc)
+     * 
+     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
+     */
+    @Override
+    public void endOfTestRun() {
+    	cleanup(true);
     }
     
     @Override
@@ -228,9 +234,9 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
 		this.jvmServers.add(jvmserver);
 	}
 
-	protected void cleanup(boolean endOfTest) throws CicsResourceManagerException {
-	    for (JvmserverImpl jvmserver : this.jvmServers) {
-	        jvmserver.cleanup(endOfTest);
-	    }
+	protected void cleanup(boolean endOfTestRun) {
+		for (JvmserverImpl jvmserver : this.jvmServers) {
+			jvmserver.cleanup(endOfTestRun);
+		}
 	}
 }
