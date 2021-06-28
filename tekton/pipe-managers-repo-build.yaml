@@ -1,0 +1,59 @@
+#
+# Licensed Materials - Property of IBM
+# 
+# (c) Copyright IBM Corp. 2021.
+#
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: managers-repo-build
+  namespace: galasa-tekton
+spec:
+  resources:
+  - name: git-managers
+    type: git
+  params:
+  - name: distBranch
+    type: string
+  - name: noPush
+    type: string
+    default: ""
+  - name: jacocoEnabled
+    type: string
+    default: "true"
+  - name: isRelease
+    type: string
+    default: "false"
+  tasks:
+  - name: managers-compile
+    taskRef:
+      name: managers-repo-build
+    params:
+    - name: distBranch
+      value: $(params.distBranch)
+    - name: extensionsSourceRepo
+      value: http://cicscit.hursley.ibm.com/galasadev/$(params.distBranch)/maven/extensions/
+    - name: noPush
+      value: $(params.noPush)
+    - name: jacocoEnabled
+      value: $(params.jacocoEnabled)
+    - name: isRelease
+      value: $(params.isRelease)
+    resources:
+      inputs:
+      - name: git-managers
+        resource: git-managers
+  - name: recycle-managers
+    taskRef:
+      name: recycle-deployment
+    runAfter:
+    - managers-compile
+    when:
+    - input: "$(params.noPush)"
+      operator: notin
+      values: ["--no-push"]
+    params:
+    - name: namespace
+      value: galasa-development
+    - name: deployment
+      value: maven-$(params.distBranch)-managers
