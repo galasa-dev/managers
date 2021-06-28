@@ -30,6 +30,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
 
     private final String        runTemporaryUNIXPath;
     private final String 		javaHome;
+    private final String 		zosConnectInstallDir;
 
     private ICredentials defaultCedentials;
 
@@ -57,6 +58,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         
         this.runTemporaryUNIXPath = this.zosManager.getRunUNIXPathPrefix(this) + SLASH + this.zosManager.getRunId();
         this.javaHome = this.zosManager.getJavaHome(this);
+        this.zosConnectInstallDir = this.zosManager.getZosConnectInstallDir(this);
     }
 
     protected IConfigurationPropertyStoreService getCPS() {
@@ -119,17 +121,25 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         return defaultCedentials;
     }
 
-    public ZosIpHostImpl getIpHost() {
+    @Override
+	public ZosIpHostImpl getIpHost() {
         return this.ipHost;
     }
 
-    public String getRunTemporaryUNIXPath() {
+    @Override
+	public String getRunTemporaryUNIXPath() {
         return this.runTemporaryUNIXPath;
     }
 
-    public String getJavaHome() {
+    @Override
+	public String getJavaHome() {
         return this.javaHome;
     }
+
+	@Override
+	public String getZosConnectInstallDir() {
+		return this.zosConnectInstallDir;
+	}
 
     @Override
     public String toString() {

@@ -66,6 +66,14 @@ public class TestZosBaseImageImpl {
     private static final String IPV4_HOSTNAME = "ipv4.hostname";
 
     private static final String IPV6_HOSTNAME = "ipv6.hostname";
+
+    private static final String RUN_ID = "runid";
+
+    private static final String DEFAUT_RUN_UNIX_PATH_PREFIX = "/u/userid/Galasa";
+    
+    private static final String JAVA_HOME = "/java/home/";
+    
+    private static final String ZOSCONNECT_INSTALL_DIR = "/zosconnect/install/";
     
     @Before
     public void setup() throws Exception {
@@ -89,6 +97,11 @@ public class TestZosBaseImageImpl {
         PowerMockito.doReturn(DEFAULT_CREDENTIALS_ID).when(AbstractManager.class, "defaultString", ArgumentMatchers.contains(DEFAULT_CREDENTIALS_ID), Mockito.anyString());
         PowerMockito.doReturn(IPV4_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV4_HOSTNAME));
         PowerMockito.doReturn(IPV6_HOSTNAME).when(AbstractManager.class, "nulled", ArgumentMatchers.contains(IPV6_HOSTNAME));
+
+        PowerMockito.when(zosManagerMock.getRunUNIXPathPrefix(Mockito.any())).thenReturn(DEFAUT_RUN_UNIX_PATH_PREFIX);
+        PowerMockito.when(zosManagerMock.getRunId()).thenReturn(RUN_ID);
+        PowerMockito.when(zosManagerMock.getJavaHome(Mockito.any())).thenReturn(JAVA_HOME);
+        PowerMockito.when(zosManagerMock.getZosConnectInstallDir(Mockito.any())).thenReturn(ZOSCONNECT_INSTALL_DIR);
         
         zosBaseImage = new ZosBaseImageImplExtended(zosManagerMock, IMAGE_ID, CLUSTER_ID);
         zosBaseImageSpy = PowerMockito.spy(zosBaseImage);
@@ -156,6 +169,21 @@ public class TestZosBaseImageImpl {
     @Test
     public void testGetIpHost() throws Exception {
         Assert.assertEquals("getIpHost() should return the expected value", IPV4_HOSTNAME, zosBaseImageSpy.getIpHost().getIpv4Hostname());
+    }
+    
+    @Test
+    public void testGetRunTemporaryUNIXPath() throws Exception {
+        Assert.assertEquals("getRunTemporaryUNIXPath() should return the expected value", DEFAUT_RUN_UNIX_PATH_PREFIX + "/" + RUN_ID, zosBaseImageSpy.getRunTemporaryUNIXPath());
+    }
+    
+    @Test
+    public void testGetJavaHome() throws Exception {
+        Assert.assertEquals("getJavaHome() should return the expected value", JAVA_HOME, zosBaseImageSpy.getJavaHome());
+    }
+    
+    @Test
+    public void testGetZosConnectInstallDir() throws Exception {
+        Assert.assertEquals("getZosConnectInstallDir() should return the expected value", ZOSCONNECT_INSTALL_DIR, zosBaseImageSpy.getZosConnectInstallDir());
     }
     
     @Test

@@ -57,24 +57,6 @@ public interface ICicsResource {
 	 * @return the JVM profile
 	 */
 	public IJvmprofile newJvmprofile(String jvmprofileName);
-	
-	/**
-	 * Create a JVM profile object for use by a {@link IJvmserver} using the CICS/Galasa default properties
-	 * @param jvmprofileName the name of the JVM profile
-	 * @param jvmserverType the JVM server type {@link JvmserverType}
-	 * @return the JVM profile
-	 * @throws CicsJvmprofileResourceException
-	 */
-	public IJvmprofile newJvmprofile(String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmprofileResourceException;
-
-	/**
-	 * Create an JVM profile object for use by a {@link IJvmserver} using the supplied String content, e.g. previously read  or Galasa artifact
-	 * or from zOS UNIX file system.<p>
-	 * See {@link IJvmprofile#setProfileValue(String, String)} for format of options
-	 * @param jvmprofileName the name of the JVM profile
-	 * @return the JVM profile content
-	 */
-	public IJvmprofile newJvmprofile(String jvmprofileName, String content);
 
 	/**
 	 * Create an JVM profile object for use by a {@link IJvmserver} using the supplied {@link HashMap} of options.<p>

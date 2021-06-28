@@ -64,6 +64,7 @@ import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
+import dev.galasa.zos.internal.properties.ZosConnectInstallDir;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
@@ -115,6 +116,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     
     private String runid;
 	private String javaHome;
+    private String zosConnectInstallDir;
 
     /* 
      * We need to load the default implementations, but provide the ability for them to be overridden
@@ -658,5 +660,12 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 			JavaHome.get(image);
 		}
 		return this.javaHome;
+	}
+
+	public String getZosConnectInstallDir(ZosBaseImageImpl image) throws ZosManagerException {
+		if (this.zosConnectInstallDir == null) {
+			ZosConnectInstallDir.get(image);
+		}
+		return this.zosConnectInstallDir;
 	}
 }
