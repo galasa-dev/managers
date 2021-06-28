@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
-import dev.galasa.cicsts.cicsresource.CicsJvmprofileResourceException;
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
@@ -59,17 +58,7 @@ public class CicsResourceImpl implements ICicsResource {
 	}
 
 	@Override
-	public IJvmprofile newJvmprofile(String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmprofileResourceException {
-		return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, jvmserverType);
-	}
-
-	@Override
 	public IJvmprofile newJvmprofile(String jvmprofileName, HashMap<String, String> content) {
-		return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
-	}
-
-	@Override
-	public IJvmprofile newJvmprofile(String jvmprofileName, String content) {
 		return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
 	}
 

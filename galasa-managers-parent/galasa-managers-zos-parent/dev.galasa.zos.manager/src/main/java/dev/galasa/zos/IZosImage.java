@@ -87,4 +87,10 @@ public interface IZosImage {
      * @return value of Java home
      */
 	public String getJavaHome() throws ZosManagerException;
+
+    /**
+     * Get the value of the location of the zOS Connect EE install directory
+     * @return value of zOS Connect EE install directory
+     */
+	public String getZosConnectInstallDir();
 }

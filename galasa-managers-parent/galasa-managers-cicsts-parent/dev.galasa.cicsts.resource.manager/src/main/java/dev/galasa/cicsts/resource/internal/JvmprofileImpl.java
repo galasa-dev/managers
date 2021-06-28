@@ -10,24 +10,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 
-import dev.galasa.cicsts.cicsresource.CicsJvmprofileResourceException;
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.IJvmprofile;
-import dev.galasa.cicsts.cicsresource.IJvmserver.JvmserverType;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.ZosUNIXFileException;
-import dev.galasa.zosliberty.IZosLibertyServer;
 
 public class JvmprofileImpl implements IJvmprofile {
 	
@@ -40,7 +35,6 @@ public class JvmprofileImpl implements IJvmprofile {
 	private String profileName;
 	private HashMap<String, String> profileMap;
 	private String jvmProfileDir;
-	private List<IZosUNIXFile> profileIncludes = new ArrayList<>();
 
 	private static final String COMMA_SYBMOL = ",";
 	private static final String HASH_SYBMOL = "#";
@@ -61,12 +55,19 @@ public class JvmprofileImpl implements IJvmprofile {
 	protected static final String OPTION_CLASSPATH_PREFIX = "CLASSPATH_PREFIX";
 	protected static final String OPTION_CLASSPATH_SUFFIX = "CLASSPATH_SUFFIX";
 	protected static final String OPTION_JAVA_PIPELINE = "JAVA_PIPELINE";
-	protected static final String OPTION_PC_INCLUDE = "%INCLUDE";
 	protected static final String OPTION_SECURITY_TOKEN_SERVICE = "SECURITY_TOKEN_SERVICE";
 	protected static final String OPTION_WLP_INSTALL_DIR = "WLP_INSTALL_DIR";
 	protected static final String OPTION_WLP_USER_DIR = "WLP_USER_DIR";
 	protected static final String OPTION_WLP_OUTPUT_DIR = "WLP_OUTPUT_DIR";
+	protected static final String OPTION_WLP_SERVER_NAME = "-Dcom.ibm.cics.jvmserver.wlp.server.name";
+	protected static final String OPTION_WLP_SERVER_HTTP_PORT = "-Dcom.ibm.cics.jvmserver.wlp.server.http.port";
+	protected static final String OPTION_WLP_SERVER_HTTPS_PORT = "-Dcom.ibm.cics.jvmserver.wlp.server.https.port";
+	protected static final String OPTION_WLP_SERVER_HOST = "-Dcom.ibm.cics.jvmserver.wlp.server.host";
+	protected static final String OPTION_WLP_AUTOCONFIGURE = "-Dcom.ibm.cics.jvmserver.wlp.autoconfigure";
+	protected static final String OPTION_WLP_WAB_ENABLED = "-Dcom.ibm.cics.jvmserver.wlp.wab";
 
+	protected static final String OPTION_ZCEE_INSTALL_DIR = "ZCEE_INSTALL_DIR";
+	
 	public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
 		this.zosFileHandler = zosFileHandler;
 		this.zosImage = zosImage;
@@ -88,29 +89,6 @@ public class JvmprofileImpl implements IJvmprofile {
 		parseContent(content);
 	}
 
-	public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmprofileResourceException {
-		//TODO
-		this.zosFileHandler = zosFileHandler;
-		this.zosImage = zosImage;
-		this.profileName = jvmprofileName;
-		switch (jvmserverType) {
-		case OSGI:
-			//
-			break;
-
-		default:
-			break;
-		}
-		
-		if (jvmserverType == JvmserverType.OSGI) {
-			// get USSHOME/JVMProfiles/DFHOSGI.jvmprofile
-			// parse profile
-			// update where required
-			// save profile JVMPROFILEDIR/name.jvmprofile
-		}
-		// TODO Auto-generated constructor stub
-	}
-
 	protected void parseContent(String content) {
     	String continuationKey = null;
     	this.profileMap = new LinkedHashMap<>();
@@ -124,19 +102,13 @@ public class JvmprofileImpl implements IJvmprofile {
 				if (optionKey.startsWith(PLUS_SYBMOL)) {
 					optionKey = optionKey.substring(1);
 					if (profileMap.containsKey(optionKey) && optionValue != null) {
-						this.profileMap.put(optionKey, this.profileMap.get(optionKey) + COMMA_SYBMOL + optionValue);
+						setProfileValue(optionKey, getProfileValue(optionKey) + COMMA_SYBMOL + optionValue);
 					} else {
-						this.profileMap.put(optionKey, optionValue);
-					}
-				} else if (optionKey.equals(OPTION_PC_INCLUDE)) {
-					if (profileMap.containsKey(optionKey) && optionValue != null) {
-						this.profileMap.put(optionKey, this.profileMap.get(optionKey) + COMMA_SYBMOL + optionValue);
-					} else {
-						this.profileMap.put(optionKey, optionValue);
+						setProfileValue(optionKey, optionValue);
 					}
 				} else {
 					if (continuationKey != null) {
-						optionValue = this.profileMap.get(continuationKey) + optionKey;
+						optionValue = getProfileValue(continuationKey) + optionKey;
 						optionKey = continuationKey;
 					}
 					if (optionValue != null && optionValue.endsWith(BACK_SLASH_SYBMOL)) {
@@ -145,7 +117,7 @@ public class JvmprofileImpl implements IJvmprofile {
 					} else {
 						continuationKey = null;
 					}
-					this.profileMap.put(optionKey, optionValue);
+					setProfileValue(optionKey, optionValue);
 				}
 			}
 		}
@@ -210,13 +182,23 @@ public class JvmprofileImpl implements IJvmprofile {
 
 
 	@Override
-	public void setProfileName(String name) {
+	public void setProfileName(String name) throws CicsJvmserverResourceException {
 		this.profileName = name;
+		resetUnixFile();
 	}
 
 	@Override
-	public void setJvmProfileDir(String jvmProfileDir) {
+	public void setJvmProfileDir(String jvmProfileDir) throws CicsJvmserverResourceException {
 		this.jvmProfileDir = jvmProfileDir;
+		resetUnixFile();
+	}
+
+	private void resetUnixFile() throws CicsJvmserverResourceException {
+		try {
+			this.profileUnixFile = this.zosFileHandler.newUNIXFile(this.getJvmProfileDir() + "/" + this.getProfileName(), this.zosImage);
+		} catch (ZosUNIXFileException e) {
+			throw new CicsJvmserverResourceException("Problem setting JVM profile zOS UNIX file", e);
+		}
 	}
 
 	@Override
@@ -335,118 +317,8 @@ public class JvmprofileImpl implements IJvmprofile {
 		}
 	}
 
-	private Object getProfileFileName() {
+	private String getProfileFileName() {
 		return this.profileName + ".jvmprofile";
-	}
-
-	@Override
-	public void addProfileIncludeFile(IZosUNIXFile profileInclude) {
-		if (this.profileMap.containsKey(OPTION_PC_INCLUDE)) {
-			this.profileMap.put(OPTION_PC_INCLUDE, this.profileMap.get(OPTION_PC_INCLUDE) + COMMA_SYBMOL + profileInclude.getUnixPath());
-		} else {
-			this.profileMap.put(OPTION_PC_INCLUDE, profileInclude.getUnixPath());
-		}
-		this.profileIncludes.add(profileInclude);
-	}
-
-	@Override
-	public IZosUNIXFile addProfileIncludeFile(String name, Map<String, String> content) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void removeProfileIncludeFile(IZosUNIXFile profileInclude) throws CicsJvmserverResourceException {
-		if (this.profileMap.containsKey(OPTION_PC_INCLUDE)) {
-			String value = this.profileMap.get(OPTION_PC_INCLUDE);
-			String[] includes = value.split(COMMA_SYBMOL);
-			StringBuilder newValue = new StringBuilder();
-			for (String include : includes) {
-				if (!include.equals(profileInclude.getUnixPath())) {
-					if (newValue.length() == 0) {
-						newValue.append(include);
-					} else {
-						newValue.append(newValue);
-						newValue.append(COMMA_SYBMOL);
-						newValue.append(include);
-					}
-				}
-			}
-			if (newValue.length() == 0) {
-				this.profileMap.remove(OPTION_PC_INCLUDE);
-			} else {
-				this.profileMap.put(OPTION_PC_INCLUDE, newValue.toString());
-			}
-		}
-		deleteProfileIncudeFile(profileInclude.getUnixPath());
-	}
-
-	private void deleteProfileIncudeFile(String unixPath) throws CicsJvmserverResourceException {
-		for (IZosUNIXFile includeFile : this.profileIncludes) {
-			if (includeFile.getUnixPath().equals(unixPath)) {
-				try {
-					includeFile.delete();
-				} catch (ZosUNIXFileException e) {
-					throw new CicsJvmserverResourceException("Problem deleting profile include file " + includeFile.getUnixPath(), e);			
-				}
-				this.profileIncludes.remove(includeFile);
-				break;
-			}
-		}
-	}
-
-	@Override
-	public void removeAllProfileIncludes() throws CicsJvmserverResourceException {
-		if (this.profileMap.containsKey(OPTION_PC_INCLUDE)) {
-			String value = this.profileMap.get(OPTION_PC_INCLUDE);
-			String[] includes = value.split(COMMA_SYBMOL);
-			for (String includeFile : includes) {
-				deleteProfileIncudeFile(includeFile);
-			}
-			this.profileMap.remove(OPTION_PC_INCLUDE);
-		}
-	}
-
-	@Override
-	public void addJCCTraceProperties() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Map<String, String> getJCCTraceProperties() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void saveJCCTraceFiles() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void saveJCCTraceFiles(String rasPath) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void addRemoteDebug(int debugPort, boolean suspend) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setLibertyServer(IZosLibertyServer zosLibertyServer) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public IZosLibertyServer getLibertyServer() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -466,49 +338,43 @@ public class JvmprofileImpl implements IJvmprofile {
 	}
 
 	@Override
-	public void setZosConnectInstallDir() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
+	public void setWlpServerName(String serverName) throws CicsJvmserverResourceException {
+		setProfileValue(OPTION_WLP_SERVER_NAME, serverName);
+	}
 
+	@Override
+	public void setZosConnectInstallDir() throws CicsJvmserverResourceException {
+		setZosConnectInstallDir(this.zosImage.getZosConnectInstallDir());
 	}
 
 	@Override
 	public void setZosConnectInstallDir(String zOSConnectInstallDir) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setWlpServerName(String serverName) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_ZCEE_INSTALL_DIR, zOSConnectInstallDir);
 	}
 
 	@Override
 	public void setWlpAutoconfigure(boolean autoconfigure) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_WLP_AUTOCONFIGURE, String.valueOf(autoconfigure));
 	}
 
 	@Override
 	public void setWlpServerHost(String hostname) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_WLP_SERVER_HOST, hostname);
 	}
 
 	@Override
 	public void setWlpServerHttpPort(int httpPort) throws CicsJvmserverResourceException {
-		this.profileMap.put("-Dcom.ibm.cics.jvmserver.wlp.server.http.port", Integer.toString(httpPort));
+		setProfileValue(OPTION_WLP_SERVER_HTTP_PORT, Integer.toString(httpPort));
 	}
 
 	@Override
 	public void setWlpServerHttpsPort(int httpsPort) throws CicsJvmserverResourceException {
-		this.profileMap.put("-Dcom.ibm.cics.jvmserver.wlp.server.https.port", Integer.toString(httpsPort));
+		setProfileValue(OPTION_WLP_SERVER_HTTPS_PORT, Integer.toString(httpsPort));
 	}
 
 	@Override
 	public void setWlpServerWabEnabled(boolean wabEnabled) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		setProfileValue(OPTION_WLP_WAB_ENABLED, String.valueOf(wabEnabled));
 	}
 
 	@Override
@@ -528,72 +394,36 @@ public class JvmprofileImpl implements IJvmprofile {
 
 	@Override
 	public String getWlpServerName() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_SERVER_NAME);
 	}
 
 	@Override
 	public String getWlpAutoconfigure() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_AUTOCONFIGURE);
 	}
 
 	@Override
 	public String getWlpServerHost() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_SERVER_HOST);
 	}
 
 	@Override
 	public String getWlpServerHttpPort() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_SERVER_HTTP_PORT);
 	}
 
 	@Override
 	public String getWlpServerHttpsPort() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProfileValue(OPTION_WLP_SERVER_HTTPS_PORT);
 	}
 
 	@Override
 	public boolean getWlpServerWabEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void addLibertyIncludeXml(IZosUNIXFile profileInclude) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public IZosUNIXFile addLibertyIncludeXml(String name, String content) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IZosUNIXFile addLibertyIncludeXml(String name, Document content) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void removeLibertyIncludeXml(IZosUNIXFile name) throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void removeAllLibertyIncludeXmls() throws CicsJvmserverResourceException {
-		// TODO Auto-generated method stub
-
+		return Boolean.valueOf(getProfileValue(OPTION_WLP_WAB_ENABLED));
 	}
 
 	@Override
 	public String toString() {
-		return "[JVM profile] " + this.profileName;
+		return "[JVM profile] " + getProfileName();
 	}
 }

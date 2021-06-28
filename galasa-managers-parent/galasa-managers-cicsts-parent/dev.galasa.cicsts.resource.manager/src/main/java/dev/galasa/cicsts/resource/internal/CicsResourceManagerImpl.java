@@ -12,8 +12,6 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
@@ -45,8 +43,6 @@ import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 @Component(service = { IManager.class })
 public class CicsResourceManagerImpl extends AbstractManager implements ICicsResourceProvider {
-    
-    private static final Log logger = LogFactory.getLog(CicsResourceManagerImpl.class);
     
     protected static final String NAMESPACE = "cicsresource";
     private ICicstsManagerSpi cicstsManager;

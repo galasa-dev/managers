@@ -6,12 +6,8 @@
 package dev.galasa.cicsts.cicsresource;
 
 import java.util.HashMap;
-import java.util.Map;
-
-import org.w3c.dom.Document;
 
 import dev.galasa.zosfile.IZosUNIXFile;
-import dev.galasa.zosliberty.IZosLibertyServer;
 
 /**
  * Represents a CICS JVM server JVM profile
@@ -21,15 +17,17 @@ public interface IJvmprofile {
 	/**
 	 * Set the JVM profile name in the JVM server resource definition
 	 * @param name the profile name
+	 * @throws CicsJvmserverResourceException 
 	 */
-	public void setProfileName(String name);
+	public void setProfileName(String name) throws CicsJvmserverResourceException;
 
 	/**
 	 * Set the location for the JVM profile on the zOS UNIX file system.<br>
 	 * <b>WARNING: This should must equal to the CICS region JVMPROFILEDIR SIT parameter</b> 
 	 * @param jvmProfileDir
+	 * @throws CicsJvmserverResourceException 
 	 */
-	public void setJvmProfileDir(String jvmProfileDir);
+	public void setJvmProfileDir(String jvmProfileDir) throws CicsJvmserverResourceException;
 
 	/**
 	 * Returns the JVM profile as a {@link IZosUNIXFile} object
@@ -164,78 +162,6 @@ public interface IJvmprofile {
     public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
 
 	/**
-	 * Add a previously created JVM profile include file to the JVM profile using the <code>%INCLUDE</code> option
-	 * @param profileInclude the file to include
-	 */
-	public void addProfileIncludeFile(IZosUNIXFile profileInclude);
-
-	/**
-	 * Creates a new JVM profile include file and adds it to the JVM profile using the <code>%INCLUDE</code> option.<br>
-	 * See {@link #setProfileValue(String, String)} for the format of key/value pairs 
-	 * @param name the file name for new JVM profile include file
-	 * @param content the content for the new JVM profile include file
-	 *  
-	 * @return a {@link IZosUNIXFile} object representing the new JVM profile include file
-	 * @throws CicsJvmserverResourceException
-	 */
-	public IZosUNIXFile addProfileIncludeFile(String name, Map<String, String> content) throws CicsJvmserverResourceException;
-
-	/**
-	 * Removes and deletes a JVM profile include file from the JVM profile 
-	 * @param name the JVM profile include file to remove
-	 */
-	public void removeProfileIncludeFile(IZosUNIXFile profileInclude) throws CicsJvmserverResourceException;
-
-	/**
-	 * Removes and deletes all JVM profile included files from the JVM profile
-	 */
-	public void removeAllProfileIncludes() throws CicsJvmserverResourceException;	/**
-	 * Enable DB2 JCC trace by adding the jcc trace properties to the JVM profile 
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public void addJCCTraceProperties() throws CicsJvmserverResourceException;	
-	
-	/**
-	 * Returns a HashMap of jcc trace properties
-	 * @return the jcc properties
-	 * @throws CicsJvmserverResourceException 
-	 */
-	public Map<String, String> getJCCTraceProperties() throws CicsJvmserverResourceException;	
-	
-	/**
-	 * Save the DB2 JCC trace files to the default location in the Results Archive Store
-	 * @throws CicsJvmserverResourceException
-	 */
-	public void saveJCCTraceFiles() throws CicsJvmserverResourceException;	
-	
-	/**
-	 * Save the DB2 JCC trace files to the Results in the Archive Store
-	 * @param rasPath path in Results Archive Store
-	 * @throws CicsJvmserverResourceException
-	 */
-	public void saveJCCTraceFiles(String rasPath) throws CicsJvmserverResourceException;
-
-	/**
-	 * Convenience method that adds remote debug properties to the JVM profile for debug of local runs
-	 * @param debugPort port for debug
-	 * @param suspend suspend the JVM until the remote debugger is connected
-	 * @throws EnvironmentException 
-	 */
-	public void addRemoteDebug(int debugPort, boolean suspend) throws CicsJvmserverResourceException;
-	
-	/**
-	 * Sets the zOS Liberty server object associated with this JVM server
-	 * @param zosLibertyServer the {@link IZosLibertyServer} object to associate with this JVM server
-	 */
-	public void setLibertyServer(IZosLibertyServer zosLibertyServer);
-
-	/**
-	 * Returns the zOS Liberty server object associated with this JVM server
-	 * @return the {@link IZosLibertyServer} associated with this JVM server
-	 */
-	public IZosLibertyServer getLibertyServer();
-
-	/**
 	 * Set the value of the <code>WLP_INSTALL_DIR</code> environment variable in the JVM profile<br>Galasa sets the default value of<code>&USSHOME;/wlp</code>
 	 * @param wlpInstallDir the value of <code>WLP_INSTALL_DIR</code>
 	 * @throws CicsJvmserverResourceException
@@ -368,43 +294,4 @@ public interface IJvmprofile {
 	 * @return the value of <code>-Dcom.ibm.cics.jvmserver.wlp.wab</code>
 	 */
 	public boolean getWlpServerWabEnabled();
-
-	/**
-	 * Add a previously created JVM profile include file to the JVM profile using the <code>LIBERTY_INCLUDE_XML</code> option
-	 * @param profileInclude the file to include
-	 */
-	public void addLibertyIncludeXml(IZosUNIXFile profileInclude);
-
-	/**
-	 * Creates a new Liberty server.xml include file and adds it to the JVM profile using the <code>LIBERTY_INCLUDE_XML</code>
-	 * option using {@link String} content. The content will NOT be parsed for invalid XML
-	 * @param name the file name for new Liberty server.xml include file
-	 * @param content the content for the new Liberty server.xml include file
-	 *  
-	 * @return a {@link IZosUNIXFile} object representing the new Liberty server.xml include file
-	 * @throws CicsJvmserverResourceException
-	 */
-	public IZosUNIXFile addLibertyIncludeXml(String name, String content) throws CicsJvmserverResourceException;
-
-	/**
-	 * Creates a new Liberty server.xml include file and adds it to the JVM profile using the <code>LIBERTY_INCLUDE_XML</code>
-	 * option using {@link Document} content
-	 * @param name the file name for new Liberty server.xml include file
-	 * @param content the content for the new Liberty server.xml include file
-	 *  
-	 * @return a {@link IZosUNIXFile} object representing the new Liberty server.xml include file
-	 * @throws CicsJvmserverResourceException
-	 */
-	public IZosUNIXFile addLibertyIncludeXml(String name, Document content) throws CicsJvmserverResourceException;
-
-	/**
-	 * Removes and deletes a JVM profile include file from the JVM profile 
-	 * @param name the JVM profile include file to remove
-	 */
-	public void removeLibertyIncludeXml(IZosUNIXFile name) throws CicsJvmserverResourceException;
-
-	/**
-	 * Removes and deletes all JVM profile included files from the JVM profile
-	 */
-	public void removeAllLibertyIncludeXmls() throws CicsJvmserverResourceException;
 }
