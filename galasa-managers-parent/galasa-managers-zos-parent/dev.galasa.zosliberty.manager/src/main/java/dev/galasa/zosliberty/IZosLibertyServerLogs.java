@@ -5,7 +5,7 @@
  */
 package dev.galasa.zosliberty;
 
-import java.io.OutputStream;
+import dev.galasa.zosfile.IZosUNIXFile;
 
 /**
  * An IZosLibertyServerLogs contain an array of Liberty server logs
@@ -28,25 +28,25 @@ public interface IZosLibertyServerLogs {
 	 * @param fileName the log file name
 	 * @return the log file
 	 */
-	public OutputStream getLog(String fileName);
-
-	/**
-	 * Get the Liberty messages.log
-	 * @return the log file
-	 */
-	public OutputStream getMessagesLog();
-
-	/**
-	 * Get the next FFDC log file
-	 * @return the next FFDC log 
-	 */
-	public OutputStream getNextFfdc();
+	public IZosUNIXFile getLog(String fileName);
 
 	/**
 	 * Get the next log file
 	 * @return the next log file
 	 */
-	public OutputStream getNext();
+	public IZosUNIXFile getNext();
+
+	/**
+	 * Get the Liberty messages.log
+	 * @return the log file
+	 */
+	public IZosUNIXFile getMessagesLog();
+
+	/**
+	 * Get the next FFDC log file
+	 * @return the next FFDC log 
+	 */
+	public IZosUNIXFile getNextFfdc();
 
 	/**
 	 * The the name of the current log file
@@ -54,5 +54,10 @@ public interface IZosLibertyServerLogs {
 	 */
 	public String getCurrentLogName();
 
+	/**
+	 * Store the content of the Liberty server logs to the Results Archive Store
+	 * @param rasPath path in Results Archive
+	 * @throws ZosLibertyServerException
+	 */
 	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException;
 }
