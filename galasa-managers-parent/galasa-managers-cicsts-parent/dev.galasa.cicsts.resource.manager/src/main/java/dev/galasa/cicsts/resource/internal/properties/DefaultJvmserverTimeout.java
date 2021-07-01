@@ -11,6 +11,6 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 public class DefaultJvmserverTimeout extends CpsProperties {
 
     public static int get() throws CicsResourceManagerException {
-            return getIntWithDefault(CicstsResourcePropertiesSingleton.cps(), 10000, "jvmserver", "default.timeout");
+            return getIntWithDefault(CicstsResourcePropertiesSingleton.cps(), 120000, "jvmserver", "default.timeout");
     }
 }
