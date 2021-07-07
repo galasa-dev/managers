@@ -16,6 +16,11 @@ public interface IJavaInstallation {
     String getArchiveFilename() throws JavaManagerException;
     
     String getJavaCommand() throws JavaManagerException;
-    String getJavaHome() throws JavaManagerException;
+
+    /**
+     * Provides the canonical "Java Home" directory location within the unpacked java archive.
+     * @return String 
+     */
+    String getJavaHome();
 
 }

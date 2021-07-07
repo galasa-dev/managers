@@ -180,7 +180,7 @@ public class JavaWindowsInstallationImpl extends JavaInstallationImpl implements
     }
 
     @Override
-    public String getJavaHome() throws JavaManagerException {
+    public String getJavaHome() {
         return this.javaHome.toString();
     }
 
