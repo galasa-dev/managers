@@ -11,4 +11,5 @@ dependencies {
     api              project(':galasa-managers-cloud-parent:dev.galasa.liberty.manager')
     api              project (':galasa-managers-core-parent:dev.galasa.textscan.manager')
     implementation   'org.apache.commons:commons-lang3:3.8.1'
+    implementation   'org.apache.commons:commons-collections4:4.4'
 }

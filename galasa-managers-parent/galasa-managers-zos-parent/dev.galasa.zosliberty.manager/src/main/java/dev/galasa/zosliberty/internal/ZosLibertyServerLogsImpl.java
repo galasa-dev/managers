@@ -5,114 +5,117 @@
  */
 package dev.galasa.zosliberty.internal;
 
-import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import dev.galasa.zosfile.IZosUNIXFile;
-import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
+import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosliberty.IZosLibertyServerLogs;
 import dev.galasa.zosliberty.ZosLibertyServerException;
 
 public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
 
-	private static final String SLASH_SYMBOL = "/";
 	private IZosUNIXFile logsDirectory;
+	private HashMap<String, IZosUNIXFile> logs = new HashMap<>();
+	private boolean hasFFDC;
+	private Iterator<Entry<String, IZosUNIXFile>> logsIterator;
+	private String currentLogName;
 
-	public ZosLibertyServerLogsImpl(IZosUNIXFile logsDirectory) {
+	public ZosLibertyServerLogsImpl(IZosUNIXFile logsDirectory) throws ZosLibertyServerException {
 		this.logsDirectory = logsDirectory;
+		this.logs = listServerLogsDirectory();
+		this.logsIterator = this.logs.entrySet().iterator();
 	}
 
 	@Override
 	public boolean hasFFDC() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.hasFFDC;
 	}
 
 	@Override
 	public int numberOfFiles() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.logs.size();
 	}
 
 	@Override
-	public OutputStream getLog(String fileName) {
-		// TODO Auto-generated method stub
+	public IZosUNIXFile getLog(String fileName) {
+		return this.logs.get(fileName);
+	}
+
+	@Override
+	public IZosUNIXFile getMessagesLog() {
+		return getLog("messages.log");
+	}
+
+	@Override
+	public IZosUNIXFile getNext() {
+		if (this.logsIterator.hasNext()) {
+			Entry<String, IZosUNIXFile> logsEntry = this.logsIterator.next();
+			this.currentLogName = logsEntry.getKey();
+			return getLog(this.currentLogName);
+		}
 		return null;
 	}
 
 	@Override
-	public OutputStream getMessagesLog() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public OutputStream getNextFfdc() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public OutputStream getNext() {
-		// TODO Auto-generated method stub
+	public IZosUNIXFile getNextFfdc() {
+		while (this.logsIterator.hasNext()) {
+			Entry<String, IZosUNIXFile> logsEntry = this.logsIterator.next();
+			this.currentLogName = logsEntry.getKey();
+			if (isFfdc(logsEntry.getKey())) {
+				return getLog(this.currentLogName);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public String getCurrentLogName() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.currentLogName;
 	}
 
 	@Override
 	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException {
 		for (Entry<String, IZosUNIXFile> entry : listServerLogsDirectory().entrySet()) {
+			String logsRasPath = rasPath + "/logs/";
 			try {
-				StringBuilder logsRasPath =  new StringBuilder();
-				logsRasPath.append(rasPath);
-				logsRasPath.append(SLASH_SYMBOL);
-				logsRasPath.append("logs");
-				if (isFfdc(entry.getKey())) {
-					logsRasPath.append(SLASH_SYMBOL);
-					logsRasPath.append("ffdc");
-				}
-				entry.getValue().saveToResultsArchive(logsRasPath.toString());
+				logsRasPath = logsRasPath + entry.getKey().substring(0, entry.getKey().length()-entry.getValue().getFileName().length());
+				entry.getValue().saveToResultsArchive(logsRasPath);
 			} catch (ZosUNIXFileException e) {
 				throw new ZosLibertyServerException("Unable to store '" + entry.getKey() + " to results archive store", e);
 			}
 		}
 	}
 
-	private SortedMap<String, IZosUNIXFile> listServerLogsDirectory() throws ZosLibertyServerException {
-		SortedMap<String, IZosUNIXFile> directoryList = new TreeMap<>();
+	private HashMap<String, IZosUNIXFile> listServerLogsDirectory() throws ZosLibertyServerException {
+		this.hasFFDC = false;
 		try {
-			SortedMap<String, IZosUNIXFile> sortedMap = this.logsDirectory.directoryListRecursive();
-			for (Entry<String, IZosUNIXFile> entry : sortedMap.entrySet()) {
-				String file = entry.getKey();
-				if (isMessagesLog(file) || isTrace(file)|| isFfdc(file)) {
-					entry.getValue().setDataType(UNIXFileDataType.BINARY);
-					directoryList.put(entry.getKey(), entry.getValue());
-					continue;
+			if (this.logsDirectory.exists()) {
+				SortedMap<String, IZosUNIXFile> sortedMap = this.logsDirectory.directoryListRecursive();
+				for (Entry<String, IZosUNIXFile> entry : sortedMap.entrySet()) {
+					IZosUNIXFile zosUnixFile = entry.getValue();
+					if (!zosUnixFile.isDirectory()) {
+						zosUnixFile.setDataType(UNIXFileDataType.BINARY);
+						String fileName = zosUnixFile.getUnixPath().substring(this.logsDirectory.getUnixPath().length());
+						if (!fileName.startsWith("state/")) {
+							this.logs.put(fileName, zosUnixFile);
+						}
+						if (isFfdc(zosUnixFile.getUnixPath())) {
+							this.hasFFDC = true;
+						}
+					}
 				}
 			}
 		} catch (ZosUNIXFileException e) {
 			throw new ZosLibertyServerException("Unable to list content of logs directory", e);
 		}
-		return directoryList;
-	}
-
-	private boolean isMessagesLog(String file) {
-		return file.matches(".*/messages.*\\.log$");
-	}
-
-	private boolean isTrace(String file) {
-		return file.matches(".*/trace.*\\.log$");
+		return this.logs;
 	}
 
 	private boolean isFfdc(String file) {
-		return file.matches(".*/ffdc/exception_summary.*\\.log$") || file.matches(".*/ffdc/ffdc_.*\\.log$");
+		return file.matches(".*/ffdc/ffdc_.*\\.log$") || file.matches("ffdc/ffdc_.*\\.log$");
 	}
 }

@@ -77,8 +77,6 @@ public class JvmserverImpl implements IJvmserver {
 	private HashMap<String, String> resourceDefinitionAttribute = new HashMap<>();
 	private String resourceDefinitionLerunopts;
 	private int resourceDefinitionThreadlimit = 15;
-
-	private boolean resourceDefinedByTest = false;
 	
 	private IJvmprofile jvmprofile;
 
@@ -254,7 +252,7 @@ public class JvmserverImpl implements IJvmserver {
 			IZosUNIXFile cicsSuppliedserverXml = this.zosFileHandler.newUNIXFile(path.toString(), this.cicsZosImage);
 			cicsSuppliedserverXml.setDataType(UNIXFileDataType.BINARY);
 			String content = cicsSuppliedserverXml.retrieve();
-			libertyServer.getServerXml().setServerXmlFromString(content);
+			libertyServer.getServerXml().setFromString(content);
 		} catch (ZosLibertyServerException | ZosUNIXFileException e) {
 			throw new CicsJvmserverResourceException("Unable to create new zOS Liberty Server for JVMSERVER " + this.getName(), e);
 		}
@@ -488,7 +486,6 @@ public class JvmserverImpl implements IJvmserver {
 		} catch (CicstsManagerException e) {
 			throw new CicsJvmserverResourceException("Unable to build JVMSERVER resource definition", e);
 		}
-		this.resourceDefinedByTest = true;
 	}
 
 	@Override
@@ -565,6 +562,7 @@ public class JvmserverImpl implements IJvmserver {
 
 	@Override
 	public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException {
+		logger.trace("Waiting " + millisecondTimeout + "ms for JVMSERVER " +  getName() + " to be enabled");
 		int timeout = millisecondTimeout/1000;
 		for (int i = 0; i < timeout; i++) {
 			if (isEnabled()) {
@@ -579,7 +577,13 @@ public class JvmserverImpl implements IJvmserver {
 		if (!resourceInstalled()) {
 			return false;
 		}
-		return cemtInquire().isParameterEquals("enablestatus", CicsResourceStatus.ENABLED.toString());
+		boolean enabled = cemtInquire().isParameterEquals("enablestatus", CicsResourceStatus.ENABLED.toString());
+		if (enabled) {
+			logger.trace("JVMSERVER " +  getName() + " is enabled");
+		} else {
+			logger.trace("JVMSERVER " +  getName() + " is NOT enabled");
+		}
+		return enabled;
 	}
 
 	@Override
@@ -657,11 +661,7 @@ public class JvmserverImpl implements IJvmserver {
 	public void delete(boolean ignoreErrors) throws CicsJvmserverResourceException {
 		try {
 			if (resourceDefined()) {
-				if (this.resourceDefinedByTest) {
-					this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), resourceDefinitionGroup);
-				} else {
-					logger.warn("JVMSERVER " + getName() + " in group " + this.resourceDefinitionGroup + " was not defined by this test run and has not be deleted");
-				}
+				this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), resourceDefinitionGroup);
 			}
 		} catch (CicstsManagerException e) {
 			String message = "Problem deleteing JVMSERVER " + getName();
