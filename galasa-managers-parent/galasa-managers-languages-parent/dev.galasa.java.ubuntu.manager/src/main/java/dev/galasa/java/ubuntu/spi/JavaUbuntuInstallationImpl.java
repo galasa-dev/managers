@@ -286,4 +286,9 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
         }
     }
 
+    @Override
+    public String getJavaHome() throws JavaManagerException {
+        return this.javaHome.toString();
+    }
+
 }

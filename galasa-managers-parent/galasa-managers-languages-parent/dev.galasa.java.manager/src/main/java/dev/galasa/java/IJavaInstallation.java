@@ -16,5 +16,6 @@ public interface IJavaInstallation {
     String getArchiveFilename() throws JavaManagerException;
     
     String getJavaCommand() throws JavaManagerException;
-    
+    String getJavaHome() throws JavaManagerException;
+
 }
