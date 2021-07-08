@@ -83,6 +83,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private String galasaBootVersion;
     private String simplatformVersion;
     private Path mavenLocal;
+    Path isolatedRepoDirectory;
 
     private final IsolationInstallation isolationInstallation;
     private final boolean               startSimPlatform;
@@ -212,7 +213,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         // unzip it 
 
-        Path isolatedRepoDirectory = this.galasaDirectory.resolve("isolatedrepo");
+        isolatedRepoDirectory = this.galasaDirectory.resolve("isolatedrepo");
         Files.createDirectories(isolatedRepoDirectory);
 
         StringBuilder sb = new StringBuilder();
@@ -241,6 +242,11 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         }
 
         this.runtimeRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
+    }
+    
+    @Override
+    public String getIsolatedDirectory() {
+    	return isolatedRepoDirectory.toString();
     }
 
 
