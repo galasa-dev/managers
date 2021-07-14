@@ -83,7 +83,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private String galasaBootVersion;
     private String simplatformVersion;
     private Path mavenLocal;
-    Path isolatedRepoDirectory;
+    private Path isolatedRepoDirectory;
 
     private final IsolationInstallation isolationInstallation;
     private final boolean               startSimPlatform;
