@@ -179,4 +179,9 @@ public class JavaWindowsInstallationImpl extends JavaInstallationImpl implements
         return this.javaHome.resolve("bin/java").toString();
     }
 
+    @Override
+    public String getJavaHome() {
+        return this.javaHome.toString();
+    }
+
 }
