@@ -389,7 +389,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             delProps.add(prefix + ".allocated");
             delProps.add(slotKey);
             dss.delete(delProps);
-            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker engine: " + dockerEngineId);
+            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the docker engine: " + dockerEngineId);
         } catch (Exception e) {
             logger.warn("Failed to free slot on engine " + dockerEngineId + ", slot " + dockerSlot.getSlotName()
                     + ", leaving for manager clean up routines", e);
