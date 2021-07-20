@@ -19,5 +19,11 @@ public interface ILocalEcosystem extends IGenericEcosystem {
     void startSimPlatform() throws GalasaEcosystemManagerException;
     
     void stopSimPlatform() throws GalasaEcosystemManagerException;
+
+    /**
+     * retrieve the directory location to which the isolated archive was unpacked.
+     * @return string
+     * */
+    public String getIsolatedDirectory();
     
 }
