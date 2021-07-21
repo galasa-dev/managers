@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zos.internal;
 
@@ -69,9 +69,11 @@ public class TestZosBaseImageImpl {
 
     private static final String RUN_ID = "runid";
 
-    private static final String DEFAUT_RUN_UNIX_PATH_PREFIX = "/u/userid/Galasa";
+    private static final String DEFAUT_RUN_UNIX_PATH_PREFIX = "/u/userid/Galasa/";
     
     private static final String JAVA_HOME = "/java/home/";
+    
+    private static final String LIBERTY_INSTALL_DIR = "/liberty/install/";
     
     private static final String ZOSCONNECT_INSTALL_DIR = "/zosconnect/install/";
     
@@ -101,6 +103,7 @@ public class TestZosBaseImageImpl {
         PowerMockito.when(zosManagerMock.getRunUNIXPathPrefix(Mockito.any())).thenReturn(DEFAUT_RUN_UNIX_PATH_PREFIX);
         PowerMockito.when(zosManagerMock.getRunId()).thenReturn(RUN_ID);
         PowerMockito.when(zosManagerMock.getJavaHome(Mockito.any())).thenReturn(JAVA_HOME);
+        PowerMockito.when(zosManagerMock.getLibertyInstallDir(Mockito.any())).thenReturn(LIBERTY_INSTALL_DIR);
         PowerMockito.when(zosManagerMock.getZosConnectInstallDir(Mockito.any())).thenReturn(ZOSCONNECT_INSTALL_DIR);
         
         zosBaseImage = new ZosBaseImageImplExtended(zosManagerMock, IMAGE_ID, CLUSTER_ID);
@@ -173,12 +176,17 @@ public class TestZosBaseImageImpl {
     
     @Test
     public void testGetRunTemporaryUNIXPath() throws Exception {
-        Assert.assertEquals("getRunTemporaryUNIXPath() should return the expected value", DEFAUT_RUN_UNIX_PATH_PREFIX + "/" + RUN_ID, zosBaseImageSpy.getRunTemporaryUNIXPath());
+        Assert.assertEquals("getRunTemporaryUNIXPath() should return the expected value", DEFAUT_RUN_UNIX_PATH_PREFIX + "/" + RUN_ID + "/", zosBaseImageSpy.getRunTemporaryUNIXPath());
     }
     
     @Test
     public void testGetJavaHome() throws Exception {
         Assert.assertEquals("getJavaHome() should return the expected value", JAVA_HOME, zosBaseImageSpy.getJavaHome());
+    }
+    
+    @Test
+    public void testGetLibertyInstallDir() throws Exception {
+        Assert.assertEquals("getLibertyInstallDir() should return the expected value", LIBERTY_INSTALL_DIR, zosBaseImageSpy.getLibertyInstallDir());
     }
     
     @Test

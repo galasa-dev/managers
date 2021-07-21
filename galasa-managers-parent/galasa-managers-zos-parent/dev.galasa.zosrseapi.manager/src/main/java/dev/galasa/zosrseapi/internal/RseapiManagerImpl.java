@@ -193,7 +193,7 @@ public class RseapiManagerImpl extends AbstractManager implements IRseapiManager
             	IRseapi actualRseapi = this.rseapis.get(serverId);
 
                 if (actualRseapi == null) {
-                    logger.trace("Retreiving RSE API server " + serverId);
+                    logger.trace("Retrieving RSE API server " + serverId);
                     actualRseapi = newRseapi(serverId);
                     this.rseapis.put(serverId, actualRseapi);
                 }

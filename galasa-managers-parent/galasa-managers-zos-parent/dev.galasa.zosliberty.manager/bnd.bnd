@@ -2,21 +2,24 @@
 Bundle-Name: Galasa zOS Liberty Manager
 Export-Package: dev.galasa.zosliberty,\
     dev.galasa.zosliberty.spi
-Import-Package: dev.galasa,\
-    dev.galasa.framework.spi,\
-    dev.galasa.framework.spi.language,\
-    dev.galasa.textscan,\
-    dev.galasa.zos,\
-    dev.galasa.zos.spi,\
-    dev.galasa.zosfile,\
-    dev.galasa.zosfile.spi,\
-    dev.galasa.zosliberty.spi,\
-    javax.validation.constraints;resolution:=optional,\
-    javax.xml.parsers,\
-    javax.xml.transform,\
-    javax.xml.transform.dom,\
-    javax.xml.transform.stream,\
-    org.apache.commons.logging,\
-    org.w3c.dom,\
-    org.xml.sax
+Import-Package: \
+	dev.galasa,\
+	dev.galasa.framework.spi,\
+	dev.galasa.framework.spi.language,\
+	dev.galasa.textscan,\
+	dev.galasa.zos,\
+	dev.galasa.zos.spi,\
+	dev.galasa.zosfile,\
+	dev.galasa.zosfile.spi,\
+	dev.galasa.zosliberty.spi,\
+	dev.galasa.artifact,\
+	javax.validation.constraints;'resolution:'=optional,\
+	javax.xml.parsers,\
+	javax.xml.transform,\
+	javax.xml.transform.dom,\
+	javax.xml.transform.stream,\
+	org.apache.commons.logging,\
+	org.w3c.dom,\
+	org.xml.sax,\
+	*
 

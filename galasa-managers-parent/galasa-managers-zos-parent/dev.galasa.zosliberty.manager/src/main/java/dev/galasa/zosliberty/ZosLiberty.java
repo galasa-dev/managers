@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2021.
  */
 package dev.galasa.zosliberty;
 
@@ -19,12 +19,11 @@ import dev.galasa.zosliberty.internal.ZosLibertyField;
  * @galasa.annotation
  * 
  * @galasa.description The <code>{@literal @}ZosLiberty</code> annotation requests the zOS Liberty Manager to provide a
- * zOS instance associated with a z/OS image. 
- * The test can request multiple zOS Liberty instances, with the default being associated with the <b>primary</b> zOS image.
+ * zOS Liberty instance.
  * 
  * @galasa.examples 
  * {@literal @}ZosLiberty<br>
- * public IZosmf zosmfA;<br></code>
+ * public IZosLiberty zosLiberty;<br></code>
  * 
  * @galasa.extra
  * The <code>IZosLiberty</code> interface has a number of methods to manage a zOS Liberty Server

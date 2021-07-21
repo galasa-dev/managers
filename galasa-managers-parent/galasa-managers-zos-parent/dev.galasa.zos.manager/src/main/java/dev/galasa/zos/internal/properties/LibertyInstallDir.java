@@ -15,9 +15,9 @@ import dev.galasa.zos.ZosManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zos.image.[image].zosconnect.install.dir
+ * @galasa.name zos.image.[image].liberty.install.dir
  * 
- * @galasa.description Provides the value of the zOS Connect Install Directory for a zOS Image
+ * @galasa.description Provides the value of the Liberty Install Directory for a zOS Image
  * 
  * @galasa.required No
  * 
@@ -26,17 +26,17 @@ import dev.galasa.zos.ZosManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zos.image.[image].zosconnect.install.dir=/usr/lpp/IBM/zosconnect/v3r0/runtime/</code><br>
+ * <code>zos.image.[image].liberty.install.dir=/usr/lpp/zosmf/liberty/</code><br>
  *
  */
-public class ZosConnectInstallDir extends CpsProperties {
+public class LibertyInstallDir extends CpsProperties {
     
     public static String get(IZosImage image) throws ZosManagerException {
         String imageId = image.getImageID();
         try {
-            return getStringNulled(ZosPropertiesSingleton.cps(), "image", "zosconnect.install.dir", imageId);
+            return getStringNulled(ZosPropertiesSingleton.cps(), "image", "liberty.install.dir", imageId);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosManagerException("Problem asking the CPS for the zOS Connect Install Directory for image " + imageId, e);
+            throw new ZosManagerException("Problem asking the CPS for the Liberty Install Directory for image " + imageId, e);
         }
     }
 

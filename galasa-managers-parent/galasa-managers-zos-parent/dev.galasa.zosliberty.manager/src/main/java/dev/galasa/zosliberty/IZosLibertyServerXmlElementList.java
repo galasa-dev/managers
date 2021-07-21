@@ -14,21 +14,21 @@ import java.util.Map.Entry;
  */
 public interface IZosLibertyServerXmlElementList 
 {    
-	/**
+    /**
      * Put an XML element in the element list
      * @param elementName - The name of the element to add
      * @param attributes - A HashMap<String, String> of attributes
      */
-	public void add(String elementName, Map<String, String> attributes);
-	
-	/**
-	 * Get a collection of XML elements in the element list
-	 * @return collection of XML elements
-	 */
-	public Collection<Entry<String, Map<String, String>>> entries();
+    public void add(String elementName, Map<String, String> attributes);
+    
+    /**
+     * Get a collection of XML elements in the element list
+     * @return collection of XML elements
+     */
+    public Collection<Entry<String, Map<String, String>>> entries();
 
-	/**
-	 * Clear the XML element list
-	 */
+    /**
+     * Clear the XML element list
+     */
     public void clear();
 }

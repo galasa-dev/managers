@@ -1,13 +1,17 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosfile;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 import java.util.SortedMap;
+
+import javax.validation.constraints.NotNull;
+
+import dev.galasa.zosfile.IZosDataset.DatasetDataType;
 
 /**
  * Representation of a UNIX file or directory.
@@ -114,15 +118,33 @@ public interface IZosUNIXFile {
     public boolean exists() throws ZosUNIXFileException;
 
     /**
-     * Write the content to the zOS UNIX file on the zOS image. Data type is can be set by {@link #setDataType(UNIXFileDataType)}
+     * Write the content to the zOS UNIX file on the zOS image in Text mode
+     * <p>See {@link #setDataType(UNIXFileDataType)}
      */
-    public void store(String content) throws ZosUNIXFileException;
+    public void storeText(String content) throws ZosUNIXFileException;
 
     /**
-     * Retrieve the content of the zOS UNIX file from the zOS image. Data type is can be set by {@link #setDataType(UNIXFileDataType)}
+     * Write content to the zOS UNIX file on the zOS image in Binary mode 
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @param content
      * @throws ZosUNIXFileException
      */
-    public String retrieve() throws ZosUNIXFileException;
+    public void storeBinary(@NotNull byte[] content) throws ZosUNIXFileException;
+
+    /**
+     * Retrieve the content of the zOS UNIX file from the zOS image in Text mode
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @throws ZosUNIXFileException
+     */
+    public String retrieveAsText() throws ZosUNIXFileException;
+
+    /**
+     * Retrieve content of the zOS UNIX file from the zOS image in Binary mode
+     * <p>See {@link #setDataType(DatasetDataType)}
+     * @return data set content
+     * @throws ZosUNIXFileException
+     */
+    public byte[] retrieveAsBinary() throws ZosUNIXFileException;
 
     /**
      * Recursively store the content of the zOS UNIX file or directory to the Results Archive Store

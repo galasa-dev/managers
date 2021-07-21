@@ -21,45 +21,45 @@ import dev.galasa.zosliberty.IZosLibertyServer;
 
 public class CicsResourceImpl implements ICicsResource {
 
-	private CicsResourceManagerImpl cicsResourceManagerImpl;
-	private ICicsRegion cicsRegion;
-	private IZosImage zosImage;
-	private IZosFileHandler zosFileHandler;
+    private CicsResourceManagerImpl cicsResourceManagerImpl;
+    private ICicsRegion cicsRegion;
+    private IZosImage zosImage;
+    private IZosFileHandler zosFileHandler;
 
-	public CicsResourceImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion) throws CicsResourceManagerException {
-		this.cicsResourceManagerImpl = cicsResourceManagerImpl;
-		this.cicsRegion = cicsRegion;
-		this.zosImage = cicsRegion.getZosImage();
-		try {
-			this.zosFileHandler =  cicsResourceManagerImpl.getZosFileHandler();
-		} catch (CicsResourceManagerException e) {
-			throw new CicsResourceManagerException("Unable to get zOS File Handler", e);
-		}
-	}
+    public CicsResourceImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion) throws CicsResourceManagerException {
+        this.cicsResourceManagerImpl = cicsResourceManagerImpl;
+        this.cicsRegion = cicsRegion;
+        this.zosImage = cicsRegion.getZosImage();
+        try {
+            this.zosFileHandler =  cicsResourceManagerImpl.getZosFileHandler();
+        } catch (CicsResourceManagerException e) {
+            throw new CicsResourceManagerException("Unable to get zOS File Handler", e);
+        }
+    }
 
-	@Override
-	public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException {
-		return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofileName, jvmserverType);
-	}
+    @Override
+    public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException {
+        return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofileName, jvmserverType);
+    }
 
-	@Override
-	public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException {
-		return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofile);
-	}
+    @Override
+    public IJvmserver newJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException {
+        return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofile);
+    }
 
-	@Override
-	public IJvmserver newLibertyJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile, IZosLibertyServer libertyServer) throws CicsJvmserverResourceException {
-		return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofile, libertyServer);
-	}
+    @Override
+    public IJvmserver newLibertyJvmserver(ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile, IZosLibertyServer libertyServer) throws CicsJvmserverResourceException {
+        return new JvmserverImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, name, group, jvmprofile, libertyServer);
+    }
 
-	@Override
-	public IJvmprofile newJvmprofile(String jvmprofileName) {
-		return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName);
-	}
+    @Override
+    public IJvmprofile newJvmprofile(String jvmprofileName) {
+        return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName);
+    }
 
-	@Override
-	public IJvmprofile newJvmprofile(String jvmprofileName, HashMap<String, String> content) {
-		return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
-	}
+    @Override
+    public IJvmprofile newJvmprofile(String jvmprofileName, HashMap<String, String> content) {
+        return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
+    }
 
 }

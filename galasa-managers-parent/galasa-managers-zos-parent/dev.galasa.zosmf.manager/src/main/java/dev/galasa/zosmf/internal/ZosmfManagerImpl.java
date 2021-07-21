@@ -181,7 +181,7 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
                 IZosmf actualZosmf = this.zosmfs.get(serverId);
 
                 if (actualZosmf == null) {
-                    logger.trace("Retreiving zOS server " + serverId);
+                    logger.trace("Retrieving zOS server " + serverId);
                     actualZosmf = newZosmf(serverId);
                     this.zosmfs.put(serverId, actualZosmf);
                 }

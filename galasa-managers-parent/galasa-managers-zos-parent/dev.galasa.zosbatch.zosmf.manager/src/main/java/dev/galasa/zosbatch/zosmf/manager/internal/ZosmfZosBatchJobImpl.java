@@ -236,7 +236,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public String getRetcode() {
-    	if (this.retcode == null) {
+    	if (this.retcode == null || this.retcode.equals(StringUtils.repeat(QUERY, 4))) {
         	try {
     			updateJobStatus();
     		} catch (ZosBatchException e) {
@@ -335,7 +335,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
     @Override
     public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException {
-        if (jobOutput() == null) {
+        if (jobOutput().isEmpty()) {
             retrieveOutput();
         }
         Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
@@ -552,9 +552,10 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         return this.jobPurged;
     }
 
-    protected IZosBatchJobOutput jobOutput() {
+    protected IZosBatchJobOutput jobOutput() throws ZosBatchException {
         if (this.jobOutput == null) {
         	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
+        	retrieveOutput();
         }
         return this.jobOutput;
     }

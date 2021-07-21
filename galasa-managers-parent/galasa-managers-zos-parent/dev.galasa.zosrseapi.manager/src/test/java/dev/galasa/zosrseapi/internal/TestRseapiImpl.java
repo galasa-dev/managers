@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -389,7 +389,7 @@ public class TestRseapiImpl {
     }
     
     @Test
-    public void testPutBadHttpResponseException() throws RseapiException {
+    public void testPutTextBadHttpResponseException() throws RseapiException {
         setupPutText();
         Mockito.when(httpClientResponseStringMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
@@ -400,7 +400,7 @@ public class TestRseapiImpl {
     }
     
     @Test
-    public void testPutHttpException() throws RseapiException, HttpClientException {
+    public void testPutTextHttpException() throws RseapiException, HttpClientException {
         setupPutText();
         Mockito.when(httpClientMock.putText(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
         String expectedMessage =  "Problem with PUT to RSE API server";
@@ -418,6 +418,50 @@ public class TestRseapiImpl {
             Mockito.when(httpClientResponseStringMock.getStatusLine()).thenReturn(STATUS_LINE);
         } catch (HttpClientException | UnsupportedOperationException e) {
             throw new MockitoException("Problem in setupPutText() method ", e);
+        }
+    }
+
+
+    @Test
+    public void testPutBinary() throws RseapiException {
+        setupPutBinary();
+        IRseapiResponse rseapiResponse = rseapiSpy.putBinary(PATH, "".getBytes(), null);
+        Assert.assertEquals("get() should return the expected value", HttpStatus.SC_OK, rseapiResponse.getStatusCode());
+
+        rseapiResponse = rseapiSpy.putBinary(PATH, "".getBytes(), new ArrayList<>(Arrays.asList(HttpStatus.SC_OK)));
+        Assert.assertEquals("get() should return the expected value", HttpStatus.SC_OK, rseapiResponse.getStatusCode());
+    }
+    
+    @Test
+    public void testPutBinaryBadHttpResponseException() throws RseapiException {
+        setupPutBinary();
+        Mockito.when(httpClientResponseByteMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+        String expectedMessage = "Unexpected HTTP status code: " + HttpStatus.SC_NOT_FOUND;
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiSpy.putBinary(PATH, "".getBytes(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    }
+    
+    @Test
+    public void testPutBinaryHttpException() throws RseapiException, HttpClientException {
+        setupPutBinary();
+        Mockito.when(httpClientMock.putBinary(Mockito.any(), Mockito.any())).thenThrow(new HttpClientException(EXCEPTION));
+        String expectedMessage =  "Problem with PUT to RSE API server";
+        RseapiException expectedException = Assert.assertThrows("expected exception should be thrown", RseapiException.class, ()->{
+        	rseapiSpy.putBinary(PATH, "".getBytes(), null);
+        });
+    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+    }
+
+    private void setupPutBinary() {
+        try {
+            Mockito.when(httpClientMock.putBinary(Mockito.anyString(), Mockito.any())).thenReturn(httpClientResponseByteMock); 
+            Mockito.when(httpClientResponseByteMock.getContent()).thenReturn(CONTENT.getBytes());
+            Mockito.when(httpClientResponseByteMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            Mockito.when(httpClientResponseByteMock.getStatusLine()).thenReturn(STATUS_LINE);
+        } catch (HttpClientException | UnsupportedOperationException e) {
+            throw new MockitoException("Problem in setupPutBinary() method ", e);
         }
     }
 

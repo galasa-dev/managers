@@ -1,11 +1,12 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -17,6 +18,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -116,7 +118,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
-
     @Override
     public IZosUNIXFile create() throws ZosUNIXFileException {
         return create(PosixFilePermissions.fromString(this.createMode));
@@ -153,7 +154,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         return this;
 	}
 
-
 	@Override
     public boolean delete() throws ZosUNIXFileException {
         delete(this.unixPath, false);
@@ -166,36 +166,26 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         return this.deleted;
     }
 
-
     @Override
     public boolean exists() throws ZosUNIXFileException {
         return exists(this.unixPath);
     }
+    
     @Override
-    public void store(String content) throws ZosUNIXFileException {
+    public void storeText(String content) throws ZosUNIXFileException {
         if (!exists()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         if (isDirectory()) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
         }
-        
-        String urlPath;
-        RseapiRequestType requestType;
-        Object requestBody;   
-        Map<String, String> headers = new HashMap<>();
-        if (getDataType().equals(UNIXFileDataType.TEXT)) {
-        	urlPath = RESTFILES_FILE_PATH + this.unixPath;
-        	requestType = RseapiRequestType.PUT_JSON;
-	        requestBody = new JsonObject();
-	        headers.put(HEADER_CONVERT, "true");
-	        ((JsonObject) requestBody).addProperty(PROP_CONTENT, content);
-        } else {        	
-        	urlPath = RESTFILES_FILE_PATH + this.unixPath + RESTFILES_FILE_PATH_RAW_CONTENT;
-        	requestType = RseapiRequestType.PUT_TEXT;
-        	requestBody = content;
-        	headers.put(HEADER_CONVERT, "false");
-        }        
+        setDataType(UNIXFileDataType.TEXT);
+        String urlPath = RESTFILES_FILE_PATH + this.unixPath;
+        RseapiRequestType requestType = RseapiRequestType.PUT_JSON;
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty(PROP_CONTENT, content);
+    	Map<String, String> headers = new HashMap<>();
+        headers.put(HEADER_CONVERT, "true");        
     
         IRseapiResponse response;
         try {
@@ -212,21 +202,65 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
     
         logger.trace(LOG_UNIX_PATH + quoted(this.directoryPath) + " updated" + logOnImage());
-        
     }
 
     @Override
-    public String retrieve() throws ZosUNIXFileException {
+	public void storeBinary(byte[] content) throws ZosUNIXFileException {
         if (!exists()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         if (isDirectory()) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
         }
-        return retrieve(this.unixPath);
+        setDataType(UNIXFileDataType.BINARY);
+        String urlPath = RESTFILES_FILE_PATH + this.unixPath + RESTFILES_FILE_PATH_RAW_CONTENT;
+        RseapiRequestType requestType = RseapiRequestType.PUT_BINARY;
+        Object requestBody = content;
+        Map<String, String> headers = new HashMap<>();
+    	headers.put(HEADER_CONVERT, "false");
+    
+        IRseapiResponse response;
+        try {
+            response = this.rseapiApiProcessor.sendRequest(requestType, urlPath, headers, requestBody, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
+        } catch (RseapiException e) {
+            throw new ZosUNIXFileException(e);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_OK) {
+            // Error case
+        	String displayMessage = this.zosFileHandler.buildErrorString("writing to " + quoted(this.unixPath), response); 
+            logger.error(displayMessage);
+            throw new ZosUNIXFileException(displayMessage);
+        }
+    
+        logger.trace(LOG_UNIX_PATH + quoted(this.directoryPath) + " updated" + logOnImage());
+	}
+
+	@Override
+    public String retrieveAsText() throws ZosUNIXFileException {
+        if (!exists()) {
+            throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+        if (isDirectory()) {
+            throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
+        }
+        setDataType(UNIXFileDataType.TEXT);
+        return (String) retrieve(this.unixPath);
     }
 
     @Override
+	public byte[] retrieveAsBinary() throws ZosUNIXFileException {
+        if (!exists()) {
+            throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+        if (isDirectory()) {
+            throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
+        }
+        setDataType(UNIXFileDataType.BINARY);
+        return (byte[]) retrieve(this.unixPath);
+	}
+
+	@Override
     public void saveToResultsArchive(String rasPath) throws ZosUNIXFileException {
         saveToResultsArchive(this.unixPath, rasPath);
     }
@@ -246,12 +280,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         return listDirectory(this.unixPath, true);
     }
 
-
     @Override
     public void setDataType(UNIXFileDataType dataType) {
         this.dataType = dataType;
     }
-
 
     @Override
 	public void setAccessPermissions(Set<PosixFilePermission> accessPermissions, boolean recursive) throws ZosUNIXFileException {
@@ -291,12 +323,10 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         }
 	}
 
-
 	@Override
     public UNIXFileType getFileType() {
     	return this.fileType;
     }
-
 
 	@Override
 	public UNIXFileDataType getDataType() {
@@ -306,7 +336,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 	    return this.dataType;
 	}
 
-
 	@Override
 	public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException {
 		if (this.filePermissions == null) {
@@ -314,7 +343,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		}
 		return this.filePermissions;
 	}
-
 
 	@Override
 	public int getSize() throws ZosUNIXFileException {
@@ -324,7 +352,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		return this.fileSize;
 	}
 
-
 	@Override
 	public String getLastModified() throws ZosUNIXFileException {
 		if (this.lastModified == null) {
@@ -332,7 +359,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		}
 		return this.lastModified;
 	}
-
 
 	@Override
 	public String getUser() throws ZosUNIXFileException {
@@ -342,7 +368,6 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		return this.user;
 	}
 
-
 	@Override
 	public String getGroup() throws ZosUNIXFileException {
 		if (this.group == null) {
@@ -351,24 +376,20 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 		return this.group;
 	}
 
-
 	@Override
 	public void retrieveAttributes() throws ZosUNIXFileException {
 		getAttributes(this.unixPath);
 	}
-
 
 	@Override
     public String getUnixPath() {
         return this.unixPath;
     }
 
-
     @Override
     public String getFileName() {
         return this.fileName;
     }
-
 
     @Override
     public String getDirectoryPath() {
@@ -590,7 +611,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    protected String retrieve(String path) throws ZosUNIXFileException {
+    protected Object retrieve(String path) throws ZosUNIXFileException {
     	String urlPath;
         Map<String, String> headers = new HashMap<>();
         boolean convert;
@@ -618,7 +639,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             throw new ZosUNIXFileException(displayMessage);
         }
 
-        String content = "";
+        Object content = "";
         Object responseBody;
         try {
         	if (getDataType().equals(UNIXFileDataType.TEXT)) {
@@ -628,9 +649,9 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
         			content = ((JsonObject) responseBody).get(PROP_CONTENT).getAsString();
         		}
         	} else {
-        		content = response.getTextContent();
+        		content = IOUtils.toByteArray((InputStream) response.getContent());
         	}
-        } catch (RseapiException e) {
+        } catch (RseapiException | IOException e) {
         	throw new ZosUNIXFileException("Unable to retrieve content of " + quoted(path) + logOnImage(), e);
         }
     
@@ -667,7 +688,12 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             	}
             }
         } else {
-            String archiveLocation = storeArtifact(rasPath, retrieve(path), false, this.fileName);
+            String archiveLocation;
+            if (this.dataType.equals(UNIXFileDataType.TEXT)) {
+            	archiveLocation = storeArtifact(rasPath, retrieveAsText(), false, this.fileName);
+            } else {
+            	archiveLocation = storeArtifact(rasPath, retrieveAsBinary(), false, this.fileName);
+            }
             logger.info(quoted(this.unixPath) + LOG_ARCHIVED_TO + archiveLocation);
         }
     }

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosrseapi;
 
@@ -36,11 +36,15 @@ public interface IRseapi {
          */
         GET("GET"),
         /**
-         * PUT method with no request body
+         * PUT method with text request body
          */
         PUT_TEXT("PUT"),
         /**
-         * PUT method with TEXT request body
+         * PUT method with binary request body
+         */
+        PUT_BINARY("PUT"),
+        /**
+         * PUT method with JSON request body
          */
         PUT_JSON("PUT"),
         /**
@@ -80,7 +84,7 @@ public interface IRseapi {
     /**
      * Issue an HTTP PUT request to the RSE API server with no request body
      * 
-     * @param path identifies the RSE API REST API
+     * @param path identifies the RSE API REST API server
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
      * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the RSE API server response
@@ -91,7 +95,7 @@ public interface IRseapi {
     /**
 	 * Issue an HTTP PUT request to the RSE API server with text request body {@code text/plain}
 	 * 
-	 * @param path identifies the RSE API REST API
+	 * @param path identifies the RSE API REST API server
 	 * @param body the request body
 	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
 	 * @return the RSE API server response
@@ -102,7 +106,7 @@ public interface IRseapi {
 	/**
 	 * Issue an HTTP PUT request to the RSE API server with a request body of content type of {@code application/json}
 	 * 
-	 * @param path identifies the RSE API REST API
+	 * @param path identifies the RSE API REST API server
 	 * @param body the request body
 	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
 	 * @return the RSE API server response
@@ -110,10 +114,21 @@ public interface IRseapi {
 	 */
 	public @NotNull IRseapiResponse putJson(String path, JsonObject body, List<Integer> validStatusCodes) throws RseapiException;
 
+    /**
+    * Issue an HTTP PUT request to the RSE API server with a request body of content type of {@code text/plain}
+    * 
+    * @param path identifies the RSE API REST API server
+    * @param body the request body
+    * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+    * @return the RSE API server response
+    * @throws RseapiException
+    */
+   public @NotNull IRseapiResponse putBinary(String path, byte[] body, List<Integer> validStatusCodes) throws RseapiException;
+
 	/**
      * Issue an HTTP POST request to the RSE API server with no request body
      * 
-     * @param path identifies the RSE API REST API
+     * @param path identifies the RSE API REST API server
      * @param requestBody the request body
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
      * @return the RSE API server response
@@ -124,7 +139,7 @@ public interface IRseapi {
 	/**
      * Issue an HTTP POST request to the RSE API server with a request body of content type of {@code application/json}
      * 
-     * @param path identifies the RSE API REST API
+     * @param path identifies the RSE API REST API server
      * @param requestBody the request body
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
      * @return the RSE API server response
@@ -135,7 +150,7 @@ public interface IRseapi {
     /**
      * Issue an HTTP DELETE request to the RSE API server with no request body
      * 
-     * @param path identifies the RSE API REST API
+     * @param path identifies the RSE API REST API server
      * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
      * @return the RSE API server response
      * @throws RseapiException

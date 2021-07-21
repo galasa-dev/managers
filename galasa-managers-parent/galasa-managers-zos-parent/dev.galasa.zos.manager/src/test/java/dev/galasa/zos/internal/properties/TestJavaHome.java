@@ -37,7 +37,7 @@ public class TestJavaHome {
     
     @Before
     public void setup() {
-        Mockito.doReturn(IMAGE_ID).when(zosProvisionedImageMock).getImageID();
+    	Mockito.doReturn(IMAGE_ID).when(zosProvisionedImageMock).getImageID();
     }    
     
     @Test
@@ -75,9 +75,9 @@ public class TestJavaHome {
         PowerMockito.spy(CpsProperties.class);
         
         if (!exception) {
-            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString());
+            PowerMockito.doReturn(value).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         } else {
-            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.anyString(), Mockito.anyString());
+            PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         }
         
         return JavaHome.get(arg);

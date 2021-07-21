@@ -272,6 +272,14 @@ public class TestRseapiZosFileHandlerImpl {
         zosFileHandlerSpy.cleanupVsamDatasets();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(9)).invoke("cleanupVsamDatasets");
         
+        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).created();
+        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).exists();
+        Mockito.doReturn(true).when(zosVSAMDatasetImplMock).shouldArchive();
+        Mockito.doReturn(false).when(zosVSAMDatasetImplMock).shouldCleanup();
+        zosVsamDatasets.add(zosVSAMDatasetImplMock);
+        zosFileHandlerSpy.cleanupVsamDatasets();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(10)).invoke("cleanupVsamDatasets");
+        
         Mockito.doThrow(new ZosVSAMDatasetException()).when(zosVSAMDatasetImplMock).exists();        
         zosVsamDatasets.add(zosVSAMDatasetImplMock);
         zosFileHandlerSpy.cleanupVsamDatasets();
@@ -387,24 +395,25 @@ public class TestRseapiZosFileHandlerImpl {
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).isDirectory();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFiles();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(13)).invoke("cleanupUnixFiles");
 
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldCleanup();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFiles();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(14)).invoke("cleanupUnixFiles");
 
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
         zosUnixFiles.add(zosUNIXFileImplMock);
@@ -413,7 +422,7 @@ public class TestRseapiZosFileHandlerImpl {
 
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
         zosUnixFiles.add(zosUNIXFileImplMock);
@@ -422,12 +431,30 @@ public class TestRseapiZosFileHandlerImpl {
 
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
-        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).exists();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
         Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
         zosUnixFiles.add(zosUNIXFileImplMock);
         zosFileHandlerSpy.cleanupUnixFiles();
         PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(17)).invoke("cleanupUnixFiles");
+
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(false).when(zosUNIXFileImplMock).shouldArchive();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
+        zosUnixFiles.add(zosUNIXFileImplMock);
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(18)).invoke("cleanupUnixFiles");
+
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).deleted();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).exists();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldArchive();
+        Mockito.doReturn(true).when(zosUNIXFileImplMock).shouldCleanup();
+        zosUnixFiles.add(zosUNIXFileImplMock);
+        zosFileHandlerSpy.cleanupUnixFiles();
+        PowerMockito.verifyPrivate(zosFileHandlerSpy, Mockito.times(19)).invoke("cleanupUnixFiles");
 
         Mockito.doReturn(true).when(zosUNIXFileImplMock).created();
         Mockito.doReturn(false).when(zosUNIXFileImplMock).deleted();

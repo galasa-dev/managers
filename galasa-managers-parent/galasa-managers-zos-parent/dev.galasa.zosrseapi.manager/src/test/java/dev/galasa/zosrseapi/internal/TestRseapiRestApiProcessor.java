@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020,2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -66,9 +66,9 @@ public class TestRseapiRestApiProcessor {
     public void mockEnum() {
     	if (testName.getMethodName().equals("testSendRequest")) {
 	    	rseapiRequestTypeINVALID = PowerMockito.mock(RseapiRequestType.class);
-	    	Whitebox.setInternalState(rseapiRequestTypeINVALID, "ordinal", 5);
+	    	Whitebox.setInternalState(rseapiRequestTypeINVALID, "ordinal", 6);
 	    	PowerMockito.mockStatic(RseapiRequestType.class);
-	        PowerMockito.when(RseapiRequestType.values()).thenReturn(new RseapiRequestType[]{RseapiRequestType.GET, RseapiRequestType.PUT_TEXT, RseapiRequestType.PUT_JSON, RseapiRequestType.POST_JSON, RseapiRequestType.DELETE, rseapiRequestTypeINVALID});
+	        PowerMockito.when(RseapiRequestType.values()).thenReturn(new RseapiRequestType[]{RseapiRequestType.GET, RseapiRequestType.PUT_TEXT, RseapiRequestType.PUT_BINARY, RseapiRequestType.PUT_JSON, RseapiRequestType.POST_JSON, RseapiRequestType.DELETE, rseapiRequestTypeINVALID});
     	}
     }
 
@@ -100,6 +100,11 @@ public class TestRseapiRestApiProcessor {
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(rseapiMock1.putText(Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(rseapiResponseMock);
         response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_TEXT, PATH, null, null, null, false);
+        Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
+
+        Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        Mockito.when(rseapiMock1.putBinary(Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(rseapiResponseMock);
+        response = rseapiRestApiProcessorSpy.sendRequest(RseapiRequestType.PUT_BINARY, PATH, null, null, null, false);
         Assert.assertEquals("sendRequest() should return the expected value", HttpStatus.SC_OK, response.getStatusCode());
 
         Mockito.when(rseapiResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
