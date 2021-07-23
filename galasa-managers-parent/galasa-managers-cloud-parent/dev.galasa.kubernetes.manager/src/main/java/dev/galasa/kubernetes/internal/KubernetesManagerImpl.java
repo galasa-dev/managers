@@ -23,7 +23,6 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.FrameworkException;
-import dev.galasa.framework.spi.FrameworkResourceUnavailableException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -177,7 +176,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
      * @throws KubernetesManagerException if there is a problem generating a namespace
      */
     @GenerateAnnotatedField(annotation = KubernetesNamespace.class)
-    public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws FrameworkResourceUnavailableException, KubernetesManagerException {
+    public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws ResourceUnavailableException, KubernetesManagerException {
         KubernetesNamespace annotation = field.getAnnotation(KubernetesNamespace.class);
 
         String tag = annotation.kubernetesNamespaceTag().trim().toUpperCase();
@@ -247,7 +246,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
             //*** Did we find a cluster with availability?
             if (selectedCluster == null) {
-                throw new FrameworkResourceUnavailableException("Unable to allocate a slot on any Kubernetes Cluster");
+                throw new ResourceUnavailableException("Unable to allocate a slot on any Kubernetes Cluster");
             }
 
             //*** ask cluster to allocate a namespace,  if it returns null, means we have run out of available namespaces
