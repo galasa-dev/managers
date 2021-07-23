@@ -41,7 +41,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
     private Path javaHome;
     private Path jacocoAgent;
 
-    private static final Pattern findHome = Pattern.compile("^(([a-zA-Z0-9\\-\\+\\._/ \\\\]*)?/)?\\Qbin/java\\E$", Pattern.MULTILINE);
+    private static final Pattern findHome = Pattern.compile("^(\\.\\/){0,1}(([a-zA-Z0-9\\-\\+\\._/ \\\\]*)?/)?\\Qbin/java\\E$", Pattern.MULTILINE);
 
     private final ArrayList<Path> jacocoExecs = new ArrayList<>();
     private int execFileNumber;
@@ -170,7 +170,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
                 Path targetHome = possibleJavaHomes.resolve(this.javaDirectoryName);
                 Path extractedHome = tempExtractDirectory;
 
-                String prefixDirectories = matcher.group(2);
+                String prefixDirectories = matcher.group(3);
                 if (prefixDirectories != null && !prefixDirectories.isEmpty()) {
                     if ("/".equals(prefixDirectories)) {
                         throw new JavaManagerException("Unexpected found Java home in the root directory of the archive, ie prefixed /");
