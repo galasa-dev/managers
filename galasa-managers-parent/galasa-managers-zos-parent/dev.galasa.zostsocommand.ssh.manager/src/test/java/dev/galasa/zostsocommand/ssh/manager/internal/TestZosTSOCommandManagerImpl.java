@@ -2,7 +2,7 @@ package dev.galasa.zostsocommand.ssh.manager.internal;
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 
 import java.lang.annotation.Annotation;
