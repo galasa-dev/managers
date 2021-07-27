@@ -1,9 +1,9 @@
-package dev.galasa.zostsocommand.ssh.manager.internal;
 /*
  * Licensed Materials - Property of IBM
  * 
  * (c) Copyright IBM Corp. 2020-2021.
  */
+package dev.galasa.zostsocommand.ssh.manager.internal;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
