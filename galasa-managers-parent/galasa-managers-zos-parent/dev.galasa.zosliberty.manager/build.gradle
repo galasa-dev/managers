@@ -7,9 +7,12 @@ description = 'Galasa zOS Liberty Manager'
 version = '0.17.0'
 
 dependencies {
-    api              project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
-    api              project(':galasa-managers-cloud-parent:dev.galasa.liberty.manager')
-    api              project (':galasa-managers-core-parent:dev.galasa.textscan.manager')
-    implementation   'org.apache.commons:commons-lang3:3.8.1'
-    implementation   'org.apache.commons:commons-collections4:4.4'
+    implementation project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
+    implementation project(':galasa-managers-zos-parent:dev.galasa.zosunixcommand.ssh.manager')
+    implementation project(':galasa-managers-cloud-parent:dev.galasa.liberty.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.textscan.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'commons-io:commons-io:2.9.0'
 }

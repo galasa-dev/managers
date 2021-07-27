@@ -1,11 +1,12 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -18,7 +19,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -185,14 +189,14 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
     
     @Override
-    public void store(String content) throws ZosUNIXFileException {
+    public void storeText(String content) throws ZosUNIXFileException {
         if (!exists()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         if (isDirectory()) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
         }
-        
+        setDataType(UNIXFileDataType.TEXT);
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
     
@@ -223,15 +227,68 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         
     }
 
-    @Override
-    public String retrieve() throws ZosUNIXFileException {
+
+	@Override
+	public void storeBinary(@NotNull byte[] content) throws ZosUNIXFileException {
         if (!exists()) {
             throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
         }
         if (isDirectory()) {
             throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
         }
-        return retrieve(this.unixPath);
+        setDataType(UNIXFileDataType.BINARY);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+    
+        String urlPath = RESTFILES_FILE_SYSTEM_PATH + this.unixPath;
+        IZosmfResponse response;
+        try {
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.PUT_BINARY, urlPath, headers, content, 
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_CREATED, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+        } catch (ZosmfException e) {
+            throw new ZosUNIXFileException(e);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT && response.getStatusCode() != HttpStatus.SC_CREATED) {
+            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR            
+            JsonObject responseBody;
+            try {
+                responseBody = response.getJsonContent();
+            } catch (ZosmfException e) {
+                throw new ZosUNIXFileException("Unable to write to " + LOG_UNIX_PATH + quoted(this.unixPath) + logOnImage(), e);
+            }
+            logger.trace(responseBody);
+            String displayMessage = buildErrorString(LOG_WRITING_TO, responseBody, this.unixPath); 
+            logger.error(displayMessage);
+            throw new ZosUNIXFileException(displayMessage);
+        }
+    
+        logger.trace(LOG_UNIX_PATH + quoted(this.directoryPath) + " updated" + logOnImage());
+		
+	}
+
+    @Override
+    public String retrieveAsText() throws ZosUNIXFileException {
+        if (!exists()) {
+            throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+        if (isDirectory()) {
+            throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
+        }
+        setDataType(UNIXFileDataType.TEXT);
+        return retrieveAsText(this.unixPath);
+    }
+
+    @Override
+    public byte[] retrieveAsBinary() throws ZosUNIXFileException {
+        if (!exists()) {
+            throw new ZosUNIXFileException(LOG_UNIX_PATH + quoted(this.unixPath) + LOG_DOES_NOT_EXIST + logOnImage());
+        }
+        if (isDirectory()) {
+            throw new ZosUNIXFileException(LOG_INVALID_REQUETS + quoted(this.unixPath) + " is a directory");
+        }
+        setDataType(UNIXFileDataType.BINARY);
+        return retrieveAsBinary(this.unixPath);
     }
 
     @Override
@@ -645,7 +702,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     }
 
 
-    protected String retrieve(String path) throws ZosUNIXFileException {
+    protected String retrieveAsText(String path) throws ZosUNIXFileException {
         Map<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
         String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
@@ -662,6 +719,45 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             try {
                 content = response.getTextContent();
             } catch (ZosmfException e) {
+                throw new ZosUNIXFileException("Unable to retrieve content of " + quoted(path) + logOnImage(), e);
+            }
+        } else {
+            
+            JsonObject responseBody;
+            try {
+                responseBody = response.getJsonContent();
+            } catch (ZosmfException e) {
+                throw new ZosUNIXFileException("Unable to retrieve content of " + quoted(path) + logOnImage(), e);
+            }
+            logger.trace(responseBody);    
+            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+            String displayMessage = buildErrorString(LOG_READING_FROM, responseBody, path); 
+            logger.error(displayMessage);
+            throw new ZosUNIXFileException(displayMessage);
+        }
+    
+        logger.trace("Content of " + LOG_UNIX_PATH + quoted(path) + " retrieved from  image " + this.image.getImageID());
+        return content;
+    }
+
+
+    protected byte[] retrieveAsBinary(String path) throws ZosUNIXFileException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(ZosmfCustomHeaders.X_IBM_DATA_TYPE.toString(), getDataType().toString());
+        String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
+        IZosmfResponse response;
+        try {
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, headers, null,
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), false);
+        } catch (ZosmfException e) {
+            throw new ZosUNIXFileException(e);
+        }        
+    
+        byte[] content;
+        if (response.getStatusCode() == HttpStatus.SC_OK) {
+            try {
+                content = IOUtils.toByteArray((InputStream) response.getContent());
+            } catch (ZosmfException | IOException e) {
                 throw new ZosUNIXFileException("Unable to retrieve content of " + quoted(path) + logOnImage(), e);
             }
         } else {
@@ -702,7 +798,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
                 	} else {
                 		directoryName = SLASH;
                 	}
-                    String archiveLocation = storeArtifact(rasPath + directoryName, retrieve(entryPath), false, fileName);
+                    String archiveLocation = storeArtifact(rasPath + directoryName, retrieveAsText(entryPath), false, fileName);
                     logger.info(quoted(entryPath) + LOG_ARCHIVED_TO + archiveLocation);
                 } else if (entryFileType.equals(UNIXFileType.DIRECTORY)) {
                     String archiveLocation = storeArtifact(rasPath, null, true, directoryName);
@@ -710,7 +806,12 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
                 }
             }
         } else {
-            String archiveLocation = storeArtifact(rasPath, retrieve(path), false, this.fileName);
+            String archiveLocation;
+            if (this.dataType.equals(UNIXFileDataType.TEXT)) {
+            	archiveLocation = storeArtifact(rasPath, retrieveAsText(), false, this.fileName);
+            } else {
+            	archiveLocation = storeArtifact(rasPath, retrieveAsBinary(), false, this.fileName);
+            }
             logger.info(quoted(this.unixPath) + LOG_ARCHIVED_TO + archiveLocation);
         }
     }

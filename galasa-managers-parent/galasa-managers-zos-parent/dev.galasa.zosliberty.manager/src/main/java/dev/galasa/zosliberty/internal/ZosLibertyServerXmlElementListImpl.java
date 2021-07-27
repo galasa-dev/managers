@@ -16,28 +16,28 @@ import dev.galasa.zosliberty.IZosLibertyServerXmlElementList;
 
 public class ZosLibertyServerXmlElementListImpl implements IZosLibertyServerXmlElementList
 {
-	private MultiValuedMap<String, Map<String, String>> elements;
+    private MultiValuedMap<String, Map<String, String>> elements;
 
-	public ZosLibertyServerXmlElementListImpl()
-	{
-		this.elements = new ArrayListValuedHashMap<>();
-	}
+    public ZosLibertyServerXmlElementListImpl()
+    {
+        this.elements = new ArrayListValuedHashMap<>();
+    }
 
-	@Override
-	public void add(String elementName, Map<String, String> attributes)
-	{
-		elements.put(elementName, attributes);
-	}
+    @Override
+    public void add(String elementName, Map<String, String> attributes)
+    {
+        elements.put(elementName, attributes);
+    }
 
-	@Override
-	public void clear()
-	{
-		this.elements.clear();
-	}
+    @Override
+    public void clear()
+    {
+        this.elements.clear();
+    }
 
-	@Override
-	public Collection<Entry<String, Map<String, String>>> entries() {
-		return this.elements.entries();
-	}
+    @Override
+    public Collection<Entry<String, Map<String, String>>> entries() {
+        return this.elements.entries();
+    }
 
 }

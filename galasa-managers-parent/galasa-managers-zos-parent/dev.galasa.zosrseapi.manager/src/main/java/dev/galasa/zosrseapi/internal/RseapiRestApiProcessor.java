@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -79,6 +79,9 @@ public class RseapiRestApiProcessor implements IRseapiRestApiProcessor {
 	                    break;
 	                case PUT_TEXT:
 	                    response = rseapiServer.putText(path, (String) body, validStatusCodes);
+	                    break;
+	                case PUT_BINARY:
+	                    response = rseapiServer.putBinary(path, (byte[]) body, validStatusCodes);
 	                    break;
 	                case POST_JSON:
 	                    response = rseapiServer.postJson(path, (JsonObject) body, validStatusCodes);

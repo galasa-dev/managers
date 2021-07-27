@@ -47,21 +47,21 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     protected static final String NAMESPACE = "cicsresource";
     private ICicstsManagerSpi cicstsManager;
     private IZosFileSpi zosFileManager;
-	private IZosLibertySpi zosLibertyManager;
+    private IZosLibertySpi zosLibertyManager;
     protected IZosUNIXCommandSpi zosUnixCommandManager;
-	private ITextScannerManagerSpi textScannerManager;
+    private ITextScannerManagerSpi textScannerManager;
 
     private static final String JVMSERVERS = "JVM_servers";
 
     private static final String PROVISIONING = "provisioning";
-	
-	private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
-	private List<JvmserverImpl> jvmServers = new ArrayList<>();
-	
+    
+    private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
+    private List<JvmserverImpl> jvmServers = new ArrayList<>();
+    
 
     private Path artifactsRoot;
     public Path getArtifactsRoot() {
-    	return artifactsRoot;
+        return artifactsRoot;
     }
     
     private Path archivePath;
@@ -75,7 +75,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         return archivePath.resolve(currentTestMethodArchiveFolderName);
     }
     
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
      */
     @Override
@@ -86,7 +86,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
             youAreRequired(allManagers, activeManagers, galasaTest);
         }
         try {
-        	CicstsResourcePropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+            CicstsResourcePropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
             throw new CicsResourceManagerException("Unable to request framework services", e);
         }
@@ -154,9 +154,9 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(JVMSERVERS);
         if (galasaMethod.getJavaTestMethod() != null) {
-        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
-        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
     }
 
@@ -181,58 +181,58 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      */
     @Override
     public void endOfTestRun() {
-    	cleanup(true);
+        cleanup(true);
     }
     
     @Override
-	public @NotNull ICicsResource getCicsResource(ICicsRegion cicsRegion) throws CicsResourceManagerException {
-		ICicsResource cicsResources = this.regionCicsResources.get(cicsRegion);
-	    if (cicsResources == null) {
-	        cicsResources = new CicsResourceImpl(this, cicsRegion);
-	        this.regionCicsResources.put(cicsRegion, cicsResources);
-	    }
-	    return cicsResources;
-	}
+    public @NotNull ICicsResource getCicsResource(ICicsRegion cicsRegion) throws CicsResourceManagerException {
+        ICicsResource cicsResources = this.regionCicsResources.get(cicsRegion);
+        if (cicsResources == null) {
+            cicsResources = new CicsResourceImpl(this, cicsRegion);
+            this.regionCicsResources.put(cicsRegion, cicsResources);
+        }
+        return cicsResources;
+    }
 
-	protected ICicstsManagerSpi getCicsManager() {
-		return this.cicstsManager;
-	}
-	
-	protected IZosFileHandler getZosFileHandler() throws CicsResourceManagerException {
-		try {
-			return this.zosFileManager.getZosFileHandler();
-		} catch (ZosFileManagerException e) {
-			throw new CicsResourceManagerException("Problem getting IZosFileHandler", e);
-		}
-	}
-	
-	protected IZosLiberty getZosLiberty() throws CicsResourceManagerException {
-		try {
-			return this.zosLibertyManager.getZosLiberty();
-		} catch (ZosLibertyManagerException e) {
-			throw new CicsResourceManagerException("Problem getting IZosLiberty", e);
-		}
-	}
-	
-	protected @NotNull IZosUNIXCommand getZosUnixCommand(IZosImage image) {
-		return this.zosUnixCommandManager.getZosUNIXCommand(image);
-	}
+    protected ICicstsManagerSpi getCicsManager() {
+        return this.cicstsManager;
+    }
+    
+    protected IZosFileHandler getZosFileHandler() throws CicsResourceManagerException {
+        try {
+            return this.zosFileManager.getZosFileHandler();
+        } catch (ZosFileManagerException e) {
+            throw new CicsResourceManagerException("Problem getting IZosFileHandler", e);
+        }
+    }
+    
+    protected IZosLiberty getZosLiberty() throws CicsResourceManagerException {
+        try {
+            return this.zosLibertyManager.getZosLiberty();
+        } catch (ZosLibertyManagerException e) {
+            throw new CicsResourceManagerException("Problem getting IZosLiberty", e);
+        }
+    }
+    
+    protected @NotNull IZosUNIXCommand getZosUnixCommand(IZosImage image) {
+        return this.zosUnixCommandManager.getZosUNIXCommand(image);
+    }
 
-	protected ILogScanner getLogScanner() throws CicsResourceManagerException {
-		try {
-			return this.textScannerManager.getLogScanner();
-		} catch (TextScanManagerException e) {
-			throw new CicsResourceManagerException("Problem getting ILogScanner", e);
-		}
-	}
+    protected ILogScanner getLogScanner() throws CicsResourceManagerException {
+        try {
+            return this.textScannerManager.getLogScanner();
+        } catch (TextScanManagerException e) {
+            throw new CicsResourceManagerException("Problem getting ILogScanner", e);
+        }
+    }
 
-	protected void registerJvmserver(JvmserverImpl jvmserver) {
-		this.jvmServers.add(jvmserver);
-	}
+    protected void registerJvmserver(JvmserverImpl jvmserver) {
+        this.jvmServers.add(jvmserver);
+    }
 
-	protected void cleanup(boolean endOfTestRun) {
-		for (JvmserverImpl jvmserver : this.jvmServers) {
-			jvmserver.cleanup(endOfTestRun);
-		}
-	}
+    protected void cleanup(boolean endOfTestRun) {
+        for (JvmserverImpl jvmserver : this.jvmServers) {
+            jvmserver.cleanup(endOfTestRun);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosfile;
 
@@ -226,7 +226,7 @@ public interface IZosDataset {
     public boolean exists() throws ZosDatasetException;
 
     /**
-     * Write to content to the data set in Text mode 
+     * Write content to the data set in Text mode 
      * <p>See {@link #setDataType(DatasetDataType)}
      * @param content
      * @throws ZosDatasetException
@@ -234,7 +234,7 @@ public interface IZosDataset {
     public void storeText(@NotNull String content) throws ZosDatasetException;
 
     /**
-     * Write to content to the data set in Binary mode 
+     * Write content to the data set in Binary mode 
      * <p>See {@link #setDataType(DatasetDataType)}
      * @param content
      * @throws ZosDatasetException

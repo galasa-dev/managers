@@ -34,7 +34,7 @@ public class JavaHome extends CpsProperties {
     public static String get(IZosImage image) throws ZosManagerException {
         String imageId = image.getImageID();
         try {
-            return getStringNulled(ZosPropertiesSingleton.cps(), "image." + imageId, "javahome");
+            return getStringNulled(ZosPropertiesSingleton.cps(), "image", "javahome", imageId);
         } catch (ConfigurationPropertyStoreException e) {
             throw new ZosManagerException("Problem asking the CPS for the zOS run Java home for image "  + imageId, e);
         }

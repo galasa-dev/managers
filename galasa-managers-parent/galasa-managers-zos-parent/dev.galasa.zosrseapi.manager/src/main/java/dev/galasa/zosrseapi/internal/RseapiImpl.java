@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -157,6 +157,30 @@ public class RseapiImpl implements IRseapi {
 	        logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
 	        logger.trace(LOG_BODY + requestBody);
 	        rseapiResponse.setHttpClientresponse(this.httpClient.putText(validPath(path), requestBody));
+	        logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
+	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
+	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));
+	        }
+	    } catch (MalformedURLException | HttpClientException  e) {
+	        logger.error(e);
+	        throw new RseapiException(logBadRequest(method), e);
+	    }
+	    
+	    return rseapiResponse;
+	}
+
+    @Override
+	public @NotNull IRseapiResponse putBinary(String path, byte[] requestBody, List<Integer> validStatusCodes) throws RseapiException {
+	    String method = RseapiRequestType.PUT_BINARY.getRequestType();
+	    if (validStatusCodes == null) {
+	        validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
+	    }
+	    RseapiResponseImpl rseapiResponse;
+	    try {
+	        addCommonHeaders();
+	        rseapiResponse = new RseapiResponseImpl(this.rseapiUrl, validPath(path));
+	        logger.trace(logRequest(method, rseapiResponse.getRequestUrl()));
+	        rseapiResponse.setHttpClientresponse(this.httpClient.putBinary(validPath(path), requestBody));
 	        logger.trace(logResponse(rseapiResponse.getStatusLine(), method, rseapiResponse.getRequestUrl()));
 	        if (!validStatusCodes.contains(rseapiResponse.getStatusCode())) {
 	            throw new RseapiException(logBadStatusCode(rseapiResponse.getStatusCode()));

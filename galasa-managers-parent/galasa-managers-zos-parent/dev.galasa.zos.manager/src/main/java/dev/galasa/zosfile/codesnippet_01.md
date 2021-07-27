@@ -157,7 +157,7 @@ Create a new *IZosDataset* object representing a UNIX file. If the file exists, 
 IZosUNIXFile unixFile = zosFileHandler.newUNIXFile("/tmp/Galasa/existingFile", zosImage);
 if (unixFile.exists()) {
     unixFile.setDataType(UNIXFileDataType.TEXT);
-    String content = unixFile.retrieve();
+    String content = unixFile.retrieveAsText();
 }
 ```
 
@@ -177,7 +177,7 @@ properties.add("dev.galasa.property1=value1");
 properties.add("dev.galasa.property2=value2");
 properties.add("dev.galasa.property3=value3");
 unixFile.setDataType(UNIXFileDataType.BINARY);
-unixFile.store(String.join("\n", properties));
+unixFile.storeBinary(String.join("\n", properties).getBytes());
 ```
 
 </details>

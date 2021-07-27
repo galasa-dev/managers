@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos.internal.properties;
 
@@ -39,7 +39,7 @@ public class RunUNIXPathPrefix extends CpsProperties {
     public static String get(@NotNull IZosImage image) throws ZosManagerException {
         String imageId = image.getImageID();
         try {
-            String runUNIXPathePrefix = getStringNulled(ZosPropertiesSingleton.cps(), "run." + imageId, "unix.path.prefix");
+            String runUNIXPathePrefix = getStringNulled(ZosPropertiesSingleton.cps(), "run", "unix.path.prefix", imageId);
             if (runUNIXPathePrefix == null) {
                 ICredentials creds = image.getDefaultCredentials();                
                 if (!(creds instanceof ICredentialsUsernamePassword)) {
