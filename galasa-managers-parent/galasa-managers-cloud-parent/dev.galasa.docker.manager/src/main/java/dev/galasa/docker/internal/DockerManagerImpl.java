@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.docker.internal;
 
@@ -40,6 +40,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.IHttpManager;
 import dev.galasa.http.spi.IHttpManagerSpi;
@@ -223,7 +224,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * @throws ManagerException
      */
     @Override
-    public void provisionGenerate() throws ManagerException {
+    public void provisionGenerate() throws ResourceUnavailableException, ManagerException {
         logger.info("Registering docker registries");
         registerDockerRegistires();
         logger.info("Finding all docker related annotations");
@@ -235,7 +236,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * 
      * @throws ManagerException
      */
-    private void generateDockerFields() throws ManagerException {
+    private void generateDockerFields() throws ResourceUnavailableException, ManagerException {
         List<AnnotatedField> annotatedFields = findAnnotatedFields(DockerManagerField.class);
 
         for (AnnotatedField annotatedField: annotatedFields) {

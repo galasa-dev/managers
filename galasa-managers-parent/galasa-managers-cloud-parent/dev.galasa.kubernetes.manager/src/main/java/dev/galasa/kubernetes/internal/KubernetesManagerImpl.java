@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.kubernetes.internal;
 
@@ -176,7 +176,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
      * @throws KubernetesManagerException if there is a problem generating a namespace
      */
     @GenerateAnnotatedField(annotation = KubernetesNamespace.class)
-    public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws KubernetesManagerException {
+    public IKubernetesNamespace generateKubernetesNamespace(Field field, List<Annotation> annotations) throws ResourceUnavailableException, KubernetesManagerException {
         KubernetesNamespace annotation = field.getAnnotation(KubernetesNamespace.class);
 
         String tag = annotation.kubernetesNamespaceTag().trim().toUpperCase();
@@ -246,7 +246,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
             //*** Did we find a cluster with availability?
             if (selectedCluster == null) {
-                throw new KubernetesManagerException("Unable to allocate a slot on any Kubernetes Cluster");
+                throw new ResourceUnavailableException("Unable to allocate a slot on any Kubernetes Cluster");
             }
 
             //*** ask cluster to allocate a namespace,  if it returns null, means we have run out of available namespaces
