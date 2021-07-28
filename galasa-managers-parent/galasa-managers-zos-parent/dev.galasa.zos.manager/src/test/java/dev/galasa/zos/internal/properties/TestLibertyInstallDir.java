@@ -23,7 +23,7 @@ import dev.galasa.zos.internal.ZosProvisionedImageImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ZosPropertiesSingleton.class, CpsProperties.class})
-public class TestZosConnectInstallDir {
+public class TestLibertyInstallDir {
     
     @Mock
     private IConfigurationPropertyStoreService configurationPropertyStoreServiceMock;
@@ -33,7 +33,7 @@ public class TestZosConnectInstallDir {
     
     private static final String IMAGE_ID = "image";
     
-    private static final String ZOSCONNECT_INSTALL_DIR = "/zosconnect/install/";
+    private static final String LIBERTY_INSTALL_DIR = "/liberty/install/";
     
     @Before
     public void setup() {
@@ -42,27 +42,27 @@ public class TestZosConnectInstallDir {
     
     @Test
     public void testConstructor() {
-        ZosConnectInstallDir ZosConnectInstallDir = new ZosConnectInstallDir();
-        Assert.assertNotNull("Object was not created", ZosConnectInstallDir);
+        LibertyInstallDir LibertyInstallDir = new LibertyInstallDir();
+        Assert.assertNotNull("Object was not created", LibertyInstallDir);
     }
     
     @Test
     public void testNull() throws Exception {
-        Assert.assertNull("Unexpected value returned from ZosConnectInstallDir.get()", getProperty(zosProvisionedImageMock, null));
+        Assert.assertNull("Unexpected value returned from LibertyInstallDir.get()", getProperty(zosProvisionedImageMock, null));
     }
     
     @Test
     public void testValid() throws Exception {
-        Assert.assertEquals("Unexpected value returned from ZosConnectInstallDir.get()", ZOSCONNECT_INSTALL_DIR, getProperty(zosProvisionedImageMock, ZOSCONNECT_INSTALL_DIR));
+        Assert.assertEquals("Unexpected value returned from LibertyInstallDir.get()", LIBERTY_INSTALL_DIR, getProperty(zosProvisionedImageMock, LIBERTY_INSTALL_DIR));
     }
     
     @Test
     public void testException() throws Exception {
-        String expectedMessage = "Problem asking the CPS for the zOS Connect Install Directory for image "  + IMAGE_ID;
+        String expectedMessage = "Problem asking the CPS for the Liberty Install Directory for image "  + IMAGE_ID;
         ZosManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosManagerException.class, ()->{
-        	getProperty(zosProvisionedImageMock, null, true);
+            getProperty(zosProvisionedImageMock, null, true);
         });
-    	Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
+        Assert.assertEquals("exception should contain expected message", expectedMessage, expectedException.getMessage());
     }
 
     private String getProperty(ZosProvisionedImageImpl arg, String value) throws Exception {
@@ -80,6 +80,6 @@ public class TestZosConnectInstallDir {
             PowerMockito.doThrow(new ConfigurationPropertyStoreException()).when(CpsProperties.class, "getStringNulled", Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         }
         
-        return ZosConnectInstallDir.get(arg);
+        return LibertyInstallDir.get(arg);
     }
 }

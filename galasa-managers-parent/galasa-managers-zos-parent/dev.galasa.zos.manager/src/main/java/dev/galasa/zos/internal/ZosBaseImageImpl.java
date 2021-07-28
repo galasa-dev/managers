@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos.internal;
 
@@ -29,12 +29,13 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     private final ZosIpHostImpl ipHost;
 
     private final String        runTemporaryUNIXPath;
-    private final String 		javaHome;
-    private final String 		zosConnectInstallDir;
+    private final String         javaHome;
+    private final String         libertyInstallDir;
+    private final String         zosConnectInstallDir;
 
     private ICredentials defaultCedentials;
 
-    private static final String SLASH = "/";
+    private static final String SLASH_SYBMOL = "/";
 
     public ZosBaseImageImpl(ZosManagerImpl zosManager, String imageId, String clusterId) throws ZosManagerException {
         this.zosManager = zosManager;
@@ -56,8 +57,9 @@ public abstract class ZosBaseImageImpl implements IZosImage {
             throw new ZosManagerException("Unable to create the IP Host for the image " + this.imageId, e);
         }
         
-        this.runTemporaryUNIXPath = this.zosManager.getRunUNIXPathPrefix(this) + SLASH + this.zosManager.getRunId();
+        this.runTemporaryUNIXPath = this.zosManager.getRunUNIXPathPrefix(this) + SLASH_SYBMOL + this.zosManager.getRunId() + SLASH_SYBMOL;
         this.javaHome = this.zosManager.getJavaHome(this);
+        this.libertyInstallDir = this.zosManager.getLibertyInstallDir(this);
         this.zosConnectInstallDir = this.zosManager.getZosConnectInstallDir(this);
     }
 
@@ -122,24 +124,29 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     }
 
     @Override
-	public ZosIpHostImpl getIpHost() {
+    public ZosIpHostImpl getIpHost() {
         return this.ipHost;
     }
 
     @Override
-	public String getRunTemporaryUNIXPath() {
+    public String getRunTemporaryUNIXPath() {
         return this.runTemporaryUNIXPath;
     }
 
     @Override
-	public String getJavaHome() {
+    public String getJavaHome() {
         return this.javaHome;
     }
 
-	@Override
-	public String getZosConnectInstallDir() {
-		return this.zosConnectInstallDir;
-	}
+    @Override
+    public String getLibertyInstallDir() {
+        return this.libertyInstallDir;
+    }
+
+    @Override
+    public String getZosConnectInstallDir() {
+        return this.zosConnectInstallDir;
+    }
 
     @Override
     public String toString() {

@@ -32,7 +32,7 @@ spec:
     - name: distBranch
       value: $(params.distBranch)
     - name: extensionsSourceRepo
-      value: http://cicscit.hursley.ibm.com/galasadev/$(params.distBranch)/maven/extensions/
+      value: http://maven-main-extensions.galasa-development.svc.cluster.local/galasadev/$(params.distBranch)/maven/extensions/
     - name: noPush
       value: $(params.noPush)
     - name: jacocoEnabled

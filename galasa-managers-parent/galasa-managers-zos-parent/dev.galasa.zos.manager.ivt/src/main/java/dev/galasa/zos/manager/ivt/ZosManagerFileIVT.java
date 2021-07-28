@@ -289,7 +289,7 @@ public class ZosManagerFileIVT {
         
         // Create File
         unixFile.create();
-        unixFile.store("Hello World"); // Text
+        unixFile.storeText("Hello World"); // Text
         
         // Test file type
         assertThat(unixFile.getDataType()).isEqualTo(UNIXFileDataType.TEXT);
@@ -424,7 +424,7 @@ public class ZosManagerFileIVT {
         
         // Create File
         unixFile.create();
-        unixFile.store("This file will be more than one byte.");
+        unixFile.storeText("This file will be more than one byte.");
         
         int size = unixFile.getSize();
         

@@ -1,16 +1,15 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * (c) Copyright IBM Corp. 2020-2021.
  */
 package dev.galasa.zosliberty.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -33,6 +33,11 @@ import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.spi.IZosManagerSpi;
+import dev.galasa.zosbatch.IZosBatch;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
+import dev.galasa.zosconsole.IZosConsole;
+import dev.galasa.zosconsole.ZosConsoleManagerException;
+import dev.galasa.zosconsole.spi.IZosConsoleSpi;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 import dev.galasa.zosfile.spi.IZosFileSpi;
@@ -41,6 +46,8 @@ import dev.galasa.zosliberty.ZosLiberty;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
 import dev.galasa.zosliberty.internal.properties.ZosLibertyPropertiesSingleton;
 import dev.galasa.zosliberty.spi.IZosLibertySpi;
+import dev.galasa.zosunixcommand.IZosUNIXCommand;
+import dev.galasa.zosunixcommand.spi.IZosUNIXCommandSpi;
 
 @Component(service = { IManager.class })
 public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibertySpi {
@@ -54,15 +61,18 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     private static final String PROVISIONING = "provisioning";
 
     private IZosManagerSpi  zosManager;
-	private IZosFileSpi zosFileManager;
-	private ITextScannerManagerSpi textScannerManager;
+    private IZosFileSpi zosFileManager;
+    private IZosBatchSpi zosBatchManager;
+    private IZosConsoleSpi zosConsoleManager;
+    private IZosUNIXCommandSpi zosUNIXCommand;
+    private ITextScannerManagerSpi textScannerManager;
+	private IArtifactManager artifactManager;
 
-//    private final HashMap<String, IZosLiberty> taggedZosLibertys = new HashMap<>();
-//    private final HashMap<String, IZosLiberty> zosLibertys = new HashMap<>();
+    private final List<ZosLibertyImpl> zosLibertys = new ArrayList<>();
 
     private Path artifactsRoot;
     public Path getArtifactsRoot() {
-    	return artifactsRoot;
+        return artifactsRoot;
     }
     
     private Path archivePath;
@@ -118,6 +128,22 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
         if (this.zosFileManager == null) {
             throw new ZosLibertyManagerException("The zOS File Manager is not available");
         }
+        this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
+        if (this.zosBatchManager == null) {
+            throw new ZosLibertyManagerException("The zOS Batch Manager is not available");
+        }
+        this.zosConsoleManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosConsoleSpi.class);
+        if (this.zosConsoleManager == null) {
+            throw new ZosLibertyManagerException("The zOS Console Manager is not available");
+        }
+        this.zosUNIXCommand = addDependentManager(allManagers, activeManagers, galasaTest, IZosUNIXCommandSpi.class);
+        if (this.zosUNIXCommand == null) {
+            throw new ZosLibertyManagerException("The zOS UNIX Command Manager is not available");
+        }
+        this.artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
+        if (this.artifactManager == null) {
+            throw new ZosLibertyManagerException("The Artifact Manager is not available");
+        }
     }
 
     /*
@@ -141,9 +167,9 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
         cleanup(false);
         this.archivePath = artifactsRoot.resolve(LIBERTY_SERVERS);
         if (galasaMethod.getJavaTestMethod() != null) {
-        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaTestMethod().getName() + "." + galasaMethod.getJavaExecutionMethod().getName();
         } else {
-        	this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
+            this.currentTestMethodArchiveFolderName = galasaMethod.getJavaExecutionMethod().getName();
         }
     }
 
@@ -161,10 +187,9 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     }
     
     protected void cleanup(boolean endOfTest) throws ZosLibertyManagerException {
-    	//TODO
-//        for (Entry<String, JvmserverImpl> entry : this.jvmServers.entrySet()) {
-//            entry.getValue().cleanup(endOfTest);
-//        }
+        for (ZosLibertyImpl zosLiberty : this.zosLibertys) {
+        	zosLiberty.cleanup(endOfTest);
+        }
     }
 
 
@@ -177,95 +202,56 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     }
 
     @GenerateAnnotatedField(annotation=ZosLiberty.class)
-    public IZosLiberty generateZosmf(Field field, List<Annotation> annotations) throws ZosLibertyManagerException {
-//        ZosLiberty annotationZosmf = field.getAnnotation(ZosLiberty.class);
-//
-//        //*** Default the tag to primary
-//        String tag = defaultString(annotationZosmf.imageTag(), "PRIMARY").toUpperCase();
-//
-//        //*** Have we already generated this tag
-//        if (taggedZosLibertys.containsKey(tag)) {
-//            return taggedZosLibertys.get(tag);
-//        }
-//
-//        // TODO this needs to be proper DSEd
-//        IZosImage zosImage = null;
-//        try {
-//            zosImage = getZosManager().getImageForTag(tag);
-//        } catch(Exception e) {
-//            throw new ZosLibertyManagerException("Unable to locate z/OS image for tag '" + tag + "'", e);
-//        }
-//
-//        // TODO should be the DSE server id or provision one
-//
-//        Map<String, IZosLiberty> possibleZosmfs = getZosLibertys(zosImage);
-//        if (possibleZosmfs.isEmpty()) {
-//            throw new ZosLibertyManagerException("Unable to provision zOS/MF, no zOS/MF server defined for image tag '" + tag + "'");
-//        }
-//
-//        IZosLiberty selected = possibleZosmfs.values().iterator().next();  // TODO do we want to randomise this?
-//        taggedZosLibertys.put(tag, selected);
-
-        return new ZosLibertyImpl(this);
+    public IZosLiberty generateZosLiberty(Field field, List<Annotation> annotations) throws ZosLibertyManagerException {
+    	ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
+    	zosLibertys.add(zosLiberty);
+        return zosLiberty;
     }
-
-
-    public Map<String, IZosLiberty> getZosLibertys(@NotNull IZosImage zosImage) throws ZosLibertyManagerException {
-        HashMap<String, IZosLiberty> possibleZosmfs = new HashMap<>();
-
-//        try {
-//            List<String> possibleServers = ImageServers.get(zosImage);
-//            if (possibleServers.isEmpty()) {
-//                possibleServers = SysplexServers.get(zosImage);
-//                if (possibleServers.isEmpty()) {
-//                    // Default to assume there is a zOS/MF server running on the same image on port 443
-//                    possibleServers = new ArrayList<String>(1);
-//                    possibleServers.add(zosImage.getImageID());
-//                }
-//            }
-//
-//
-//            for (String serverId : possibleServers) {
-//                IZosmf actualZosmf = this.zosLibertys.get(serverId);
-//
-//                if (actualZosmf == null) {
-//                    logger.trace("Retreiving zOS server " + serverId);
-//                    actualZosmf = newZosmf(serverId);
-//                    this.zosLibertys.put(serverId, actualZosmf);
-//                }
-//                possibleZosmfs.put(serverId, actualZosmf);
-//            }
-//        } catch (ZosLibertyManagerException e) {
-//            throw new ZosLibertyManagerException("Unable to get zOS Liberty server for image \"" + zosImage.getImageID() + "\"", e);
-//        }
-        return possibleZosmfs;
-    }
-
 
     public IZosManagerSpi getZosManager() {
         return this.zosManager;
     }
 
+    @Override
+    public @NotNull IZosLiberty getZosLiberty() throws ZosLibertyManagerException {
+    	ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
+        zosLibertys.add(zosLiberty);
+        return zosLiberty;
+    }
 
-	@Override
-	public @NotNull IZosLiberty getZosLiberty() throws ZosLibertyManagerException {
-		return new ZosLibertyImpl(this);
+    public IZosFileHandler getZosFileHandler() throws ZosLibertyManagerException {
+        try {
+            return this.zosFileManager.getZosFileHandler();
+        } catch (ZosFileManagerException e) {
+            throw new ZosLibertyManagerException("Problem getting IZosFileHandler", e);
+        }
+    }
+
+	public IZosConsole getZosConsole(IZosImage zosImage) throws ZosLibertyManagerException {
+        try {
+            return this.zosConsoleManager.getZosConsole(zosImage);
+        } catch (ZosConsoleManagerException e) {
+            throw new ZosLibertyManagerException("Problem getting IZosFileHandler", e);
+        }
 	}
 
+    public IZosUNIXCommand getZosUNIXCommand(IZosImage image) {
+        return this.zosUNIXCommand.getZosUNIXCommand(image);
+    }
 
-	public IZosFileHandler getZosFileHandler() throws ZosLibertyManagerException {
-		try {
-			return this.zosFileManager.getZosFileHandler();
-		} catch (ZosFileManagerException e) {
-			throw new ZosLibertyManagerException("Problem getting IZosFileHandler", e);
-		}
-	}
+    public IZosBatch getZosBatch(IZosImage image) {
+        return this.zosBatchManager.getZosBatch(image);
+    }
 
-	protected ILogScanner getLogScanner() throws ZosLibertyManagerException {
-		try {
-			return this.textScannerManager.getLogScanner();
-		} catch (TextScanManagerException e) {
-			throw new ZosLibertyManagerException("Problem getting ILogScanner", e);
-		}
-	}
+    protected ILogScanner getLogScanner() throws ZosLibertyManagerException {
+        try {
+            return this.textScannerManager.getLogScanner();
+        } catch (TextScanManagerException e) {
+            throw new ZosLibertyManagerException("Problem getting ILogScanner", e);
+        }
+    }
+
+    public IArtifactManager getArtifactManager() {
+        return this.artifactManager;
+    }
 }

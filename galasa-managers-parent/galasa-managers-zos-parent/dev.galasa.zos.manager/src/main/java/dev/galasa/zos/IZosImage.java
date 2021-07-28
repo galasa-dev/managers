@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos;
 
@@ -85,12 +85,21 @@ public interface IZosImage {
     /**
      * Get the value of Java home for the image
      * @return value of Java home
+     * @throws ZosManagerException
      */
-	public String getJavaHome() throws ZosManagerException;
+    public String getJavaHome() throws ZosManagerException;
+
+    /**
+     * Get the value of the location of the Liberty install directory
+     * @return value of Liberty install directory
+     * @throws ZosManagerException
+     */
+    public String getLibertyInstallDir() throws ZosManagerException;
 
     /**
      * Get the value of the location of the zOS Connect EE install directory
      * @return value of zOS Connect EE install directory
+     * @throws ZosManagerException
      */
-	public String getZosConnectInstallDir();
+    public String getZosConnectInstallDir() throws ZosManagerException;
 }

@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zosmf.internal;
 
@@ -181,7 +181,7 @@ public class ZosmfManagerImpl extends AbstractManager implements IZosmfManagerSp
                 IZosmf actualZosmf = this.zosmfs.get(serverId);
 
                 if (actualZosmf == null) {
-                    logger.trace("Retreiving zOS server " + serverId);
+                    logger.trace("Retrieving zOS server " + serverId);
                     actualZosmf = newZosmf(serverId);
                     this.zosmfs.put(serverId, actualZosmf);
                 }

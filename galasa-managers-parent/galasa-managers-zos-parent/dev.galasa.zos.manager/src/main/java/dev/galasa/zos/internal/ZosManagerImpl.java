@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.zos.internal;
 
@@ -65,6 +65,7 @@ import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosConnectInstallDir;
+import dev.galasa.zos.internal.properties.LibertyInstallDir;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
@@ -115,7 +116,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
     
     private String runid;
-	private String javaHome;
+    private String javaHome;
+    private String zosLibertyInstallDir;
     private String zosConnectInstallDir;
 
     /* 
@@ -504,13 +506,13 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     @Override
     public ICredentials getCredentials(String credentialsId, String imageId) throws ZosManagerException {
-    	ICredentials credentials;
+        ICredentials credentials;
         try {
             ICredentialsService credsService = getFramework().getCredentialsService();
 
             credentials = credsService.getCredentials(credentialsId);
             if (credentials == null) {
-            	credentials = credsService.getCredentials(credentialsId.toUpperCase());
+                credentials = credsService.getCredentials(credentialsId.toUpperCase());
             }
         } catch (CredentialsException e) {
             throw new ZosManagerException("Unable to acquire the credentials for id " + credentialsId, e);
@@ -551,67 +553,67 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     
     @Override
     public boolean getZosBatchPropertyBatchRestrictToImage(String imageId) throws ZosBatchManagerException {
-		return BatchRestrictToImage.get(imageId);
-	}
+        return BatchRestrictToImage.get(imageId);
+    }
 
-	@Override
-	public boolean getZosBatchPropertyUseSysaff(String imageId) throws ZosBatchManagerException {
-		return UseSysaff.get(imageId);
-	}
+    @Override
+    public boolean getZosBatchPropertyUseSysaff(String imageId) throws ZosBatchManagerException {
+        return UseSysaff.get(imageId);
+    }
 
-	@Override
-	public int getZosBatchPropertyJobWaitTimeout(String imageId) throws ZosBatchManagerException {
-		return JobWaitTimeout.get(imageId);
-	}
+    @Override
+    public int getZosBatchPropertyJobWaitTimeout(String imageId) throws ZosBatchManagerException {
+        return JobWaitTimeout.get(imageId);
+    }
 
-	@Override
-	public boolean getZosBatchPropertyTruncateJCLRecords(String imageId) throws ZosBatchManagerException {
-		return TruncateJCLRecords.get(imageId);
-	}
+    @Override
+    public boolean getZosBatchPropertyTruncateJCLRecords(String imageId) throws ZosBatchManagerException {
+        return TruncateJCLRecords.get(imageId);
+    }
 
-	@Override
-	public IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
-		return new ZosBatchJobnameImpl(image);
-	}
+    @Override
+    public IZosBatchJobname newZosBatchJobname(IZosImage image) throws ZosBatchException {
+        return new ZosBatchJobnameImpl(image);
+    }
 
-	@Override
-	public IZosBatchJobname newZosBatchJobname(String name) {
-		return new ZosBatchJobnameImpl(name);
-	}
+    @Override
+    public IZosBatchJobname newZosBatchJobname(String name) {
+        return new ZosBatchJobnameImpl(name);
+    }
 
-	@Override
-	public IZosBatchJobOutputSpi newZosBatchJobOutput(IZosBatchJob batchJob, String jobname, String jobid) {
-		return new ZosBatchJobOutputImpl(batchJob, jobname, jobid);
-	}
+    @Override
+    public IZosBatchJobOutputSpi newZosBatchJobOutput(IZosBatchJob batchJob, String jobname, String jobid) {
+        return new ZosBatchJobOutputImpl(batchJob, jobname, jobid);
+    }
 
-	@Override
-	public IZosBatchJobOutputSpoolFile newZosBatchJobOutputSpoolFile(IZosBatchJob batchJob, String jobname, String jobid, String stepname, String procstep, String ddname, String id, String records) throws ZosBatchException {
-		return new ZosBatchJobOutputSpoolFileImpl(batchJob, jobname, jobid, stepname, procstep, ddname, id, records);
-	}
+    @Override
+    public IZosBatchJobOutputSpoolFile newZosBatchJobOutputSpoolFile(IZosBatchJob batchJob, String jobname, String jobid, String stepname, String procstep, String ddname, String id, String records) throws ZosBatchException {
+        return new ZosBatchJobOutputSpoolFileImpl(batchJob, jobname, jobid, stepname, procstep, ddname, id, records);
+    }
 
-	@Override
-	public int getZosFilePropertyDirectoryListMaxItems(String imageId) throws ZosFileManagerException {
-		return DirectoryListMaxItems.get(imageId);
-	}
+    @Override
+    public int getZosFilePropertyDirectoryListMaxItems(String imageId) throws ZosFileManagerException {
+        return DirectoryListMaxItems.get(imageId);
+    }
 
-	@Override
-	public boolean getZosFilePropertyFileRestrictToImage(String imageId) throws ZosFileManagerException {
-		return FileRestrictToImage.get(imageId);
-	}
+    @Override
+    public boolean getZosFilePropertyFileRestrictToImage(String imageId) throws ZosFileManagerException {
+        return FileRestrictToImage.get(imageId);
+    }
 
-	@Override
-	public String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException {
-		return UnixFilePermissions.get(imageId);
-	}
+    @Override
+    public String getZosFilePropertyUnixFilePermissions(String imageId) throws ZosFileManagerException {
+        return UnixFilePermissions.get(imageId);
+    }
 
-	@Override
-	public boolean getZosConsolePropertyConsoleRestrictToImage(String imageId) throws ZosConsoleManagerException {
-		return ConsoleRestrictToImage.get(imageId);
-	}
+    @Override
+    public boolean getZosConsolePropertyConsoleRestrictToImage(String imageId) throws ZosConsoleManagerException {
+        return ConsoleRestrictToImage.get(imageId);
+    }
 
-	@Override
-	public String buildUniquePathName(Path artifactPath, String name) {
-    	int uniqueId = 1;
+    @Override
+    public String buildUniquePathName(Path artifactPath, String name) {
+        int uniqueId = 1;
         while (Files.exists(artifactPath.resolve(name))) {
             Pattern pattern = Pattern.compile("[_][\\d]+$");
             Matcher matcher = pattern.matcher(name);
@@ -624,48 +626,55 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
                 stringBuilder.append(uniqueId);
                 name = stringBuilder.toString();
             }
-        	uniqueId++;
+            uniqueId++;
         }
-		return name;
-	}
+        return name;
+    }
 
-	@Override
-	public void storeArtifact(Path artifactPath, String content, ResultArchiveStoreContentType type) throws ZosManagerException {
-		try {
-			Files.createFile(artifactPath, type);
-			Files.write(artifactPath, content.getBytes());
-		} catch (IOException e) {
-			throw new ZosManagerException("Unable to store artifact", e);
-		}
-	}
+    @Override
+    public void storeArtifact(Path artifactPath, String content, ResultArchiveStoreContentType type) throws ZosManagerException {
+        try {
+            Files.createFile(artifactPath, type);
+            Files.write(artifactPath, content.getBytes());
+        } catch (IOException e) {
+            throw new ZosManagerException("Unable to store artifact", e);
+        }
+    }
 
-	@Override
-	public void createArtifactDirectory(Path artifactPath) throws ZosManagerException {
-		try {
-			Files.createDirectories(artifactPath);
-		} catch (IOException e) {
-			throw new ZosManagerException("Unable to create artifact directory", e);
-		}
-	}
+    @Override
+    public void createArtifactDirectory(Path artifactPath) throws ZosManagerException {
+        try {
+            Files.createDirectories(artifactPath);
+        } catch (IOException e) {
+            throw new ZosManagerException("Unable to create artifact directory", e);
+        }
+    }
 
-	public String getRunId() {
-		if (this.runid == null) {
-			this.runid = getFramework().getTestRunName();
-		}
-		return this.runid;
-	}
+    public String getRunId() {
+        if (this.runid == null) {
+            this.runid = getFramework().getTestRunName();
+        }
+        return this.runid;
+    }
 
-	public String getJavaHome(ZosBaseImageImpl image) throws ZosManagerException {
-		if (this.javaHome == null) {
-			JavaHome.get(image);
-		}
-		return this.javaHome;
-	}
+    public String getJavaHome(ZosBaseImageImpl image) throws ZosManagerException {
+        if (this.javaHome == null) {
+            this.javaHome = JavaHome.get(image);
+        }
+        return this.javaHome;
+    }
 
-	public String getZosConnectInstallDir(ZosBaseImageImpl image) throws ZosManagerException {
-		if (this.zosConnectInstallDir == null) {
-			ZosConnectInstallDir.get(image);
-		}
-		return this.zosConnectInstallDir;
-	}
+    public String getLibertyInstallDir(ZosBaseImageImpl image) throws ZosManagerException {
+        if (this.zosLibertyInstallDir == null) {
+            this.zosLibertyInstallDir = LibertyInstallDir.get(image);
+        }
+        return this.zosLibertyInstallDir;
+    }
+
+    public String getZosConnectInstallDir(ZosBaseImageImpl image) throws ZosManagerException {
+        if (this.zosConnectInstallDir == null) {
+            this.zosConnectInstallDir = ZosConnectInstallDir.get(image);
+        }
+        return this.zosConnectInstallDir;
+    }
 }
