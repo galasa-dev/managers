@@ -12,6 +12,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.ProviderMismatchException;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
@@ -141,14 +142,12 @@ public class SSHPath implements Path {
 
     @Override
     public Path getName(int index) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        return Paths.get(this.nameElements.get(index));
     }
 
     @Override
     public int getNameCount() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        return this.nameElements.size();
     }
 
     @Override
