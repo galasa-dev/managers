@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.http.internal;
 
@@ -205,7 +205,7 @@ public class HttpClientImpl implements IHttpClient {
     public HttpClientResponse<String> putXML(String url, String xml) throws HttpClientException {
 
         HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+                new ContentType[] { ContentType.APPLICA TION_XML }, ContentType.APPLICATION_XML);
         request.setBody(xml);
 
         return executeTextRequest(request);
