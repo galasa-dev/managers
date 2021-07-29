@@ -1,13 +1,16 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.Charset;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryNotEmptyException;
@@ -15,6 +18,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
@@ -193,8 +197,20 @@ public class SSHFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void move(Path source, Path target, CopyOption... options) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("need to write");
+        ChannelSftp channel = null;
+        try {
+            channel = fileSystem.getFileChannel();
+            String filecontent = new String(Files.readAllBytes(source), Charset.defaultCharset());
+            InputStream sourceStream = new ByteArrayInputStream(filecontent.getBytes());
+            channel.put(sourceStream, target.toAbsolutePath().toString());
+            channel.rm(source.toString());
+        } catch (Exception e) {
+            throw new IOException("Unable to move file via SFTP", e);
+        } finally {
+            if (channel != null) {
+                channel.disconnect();
+            }
+        }
     }
 
     @Override
