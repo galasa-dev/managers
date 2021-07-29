@@ -202,6 +202,26 @@ public class HttpClientImpl implements IHttpClient {
     }
 
     @Override
+    public HttpClientResponse<String> putXML(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> postXML(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
     public HttpClientResponse<String> putText(String url, String text) throws HttpClientException {
 
         HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
