@@ -88,6 +88,29 @@ public interface IHttpClient {
 
     /**
      * Issue an HTTP POST to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. Uses a content type of application/soap+xml
+     * 
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> postSOAP(String url, String xml)
+            throws HttpClientException;
+
+    /**
+     * Issue an HTTP PUT to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. Uses a content type of application/soap+xml
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> putSOAP(String url, String xml)
+            throws HttpClientException;
+
+    /**
+     * Issue an HTTP POST to the provided URL, sending the provided XML as a String and
      * receiving a String in the response. 
      * 
      * @param url

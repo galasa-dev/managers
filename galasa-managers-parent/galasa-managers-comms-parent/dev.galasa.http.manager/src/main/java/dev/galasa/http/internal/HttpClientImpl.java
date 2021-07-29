@@ -222,6 +222,26 @@ public class HttpClientImpl implements IHttpClient {
     }
 
     @Override
+    public HttpClientResponse<String> putSOAP(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.SOAP_XML }, ContentType.SOAP_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> postSOAP(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.SOAP_XML }, ContentType.SOAP_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
     public HttpClientResponse<String> putText(String url, String text) throws HttpClientException {
 
         HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
