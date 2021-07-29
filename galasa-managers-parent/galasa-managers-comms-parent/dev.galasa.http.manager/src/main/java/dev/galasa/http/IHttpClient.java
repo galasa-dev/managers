@@ -79,7 +79,7 @@ public interface IHttpClient {
      * Issue an HTTP PUT to the provided URL, sending the provided XML as a String and
      * receiving a String in the response. 
      * @param url
-     * @param url
+     * @param xml
      * @return - {@link HttpClientResponse} with a String content type
      * @throws HttpClientException
      */
@@ -87,9 +87,8 @@ public interface IHttpClient {
             throws HttpClientException;
 
     /**
-     * Issue an HTTP POST to the provided URL, sending the provided jaxbObject and
-     * receiving a JAXB Object in the response. In order to unmarshal the response,
-     * an array of possible response classes must be provided in responseTypes
+     * Issue an HTTP POST to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. 
      * 
      * @param url
      * @param xml
