@@ -19,7 +19,7 @@ import dev.galasa.zosfile.IZosUNIXFile;
  * zOS UNIX file system.<br>
  * Use the {@link #loadFromFileSystem()} method to update the object with the content of the <code>server.xml</code> on the
  * zOS UNIX file system.<br>
- * Use the {@link #build()} method to update the the <code>server.xml</code> on the zOS UNIX file system with with the content of the object.<br>
+ * Use the {@link #store()} method to update the the <code>server.xml</code> on the zOS UNIX file system with with the content of the object.<br>
  */
 public interface IZosLibertyServerXml {
 
@@ -69,7 +69,7 @@ public interface IZosLibertyServerXml {
      * Create or replace the server.xml file on the zOS UNIX file system
      * @throws ZosLibertyServerException
      */
-    public void build() throws ZosLibertyServerException;
+    public void store() throws ZosLibertyServerException;
     
     /**
      * Update the content of the {@link IZosLibertyServerXml) with the content of the server.xml file from the zOS UNIX file system 

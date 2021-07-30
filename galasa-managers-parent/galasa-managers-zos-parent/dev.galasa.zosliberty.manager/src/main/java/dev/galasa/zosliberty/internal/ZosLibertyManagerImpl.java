@@ -140,6 +140,10 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
         if (this.zosUNIXCommand == null) {
             throw new ZosLibertyManagerException("The zOS UNIX Command Manager is not available");
         }
+        this.textScannerManager = addDependentManager(allManagers, activeManagers, galasaTest, ITextScannerManagerSpi.class);
+        if (this.textScannerManager == null) {
+            throw new ZosLibertyManagerException("The Text Scanner Manager is not available");
+        }
         this.artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (this.artifactManager == null) {
             throw new ZosLibertyManagerException("The Artifact Manager is not available");

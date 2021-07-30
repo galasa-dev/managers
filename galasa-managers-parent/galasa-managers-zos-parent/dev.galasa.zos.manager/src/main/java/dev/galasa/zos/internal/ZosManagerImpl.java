@@ -634,6 +634,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     @Override
     public void storeArtifact(Path artifactPath, String content, ResultArchiveStoreContentType type) throws ZosManagerException {
         try {
+        	if (content == null) {
+        		content = "";
+        	}
             Files.createFile(artifactPath, type);
             Files.write(artifactPath, content.getBytes());
         } catch (IOException e) {

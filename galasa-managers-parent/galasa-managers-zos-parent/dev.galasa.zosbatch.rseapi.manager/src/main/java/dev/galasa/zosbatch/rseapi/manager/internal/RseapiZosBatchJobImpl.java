@@ -503,7 +503,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             throw new ZosBatchException(e);
         }
 
-        if (response.getStatusCode() == HttpStatus.SC_OK || response.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+        if (response.getStatusCode() == HttpStatus.SC_OK || response.getStatusCode() == HttpStatus.SC_NOT_FOUND || response.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
             this.status = null;
             if (purge) {
                 this.jobPurged = true; 
