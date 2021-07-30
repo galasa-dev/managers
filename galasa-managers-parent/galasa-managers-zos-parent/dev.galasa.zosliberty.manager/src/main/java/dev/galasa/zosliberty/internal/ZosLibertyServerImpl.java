@@ -12,14 +12,16 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
@@ -37,6 +39,7 @@ import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosliberty.IZosLibertyServer;
+import dev.galasa.zosliberty.IZosLibertyServerLog;
 import dev.galasa.zosliberty.IZosLibertyServerLogs;
 import dev.galasa.zosliberty.IZosLibertyServerXml;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
@@ -68,9 +71,17 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	private IZosBatchJob zosLibertySeverJob;
 	private IZosUNIXFile tmpWorkDirDir;
 	private IZosUNIXFile sharedAppDir;
+	private IZosUNIXFile serverConfigDir;
+	private IZosUNIXFile serverOutputDir;
+	private IZosUNIXFile sharedConfigDir;
+	private IZosUNIXFile sharedResourceDir;
     
 	private static final String SLASH_SYBMOL = "/";
 	private static final String SEMI_COLON_SYMBOL = ";";
+
+	private static final String APP_STARTED_MESSAGE_ID = "CWWKZ0001I";
+	private static final String APP_STOPPED_MESSAGE_ID = "CWWKZ0009I";
+	private static final String SERVER_STARTED_MESSAGE_ID = "CWWKF0011I";
     
     public ZosLibertyServerImpl(ZosLibertyImpl zosLiberty, IZosImage zosImage, String wlpInstallDir, String wlpUserDir, String wlpOutputDir) throws ZosLibertyServerException {
         this.zosLiberty = zosLiberty;
@@ -153,13 +164,6 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public void build() throws ZosLibertyServerException {
-        if (getServerXml() != null) {
-            getServerXml().build();
-        }
-    }
-
-    @Override
     public String getVersion() throws ZosLibertyServerException {
         try {
             UnixCommandResponse commandResponse = issueLibertyCommand("productInfo version", false);
@@ -177,6 +181,13 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
             }
         } catch (ZosLibertyServerException e) {
             throw new ZosLibertyServerException("Unable to get Liberty version", e);
+        }
+    }
+    
+    @Override
+    public void build() throws ZosLibertyServerException {
+        if (getServerXml() != null) {
+            getServerXml().store();
         }
     }
 
@@ -218,6 +229,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
                 path.append("wlp");
                 path.append(SLASH_SYBMOL);
                 path.append("usr");
+                path.append(SLASH_SYBMOL);
                 setWlpUserDir(path.toString());
             } catch (ZosManagerException e) {
                 throw new ZosLibertyServerException("Unable to get Liberty user directory", e);
@@ -229,19 +241,97 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     @Override
     public IZosUNIXFile getWlpOutputDir() throws ZosLibertyServerException {
         if (this.wlpOutputDir == null) {
-            StringBuilder path = new StringBuilder();
-            path.append(getWlpUserDir());
-            path.append(SLASH_SYBMOL);
-            path.append("servers");
-            path.append(SLASH_SYBMOL);
-            path.append(getServerName());
-            path.append(SLASH_SYBMOL);
-            setWlpOutputDir(path.toString());
+            setWlpOutputDir(getServerConfigDir().getUnixPath());
         }
         return this.wlpOutputDir;
     }
     
     @Override
+    public IZosUNIXFile getSharedAppDir() throws ZosLibertyServerException {
+		if (this.sharedAppDir == null) {
+	        try {
+	        	this.sharedAppDir = this.zosFileHandler.newUNIXFile(getWlpUserDir().getUnixPath() + "shared/apps/", getZosImage());
+	        } catch (ZosManagerException e) {
+	            throw new ZosLibertyServerException("Unable to get shared app directory", e);
+	        }
+		}
+		return this.sharedAppDir;
+	}
+
+    @Override
+    public IZosUNIXFile getServerConfigDir() throws ZosLibertyServerException {
+		if (this.serverConfigDir == null) {
+	        try {
+	        	this.serverConfigDir = this.zosFileHandler.newUNIXFile(getWlpUserDir().getUnixPath() + "servers/" + getServerName() + SLASH_SYBMOL, getZosImage());
+	        } catch (ZosManagerException e) {
+	            throw new ZosLibertyServerException("Unable to get server config directory", e);
+	        }
+		}
+		return this.serverConfigDir;
+	}
+
+    @Override
+    public IZosUNIXFile getServerOutputDir() throws ZosLibertyServerException {
+		if (this.serverOutputDir == null) {
+	        try {
+	        	this.serverOutputDir = this.zosFileHandler.newUNIXFile(getServerConfigDir().getUnixPath(), getZosImage());
+	        } catch (ZosManagerException e) {
+	            throw new ZosLibertyServerException("Unable to get server output directory", e);
+	        }
+		}
+		return this.serverOutputDir;
+	}
+
+    @Override
+    public IZosUNIXFile getSharedConfigDir() throws ZosLibertyServerException {
+		if (this.sharedConfigDir == null) {
+	        try {
+	        	this.sharedConfigDir = this.zosFileHandler.newUNIXFile(getWlpUserDir().getUnixPath() + "shared/config/", getZosImage());
+	        } catch (ZosManagerException e) {
+	            throw new ZosLibertyServerException("Unable to get server output directory", e);
+	        }
+		}
+		return this.sharedConfigDir;
+	}
+
+    @Override
+    public IZosUNIXFile getSharedResourceDir() throws ZosLibertyServerException {
+		if (this.sharedResourceDir == null) {
+	        try {
+	        	this.sharedResourceDir = this.zosFileHandler.newUNIXFile(getWlpUserDir().getUnixPath() + "shared/resources/", getZosImage());
+	        } catch (ZosManagerException e) {
+	            throw new ZosLibertyServerException("Unable to get server output directory", e);
+	        }
+		}
+		return this.sharedResourceDir;
+	}
+
+	@Override
+	public IZosUNIXFile getLogsDirectory() throws ZosLibertyServerException {
+	    if (this.logsDir == null) {
+	        try {
+	            this.logsDir = this.zosFileHandler.newUNIXFile(getWlpOutputDir().getUnixPath() + SLASH_SYBMOL + "logs/", getZosImage());
+	        } catch (ZosUNIXFileException e) {
+	            throw new ZosLibertyServerException("Unable to get logs directory", e);
+	        }
+	
+	    }
+	    return this.logsDir;
+	}
+
+	@Override
+	public IZosUNIXFile getDropinsDir() throws ZosLibertyServerException {
+		if (this.dropinsDir == null) {
+	        try {
+	        	this.dropinsDir = this.zosFileHandler.newUNIXFile(getWlpOutputDir().getUnixPath() + SLASH_SYBMOL + "dropins/", getZosImage());
+	        } catch (ZosUNIXFileException e) {
+	            throw new ZosLibertyServerException("Unable to get dropins directory", e);
+	        }
+		}
+		return this.dropinsDir;
+	}
+
+	@Override
     public IZosUNIXFile getJavaHome() throws ZosLibertyServerException {
         if (this.javaHome == null) {
             try {
@@ -278,23 +368,10 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public IZosUNIXFile getLogsDirectory() throws ZosLibertyServerException {
-        if (this.logsDir == null) {
-            try {
-                this.logsDir = this.zosFileHandler.newUNIXFile(getWlpOutputDir().getUnixPath() + SLASH_SYBMOL + "logs/", getZosImage());
-            } catch (ZosUNIXFileException e) {
-                throw new ZosLibertyServerException("Unable to get logs directory", e);
-            }
-    
-        }
-        return this.logsDir;
-    }
-
-    @Override
     public IZosLibertyServerLogs getLogs() throws ZosLibertyServerException {
         if (this.libertyServerLogs == null) {
             try {
-                this.libertyServerLogs = new ZosLibertyServerLogsImpl(getLogsDirectory());
+                this.libertyServerLogs = new ZosLibertyServerLogsImpl(getLogsDirectory(), this.zosLibertyManager);
             } catch (ZosLibertyServerException e) {
                 throw new ZosLibertyServerException("Unable to get server logs", e);
             }
@@ -305,7 +382,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     @Override
     public String getMessageLog() throws ZosLibertyServerException {
         try {
-            return new String(getLogs().getMessagesLog().retrieveAsBinary(), StandardCharsets.UTF_8);
+            return new String(getLogs().getMessagesLog().getZosUNIXFile().retrieveAsBinary(), StandardCharsets.UTF_8);
         } catch (ZosUNIXFileException e) {
             throw new ZosLibertyServerException("Unable to get messages.log", e);
         }
@@ -330,7 +407,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	}
 
 	@Override
-	public boolean run() throws ZosLibertyServerException {
+	public int run() throws ZosLibertyServerException {
     	try {
 			this.zosLibertySeverJob = this.zosBatch.submitJob(buildServerJcl(), null);
 			if (waitForStart() != 0) {
@@ -338,7 +415,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 					throw new ZosLibertyServerException("Liberty server batch job ended " + this.zosLibertySeverJob.getRetcode());
 				}
 			}
-			return true;
+			return status();
 		} catch (ZosBatchException | ZosLibertyServerException e) {
 			throw new ZosLibertyServerException("Unable to start Liberty server", e);
 		}
@@ -371,6 +448,40 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	}
 
 	@Override
+	public boolean waitForStartMessage() throws ZosLibertyServerException {
+		return waitForStartMessage(20000);
+	}
+
+	@Override
+	public boolean waitForStartMessage(int millisecondTimeout) throws ZosLibertyServerException {
+		Pattern searchPattern = Pattern.compile(SERVER_STARTED_MESSAGE_ID);
+		IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
+		String result;
+		if (messagesLog.getCheckpoint() > -1) {
+			result = getLogs().getMessagesLog().waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+		} else {
+			result = getLogs().getMessagesLog().waitForPattern(searchPattern, millisecondTimeout);
+		}
+		if (result != null && result.equals(SERVER_STARTED_MESSAGE_ID)) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public int stop() throws ZosLibertyServerException {
+		try {
+			if (this.zosLibertySeverJob != null) {
+				return stopJob();
+			} else {
+				return issueLibertyCommand("server stop " + getServerName(), false).getRc();
+			}
+		} catch (ZosLibertyServerException e) {
+			throw new ZosLibertyServerException("Problem stopping Liberty server", e);
+		}
+	}
+
+	@Override
 	public int waitForStop() throws ZosLibertyServerException {
 		return waitForStop(10000);
 	}
@@ -385,20 +496,6 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
             }
         }
 		return status();
-	}
-
-	@Override
-	public int stop() throws ZosLibertyServerException {
-		try {
-    		if (this.zosLibertySeverJob != null) {
-    			stopJob();
-    			return 0;
-    		} else {
-				return issueLibertyCommand("server stop " + getServerName(), false).getRc();
-    		}
-		} catch (ZosLibertyServerException e) {
-			throw new ZosLibertyServerException("Problem stopping Liberty server", e);
-		}
 	}
 
 	@Override
@@ -443,36 +540,48 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 			attributes.put("httpsPort", String.valueOf(httpsPort));
 		}
 		getServerXml().addElement("httpEndpoint", attributes);
-		getServerXml().build();
+		getServerXml().store();
 	}
 	
 	@Override
-	public void deployApplication(String path, Class<?> clazz, String location, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException {
+	public void deployApplication(Class<?> clazz, String path, String targetLocation, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException {
 		try {
-			if (location == null) {
-				location = "${shared.app.dir}";
+			if (targetLocation == null) {
+				targetLocation = "${shared.app.dir}";
 			}
-			String parsedLocation = resolveLocation(location);
+			String parsedLocation = resolveLocation(targetLocation);
 			copyApplicationToZosUnix(path, clazz, parsedLocation);
+			if (!targetLocation.endsWith(getFileNameFromPath(path))) {
+				targetLocation = targetLocation + SLASH_SYBMOL + getFileNameFromPath(path);
+			}
 			Map<String, String> attributes = new HashMap<>();
 			attributes.put("id", name);
 			attributes.put("name", name);
 			attributes.put("type", type.toString());
-			attributes.put("location", location);
+			attributes.put("location", targetLocation);
 			if (contextRoot != null) {
 				attributes.put("context-root", contextRoot);			
 			}
 			getServerXml().addElement("application", attributes);
-			getServerXml().build();
+			getServerXml().store();
 		} catch (ZosLibertyServerException e) {
 			throw new ZosLibertyServerException("Problem deploying application", e);
 		}
 	}
 	
+	private String getFileNameFromPath(String path) {
+		return new File(path).getName();
+	}
+
 	private String resolveLocation(String location) throws ZosLibertyServerException {
 		String parsedLocation = location;
 		try {
 			parsedLocation = parsedLocation.replace("${shared.app.dir}", getSharedAppDir().getUnixPath());
+			parsedLocation = parsedLocation.replace("${server.config.dir}", getServerConfigDir().getUnixPath());
+			parsedLocation = parsedLocation.replace("${server.output.dir}", getServerOutputDir().getUnixPath());
+			parsedLocation = parsedLocation.replace("${shared.config.dir}", getSharedConfigDir().getUnixPath());
+			parsedLocation = parsedLocation.replace("${shared.resource.dir}", getSharedResourceDir().getUnixPath());
+			parsedLocation = parsedLocation.replace("${wlp.user.dir}", getWlpUserDir().getUnixPath());
 		} catch (ZosLibertyServerException e) {
 			throw new ZosLibertyServerException("Problem parsing location String '" + location + "'", e);
 		}
@@ -480,7 +589,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	}
 
 	@Override
-	public void deployApplicationToDropins(String path, Class<?> clazz) throws ZosLibertyServerException {
+	public void deployApplicationToDropins(Class<?> clazz, String path) throws ZosLibertyServerException {
 		try {
 			copyApplicationToZosUnix(path, clazz, getDropinsDir().getUnixPath());
 		} catch (ZosLibertyServerException e) {
@@ -488,7 +597,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 		}
 	}
 	
-	public void copyApplicationToZosUnix(String path, Class<?> clazz, String location) throws ZosLibertyServerException {
+	private void copyApplicationToZosUnix(String path, Class<?> clazz, String location) throws ZosLibertyServerException {
 		IBundleResources resources = this.artifactManager.getBundleResources(clazz);
         InputStream application;
 		try {
@@ -517,87 +626,110 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 			throw new ZosLibertyServerException("Problem deploying application to '" + location + "'", e);
 		}
 	}
-	
+
 	@Override
-	public IZosUNIXFile getDropinsDir() throws ZosLibertyServerException {
-		if (this.dropinsDir == null) {
-	        try {
-	        	this.dropinsDir = this.zosFileHandler.newUNIXFile(getWlpOutputDir().getUnixPath() + SLASH_SYBMOL + "dropins/", getZosImage());
-	        } catch (ZosUNIXFileException e) {
-	            throw new ZosLibertyServerException("Unable to get dropins directory", e);
-	        }
+	public void removeApplication(String name) throws ZosLibertyServerException {
+		try {
+			List<Element> applicationElements = getServerXml().getElements("application");
+			for (Element applicationElement : applicationElements) {
+				String applicationName = applicationElement.getAttribute("name");
+				if (name == null || (applicationName != null && applicationName.equals(name))) {
+					String applicationLocation = applicationElement.getAttribute("location");
+					if (applicationLocation != null) {
+						IZosUNIXFile application = this.zosFileHandler.newUNIXFile(resolveLocation(applicationLocation), getZosImage());
+						if (application.exists()) {
+							applicationElement.getParentNode().removeChild(applicationElement);
+							getServerXml().store();
+							application.delete();
+						} else {
+							throw new ZosLibertyServerException("Application file " + name + " does not exist in " + application.getDirectoryPath());
+						}
+					}
+				}
+			}
+		} catch (ZosUNIXFileException e) {
+			throw new ZosLibertyServerException("Unable to remove application", e);
 		}
-		return this.dropinsDir;
+	}
+
+	@Override
+	public void removeApplicationFromDropins(String fileName) throws ZosLibertyServerException {
+		if (fileName != null) {
+			try {
+				IZosUNIXFile application = this.zosFileHandler.newUNIXFile(getDropinsDir().getUnixPath() + SLASH_SYBMOL + fileName, getZosImage());
+				if (application.exists()) {
+					application.delete();
+				} else {
+					throw new ZosLibertyServerException("File " + fileName + " does not exist in dropins directory " + getDropinsDir());
+				}
+			} catch (ZosUNIXFileException | ZosLibertyServerException e) {
+				throw new ZosLibertyServerException("Unable to remove application file " + fileName + " from dropins directory", e);
+			}
+		} else {
+			try {
+				for (Entry<String, IZosUNIXFile> entry :getDropinsDir().directoryListRecursive().entrySet()) {
+					if (entry.getValue().isDirectory())
+						if (entry.getValue().exists()) {
+							entry.getValue().directoryDeleteNonEmpty();
+					} else {
+						if (entry.getValue().exists()) {
+							entry.getValue().delete();
+						}
+					}
+				}
+			} catch (ZosUNIXFileException | ZosLibertyServerException e) {
+				throw new ZosLibertyServerException("Unable to all remove applications from dropins directory", e);
+			}
+		}
+	}
+
+	@Override
+	public boolean waitForApplicationStart(String name) throws ZosLibertyServerException {
+		return waitForApplicationStart(name, 20000);
+	}
+
+	@Override
+	public boolean waitForApplicationStart(String name, int millisecondTimeout) throws ZosLibertyServerException {
+		Pattern searchPattern = Pattern.compile(APP_STARTED_MESSAGE_ID + ":\\s.*\\s" + name + "\\s.*");
+		IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
+		String result;
+		if (messagesLog.getCheckpoint() > -1) {
+			result = getLogs().getMessagesLog().waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+		} else {
+			result = getLogs().getMessagesLog().waitForPattern(searchPattern, millisecondTimeout);
+		}
+		if (result != null && result.startsWith(APP_STARTED_MESSAGE_ID)) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean waitForApplicationStop(String name) throws ZosLibertyServerException {
+		return waitForApplicationStop(name, 20000);
+	}
+
+	@Override
+	public boolean waitForApplicationStop(String name, int millisecondTimeout) throws ZosLibertyServerException {
+		Pattern searchPattern = Pattern.compile(APP_STOPPED_MESSAGE_ID + ":\\s.*\\s" + name + "\\s.*");
+		IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
+		String result;
+		if (messagesLog.getCheckpoint() > -1) {
+			result = getLogs().getMessagesLog().waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+		} else {
+			result = getLogs().getMessagesLog().waitForPattern(searchPattern, millisecondTimeout);
+		}
+		if (result != null && result.startsWith(APP_STOPPED_MESSAGE_ID)) {
+			return true;
+		}
+		return false;
 	}
 	
-    private void DELETEME() {
-    }
-    
-    @Override
-    public void addApplicationTag(String path, String id, String name, String type) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
+	@Override
+	public void startTODO() {
+		//TODO
     }
 
-    @Override
-    public void enableDropins() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void addBundleToDropins(String bundle, String targetFileName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void removeBundleFromDropins(String bundleName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void cleanDropins() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getWlpServerConfigPath() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void buildWlpServerFromTemplate() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void buildWlpServerWithServerXML(String serverXMLArtifactPath, String serverName, Class<?> klass) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void buildWlpServerBasic(String serverDescription, int httpPort, int httpsPort, String hostName)    throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void saveServerXML() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void saveInstalledAppsXML() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
 
     @Override
     public void saveJvmOptions() throws ZosLibertyServerException {
@@ -611,17 +743,6 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
         return null;
     }
 
-    @Override
-    public String checkpointLogs(String output) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public OutputStream getMsgLog(boolean binary) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public OutputStream getMsgLogSinceCheckpoint(boolean binary) throws ZosLibertyServerException {
@@ -630,7 +751,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForMessageInMsgLog(String message, String failMessage, long resourceTimeout,    boolean useCheckpoint) throws ZosLibertyServerException {
+    public boolean waitForMessageInMsgLog(String message, String failMessage, int resourceTimeout,    boolean useCheckpoint) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
         return false;
     }
@@ -642,7 +763,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForMessageInMsgLog(String message, long resourceTimeout) throws ZosLibertyServerException {
+    public boolean waitForMessageInMsgLog(String message, int resourceTimeout) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
         return false;
     }
@@ -673,75 +794,16 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForLibertyEnabled() throws ZosLibertyServerException {
+    public boolean waitForMessageInLatestMsgLog(String message, String failMessage, int resourceTimeout, boolean useCheckpoint) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
-    public boolean waitForLibertyDisabled() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public OutputStream getOrderedMessageLogsContents(boolean useCheckpoint) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public OutputStream getOrderedMessageLogsContents() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public OutputStream getLatestMessageLogContents() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean searchLatestMessageLogForString(String stringValue) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean searchLatestMessageLogForText(String text) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean waitForMessageInLatestMsgLog(String message, String failMessage, long resourceTimeout, boolean useCheckpoint) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public void addLocalBundleToDropins(String bundleLocation, String bundleFileName, Class<?> owningClass) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
 
     @Override
     public void getLibertyServerDump(String desiredDumpName) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public boolean containsFFDCs() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean containsFFDCs(boolean sinceCheckpoint) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
@@ -751,79 +813,13 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public String getWlpServerDir() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public IZosUNIXFile getKeystoreFile() throws ZosLibertyServerException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String getServerXmlDir() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Document readXmlFromUSS(String xmlDirName, String xmlFileName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Document readServerXmlFromUSS() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void writeXmlToUSS(Document xmlDoc, String xmlDirName, String xmlFileName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void writeServerXmlToUSS() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void writeJvmOptionsUSS(String options) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void deployAppToDropins(String appFileName, Class<?> artifactClass) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void deployAppToDropins(InputStream appInputStream, String appFileName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void deployAppToApps(String appFileName, Class<?> artifactClass) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void deployAppToApps(InputStream appInputStream, String appFileName) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void addApplicationServerXML(String id, String name, String location, String type) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
 
     }
@@ -841,67 +837,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public void removeServerFilesFromUSS() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public String getWlpServerWorkareaDir() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getWlpServerLogsDir() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public OutputStream getMessagesLog(boolean binary) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getMessagesLogString() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getMessagesLogName() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean searchMessagesLogForText(String text, boolean binary) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean waitForMessagesLogText(String text) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean waitForLibertyStart() throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public String securityUtilityEncode(String password) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String securityUtilityEncode(String password, String javaHome) throws ZosLibertyServerException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -913,13 +849,8 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public void addBundleToRepository(String dir, String includes) throws ZosLibertyServerException {
-        // TODO Auto-generated method stub
-
-    }
-
-    
-    private void DELETEMEAGAIN() {
+    public void endTODO() {
+    	//TODO
     }
     
     @Override
@@ -947,10 +878,11 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 		}
     }
 
-	private void stopJob() throws ZosLibertyServerException {
+	private int stopJob() throws ZosLibertyServerException {
+		int rc = -1;
 		try {
 			this.zosConsole.issueCommand("RO " + this.zosImage.getImageID() + ",STOP " + this.zosLibertySeverJob.getJobname().getName());
-			waitForStop();
+			rc  = waitForStop();
 		} catch (ZosConsoleException | ZosLibertyServerException e) {
 			logger.error("Problem stopping Liberty server job", e);
 		}
@@ -961,6 +893,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 		} catch (ZosBatchException e) {
 			logger.error("Problem during Liberty server job clean up", e);
 		}
+    	return rc;
 	}
 
     private String archiveJob(String rasPath) throws ZosLibertyServerException {
@@ -980,15 +913,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 	private IZosUNIXFile getServerXmlUnixFile() throws ZosLibertyServerException {
 	    IZosUNIXFile serverXmlUnixFile;
 	    try {
-	        StringBuilder path = new StringBuilder();
-	        path.append(getWlpUserDir().getUnixPath());
-	        path.append(SLASH_SYBMOL);
-	        path.append("servers");
-	        path.append(SLASH_SYBMOL);
-	        path.append(getServerName());
-	        path.append(SLASH_SYBMOL);
-	        path.append("server.xml");
-	        serverXmlUnixFile = this.zosFileHandler.newUNIXFile(path.toString(), zosImage);
+	        serverXmlUnixFile = this.zosFileHandler.newUNIXFile(getServerConfigDir() + "server.xml", zosImage);
 	    } catch (ZosUNIXFileException e) {
 	        throw new ZosLibertyServerException("Unable to create server.xml object", e);
 	    }
@@ -1061,17 +986,6 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
 		return this.tmpWorkDirDir;
 	}
 
-	private IZosUNIXFile getSharedAppDir() throws ZosLibertyServerException {
-		if (this.sharedAppDir == null) {
-	        try {
-	        	this.sharedAppDir = this.zosFileHandler.newUNIXFile(getWlpUserDir().getUnixPath() + "shared/apps/", getZosImage());
-	        } catch (ZosManagerException e) {
-	            throw new ZosLibertyServerException("Unable to get shared app directory", e);
-	        }
-		}
-		return this.sharedAppDir;
-	}
-	
 	class UnixCommandResponse {
 		private String response;
 		private int rc;

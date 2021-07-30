@@ -5,10 +5,6 @@
  */
 package dev.galasa.zosliberty;
 
-import java.util.HashMap;
-
-import dev.galasa.zosfile.IZosUNIXFile;
-
 /**
  * An IZosLibertyServerLogs contain an array of Liberty server logs
  */
@@ -30,25 +26,25 @@ public interface IZosLibertyServerLogs {
      * @param fileName the log file name
      * @return the log file
      */
-    public IZosUNIXFile getLog(String fileName);
+    public IZosLibertyServerLog getLog(String fileName);
 
     /**
      * Get the next log file
      * @return the next log file
      */
-    public IZosUNIXFile getNext();
+    public IZosLibertyServerLog getNext();
 
     /**
      * Get the Liberty messages.log
      * @return the log file
      */
-    public IZosUNIXFile getMessagesLog();
+    public IZosLibertyServerLog getMessagesLog();
 
     /**
      * Get the next FFDC log file
      * @return the next FFDC log 
      */
-    public IZosUNIXFile getNextFfdc();
+    public IZosLibertyServerLog getNextFfdc();
 
     /**
      * The the name of the current log file

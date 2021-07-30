@@ -3,78 +3,58 @@
  * 
  * (c) Copyright IBM Corp. 2021.
  */
-package dev.galasa.cicsts.cicsresource;
+package dev.galasa.zosliberty;
 
 import java.io.OutputStream;
 import java.util.regex.Pattern;
 
-import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
 import dev.galasa.zosfile.IZosUNIXFile;
 
-public interface IJvmserverLog {
+public interface IZosLibertyServerLog {
 	
 	/**
-	 * Returns the name of the specified log file or DDNAME
-	 * @return the file or DDNAME name
-	 * @throws CicsJvmserverResourceException 
+	 * Returns the name of the specified log file
+	 * @return the file name
+	 * @throws ZosLibertyServerException 
 	 */
-	public String getName() throws CicsJvmserverResourceException;
-	
-	/**
-	 * Is this JVM server log a {@link IZosUNIXFile}
-	 * @return
-	 */
-	public boolean isZosUNIXFile();
-	
-	/**
-	 * Is this JVM server log a {@link IZosBatchJobOutputSpoolFile}
-	 * @return
-	 */
-	public boolean isZosBatchJobSpoolFile();
-	
-	/**
-	 * Returns the {@link IZosUNIXFile} associated with this {@link IJvmserverLog}
-	 * @return JVM server log file
-	 * @throws CicsJvmserverResourceException
-	 */
-	public IZosUNIXFile getZosUNIXFile() throws CicsJvmserverResourceException;
+	public String getName() throws ZosLibertyServerException;
 
 	/**
-	 * Returns the {@link IZosBatchJobOutputSpoolFile} associated with this {@link IJvmserverLog}
-	 * @return JVM server log spool file
-	 * @throws CicsJvmserverResourceException
+	 * Returns the {@link IZosUNIXFile} associated with this {@link IZosLibertyServerLog}
+	 * @return Liberty server log file
+	 * @throws ZosLibertyServerException
 	 */
-	public IZosBatchJobOutputSpoolFile getZosBatchJobOutputSpoolFile() throws CicsJvmserverResourceException;
+	public IZosUNIXFile getZosUNIXFile() throws ZosLibertyServerException;
 	
 	/**
 	 * Returns the contents of a specified log
 	 * @return contents of log
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public OutputStream retrieve() throws CicsJvmserverResourceException;
+	public OutputStream retrieve() throws ZosLibertyServerException;
 	
 	/**
-	 * Delete the {@link IZosUNIXFile} if it exists. Will throw {@link CicsJvmserverResourceException} if the log is a {@link IZosBatchJobOutputSpoolFile}
-	 * @throws CicsJvmserverResourceException 
+	 * Delete the {@link IZosUNIXFile} if it exists
+	 * @throws ZosLibertyServerException 
 	 */
-	public void delete() throws CicsJvmserverResourceException;
+	public void delete() throws ZosLibertyServerException;
 
 	/**
 	 * Save the log to the Results Archive Store
 	 * @param rasPath
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
+	public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException;
 
 	/**
-	 * Checkpoint this {@link IJvmserverLog}
+	 * Checkpoint this {@link IZosLibertyServerLog}
 	 * @return checkpoint
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public long checkpoint() throws CicsJvmserverResourceException;
+	public long checkpoint() throws ZosLibertyServerException;
 	
 	/**
-	 * Return the current checkpoint on this {@link IJvmserverLog}
+	 * Return the current checkpoint on this {@link IZosLibertyServerLog}
 	 * @return checkpoint 
 	 */
 	public long getCheckpoint();
@@ -82,73 +62,73 @@ public interface IJvmserverLog {
 	/**
 	 * Returns the contents of log since the last checkpoint
 	 * @return contents of log
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public OutputStream retrieveSinceCheckpoint() throws CicsJvmserverResourceException;
+	public OutputStream retrieveSinceCheckpoint() throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search text
 	 * @param searchText the text to search
 	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForText(String searchText) throws CicsJvmserverResourceException;
+	public String searchForText(String searchText) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search or fail String
 	 * @param searchText the text to search
 	 * @return true if text found
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForText(String searchText, String failText) throws CicsJvmserverResourceException;
+	public String searchForText(String searchText, String failText) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search text String since the last checkpoint
 	 * @param searchText the text to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForTextSinceCheckpoint(String searchText) throws CicsJvmserverResourceException;
+	public String searchForTextSinceCheckpoint(String searchText) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search or fail String since the last checkpoint
 	 * @param searchText the text to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForTextSinceCheckpoint(String searchText, String failText) throws CicsJvmserverResourceException;
+	public String searchForTextSinceCheckpoint(String searchText, String failText) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search Pattern
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForPattern(Pattern searchPattern) throws CicsJvmserverResourceException;
+	public String searchForPattern(Pattern searchPattern) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search or fail Pattern
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForPattern(Pattern searchPattern, Pattern failPattern) throws CicsJvmserverResourceException;
+	public String searchForPattern(Pattern searchPattern, Pattern failPattern) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search Pattern since the last checkpoint
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForPatternSinceCheckpoint(Pattern searchPattern) throws CicsJvmserverResourceException;
+	public String searchForPatternSinceCheckpoint(Pattern searchPattern) throws ZosLibertyServerException;
 
 	/**
 	 * Searches contents of log for specified search or fail Pattern since the last checkpoint
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException 
+	 * @throws ZosLibertyServerException 
 	 */
-	public String searchForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern) throws CicsJvmserverResourceException;
+	public String searchForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern) throws ZosLibertyServerException;
 
 	/**
 	 * Wait for a search search String to appear in specified log. Will check every 3 seconds until one of:
@@ -160,9 +140,9 @@ public interface IJvmserverLog {
 	 * @param searchString the text to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForText(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForText(String searchText, long millisecondTimeout) throws ZosLibertyServerException;
 
 	/**
 	 * Wait for a search String or fail text to appear in specified log. Will check every 3 seconds until one of:
@@ -175,9 +155,9 @@ public interface IJvmserverLog {
 	 * @param failString the failure text to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForText(String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForText(String searchText, String failText, long millisecondTimeout) throws ZosLibertyServerException;
 	
 	/**
 	 * Wait for a search String to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
@@ -189,9 +169,9 @@ public interface IJvmserverLog {
 	 * @param searchText the text to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws ZosLibertyServerException;
 	
 	/**
 	 * Wait for a search or fail String  to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
@@ -204,9 +184,9 @@ public interface IJvmserverLog {
 	 * @param failText the failure text to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForTextSinceCheckpoint(String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForTextSinceCheckpoint(String searchText, String failText, long millisecondTimeout) throws ZosLibertyServerException;
 
 	/**
 	 * Wait for a search Pattern to appear in specified log. Will check every 3 seconds until one of:
@@ -218,9 +198,9 @@ public interface IJvmserverLog {
 	 * @param searchPattern the Pattern to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForPattern(Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForPattern(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException;
 
 	/**
 	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log. Will check every 3 seconds until one of:
@@ -233,9 +213,9 @@ public interface IJvmserverLog {
 	 * @param failPattern the failure pattern to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException;
 	
 	/**
 	 * Wait for a search Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
@@ -247,9 +227,9 @@ public interface IJvmserverLog {
 	 * @param searchPattern the Pattern to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException;
 	
 	/**
 	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
@@ -262,7 +242,7 @@ public interface IJvmserverLog {
 	 * @param failPattern the failure pattern to search
 	 * @param millisecondTimeout timeout value
 	 * @return the string found or null
-	 * @throws CicsJvmserverResourceException
+	 * @throws ZosLibertyServerException
 	 */
-	public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException;
+	public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException;
 }
