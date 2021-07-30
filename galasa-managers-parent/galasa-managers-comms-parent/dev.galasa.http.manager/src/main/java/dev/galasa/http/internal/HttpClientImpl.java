@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.http.internal;
 
@@ -197,6 +197,46 @@ public class HttpClientImpl implements IHttpClient {
 
         HttpClientRequest request = HttpClientRequest.newGetRequest(buildUri(url, null).toString(),
                 new ContentType[] { ContentType.TEXT_PLAIN });
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> putXML(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> postXML(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_XML }, ContentType.APPLICATION_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> putSOAP(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPutRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.SOAP_XML }, ContentType.SOAP_XML);
+        request.setBody(xml);
+
+        return executeTextRequest(request);
+    }
+
+    @Override
+    public HttpClientResponse<String> postSOAP(String url, String xml) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newPostRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.SOAP_XML }, ContentType.SOAP_XML);
+        request.setBody(xml);
 
         return executeTextRequest(request);
     }

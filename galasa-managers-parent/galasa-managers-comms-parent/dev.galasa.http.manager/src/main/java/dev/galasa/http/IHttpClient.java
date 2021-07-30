@@ -1,7 +1,7 @@
 /*
  * Licensed Materials - Property of IBM
  * 
- * (c) Copyright IBM Corp. 2019.
+ * (c) Copyright IBM Corp. 2019-2021.
  */
 package dev.galasa.http;
 
@@ -75,6 +75,52 @@ public interface IHttpClient {
     HttpClientResponse<Object> deleteJaxb(String url, Class<?>... responseTypes) 
             throws HttpClientException;
 
+    /**
+     * Issue an HTTP PUT to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. 
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> putXML(String url, String xml)
+            throws HttpClientException;
+
+    /**
+     * Issue an HTTP POST to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. Uses a content type of application/soap+xml
+     * 
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> postSOAP(String url, String xml)
+            throws HttpClientException;
+
+    /**
+     * Issue an HTTP PUT to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. Uses a content type of application/soap+xml
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> putSOAP(String url, String xml)
+            throws HttpClientException;
+
+    /**
+     * Issue an HTTP POST to the provided URL, sending the provided XML as a String and
+     * receiving a String in the response. 
+     * 
+     * @param url
+     * @param xml
+     * @return - {@link HttpClientResponse} with a String content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<String> postXML(String url, String xml)
+            throws HttpClientException;
+    
     /**
      * Issue an HTTP GET to the provided URL, receiving a {@link JSONObject} in the
      * response.
