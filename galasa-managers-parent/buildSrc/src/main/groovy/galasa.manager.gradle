@@ -1,6 +1,5 @@
 plugins {
     id 'galasa.java'
-    id 'dev.galasa.githash'
     id 'biz.aQute.bnd.builder'
     id 'jacoco'
 }
@@ -22,11 +21,6 @@ dependencies {
     testImplementation 'dev.galasa:galasa-testharness:0.15.0'
     testCompileOnly    'javax.validation:validation-api:2.0.1.Final'
 }
-
-hashes {
-    gitHash = System.getenv('GIT_COMMIT')
-}
-
 
 jacoco {
     toolVersion = "0.8.6"
