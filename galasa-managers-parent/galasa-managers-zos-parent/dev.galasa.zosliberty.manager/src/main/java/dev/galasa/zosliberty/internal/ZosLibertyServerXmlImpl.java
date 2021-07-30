@@ -100,7 +100,7 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
     }
 
     @Override
-    public void build() throws ZosLibertyServerException {
+    public void store() throws ZosLibertyServerException {
         try {
             if (!this.serverXmlUnixfile.exists()) {
                 this.serverXmlUnixfile.setShouldCleanup(false);

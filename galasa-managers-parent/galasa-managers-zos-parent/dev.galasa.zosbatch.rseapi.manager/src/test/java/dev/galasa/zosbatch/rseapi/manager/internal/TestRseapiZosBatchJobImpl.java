@@ -523,9 +523,9 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.PUT_JSON), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
 
         Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
-        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        String expectedMessage = "Error Cancel job, HTTP Status Code 404 : NOT_FOUND";
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("SC_FORBIDDEN");
+        String expectedMessage = "Error Cancel job, HTTP Status Code 403 : SC_FORBIDDEN";
         ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
         	zosBatchJobSpy.cancel();
         });
@@ -537,11 +537,11 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
 
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-
         Assert.assertEquals("isPurged() should return the false", false, zosBatchJobSpy.isPurged());
         zosBatchJobSpy.purge();
         Assert.assertEquals("isPurged() should return the true", true, zosBatchJobSpy.isPurged());
         
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         zosBatchJobSpy.purge();
     }
     
@@ -582,9 +582,9 @@ public class TestRseapiZosBatchJobImpl {
         Mockito.when(rseapiApiProcessorMock.sendRequest(Mockito.eq(RseapiRequestType.DELETE), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(rseapiResponseMockStatus);
 
         Mockito.when(rseapiResponseMockStatus.getJsonContent()).thenReturn(getJsonObject());
-        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("NOT_FOUND");
-        String expectedMessage = "Error Purge job, HTTP Status Code 404 : NOT_FOUND";
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+        Mockito.when(rseapiResponseMockStatus.getStatusLine()).thenReturn("SC_FORBIDDEN");
+        String expectedMessage = "Error Purge job, HTTP Status Code 403 : SC_FORBIDDEN";
         ZosBatchException expectedException = Assert.assertThrows("expected exception should be thrown", ZosBatchException.class, ()->{
         	zosBatchJobSpy.purge();
         });
