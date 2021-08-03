@@ -87,6 +87,12 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
         setCpsProperty("zos.cluster." + clusterId + ".images", sb.toString());
     }
     
+    @Override
+    public IFramework getFramework() {
+		return this.manager.getFramework();
+	}
+    
+    
     
     @Override
     public void addZosImageToCpsAsDefault(@NotNull IZosImage image) throws GalasaEcosystemManagerException {

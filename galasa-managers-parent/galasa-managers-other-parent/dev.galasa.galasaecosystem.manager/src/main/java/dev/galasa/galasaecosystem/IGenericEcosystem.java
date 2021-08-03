@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.framework.spi.IFramework;
 import dev.galasa.zos.IZosImage;
 
 /**
@@ -83,6 +84,8 @@ public interface IGenericEcosystem {
      * @throws GalasaEcosystemManagerException if there is a problem accessing the CREDS
      */
     public void setCredsProperty(@NotNull String property, String value)  throws GalasaEcosystemManagerException;
+    
+    public IFramework getFramework();
     
     public String submitRun(String runType,
                           String requestor,
