@@ -92,8 +92,6 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
 		return this.manager.getFramework();
 	}
     
-    
-    
     @Override
     public void addZosImageToCpsAsDefault(@NotNull IZosImage image) throws GalasaEcosystemManagerException {
         addZosImageToCps(image);

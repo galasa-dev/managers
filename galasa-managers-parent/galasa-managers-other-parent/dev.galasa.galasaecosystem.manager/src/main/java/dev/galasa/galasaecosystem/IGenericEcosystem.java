@@ -85,6 +85,11 @@ public interface IGenericEcosystem {
      */
     public void setCredsProperty(@NotNull String property, String value)  throws GalasaEcosystemManagerException;
     
+    /**
+     * Get instance of framework
+     * 
+     * @return  IFramework  Framework instance used by the ecosystem
+     */
     public IFramework getFramework();
     
     public String submitRun(String runType,
