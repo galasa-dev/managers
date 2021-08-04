@@ -18,7 +18,7 @@ import dev.galasa.zosliberty.ZosLibertyManagerException;
 import dev.galasa.zosliberty.ZosLibertyServerException;
 
 public class ZosLibertyImpl implements IZosLiberty {
-	private static final Log logger = LogFactory.getLog(ZosLibertyImpl.class);
+    private static final Log logger = LogFactory.getLog(ZosLibertyImpl.class);
 
     private ZosLibertyManagerImpl zosLibertyManager;
     private List<IZosLibertyServer> libertyServers = new ArrayList<>();
@@ -29,15 +29,15 @@ public class ZosLibertyImpl implements IZosLiberty {
 
     @Override
     public IZosLibertyServer newZosLibertyServer(IZosImage zosImage, String wlpInstallDir, String wlpUserDir, String wlpOutputDir) throws ZosLibertyServerException {
-    	ZosLibertyServerImpl libertyServer = new ZosLibertyServerImpl(this, zosImage, wlpInstallDir, wlpUserDir, wlpOutputDir);
-    	libertyServers.add(libertyServer);
+        ZosLibertyServerImpl libertyServer = new ZosLibertyServerImpl(this, zosImage, wlpInstallDir, wlpUserDir, wlpOutputDir);
+        libertyServers.add(libertyServer);
         return libertyServer;
     }
 
     @Override
     public IZosLibertyServer newZosLibertyServer(IZosImage zosImage) throws ZosLibertyServerException {
-    	ZosLibertyServerImpl libertyServer = new ZosLibertyServerImpl(this, zosImage, null, null, null);
-    	libertyServers.add(libertyServer);
+        ZosLibertyServerImpl libertyServer = new ZosLibertyServerImpl(this, zosImage, null, null, null);
+        libertyServers.add(libertyServer);
         return libertyServer;
     }
 
@@ -47,18 +47,22 @@ public class ZosLibertyImpl implements IZosLiberty {
     
     protected void cleanup(boolean endOfTestRun) {
         if (endOfTestRun) {
-        	for (IZosLibertyServer libertyServer : libertyServers) {
-        		try {
-					libertyServer.saveToResultsArchive();
-				} catch (ZosLibertyServerException e) {
-					logger.info("Problem archiving Liberty server", e);
-				}
-        		try {
-					libertyServer.delete();
-				} catch (ZosLibertyServerException e) {
-					logger.info("Problem deleting Liberty server", e);
-				}
-        	}
+            for (IZosLibertyServer libertyServer : libertyServers) {
+                try {
+                    if (libertyServer.status() == 0) {
+                        libertyServer.stop();
+                    } else {
+                        libertyServer.saveToResultsArchive();
+                    }
+                } catch (ZosLibertyServerException e) {
+                    logger.info("Problem archiving Liberty server", e);
+                }
+                try {
+                    libertyServer.delete();
+                } catch (ZosLibertyServerException e) {
+                    logger.info("Problem deleting Liberty server", e);
+                }
+            }
         }
     }
 }
