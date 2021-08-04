@@ -36,9 +36,15 @@ public interface IZosLibertyServerLogs {
 
     /**
      * Get the Liberty messages.log
-     * @return the log file
+     * @return the log file or null if it doesn't exist
      */
     public IZosLibertyServerLog getMessagesLog();
+
+    /**
+     * Get the Liberty trace.log
+     * @return the log file or null if it doesn't exist
+     */
+    public IZosLibertyServerLog getTraceLog();
 
     /**
      * Get the next FFDC log file
@@ -58,10 +64,20 @@ public interface IZosLibertyServerLogs {
      */
     public void refresh() throws ZosLibertyServerException;
 
-	/**
+    /**
      * Store the content of the Liberty server logs to the Results Archive Store
      * @param rasPath path in Results Archive
      * @throws ZosLibertyServerException
      */
     public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException;
+    
+    /**
+     * Checkpoint the current know log files
+     */
+    public void checkpoint() throws ZosLibertyServerException;
+    
+    /**
+     * Delete the contents of the logs directory
+     */
+    public void delete() throws ZosLibertyServerException;
 }

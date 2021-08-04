@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -556,10 +557,15 @@ public class JvmserverImpl implements IJvmserver {
     @Override
     public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException {
         logger.trace("Waiting " + millisecondTimeout + "ms for JVMSERVER " +  getName() + " to be enabled");
-        int timeout = millisecondTimeout/1000;
-        for (int i = 0; i < timeout; i++) {
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             if (isEnabled()) {
                 return true;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return isEnabled();
@@ -633,10 +639,16 @@ public class JvmserverImpl implements IJvmserver {
 
     @Override
     public boolean waitForDisable(int millisecondTimeout) throws CicsJvmserverResourceException {
-        int timeout = millisecondTimeout/1000;
-        for (int i = 0; i < timeout; i++) {
+        logger.trace("Waiting " + millisecondTimeout + "ms for JVMSERVER " +  getName() + " to be disabled");
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             if (!isEnabled()) {
                 return true;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         if (isEnabled()) {
@@ -973,7 +985,7 @@ public class JvmserverImpl implements IJvmserver {
     protected int getDefaultTimeout() throws CicsJvmserverResourceException {
         if (this.defaultTimeout == -1) {
             try {
-                this.defaultTimeout = DefaultJvmserverTimeout.get();
+                this.defaultTimeout = DefaultJvmserverTimeout.get(this.cicsZosImage);
             } catch (CicsResourceManagerException e) {
                 throw new CicsJvmserverResourceException("Problem creating getting JVM server default timeout", e);
             }

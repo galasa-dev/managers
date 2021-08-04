@@ -23,12 +23,12 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
 
     private IZosUNIXFile logsDirectory;
     private ZosLibertyManagerImpl zosLibertyManager;
-	private HashMap<String, IZosLibertyServerLog> logs;
+    private HashMap<String, IZosLibertyServerLog> logs;
     private boolean hasFFDC;
     private Iterator<Entry<String, IZosLibertyServerLog>> logsIterator;
     private String currentLogName;
     
-	public ZosLibertyServerLogsImpl(IZosUNIXFile logsDirectory, ZosLibertyManagerImpl zosLibertyManager) throws ZosLibertyServerException {
+    public ZosLibertyServerLogsImpl(IZosUNIXFile logsDirectory, ZosLibertyManagerImpl zosLibertyManager) throws ZosLibertyServerException {
         this.logsDirectory = logsDirectory;
         this.zosLibertyManager = zosLibertyManager;
         this.logs = listServerLogsDirectory();
@@ -52,6 +52,11 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
     @Override
     public IZosLibertyServerLog getMessagesLog() {
         return getLog("messages.log");
+    }
+
+    @Override
+    public IZosLibertyServerLog getTraceLog() {
+        return getLog("trace.log");
     }
 
     @Override
@@ -92,7 +97,25 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
 
     @Override
     public void refresh() throws ZosLibertyServerException {
-    	listServerLogsDirectory();
+        listServerLogsDirectory();
+    }
+
+    @Override
+    public void checkpoint() throws ZosLibertyServerException {
+        for (Entry<String, IZosLibertyServerLog> entry : listServerLogsDirectory().entrySet()) {
+            entry.getValue().checkpoint();
+        }
+    }
+
+    @Override
+    public void delete() throws ZosLibertyServerException {
+        try {
+            this.logsDirectory.directoryDeleteNonEmpty();
+            this.logsDirectory.create();
+            refresh();
+        } catch (ZosUNIXFileException | ZosLibertyServerException e) {
+            throw new ZosLibertyServerException("Problem deleting content content of logs directory", e);
+        }
     }
 
     private HashMap<String, IZosLibertyServerLog> listServerLogsDirectory() throws ZosLibertyServerException {
@@ -107,7 +130,7 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
                         zosUnixFile.setDataType(UNIXFileDataType.BINARY);
                         String fileName = zosUnixFile.getUnixPath().substring(this.logsDirectory.getUnixPath().length());
                         if (!fileName.startsWith("state/")) {
-                        	this.logs.put(fileName, new ZosLibertyServerLogImpl(zosUnixFile, newLogScanner()));
+                            this.logs.put(fileName, new ZosLibertyServerLogImpl(zosUnixFile, newLogScanner()));
                         }
                         if (isFfdc(zosUnixFile.getUnixPath())) {
                             this.hasFFDC = true;
@@ -120,12 +143,12 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
         }
         this.logsIterator = this.logs.entrySet().iterator();
         return this.logs;
-	}
+    }
 
-	private boolean isFfdc(String file) {
+    private boolean isFfdc(String file) {
         return file.matches(".*/ffdc/ffdc_.*\\.log$") || file.matches("ffdc/ffdc_.*\\.log$");
     }
-	
+    
     protected ILogScanner newLogScanner() throws ZosLibertyManagerException {
         return this.zosLibertyManager.getLogScanner();
     }

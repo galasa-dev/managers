@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.textscan.ILogScanner;
 import dev.galasa.textscan.ITextScannable;
 import dev.galasa.textscan.IncorrectOccurrencesException;
@@ -24,6 +27,8 @@ import dev.galasa.zosliberty.IZosLibertyServerLog;
 import dev.galasa.zosliberty.ZosLibertyServerException;
 
 public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScannable {
+    
+    private static final Log logger = LogFactory.getLog(ZosLibertyServerLogImpl.class);
     
     private IZosUNIXFile zosUnixFile;
     private ILogScanner logScanner;
@@ -44,11 +49,11 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     }
 
     @Override
-	public String getName() throws ZosLibertyServerException {
-		return getZosUNIXFile().getFileName();
-	}
+    public String getName() throws ZosLibertyServerException {
+        return getZosUNIXFile().getFileName();
+    }
 
-	@Override
+    @Override
     public IZosUNIXFile getZosUNIXFile() throws ZosLibertyServerException {
         return this.zosUnixFile;
     }
@@ -56,9 +61,13 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     @Override
     public OutputStream retrieve() throws ZosLibertyServerException {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	baos.write(this.zosUnixFile.retrieveAsBinary());
-            return baos;
+            if (checkExists()) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                baos.write(this.zosUnixFile.retrieveAsBinary());
+                return baos;
+            } else {
+                return new ByteArrayOutputStream();
+            }
         } catch (ZosUNIXFileException | IOException e) {
             throw new ZosLibertyServerException("Problem retrieving content of log", e);
         }
@@ -67,7 +76,9 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     @Override
     public void delete() throws ZosLibertyServerException {
         try {
-            this.zosUnixFile.delete();
+            if (checkExists()) {
+                this.zosUnixFile.delete();
+            }
         } catch (ZosUNIXFileException e) {
             throw new ZosLibertyServerException("Unable to delete Log", e);
         }
@@ -76,7 +87,9 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     @Override
     public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException {
         try {
-        	this.zosUnixFile.saveToResultsArchive(rasPath);
+            if (checkExists()) {
+                this.zosUnixFile.saveToResultsArchive(rasPath);
+            }
         } catch (ZosUNIXFileException e) {
             throw new ZosLibertyServerException("Unable to store Log to RAS", e);
         }
@@ -85,7 +98,11 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     @Override
     public long checkpoint() throws ZosLibertyServerException {
         try {
-        	this.logScanner.setCheckpoint(this.zosUnixFile.getSize());
+            if (checkExists()) {
+                this.logScanner.setCheckpoint(this.zosUnixFile.getSize());
+            } else {
+                this.logScanner.setCheckpoint(-1);
+            }
         } catch (TextScanException | ZosUNIXFileException e) {
             throw new ZosLibertyServerException("Unable to set checkpoint", e);
         }
@@ -101,15 +118,19 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     @Override
     public OutputStream retrieveSinceCheckpoint() throws ZosLibertyServerException {
         try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(((ByteArrayOutputStream) retrieve()).toByteArray());
-            long checkpoint = getCheckpoint();
-            long skipped = bais.skip(checkpoint);
-            if (skipped != getCheckpoint()) {
-                throw new IOException("Failed to skip " + checkpoint + " bytes. Actual bytes skipped " + skipped);
+            if (checkExists()) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(((ByteArrayOutputStream) retrieve()).toByteArray());
+                long checkpoint = getCheckpoint();
+                long skipped = bais.skip(checkpoint);
+                if (skipped != getCheckpoint()) {
+                    throw new IOException("Failed to skip " + checkpoint + " bytes. Actual bytes skipped " + skipped);
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                baos.writeTo(baos);
+                return baos;
+            } else {
+                return null;
             }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.writeTo(baos);
-            return baos;
         } catch (IOException e) {
             throw new ZosLibertyServerException("Problem retrieving log since last checkpoint", e);
         }
@@ -205,11 +226,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForText(String searchText, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) {
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForText(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -217,11 +243,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForText(String searchText, String failText, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) {
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForText(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -229,11 +260,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) { 
             String returnText = searchForTextSinceCheckpoint(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -253,11 +289,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForPattern(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPattern(searchPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -265,11 +306,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPattern(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -277,11 +323,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPatternSinceCheckpoint(searchPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -289,11 +340,16 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
 
     @Override
     public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPatternSinceCheckpoint(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new ZosLibertyServerException("Interrupted during wait", e);
             }
         }
         return null;
@@ -339,6 +395,18 @@ public class ZosLibertyServerLogImpl implements IZosLibertyServerLog, ITextScann
     
     @Override
     public String toString() {
-    	return "[IZosUNIXFile] " + this.getScannableName();
+        return "[IZosUNIXFile] " + this.getScannableName();
+    }
+
+    private boolean checkExists() throws ZosLibertyServerException {
+        try {
+            if (this.getZosUNIXFile().exists()) {
+                return true;
+            }
+        } catch (ZosUNIXFileException e) {
+            throw new ZosLibertyServerException("Problem checking log " + getName(), e);
+        }
+        logger.warn("File " + getName() + " does not exist");
+        return false;
     }
 }

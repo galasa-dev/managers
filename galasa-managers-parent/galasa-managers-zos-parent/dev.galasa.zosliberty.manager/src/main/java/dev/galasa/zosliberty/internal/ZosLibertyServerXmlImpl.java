@@ -127,9 +127,9 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
     @Override
     public void saveToResultsArchive(String rasPath) throws ZosLibertyServerException {
         try {
-        	if (this.serverXmlUnixfile.exists()) {
-        		this.serverXmlUnixfile.saveToResultsArchive(rasPath);
-        	}
+            if (this.serverXmlUnixfile.exists()) {
+                this.serverXmlUnixfile.saveToResultsArchive(rasPath);
+            }
         } catch (ZosUNIXFileException e) {
             throw new ZosLibertyServerException("Unable to store the content of the Liberty server.xml to the Results Archive Store", e);
         }
@@ -258,7 +258,7 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
             if (nodes.item(i).getTextContent() != null && nodes.item(i).getTextContent().trim().equals(elementText)) {
                 parent.removeChild(nodes.item(i));
             }                
-        }        
+        }
     }
 
     @Override

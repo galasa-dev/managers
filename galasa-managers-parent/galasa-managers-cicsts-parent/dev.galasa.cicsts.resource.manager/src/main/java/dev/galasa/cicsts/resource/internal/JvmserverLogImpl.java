@@ -265,11 +265,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForText(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) {
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForText(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;
@@ -289,11 +294,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForTextSinceCheckpoint(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;
@@ -301,11 +311,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForTextSinceCheckpoint(String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForTextSinceCheckpoint(searchText, failText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;
@@ -325,11 +340,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPattern(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;
@@ -337,11 +357,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
             String returnText = searchForPatternSinceCheckpoint(searchPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;
@@ -349,11 +374,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
 
     @Override
     public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) { 
             String returnText = searchForPatternSinceCheckpoint(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsJvmserverResourceException("Interrupted during wait", e);
             }
         }
         return null;

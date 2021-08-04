@@ -66,7 +66,7 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     private IZosConsoleSpi zosConsoleManager;
     private IZosUNIXCommandSpi zosUNIXCommand;
     private ITextScannerManagerSpi textScannerManager;
-	private IArtifactManager artifactManager;
+    private IArtifactManager artifactManager;
 
     private final List<ZosLibertyImpl> zosLibertys = new ArrayList<>();
 
@@ -192,7 +192,7 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
     
     protected void cleanup(boolean endOfTest) throws ZosLibertyManagerException {
         for (ZosLibertyImpl zosLiberty : this.zosLibertys) {
-        	zosLiberty.cleanup(endOfTest);
+            zosLiberty.cleanup(endOfTest);
         }
     }
 
@@ -207,8 +207,8 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
 
     @GenerateAnnotatedField(annotation=ZosLiberty.class)
     public IZosLiberty generateZosLiberty(Field field, List<Annotation> annotations) throws ZosLibertyManagerException {
-    	ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
-    	zosLibertys.add(zosLiberty);
+        ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
+        zosLibertys.add(zosLiberty);
         return zosLiberty;
     }
 
@@ -218,7 +218,7 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
 
     @Override
     public @NotNull IZosLiberty getZosLiberty() throws ZosLibertyManagerException {
-    	ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
+        ZosLibertyImpl zosLiberty = new ZosLibertyImpl(this);
         zosLibertys.add(zosLiberty);
         return zosLiberty;
     }
@@ -231,13 +231,13 @@ public class ZosLibertyManagerImpl extends AbstractManager implements IZosLibert
         }
     }
 
-	public IZosConsole getZosConsole(IZosImage zosImage) throws ZosLibertyManagerException {
+    public IZosConsole getZosConsole(IZosImage zosImage) throws ZosLibertyManagerException {
         try {
             return this.zosConsoleManager.getZosConsole(zosImage);
         } catch (ZosConsoleManagerException e) {
             throw new ZosLibertyManagerException("Problem getting IZosFileHandler", e);
         }
-	}
+    }
 
     public IZosUNIXCommand getZosUNIXCommand(IZosImage image) {
         return this.zosUNIXCommand.getZosUNIXCommand(image);
