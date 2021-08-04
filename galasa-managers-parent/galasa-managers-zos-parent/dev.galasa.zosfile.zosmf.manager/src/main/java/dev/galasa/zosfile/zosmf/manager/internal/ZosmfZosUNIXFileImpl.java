@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zosfile.zosmf.manager.internal;
 
 import java.io.IOException;
@@ -43,6 +41,8 @@ import dev.galasa.zosmf.IZosmfResponse;
 import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
+import dev.galasa.zosunixcommand.IZosUNIXCommand;
+import dev.galasa.zosunixcommand.ZosUNIXCommandException;
 
 public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     
@@ -51,8 +51,16 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     private Path testMethodArchiveFolder;
 
 	private ZosmfZosFileHandlerImpl zosFileHandler;
-	public ZosmfZosFileHandlerImpl getZosFileHandler() {
+	protected ZosmfZosFileHandlerImpl getZosFileHandler() {
 		return zosFileHandler;
+	}
+
+	private IZosUNIXCommand zosUnixCommand;
+	protected IZosUNIXCommand getZosUNIXCommand() {
+		if (this.zosUnixCommand == null) {
+			this.zosUnixCommand = this.zosFileHandler.getZosFileManager().getZosUnixCommandManager().getZosUNIXCommand(this.image);
+		}
+		return this.zosUnixCommand;
 	}
 
     // zOS Image
@@ -627,30 +635,37 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
                 throw new ZosUNIXFileException(LOG_INVALID_REQUETS + LOG_UNIX_PATH + quoted(path) + " is not a directory");
             }
             headers.put(ZosmfCustomHeaders.X_IBM_OPTION.toString(), PROP_RECURSIVE);
+            // zOSMF doesn't delete symbolic links so directory delete fails with "EDC5136I Directory not empty."
+            // so first we need to delete them here
+            unlinkSymlink(path, true);
         }
-        String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
-        IZosmfResponse response;
-        try {
-            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, headers, null, 
-                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
-        } catch (ZosmfException e) {
-            throw new ZosUNIXFileException(e);
-        }
-        
-        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
-            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
-            JsonObject responseBody;
-            try {
-                responseBody = response.getJsonContent();
-            } catch (ZosmfException e) {
-                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
-            }
-            
-            logger.trace(responseBody);
-            String displayMessage = buildErrorString("deleting", responseBody, path); 
-            logger.error(displayMessage);
-            throw new ZosUNIXFileException(displayMessage);
-        }
+        if (path.equals(this.unixPath) && this.fileType.equals(UNIXFileType.SYMBLINK)) {
+    		unlinkSymlink(path, false);
+    	} else {
+	        String urlPath = RESTFILES_FILE_SYSTEM_PATH + path;
+	        IZosmfResponse response;
+	        try {
+	            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.DELETE, urlPath, headers, null, 
+	                    new ArrayList<>(Arrays.asList(HttpStatus.SC_NO_CONTENT, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), true);
+	        } catch (ZosmfException e) {
+	            throw new ZosUNIXFileException(e);
+	        }
+	        
+	        if (response.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
+	            // Error case - BAD_REQUEST or INTERNAL_SERVER_ERROR
+	            JsonObject responseBody;
+	            try {
+	                responseBody = response.getJsonContent();
+	            } catch (ZosmfException e) {
+	                throw new ZosUNIXFileException("Unable to delete " + LOG_UNIX_PATH + quoted(path) + logOnImage(), e);
+	            }
+	            
+	            logger.trace(responseBody);
+	            String displayMessage = buildErrorString("deleting", responseBody, path); 
+	            logger.error(displayMessage);
+	            throw new ZosUNIXFileException(displayMessage);
+	        }
+    	}
         
         if (exists(path)) {
             logger.info(LOG_UNIX_PATH + quoted(path) + " not deleted" + logOnImage());
@@ -661,6 +676,21 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         }
     }
 
+    protected void unlinkSymlink(String path, boolean recursive) throws ZosUNIXFileException {
+    	try {
+    		String rc;
+        	if (recursive) {
+				rc = getZosUNIXCommand().issueCommand("find " + path + " -type l -exec unlink {} \\;;echo RC=$?");
+        	} else {
+        		rc = getZosUNIXCommand().issueCommand("unlink " + path + ";echo RC=$?");
+        	}
+			if (!rc.startsWith("RC=0")) {
+				throw new ZosUNIXCommandException("Command failed: " + rc);
+			}
+        } catch (ZosUNIXCommandException e) {
+    		throw new ZosUNIXFileException("Unable to delete symbolic link(s) - path " + path, e);
+    	}
+	}
 
     protected boolean exists(String path) throws ZosUNIXFileException {
         if (path.endsWith(SLASH)) {
@@ -687,6 +717,11 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         logger.trace(responseBody);
         if (response.getStatusCode() == HttpStatus.SC_OK) {
             logger.trace(LOG_UNIX_PATH + quoted(path) + " exists" + logOnImage());
+        	if (path.equals(this.unixPath)) {
+                JsonArray items = responseBody.getAsJsonArray(PROP_ITEMS);
+            	JsonObject attributes = items.get(0).getAsJsonObject();
+        		setAttributeValues(attributes);
+        	}
             return true;
         } else {
             if (response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {

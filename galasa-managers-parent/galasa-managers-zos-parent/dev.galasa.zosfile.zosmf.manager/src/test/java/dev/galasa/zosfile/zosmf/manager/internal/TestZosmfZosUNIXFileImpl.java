@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -53,6 +51,9 @@ import dev.galasa.zosmf.IZosmfRestApiProcessor;
 import dev.galasa.zosmf.ZosmfException;
 import dev.galasa.zosmf.ZosmfManagerException;
 import dev.galasa.zosmf.internal.ZosmfManagerImpl;
+import dev.galasa.zosunixcommand.IZosUNIXCommand;
+import dev.galasa.zosunixcommand.ZosUNIXCommandException;
+import dev.galasa.zosunixcommand.ssh.manager.internal.ZosUNIXCommandManagerImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LogFactory.class})
@@ -88,6 +89,12 @@ public class TestZosmfZosUNIXFileImpl {
     
     @Mock
     private ZosmfManagerImpl zosmfManagerMock;
+    
+    @Mock
+    private IZosUNIXCommand zosUNIXCommandMock;
+    
+    @Mock
+    private ZosUNIXCommandManagerImpl zosUNIXCommandManagerMock;
     
     @Mock
     private IZosmfRestApiProcessor zosmfApiProcessorMock;
@@ -187,6 +194,8 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosFileHandlerMock.getZosmfManager()).thenReturn(zosmfManagerMock);
         Mockito.when(zosFileHandlerMock.getZosManager()).thenReturn(zosManagerMock);
         Mockito.when(zosFileHandlerMock.getZosFileManager()).thenReturn(zosFileManagerMock);
+        Mockito.when((zosFileManagerMock).getZosUnixCommandManager()).thenReturn(zosUNIXCommandManagerMock);
+        Mockito.when((zosUNIXCommandManagerMock).getZosUNIXCommand(Mockito.any())).thenReturn(zosUNIXCommandMock);
 
     	Path pathMock = Mockito.mock(Path.class);
     	Mockito.doReturn(pathMock).when(pathMock).resolve(Mockito.anyString());
@@ -743,10 +752,34 @@ public class TestZosmfZosUNIXFileImpl {
         zosUNIXFileSpy.delete(UNIX_PATH, false);
         Assert.assertTrue("delete() should set deleted to true", Whitebox.getInternalState(zosUNIXFileSpy, "deleted"));
         
+        PowerMockito.doReturn(true).doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
+        PowerMockito.doReturn(false).when(zosUNIXFileSpy).isDirectory(Mockito.any());
+        PowerMockito.doNothing().when(zosUNIXFileSpy).unlinkSymlink(Mockito.any(), Mockito.anyBoolean());
+        Whitebox.setInternalState(zosUNIXFileSpy, "fileType", UNIXFileType.SYMBLINK);
+        zosUNIXFileSpy.delete(UNIX_PATH, false);
+        Assert.assertTrue("delete() should set deleted to true", Whitebox.getInternalState(zosUNIXFileSpy, "deleted"));
+        
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).exists(Mockito.any());
         PowerMockito.doReturn(true).when(zosUNIXFileSpy).isDirectory(Mockito.any());
-        zosUNIXFileSpy.delete(UNIX_PATH, true);
+        PowerMockito.doNothing().when(zosUNIXFileSpy).unlinkSymlink(Mockito.any(), Mockito.anyBoolean());
+        zosUNIXFileSpy.delete(UNIX_FILE, true);
         Assert.assertFalse("delete() should set deleted to false", Whitebox.getInternalState(zosUNIXFileSpy, "deleted"));
+    }
+    
+    @Test
+    public void testUnlinkSymlink() throws ZosUNIXFileException, ZosUNIXCommandException {
+    	PowerMockito.doReturn("RC=0").when(zosUNIXCommandMock).issueCommand(Mockito.any());
+    	zosUNIXFileSpy.unlinkSymlink(UNIX_DIRECTORY, true);
+
+    	zosUNIXFileSpy.unlinkSymlink(UNIX_DIRECTORY, false);
+
+    	PowerMockito.doReturn("RC=99").when(zosUNIXCommandMock).issueCommand(Mockito.any());
+        ZosUNIXFileException expectedException = Assert.assertThrows("expected exception should be thrown", ZosUNIXFileException.class, ()->{
+        	zosUNIXFileSpy.unlinkSymlink(UNIX_DIRECTORY, true);
+        });
+		Assert.assertEquals("exception should contain expected message", "Unable to delete symbolic link(s) - path " + UNIX_DIRECTORY, expectedException.getMessage());
+		Assert.assertEquals("exception should contain expected cause", "Command failed: RC=99", expectedException.getCause().getMessage());
+    	
     }
     
     @Test
@@ -821,6 +854,24 @@ public class TestZosmfZosUNIXFileImpl {
         Mockito.when(zosmfApiProcessorMock.sendRequest(Mockito.eq(ZosmfRequestType.GET), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean())).thenReturn(zosmfResponseMock);
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Assert.assertTrue("exists() should set deleted to true", zosUNIXFileSpy.exists(UNIX_DIRECTORY));
+
+        JsonObject jsonObject = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        JsonObject items = new JsonObject();
+        items = new JsonObject();
+        items.addProperty("name", UNIX_PATH);  
+        items.addProperty("mode", "lrwxrwxrwx");
+        items.addProperty("size", 0);
+        items.addProperty("mtime", "2021-03-11T09:31:24");
+        items.addProperty("user", "USER");
+        items.addProperty("group", "GROUP");
+        jsonArray.add(items);
+        jsonObject.add("items", jsonArray);
+        jsonObject.addProperty("returnedRows", 1);
+        jsonObject.addProperty("totalRows", 1);
+        
+        Mockito.when(zosmfResponseMock.getJsonContent()).thenReturn(jsonObject);
+        Assert.assertTrue("exists() should set deleted to true", zosUNIXFileSpy.exists(UNIX_PATH));
 
         Mockito.when(zosmfResponseMock.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Assert.assertFalse("exists() should set deleted to false", zosUNIXFileSpy.exists(UNIX_DIRECTORY + "/"));
