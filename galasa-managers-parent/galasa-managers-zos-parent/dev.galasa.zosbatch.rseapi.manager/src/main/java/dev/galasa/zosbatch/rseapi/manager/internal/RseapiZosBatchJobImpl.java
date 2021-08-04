@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch.rseapi.manager.internal;
 
@@ -591,6 +589,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         		logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
                 this.status = JobStatus.NOTFOUND;
+                this.jobComplete = true;
             }
             setStatus(this.statusString);
             String retcodeProperty = jsonNull(responseBody, PROP_RETCODE);
