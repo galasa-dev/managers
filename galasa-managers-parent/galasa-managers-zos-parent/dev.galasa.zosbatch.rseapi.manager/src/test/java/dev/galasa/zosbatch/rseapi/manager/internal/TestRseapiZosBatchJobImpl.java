@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch.rseapi.manager.internal;
 
@@ -500,6 +498,11 @@ public class TestRseapiZosBatchJobImpl {
         Assert.assertEquals("isComplete() should return the true", true, zosBatchJobSpy.isComplete());
         
         Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NO_CONTENT);
+        Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
+        zosBatchJobSpy.cancel();
+        Assert.assertEquals("isComplete() should return the true", true, zosBatchJobSpy.isComplete());
+        
+        Mockito.when(rseapiResponseMockStatus.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
         Whitebox.setInternalState(zosBatchJobSpy, "jobComplete", false);
         zosBatchJobSpy.cancel();
         Assert.assertEquals("isComplete() should return the true", true, zosBatchJobSpy.isComplete());
