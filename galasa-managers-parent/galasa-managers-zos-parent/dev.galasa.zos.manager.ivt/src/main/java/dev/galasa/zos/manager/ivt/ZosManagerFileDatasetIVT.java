@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 
@@ -78,6 +79,20 @@ public class ZosManagerFileDatasetIVT {
         logger.info("Using Run ID of: " + runName);
     }
     
+    private String getRandomString() {
+    	int lowerLimit = 65;
+    	int upperLimit = 90;
+    	int targetLength = 6;
+    	Random random = new Random();
+    	
+    	String generatedString = random.ints(lowerLimit, upperLimit + 1)
+    			.limit(targetLength)
+    			.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+    			.toString();
+    	
+		return generatedString;
+    }
+    
     /**
      * Run some JCL to check that a PDS has been created
      * This is used to test that zosFile is working correctly
@@ -124,7 +139,7 @@ public class ZosManagerFileDatasetIVT {
     //Test that an existing PDS exists
     @Test
     public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-    	String desiredDataSetName = "CTS.CICSCOG.JCL";
+    	String desiredDataSetName = "CTS.CICSCOG.JCL" + "." + getRandomString();
     	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
     	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isTrue();
     }
@@ -132,7 +147,7 @@ public class ZosManagerFileDatasetIVT {
     //Test that a non-existant PDS doesn't exist 
     @Test
     public void testNonExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-    	String desiredDataSetName = "CTS.CICSCOG.JCJ";
+    	String desiredDataSetName = "CTS.CICSCOG.JCJ" + "." + getRandomString();
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isFalse();
     }
@@ -159,7 +174,7 @@ public class ZosManagerFileDatasetIVT {
     //ensure that we always confirm that actions really have taken place
     @Test
     public void testPDSCreate() throws Exception {
-    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String desiredDataSetName = "CTS.GALASA." + runName + "." + getRandomString();
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
@@ -177,7 +192,7 @@ public class ZosManagerFileDatasetIVT {
    
     @Test
     public void datasetAttributeCheck() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
-    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String desiredDataSetName = "CTS.GALASA." + runName + "." + getRandomString();
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
@@ -200,7 +215,7 @@ public class ZosManagerFileDatasetIVT {
    
     @Test
    	public void testPDSMemberCreate() throws Exception {
-    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String desiredDataSetName = "CTS.GALASA." + runName + "." + getRandomString();
     	String memberName = "HOBBIT";
     	String hidingMember = "DRAGON";
     	String content = "Basic PDS Member test";
@@ -237,7 +252,7 @@ public class ZosManagerFileDatasetIVT {
     
     @Test
     public void deleteNonExistingMember() throws ZosDatasetException {
-    	String desiredDataSetName = "CTS.GALASA." + runName;
+    	String desiredDataSetName = "CTS.GALASA." + runName + "." + getRandomString();
     	String memberName = "HOBBIT";
     	String hidingMember = "DRAGON";
     	IZosDataset ds = createBasicDataset(desiredDataSetName,true);
