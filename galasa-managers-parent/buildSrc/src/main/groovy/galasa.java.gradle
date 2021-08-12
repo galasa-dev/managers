@@ -10,8 +10,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 java {
-//    withJavadocJar()
-//    withSourcesJar()
+    withJavadocJar()
+    withSourcesJar()
 }
     
 tasks.withType(Javadoc) {
