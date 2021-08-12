@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosliberty.internal;
 
@@ -711,13 +709,13 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
     
     @Override
-    public void deployApplication(Class<?> clazz, String path, String targetLocation, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException {
+    public void deployApplication(Class<?> testClass, String path, String targetLocation, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException {
         try {
             if (targetLocation == null) {
                 targetLocation = "${shared.app.dir}";
             }
             String parsedLocation = resolveLocation(targetLocation);
-            copyApplicationToZosUnix(path, clazz, parsedLocation);
+            copyApplicationToZosUnix(path, testClass, parsedLocation);
             if (!targetLocation.endsWith(getFileNameFromPath(path))) {
                 targetLocation = targetLocation + SLASH_SYBMOL + getFileNameFromPath(path);
             }
@@ -756,16 +754,16 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public void deployApplicationToDropins(Class<?> clazz, String path) throws ZosLibertyServerException {
+    public void deployApplicationToDropins(Class<?> testClass, String path) throws ZosLibertyServerException {
         try {
-            copyApplicationToZosUnix(path, clazz, getDropinsDir().getUnixPath());
+            copyApplicationToZosUnix(path, testClass, getDropinsDir().getUnixPath());
         } catch (ZosLibertyServerException e) {
             throw new ZosLibertyServerException("Problem deploying application to dropins", e);
         }
     }
     
-    private void copyApplicationToZosUnix(String path, Class<?> clazz, String location) throws ZosLibertyServerException {
-        IBundleResources resources = this.artifactManager.getBundleResources(clazz);
+    private void copyApplicationToZosUnix(String path, Class<?> testClass, String location) throws ZosLibertyServerException {
+        IBundleResources resources = this.artifactManager.getBundleResources(testClass);
         InputStream application;
         try {
             application = resources.retrieveFile(path);

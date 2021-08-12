@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosliberty.internal;
 
@@ -12,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosliberty.IZosLiberty;
 import dev.galasa.zosliberty.IZosLibertyServer;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
@@ -48,13 +47,13 @@ public class ZosLibertyImpl implements IZosLiberty {
     protected void cleanup(boolean endOfTestRun) {
         if (endOfTestRun) {
             for (IZosLibertyServer libertyServer : libertyServers) {
-                try {
-                    if (libertyServer.status() == 0) {
+                try {                	
+                    if (libertyServer.getServerXml().getAsZosUNIXFile().exists() && libertyServer.status() == 0) {
                         libertyServer.stop();
                     } else {
                         libertyServer.saveToResultsArchive();
                     }
-                } catch (ZosLibertyServerException e) {
+                } catch (ZosLibertyServerException | ZosUNIXFileException e) {
                     logger.info("Problem archiving Liberty server", e);
                 }
                 try {

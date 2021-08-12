@@ -856,8 +856,14 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
         if (path.equals(this.unixPath) && !exists(path)) {
             return this.fileType.equals(UNIXFileType.DIRECTORY);
         }
-        getAttributes(path);
-        return getFileType() == UNIXFileType.DIRECTORY;
+        JsonObject fileAttributes = getAttributes(path);
+        if (fileAttributes != null) {
+        	JsonElement element = fileAttributes.get(PROP_MODE);
+        	if (element != null) {
+        		return determineType(element.getAsString()).equals(UNIXFileType.DIRECTORY);
+        	}
+        }
+        return false;
     }
 
 

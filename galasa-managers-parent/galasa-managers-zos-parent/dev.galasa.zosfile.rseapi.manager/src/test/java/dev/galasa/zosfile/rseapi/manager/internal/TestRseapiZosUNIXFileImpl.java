@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -869,7 +867,7 @@ public class TestRseapiZosUNIXFileImpl {
         responseBody.addProperty(CONTENT, CONTENT);
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, zosUNIXFileSpy.retrieve(UNIX_PATH));
         
-        Mockito.when(rseapiResponseMock.getContent()).thenReturn(IOUtils.toInputStream(CONTENT, "UTF-8"));
+        Mockito.when(rseapiResponseMock.getContent()).thenReturn(IOUtils.toInputStream(CONTENT, StandardCharsets.UTF_8));
         PowerMockito.doReturn(UNIXFileDataType.BINARY).when(zosUNIXFileSpy).getDataType();
         Assert.assertEquals("retrieve() should return the expected value", CONTENT, new String((byte[]) zosUNIXFileSpy.retrieve(UNIX_PATH), StandardCharsets.UTF_8));
     }

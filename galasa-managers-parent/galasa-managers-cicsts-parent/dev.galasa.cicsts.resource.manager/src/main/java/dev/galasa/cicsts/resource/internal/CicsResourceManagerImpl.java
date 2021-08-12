@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.resource.internal;
 
@@ -15,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
@@ -50,12 +49,15 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
     private IZosLibertySpi zosLibertyManager;
     protected IZosUNIXCommandSpi zosUnixCommandManager;
     private ITextScannerManagerSpi textScannerManager;
+	private IArtifactManager artifactManager;
 
     private static final String JVMSERVERS = "JVM_servers";
 
     private static final String PROVISIONING = "provisioning";
     
     private HashMap<ICicsRegion, ICicsResource> regionCicsResources = new HashMap<>();
+	private List<CicsBundleImpl>  cicsBundles = new ArrayList<>();
+    private List<JvmprofileImpl> jvmprofiles = new ArrayList<>();
     private List<JvmserverImpl> jvmServers = new ArrayList<>();
     
 
@@ -107,7 +109,8 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
                otherManager instanceof IZosFileSpi ||
                otherManager instanceof IZosLibertySpi ||
                otherManager instanceof IZosUNIXCommandSpi ||
-               otherManager instanceof ITextScannerManagerSpi;
+               otherManager instanceof ITextScannerManagerSpi ||
+               otherManager instanceof IArtifactManager;
     }
 
 
@@ -142,6 +145,10 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         if (this.textScannerManager == null) {
             throw new CicstsManagerException("The Text Scan Manager is not available");
         }
+        this.artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
+        if (this.artifactManager == null) {
+            throw new ZosLibertyManagerException("The Artifact Manager is not available");
+        }
         cicstsManager.registerCicsResourceProvider(this);
     }
     
@@ -170,18 +177,18 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "postTest";
         
-        cleanup(false);
+        
+        for (CicsBundleImpl cicsBundle : this.cicsBundles) {
+            cicsBundle.cleanup();
+        }
+        for (JvmserverImpl jvmServer : this.jvmServers) {
+            jvmServer.cleanup();
+        }
+        for (JvmprofileImpl jvmProfile : this.jvmprofiles) {
+            jvmProfile.cleanup();
+        }
         
         return null;
-    }
-
-    /* (non-Javadoc)
-     * 
-     * @see dev.galasa.framework.spi.IManager#endOfTestRun()
-     */
-    @Override
-    public void endOfTestRun() {
-        cleanup(true);
     }
     
     @Override
@@ -194,7 +201,11 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         return cicsResources;
     }
 
-    protected ICicstsManagerSpi getCicsManager() {
+    protected IArtifactManager getArtifactManager() {
+		return this.artifactManager;
+	}
+
+	protected ICicstsManagerSpi getCicsManager() {
         return this.cicstsManager;
     }
     
@@ -226,13 +237,15 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
         }
     }
 
-    protected void registerJvmserver(JvmserverImpl jvmserver) {
+    protected void registerCicsBundle(CicsBundleImpl cicsBundle) {
+		this.cicsBundles.add(cicsBundle);
+	}
+
+	protected void registerJvmserver(JvmserverImpl jvmserver) {
         this.jvmServers.add(jvmserver);
     }
 
-    protected void cleanup(boolean endOfTestRun) {
-        for (JvmserverImpl jvmserver : this.jvmServers) {
-            jvmserver.cleanup(endOfTestRun);
-        }
+	protected void registerJvmprofile(JvmprofileImpl jvmprofile) {
+        this.jvmprofiles.add(jvmprofile);
     }
 }

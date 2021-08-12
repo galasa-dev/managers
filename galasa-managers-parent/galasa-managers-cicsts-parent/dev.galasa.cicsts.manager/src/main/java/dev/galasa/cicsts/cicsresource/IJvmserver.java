@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.cicsresource;
 
@@ -11,9 +9,8 @@ import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosliberty.IZosLibertyServer;
 
 /**
- * Represents a CICS JVM server resource. In addition to methods provided by {@link ICicsResourceBase}, provides methods to
- * set JVM server specific attributes on the resource (via CEDA) and to manage and set attributes in CEMT. Methods are 
- * provided to manage the logs associated with the JVM server.<p>
+ * Represents a CICS JVM server resource. It provides methods to set JVM server specific attributes on the resource
+ * (via CEDA) and to manage and set attributes in CEMT. Methods are provided to manage the logs associated with the JVM server.<p>
  * JVM profile options should be managed via the {@link IJvmprofile} JVM profile object
  */
 public interface IJvmserver {
@@ -69,13 +66,13 @@ public interface IJvmserver {
 	 * Set the CICS JVMSERVER resource LERUNOPTS attribute value
 	 * @param lerunopts the resource LERUNOPTS attribute value
 	 */
-	public void setResourceDefinitionLerunopts(String lerunopts);
+	public void setResourceDefinitionLerunoptsAttribute(String lerunopts);
 
 	/**
 	 * Set the CICS JVMSERVER resource THREADLIMIT attribute value
 	 * @param threadlimit the resource THREADLIMIT attribute value
 	 */
-	public void setResourceDefinitionThreadlimit(int threadlimit);
+	public void setResourceDefinitionThreadlimitAttribute(int threadlimit);
 
 	/**
 	 * Return the CICS JVMSERVER resource definition NAME attribute value
@@ -102,28 +99,22 @@ public interface IJvmserver {
 	public CicsResourceStatus getResourceDefinitionStatusAttribute();
 
 	/**
-	 * Return the CICS JVMSERVER resource STATUS attribute value
-	 * @return the resource STATUS attribute value
-	 */
-	public CicsResourceStatus getResourceDefinitionStatus();
-
-	/**
 	 * Return the CICS JVMSERVER resource JVMPROFILE attribute value
 	 * @return the resource JVMPROFILE attribute value
 	 */
-	public String getResourceDefinitionJvmprofile();
+	public String getResourceDefinitionJvmprofileAttribute();
 
 	/**
 	 * Return the CICS JVMSERVER resource LERUNOPTS attribute value
 	 * @return the resource LERUNOPTS attribute value
 	 */
-	public String getResourceDefinitionLerunopts();
+	public String getResourceDefinitionLerunoptsAttribute();
 
 	/**
 	 * Return the CICS JVMSERVER resource THREADLIMIT attribute value
 	 * @return the resource THREADLIMIT attribute value
 	 */
-	public int getResourceDefinitionThreadlimit();
+	public int getResourceDefinitionThreadlimitAttribute();
 
 	/**
 	 * Build the CICS JVMSERVER resource definition only 

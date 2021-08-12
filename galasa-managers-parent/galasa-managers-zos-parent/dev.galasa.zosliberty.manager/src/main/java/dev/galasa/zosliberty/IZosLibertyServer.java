@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosliberty;
 
@@ -373,7 +371,7 @@ public interface IZosLibertyServer {
     /**
      * Deploy an application to the Liberty server. This method copies the application archive file to the zOS UNIX file system and
      * creates an <code>application</code> element in the server.xml.
-     * @param clazz a {@link class} in the same bundle containing the application archive file
+     * @param testClass a {@link class} in the same bundle containing the application archive file, use <code>this.getClass()</code>
      * @param path the path in the bundle to the application archive file
      * @param targetLocation the location on the zOS UNIX file system to store the application archive file. If the value is null, 
      * <code>${shared.app.dir}/fileName</code> will be used
@@ -382,15 +380,15 @@ public interface IZosLibertyServer {
      * @param contextRoot the application context-root. Can be null
      * @throws ZosLibertyServerException
      */
-    public void deployApplication(Class<?> clazz, String path, String targetLocation, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException;
+    public void deployApplication(Class<?> testClass, String path, String targetLocation, ApplicationType type, String name, String contextRoot) throws ZosLibertyServerException;
     
     /**
      * Deploy an application to the Liberty server dropins directory. This method copies the application archive file to the Liberty server dropins directory
-     * @param clazz a {@link class} in the same bundle containing the application archive file
+     * @param testClass a {@link class} in the same bundle containing the application archive file, use <code>this.getClass()</code>
      * @param path the path in the bundle to the application archive file
      * @throws ZosLibertyServerException
      */
-    public void deployApplicationToDropins(Class<?> clazz, String path) throws ZosLibertyServerException;
+    public void deployApplicationToDropins(Class<?> testClass, String path) throws ZosLibertyServerException;
     
     /**
      * Remove an application from the Liberty server. This method removes the <code>application</code> from the server.xml and

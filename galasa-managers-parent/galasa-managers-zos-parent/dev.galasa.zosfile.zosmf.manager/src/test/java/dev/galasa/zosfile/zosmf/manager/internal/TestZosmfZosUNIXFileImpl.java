@@ -1096,6 +1096,14 @@ public class TestZosmfZosUNIXFileImpl {
         
         PowerMockito.doReturn(false).when(zosUNIXFileSpy).exists(Mockito.any());
         Whitebox.setInternalState(zosUNIXFileSpy, "fileType", UNIXFileType.DIRECTORY);
+        Assert.assertFalse("listDirectory() should return false", zosUNIXFileSpy.isDirectory(UNIX_DIRECTORY));
+        
+        PowerMockito.doReturn(null).when(zosUNIXFileSpy).getAttributes(Mockito.any());
+        Assert.assertFalse("listDirectory() should return false", zosUNIXFileSpy.isDirectory(UNIX_DIRECTORY));
+        
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("mode", "drwxrwxrwx");
+		PowerMockito.doReturn(jsonObject ).when(zosUNIXFileSpy).getAttributes(Mockito.any());
         Assert.assertTrue("listDirectory() should return true", zosUNIXFileSpy.isDirectory(UNIX_DIRECTORY));
     }
     
