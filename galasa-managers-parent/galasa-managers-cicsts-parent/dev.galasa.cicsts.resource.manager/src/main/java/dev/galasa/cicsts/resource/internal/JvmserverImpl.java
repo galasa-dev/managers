@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.resource.internal;
 
@@ -11,7 +9,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,8 +39,8 @@ import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
-import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
+import dev.galasa.zosfile.ZosDatasetException;
 import dev.galasa.zosfile.ZosUNIXFileException;
 import dev.galasa.zosliberty.IZosLiberty;
 import dev.galasa.zosliberty.IZosLibertyServer;
@@ -80,7 +77,6 @@ public class JvmserverImpl implements IJvmserver {
     private CicsResourceStatus resourceDefinitionStatus = CicsResourceStatus.ENABLED;
     private String resourceDefinitionJvmprofile;
     private JvmserverType jvmserverType = JvmserverType.UNKNOWN;
-    private HashMap<String, String> resourceDefinitionAttribute = new HashMap<>();
     private String resourceDefinitionLerunopts;
     private int resourceDefinitionThreadlimit = 15;
     
@@ -248,7 +244,7 @@ public class JvmserverImpl implements IJvmserver {
             byte[] content = cicsSuppliedserverXml.retrieveAsBinary();
             libertyServer.getServerXml().setFromString(new String(content, StandardCharsets.UTF_8));
         } catch (ZosLibertyServerException | ZosUNIXFileException e) {
-            throw new CicsJvmserverResourceException("Unable to create new zOS Liberty Server for JVMSERVER " + this.getName(), e);
+            throw new CicsJvmserverResourceException("Unable to create new zOS Liberty Server for " + RESOURCE_TYPE_JVMSERVER + " " + this.getName(), e);
         }
         return libertyServer;
     }
@@ -346,7 +342,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
             cicsSuppliedProfile.setDataType(UNIXFileDataType.TEXT);
             String content = cicsSuppliedProfile.retrieveAsText();
-            return new JvmprofileImpl(this.zosFileHandler, this.cicsZosImage, name, content);
+            return new JvmprofileImpl(this.cicsResourceManager, this.zosFileHandler, this.cicsZosImage, name, content);
         } catch (ZosUNIXFileException e) {
             throw new CicsJvmserverResourceException("Problem creating JVM profile from template " + cicsSuppliedProfile.getUnixPath(), e);
         }
@@ -417,12 +413,12 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public void setResourceDefinitionLerunopts(String lerunopts) {
+    public void setResourceDefinitionLerunoptsAttribute(String lerunopts) {
         this.resourceDefinitionLerunopts = lerunopts;
     }
 
     @Override
-    public void setResourceDefinitionThreadlimit(int threadlimit) {
+    public void setResourceDefinitionThreadlimitAttribute(int threadlimit) {
         this.resourceDefinitionThreadlimit = threadlimit;
     }
 
@@ -447,22 +443,17 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public CicsResourceStatus getResourceDefinitionStatus() {
-        return this.resourceDefinitionStatus;
-    }
-
-    @Override
-    public String getResourceDefinitionJvmprofile() {
+    public String getResourceDefinitionJvmprofileAttribute() {
         return this.resourceDefinitionJvmprofile;
     }
 
     @Override
-    public String getResourceDefinitionLerunopts() {
+    public String getResourceDefinitionLerunoptsAttribute() {
         return this.resourceDefinitionLerunopts;
     }
 
     @Override
-    public int getResourceDefinitionThreadlimit() {
+    public int getResourceDefinitionThreadlimitAttribute() {
         return this.resourceDefinitionThreadlimit;
     }
 
@@ -470,15 +461,15 @@ public class JvmserverImpl implements IJvmserver {
     public void buildResourceDefinition() throws CicsJvmserverResourceException {
         try {
             if (resourceDefined()) {
-                throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " already exists");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " already exists");
             }
             this.cicsRegion.ceda().createResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), this.resourceDefinitionGroup, buildResourceParameters());
 
             if (!resourceDefined()) {
-                throw new CicsJvmserverResourceException("Failed to define JVMSERVER resource definition");
+                throw new CicsJvmserverResourceException("Failed to define " + RESOURCE_TYPE_JVMSERVER + " resource definition");
             } 
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Unable to build JVMSERVER resource definition", e);
+            throw new CicsJvmserverResourceException("Unable to build " + RESOURCE_TYPE_JVMSERVER + " resource definition", e);
         }
     }
 
@@ -492,14 +483,14 @@ public class JvmserverImpl implements IJvmserver {
     public void installResourceDefinition() throws CicsJvmserverResourceException {
         try {
             if (resourceInstalled()) {
-                throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " already installed");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " already installed");
             }
             this.cicsRegion.ceda().installResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), this.resourceDefinitionGroup);
             if (!resourceInstalled()) {
-                throw new CicsJvmserverResourceException("Failed to install JVMSERVER resource definition");
+                throw new CicsJvmserverResourceException("Failed to install " + RESOURCE_TYPE_JVMSERVER + " resource definition");
             }
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Unable to install JVMSERVER resource definition", e);
+            throw new CicsJvmserverResourceException("Unable to install " + RESOURCE_TYPE_JVMSERVER + " resource definition", e);
         }
     }
 
@@ -508,7 +499,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
             return this.cicsRegion.ceda().resourceExists(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), resourceDefinitionGroup);
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Unable to display JVMSERVER resource definition", e);
+            throw new CicsJvmserverResourceException("Unable to display " + RESOURCE_TYPE_JVMSERVER + " resource definition", e);
         }
     }
 
@@ -517,7 +508,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
             return this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName()) != null;
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Unable to inquire JVMSERVER", e);
+            throw new CicsJvmserverResourceException("Unable to inquire " + RESOURCE_TYPE_JVMSERVER + "", e);
         }
     }
 
@@ -527,11 +518,11 @@ public class JvmserverImpl implements IJvmserver {
             // Reset logs etc as the names will have changed and there may be JVM profile updates
             resetSavedValues();
             if (!resourceInstalled()) {
-                throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " does not exist");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " does not exist");
             }
             this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), "ENABLED");
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Problem enabling JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem enabling " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
     }
 
@@ -556,7 +547,7 @@ public class JvmserverImpl implements IJvmserver {
 
     @Override
     public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for JVMSERVER " +  getName() + " to be enabled");
+        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be enabled");
         long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
         while(Calendar.getInstance().getTimeInMillis() < timeout) {
             if (isEnabled()) {
@@ -578,9 +569,9 @@ public class JvmserverImpl implements IJvmserver {
         }
         boolean enabled = cemtInquire().isParameterEquals("enablestatus", CicsResourceStatus.ENABLED.toString());
         if (enabled) {
-            logger.trace("JVMSERVER " +  getName() + " is enabled");
+            logger.trace(RESOURCE_TYPE_JVMSERVER + " " +  getName() + " is enabled");
         } else {
-            logger.trace("JVMSERVER " +  getName() + " is NOT enabled");
+            logger.trace(RESOURCE_TYPE_JVMSERVER + " " +  getName() + " is NOT enabled");
         }
         return enabled;
     }
@@ -599,11 +590,11 @@ public class JvmserverImpl implements IJvmserver {
     public boolean disable(PurgeType purgeType, int millisecondTimeout) throws CicsJvmserverResourceException {
         try {
             if (!resourceInstalled()) {
-                throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " does not exist");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " does not exist");
             }
             this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), "DISABLED " + purgeType);
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Problem disabling JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem disabling " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
         return waitForDisable(millisecondTimeout);
     }
@@ -639,7 +630,7 @@ public class JvmserverImpl implements IJvmserver {
 
     @Override
     public boolean waitForDisable(int millisecondTimeout) throws CicsJvmserverResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for JVMSERVER " +  getName() + " to be disabled");
+        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be disabled");
         long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
         while(Calendar.getInstance().getTimeInMillis() < timeout) {
             if (!isEnabled()) {
@@ -652,7 +643,7 @@ public class JvmserverImpl implements IJvmserver {
             }
         }
         if (isEnabled()) {
-            throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " not disabled in " + millisecondTimeout + "ms");
+            throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " not disabled in " + millisecondTimeout + "ms");
         }
         return true;
     }
@@ -669,7 +660,7 @@ public class JvmserverImpl implements IJvmserver {
                 this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), resourceDefinitionGroup);
             }
         } catch (CicstsManagerException e) {
-            String message = "Problem deleteing JVMSERVER " + getName();
+            String message = "Problem deleteing " + RESOURCE_TYPE_JVMSERVER + " " + getName();
             if (ignoreErrors) {
                 logger.warn(message + " - " + e.getMessage());
             } else {
@@ -680,7 +671,7 @@ public class JvmserverImpl implements IJvmserver {
             try {
                 this.jvmprofile.delete();
             } catch (CicstsManagerException e) {
-                String message = "Problem deleteing JVM profile for JVMSERVER " + getName();
+                String message = "Problem deleteing JVM profile for " + RESOURCE_TYPE_JVMSERVER + " " + getName();
                 if (ignoreErrors) {
                     logger.warn(message + " - " + e.getMessage());
                 } else {
@@ -688,10 +679,22 @@ public class JvmserverImpl implements IJvmserver {
                 }
             }
         }
+        if (isLiberty()) {
+        	try {
+				getLibertyServer().delete();
+			} catch (ZosLibertyServerException e) {
+				String message = "Problem deleteing Liberty server for " + RESOURCE_TYPE_JVMSERVER + " " + getName();
+	            if (ignoreErrors) {
+	                logger.warn(message + " - " + e.getMessage());
+	            } else {
+	                throw new CicsJvmserverResourceException(message, e);
+	            }
+			}
+        }
         try {
             clearJvmLogs();
         } catch (CicstsManagerException e) {
-            String message = "Problem deleteing logs for JVMSERVER " + getName();
+            String message = "Problem deleteing logs for " + RESOURCE_TYPE_JVMSERVER + " " + getName();
             if (ignoreErrors) {
                 logger.warn(message + " - " + e.getMessage());
             } else {
@@ -703,7 +706,7 @@ public class JvmserverImpl implements IJvmserver {
                 getDefaultLogsDiretory().directoryDeleteNonEmpty();
             }
         } catch (CicsJvmserverResourceException | ZosUNIXFileException e) {
-            String message = "Problem deleteing logs directory for JVMSERVER " + getName();
+            String message = "Problem deleteing logs directory for " + RESOURCE_TYPE_JVMSERVER + " " + getName();
             if (ignoreErrors) {
                 logger.warn(message + " - " + e.getMessage());
             } else {
@@ -719,7 +722,7 @@ public class JvmserverImpl implements IJvmserver {
                 this.cicsRegion.cemt().discardResource(cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName());
             }
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Problem discarding JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem discarding " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
     }
 
@@ -734,11 +737,11 @@ public class JvmserverImpl implements IJvmserver {
     public void setThreadLimit(int threadlimit) throws CicsJvmserverResourceException {
         try {
             if (!resourceInstalled()) {
-                throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " does not exist");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " does not exist");
             }
             this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), "THREADLIMIT(" + threadlimit + ")");
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Problem setting THREADLIMIT for JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem setting THREADLIMIT for " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
     }
 
@@ -748,7 +751,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
              cemtMap = cemtInquire();
         } catch (CicsJvmserverResourceException e) {
-            throw new CicsJvmserverResourceException("Problem getting THREADLIMIT for JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem getting THREADLIMIT for " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
         return Integer.valueOf(cemtMap.get("Threadlimit"));
     }
@@ -759,7 +762,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
              cemtMap = cemtInquire();
         } catch (CicsJvmserverResourceException e) {
-            throw new CicsJvmserverResourceException("Problem getting THREADCOUNT for JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem getting THREADCOUNT for " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
         return Integer.valueOf(cemtMap.get("Threadcount"));
     }
@@ -774,7 +777,7 @@ public class JvmserverImpl implements IJvmserver {
             buildResourceDefinition();
             installResourceDefinition();
         } catch (CicsJvmserverResourceException | ZosLibertyServerException e) {
-            throw new CicsJvmserverResourceException("Problem building JVM server " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem building " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
     }
 
@@ -1076,12 +1079,9 @@ public class JvmserverImpl implements IJvmserver {
         StringBuilder resourceParameters = new StringBuilder();
         appendNotNull(resourceParameters, "DESCRIPTION", getResourceDefinitionDescriptionAttribute());
         appendNotNull(resourceParameters, "STATUS", getResourceDefinitionStatusAttribute().toString());
-        appendNotNull(resourceParameters, "JVMPROFILE", getResourceDefinitionJvmprofile());
-        appendNotNull(resourceParameters, "LERUNOPTS", getResourceDefinitionLerunopts());
-        appendNotNull(resourceParameters, "THREADLIMIT", Integer.toString(getResourceDefinitionThreadlimit()));
-        for (Map.Entry<String, String> entry : this.resourceDefinitionAttribute.entrySet()) {
-            appendNotNull(resourceParameters, entry.getKey(), entry.getValue());
-        }
+        appendNotNull(resourceParameters, "JVMPROFILE", getResourceDefinitionJvmprofileAttribute());
+        appendNotNull(resourceParameters, "LERUNOPTS", getResourceDefinitionLerunoptsAttribute());
+        appendNotNull(resourceParameters, "THREADLIMIT", Integer.toString(getResourceDefinitionThreadlimitAttribute()));
         return resourceParameters.toString();
     }
 
@@ -1097,13 +1097,13 @@ public class JvmserverImpl implements IJvmserver {
 
     protected CicstsHashMap cemtInquire() throws CicsJvmserverResourceException {
         if (!resourceInstalled()) {
-            throw new CicsJvmserverResourceException("JVMSERVER " + getName() + " does not exist");
+            throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " does not exist");
         }
         CicstsHashMap cemtMap;
         try {
             cemtMap = this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName());
         } catch (CicstsManagerException e) {
-            throw new CicsJvmserverResourceException("Problem inquiring JVMSERVER " + getName(), e);
+            throw new CicsJvmserverResourceException("Problem inquiring " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
         return cemtMap;
     }
@@ -1211,46 +1211,36 @@ public class JvmserverImpl implements IJvmserver {
         }
     }
     
-    protected void cleanup(boolean endOfTestRun) {
-        if (!endOfTestRun) {
-            if (shouldArchive()) {
-                try {
-                    saveToResultsArchive();
-                } catch (CicsJvmserverResourceException e) {
-                    logger.error("Problem in cleanup phase", e);
-                }
-            }
-            if (shouldCleanup()) {
-                try {
-                    if (!resourceInstalled()) {
-                        logger.info("JVMSERVER " + getName() + " has not been installed");
-                    } else {
-                        try {
-                            disableWithEscalate();
-                        } catch (CicsJvmserverResourceException e) {
-                            logger.error("Problem in cleanup phase", e);
-                        }
-                        try {
-                            discard();
-                        } catch (CicsJvmserverResourceException e) {
-                            logger.error("Problem in cleanup phase", e);
-                        }
-                    }
-                } catch (CicstsManagerException e) {
-                    logger.error("Problem in cleanup phase", e);
-                }
-                try {
-                    delete(true);
-                } catch (CicsJvmserverResourceException e) {
-                    logger.error("Problem in cleanup phase", e);
-                }
-            }
-        } else {
+    protected void cleanup() {
+        if (shouldArchive()) {
             try {
-                if (this.cicsZosImageRunTemporaryUNIXPath.exists()) {
-                    this.cicsZosImageRunTemporaryUNIXPath.directoryDeleteNonEmpty();
+                saveToResultsArchive();
+            } catch (CicsJvmserverResourceException e) {
+                logger.error("Problem in cleanup phase", e);
+            }
+        }
+        if (shouldCleanup()) {
+            try {
+                if (!resourceInstalled()) {
+                    logger.info(RESOURCE_TYPE_JVMSERVER + " " + getName() + " has not been installed");
+                } else {
+                    try {
+                        disableWithEscalate();
+                    } catch (CicsJvmserverResourceException e) {
+                        logger.error("Problem in cleanup phase", e);
+                    }
+                    try {
+                        discard();
+                    } catch (CicsJvmserverResourceException e) {
+                        logger.error("Problem in cleanup phase", e);
+                    }
                 }
-            } catch (ZosUNIXFileException e) {
+            } catch (CicstsManagerException e) {
+                logger.error("Problem in cleanup phase", e);
+            }
+            try {
+                delete(true);
+            } catch (CicsJvmserverResourceException e) {
                 logger.error("Problem in cleanup phase", e);
             }
         }

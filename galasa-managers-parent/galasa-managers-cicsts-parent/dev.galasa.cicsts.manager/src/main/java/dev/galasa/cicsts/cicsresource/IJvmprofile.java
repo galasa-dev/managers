@@ -1,11 +1,10 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.cicsresource;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import dev.galasa.zosfile.IZosUNIXFile;
 
@@ -118,10 +117,10 @@ public interface IJvmprofile {
 	public boolean containsOption(String option);
 
 	/**
-	 * Returns a {@link HashMap} of the JVM server options and JVM system property in the JVM profile
+	 * Returns a {@link Map} of the JVM server options and JVM system property in the JVM profile
 	 * @return content of the JVM Profile
 	 */
-	public HashMap<String, String> getProfileMap();
+	public Map<String, String> getProfileMap();
 	
 	/**
 	 * Returns a {@link String} of the JVM server options and JVM system property in the JVM profile

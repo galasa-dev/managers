@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.resource.internal;
 
@@ -10,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,12 +28,13 @@ public class JvmprofileImpl implements IJvmprofile {
     
     private static final Log logger = LogFactory.getLog(JvmprofileImpl.class);
 
+	private CicsResourceManagerImpl cicsResourceManager;
     private IZosFileHandler zosFileHandler;
     private IZosImage zosImage;
     
     private IZosUNIXFile profileUnixFile;
     private String profileName;
-    private HashMap<String, String> profileMap;
+    private Map<String, String> profileMap;
     private String jvmProfileDir;
 
     private static final String COMMA_SYBMOL = ",";
@@ -69,21 +69,24 @@ public class JvmprofileImpl implements IJvmprofile {
 
     protected static final String OPTION_ZCEE_INSTALL_DIR = "ZCEE_INSTALL_DIR";
     
-    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
+    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
+    	this.cicsResourceManager = cicsResourceManager;
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;
         this.profileMap = new HashMap<>();
     }
 
-    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, HashMap<String, String> content) {
+    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, Map<String, String> content) {
+    	this.cicsResourceManager = cicsResourceManager;
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;
         this.profileMap = content;
     }
 
-    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, String content) {
+    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, String content) {
+    	this.cicsResourceManager = cicsResourceManager;
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;
@@ -239,7 +242,7 @@ public class JvmprofileImpl implements IJvmprofile {
     }
 
     @Override
-    public HashMap<String, String> getProfileMap() {
+    public Map<String, String> getProfileMap() {
         return this.profileMap;
     }
 
@@ -299,7 +302,7 @@ public class JvmprofileImpl implements IJvmprofile {
     @Override
     public void delete() throws CicsJvmserverResourceException {
         try {
-            if (this.profileUnixFile != null) {
+            if (this.profileUnixFile != null && this.profileUnixFile.exists()) {
                 this.profileUnixFile.delete();
             }
         } catch (ZosUNIXFileException e) {
@@ -431,4 +434,13 @@ public class JvmprofileImpl implements IJvmprofile {
     public String toString() {
         return "[JVM profile] " + getProfileName();
     }
+
+	protected void cleanup() {		
+		try {
+			delete();
+		} catch (CicsJvmserverResourceException e) {
+			logger.error("Problem in cleanup phase", e);
+			e.printStackTrace();
+		}
+	}
 }

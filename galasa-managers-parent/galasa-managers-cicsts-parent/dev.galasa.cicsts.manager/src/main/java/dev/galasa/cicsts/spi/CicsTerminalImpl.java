@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.spi;
 
@@ -14,8 +12,12 @@ import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
+import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270ManagerException;
+import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
 public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTerminal {
@@ -107,5 +109,36 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     public boolean isConnectAtStartup() {
         return this.connectAtStartup;
     }
+
+	@Override
+	public void setUppercaseTranslation(boolean ucctran) throws CicstsManagerException {
+		try {
+			resetAndClear();
+			type("CEOT " + (ucctran? "UCTRAN":"NOUCTRAN")).enter().waitForKeyboard();
+			pf3().waitForKeyboard();
+		} catch (KeyboardLockedException | FieldNotFoundException | NetworkException | TerminalInterruptedException | TimeoutException e) {
+			throw new CicstsManagerException("Unable to set Uppercase Translation status", e);
+		}
+	}
+
+	@Override
+	public boolean isUppercaseTranslation() throws CicstsManagerException {
+		try {
+			resetAndClear();
+			type("CEOT").enter().waitForKeyboard();
+			home().newLine().newLine();
+			String uccStatus = retrieveFieldAtCursor();
+			pf3().waitForKeyboard();
+			if (uccStatus.equals(new String(new byte[] { 0x20, 0x20, 0x20 })) || uccStatus.equals("Tra")) {
+				return false;
+			} else if (uccStatus.equals("Uct")) {
+				return true;
+			} else {
+				throw new CicstsManagerException("Unable to find Uppercase Translation status on screen");
+			}
+		} catch (KeyboardLockedException | FieldNotFoundException | NetworkException | TerminalInterruptedException | TimeoutException e) {
+			throw new CicstsManagerException("Unable to get Uppercase Translation status", e);
+		}
+	}
 
 }

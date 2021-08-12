@@ -9,6 +9,9 @@ version = '0.17.0'
 dependencies {
     api            project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zosliberty.manager')
-    api            project (':galasa-managers-core-parent:dev.galasa.textscan.manager')
+    implementation project (':galasa-managers-core-parent:dev.galasa.textscan.manager')
+    implementation project (':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
     implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'commons-io:commons-io:2.9.0'
 }
