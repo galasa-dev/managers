@@ -1,15 +1,13 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.openstack.manager.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
@@ -25,7 +23,10 @@ import com.google.gson.GsonBuilder;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.DssAdd;
+import dev.galasa.framework.spi.DssSwap;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
+import dev.galasa.framework.spi.DynamicStatusStoreMatchException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -134,7 +135,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public void provisionDiscard() {
-
+        
         for (OpenstackServerImpl instance : instances) {
             instance.discard();
         }
@@ -275,6 +276,12 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     private String reserveInstance() throws DynamicStatusStoreException, InterruptedException,
             InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
 
+        // *** Get the runname for reserving slot names
+        String runName = this.getFramework().getTestRunName();
+        
+        List<String> instanceNamePool = NamePool.get();
+        IResourcePoolingService poolingService = this.getFramework().getResourcePoolingService();
+        
         // *** Get the current and maximum instances
         int maxInstances = MaximumInstances.get();
 
@@ -289,45 +296,40 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         if (maxInstances <= currentInstances) {
             throw new InsufficientResourcesAvailableException("At max slots");
         }
-
-        // *** Reserve a instance
+        
+        
+        // *** reserve a slot and allocate a new name
         currentInstances++;
-        if (!dss.putSwap("server.current.compute.instances", sCurrentInstances, Integer.toString(currentInstances))) {
-            // *** The value of the current instances changed whilst this was running, so we
-            // need to try again with the updated value
-            Thread.sleep(200); // *** To avoid race conditions
+        DssSwap slotNumber = new DssSwap("server.current.compute.instances", sCurrentInstances, Integer.toString(currentInstances));
+
+        // *** Get a list of potential compute IDs
+        ArrayList<String> exclude = new ArrayList<>();
+        List<String> possibleNames = poolingService.obtainResources(instanceNamePool, exclude, 10, 1, this.dss,
+                "compute");
+        
+        if (possibleNames.isEmpty()) {
+            throw new InsufficientResourcesAvailableException("Insufficient Compute names available");
+        }
+        
+        // take the first one
+        String instanceName = "compute." + possibleNames.remove(0);
+        
+        // add active and ownership
+        DssAdd computeId = new DssAdd(instanceName, runName);
+        DssAdd runInstance = new DssAdd("run." + runName + "." + instanceName, "active");
+        
+        
+        
+        
+        try {
+            this.dss.performActions(slotNumber, computeId, runInstance);
+        } catch(DynamicStatusStoreMatchException e) {
+            //*** collision on either the slot increment or the instance name,  so simply retry
+            Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
             return reserveInstance();
         }
-
-        // *** Generate an Instance Name
-        String runName = this.getFramework().getTestRunName();
-
-        String actualInstanceName = null;
-
-        List<String> instanceNamePool = NamePool.get();
-        IResourcePoolingService poolingService = this.getFramework().getResourcePoolingService();
-
-        ArrayList<String> exclude = new ArrayList<>();
-        while (true) {
-            List<String> possibleNames = poolingService.obtainResources(instanceNamePool, exclude, 10, 1, this.dss,
-                    "compute");
-            for (String possibleName : possibleNames) {
-                String instanceName = "compute." + possibleName;
-                HashMap<String, String> otherProps = new HashMap<>();
-                otherProps.put("run." + runName + "." + instanceName, "active");
-
-                if (dss.putSwap(instanceName, null, runName, otherProps)) {
-                    actualInstanceName = possibleName;
-                    break;
-                }
-            }
-            if (actualInstanceName != null) {
-                break;
-            }
-        }
-
-        // *** we have a new Instance Name, so return
-        return actualInstanceName;
+        
+        return instanceName;
     }
 
     public IDynamicStatusStoreService getDSS() {

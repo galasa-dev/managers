@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.linux.internal;
 
 import java.lang.annotation.Annotation;
@@ -28,7 +26,6 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
-import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
@@ -41,7 +38,6 @@ import dev.galasa.linux.LinuxManagerField;
 import dev.galasa.linux.OperatingSystem;
 import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
-import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 @Component(service = { IManager.class })
@@ -288,8 +284,8 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     @Override
     public void provisionDiscard() {
         for(ILinuxImage image : this.taggedImages.values()) {
-            if (image instanceof ILinuxProvisionedImage) {
-                ((ILinuxProvisionedImage)image).discard();
+            if (image instanceof LinuxDSEImage) { // dont discard provisioned images, allow that manager to do it
+                ((LinuxDSEImage)image).discard();
             }
         }
     }

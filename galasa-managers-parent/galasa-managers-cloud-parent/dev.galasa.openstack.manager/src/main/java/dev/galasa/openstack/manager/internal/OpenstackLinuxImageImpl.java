@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.openstack.manager.internal;
 
 import java.nio.file.FileSystem;
@@ -174,10 +172,5 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
 
         return this.pathRunDirectory;
     }
-
-    public void discard() {
-        // Assuming that the provisioned image will be deleted, so not cleaning up
-    }
-
 
 }

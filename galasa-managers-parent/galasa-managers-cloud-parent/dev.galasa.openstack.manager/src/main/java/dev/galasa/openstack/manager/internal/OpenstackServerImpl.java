@@ -1,14 +1,13 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.openstack.manager.internal;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,7 +16,10 @@ import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ICredentials;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.DssDelete;
+import dev.galasa.framework.spi.DssSwap;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
+import dev.galasa.framework.spi.DynamicStatusStoreMatchException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
@@ -132,23 +134,19 @@ public abstract class OpenstackServerImpl {
         // TODO create userview set
 
         // *** Remove the control set
-        String prefix = "compute." + serverName;
-        HashMap<String, String> otherProps = new HashMap<>();
-        otherProps.put("run." + runName + "." + prefix, "free");
-        if (!dss.putSwap("server.current.compute.instances", currentInstances, Integer.toString(usedInstances),
-                otherProps)) {
-            // *** The value of the current slots changed whilst this was running, so we
-            // need to try again with the updated value
-            Thread.sleep(200); // *** To avoid race conditions
-            freeServerFromDss(prefix, prefix, dss);
+        DssSwap slotNumber = new DssSwap("server.current.compute.instances", currentInstances, Integer.toString(usedInstances));
+
+        DssDelete computeName   = new DssDelete(serverName, null);
+        DssDelete runAllocation = new DssDelete("run." + runName + "." + serverName, null);
+        
+        try {
+            dss.performActions(slotNumber, computeName, runAllocation);
+        } catch(DynamicStatusStoreMatchException e) {
+            //*** collision on either the slot increment or the instance name,  so simply retry
+            Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
+            freeServerFromDss(serverName, runName, dss);
             return;
         }
-
-        // *** Clear the DSS for this run completely
-        HashSet<String> deleteProperties = new HashSet<>();
-        deleteProperties.add("run." + runName + "." + prefix);
-        deleteProperties.add(prefix);
-        dss.delete(deleteProperties);
     }
 
     public static void deleteFloatingIpByName(String fipName, String runName, IDynamicStatusStoreService dss,
@@ -232,7 +230,7 @@ public abstract class OpenstackServerImpl {
         dss.put(fipProperties);
     }
     
-    protected void discard() {
+    public void discard() {
         try {
             // *** delete the instance in Openstack
             if (this.openstackServer != null) {
