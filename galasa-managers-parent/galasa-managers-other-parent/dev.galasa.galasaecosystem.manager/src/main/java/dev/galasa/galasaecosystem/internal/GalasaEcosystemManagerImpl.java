@@ -302,10 +302,11 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
      * @param field The test field
      * @param annotations any annotations with the ecosystem
      * @return a {@link IKubernetesEcosystem} ecosystem
+     * @throws InsufficientResourcesAvailableException 
      * @throws KubernetesManagerException if there is a problem generating a ecosystem
      */
     @GenerateAnnotatedField(annotation = KubernetesEcosystem.class)
-    public IKubernetesEcosystem generateKubernetesEcosystem(Field field, List<Annotation> annotations) throws GalasaEcosystemManagerException {
+    public IKubernetesEcosystem generateKubernetesEcosystem(Field field, List<Annotation> annotations) throws GalasaEcosystemManagerException, InsufficientResourcesAvailableException {
         KubernetesEcosystem annotation = field.getAnnotation(KubernetesEcosystem.class);
 
         String tag = annotation.ecosystemNamespaceTag().trim().toUpperCase();
@@ -376,6 +377,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         }
 
         KubernetesEcosystemImpl k8sEcosystem = new KubernetesEcosystemImpl(this, tag, namespace);
+        k8sEcosystem.reserveRunIdPrefix();
         taggedEcosystems.put(tag, k8sEcosystem);
 
         try {

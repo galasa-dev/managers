@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.InputStream;
@@ -46,6 +44,7 @@ import dev.galasa.artifact.IBundleResources;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
@@ -124,10 +123,16 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankWebUrl;
     private InetSocketAddress                simbankDatabasePort;
     private URL                              simbankManagementFacilityUrl;
+    
+    private RunIdPrefixImpl                  runIdPrefix;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
         super(manager, tag, null, null);
         this.namespace = namespace;
+    }
+    
+    protected void reserveRunIdPrefix() throws InsufficientResourcesAvailableException, GalasaEcosystemManagerException {
+        this.runIdPrefix = new RunIdPrefixImpl(getEcosystemManager().getFramework(), getEcosystemManager().getDss());
     }
 
     /**
@@ -673,6 +678,14 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
         // Do not discard, we will leave this for the Kubernetes Manager to clean up
         logger.debug("Not discarding Galasa Ecosystem " + getTag() + ", leaving for the Kubernetes Manager to do it");
 
+        //*** if run id prefix is present,  remove it
+        if (this.runIdPrefix != null) {
+            try {
+                this.runIdPrefix.discard();
+            } catch (GalasaEcosystemManagerException e) {
+                logger.error("Unable to discard the run id prefix",e);
+            }
+        }
 
         //*** But clean up the DSS
         String runName = getEcosystemManager().getFramework().getTestRunName();
@@ -1206,5 +1219,9 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     }
 
 
+    @Override
+    protected void insertLastRunIDIntoDSS() throws GalasaEcosystemManagerException {
+        setCpsProperty("framework.request.type.UNKNOWN.prefix", this.runIdPrefix.getRunIdPrefix());
+    }
 
 }
