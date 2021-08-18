@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.IOException;
@@ -25,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.artifact.IBundleResources;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IsolationInstallation;
@@ -54,7 +53,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
             ILinuxImage linuxImage, IJavaInstallation javaInstallation, 
             IsolationInstallation isolationInstallation,
             boolean startSimPlatform,
-            String defaultZosImage) throws LinuxManagerException {
+            String defaultZosImage) throws LinuxManagerException, InsufficientResourcesAvailableException, GalasaEcosystemManagerException {
         super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform, defaultZosImage);
 
         this.linuxImage = linuxImage;

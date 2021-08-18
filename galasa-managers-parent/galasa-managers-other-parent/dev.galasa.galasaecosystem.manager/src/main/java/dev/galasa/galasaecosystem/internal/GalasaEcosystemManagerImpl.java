@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.galasaecosystem.internal;
 
 import java.lang.annotation.Annotation;
@@ -14,6 +12,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
@@ -32,6 +31,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.ILoggingManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -72,7 +72,7 @@ import dev.galasa.zos.spi.IZosManagerSpi;
 @Component(service = { IManager.class })
 public class GalasaEcosystemManagerImpl extends AbstractManager implements ILoggingManager {
 
-    protected final static String               NAMESPACE = "galasaecosystem";
+    public final static String               NAMESPACE = "galasaecosystem";
     private final Log                           logger = LogFactory.getLog(getClass());
     private IDynamicStatusStoreService          dss;
     private final Gson                          gson = new Gson();
@@ -395,10 +395,12 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
      * @param field The test field
      * @param annotations any annotations with the ecosystem
      * @return a {@link IKubernetesEcosystem} ecosystem
+     * @throws LogConfigurationException 
+     * @throws InsufficientResourcesAvailableException 
      * @throws KubernetesManagerException if there is a problem generating a ecosystem
      */
     @GenerateAnnotatedField(annotation = LocalEcosystem.class)
-    public ILocalEcosystem generateLocalEcosystem(Field field, List<Annotation> annotations) throws GalasaEcosystemManagerException {
+    public ILocalEcosystem generateLocalEcosystem(Field field, List<Annotation> annotations) throws GalasaEcosystemManagerException, InsufficientResourcesAvailableException {
         LocalEcosystem annotation = field.getAnnotation(LocalEcosystem.class);
 
         String tag = annotation.ecosystemTag().trim().toUpperCase();
@@ -448,7 +450,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
         if (linuxImageTag.isEmpty() && windowsImageTag.isEmpty()) {
             throw new GalasaEcosystemManagerException("Galasa Ecosystem tag " + tag + " does not refere to either a Linux and Windows image tag");
         }
-
+        
         if (!linuxImageTag.isEmpty()) {
             try {
                 ILinuxImage linuxImage = this.linuxManager.getImageForTag(linuxImageTag);

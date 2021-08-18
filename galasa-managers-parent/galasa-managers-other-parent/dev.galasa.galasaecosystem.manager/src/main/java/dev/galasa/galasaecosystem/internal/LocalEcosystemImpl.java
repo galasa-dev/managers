@@ -1,9 +1,6 @@
 /*
-
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.IOException;
@@ -29,6 +26,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
@@ -42,6 +40,7 @@ import dev.galasa.SetContentType;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
@@ -94,15 +93,19 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     private final ArrayList<LocalRun> localRuns = new ArrayList<>();
 
+    private final RunIdPrefixImpl runIdPrefix;
+
     public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
             @NotNull String tag,
             @NotNull IJavaInstallation javaInstallation, 
             @NotNull IsolationInstallation isolationInstallation,
             boolean startSimPlatform,
-            String defaultZosImage) {
+            String defaultZosImage) throws InsufficientResourcesAvailableException, GalasaEcosystemManagerException, LogConfigurationException {
         super(manager, tag, javaInstallation, defaultZosImage);
         this.isolationInstallation = isolationInstallation;
         this.startSimPlatform      = startSimPlatform;
+
+        this.runIdPrefix           = new RunIdPrefixImpl(manager.getFramework(), manager.getDss());
     }
 
 
@@ -243,10 +246,10 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         this.runtimeRepo = new URL("file:" + isolatedRepoDirectory.resolve("maven").toString());
     }
-    
+
     @Override
     public String getIsolatedDirectory() {
-    	return isolatedRepoDirectory.toString();
+        return isolatedRepoDirectory.toString();
     }
 
 
@@ -454,6 +457,14 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     }
 
     public void discard() {
+        
+        // Release runid prefix
+        
+        try {
+            this.runIdPrefix.discard();
+        } catch (GalasaEcosystemManagerException e) {
+            logger.warn("Failed to discard runid prefix from dss", e);
+        }
 
         // save all data in the stored artifacts
 
@@ -768,6 +779,9 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         }
     }
 
-
+    @Override
+    protected void insertLastRunIDIntoDSS() throws GalasaEcosystemManagerException {
+        setCpsProperty("framework.request.type.LOCAL.prefix", this.runIdPrefix.getRunIdPrefix());
+    }
 
 }

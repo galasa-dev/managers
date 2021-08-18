@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
-package dev.galasa.galasaecosystem.internal;
+* Copyright contributors to the Galasa project 
+*/
+package dev.galasa.galasaecosystem.internal.resourcemanagement;
 
 import java.util.HashSet;
 import java.util.Map;

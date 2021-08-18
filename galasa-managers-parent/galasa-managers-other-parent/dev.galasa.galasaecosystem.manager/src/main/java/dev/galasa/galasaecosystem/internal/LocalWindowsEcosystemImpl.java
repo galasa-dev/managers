@@ -1,14 +1,13 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.galasaecosystem.internal;
 
 import java.util.Properties;
 
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IsolationInstallation;
 import dev.galasa.ipnetwork.ICommandShell;
@@ -26,7 +25,7 @@ public class LocalWindowsEcosystemImpl extends LocalEcosystemImpl {
             IJavaInstallation javaInstallation, 
             IsolationInstallation isolationInstallation,
             boolean startSimPlatform,
-            String defaultZosImage) throws WindowsManagerException {
+            String defaultZosImage) throws WindowsManagerException, InsufficientResourcesAvailableException, GalasaEcosystemManagerException {
         super(manager, tag, javaInstallation, isolationInstallation, startSimPlatform, defaultZosImage);
         this.windowsImage = windowsImage;
     }

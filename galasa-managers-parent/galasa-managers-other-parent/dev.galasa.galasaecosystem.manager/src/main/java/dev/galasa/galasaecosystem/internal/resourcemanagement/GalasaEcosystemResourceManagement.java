@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
-package dev.galasa.galasaecosystem.internal;
+* Copyright contributors to the Galasa project 
+*/
+package dev.galasa.galasaecosystem.internal.resourcemanagement;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +13,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IResourceManagement;
 import dev.galasa.framework.spi.IResourceManagementProvider;
 import dev.galasa.framework.spi.ResourceManagerException;
+import dev.galasa.galasaecosystem.internal.GalasaEcosystemManagerImpl;
 import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesSingleton;
 
 /**
@@ -31,7 +30,8 @@ public class GalasaEcosystemResourceManagement implements IResourceManagementPro
 	private IDynamicStatusStoreService         dss;
 	private IConfigurationPropertyStoreService cps;
 	
-	private RunResourceMonitor runResourceMonitor;
+    private RunResourceMonitor runResourceMonitor;
+    private RunIdPrefixMonitor runIdPrefixMonitor;
 	
 	@Override
 	public boolean initialise(IFramework framework, IResourceManagement resourceManagement) throws ResourceManagerException {
@@ -46,16 +46,21 @@ public class GalasaEcosystemResourceManagement implements IResourceManagementPro
 		}
 		
 		runResourceMonitor = new RunResourceMonitor(framework, resourceManagement, dss, this, cps);
+		runIdPrefixMonitor = new RunIdPrefixMonitor(framework, resourceManagement, dss, this, cps);
 		
 		return true;
 	}
 
 	@Override
 	public void start() {
-		this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(runResourceMonitor, 
-				this.framework.getRandom().nextInt(20),
-				60, 
-				TimeUnit.SECONDS);
+        this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(runResourceMonitor, 
+                this.framework.getRandom().nextInt(20),
+                60, 
+                TimeUnit.SECONDS);
+        this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(runIdPrefixMonitor, 
+                this.framework.getRandom().nextInt(20),
+                60, 
+                TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -64,7 +69,8 @@ public class GalasaEcosystemResourceManagement implements IResourceManagementPro
 
 	@Override
 	public void runFinishedOrDeleted(String runName) {
-		this.runResourceMonitor.runFinishedOrDeleted(runName);
+        this.runResourceMonitor.runFinishedOrDeleted(runName);
+        this.runIdPrefixMonitor.runFinishedOrDeleted(runName);
 	}
 
 }
