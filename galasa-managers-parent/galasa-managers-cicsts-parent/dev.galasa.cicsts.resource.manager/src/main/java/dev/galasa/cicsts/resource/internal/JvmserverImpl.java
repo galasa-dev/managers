@@ -32,7 +32,7 @@ import dev.galasa.cicsts.cicsresource.CicsResourceStatus;
 import dev.galasa.cicsts.cicsresource.IJvmprofile;
 import dev.galasa.cicsts.cicsresource.IJvmserver;
 import dev.galasa.cicsts.cicsresource.IJvmserverLog;
-import dev.galasa.cicsts.resource.internal.properties.DefaultJvmserverTimeout;
+import dev.galasa.cicsts.resource.internal.properties.DefaultResourceTimeout;
 import dev.galasa.textscan.ILogScanner;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
@@ -342,7 +342,7 @@ public class JvmserverImpl implements IJvmserver {
         try {
             cicsSuppliedProfile.setDataType(UNIXFileDataType.TEXT);
             String content = cicsSuppliedProfile.retrieveAsText();
-            return new JvmprofileImpl(this.cicsResourceManager, this.zosFileHandler, this.cicsZosImage, name, content);
+            return new JvmprofileImpl(this.zosFileHandler, this.cicsZosImage, name, content);
         } catch (ZosUNIXFileException e) {
             throw new CicsJvmserverResourceException("Problem creating JVM profile from template " + cicsSuppliedProfile.getUnixPath(), e);
         }
@@ -464,7 +464,7 @@ public class JvmserverImpl implements IJvmserver {
                 throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " already exists");
             }
             this.cicsRegion.ceda().createResource(this.cicsTerminal, RESOURCE_TYPE_JVMSERVER, getName(), this.resourceDefinitionGroup, buildResourceParameters());
-
+            //TODO: Messages???
             if (!resourceDefined()) {
                 throw new CicsJvmserverResourceException("Failed to define " + RESOURCE_TYPE_JVMSERVER + " resource definition");
             } 
@@ -882,18 +882,10 @@ public class JvmserverImpl implements IJvmserver {
 
     @Override
     public void checkpointLogs() throws CicsJvmserverResourceException {    
-        if (this.jvmLogLog != null) {
-            this.jvmLogLog.checkpoint();
-        }
-        if (this.stdOutLog != null) {
-            this.stdOutLog.checkpoint();
-        }
-        if (this.stdErrLog != null) {
-            this.stdErrLog.checkpoint();
-        }
-        if (this.jvmTraceLog != null) {
-            this.jvmTraceLog.checkpoint();
-        }
+        getJvmLog().checkpoint();
+        getStdOut().checkpoint();
+        getStdErr().checkpoint();
+        getJvmTrace().checkpoint();
     }
 
     @Override
@@ -988,9 +980,9 @@ public class JvmserverImpl implements IJvmserver {
     protected int getDefaultTimeout() throws CicsJvmserverResourceException {
         if (this.defaultTimeout == -1) {
             try {
-                this.defaultTimeout = DefaultJvmserverTimeout.get(this.cicsZosImage);
+                this.defaultTimeout = DefaultResourceTimeout.get(this.cicsZosImage);
             } catch (CicsResourceManagerException e) {
-                throw new CicsJvmserverResourceException("Problem creating getting JVM server default timeout", e);
+                throw new CicsJvmserverResourceException("Problem creating getting default resource timeout", e);
             }
         }
         return this.defaultTimeout;

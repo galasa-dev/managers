@@ -7,7 +7,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +50,8 @@ import dev.galasa.cicsts.cicsresource.CicsBundleResourceException;
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
 import dev.galasa.cicsts.cicsresource.CicsResourceStatus;
-import dev.galasa.cicsts.cicsresource.ICICSBundle;
+import dev.galasa.cicsts.cicsresource.ICicsBundle;
+import dev.galasa.cicsts.resource.internal.properties.DefaultResourceTimeout;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -56,7 +59,7 @@ import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.ZosUNIXFileException;
 
-public class CicsBundleImpl implements ICICSBundle {
+public class CicsBundleImpl implements ICicsBundle {
     
     private static final Log logger = LogFactory.getLog(CicsBundleImpl.class);
 
@@ -79,6 +82,8 @@ public class CicsBundleImpl implements ICICSBundle {
     private String resourceDefinitionDescription;
     private CicsResourceStatus resourceDefinitionStatus = CicsResourceStatus.ENABLED;
     private String resourceDefinitionBundledir;
+
+	private int defaultTimeout;
 
     private static final String SLASH_SYBMOL = "/";
 
@@ -109,7 +114,9 @@ public class CicsBundleImpl implements ICICSBundle {
 	    		String root = new File(this.localBundlePath).getName();
 	    		this.resourceDefinitionBundledir = this.cicsZosImageRunTemporaryUNIXPath.getUnixPath() + root + SLASH_SYBMOL;
 	    	}
-	        this.parameters.putAll(parameters);
+	        if (parameters != null && !parameters.isEmpty()) {
+	        	this.parameters.putAll(parameters);
+	        }
     		this.testBundleResources = this.artifactManager.getBundleResources(this.testClass);
         } else {
             this.shouldDeploy = false;
@@ -202,7 +209,7 @@ public class CicsBundleImpl implements ICICSBundle {
                 	bundleFile.setDataType(UNIXFileDataType.TEXT);
                 }
                 if (!bundleFile.exists()) {
-                    bundleFile.create();
+                    bundleFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
                 }
                 bundleFile.storeBinary(bundleComponent.content);
     		}
@@ -325,6 +332,7 @@ public class CicsBundleImpl implements ICICSBundle {
                 throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " already installed");
             }
             this.cicsRegion.ceda().installResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), this.resourceDefinitionGroup);
+            //TODO: should return messages????
             if (!resourceInstalled()) {
                 throw new CicsBundleResourceException("Failed to install " + RESOURCE_TYPE_BUNDLE + " resource definition");
             }
@@ -364,6 +372,28 @@ public class CicsBundleImpl implements ICICSBundle {
 	}
 
 	@Override
+	public boolean waitForEnable() throws CicsBundleResourceException {
+        return waitForEnable(getDefaultTimeout());
+	}
+
+	@Override
+	public boolean waitForEnable(int millisecondTimeout) throws CicsBundleResourceException {
+        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be enabled");
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+            if (isEnabled()) {
+                return true;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsBundleResourceException("Interrupted during wait", e);
+            }
+        }
+        return isEnabled();
+	}
+
+	@Override
 	public boolean isEnabled() throws CicsBundleResourceException {
         if (!resourceInstalled()) {
             return false;
@@ -391,23 +421,52 @@ public class CicsBundleImpl implements ICICSBundle {
 	}
 
 	@Override
-	public void delete() throws CicsBundleResourceException {
-        delete(false);
+	public boolean waitForDisable() throws CicsBundleResourceException {
+        return waitForDisable(getDefaultTimeout());
 	}
 
 	@Override
-	public void delete(boolean ignoreErrors) throws CicsBundleResourceException {
+	public boolean waitForDisable(int millisecondTimeout) throws CicsBundleResourceException {
+        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be disabled");
+        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
+        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+            if (!isEnabled()) {
+                return true;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new CicsBundleResourceException("Interrupted during wait", e);
+            }
+        }
+        if (isEnabled()) {
+            throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " not disabled in " + millisecondTimeout + "ms");
+        }
+        return true;
+	}
+
+	@Override
+	public boolean disableDiscardInstall() throws CicsBundleResourceException {
+		return disableDiscardInstall(getDefaultTimeout());
+	}
+
+	@Override
+	public boolean disableDiscardInstall(int millisecondTimeout) throws CicsBundleResourceException {
+		disable();
+		waitForDisable(millisecondTimeout);
+		discard();
+		installResourceDefinition();
+		return waitForEnable();
+	}
+
+	@Override
+	public void delete() throws CicsBundleResourceException {
         try {
             if (resourceDefined()) {
                 this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), resourceDefinitionGroup);
             }
         } catch (CicstsManagerException e) {
-            String message = "Problem deleteing " + RESOURCE_TYPE_BUNDLE + " " + getName();
-            if (ignoreErrors) {
-                logger.warn(message + " - " + e.getMessage());
-            } else {
-                throw new CicsBundleResourceException(message, e);
-            }
+        	throw new CicsBundleResourceException("Problem deleteing " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
         }
 	}
 
@@ -416,6 +475,9 @@ public class CicsBundleImpl implements ICICSBundle {
         try {
             if (resourceInstalled()) {
                 this.cicsRegion.cemt().discardResource(cicsTerminal, RESOURCE_TYPE_BUNDLE, getName());
+	            if (resourceInstalled()) {
+	            	throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " was not discarded" + getName());
+	            }
             }
         } catch (CicstsManagerException e) {
             throw new CicsBundleResourceException("Problem discarding " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
@@ -423,10 +485,11 @@ public class CicsBundleImpl implements ICICSBundle {
 	}
 
 	@Override
-	public void disableDiscardDelete(boolean ignoreErrors) throws CicsBundleResourceException {
+	public void disableDiscardDelete() throws CicsBundleResourceException {
         disable();
+        waitForDisable();
         discard();
-        delete(ignoreErrors);
+        delete();
 	}
 
 	@Override
@@ -450,6 +513,17 @@ public class CicsBundleImpl implements ICICSBundle {
 	@Override
     public String toString() {
         return "[CICS Bundle] " + getName();
+    }
+
+    protected int getDefaultTimeout() throws CicsBundleResourceException {
+        if (this.defaultTimeout == -1) {
+            try {
+                this.defaultTimeout = DefaultResourceTimeout.get(this.cicsZosImage);
+            } catch (CicsResourceManagerException e) {
+                throw new CicsBundleResourceException("Problem creating getting default resource timeout", e);
+            }
+        }
+        return this.defaultTimeout;
     }
 
     protected String buildResourceParameters() {
@@ -490,6 +564,7 @@ public class CicsBundleImpl implements ICICSBundle {
             } else {
                 try {
                     disable();
+                    waitForDisable();
                 } catch (CicsBundleResourceException e) {
                     logger.error("Problem in cleanup phase", e);
                 }
@@ -503,7 +578,7 @@ public class CicsBundleImpl implements ICICSBundle {
             logger.error("Problem in cleanup phase", e);
         }
         try {
-            delete(true);
+            delete();
         } catch (CicsBundleResourceException e) {
             logger.error("Problem in cleanup phase", e);
         }

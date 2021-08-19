@@ -33,7 +33,7 @@ public class ZosLibertyServerLogsImpl implements IZosLibertyServerLogs {
     }
 
     @Override
-    public boolean hasFFDC() {
+    public boolean hasFfdcs() {
         return this.hasFFDC;
     }
 

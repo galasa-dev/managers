@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.internal.properties;
 
@@ -19,7 +17,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.description Provides the applid of the CICS TS region for the DSE provisioner.  The applid setting
  * is mandatory for a DSE region.
  * 
- * @galasa.required Yes if you want a DSE region, otherwide not required
+ * @galasa.required Yes if you want a DSE region, otherwise not required
  * 
  * @galasa.default None
  * 

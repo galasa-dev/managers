@@ -160,7 +160,7 @@ public interface IJvmserver {
 	public boolean waitForEnable() throws CicsJvmserverResourceException;
 
 	/**
-	 * Wait for the CICS JVMSERVER resource to be enabled with specified timeout. Does NOT issue the enable command 
+	 * Wait for the CICS JVMSERVER resource to be enabled with specified timeout. Does NOT issue the enable command
 	 * @param millisecondTimeout
 	 * @return true if enabled, false if not enabled
 	 * @throws CicsJvmserverResourceException

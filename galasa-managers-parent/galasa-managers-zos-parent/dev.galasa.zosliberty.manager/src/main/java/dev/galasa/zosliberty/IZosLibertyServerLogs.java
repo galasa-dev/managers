@@ -11,7 +11,7 @@ public interface IZosLibertyServerLogs {
      * Does this Liberty server have any FFDC logs
      * @return true or false
      */
-    public boolean hasFFDC();
+    public boolean hasFfdcs();
 
     /**
      * The number of Liberty log files

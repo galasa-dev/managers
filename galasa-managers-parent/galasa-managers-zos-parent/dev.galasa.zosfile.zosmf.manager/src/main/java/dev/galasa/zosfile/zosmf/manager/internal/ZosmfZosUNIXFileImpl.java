@@ -1,6 +1,6 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
 import java.io.IOException;
@@ -340,54 +340,44 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
 
     @Override
     public UNIXFileDataType getDataType() {
-        if (this.dataType == null) {
-            return UNIXFileDataType.TEXT;
-        }
-        return this.dataType;
+	    if (this.dataType == null) {
+	        return UNIXFileDataType.TEXT;
+	    }
+	    return this.dataType;
     }
 
 
 	@Override
 	public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException {
-		if (this.filePermissions == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.filePermissions;
 	}
 
 
 	@Override
 	public int getSize() throws ZosUNIXFileException {
-		if (this.fileSize == -1) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.fileSize;
 	}
 
 
 	@Override
 	public String getLastModified() throws ZosUNIXFileException {
-		if (this.lastModified == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.lastModified;
 	}
 
 
 	@Override
 	public String getUser() throws ZosUNIXFileException {
-		if (this.user == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.user;
 	}
 
 
 	@Override
 	public String getGroup() throws ZosUNIXFileException {
-		if (this.group == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.group;
 	}
 
@@ -842,7 +832,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
             }
         } else {
             String archiveLocation;
-            if (this.dataType.equals(UNIXFileDataType.TEXT)) {
+            if (getDataType().equals(UNIXFileDataType.TEXT)) {
             	archiveLocation = storeArtifact(rasPath, retrieveAsText(), false, this.fileName);
             } else {
             	archiveLocation = storeArtifact(rasPath, retrieveAsBinary(), false, this.fileName);
@@ -989,7 +979,7 @@ public class ZosmfZosUNIXFileImpl implements IZosUNIXFile {
     protected void splitUnixPath() {
         if (this.unixPath.endsWith(SLASH)) {
             this.fileName = null;
-            this.directoryPath = this.unixPath.substring(0,this.unixPath.length()-1);
+            this.directoryPath = this.unixPath;
             this.fileType = UNIXFileType.DIRECTORY;
         } else {
             int index = this.unixPath.lastIndexOf('/');

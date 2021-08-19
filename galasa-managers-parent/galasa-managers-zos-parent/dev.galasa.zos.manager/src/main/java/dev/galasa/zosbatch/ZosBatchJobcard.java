@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.zosbatch;
 
 import dev.galasa.zos.IZosImage;
@@ -25,7 +28,7 @@ public class ZosBatchJobcard {
     private String region;
     private String memlimit;
     private Typrun typrun;
-    private String userid;
+    private String user;
     private String password;
     private String cond;
     private String time;
@@ -89,11 +92,11 @@ public class ZosBatchJobcard {
     }
 
     /**
-     * @param userid value for USERID=
+     * @param user value for USER=
      * @return this class for Fluent calls
      */
-    public ZosBatchJobcard setUserid(String userid) {
-        this.userid = userid;
+    public ZosBatchJobcard setUser(String user) {
+        this.user = user;
         return this;
     }
 
@@ -185,10 +188,10 @@ public class ZosBatchJobcard {
     }
 
     /**
-     * @return USERID= value
+     * @return USER= value
      */
-    public String getUserid() {
-        return nulled(userid);
+    public String getUser() {
+        return nulled(user);
     }
 
     /**
@@ -286,9 +289,9 @@ public class ZosBatchJobcard {
             jobCard.append(",\n");
         }
         
-        if (userid != null) {
-            jobCard.append("//         USERID=");
-            jobCard.append(userid);
+        if (user != null) {
+            jobCard.append("//         USER=");
+            jobCard.append(user);
             jobCard.append(",\n");
         }
         

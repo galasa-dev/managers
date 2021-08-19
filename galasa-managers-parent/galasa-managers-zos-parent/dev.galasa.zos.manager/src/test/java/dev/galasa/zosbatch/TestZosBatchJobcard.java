@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch;
 
@@ -85,9 +83,9 @@ public class TestZosBatchJobcard {
     }
     
     @Test
-    public void testUserid() {
-        String value = "userid";
-        Assert.assertEquals("problem with userid value", value, zosBatchJobcard.setUserid(value).getUserid());
+    public void testUser() {
+        String value = "user";
+        Assert.assertEquals("problem with user value", value, zosBatchJobcard.setUser(value).getUser());
     }
     
     @Test
@@ -131,7 +129,7 @@ public class TestZosBatchJobcard {
         String region = "region";
         String memlimit = "memlimit";
         String typrun = "SCAN";
-        String userid = "userid";
+        String user = "user";
         String password = "password";
         String cond = "cond";
         String time = "time";
@@ -160,7 +158,7 @@ public class TestZosBatchJobcard {
         Whitebox.setInternalState(zosBatchJobcardSpy, region, region);
         Whitebox.setInternalState(zosBatchJobcardSpy, memlimit, memlimit);
         Whitebox.setInternalState(zosBatchJobcardSpy, "typrun", ZosBatchJobcard.Typrun.SCAN);
-        Whitebox.setInternalState(zosBatchJobcardSpy, userid, userid);
+        Whitebox.setInternalState(zosBatchJobcardSpy, user, user);
         Whitebox.setInternalState(zosBatchJobcardSpy, password, password);
         Whitebox.setInternalState(zosBatchJobcardSpy, cond, cond);
         Whitebox.setInternalState(zosBatchJobcardSpy, time, time);
@@ -168,7 +166,7 @@ public class TestZosBatchJobcard {
                 "//         REGION=" + region + ",\n" + 
                 "//         MEMLIMIT=" + memlimit + ",\n" + 
                 "//         TYPRUN=" + typrun + ",\n" +
-                "//         USERID=" + userid + ",\n" +
+                "//         USER=" + user + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
                 "//         COND=" + cond + ",\n" + 
                 "//         TIME=" + time);
@@ -179,7 +177,7 @@ public class TestZosBatchJobcard {
                 "//         REGION=" + region + ",\n" + 
                 "//         MEMLIMIT=" + memlimit + ",\n" + 
                 "//         TYPRUN=" + typrun + ",\n" +
-                "//         USERID=" + userid + ",\n" +
+                "//         USER=" + user + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
                 "//         COND=" + cond + ",\n" + 
                 "//         TIME=" + time);
@@ -190,7 +188,7 @@ public class TestZosBatchJobcard {
                 "//         REGION=" + region + ",\n" + 
                 "//         MEMLIMIT=" + memlimit + ",\n" + 
                 "//         TYPRUN=" + typrun + ",\n" +
-                "//         USERID=" + userid + ",\n" +
+                "//         USER=" + user + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
                 "//         COND=" + cond + ",\n" + 
                 "//         TIME=" + time);
@@ -209,7 +207,7 @@ public class TestZosBatchJobcard {
                 "//         REGION=" + region + ",\n" + 
                 "//         MEMLIMIT=" + memlimit + ",\n" + 
                 "//         TYPRUN=" + typrun + ",\n" +
-                "//         USERID=" + userid + ",\n" +
+                "//         USER=" + user + ",\n" +
                 "//         PASSWORD=" + password + ",\n" + 
                 "//         COND=" + cond + ",\n" + 
                 "//         TIME=" + time);

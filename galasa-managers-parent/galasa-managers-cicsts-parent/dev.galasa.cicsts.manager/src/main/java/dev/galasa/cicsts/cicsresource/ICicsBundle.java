@@ -7,7 +7,7 @@ package dev.galasa.cicsts.cicsresource;
  * Represents a CICS Bundle resource. It provides methods to set CICS Bundle specific attributes on the resource
  * (via CEDA) and to manage and set attributes in CEMT
  */
-public interface ICICSBundle {
+public interface ICicsBundle {
 	
 	/**
 	 * Set the CICS BUNDLE resource definition DESCRIPTION attribute value
@@ -101,6 +101,21 @@ public interface ICICSBundle {
 	public void enable() throws CicsBundleResourceException;
 
 	/**
+	 * Wait for the CICS BUNDLE resource to be enabled. Does NOT issue the enable command
+	 * @return true if enabled, false if not enabled
+	 * @throws CicsBundleResourceException
+	 */
+	public boolean waitForEnable() throws CicsBundleResourceException;
+
+	/**
+	 * Wait for the CICS BUNDLE resource to be enabled with specified timeout. Does NOT issue the enable command
+	 * @param millisecondTimeout
+	 * @return true if enabled, false if not enabled
+	 * @throws CicsBundleResourceException
+	 */
+	public boolean waitForEnable(int millisecondTimeout) throws CicsBundleResourceException;
+
+	/**
 	 * Returns whether the CICS BUNDLE resource is currently enabled
 	 * @return true if enabled, false if not enabled
 	 * @throws CicsBundleResourceException 
@@ -112,21 +127,45 @@ public interface ICICSBundle {
 	 * @return true if disabled, false if not disabled
 	 * @throws CicsBundleResourceException
 	 */
-	public boolean disable() throws CicsBundleResourceException; 
+	public boolean disable() throws CicsBundleResourceException;
+
+	/**
+	 * Wait for the CICS BUNDLE resource to be disabled. Does NOT issue the disable command
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsBundleResourceException
+	 */
+	public boolean waitForDisable() throws CicsBundleResourceException;
+
+	/**
+	 * Wait for the CICS BUNDLE resource to be disabled with specified timeout. Does NOT issue the disable command
+	 * @param millisecondTimeout
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsJvmserverResourceException
+	 */
+	public boolean waitForDisable(int millisecondTimeout) throws CicsBundleResourceException;
+
+	/**
+	 * Disable and discard the CICS BUNDLE resource and re-install. Waits for disable and enable
+	 * Errors during the process will cause an exception to be thrown
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsBundleResourceException
+	 */
+	public boolean disableDiscardInstall() throws CicsBundleResourceException;
+
+	/**
+	 * Disable and discard the CICS BUNDLE resource and re-install. Waits for disable and enable
+	 * Errors during the process will cause an exception to be thrown
+	 * @param millisecondTimeout
+	 * @return true if disabled, false if not disabled
+	 * @throws CicsBundleResourceException
+	 */
+	public boolean disableDiscardInstall(int millisecondTimeout) throws CicsBundleResourceException;
 	
 	/**
 	 * Delete the CICS BUNDLE resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded
 	 * @throws CicsBundleResourceException
 	 */
 	public void delete() throws CicsBundleResourceException;
-
-	/**
-	 * Delete the CICS BUNDLE resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded. 
-	 * Errors during the process will cause an exception to be thrown depending on the value of ignoreErrors 
-	 * @param ignoreErrors 
-	 * @throws CicsBundleResourceException
-	 */
-	public void delete(boolean ignoreErrors) throws CicsBundleResourceException;
 
 	/**
 	 * Discard the CICS BUNDLE resource. If the resource is enabled, it will be disabled and discarded
@@ -136,11 +175,10 @@ public interface ICICSBundle {
 
 	/**
 	 * Disable and discard the CICS BUNDLE resource and delete the resource definition.
-	 * Errors during the process will cause an exception to be thrown depending on the value of ignoreErrors 
-	 * @param ignoreErrors 
+	 * Errors during the process will cause an exception to be thrown
 	 * @throws CicsBundleResourceException
 	 */
-	public void disableDiscardDelete(boolean ignoreErrors) throws CicsBundleResourceException;
+	public void disableDiscardDelete() throws CicsBundleResourceException;
 
 	/**
 	 * Returns the CICS BUNDLE name as defined in the CICS Resource Definition

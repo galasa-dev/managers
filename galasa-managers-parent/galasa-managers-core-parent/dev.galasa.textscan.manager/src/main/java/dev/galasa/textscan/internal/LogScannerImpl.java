@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.textscan.internal;
 
@@ -9,6 +7,8 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.textscan.FailTextFoundException;
 import dev.galasa.textscan.ILogScanner;
@@ -19,6 +19,8 @@ import dev.galasa.textscan.MissingTextException;
 import dev.galasa.textscan.TextScanException;
 
 public class LogScannerImpl implements ILogScanner {
+	
+	private static final Log logger = LogFactory.getLog(LogScannerImpl.class);
 
 	private static final String MESSAGE_PROBLEM_SCANNING = "Problem scanning '";
 
@@ -284,6 +286,10 @@ public class LogScannerImpl implements ILogScanner {
 	}
 
 	protected void skipToCheckpoint() throws TextScanException {
+		if (getCheckpoint() == -1) {
+			logger.warn("Log '" + this.scannableName + "' has not been checkpointed");
+			return;
+		}
 		try {
 			this.scannable.updateScannable();
 			long skipped = this.scannable.getScannableInputStream().skip(this.checkpoint);
