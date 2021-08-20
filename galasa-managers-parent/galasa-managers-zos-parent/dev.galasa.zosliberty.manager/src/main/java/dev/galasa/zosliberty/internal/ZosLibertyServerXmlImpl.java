@@ -260,7 +260,7 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
     }
 
     @Override
-    public IZosLibertyServerXmlElementList createElementList() {
+    public IZosLibertyServerXmlElementList newElementList() {
         return new ZosLibertyServerXmlElementListImpl();
     }
 

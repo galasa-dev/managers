@@ -201,5 +201,5 @@ public interface IZosLibertyServerXml {
      * Create an {@link IZosLibertyServerXmlElementList} 
      * @return {@link IZosLibertyServerXmlElementList}
      */
-    public IZosLibertyServerXmlElementList createElementList();
+    public IZosLibertyServerXmlElementList newElementList();
 }

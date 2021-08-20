@@ -27,7 +27,7 @@ public interface ICicsResource {
 	 * @return the CICS Bundle object
 	 * @throws CicsJvmserverResourceException
 	 */
-	public ICICSBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException;
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException;
 	
 	/**
 	 * Create a CICS BUNDLE resource object without supplying the CICS bundle content, i.e. the bundle already exists on the zOS UNIX file system
@@ -39,7 +39,7 @@ public interface ICicsResource {
 	 * @return the CICS Bundle object
 	 * @throws CicsJvmserverResourceException
 	 */
-	public ICICSBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundleDir) throws CicsBundleResourceException;
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundleDir) throws CicsBundleResourceException;
 
 	/**
 	 * Create a CICS JVMSERVER resource object using the CICS/Galasa default properties

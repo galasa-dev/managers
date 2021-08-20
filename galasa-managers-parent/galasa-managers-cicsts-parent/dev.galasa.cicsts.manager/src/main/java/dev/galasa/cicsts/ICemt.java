@@ -1,9 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
-
 package dev.galasa.cicsts;
 
 import javax.validation.constraints.NotNull;
@@ -39,7 +36,7 @@ public interface ICemt {
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param resourceType a {@link String} of the type of resource you want to set.
-     * @param resourceName a {@link String} of the name of the resource you want to set.
+     * @param resourceName a {@link String} of the name of the resource you want to set. Can be {@code null} for example {@code SET DB2CONN ...}.
      * @param action a {@link String} of the action you want to perform on the resource.
      * @return a {@link CicstsHashMap} object containing all of the properties of the resource.
      * @throws CemtException

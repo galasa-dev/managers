@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -338,41 +336,31 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
 	@Override
 	public Set<PosixFilePermission> getFilePermissions() throws ZosUNIXFileException {
-		if (this.filePermissions == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.filePermissions;
 	}
 
 	@Override
 	public int getSize() throws ZosUNIXFileException {
-		if (this.fileSize == -1) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.fileSize;
 	}
 
 	@Override
 	public String getLastModified() throws ZosUNIXFileException {
-		if (this.lastModified == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.lastModified;
 	}
 
 	@Override
 	public String getUser() throws ZosUNIXFileException {
-		if (this.user == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.user;
 	}
 
 	@Override
 	public String getGroup() throws ZosUNIXFileException {
-		if (this.group == null) {
-			retrieveAttributes();
-		}
+		retrieveAttributes();
 		return this.group;
 	}
 
@@ -523,7 +511,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
 
 	protected boolean createPath(String path, UNIXFileType fileType, Set<PosixFilePermission> accessPermissions) throws ZosUNIXFileException {
         JsonObject requestBody = new JsonObject();
-        requestBody.addProperty(PROP_TYPE, fileType.toString().toUpperCase());
+        requestBody.addProperty(PROP_TYPE, fileType.toString().toLowerCase());
         requestBody.addProperty(PROP_PERMISSIONS, IZosUNIXFile.posixFilePermissionsToSymbolicNotation(accessPermissions));
         
         String urlPath = RESTFILES_FILE_PATH + SLASH + path;
@@ -689,7 +677,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
             }
         } else {
             String archiveLocation;
-            if (this.dataType.equals(UNIXFileDataType.TEXT)) {
+            if (getDataType().equals(UNIXFileDataType.TEXT)) {
             	archiveLocation = storeArtifact(rasPath, retrieveAsText(), false, this.fileName);
             } else {
             	archiveLocation = storeArtifact(rasPath, retrieveAsBinary(), false, this.fileName);
@@ -809,7 +797,7 @@ public class RseapiZosUNIXFileImpl implements IZosUNIXFile {
     protected void splitUnixPath() {
         if (this.unixPath.endsWith(SLASH)) {
             this.fileName = null;
-            this.directoryPath = this.unixPath.substring(0,this.unixPath.length()-1);
+            this.directoryPath = this.unixPath;
             this.fileType = UNIXFileType.DIRECTORY;
         } else {
             int index = this.unixPath.lastIndexOf('/');

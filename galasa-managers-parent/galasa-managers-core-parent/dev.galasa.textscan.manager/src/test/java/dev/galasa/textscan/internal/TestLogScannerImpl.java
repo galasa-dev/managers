@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.textscan.internal;
 
@@ -799,6 +797,10 @@ public class TestLogScannerImpl {
 		when(textScannableMock.getScannableInputStream()).thenReturn(textInputStream);
 		logScannerSpy.setScannable(textScannableMock);
 
+		logScannerSpy.setCheckpoint(-1);		
+		logScannerSpy.skipToCheckpoint();
+
+		textInputStream.reset();
 		logScannerSpy.setCheckpoint(11);		
 		logScannerSpy.skipToCheckpoint();
 

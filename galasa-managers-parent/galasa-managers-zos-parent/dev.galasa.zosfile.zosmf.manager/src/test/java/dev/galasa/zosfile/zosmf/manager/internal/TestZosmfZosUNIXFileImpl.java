@@ -1355,7 +1355,7 @@ public class TestZosmfZosUNIXFileImpl {
         
         zosUNIXFileSpy.splitUnixPath();
         Assert.assertEquals("splitUnixPath() should set the expected value", (String) null, Whitebox.getInternalState(zosUNIXFileSpy, "fileName"));
-        Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY_PATH, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
+        Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIXFileType.DIRECTORY, Whitebox.getInternalState(zosUNIXFileSpy, "fileType"));
     }
     

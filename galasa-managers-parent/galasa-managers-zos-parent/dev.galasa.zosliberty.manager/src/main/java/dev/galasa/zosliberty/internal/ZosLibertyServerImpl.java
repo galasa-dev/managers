@@ -727,7 +727,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
             if (contextRoot != null) {
                 attributes.put("context-root", contextRoot);            
             }
-            getServerXml().addElement("application", attributes);
+            loadServerXmlFromFileSystem().addElement("application", attributes);
             getServerXml().store();
         } catch (ZosLibertyServerException e) {
             throw new ZosLibertyServerException("Problem deploying application", e);
@@ -798,7 +798,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     @Override
     public void removeApplication(String name) throws ZosLibertyServerException {
         try {
-            List<Element> applicationElements = getServerXml().getElements("application");
+            List<Element> applicationElements = loadServerXmlFromFileSystem().getElements("application");
             for (Element applicationElement : applicationElements) {
                 String applicationName = applicationElement.getAttribute("name");
                 if (name == null || (applicationName != null && applicationName.equals(name))) {

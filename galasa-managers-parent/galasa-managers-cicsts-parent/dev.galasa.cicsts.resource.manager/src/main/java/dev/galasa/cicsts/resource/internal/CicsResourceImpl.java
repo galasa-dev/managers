@@ -10,7 +10,7 @@ import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.cicsresource.CicsBundleResourceException;
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.CicsResourceManagerException;
-import dev.galasa.cicsts.cicsresource.ICICSBundle;
+import dev.galasa.cicsts.cicsresource.ICicsBundle;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.cicsts.cicsresource.IJvmprofile;
 import dev.galasa.cicsts.cicsresource.IJvmserver;
@@ -38,12 +38,12 @@ public class CicsResourceImpl implements ICicsResource {
     }
 
     @Override
-	public ICICSBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException {
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException {
 		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, bundlePath, null, parameters);
 	}
 
     @Override
-	public ICICSBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundleDir) throws CicsBundleResourceException {
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundleDir) throws CicsBundleResourceException {
 		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, null, bundleDir, null);
 	}
 
@@ -64,17 +64,17 @@ public class CicsResourceImpl implements ICicsResource {
 
     @Override
     public IJvmprofile newJvmprofile(String jvmprofileName) {
-        return new JvmprofileImpl(this.cicsResourceManagerImpl, this.zosFileHandler, this.zosImage, jvmprofileName);
+        return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName);
     }
 
     @Override
     public IJvmprofile newJvmprofile(String jvmprofileName, Map<String, String> content) {
-        return new JvmprofileImpl(this.cicsResourceManagerImpl, this.zosFileHandler, this.zosImage, jvmprofileName, content);
+        return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
     }
 
     @Override
     public IJvmprofile newJvmprofile(String jvmprofileName, String content) {
-        return new JvmprofileImpl(this.cicsResourceManagerImpl, this.zosFileHandler, this.zosImage, jvmprofileName, content);
+        return new JvmprofileImpl(this.zosFileHandler, this.zosImage, jvmprofileName, content);
     }
 
 }

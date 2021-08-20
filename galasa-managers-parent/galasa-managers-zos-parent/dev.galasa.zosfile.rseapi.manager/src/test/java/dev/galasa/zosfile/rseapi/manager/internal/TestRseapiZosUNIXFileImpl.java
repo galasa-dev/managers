@@ -1174,7 +1174,7 @@ public class TestRseapiZosUNIXFileImpl {
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIX_DIRECTORY_PATH, Whitebox.getInternalState(zosUNIXFileSpy, "directoryPath"));
         Assert.assertEquals("splitUnixPath() should set the expected value", UNIXFileType.FILE, Whitebox.getInternalState(zosUNIXFileSpy, "fileType"));
 
-        Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_DIRECTORY + "/");
+        Whitebox.setInternalState(zosUNIXFileSpy, "unixPath", UNIX_DIRECTORY);
         Whitebox.setInternalState(zosUNIXFileSpy, "directoryPath", (String) null);
         Whitebox.setInternalState(zosUNIXFileSpy, "fileType", (UNIXFileType) null);
         

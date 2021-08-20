@@ -28,7 +28,6 @@ public class JvmprofileImpl implements IJvmprofile {
     
     private static final Log logger = LogFactory.getLog(JvmprofileImpl.class);
 
-	private CicsResourceManagerImpl cicsResourceManager;
     private IZosFileHandler zosFileHandler;
     private IZosImage zosImage;
     
@@ -69,24 +68,21 @@ public class JvmprofileImpl implements IJvmprofile {
 
     protected static final String OPTION_ZCEE_INSTALL_DIR = "ZCEE_INSTALL_DIR";
     
-    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
-    	this.cicsResourceManager = cicsResourceManager;
+    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName) {
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;
         this.profileMap = new HashMap<>();
     }
 
-    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, Map<String, String> content) {
-    	this.cicsResourceManager = cicsResourceManager;
+    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, Map<String, String> content) {
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;
         this.profileMap = content;
     }
 
-    public JvmprofileImpl(CicsResourceManagerImpl cicsResourceManager, IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, String content) {
-    	this.cicsResourceManager = cicsResourceManager;
+    public JvmprofileImpl(IZosFileHandler zosFileHandler, IZosImage zosImage, String jvmprofileName, String content) {
         this.zosFileHandler = zosFileHandler;
         this.zosImage = zosImage;
         this.profileName = jvmprofileName;

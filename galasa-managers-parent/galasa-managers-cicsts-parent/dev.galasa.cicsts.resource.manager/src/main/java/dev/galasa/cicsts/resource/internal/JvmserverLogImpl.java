@@ -11,6 +11,10 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.IJvmserverLog;
 import dev.galasa.textscan.ILogScanner;
@@ -24,8 +28,10 @@ import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.ZosUNIXFileException;
 
 public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
+	
+	private static final Log logger = LogFactory.getLog(JvmserverLogImpl.class);
     
-    private IZosUNIXFile zosUnixFile;
+	private IZosUNIXFile zosUnixFile;
     private IZosBatchJobOutputSpoolFile zosBatchJobOutputSpoolFile;
     private ILogScanner logScanner;
     private String scannableName;
@@ -161,12 +167,16 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(((ByteArrayOutputStream) retrieve()).toByteArray());
             long checkpoint = getCheckpoint();
-            long skipped = bais.skip(checkpoint);
-            if (skipped != getCheckpoint()) {
-                throw new IOException("Failed to skip " + checkpoint + " bytes. Actual bytes skipped " + skipped);
+            if (checkpoint == -1) {
+            	logger.warn("Log '" + this.scannableName + "' has not been checkpointed");
+            } else {
+	            long skipped = bais.skip(checkpoint);
+	            if (skipped != getCheckpoint()) {
+	                throw new IOException("Failed to skip " + checkpoint + " bytes. Actual bytes skipped " + skipped);
+	            }
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.writeTo(baos);
+            IOUtils.copy(bais, baos);
             return baos;
         } catch (IOException e) {
             throw new CicsJvmserverResourceException("Problem retrieving log since last checkpoint", e);

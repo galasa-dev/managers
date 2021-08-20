@@ -3,7 +3,6 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import dev.galasa.zosfile.IZosUNIXFile;
