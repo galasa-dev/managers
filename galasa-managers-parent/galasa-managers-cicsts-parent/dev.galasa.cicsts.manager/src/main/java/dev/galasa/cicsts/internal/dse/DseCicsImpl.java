@@ -141,5 +141,4 @@ public class DseCicsImpl extends BaseCicsImpl {
 		}
 		return this.regionJob;
 	}
-
 }

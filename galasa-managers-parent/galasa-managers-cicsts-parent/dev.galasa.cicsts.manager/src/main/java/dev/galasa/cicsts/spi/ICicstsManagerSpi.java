@@ -13,6 +13,7 @@ import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.zosbatch.IZosBatch;
+import dev.galasa.zosfile.IZosFileHandler;
 
 public interface ICicstsManagerSpi {
 
@@ -88,5 +89,7 @@ public interface ICicstsManagerSpi {
     public void cicstsRegionStarted(ICicsRegion region) throws CicstsManagerException;
 
 	public IZosBatch getZosBatch(ICicsRegion region) throws CicstsManagerException;
+
+	public IZosFileHandler getZosFileHandler() throws CicstsManagerException;
 
 }

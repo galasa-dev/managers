@@ -101,8 +101,9 @@ public class ZosLibertyServerXmlImpl implements IZosLibertyServerXml {
     public void store() throws ZosLibertyServerException {
         try {
             if (!this.serverXmlUnixfile.exists()) {
-                this.serverXmlUnixfile.setShouldCleanup(false);
                 this.serverXmlUnixfile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
+            } else {
+                this.serverXmlUnixfile.setShouldCleanup(false);
             }
             this.serverXmlUnixfile.setDataType(UNIXFileDataType.BINARY);
             this.serverXmlUnixfile.storeBinary(documentToString(getAsDocument()).getBytes());
