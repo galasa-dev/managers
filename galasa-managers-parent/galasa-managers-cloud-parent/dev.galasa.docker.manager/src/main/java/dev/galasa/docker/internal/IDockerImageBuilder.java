@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
 import java.io.InputStream;
