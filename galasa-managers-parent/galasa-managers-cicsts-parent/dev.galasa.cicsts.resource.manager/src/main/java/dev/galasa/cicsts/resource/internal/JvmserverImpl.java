@@ -61,7 +61,7 @@ public class JvmserverImpl implements IJvmserver {
     private ICicsTerminal cicsTerminal;
     private String cicsApplid;
     private IZosImage cicsZosImage;
-    private IZosUNIXFile cicsZosImageRunTemporaryUNIXPath;
+    private IZosUNIXFile runTemporaryUNIXPath;
     private ICredentials cicsZosImageDefaultCredentials;
     private String cicsZosImageDefaultCredentialsUserid;
     private String cicsConfigroot;
@@ -203,9 +203,9 @@ public class JvmserverImpl implements IJvmserver {
 
     private void setRunTemporaryUNIXPath() throws CicsJvmserverResourceException {
         try {
-            this.cicsZosImageRunTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(this.cicsZosImage.getRunTemporaryUNIXPath() + SLASH_SYBMOL, this.cicsZosImage);
-        } catch (ZosManagerException e) {
-            throw new CicsJvmserverResourceException("Unable to get Run Temporary UNIX Path for image" + this.cicsZosImage.getImageID(), e);
+            this.runTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(cicsRegion.getRunTemporaryUNIXDirectory().getUnixPath() + SLASH_SYBMOL, this.cicsZosImage);
+        } catch (ZosManagerException | CicstsManagerException e) {
+            throw new CicsJvmserverResourceException("Unable to get Run Temporary UNIX directory for image" + this.cicsZosImage.getImageID(), e);
         }
     }
 
@@ -272,7 +272,7 @@ public class JvmserverImpl implements IJvmserver {
 
     protected String getDefaultWorkingDirectoryValue() throws CicsJvmserverResourceException {
         if (this.defaultWorkingDirectoryValue == null) {
-            this.defaultWorkingDirectoryValue = this.cicsZosImageRunTemporaryUNIXPath.getUnixPath();
+            this.defaultWorkingDirectoryValue = this.runTemporaryUNIXPath.getUnixPath().substring(0, this.runTemporaryUNIXPath.getUnixPath().length()-getApplid().length()-1);
         }
         return this.defaultWorkingDirectoryValue;
     }

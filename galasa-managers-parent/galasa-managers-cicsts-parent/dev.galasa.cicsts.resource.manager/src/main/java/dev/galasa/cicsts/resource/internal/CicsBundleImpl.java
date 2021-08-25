@@ -53,7 +53,6 @@ import dev.galasa.cicsts.cicsresource.CicsResourceStatus;
 import dev.galasa.cicsts.cicsresource.ICicsBundle;
 import dev.galasa.cicsts.resource.internal.properties.DefaultResourceTimeout;
 import dev.galasa.zos.IZosImage;
-import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
 import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
@@ -70,7 +69,7 @@ public class CicsBundleImpl implements ICicsBundle {
     private ICicsTerminal cicsTerminal;
     private Class<?> testClass;
     private IZosImage cicsZosImage;
-    private IZosUNIXFile cicsZosImageRunTemporaryUNIXPath;
+    private IZosUNIXFile runTemporaryUNIXPath;
     private IZosFileHandler zosFileHandler;
 	private String localBundlePath;
 	private Map<String, Object> parameters = new HashMap<>();
@@ -104,34 +103,30 @@ public class CicsBundleImpl implements ICicsBundle {
         this.testClass = testClass;
         this.resourceDefinitionName = name;
         this.resourceDefinitionGroup = group;
-        setRunTemporaryUNIXPath();
-        if (bundlePath != null) {
+        try {        	                          
+			this.runTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(cicsRegion.getRunTemporaryUNIXDirectory().getUnixPath() + "CICSBundles" + SLASH_SYBMOL + getName() + SLASH_SYBMOL, this.cicsZosImage);
+		} catch (CicstsManagerException | ZosUNIXFileException e) {
+			throw new CicsBundleResourceException("Unable to get run temporary UNIX path", e);
+		}
+        // CICS bundle source already stored on file system 
+        if (bundlePath == null) {
+            this.shouldDeploy = false;
+            this.resourceDefinitionBundledir = bunndledir;
+        } else {
             this.shouldDeploy = true;
 	        if (bundlePath.endsWith(SLASH_SYBMOL)) {
 	        	this.localBundlePath = bundlePath;
 	        } else {
 	        	this.localBundlePath = bundlePath + SLASH_SYBMOL;
-	    		String root = new File(this.localBundlePath).getName();
-	    		this.resourceDefinitionBundledir = this.cicsZosImageRunTemporaryUNIXPath.getUnixPath() + root + SLASH_SYBMOL;
 	    	}
+	    	String root = new File(this.localBundlePath).getName();
+	    	this.resourceDefinitionBundledir = this.runTemporaryUNIXPath.getUnixPath() + root + SLASH_SYBMOL;
 	        if (parameters != null && !parameters.isEmpty()) {
 	        	this.parameters.putAll(parameters);
 	        }
     		this.testBundleResources = this.artifactManager.getBundleResources(this.testClass);
-        } else {
-            this.shouldDeploy = false;
-            this.resourceDefinitionBundledir = bunndledir;        	
         }
-        setRunTemporaryUNIXPath();
 	}
-
-    private void setRunTemporaryUNIXPath() throws CicsBundleResourceException {
-        try {
-            this.cicsZosImageRunTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(this.cicsZosImage.getRunTemporaryUNIXPath() + SLASH_SYBMOL + "CICSBundles" + SLASH_SYBMOL + getName() + SLASH_SYBMOL, this.cicsZosImage);
-        } catch (ZosManagerException e) {
-            throw new CicsBundleResourceException("Unable to get Run Temporary UNIX Path for image" + this.cicsZosImage.getImageID(), e);
-        }
-    }
 
 	@Override
 	public void setDefinitionDescriptionAttribute(String value) {

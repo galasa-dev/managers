@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.internal;
 
@@ -51,6 +49,9 @@ import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
+import dev.galasa.zosfile.IZosFileHandler;
+import dev.galasa.zosfile.ZosFileManagerException;
+import dev.galasa.zosfile.spi.IZosFileSpi;
 
 @Component(service = { IManager.class })
 public class CicstsManagerImpl extends AbstractManager implements ICicstsManagerSpi {
@@ -61,6 +62,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     private IZosManagerSpi zosManager;
 	private IZosBatchSpi zosBatchManager;
+	private IZosFileSpi zosFileManager;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -108,6 +110,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         this.zosBatchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
         if (this.zosBatchManager == null) {
             throw new CicstsManagerException("The zOS Batch Manager is not available");
+        }
+        this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
+        if (this.zosFileManager == null) {
+            throw new CicstsManagerException("The zOS File Manager is not available");
         }
 
         this.provisionType = ProvisionType.get();
@@ -381,6 +387,15 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 	@Override
 	public IZosBatch getZosBatch(ICicsRegion region) throws CicstsManagerException {
 		return this.zosBatchManager.getZosBatch(region.getZosImage());
+	}
+
+	@Override
+	public IZosFileHandler getZosFileHandler() throws CicstsManagerException {
+		try {
+			return this.zosFileManager.getZosFileHandler();
+		} catch (ZosFileManagerException e) {
+			throw new CicstsManagerException("Unable to get zOS File Handler", e);
+		}
 	}
 
 }
