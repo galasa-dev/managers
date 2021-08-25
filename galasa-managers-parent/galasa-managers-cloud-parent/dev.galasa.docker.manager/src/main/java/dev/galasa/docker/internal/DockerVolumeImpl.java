@@ -35,7 +35,7 @@ public class DockerVolumeImpl implements IDockerVolume {
 
     /**
      * Constructor that determines the nature of the volume (readOnly or not), and
-     * provisions or ensures the volumes exsists.
+     * provisions or ensures the volumes exists.
      * 
      * @param volumeName
      * @param mountPath
@@ -146,9 +146,14 @@ public class DockerVolumeImpl implements IDockerVolume {
             volumeDir.delete();
         }
         volumeDir.mkdir();
-
+        
+        Map<String,String> subs = new HashMap<>();
+        
+        subs.put("${FILENAME}", fileName);
+        subs.put("${MOUNTPATH}", this.mountPath);
+        
         // Create a busy box image to load the volume
-        InputStream dockerfile = createDockerfile(volumeDir.getAbsolutePath(), fileName);
+        InputStream dockerfile = createDockerfile("VolumeBusyboxDockerfile", subs);
         Map<String, InputStream> resources = new HashMap<>();
         resources.put(fileName, data);
         builder.buildImage("galasa-volume-loader", dockerfile, resources);
@@ -159,6 +164,7 @@ public class DockerVolumeImpl implements IDockerVolume {
 
         String status = "";
         engine.startContainer(containerId);
+        
         while (!"exited".equals(status)) {
             json = engine.getContainer(containerId);
             json = json.get("State").getAsJsonObject();
@@ -189,14 +195,15 @@ public class DockerVolumeImpl implements IDockerVolume {
      * @return
      * @throws DockerManagerException
      */
-    private InputStream createDockerfile(String path, String fileName) throws DockerManagerException {
+    private InputStream createDockerfile(String dockerfile, Map<String,String> subs) throws DockerManagerException {
         try {
             String dockerfileTemplate = this.dockerManager.getArtifactManager()
             .getBundleResources(this.getClass())
-            .retrieveFileAsString("resources/VolumeBusyboxDockerfile");
-
-            dockerfileTemplate = dockerfileTemplate.replace("${FILENAME}", fileName);
-            dockerfileTemplate = dockerfileTemplate.replace("${MOUNTPATH}", this.mountPath);
+            .retrieveFileAsString("resources/" + dockerfile);
+            
+            for (String key: subs.keySet()) {
+            	dockerfileTemplate = dockerfileTemplate.replace(key, subs.get(key));
+            }
 
             return new ByteArrayInputStream(dockerfileTemplate.getBytes());
         } catch (IOException | TestBundleResourceException e) {
@@ -239,4 +246,45 @@ public class DockerVolumeImpl implements IDockerVolume {
         }
         return metadata;
     }
+    
+    
+    public void runCommand(String command) throws DockerManagerException {
+        DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
+        
+        Map<String,String> subs = new HashMap<>();
+        subs.put("${COMMAND}", command);
+        logger.info("Command: " + command);
+
+        // Create a busy box image to load the volume
+        InputStream dockerfile = createDockerfile("CommandBusyboxDockerfile", subs);
+        Map<String, InputStream> resources = new HashMap<>();
+
+        builder.buildImage("galasa-volume-loader", dockerfile);
+
+        //  Run the busybox, then remove it
+        JsonObject json = engine.createContainer(this.volumeName + "_LOADER", generateMetadata("galasa-volume-loader"));
+        String containerId = json.get("Id").getAsString();
+
+        String status = "";
+        engine.startContainer(containerId);
+        
+        while (!"exited".equals(status)) {
+            json = engine.getContainer(containerId);
+            json = json.get("State").getAsJsonObject();
+            status = json.get("Status").getAsString();
+        }
+        
+        engine.deleteContainer(containerId);
+    }
+
+	@Override
+	public void fileChown(String userGroup, String filename) throws DockerManagerException {
+		runCommand("\"chown\",\"" + userGroup + "\",\"" + this.mountPath + "/"+ filename +"\"");
+	}
+
+	@Override
+	public void fileChmod(String permissions, String filename) throws DockerManagerException {
+		runCommand("\"chmod\",\"" + permissions + "\",\"" + this.mountPath + "/"+ filename +"\"");
+		
+	}
 }

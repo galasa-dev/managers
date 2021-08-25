@@ -60,4 +60,23 @@ public interface IDockerVolume {
      */
     public void LoadFileAsString(String fileName, String data) throws DockerManagerException;
     
+    
+    /**
+     * Will execute a `chown USER:GROUP filename` on a file inside the volume.
+     * 
+     * @param userGroup
+     * @param filename
+     * @throws DockerManagerException
+     */
+    public void fileChown(String userGroup, String filename) throws DockerManagerException;
+    
+    /**
+     * Will execute a `chmod XXX filename` where the XXX is the permission string, on a file inside a volume.
+     * 
+     * @param permissions
+     * @param filename
+     * @throws DockerManagerException
+     */
+    public void fileChmod(String permissions, String filename) throws DockerManagerException;
+    
 }
