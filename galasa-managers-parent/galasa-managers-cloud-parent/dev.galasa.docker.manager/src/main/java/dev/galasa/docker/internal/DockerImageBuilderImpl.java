@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
 import java.io.BufferedInputStream;
@@ -29,6 +32,18 @@ public class DockerImageBuilderImpl implements IDockerImageBuilder {
     public DockerImageBuilderImpl(DockerEngineImpl engine) {
         this.engine = engine;
     }
+    
+    /**
+     * Build a new image on the docker engine. A dockerfile MUST be passed.
+     * @param imageName
+     * @param dockerfile
+     * @throws DockerMangerException
+     */
+    @Override
+    public void buildImage(String imageName, InputStream dockerfile)throws DockerManagerException {
+    	buildImage(imageName, dockerfile, null);
+    }
+    
 
     /**
      * Build a new image on the docker engine. A dockerfile MUST be passed. Any resources required to build the 
@@ -80,15 +95,17 @@ public class DockerImageBuilderImpl implements IDockerImageBuilder {
             IOUtils.copy(dockerfile, tOut);
             tOut.closeArchiveEntry();
 
-            // Put the rest of the resources in a flat dir
-            for (String fileName : buildResources.keySet()) {
-                TarArchiveEntry entry = new TarArchiveEntry(fileName);
-                entry.setSize(buildResources.get(fileName).available());
-                tOut.putArchiveEntry(entry);
-                IOUtils.copy(buildResources.get(fileName), tOut);
-                tOut.closeArchiveEntry();
+            if (buildResources != null) {
+            	// Put the rest of the resources in a flat dir
+                for (String fileName : buildResources.keySet()) {
+                    TarArchiveEntry entry = new TarArchiveEntry(fileName);
+                    entry.setSize(buildResources.get(fileName).available());
+                    tOut.putArchiveEntry(entry);
+                    IOUtils.copy(buildResources.get(fileName), tOut);
+                    tOut.closeArchiveEntry();
+                }
             }
-
+            
             tOut.flush();
             tOut.close();
 

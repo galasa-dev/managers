@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -293,5 +291,31 @@ public class DockerManagerIVT {
         container.startWithConfig(config1);
         assertThat(container.isRunning()).isEqualTo(true);
     }
+    
+    @Test
+    public void testFilePermissionsChange() throws DockerManagerException {
+    	IDockerVolume volume = config2.getVolumeByTag("testVolume");
+        volume.LoadFileAsString("AnotherConfig.cfg", "AdditionalStringConfigs");
+        volume.fileChmod("755", "AnotherConfig.cfg");
 
+        container.startWithConfig(config2);
+
+        IDockerExec cmd = container.exec("ls", "-l", "/tmp/testvol/AnotherConfig.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("-rwxr-xr-x");
+    }
+    
+    @Test
+    public void testFileOwnerChange() throws DockerManagerException {
+    	IDockerVolume volume = config2.getVolumeByTag("testVolume");
+        volume.LoadFileAsString("AnotherConfig.cfg", "AdditionalStringConfigs");
+        volume.fileChown("200", "AnotherConfig.cfg");
+
+        container.startWithConfig(config2);
+
+        IDockerExec cmd = container.exec("ls", "-l", "/tmp/testvol/AnotherConfig.cfg");
+        cmd.waitForExec();
+        assertThat(cmd.getCurrentOutput()).contains("200");
+    }
+    
 }
