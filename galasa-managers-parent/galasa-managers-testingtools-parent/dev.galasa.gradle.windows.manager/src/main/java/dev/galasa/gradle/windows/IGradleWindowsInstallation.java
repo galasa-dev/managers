@@ -4,7 +4,6 @@
 
 package dev.galasa.gradle.windows;
 
-
 /**
  * <p>
  * Represents a Gradle installation on an Windows image.
