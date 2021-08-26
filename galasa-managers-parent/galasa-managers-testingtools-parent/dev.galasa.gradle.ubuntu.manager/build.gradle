@@ -1,0 +1,16 @@
+/*
+ * Copyright contributors to the Galasa project 
+ */
+
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Gradle Ubuntu Manager'
+
+version = '0.17.0'
+
+dependencies {
+    api project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
+    api project(':galasa-managers-testingtools-parent:dev.galasa.gradle.manager')
+}

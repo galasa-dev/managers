@@ -1,0 +1,15 @@
+/*
+ * Copyright contributors to the Galasa project 
+ */
+
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Gradle Manager'
+
+version = '0.17.0'
+
+dependencies {
+    
+}
