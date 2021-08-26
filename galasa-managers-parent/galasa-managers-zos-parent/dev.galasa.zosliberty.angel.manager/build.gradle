@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa zOS Liberty Angel Manager'
+
+version = '0.17.0'
+
+dependencies {
+    implementation project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
+}
