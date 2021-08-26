@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
 import java.lang.reflect.Field;
@@ -389,7 +387,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             delProps.add(prefix + ".allocated");
             delProps.add(slotKey);
             dss.delete(delProps);
-            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the socker engine: " + dockerEngineId);
+            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the docker engine: " + dockerEngineId);
         } catch (Exception e) {
             logger.warn("Failed to free slot on engine " + dockerEngineId + ", slot " + dockerSlot.getSlotName()
                     + ", leaving for manager clean up routines", e);
