@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts;
 
@@ -9,6 +7,7 @@ import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosfile.IZosUNIXFile;
 
 public interface ICicsRegion {
 
@@ -74,4 +73,11 @@ public interface ICicsRegion {
      * @throws CicstsManagerException
      */
 	public IZosBatchJob getRegionJob() throws CicstsManagerException;
+	
+	/**
+	 * 
+	 * @return the Run Temporary UNIX Directory for this CICS Region
+	 * @throws CicstsManagerException
+	 */
+	public IZosUNIXFile getRunTemporaryUNIXDirectory() throws CicstsManagerException;
 }

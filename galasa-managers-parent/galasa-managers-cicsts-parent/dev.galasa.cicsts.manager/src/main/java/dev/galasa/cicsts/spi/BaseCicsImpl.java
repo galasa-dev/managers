@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.spi;
 
@@ -10,8 +8,11 @@ import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICeda;
 import dev.galasa.cicsts.ICemt;
 import dev.galasa.cicsts.MasType;
+import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zosfile.IZosUNIXFile;
 
 public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
 
@@ -27,6 +28,9 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     private ICeda ceda;
     private ICemt cemt;
     private ICicsResource cicsResource;
+	private IZosUNIXFile runTemporaryUNIXPath;
+    
+    private static final String SLASH_SYBMOL = "/";
 
     public BaseCicsImpl(ICicstsManagerSpi cicstsManager, String cicsTag, IZosImage zosImage, String applid, MasType masType) {
         this.cicstsManager = cicstsManager;
@@ -101,5 +105,22 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
             this.cicsResource = this.cicstsManager.getCicsResourceProvider().getCicsResource(this);
         }
         return this.cicsResource;
+	}
+
+	@Override
+	public IZosUNIXFile getRunTemporaryUNIXDirectory() throws CicstsManagerException {
+		if (this.runTemporaryUNIXPath == null) { 
+	        try {
+	            this.runTemporaryUNIXPath = this.cicstsManager.getZosFileHandler().newUNIXFile(getZosImage().getRunTemporaryUNIXPath() + SLASH_SYBMOL + getApplid() + SLASH_SYBMOL, getZosImage());
+	            if (!this.runTemporaryUNIXPath.exists()) {
+	            	this.runTemporaryUNIXPath.create();
+	            	this.runTemporaryUNIXPath.setShouldArchive(false);
+	            	this.runTemporaryUNIXPath.setShouldCleanup(true);
+	            }
+	        } catch (ZosManagerException e) {
+	            throw new CicsJvmserverResourceException("Unable to create the Run Temporary UNIX directory for applid " + getApplid() + " on image " + getZosImage().getImageID(), e);
+	        }
+		}
+		return this.runTemporaryUNIXPath;
 	}
 }
