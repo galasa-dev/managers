@@ -5,7 +5,9 @@
 package dev.galasa.gradle;
 
 /**
- * Gradle Versions.
+ * Gradle Versions. 
+ *      From:   6.6.1 
+ *      To:     7.2
  */
 public enum GradleVersion {
     vDefault,

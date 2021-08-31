@@ -9,7 +9,7 @@ import dev.galasa.gradle.IGradleInstallation;
 import javax.validation.constraints.NotNull;
 
 /**
- * Provides utilities to enable management of the manager itself.
+ * Provides utilities to enable management of manager instances.
  * e.g. Registering tags ("PRIMARY", "SECONDARY", etc.) and fetching installations represented by a tag.
  * 
  */
