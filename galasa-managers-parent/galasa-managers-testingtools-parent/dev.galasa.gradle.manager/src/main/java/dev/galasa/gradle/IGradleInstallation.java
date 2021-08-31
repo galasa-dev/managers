@@ -8,8 +8,8 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import java.nio.file.Path;
 
 /**
- * Represents a Gradle installation, providing utility methods that can interact with the installation.
- * Note: Interacts with the installation (archives, directories) not gradle itself.
+ * Represents a Gradle installation.
+ * Note: Interacts with the installation (archives, directories), not gradle itself.
  * 
  * @author Matthew Chivers
  * 
