@@ -4,6 +4,8 @@
 
 package dev.galasa.gradle.ubuntu;
 
+import dev.galasa.gradle.IGradleInstallation;
+
 /**
  * <p>
  * Represents a Gradle installation on an Ubuntu image.
@@ -15,7 +17,6 @@ package dev.galasa.gradle.ubuntu;
  * 
  * @author Matthew Chivers
  */
-
 public interface IGradleUbuntuInstallation {
     
 }
