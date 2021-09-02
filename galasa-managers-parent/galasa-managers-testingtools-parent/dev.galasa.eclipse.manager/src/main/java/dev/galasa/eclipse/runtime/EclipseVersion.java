@@ -2,24 +2,9 @@
 * Copyright contributors to the Galasa project 
 */
 
-package dev.galasa.eclipse;
+package dev.galasa.eclipse.runtime;
 
 public enum EclipseVersion {
-	v3_0,
-	v3_1,
-	v3_2,
-	v3_3,
-	v3_4,
-	v3_5,
-	v3_6,
-	v3_7,
-	v3_8,
-	v4_2,
-	v4_3,
-	v4_4,
-	v4_5,
-	v4_6,
-	v4_7,
 	v4_8,
 	v4_9,
 	v4_10,

@@ -2,11 +2,11 @@
 * Copyright contributors to the Galasa project 
 */
 
-package dev.galasa.eclipse;
+package dev.galasa.eclipse.runtime;
 
 /**
  * 
- * @author reecewilliams
+ * @author Reece Williams
  *
  */
 public interface IEclipseInstall {
@@ -24,16 +24,14 @@ public interface IEclipseInstall {
 	EclipseType getEclipseType();
 	
 	/**
-	 * Returns the version of java being used
+	 * Returns the Instance of java being used
 	 * @return String
 	 */
-	String getJavaVersion();
-
+	String getJavaInstallation();
 	
 	/**
-	 * Returns the path where the workspace resides.
+	 * Returns the location of the eclipse install
 	 * @return String
 	 */
-	String getWorkspacePath();
-	
+	String getEclipseInstallation();
 }

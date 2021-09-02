@@ -2,9 +2,9 @@
 * Copyright contributors to the Galasa project 
 */
 
-package dev.galasa.eclipse.ubuntu;
+package dev.galasa.eclipse.runtime.ubuntu;
 
-import dev.galasa.eclipse.IEclipseInstall;
+import dev.galasa.eclipse.runtime.IEclipseInstall;
 
 /**
  * <p>
@@ -18,6 +18,7 @@ import dev.galasa.eclipse.IEclipseInstall;
  * @author Reece Williams
  *
  */
+
 public interface IEclipseInstallUbuntu extends IEclipseInstall {
 	
 }

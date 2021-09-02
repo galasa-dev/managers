@@ -1,7 +1,8 @@
 /*
 * Copyright contributors to the Galasa project 
 */
-package dev.galasa.eclipse;
+
+package dev.galasa.eclipse.runtime.ubuntu;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,6 +18,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-public @interface EclipseManagerField {
+public @interface EclipseUbuntuManagerField {
 
 }
