@@ -4,4 +4,3 @@ Export-Package: dev.galasa.gradle, \
                 dev.galasa.gradle.spi
 Import-Package: !javax.validation.constraints,\
                 *
-                
