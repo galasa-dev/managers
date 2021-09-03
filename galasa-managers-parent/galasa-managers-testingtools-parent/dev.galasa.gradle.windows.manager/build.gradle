@@ -8,9 +8,9 @@ plugins {
 
 description = 'Galasa Gradle Windows Manager'
 
-version = '0.17.0'
+version = '0.18.0'
 
 dependencies {
-    api project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
+    api project(':galasa-managers-windows-parent:dev.galasa.windows.manager')
     api project(':galasa-managers-testingtools-parent:dev.galasa.gradle.manager')
 }
