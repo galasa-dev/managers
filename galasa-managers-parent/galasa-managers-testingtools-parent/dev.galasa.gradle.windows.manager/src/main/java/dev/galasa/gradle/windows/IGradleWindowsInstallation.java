@@ -4,9 +4,11 @@
 
 package dev.galasa.gradle.windows;
 
+import dev.galasa.gradle.IGradleInstallation;
+
 /**
  * <p>
- * Represents a Gradle installation on an Windows image.
+ * Represents a Gradle installation on a Windows image.
  * </p>
  * 
  * <p>
