@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Eclipse Manager'
+
+version = '0.17.0'
+
+dependencies {
+	
+}
