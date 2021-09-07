@@ -27,11 +27,5 @@ public interface IEclipseInstall {
 	 * Returns the Instance of java being used
 	 * @return String
 	 */
-	String getJavaInstallation();
-	
-	/**
-	 * Returns the location of the eclipse install
-	 * @return String
-	 */
-	String getEclipseInstallation();
+	String getIJavaInstallation();
 }
