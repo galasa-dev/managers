@@ -1,0 +1,13 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Eclipse Ubuntu Manager'
+
+version = '0.18.0'
+
+dependencies {
+	  implementation project(':galasa-managers-ides-parent:dev.galasa.eclipseruntime.manager')
+	  implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
+}
+
