@@ -4,6 +4,8 @@
 
 package dev.galasa.eclipseruntime;
 
+import dev.galasa.java.IJavaInstallation;
+
 /**
  * 
  * @author Reece Williams
@@ -27,6 +29,6 @@ public interface IEclipseInstall {
 	 * Returns the Instance of java being used
 	 * @return String
 	 */
-	String getIJavaInstallation();
+	IJavaInstallation getJavaInstallation();
 }
 
