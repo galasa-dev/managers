@@ -17,3 +17,4 @@ public enum EclipseType {
 	//SciComp, //Parallel
 	//ScoutDev //Scout
 }
+

@@ -10,3 +10,4 @@ dependencies {
 	  implementation project(':galasa-managers-ides-parent:dev.galasa.eclipseruntime.manager')
 	  implementation project(':galasa-managers-languages-parent:dev.galasa.java.manager')
 }
+

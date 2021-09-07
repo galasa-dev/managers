@@ -22,3 +22,4 @@ import dev.galasa.eclipseruntime.IEclipseInstall;
 public interface IEclipseInstallUbuntu extends IEclipseInstall {
 	
 }
+

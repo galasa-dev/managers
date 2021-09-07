@@ -19,3 +19,4 @@ public enum EclipseVersion {
 	v4_19,
 	v4_20
 }
+

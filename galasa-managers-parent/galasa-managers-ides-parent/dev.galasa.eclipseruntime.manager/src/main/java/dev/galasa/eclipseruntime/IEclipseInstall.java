@@ -29,3 +29,4 @@ public interface IEclipseInstall {
 	 */
 	String getIJavaInstallation();
 }
+

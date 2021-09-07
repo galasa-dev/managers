@@ -50,3 +50,4 @@ public @interface EclipseInstallUbuntu {
 	 */
 	String linuxImageTag() default "PRIMARY";
 }
+
