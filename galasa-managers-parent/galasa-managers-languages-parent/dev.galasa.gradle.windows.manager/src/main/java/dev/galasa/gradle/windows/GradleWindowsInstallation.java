@@ -42,4 +42,10 @@ public @interface GradleWindowsInstallation {
      */
     String imageTag() default "PRIMARY";
 
+    /**
+     * The tag of the Java installation this Gradle installation is to be associated with.
+     * e.g. Set `org.gradle.java.home` to equal this Java installation home.
+     */
+    String javaTag() default "PRIMARY";
+
 }
