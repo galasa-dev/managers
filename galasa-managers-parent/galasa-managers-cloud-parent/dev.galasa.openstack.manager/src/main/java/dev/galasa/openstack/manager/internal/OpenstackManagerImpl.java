@@ -27,6 +27,7 @@ import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DssSwap;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreMatchException;
+import dev.galasa.framework.spi.IDssAction;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -300,12 +301,17 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         
         // *** reserve a slot and allocate a new name
         currentInstances++;
-        DssSwap slotNumber = new DssSwap("server.current.compute.instances", sCurrentInstances, Integer.toString(currentInstances));
+        IDssAction slotNumber = null;
+        if (sCurrentInstances != null) {
+            slotNumber = new DssSwap("server.current.compute.instances", sCurrentInstances, Integer.toString(currentInstances));
+        } else {
+            slotNumber = new DssAdd("server.current.compute.instances", Integer.toString(currentInstances));
+        }
 
         // *** Get a list of potential compute IDs
         ArrayList<String> exclude = new ArrayList<>();
         List<String> possibleNames = poolingService.obtainResources(instanceNamePool, exclude, 10, 1, this.dss,
-                "compute");
+                "compute.");
         
         if (possibleNames.isEmpty()) {
             throw new InsufficientResourcesAvailableException("Insufficient Compute names available");

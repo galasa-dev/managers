@@ -80,3 +80,7 @@ include 'galasa-managers-testingtools-parent:dev.galasa.gradle.windows.manager'
 // galasa-managers-other-parent
 include 'galasa-managers-other-parent:dev.galasa.galasaecosystem.manager'
 include 'galasa-managers-other-parent:dev.galasa.galasaecosystem.manager.ivt'
+// galasa-managers-ides-parent
+include 'galasa-managers-ides-parent:dev.galasa.eclipseruntime.manager'
+include 'galasa-managers-ides-parent:dev.galasa.eclipseruntime.ubuntu.manager'
+

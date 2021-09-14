@@ -1,7 +1,5 @@
 #
-# Licensed Materials - Property of IBM
-# 
-# (c) Copyright IBM Corp. 2021.
+# Copyright contributors to the Galasa project 
 #
 apiVersion: tekton.dev/v1beta1
 kind: Task
@@ -9,10 +7,10 @@ metadata:
   name: managers-repo-build
   namespace: galasa-tekton
 spec:
-  resources:
-    inputs:
-      - name: git-managers
-        type: git
+  workspaces:
+  - name: git-workspace
+    optional: false
+    mountpath: /workspace/git
   params:
   - name: distBranch
     type: string
@@ -36,16 +34,16 @@ spec:
     default: "false"
   steps:
   - name: get-commit
-    workingDir: /workspace/git-managers
+    workingDir: /workspace/git/managers
     image: $(params.dockerRepo)/galasa/galasa-build
     script: |
       #!/bin/sh
       set +e
       COMMIT="$(git log --format="%H" -n 1)"
-      echo $COMMIT > /workspace/git-managers/docker/managers.githash
+      echo $COMMIT > /workspace/git/managers/docker/managers.githash
       echo commit is $COMMIT
   - name: gradle-build
-    workingDir: /workspace/git-managers/galasa-managers-parent
+    workingDir: /workspace/git/managers/galasa-managers-parent
     image: $(params.dockerRepo)/galasa/galasa-build
     command:
     - gradle
@@ -54,7 +52,7 @@ spec:
     - plain
     - -PsourceMaven=$(params.extensionsSourceRepo)
     - -PcentralMaven=$(params.mavenCentralRepo)
-    - -PtargetMaven=/workspace/git-managers/docker/repo
+    - -PtargetMaven=/workspace/git/managers/docker/repo
     - -PjacocoEnabled=$(params.jacocoEnabled)
     - -PisRelease=$(params.isRelease)
     - publish
@@ -66,7 +64,7 @@ spec:
       mountPath: /opt/gradle/gradle-6.8.2/gradle.properties
       subPath: gradle.properties
   - name: docker-build
-    workingDir: /workspace/git-managers/docker
+    workingDir: /workspace/git/managers/docker
     image: $(params.dockerRepo)/library/kaniko-executor:latest
     env:
     - name: DOCKER_CONFIG
@@ -74,9 +72,9 @@ spec:
     command:
     - /kaniko/executor
     - --dockerfile=./Dockerfile
-    - --context=/workspace/git-managers/docker
+    - --context=/workspace/git/managers/docker
     - --destination=$(params.dockerRepo)/galasadev/galasa-maven-managers:$(params.distBranch)
-    - --oci-layout-path=/workspace/git-managers/docker/image-digest
+    - --oci-layout-path=/workspace/git/managers/docker/image-digest
     - --skip-tls-verify
     - --skip-tls-verify-pull
     - --single-snapshot
