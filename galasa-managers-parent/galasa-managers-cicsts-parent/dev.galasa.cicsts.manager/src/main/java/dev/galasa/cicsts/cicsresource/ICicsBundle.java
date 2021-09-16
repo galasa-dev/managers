@@ -109,11 +109,11 @@ public interface ICicsBundle {
 
 	/**
 	 * Wait for the CICS BUNDLE resource to be enabled with specified timeout. Does NOT issue the enable command
-	 * @param millisecondTimeout
+	 * @param timeout timeout in seconds
 	 * @return true if enabled, false if not enabled
 	 * @throws CicsBundleResourceException
 	 */
-	public boolean waitForEnable(int millisecondTimeout) throws CicsBundleResourceException;
+	public boolean waitForEnable(int timeout) throws CicsBundleResourceException;
 
 	/**
 	 * Returns whether the CICS BUNDLE resource is currently enabled
@@ -138,11 +138,11 @@ public interface ICicsBundle {
 
 	/**
 	 * Wait for the CICS BUNDLE resource to be disabled with specified timeout. Does NOT issue the disable command
-	 * @param millisecondTimeout
+	 * @param timeout timeout in seconds
 	 * @return true if disabled, false if not disabled
 	 * @throws CicsJvmserverResourceException
 	 */
-	public boolean waitForDisable(int millisecondTimeout) throws CicsBundleResourceException;
+	public boolean waitForDisable(int timeout) throws CicsBundleResourceException;
 
 	/**
 	 * Disable and discard the CICS BUNDLE resource and re-install. Waits for disable and enable
@@ -155,11 +155,11 @@ public interface ICicsBundle {
 	/**
 	 * Disable and discard the CICS BUNDLE resource and re-install. Waits for disable and enable
 	 * Errors during the process will cause an exception to be thrown
-	 * @param millisecondTimeout
+	 * @param timeout timeout in seconds
 	 * @return true if disabled, false if not disabled
 	 * @throws CicsBundleResourceException
 	 */
-	public boolean disableDiscardInstall(int millisecondTimeout) throws CicsBundleResourceException;
+	public boolean disableDiscardInstall(int timeout) throws CicsBundleResourceException;
 	
 	/**
 	 * Delete the CICS BUNDLE resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded

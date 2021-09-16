@@ -161,11 +161,11 @@ public interface IJvmserver {
 
 	/**
 	 * Wait for the CICS JVMSERVER resource to be enabled with specified timeout. Does NOT issue the enable command
-	 * @param millisecondTimeout
+	 * @param timeout timeout in seconds
 	 * @return true if enabled, false if not enabled
 	 * @throws CicsJvmserverResourceException
 	 */
-	public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException;
+	public boolean waitForEnable(int timeout) throws CicsJvmserverResourceException;
 
 	/**
 	 * Returns whether the CICS JVMSERVER resource is currently enabled
@@ -192,11 +192,11 @@ public interface IJvmserver {
 	/**
 	 * Disable the CICS JVMSERVER resource with a specific {@link PurgeType} and specified timeout
 	 * @param purgeType
-	 * @param millisecondTimeout
+	 * @param timeout timeout in seconds
 	 * @return true if the resource disables within the time, false otherwise
 	 * @throws CicsJvmserverResourceException
 	 */
-	public boolean disable(PurgeType purgeType, int millisecondTimeout) throws CicsJvmserverResourceException;
+	public boolean disable(PurgeType purgeType, int timeout) throws CicsJvmserverResourceException;
 
 	/**
 	 * Disable the CICS JVMSERVER resource. This method will escalate through all the {@link PurgeType} levels (PHASEOUT, PURGE, FORCEPURGE, KILL) as
@@ -208,12 +208,12 @@ public interface IJvmserver {
 
 	/**
 	 * Disable the CICS JVMSERVER resource. This method will escalate through all the {@link PurgeType} levels (PHASEOUT, PURGE, FORCEPURGE, KILL) as
-	 * necessary. If the disable at any level is not successful within the stepMillisecondTimeout, escalation will happen
-	 * @param stepMillisecondTimeout time to allow each step to disable before escalating
+	 * necessary. If the disable at any level is not successful within the stepTimeout, escalation will happen
+	 * @param stepTimeout time in seconds to allow each step to disable before escalating
 	 * @return the {@link PurgeType} at which the disable was successful
 	 * @throws CicsJvmserverResourceException 
 	 */
-	public PurgeType disableWithEscalate(int stepMillisecondTimeout) throws CicsJvmserverResourceException;
+	public PurgeType disableWithEscalate(int stepTimeout) throws CicsJvmserverResourceException;
 
 	/**
 	 * Wait for the CICS JVMSERVER resource to be disabled. Does NOT issue the disable command
@@ -224,10 +224,11 @@ public interface IJvmserver {
 
 	/**
 	 * Wait for the CICS JVMSERVER resource to be disabled with specified timeout. Does NOT issue the disable command
+	 * @param timeout timeout in seconds
 	 * @return true if disabled, false if not disabled
 	 * @throws CicsJvmserverResourceException
 	 */
-	public boolean waitForDisable(int millisecondTimeout) throws CicsJvmserverResourceException;
+	public boolean waitForDisable(int timeout) throws CicsJvmserverResourceException;
 
 	/**
 	 * Delete the CICS JVMSERVER resource including it's zOS UNIX files and directories. If the resource is installed, it will be disabled and discarded

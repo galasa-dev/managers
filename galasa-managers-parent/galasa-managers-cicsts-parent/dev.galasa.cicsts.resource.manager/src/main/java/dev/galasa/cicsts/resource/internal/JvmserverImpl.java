@@ -7,8 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -546,10 +546,10 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public boolean waitForEnable(int millisecondTimeout) throws CicsJvmserverResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be enabled");
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public boolean waitForEnable(int timeout) throws CicsJvmserverResourceException {
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be enabled");
+        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (isEnabled()) {
                 return true;
             }
@@ -587,7 +587,7 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public boolean disable(PurgeType purgeType, int millisecondTimeout) throws CicsJvmserverResourceException {
+    public boolean disable(PurgeType purgeType, int timeout) throws CicsJvmserverResourceException {
         try {
             if (!resourceInstalled()) {
                 throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " does not exist");
@@ -596,7 +596,7 @@ public class JvmserverImpl implements IJvmserver {
         } catch (CicstsManagerException e) {
             throw new CicsJvmserverResourceException("Problem disabling " + RESOURCE_TYPE_JVMSERVER + " " + getName(), e);
         }
-        return waitForDisable(millisecondTimeout);
+        return waitForDisable(timeout);
     }
 
     @Override
@@ -605,15 +605,15 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public PurgeType disableWithEscalate(int stepMillisecondTimeout) throws CicsJvmserverResourceException {
+    public PurgeType disableWithEscalate(int steptimeout) throws CicsJvmserverResourceException {
         PurgeType purgeType = PurgeType.PHASEOUT;
-        if (!disable(purgeType, stepMillisecondTimeout)) {
+        if (!disable(purgeType, steptimeout)) {
             purgeType = PurgeType.PURGE;
-            if (!disable(purgeType, stepMillisecondTimeout)) {
+            if (!disable(purgeType, steptimeout)) {
                 purgeType = PurgeType.FORCEPURGE;
-                if (!disable(purgeType, stepMillisecondTimeout)) {
+                if (!disable(purgeType, steptimeout)) {
                     purgeType = PurgeType.KILL;
-                    if (!disable(purgeType, stepMillisecondTimeout)) {
+                    if (!disable(purgeType, steptimeout)) {
                         purgeType = PurgeType.FAILED;
                     }
                 }
@@ -629,10 +629,10 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public boolean waitForDisable(int millisecondTimeout) throws CicsJvmserverResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be disabled");
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public boolean waitForDisable(int timeout) throws CicsJvmserverResourceException {
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_JVMSERVER + " " +  getName() + " to be disabled");
+        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (!isEnabled()) {
                 return true;
             }
@@ -643,7 +643,7 @@ public class JvmserverImpl implements IJvmserver {
             }
         }
         if (isEnabled()) {
-            throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " not disabled in " + millisecondTimeout + "ms");
+            throw new CicsJvmserverResourceException(RESOURCE_TYPE_JVMSERVER + " " + getName() + " not disabled in " + timeout + " second(s)");
         }
         return true;
     }

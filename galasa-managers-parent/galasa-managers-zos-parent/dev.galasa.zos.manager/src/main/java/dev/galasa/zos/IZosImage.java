@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos;
 
@@ -76,10 +74,19 @@ public interface IZosImage {
     IIpHost getIpHost();
     
     /**
-     * Get the path to the temporary zOS UNIX directory on this zOS Image for this run  
+     * Get the zOS UNIX home directory on this zOS Image for this run. Same as {@link #getRunTemporaryUNIXPath()}
+     * @return the zOS UNIX home directory location
+     * @throws ZosManagerException
+     */
+    @NotNull
+    public String getHome() throws ZosManagerException;
+    
+    /**
+     * Get the path to the temporary zOS UNIX directory on this zOS Image for this run. Same as {@link #getHome()}
      * @return the Run Temporary UNIX Path location
      * @throws ZosManagerException
      */
+    @NotNull
     public String getRunTemporaryUNIXPath() throws ZosManagerException;
 
     /**
@@ -87,6 +94,7 @@ public interface IZosImage {
      * @return value of Java home
      * @throws ZosManagerException
      */
+    @NotNull
     public String getJavaHome() throws ZosManagerException;
 
     /**
@@ -94,6 +102,7 @@ public interface IZosImage {
      * @return value of Liberty install directory
      * @throws ZosManagerException
      */
+    @NotNull
     public String getLibertyInstallDir() throws ZosManagerException;
 
     /**
@@ -101,5 +110,6 @@ public interface IZosImage {
      * @return value of zOS Connect EE install directory
      * @throws ZosManagerException
      */
+    @NotNull
     public String getZosConnectInstallDir() throws ZosManagerException;
 }

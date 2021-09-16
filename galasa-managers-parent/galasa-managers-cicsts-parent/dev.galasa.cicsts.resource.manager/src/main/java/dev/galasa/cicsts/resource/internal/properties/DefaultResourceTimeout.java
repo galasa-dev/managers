@@ -8,7 +8,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zos.IZosImage;
 
 /**
- * The Default Timeout value in milliseconds for CICS resources on a zOS Image. Used during resource enable and disable
+ * The Default Timeout value in seconds for CICS resources on a zOS Image. Used during resource enable and disable
  * 
  * @galasa.cps.property
  * 
@@ -18,17 +18,17 @@ import dev.galasa.zos.IZosImage;
  * 
  * @galasa.required No
  * 
- * @galasa.default 120000 milliseconds
+ * @galasa.default 120 seconds
  * 
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>cicsresource.default.[image].timeout=120000</code><br>
+ * <code>cicsresource.default.[image].timeout=120</code><br>
  *
  */
 public class DefaultResourceTimeout extends CpsProperties {
 
     public static int get(IZosImage image) throws CicsResourceManagerException {
-    	return getIntWithDefault(CicstsResourcePropertiesSingleton.cps(), 120000, "default", "timeout", image.getImageID());
+    	return getIntWithDefault(CicstsResourcePropertiesSingleton.cps(), 120, "default", "timeout", image.getImageID());
     }
 }
