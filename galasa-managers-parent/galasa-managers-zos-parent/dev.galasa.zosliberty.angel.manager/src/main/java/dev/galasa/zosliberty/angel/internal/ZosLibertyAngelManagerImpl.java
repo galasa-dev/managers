@@ -11,8 +11,6 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
@@ -26,6 +24,7 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
@@ -40,8 +39,6 @@ import dev.galasa.zosliberty.angel.spi.IZosLibertyAngelSpi;
 
 @Component(service = { IManager.class })
 public class ZosLibertyAngelManagerImpl extends AbstractManager implements IZosLibertyAngelSpi {
-
-    private static final Log logger = LogFactory.getLog(ZosLibertyAngelManagerImpl.class);
 
     protected static final String NAMESPACE = "zoslibertyangel";
 
@@ -166,7 +163,21 @@ public class ZosLibertyAngelManagerImpl extends AbstractManager implements IZosL
 
     @GenerateAnnotatedField(annotation=ZosLibertyAngel.class)
     public IZosLibertyAngel generateZosLiberty(Field field, List<Annotation> annotations) throws ZosLibertyAngelManagerException {
-        ZosLibertyAngelImpl zosLibertyAngel = new ZosLibertyAngelImpl(this);
+    	ZosLibertyAngel annotationZosLibertyAngel = field.getAnnotation(ZosLibertyAngel.class);
+    	
+    	//*** Default the tag to primary
+        String tag = defaultString(annotationZosLibertyAngel.imageTag(), "PRIMARY").toUpperCase();
+        
+        String angelName = annotationZosLibertyAngel.name();
+
+        IZosImage zosImage;
+		try {
+			zosImage = this.zosManager.getImageForTag(tag);
+		} catch (ZosManagerException e) {
+			throw new ZosLibertyAngelManagerException("Problem getting zOS image for tag \"" + tag + "\"", e);
+		}
+    	
+        ZosLibertyAngelImpl zosLibertyAngel = new ZosLibertyAngelImpl(this, zosImage, angelName);
         zosLibertyAngels.add(zosLibertyAngel);
         return zosLibertyAngel;
     }
@@ -176,8 +187,8 @@ public class ZosLibertyAngelManagerImpl extends AbstractManager implements IZosL
     }
 
     @Override
-    public @NotNull IZosLibertyAngel newZosLibertyAngel() throws ZosLibertyAngelManagerException {
-        ZosLibertyAngelImpl zosLibertyAngel = new ZosLibertyAngelImpl(this);
+    public @NotNull IZosLibertyAngel newZosLibertyAngel(IZosImage zosImage, String angelName) throws ZosLibertyAngelManagerException {
+        ZosLibertyAngelImpl zosLibertyAngel = new ZosLibertyAngelImpl(this, zosImage, angelName);
         zosLibertyAngels.add(zosLibertyAngel);
         return zosLibertyAngel;
     }

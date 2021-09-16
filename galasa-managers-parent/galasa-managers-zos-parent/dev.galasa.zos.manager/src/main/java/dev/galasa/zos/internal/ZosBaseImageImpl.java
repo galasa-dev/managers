@@ -129,6 +129,11 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     }
 
     @Override
+    public String getHome() {
+        return getRunTemporaryUNIXPath();
+    }
+
+    @Override
     public String getRunTemporaryUNIXPath() {
         return this.runTemporaryUNIXPath;
     }

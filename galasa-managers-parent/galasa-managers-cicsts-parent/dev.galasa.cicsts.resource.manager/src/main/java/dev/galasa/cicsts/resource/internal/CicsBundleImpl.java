@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -372,10 +372,10 @@ public class CicsBundleImpl implements ICicsBundle {
 	}
 
 	@Override
-	public boolean waitForEnable(int millisecondTimeout) throws CicsBundleResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be enabled");
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+	public boolean waitForEnable(int timeout) throws CicsBundleResourceException {
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be enabled");
+	    LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (isEnabled()) {
                 return true;
             }
@@ -421,10 +421,10 @@ public class CicsBundleImpl implements ICicsBundle {
 	}
 
 	@Override
-	public boolean waitForDisable(int millisecondTimeout) throws CicsBundleResourceException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be disabled");
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+	public boolean waitForDisable(int timeout) throws CicsBundleResourceException {
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be disabled");
+	    LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (!isEnabled()) {
                 return true;
             }
@@ -435,7 +435,7 @@ public class CicsBundleImpl implements ICicsBundle {
             }
         }
         if (isEnabled()) {
-            throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " not disabled in " + millisecondTimeout + "ms");
+            throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " not disabled in " + timeout + " second(s)");
         }
         return true;
 	}
@@ -446,9 +446,9 @@ public class CicsBundleImpl implements ICicsBundle {
 	}
 
 	@Override
-	public boolean disableDiscardInstall(int millisecondTimeout) throws CicsBundleResourceException {
+	public boolean disableDiscardInstall(int timeout) throws CicsBundleResourceException {
 		disable();
-		waitForDisable(millisecondTimeout);
+		waitForDisable(timeout);
 		discard();
 		installResourceDefinition();
 		return waitForEnable();

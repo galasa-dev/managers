@@ -20,7 +20,9 @@ import dev.galasa.zosliberty.angel.internal.ZosLibertyAngelField;
  * zOS Liberty Angel instance.
  * 
  * @galasa.examples 
- * {@literal @}ZosLibertyAngel<br>
+ * @galasa.examples {@literal @}ZosImage(imageTag="A")<br> 
+ * public IZosImage zosImageA;<br>
+ * {@literal @}ZosLibertyAngel(imageTag="A", name="ANGELA")<br>
  * public IZosLibertyAngel zosLibertyAngel;<br></code>
  * 
  * @galasa.extra
@@ -32,5 +34,14 @@ import dev.galasa.zosliberty.angel.internal.ZosLibertyAngelField;
 @ZosLibertyAngelField
 @ValidAnnotatedFields({ IZosLibertyAngel.class })
 public @interface ZosLibertyAngel {
-
+	
+    /**
+     * The <code>imageTag</code> is used to identify the zOS image
+     */
+    String imageTag() default "primary";
+    
+    /**
+     * The Liberty Named Angel name. If null, a name will be generated
+     */
+    String name() default "";
 }
