@@ -18,6 +18,7 @@ import dev.galasa.framework.spi.DynamicStatusStoreMatchException;
 import dev.galasa.framework.spi.IDssAction;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IResourcePoolingService;
+import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.OperatingSystem;
 import dev.galasa.linux.internal.LinuxManagerImpl;
@@ -45,16 +46,16 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
 
     @Override
     public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
-            throws LinuxManagerException {
+            throws LinuxManagerException, ResourceUnavailableException {
         return provisionLinux(tag, operatingSystem, capabilities, 1);
     }
 
     private ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities, int retryCount)
-                throws LinuxManagerException {
+                throws LinuxManagerException, ResourceUnavailableException {
         
         if (retryCount > 10) {
             // tried too many times,  allow another provisioner to attempt
-            return null;
+            throw new ResourceUnavailableException("Failed to reserve shared linux image");
         }
         
 
@@ -154,7 +155,7 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
             
             if (availableImages.isEmpty()) {
                 logger.trace("There are no suitable shared Linux images with spare capacity");
-                return null;
+                throw new ResourceUnavailableException("Failed to reserve shared linux image");
             }
 
             Collections.sort(availableImages);
