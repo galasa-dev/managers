@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.ipnetwork.spi;
 
@@ -21,5 +19,8 @@ public interface IIpNetworkManagerSpi {
 
     @NotNull
     FileSystem getFileSystem(IIpHost host) throws IpNetworkManagerException;
+
+    @NotNull
+    FileSystem getFileSystem(IIpHost host, ICredentials credentials) throws IpNetworkManagerException;
 
 }

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.linux.spi;
 
@@ -14,6 +12,11 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.linux.OperatingSystem;
 
 public interface ILinuxProvisioner {
+    
+    /**
+     * @return the priority of the provisioner, larger number, the higher the provisioner is in the list
+     */
+    int getLinuxPriority();
 
     ILinuxProvisionedImage provisionLinux(@NotNull String tag, @NotNull OperatingSystem operatingSystem,
             @NotNull List<String> capabilities) throws ManagerException, ResourceUnavailableException;

@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * Copyright contributors to the Galasa project
  */
-package dev.galasa.ipnetwork.internal.ssh;
+package dev.galasa.ipnetwork.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +33,6 @@ import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.SSHAuthFailException;
 import dev.galasa.ipnetwork.SSHException;
-import dev.galasa.ipnetwork.spi.AnsiEscapeSequences;
 
 /**
  * SSH client for Galasa
