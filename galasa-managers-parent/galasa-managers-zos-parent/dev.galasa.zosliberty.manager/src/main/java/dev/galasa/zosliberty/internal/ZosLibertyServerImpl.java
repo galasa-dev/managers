@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -523,10 +523,11 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public int waitForStart(int millisecondTimeout) throws ZosLibertyServerException {
-        logger.trace("Waiting " + millisecondTimeout + "ms for Liberty server " +  getServerName() + " to start");
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public int waitForStart(int timeout) throws ZosLibertyServerException {
+        logger.trace("Waiting " + timeout + "second(s) for Liberty server " +  getServerName() + " to start");
+	    
+        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (this.zosLibertySeverJob == null || this.zosLibertySeverJob.getStatus() == JobStatus.ACTIVE) {
                 if (status() == 0) {
                     return 0;
@@ -554,14 +555,14 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForStartMessage(int millisecondTimeout) throws ZosLibertyServerException {
+    public boolean waitForStartMessage(int timeout) throws ZosLibertyServerException {
         Pattern searchPattern = Pattern.compile(SERVER_STARTED_MESSAGE_ID);
         IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
         String result;
         if (messagesLog.getCheckpoint() > -1) {
-            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, timeout * 1000);
         } else {
-            result = messagesLog.waitForPattern(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPattern(searchPattern, timeout * 1000);
         }
         if (result != null && result.equals(SERVER_STARTED_MESSAGE_ID)) {
             return true;
@@ -588,7 +589,7 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public int waitForStop(int millisecondTimeout) throws ZosLibertyServerException {
+    public int waitForStop(int timeout) throws ZosLibertyServerException {
         if (this.zosLibertySeverJob != null) {
             try {
                 this.zosLibertySeverJob.waitForJob();
@@ -596,9 +597,9 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
                 throw new ZosLibertyServerException("Problem waiting for Liberty server batch job to complete", e);
             }
         } else {
-            logger.trace("Waiting " + millisecondTimeout + "ms for Liberty server " +  getServerName() + " to stop");
-            long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-            while(Calendar.getInstance().getTimeInMillis() < timeout) {
+            logger.trace("Waiting " + timeout + " second(s) for Liberty server " +  getServerName() + " to stop");
+            LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+    	    while (LocalDateTime.now().isBefore(timeoutTime)) {
                 if (status() == 1) {
                     return 1;
                 }
@@ -618,14 +619,14 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForStopMessage(int millisecondTimeout) throws ZosLibertyServerException {
+    public boolean waitForStopMessage(int timeout) throws ZosLibertyServerException {
         Pattern searchPattern = Pattern.compile(SERVER_STOPPED_MESSAGE_ID);
         IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
         String result;
         if (messagesLog.getCheckpoint() > -1) {
-            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, timeout * 1000);
         } else {
-            result = messagesLog.waitForPattern(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPattern(searchPattern, timeout * 1000);
         }
         if (result != null && result.equals(SERVER_STOPPED_MESSAGE_ID)) {
             return true;
@@ -857,14 +858,14 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForApplicationStart(String name, int millisecondTimeout) throws ZosLibertyServerException {
+    public boolean waitForApplicationStart(String name, int timeout) throws ZosLibertyServerException {
         Pattern searchPattern = Pattern.compile(APP_STARTED_MESSAGE_ID + ":\\s.*\\s" + name + "\\s.*");
         IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
         String result;
         if (messagesLog.getCheckpoint() > -1) {
-            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, timeout * 1000);
         } else {
-            result = messagesLog.waitForPattern(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPattern(searchPattern, timeout * 1000);
         }
         if (result != null && result.startsWith(APP_STARTED_MESSAGE_ID)) {
             return true;
@@ -878,14 +879,14 @@ public class ZosLibertyServerImpl implements IZosLibertyServer {
     }
 
     @Override
-    public boolean waitForApplicationStop(String name, int millisecondTimeout) throws ZosLibertyServerException {
+    public boolean waitForApplicationStop(String name, int timeout) throws ZosLibertyServerException {
         Pattern searchPattern = Pattern.compile(APP_STOPPED_MESSAGE_ID + ":\\s.*\\s" + name + "\\s.*");
         IZosLibertyServerLog messagesLog = getLogs().getMessagesLog();
         String result;
         if (messagesLog.getCheckpoint() > -1) {
-            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPatternSinceCheckpoint(searchPattern, timeout * 1000);
         } else {
-            result = messagesLog.waitForPattern(searchPattern, millisecondTimeout);
+            result = messagesLog.waitForPattern(searchPattern, timeout * 1000);
         }
         if (result != null && result.startsWith(APP_STOPPED_MESSAGE_ID)) {
             return true;

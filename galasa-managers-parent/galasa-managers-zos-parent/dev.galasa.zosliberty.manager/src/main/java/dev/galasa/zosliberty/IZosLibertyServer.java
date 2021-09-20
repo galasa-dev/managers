@@ -8,6 +8,9 @@ import java.util.List;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosUNIXFile;
 
+/**
+ * Represents a zOS Liberty server
+ */
 public interface IZosLibertyServer {
     
     public enum ApplicationType {
@@ -263,11 +266,11 @@ public interface IZosLibertyServer {
 
     /**
      * Wait for the Liberty server to start using the supplied timeout
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return the return code from the <code>server status</code> command
      * @throws ZosLibertyServerException
      */
-    public int waitForStart(int millisecondTimeout) throws ZosLibertyServerException;
+    public int waitForStart(int timeout) throws ZosLibertyServerException;
 
     /**
      * Wait for the Liberty server to issue the <code>CWWKF0011I</code> message to the <code>messages.log</code> using the default timeout
@@ -278,11 +281,11 @@ public interface IZosLibertyServer {
 
     /**
      * Wait for the Liberty server to issue the <code>CWWKF0011I</code> message to the <code>messages.log</code> using the supplied timeout
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return true if message was found in log
      * @throws ZosLibertyServerException
      */
-    public boolean waitForStartMessage(int millisecondTimeout) throws ZosLibertyServerException;
+    public boolean waitForStartMessage(int timeout) throws ZosLibertyServerException;
 
     /**
      * Stop the Liberty server
@@ -300,11 +303,11 @@ public interface IZosLibertyServer {
 
     /**
      * Wait for the Liberty server to stop using the supplied timeout
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return the return code from the <code>server status</code> command
      * @throws ZosLibertyServerException
      */
-    public int waitForStop(int millisecondTimeout) throws ZosLibertyServerException;
+    public int waitForStop(int timeout) throws ZosLibertyServerException;
 
     /**
      * Wait for the Liberty server to issue the <code>CWWKE0036I</code> message to the <code>messages.log</code> using the default timeout
@@ -315,11 +318,11 @@ public interface IZosLibertyServer {
 
     /**
      * Wait for the Liberty server to issue the <code>CWWKE0036I</code> message to the <code>messages.log</code> using the supplied timeout
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return true if message was found in log
      * @throws ZosLibertyServerException
      */
-    public boolean waitForStopMessage(int millisecondTimeout) throws ZosLibertyServerException;
+    public boolean waitForStopMessage(int timeout) throws ZosLibertyServerException;
 
     /**
      * Get the Liberty sever status using the <code>server status</code> command
@@ -418,11 +421,11 @@ public interface IZosLibertyServer {
      * Wait for an application to start using the supplied timeout by looking for <code>CWWKZ0001I</code> message in messages.log.
      * If the <code>messages.log</code> has not been check-pointed, the whole file will be searched.
      * @param name the application name
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return true if application has stopped within the timeout
      * @throws ZosLibertyServerException
      */
-    public boolean waitForApplicationStart(String name, int millisecondTimeout) throws ZosLibertyServerException;
+    public boolean waitForApplicationStart(String name, int timeout) throws ZosLibertyServerException;
     
     /**
      * Wait for an application to stop using the default timeout by looking for <code>CWWKZ0009I</code> message in messages.log.
@@ -436,11 +439,11 @@ public interface IZosLibertyServer {
     /**
      * If the <code>messages.log</code> has not been check-pointed, the whole file will be searched.
      * @param name the application name
-     * @param millisecondTimeout the timeout in milliseconds
+     * @param timeout the timeout in seconds
      * @return true if application has stopped within the timeout
      * @throws ZosLibertyServerException
      */
-    public boolean waitForApplicationStop(String name, int millisecondTimeout) throws ZosLibertyServerException;
+    public boolean waitForApplicationStop(String name, int timeout) throws ZosLibertyServerException;
     
     /**
      * Returns the keystore file for this Liberty server

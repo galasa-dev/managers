@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa zOS Manager'
 
-version = '0.17.0'
+version = '0.19.0'
 
 dependencies {
     api project     (':galasa-managers-comms-parent:dev.galasa.ipnetwork.manager')
