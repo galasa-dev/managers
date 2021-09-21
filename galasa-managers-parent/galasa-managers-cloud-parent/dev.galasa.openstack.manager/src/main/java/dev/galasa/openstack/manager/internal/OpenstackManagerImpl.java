@@ -170,20 +170,58 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         try {
             List<String> possibleImages = LinuxImages.get(operatingSystem, null);
 
-            // *** Filter out those that don't have the necessary capabilities
-            if (!capabilities.isEmpty()) {
-                Iterator<String> imageIterator = possibleImages.iterator();
-                imageSearch: while (imageIterator.hasNext()) {
-                    String image = imageIterator.next();
-                    List<String> imageCapabilities = LinuxImageCapabilities.get(image);
-                    for (String requestedCapability : capabilities) {
-                        if (!imageCapabilities.contains(requestedCapability)) {
-                            imageIterator.remove();
-                            continue imageSearch;
+            Iterator<String> possibleImagesIterator = possibleImages.iterator();
+            nextImage:
+            while(possibleImagesIterator.hasNext()) {
+                String image = possibleImagesIterator.next();
+
+                // First check to see the the tests MUST request a capability this server provides
+                List<String> availableCapabilities = LinuxImageCapabilities.get(image);
+                if (!availableCapabilities.isEmpty()) {
+                    for(String availableCapability : availableCapabilities) {
+                        if (availableCapability.startsWith("+")) {
+                            String actualAvailableCapability = availableCapability.substring(1);
+                            boolean requestedCapability = false;
+                            for(String choosenCapability : capabilities) {
+                                if (choosenCapability.equalsIgnoreCase(actualAvailableCapability)) {
+                                    requestedCapability = true;
+                                    break;
+                                }
+                            }
+                            if (!requestedCapability) {
+                                possibleImagesIterator.remove();
+                                continue nextImage;
+                            }
+                        }
+                    }
+                }
+
+                // Now check the server provides the capabilities requested
+                if (!capabilities.isEmpty()) {
+                    for(String choosenCapability : capabilities) {
+                        if (choosenCapability == null || choosenCapability.isEmpty()) {
+                            continue;
+                        }
+
+                        boolean found = false;
+                        for (String availableCapability : availableCapabilities) {
+                            if (availableCapability.startsWith("+")) {
+                                availableCapability = availableCapability.substring(1);
+                            }
+                            if (availableCapability.equalsIgnoreCase(choosenCapability)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            possibleImagesIterator.remove();
+                            continue nextImage;
                         }
                     }
                 }
             }
+
 
             // *** Are there any images left? if not return gracefully as some other
             // provisioner may be able to support it

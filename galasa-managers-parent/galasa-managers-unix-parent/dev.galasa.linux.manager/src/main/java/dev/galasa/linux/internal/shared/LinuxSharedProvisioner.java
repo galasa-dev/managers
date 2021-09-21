@@ -80,6 +80,7 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
                 choosenOperatingSystem = operatingSystem.name();
             }
             Iterator<AvailableImage> availableImagesIterator = availableImages.iterator();
+            nextImage:
             while(availableImagesIterator.hasNext()) {
                 AvailableImage image = availableImagesIterator.next();
 
@@ -94,10 +95,30 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
                         continue;
                     }
                 }
+                
+                // First check to see the the tests MUST request a capability this server provides
+                List<String> availableCapabilities = LinuxCapabilities.get(image.getHostId());
+                if (!availableCapabilities.isEmpty()) {
+                    for(String availableCapability : availableCapabilities) {
+                        if (availableCapability.startsWith("+")) {
+                            String actualAvailableCapability = availableCapability.substring(1);
+                            boolean requestedCapability = false;
+                            for(String choosenCapability : capabilities) {
+                                if (choosenCapability.equalsIgnoreCase(actualAvailableCapability)) {
+                                    requestedCapability = true;
+                                    break;
+                                }
+                            }
+                            if (!requestedCapability) {
+                                availableImagesIterator.remove();
+                                continue nextImage;
+                            }
+                        }
+                    }
+                }
 
+                // Now check the server provides the capabilities requested
                 if (!capabilities.isEmpty()) {
-                    List<String> availableCapabilities = LinuxCapabilities.get(image.getHostId());
-
                     for(String choosenCapability : capabilities) {
                         if (choosenCapability == null || choosenCapability.isEmpty()) {
                             continue;
@@ -105,6 +126,9 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
 
                         boolean found = false;
                         for (String availableCapability : availableCapabilities) {
+                            if (availableCapability.startsWith("+")) {
+                                availableCapability = availableCapability.substring(1);
+                            }
                             if (availableCapability.equalsIgnoreCase(choosenCapability)) {
                                 found = true;
                                 break;
@@ -113,7 +137,7 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
 
                         if (!found) {
                             availableImagesIterator.remove();
-                            continue;
+                            continue nextImage;
                         }
                     }
                 }
