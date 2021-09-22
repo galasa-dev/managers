@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
-package dev.galasa.linux.internal;
+* Copyright contributors to the Galasa project 
+*/
+package dev.galasa.linux.internal.dse;
 
 import java.util.List;
 
@@ -13,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.OperatingSystem;
+import dev.galasa.linux.internal.LinuxManagerImpl;
 import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
@@ -46,6 +45,12 @@ public class LinuxDSEProvisioner implements ILinuxProvisioner {
         } catch (Exception e) {
             throw new LinuxManagerException("Unable to provision the Linux DSE", e);
         }
+    }
+
+    @Override
+    public int getLinuxPriority() {
+        // Make sure the DSE provisioner is at the top of the list
+        return Integer.MAX_VALUE;
     }
 
 }

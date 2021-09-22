@@ -1,13 +1,12 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
-package dev.galasa.linux.internal;
+* Copyright contributors to the Galasa project 
+*/
+package dev.galasa.linux.internal.dse;
 
 import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.ipnetwork.spi.AbstractGenericIpHost;
+import dev.galasa.linux.internal.LinuxManagerImpl;
 import dev.galasa.framework.spi.creds.CredentialsException;
 
 public class LinuxDSEIpHost extends AbstractGenericIpHost {

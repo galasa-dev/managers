@@ -349,6 +349,10 @@ public abstract class OpenstackServerImpl {
         return this.ipHost;
     }
     
+    public String getImage() {
+        return this.image;
+    }
+    
     protected OpenstackHttpClient getOpenstackHttpClient() {
         return this.openstackHttpClient;
     }

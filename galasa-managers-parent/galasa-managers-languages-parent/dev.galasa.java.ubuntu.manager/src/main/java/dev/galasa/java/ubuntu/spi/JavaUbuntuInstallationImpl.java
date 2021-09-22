@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.java.ubuntu.spi;
 
@@ -97,7 +95,7 @@ public class JavaUbuntuInstallationImpl extends JavaInstallationImpl implements 
         try {
             Path managerHome  = home.resolve(JavaUbuntuManagerImpl.NAMESPACE);
             Path javasHome    = managerHome.resolve("javas");
-            Path archivesHome = managerHome.resolve("archives");         
+            Path archivesHome = this.image.getArchivesDirectory().resolve(JavaUbuntuManagerImpl.NAMESPACE);         
 
 
             // for DSE and speed reasons, check to see if we need to install the 

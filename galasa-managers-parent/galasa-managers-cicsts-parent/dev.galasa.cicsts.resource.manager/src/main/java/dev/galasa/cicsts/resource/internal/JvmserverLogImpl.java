@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -272,9 +272,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForText(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public String waitForText(String searchText, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForText(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -289,9 +289,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForText(String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) {
+    public String waitForText(String searchText, String failText, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForText(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -301,9 +301,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public String waitForTextSinceCheckpoint(String searchText, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForTextSinceCheckpoint(searchText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -318,9 +318,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForTextSinceCheckpoint(String searchText, String failText, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public String waitForTextSinceCheckpoint(String searchText, String failText, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForTextSinceCheckpoint(searchText, failText);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -335,9 +335,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForPattern(Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeoutTimeInMilliseconds = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeoutTimeInMilliseconds) { 
+    public String waitForPattern(Pattern searchPattern, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForPattern(searchPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -347,9 +347,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public String waitForPattern(Pattern searchPattern, Pattern failPattern, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForPattern(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -364,9 +364,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) {
+    public String waitForPatternSinceCheckpoint(Pattern searchPattern, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForPatternSinceCheckpoint(searchPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;
@@ -381,9 +381,9 @@ public class JvmserverLogImpl implements IJvmserverLog, ITextScannable {
     }
 
     @Override
-    public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws CicsJvmserverResourceException {
-        long timeout = Calendar.getInstance().getTimeInMillis() + millisecondTimeout;
-        while(Calendar.getInstance().getTimeInMillis() < timeout) { 
+    public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long timeout) throws CicsJvmserverResourceException {
+    	LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
+	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             String returnText = searchForPatternSinceCheckpoint(searchPattern, failPattern);
             if (returnText != null && !returnText.isEmpty()) {
                 return returnText;

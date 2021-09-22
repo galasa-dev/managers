@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos.internal;
 
@@ -126,6 +124,11 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     @Override
     public ZosIpHostImpl getIpHost() {
         return this.ipHost;
+    }
+
+    @Override
+    public String getHome() {
+        return getRunTemporaryUNIXPath();
     }
 
     @Override

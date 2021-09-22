@@ -9,7 +9,7 @@ import dev.galasa.zos.IZosImage;
 import dev.galasa.zosliberty.ZosLibertyManagerException;
 
 /**
- * The Default Timeout value in milliseconds for Liberty servers on a zOS Image
+ * The Default Timeout value in seconds for Liberty servers on a zOS Image
  * 
  * @galasa.cps.property
  * 
@@ -19,17 +19,17 @@ import dev.galasa.zosliberty.ZosLibertyManagerException;
  * 
  * @galasa.required No
  * 
- * @galasa.default 20000 milliseconds
+ * @galasa.default 20 seconds
  * 
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>zosliberty.server.[image].default.timeout=20000</code><br>
+ * <code>zosliberty.server.[image].default.timeout=20</code><br>
  *
  */
 public class DefaultTimeout extends CpsProperties {
 
     public static int get(IZosImage image) throws ZosLibertyManagerException {
-            return getIntWithDefault(ZosLibertyPropertiesSingleton.cps(), 20000, "server", "default.timeout", image.getImageID());
+            return getIntWithDefault(ZosLibertyPropertiesSingleton.cps(), 20, "server", "default.timeout", image.getImageID());
     }
 }

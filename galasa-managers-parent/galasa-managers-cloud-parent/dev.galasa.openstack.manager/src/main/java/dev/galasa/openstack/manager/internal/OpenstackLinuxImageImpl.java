@@ -23,9 +23,10 @@ import dev.galasa.linux.spi.ILinuxProvisionedImage;
 import dev.galasa.openstack.manager.OpenstackLinuxManagerException;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.GalasaMetadata;
+import dev.galasa.openstack.manager.internal.json.SecurityGroup;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
-import dev.galasa.openstack.manager.internal.json.SecurityGroup;
+import dev.galasa.openstack.manager.internal.properties.LinuxArchivesDirectory;
 import dev.galasa.openstack.manager.internal.properties.LinuxAvailablityZone;
 import dev.galasa.openstack.manager.internal.properties.LinuxCredentials;
 import dev.galasa.openstack.manager.internal.properties.LinuxFlavor;
@@ -171,6 +172,15 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         }
 
         return this.pathRunDirectory;
+    }
+    
+    @Override
+    public @NotNull Path getArchivesDirectory() throws LinuxManagerException {
+        try {
+            return this.fileSystem.getPath(LinuxArchivesDirectory.get(getImage()));
+        } catch (Exception e) {
+            throw new LinuxManagerException("Problem determining archives directory", e);
+        }
     }
 
 }

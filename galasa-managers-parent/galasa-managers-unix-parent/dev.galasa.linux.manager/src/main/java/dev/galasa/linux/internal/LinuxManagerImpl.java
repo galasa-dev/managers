@@ -6,6 +6,8 @@ package dev.galasa.linux.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,13 +38,17 @@ import dev.galasa.linux.LinuxIpHost;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.LinuxManagerField;
 import dev.galasa.linux.OperatingSystem;
+import dev.galasa.linux.internal.dse.LinuxDSEImage;
+import dev.galasa.linux.internal.dse.LinuxDSEProvisioner;
 import dev.galasa.linux.internal.properties.LinuxPropertiesSingleton;
+import dev.galasa.linux.internal.shared.LinuxSharedImage;
+import dev.galasa.linux.internal.shared.LinuxSharedProvisioner;
 import dev.galasa.linux.spi.ILinuxManagerSpi;
 import dev.galasa.linux.spi.ILinuxProvisioner;
 
 @Component(service = { IManager.class })
 public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSpi {
-    protected final static String              NAMESPACE    = "linux";
+    public final static String                 NAMESPACE    = "linux";
 
     private final static Log                   logger       = LogFactory.getLog(LinuxManagerImpl.class);
 
@@ -108,8 +114,9 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             throw new LinuxManagerException("Unable to request framework services", e);
         }
 
-        // *** Ensure our DSE Provisioner is at the top of the list
-        this.provisioners.add(0, new LinuxDSEProvisioner(this));
+        // *** Add our inbuilt provisioners
+        this.provisioners.add(new LinuxDSEProvisioner(this));
+        this.provisioners.add(new LinuxSharedProvisioner(this));
     }
 
     @Override
@@ -158,6 +165,9 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             if (provisioner instanceof LinuxDSEProvisioner) {
                 continue;
             }
+            if (provisioner instanceof LinuxSharedProvisioner) {
+                continue;
+            }
 
             if (otherManager == provisioner) {
                 return true;
@@ -173,9 +183,9 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        // *** First add our default provisioning agent to the end
-        this.provisioners.add(new LinuxDefaultProvisioner());
-
+        // Sort the provisioners in descending order
+        Collections.sort(this.provisioners, new ProvisionersComparator());
+        
         // *** Get all our annotated fields
         List<AnnotatedField> annotatedFields = findAnnotatedFields(LinuxManagerField.class);
 
@@ -284,8 +294,11 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
     @Override
     public void provisionDiscard() {
         for(ILinuxImage image : this.taggedImages.values()) {
-            if (image instanceof LinuxDSEImage) { // dont discard provisioned images, allow that manager to do it
+            if (image instanceof LinuxDSEImage) { // dont discard provisioned images from other managers,  let them do it
                 ((LinuxDSEImage)image).discard();
+            }
+            if (image instanceof LinuxSharedImage) { // dont discard provisioned images from other managers,  let them do it
+                ((LinuxSharedImage)image).discard();
             }
         }
     }
@@ -306,15 +319,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
         return image.getIpHost();
     }
 
-    protected IConfigurationPropertyStoreService getCps() {
+    public IConfigurationPropertyStoreService getCps() {
         return this.cps;
     }
 
-    protected IDynamicStatusStoreService getDss() {
+    public IDynamicStatusStoreService getDss() {
         return this.dss;
     }
 
-    protected IIpNetworkManagerSpi getIpNetworkManager() {
+    public IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
     }
 
@@ -325,6 +338,15 @@ public class LinuxManagerImpl extends AbstractManager implements ILinuxManagerSp
             throw new LinuxManagerException("Unable to locate Linux image tagged '" + imageTag + "'");
         }
         return image;
+    }
+    
+    private static class ProvisionersComparator implements Comparator<ILinuxProvisioner> {
+
+        @Override
+        public int compare(ILinuxProvisioner o1, ILinuxProvisioner o2) {
+            return o2.getLinuxPriority() - o1.getLinuxPriority();
+        }
+        
     }
 
 }

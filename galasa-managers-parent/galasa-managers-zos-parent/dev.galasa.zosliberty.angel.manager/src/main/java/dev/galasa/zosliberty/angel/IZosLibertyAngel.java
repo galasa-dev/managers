@@ -4,8 +4,33 @@
 package dev.galasa.zosliberty.angel;
 
 /**
- * TODO
+ * Represents a zOS Liberty angel process
  */
 public interface IZosLibertyAngel {
+
+	/**
+	 * Start the zOS Liberty angel
+	 * @throws ZosLibertyAngelException
+	 */
+	public void start() throws ZosLibertyAngelException;
+
+	/**
+	 * Stop the zOS Liberty angel
+	 * @throws ZosLibertyAngelException
+	 */
+	public void stop() throws ZosLibertyAngelException;
+
+	/**
+	 * Is the zOS Liberty angel active
+	 * @return true/false
+	 * @throws ZosLibertyAngelException
+	 */
+	public boolean isActive() throws ZosLibertyAngelException;
+
+	/**
+	 * Get the zOS Liberty angel "named angel name"
+	 * @return the "named angel name"
+	 */
+	public String getName();
 
 }

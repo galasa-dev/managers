@@ -6,7 +6,7 @@ package dev.galasa.zosliberty;
 import dev.galasa.zos.IZosImage;
 
 /**
- * TODO
+ * Create a new zOS Liberty server
  */
 public interface IZosLiberty {
 

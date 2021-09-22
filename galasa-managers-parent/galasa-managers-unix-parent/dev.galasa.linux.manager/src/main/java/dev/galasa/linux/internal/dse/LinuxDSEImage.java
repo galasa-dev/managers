@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
  */
-package dev.galasa.linux.internal;
+package dev.galasa.linux.internal.dse;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
@@ -15,12 +13,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ICredentials;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
-import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.linux.LinuxManagerException;
+import dev.galasa.linux.internal.LinuxManagerImpl;
+import dev.galasa.linux.internal.properties.LinuxArchivesDirectory;
 import dev.galasa.linux.internal.properties.RetainRunDirectory;
 import dev.galasa.linux.spi.ILinuxProvisionedImage;
 
@@ -165,6 +165,15 @@ public class LinuxDSEImage implements ILinuxProvisionedImage {
             }
         }
 
+    }
+
+    @Override
+    public @NotNull Path getArchivesDirectory() throws LinuxManagerException {
+        try {
+            return this.fileSystem.getPath(LinuxArchivesDirectory.get(this.hostid));
+        } catch (Exception e) {
+            throw new LinuxManagerException("Problem determining archives directory", e);
+        }
     }
 
 }

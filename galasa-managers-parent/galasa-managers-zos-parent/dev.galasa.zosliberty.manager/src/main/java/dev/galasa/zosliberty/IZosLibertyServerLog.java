@@ -133,114 +133,114 @@ public interface IZosLibertyServerLog {
      * <ul>
      * <li>the searchText is found;</li>
      * <li>the failText is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchString the text to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForText(String searchText, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForText(String searchText, long timeout) throws ZosLibertyServerException;
 
     /**
      * Wait for a search String or fail text to appear in specified log. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchText is found;</li>
      * <li>the failText is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchString the text to search
      * @param failString the failure text to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForText(String searchText, String failText, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForText(String searchText, String failText, long timeout) throws ZosLibertyServerException;
     
     /**
      * Wait for a search String to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchText is found;</li>
      * <li>the failText is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchText the text to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForTextSinceCheckpoint(String searchText, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForTextSinceCheckpoint(String searchText, long timeout) throws ZosLibertyServerException;
     
     /**
      * Wait for a search or fail String  to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchText is found;</li>
      * <li>the failText is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchText the text to search
      * @param failText the failure text to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForTextSinceCheckpoint(String searchText, String failText, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForTextSinceCheckpoint(String searchText, String failText, long timeout) throws ZosLibertyServerException;
 
     /**
      * Wait for a search Pattern to appear in specified log. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchPattern is found;</li>
      * <li>the failPattern is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchPattern the Pattern to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForPattern(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForPattern(Pattern searchPattern, long timeout) throws ZosLibertyServerException;
 
     /**
      * Wait for a search or fail Pattern or fail Pattern to appear in specified log. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchPattern is found;</li>
      * <li>the failPattern is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchPattern the Pattern to search
      * @param failPattern the failure pattern to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForPattern(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForPattern(Pattern searchPattern, Pattern failPattern, long timeout) throws ZosLibertyServerException;
     
     /**
      * Wait for a search Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchPattern is found;</li>
      * <li>the failPattern is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchPattern the Pattern to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForPatternSinceCheckpoint(Pattern searchPattern, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForPatternSinceCheckpoint(Pattern searchPattern, long timeout) throws ZosLibertyServerException;
     
     /**
      * Wait for a search or fail Pattern or fail Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
      * <ul>
      * <li>the searchPattern is found;</li>
      * <li>the failPattern is found;</li>
-     * <li>the specified millisecondTimeout is reached.</li>
+     * <li>the specified timeout is reached.</li>
      * </ul>
      * @param searchPattern the Pattern to search
      * @param failPattern the failure pattern to search
-     * @param millisecondTimeout timeout value
+     * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
      */
-    public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long millisecondTimeout) throws ZosLibertyServerException;
+    public String waitForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern, long timeout) throws ZosLibertyServerException;
 }

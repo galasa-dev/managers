@@ -1,6 +1,6 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project 
+ */
 package dev.galasa.openstack.manager.internal;
 
 import java.io.IOException;
@@ -46,6 +46,8 @@ import dev.galasa.openstack.manager.internal.properties.LinuxImageCapabilities;
 import dev.galasa.openstack.manager.internal.properties.LinuxImages;
 import dev.galasa.openstack.manager.internal.properties.MaximumInstances;
 import dev.galasa.openstack.manager.internal.properties.NamePool;
+import dev.galasa.openstack.manager.internal.properties.OpenStackEnabled;
+import dev.galasa.openstack.manager.internal.properties.OpenStackLinuxPriority;
 import dev.galasa.openstack.manager.internal.properties.OpenstackPropertiesSingleton;
 import dev.galasa.openstack.manager.internal.properties.WindowsImageCapabilities;
 import dev.galasa.openstack.manager.internal.properties.WindowsImages;
@@ -136,7 +138,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @Override
     public void provisionDiscard() {
-        
+
         for (OpenstackServerImpl instance : instances) {
             instance.discard();
         }
@@ -153,6 +155,11 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     public ILinuxProvisionedImage provisionLinux(String tag, OperatingSystem operatingSystem, List<String> capabilities)
             throws OpenstackManagerException, ResourceUnavailableException {
 
+        // check we are enabled
+        if (!OpenStackEnabled.get()) {
+            return null;
+        }
+
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
         if (!openstackHttpClient.connectToOpenstack()) {
@@ -163,20 +170,58 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         try {
             List<String> possibleImages = LinuxImages.get(operatingSystem, null);
 
-            // *** Filter out those that don't have the necessary capabilities
-            if (!capabilities.isEmpty()) {
-                Iterator<String> imageIterator = possibleImages.iterator();
-                imageSearch: while (imageIterator.hasNext()) {
-                    String image = imageIterator.next();
-                    List<String> imageCapabilities = LinuxImageCapabilities.get(image);
-                    for (String requestedCapability : capabilities) {
-                        if (!imageCapabilities.contains(requestedCapability)) {
-                            imageIterator.remove();
-                            continue imageSearch;
+            Iterator<String> possibleImagesIterator = possibleImages.iterator();
+            nextImage:
+            while(possibleImagesIterator.hasNext()) {
+                String image = possibleImagesIterator.next();
+
+                // First check to see the the tests MUST request a capability this server provides
+                List<String> availableCapabilities = LinuxImageCapabilities.get(image);
+                if (!availableCapabilities.isEmpty()) {
+                    for(String availableCapability : availableCapabilities) {
+                        if (availableCapability.startsWith("+")) {
+                            String actualAvailableCapability = availableCapability.substring(1);
+                            boolean requestedCapability = false;
+                            for(String choosenCapability : capabilities) {
+                                if (choosenCapability.equalsIgnoreCase(actualAvailableCapability)) {
+                                    requestedCapability = true;
+                                    break;
+                                }
+                            }
+                            if (!requestedCapability) {
+                                possibleImagesIterator.remove();
+                                continue nextImage;
+                            }
+                        }
+                    }
+                }
+
+                // Now check the server provides the capabilities requested
+                if (!capabilities.isEmpty()) {
+                    for(String choosenCapability : capabilities) {
+                        if (choosenCapability == null || choosenCapability.isEmpty()) {
+                            continue;
+                        }
+
+                        boolean found = false;
+                        for (String availableCapability : availableCapabilities) {
+                            if (availableCapability.startsWith("+")) {
+                                availableCapability = availableCapability.substring(1);
+                            }
+                            if (availableCapability.equalsIgnoreCase(choosenCapability)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            possibleImagesIterator.remove();
+                            continue nextImage;
                         }
                     }
                 }
             }
+
 
             // *** Are there any images left? if not return gracefully as some other
             // provisioner may be able to support it
@@ -214,6 +259,11 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     @Override
     public IWindowsProvisionedImage provisionWindows(String tag, List<String> capabilities)
             throws OpenstackManagerException, ResourceUnavailableException {
+
+        // check we are enabled
+        if (!OpenStackEnabled.get()) {
+            return null;
+        }
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
@@ -275,14 +325,14 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     @NotNull
     private String reserveInstance() throws DynamicStatusStoreException, InterruptedException,
-            InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
+    InsufficientResourcesAvailableException, ConfigurationPropertyStoreException, OpenstackManagerException {
 
         // *** Get the runname for reserving slot names
         String runName = this.getFramework().getTestRunName();
-        
+
         List<String> instanceNamePool = NamePool.get();
         IResourcePoolingService poolingService = this.getFramework().getResourcePoolingService();
-        
+
         // *** Get the current and maximum instances
         int maxInstances = MaximumInstances.get();
 
@@ -297,8 +347,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         if (maxInstances <= currentInstances) {
             throw new InsufficientResourcesAvailableException("At max slots");
         }
-        
-        
+
+
         // *** reserve a slot and allocate a new name
         currentInstances++;
         IDssAction slotNumber = null;
@@ -312,21 +362,21 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
         ArrayList<String> exclude = new ArrayList<>();
         List<String> possibleNames = poolingService.obtainResources(instanceNamePool, exclude, 10, 1, this.dss,
                 "compute.");
-        
+
         if (possibleNames.isEmpty()) {
             throw new InsufficientResourcesAvailableException("Insufficient Compute names available");
         }
-        
+
         // take the first one
         String instanceName = "compute." + possibleNames.remove(0);
-        
+
         // add active and ownership
         DssAdd computeId = new DssAdd(instanceName, runName);
         DssAdd runInstance = new DssAdd("run." + runName + "." + instanceName, "active");
-        
-        
-        
-        
+
+
+
+
         try {
             this.dss.performActions(slotNumber, computeId, runInstance);
         } catch(DynamicStatusStoreMatchException e) {
@@ -334,7 +384,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
             return reserveInstance();
         }
-        
+
         return instanceName;
     }
 
@@ -348,6 +398,11 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {
         return this.ipManager;
+    }
+
+    @Override
+    public int getLinuxPriority() {
+        return OpenStackLinuxPriority.get();
     }
 
 }

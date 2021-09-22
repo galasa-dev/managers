@@ -27,7 +27,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
@@ -61,7 +61,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.resource.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
@@ -128,7 +128,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.ipnetwork.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     mvp: true
@@ -141,7 +141,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.java.ubuntu.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
@@ -182,7 +182,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.linux.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
@@ -193,7 +193,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.openstack.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
@@ -272,19 +272,19 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.zosliberty.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
     
   - artifact: dev.galasa.zosliberty.angel.manager
-    version: 0.18.0
+    version: 0.19.0
     obr: true
     bom: true
     isolated: true
     
   - artifact: dev.galasa.zos.manager
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     bom: true
     mvp: true

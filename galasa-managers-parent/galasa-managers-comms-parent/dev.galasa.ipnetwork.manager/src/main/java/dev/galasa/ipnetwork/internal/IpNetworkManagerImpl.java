@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.ipnetwork.internal;
 
@@ -26,9 +24,9 @@ import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.ICommandShell;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
-import dev.galasa.ipnetwork.internal.ssh.SSHClient;
 import dev.galasa.ipnetwork.internal.ssh.filesystem.SSHFileSystem;
 import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
+import dev.galasa.ipnetwork.spi.SSHClient;
 
 @Component(service = { IManager.class })
 public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkManagerSpi {
@@ -86,6 +84,11 @@ public class IpNetworkManagerImpl extends AbstractManager implements IIpNetworkM
     @Override
     public @NotNull FileSystem getFileSystem(IIpHost ipHost) throws IpNetworkManagerException {
         return new SSHFileSystem(ipHost.getHostname(), ipHost.getSshPort(), ipHost.getDefaultCredentials());
+    }
+
+    @Override
+    public @NotNull FileSystem getFileSystem(IIpHost ipHost, ICredentials credentials) throws IpNetworkManagerException {
+        return new SSHFileSystem(ipHost.getHostname(), ipHost.getSshPort(), credentials);
     }
 
 }
