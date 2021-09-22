@@ -48,4 +48,11 @@ public interface IGradleInstallation {
      */
     String getGradleHome();
 
+    /**
+     * Returns the instance of the Java installation being used by the gradle manager.
+     * 
+     * @return IJavaInstallation    -   Java instance
+     */
+    IJavaInstallation getJavaInstallation();
+
 }
