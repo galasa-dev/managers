@@ -17,6 +17,6 @@ import dev.galasa.mq.internal.MqManagerField;
 @ValidAnnotatedFields({ IMessageQueueManager.class })
 public @interface QueueManager {
 
-    String queueManagerTag();
+    String queueMgrTag();
 
 }
