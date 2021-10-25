@@ -1,0 +1,23 @@
+/*
+ * Licensed Materials - Property of IBM
+ * 
+ * (c) Copyright IBM Corp. 2019-2021.
+ */
+package dev.galasa.mq;
+
+import javax.jms.Message;
+import javax.jms.TextMessage;
+
+public interface IMessageQueue {
+	
+	public TextMessage getNewTextMessage();
+	public Message getNewMessage();
+	
+	public void sendMessage(Message message);
+	
+	public Message receiveMessage();
+	public Message receiveMessage(long timeout);
+	public Message receiveMessageNoWait();
+	
+	public void setArchiveMessages(boolean archive);
+}
