@@ -154,12 +154,35 @@ public class ZosManagerFileDatasetIVT {
     	ds.create();
     	return ds;
     }
+    
+    /**
+     * Run some JCL to delete a PDS
+     * @throws ZosBatchException 
+     * @throws IOException 
+     * @throws TestBundleResourceException 
+     */
+    private void deleteDataSet(String dataset) throws ZosBatchException, TestBundleResourceException, IOException {
+    	HashMap<String,Object> parms = new HashMap<>();
+    	parms.put("DATASET", dataset);
+    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSDelete.jcl", parms);
+    	batch.submitJob(jcl, null).waitForJob();
+    }
 
     //Test that the manager can create a new PDS that doesn't exist and delete it
     //ensure that we always confirm that actions really have taken place
     @Test
     public void testPDSCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
+ 
+    	// Check if a PDS exists with the same name already
+    	// If one exists, delete it
+    	if (checkThatPDSExists(desiredDataSetName)) {
+    		deleteDataSet(desiredDataSetName);
+    		if (checkThatPDSExists(desiredDataSetName)) {
+    			throw new Exception("Unable to delete PDS " + desiredDataSetName);
+    		}
+    	}
+    	
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
@@ -176,8 +199,18 @@ public class ZosManagerFileDatasetIVT {
     }
    
     @Test
-    public void datasetAttributeCheck() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
+    public void datasetAttributeCheck() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
+    	
+    	// Check if a PDS exists with the same name already
+    	// If one exists, delete it
+    	if (checkThatPDSExists(desiredDataSetName)) {
+    		deleteDataSet(desiredDataSetName);
+    		if (checkThatPDSExists(desiredDataSetName)) {
+    			throw new Exception("Unable to delete PDS " + desiredDataSetName);
+    		}
+    	}
+    	
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	logger.info("Checked that " + desiredDataSetName + " doesn't currently exist");
 	   
