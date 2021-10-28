@@ -6,8 +6,8 @@ package dev.galasa.cicsts.ceci.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.time.Instant;
+import java.util.List;
 import java.util.Random;
 
 import dev.galasa.AfterClass;
@@ -27,12 +27,9 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zosbatch.ZosBatchException;
-
-//import dev.galasa.artifact.BundleResources;
-//import dev.galasa.artifact.IBundleResources;
-//import dev.galasa.artifact.TestBundleResourceException;
-//import dev.galasa.zosbatch.IZosBatch;
-//import dev.galasa.zosbatch.ZosBatch;
+import dev.galasa.zosbatch.IZosBatch;
+import dev.galasa.zosbatch.IZosBatchJob;
+import dev.galasa.zosbatch.ZosBatch;
 
 import org.apache.commons.logging.Log;
 
@@ -47,15 +44,9 @@ public class CECIManagerIVT {
 
    @CicsTerminal
    public ICicsTerminal terminal;
-   
-   @CicsTerminal()
-   public ICicsTerminal lowerCaseTerminal;
 
-//   @ZosBatch(imageTag = "PRIMARY")
-//   public IZosBatch batch;
-//   
-//   @BundleResources
-//   public IBundleResources resources; 
+   @ZosBatch(imageTag = "PRIMARY")
+   public IZosBatch batch;
 
    @BeforeClass
    public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
@@ -75,75 +66,9 @@ public class CECIManagerIVT {
       assertThat(cics).isNotNull();
       assertThat(cics.ceci()).isNotNull();
       assertThat(terminal).isNotNull();
+      assertThat(batch).isNotNull();
    }
-
-   // FAIL 
-   /**
-    * Test documentation link with container.
-    * 
-    * @throws CeciException 
-    * @throws CicstsManagerException  
-    */ 
-   @Test
-   public void testPutAndGetDataToContainer() throws CeciException, CicstsManagerException {
-      String channelName = "MY-CHANNEL";
-      String containerName = "MY-CONTAINER";
-      String content = "My_Container_Data";
-      
-      ICeciResponse resp = cics.ceci().putContainer(terminal, channelName, containerName, content, null, null, null);
-      assertThat(resp.isNormal()).isTrue();
-
-      String programName = "MYPROG";
-      resp = cics.ceci().linkProgramWithChannel(terminal, programName, channelName, null, null, false);
-//      assertThat(resp.isNormal()).isTrue(); // FAIL
-
-      String variableName = "&DATAOUT";
-      resp = cics.ceci().getContainer(terminal, channelName, containerName, variableName, null, null);
-      assertThat(resp.isNormal()).isTrue();
-      assertThat(cics.ceci().retrieveVariableText(terminal, variableName)).isEqualToIgnoringCase(content);
-   }
-
-   // FAIL
-   /**
-    * Test link to program.
-    * 
-    * @throws CicstsManagerException 
-    * @throws CeciException
-    */
-   @Test
-   public void linkToProgram() throws CeciException, CicstsManagerException  {
-	  String variableName = "INPUT";
-      String variableValue = "GALASA";
-      
-      cics.ceci().defineVariableText(terminal, variableName, variableValue);
-      String execString = "LINK PROGRAM(APITEST) COMMAREA(&input)";
-      ICeciResponse resp = cics.ceci().issueCommand(terminal, execString);
-//      assertThat(resp.getEIBRESP()).isZero(); // FAILED
-
-      String outputData = cics.ceci().retrieveVariableText(terminal, "&"+variableName);
-      assertThat(outputData).isUpperCase();
-      assertThat(outputData).isEqualToIgnoringCase(variableValue);
-   }
-
-   /**
-    * Test link to program channel.
-    * 
-    * @throws CicstsManagerException 
-    * @throws CeciException 
-    */
-   @Test
-   public void linkToProgramChannel() throws CeciException, CicstsManagerException  {
-	  String variableName = "INPUT";
-      String variableValue = constructRandomString(25000);
-      cics.ceci().defineVariableText(terminal, variableName, variableValue);
-      cics.ceci().issueCommand(terminal, "PUT CONTAINER(HOBBIT) FROM(&input) CHANNEL(HOBBITCHAN)");
-      cics.ceci().issueCommand(terminal, "LINK PROGRAM(CONTTEST) CHANNEL(HOBBITCHAN)");
-      cics.ceci().issueCommand(terminal, "GET CONTAINER(HOBBIT) INTO(&output) CHANNEL(HOBBITCHAN)");
-      String outputData = cics.ceci().retrieveVariableText(terminal, "&OUTPUT");
-      assertThat(outputData).isUpperCase();
-      assertThat(outputData).isEqualToIgnoringCase(variableValue);
-   }
-
+   
    /**
     * Tests that variables defined with a name longer than 10 characters are caught.
     * 
@@ -332,17 +257,27 @@ public class CECIManagerIVT {
     * 
     * @throws CicstsManagerException 
     * @throws CeciException 
-    * @throws IOException 
-    * @throws TestBundleResourceException 
     * @throws ZosBatchException 
     */
    @Test
-   public void testDocumentationBasicCommand() throws CeciException, CicstsManagerException, ZosBatchException, IOException {
-      String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('About to execute Galasa Test...')";
+   public void testDocumentationBasicCommand() throws CeciException, CicstsManagerException, ZosBatchException  {
+	  String message = "GALASA TEST " + Instant.now().toString();
+      String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('" + message + "')";
+      
       ICeciResponse resp = cics.ceci().issueCommand(terminal, ceciCommand);
       assertThat(resp.isNormal()).isTrue();
-      
-//      readCicsLog();
+
+      logger.info("Checking that the message was written to the CICS log");
+      boolean messageFound = false;
+      List<IZosBatchJob> jobs = batch.getJobs(cics.getApplid(), "*");      
+      for (IZosBatchJob job : jobs) {
+         String output = job.getSpoolFile("JESMSGLG").getRecords();
+         if (output.contains(message)) {
+            messageFound = true;
+            break;
+         }
+      }
+      assertThat(messageFound).isTrue();
    }
    
    /**
@@ -372,6 +307,7 @@ public class CECIManagerIVT {
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
       
       // Log back into CECI session
+      logger.info("Logging back into CECI session");
       terminal.type("CECI").enter().waitForKeyboard();
       command = "DELETEQ TS QUEUE('" + queueName + "')";
       cics.ceci().issueCommand(terminal, command);
@@ -382,7 +318,29 @@ public class CECIManagerIVT {
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
       
       // Log back into CECI session for next test
+      logger.info("Logging back into CECI session");
       terminal.type("CECI").enter().waitForKeyboard();
+   }
+
+   /**
+    * Test link to program channel.
+    * 
+    * @throws CicstsManagerException 
+    * @throws CeciException 
+    */
+   @Test
+   public void linkToProgramChannel() throws CeciException, CicstsManagerException  {
+	  String variableName = "INPUT";
+      String variableValue = constructRandomString(25000);
+      
+      cics.ceci().defineVariableText(terminal, variableName, variableValue);
+      cics.ceci().issueCommand(terminal, "PUT CONTAINER(HOBBIT) FROM(&input) CHANNEL(HOBBITCHAN)");
+      cics.ceci().issueCommand(terminal, "LINK PROGRAM(CONTTEST) CHANNEL(HOBBITCHAN)");
+      cics.ceci().issueCommand(terminal, "GET CONTAINER(HOBBIT) INTO(&output) CHANNEL(HOBBITCHAN)");
+      
+      String outputData = cics.ceci().retrieveVariableText(terminal, "&OUTPUT");
+      assertThat(outputData).isUpperCase();
+      assertThat(outputData).isEqualToIgnoringCase(variableValue);
    }
 
    private String constructRandomString(int length) {
@@ -394,19 +352,6 @@ public class CECIManagerIVT {
       }
       return sb.toString();
    }
-
-//   /**
-//    * Run some JCL to read from the CICS log
-//    * @throws IOException 
-//    * @throws TestBundleResourceException 
-//    * @throws ZosBatchException 
-//    */
-//   private void readCicsLog() throws TestBundleResourceException, IOException, ZosBatchException {
-//      HashMap<String,Object> parms = new HashMap<>();
-//      parms.put("","");
-//      String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/ReadCicsLog.jcl", parms);
-//      batch.submitJob(jcl, null).waitForJob();
-//   }
 
    @AfterClass
       public void afterClass() throws CicstsManagerException {

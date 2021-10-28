@@ -77,106 +77,48 @@ public class ZosManagerFileDatasetIVT {
         runName = coreManager.getRunName();
         logger.info("Using Run ID of: " + runName);
     }
-    
-    /**
-     * Run some JCL to check that a PDS has been created
-     * This is used to test that zosFile is working correctly
-     * @param dataset The name of the dataset that we want to test
-     * @return a boolean to signify that the dataset exists (or not)
-     * @throws TestBundleResourceException
-     * @throws IOException
-     * @throws ZosBatchException
-     */
-    private boolean checkThatPDSExists(String dataset) throws TestBundleResourceException, IOException, ZosBatchException {
-    	HashMap<String,Object> parms = new HashMap<>();
-    	parms.put("DATASET", dataset);
-    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSCheck.jcl", parms);
-    	return(batch.submitJob(jcl, null).waitForJob() == 0);
-    }
-    
-    /**
-     * Run a piece of JCL to echo the content of the member in the PDS requested
-     * Check that the strings provided as content exist within the content of the PDS member
-     * @param pds The data set name 
-     * @param member the member within the dataset
-     * @param content lines of content to check
-     * @return a boolean true if the content exists in the pds member, false if something is missing or the member does not exist
-     * @throws ZosBatchException
-     * @throws TestBundleResourceException
-     * @throws IOException
-     */
-    private boolean checkContentWasWritten(String pds, String member, String... content) throws ZosBatchException, TestBundleResourceException, IOException {
-    	String fullName = pds+"("+member+")";
-    	HashMap<String, Object> parms = new HashMap<>();
-    	parms.put("MEMBER_NAME",fullName);
-    	IZosBatchJob job = batch.submitJob(resources.retrieveSkeletonFileAsString("/resources/jcl/list.jcl", parms),null);
-    	job.setShouldArchive(false);
-    	if(job.waitForJob() > 0)
-    		return false;
-    	IZosBatchJobOutputSpoolFile output = job.getSpoolFile("SYSUT2");
-    	for(String c : content) {
-    		if(!output.getRecords().contains(c))
-    			return false;
-    	}
-    	return true;
-    }
    
-    //Test that an existing PDS exists
+    /**
+     * Test that an existing PDS exists
+     * @throws IOException 
+     * @throws TestBundleResourceException 
+     * @throws ZosBatchException 
+     * @throws ZosDatasetException 
+     */
     @Test
-    public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
+    public void testExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException{
     	String desiredDataSetName = "CTS.CICSCOG.JCL";
     	assertThat(checkThatPDSExists(desiredDataSetName)).isTrue();
     	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isTrue();
     }
    
-    //Test that a non-existant PDS doesn't exist 
+    /** 
+     * Test that a non-existent PDS doesn't exist 
+     * @throws ZosBatchException
+     * @throws TestBundleResourceException
+     * @throws IOException
+     * @throws ZosDatasetException
+     */
     @Test
     public void testNonExistingDS() throws ZosBatchException, TestBundleResourceException, IOException, ZosDatasetException {
     	String desiredDataSetName = "CTS.CICSCOG.JCJ";
     	assertThat(checkThatPDSExists(desiredDataSetName)).isFalse();
     	assertThat(fileHandler.newDataset(desiredDataSetName, imagePrimary).exists()).isFalse();
     }
-   
-    private IZosDataset createBasicDataset(String name, boolean pds) throws ZosDatasetException {
-    	IZosDataset ds = fileHandler.newDataset(name, imagePrimary);
-    	if(pds) {
-    		ds.setDirectoryBlocks(10);
-    		ds.setDatasetOrganization(DatasetOrganization.PARTITIONED);
-    	}	
-    	else {
-    		ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
-    	}
-    	ds.setRecordFormat(RecordFormat.FIXED_BLOCKED);
-    	ds.setRecordlength(80);
-    	ds.setBlockSize(32720);
-    	ds.setUnit("SYSDA");
-    	ds.setSpace(SpaceUnit.TRACKS, 1, 1);
-    	ds.create();
-    	return ds;
-    }
-    
-    /**
-     * Run some JCL to delete a PDS
-     * @throws ZosBatchException 
-     * @throws IOException 
-     * @throws TestBundleResourceException 
-     */
-    private void deleteDataSet(String dataset) throws ZosBatchException, TestBundleResourceException, IOException {
-    	HashMap<String,Object> parms = new HashMap<>();
-    	parms.put("DATASET", dataset);
-    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSDelete.jcl", parms);
-    	batch.submitJob(jcl, null).waitForJob();
-    }
 
-    //Test that the manager can create a new PDS that doesn't exist and delete it
-    //ensure that we always confirm that actions really have taken place
+    /** 
+     * Test that the manager can create a new PDS that doesn't exist and delete it
+     * Ensure that we always confirm that actions really have taken place
+     * @throws Exception
+     */
     @Test
     public void testPDSCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
- 
+    	
     	// Check if a PDS exists with the same name already
     	// If one exists, delete it
     	if (checkThatPDSExists(desiredDataSetName)) {
+    		logger.info("Deleting PDS " + desiredDataSetName + " as it pre-exists");
     		deleteDataSet(desiredDataSetName);
     		if (checkThatPDSExists(desiredDataSetName)) {
     			throw new Exception("Unable to delete PDS " + desiredDataSetName);
@@ -198,6 +140,10 @@ public class ZosManagerFileDatasetIVT {
     	logger.info("Checked that " + desiredDataSetName + " has been deleted");
     }
    
+    /** 
+     * Test that the data set attributes are correct
+     * @throws Exception
+     */
     @Test
     public void datasetAttributeCheck() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
@@ -205,6 +151,7 @@ public class ZosManagerFileDatasetIVT {
     	// Check if a PDS exists with the same name already
     	// If one exists, delete it
     	if (checkThatPDSExists(desiredDataSetName)) {
+    		logger.info("Deleting PDS " + desiredDataSetName + " as it pre-exists");
     		deleteDataSet(desiredDataSetName);
     		if (checkThatPDSExists(desiredDataSetName)) {
     			throw new Exception("Unable to delete PDS " + desiredDataSetName);
@@ -231,6 +178,10 @@ public class ZosManagerFileDatasetIVT {
 	   
     }	
    
+    /** 
+     * Test creation of a data set member
+     * @throws Exception
+     */
     @Test
    	public void testPDSMemberCreate() throws Exception {
     	String desiredDataSetName = "CTS.GALASA." + runName;
@@ -268,6 +219,10 @@ public class ZosManagerFileDatasetIVT {
     	ds.delete();
     }
     
+    /** 
+     * Test deleting a non-existent data set member
+     * @throws ZosDatasetException
+     */
     @Test
     public void deleteNonExistingMember() throws ZosDatasetException {
     	String desiredDataSetName = "CTS.GALASA." + runName;
@@ -279,6 +234,84 @@ public class ZosManagerFileDatasetIVT {
     	assertThat(ds.memberExists(memberName)).isTrue();
     	//this doesn't exist - but also shouldn't
     	ds.memberDelete(hidingMember);
-    	
+    }
+    
+    /**
+     * Run some JCL to check that a PDS has been created
+     * This is used to test that zosFile is working correctly
+     * @param dataset The name of the dataset that we want to test
+     * @return a boolean to signify that the dataset exists (or not)
+     * @throws TestBundleResourceException
+     * @throws IOException
+     * @throws ZosBatchException
+     */
+    private boolean checkThatPDSExists(String dataset) throws TestBundleResourceException, IOException, ZosBatchException {
+    	HashMap<String,Object> parms = new HashMap<>();
+    	parms.put("DATASET", dataset);
+    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSCheck.jcl", parms);
+    	return(batch.submitJob(jcl, null).waitForJob() == 0);
+    }
+    
+    private IZosDataset createBasicDataset(String name, boolean pds) throws ZosDatasetException {
+    	IZosDataset ds = fileHandler.newDataset(name, imagePrimary);
+    	if(pds) {
+    		ds.setDirectoryBlocks(10);
+    		ds.setDatasetOrganization(DatasetOrganization.PARTITIONED);
+    	}	
+    	else {
+    		ds.setDatasetOrganization(DatasetOrganization.SEQUENTIAL);
+    	}
+    	ds.setRecordFormat(RecordFormat.FIXED_BLOCKED);
+    	ds.setRecordlength(80);
+    	ds.setBlockSize(32720);
+    	ds.setUnit("SYSDA");
+    	ds.setSpace(SpaceUnit.TRACKS, 1, 1);
+    	ds.create();
+    	return ds;
+    }
+    
+    /**
+     * Run some JCL to delete a PDS
+     * @throws ZosBatchException 
+     * @throws IOException 
+     * @throws TestBundleResourceException 
+     */
+    private void deleteDataSet(String dataset) throws ZosBatchException, TestBundleResourceException, IOException {
+    	HashMap<String,Object> parms = new HashMap<>();
+    	parms.put("DATASET", dataset);
+    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSDelete.jcl", parms);
+    	IZosBatchJob job = batch.submitJob(jcl, null);
+    	job.waitForJob();
+    	// Do not archive this batch job to RAS as it isn't what is being tested
+    	job.setShouldArchive(false);
+    	// Delete from the Mainframe
+    	job.setShouldCleanup(true);
+    }
+    
+    /**
+     * Run a piece of JCL to echo the content of the member in the PDS requested
+     * Check that the strings provided as content exist within the content of the PDS member
+     * @param pds The data set name 
+     * @param member the member within the dataset
+     * @param content lines of content to check
+     * @return a boolean true if the content exists in the pds member, false if something is missing or the member does not exist
+     * @throws ZosBatchException
+     * @throws TestBundleResourceException
+     * @throws IOException
+     */
+    private boolean checkContentWasWritten(String pds, String member, String... content) throws ZosBatchException, TestBundleResourceException, IOException {
+    	String fullName = pds+"("+member+")";
+    	HashMap<String, Object> parms = new HashMap<>();
+    	parms.put("MEMBER_NAME",fullName);
+    	IZosBatchJob job = batch.submitJob(resources.retrieveSkeletonFileAsString("/resources/jcl/list.jcl", parms),null);
+    	job.setShouldArchive(false);
+    	if(job.waitForJob() > 0)
+    		return false;
+    	IZosBatchJobOutputSpoolFile output = job.getSpoolFile("SYSUT2");
+    	for(String c : content) {
+    		if(!output.getRecords().contains(c))
+    			return false;
+    	}
+    	return true;
     }
 }
