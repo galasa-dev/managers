@@ -9,7 +9,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
-import dev.galasa.mq.internal.MqManagerField;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
@@ -17,7 +16,8 @@ import dev.galasa.mq.internal.MqManagerField;
 @ValidAnnotatedFields({ IMessageQueue.class })
 public @interface Queue {
 
-    String queueMgrTag();
+    String queueMgrTag() default "PRIMARY";
     String name();
+    String archive() default "true";
 
 }

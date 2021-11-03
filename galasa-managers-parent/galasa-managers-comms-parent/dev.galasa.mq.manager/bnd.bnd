@@ -4,12 +4,6 @@ Export-Package: !dev.galasa.mq.internal*;dev.galasa.mq*
 Import-Package: dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.language,\
-    javax.net.ssl,\
-    javax.validation.constraints;resolution:=optional,\
-    jakarta.xml.bind,\
-    jakarta.xml.bind.annotation,\
-    javax.xml.parsers,\
-    org.apache.commons.io;version="[2,3)",\
     org.apache.commons.logging
 
 

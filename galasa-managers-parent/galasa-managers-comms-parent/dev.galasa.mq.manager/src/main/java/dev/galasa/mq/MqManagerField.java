@@ -1,7 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
  */
-package dev.galasa.mq.internal;
+package dev.galasa.mq;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

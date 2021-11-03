@@ -16,6 +16,4 @@ public interface IMessageQueue {
 	public Message receiveMessage();
 	public Message receiveMessage(long timeout);
 	public Message receiveMessageNoWait();
-	
-	public void setArchiveMessages(boolean archive);
 }
