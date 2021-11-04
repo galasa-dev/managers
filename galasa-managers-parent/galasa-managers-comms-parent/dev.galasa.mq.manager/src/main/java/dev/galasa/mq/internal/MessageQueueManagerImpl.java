@@ -28,12 +28,13 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 	
 	private JMSContext context;
 	
-	public MessageQueueManagerImpl(String host, int port, String channel, String name, Log log) {
+	public MessageQueueManagerImpl(String host, int port, String channel, String name, ICredentialsUsernamePassword credentials, Log log) {
 		this.host = host;
 		this.port = port;
 		this.channel = channel;
 		this.name = name;
 		this.log = log;
+		this.credentials = credentials;
 	}
 	
 	/*

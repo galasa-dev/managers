@@ -17,6 +17,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
@@ -24,6 +26,8 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.mq.IMessageQueue;
@@ -38,6 +42,7 @@ public class MQManagerImpl extends AbstractManager {
 
     private static final Log  logger = LogFactory.getLog(MQManagerImpl.class);
     private Path storedArtifactsRoot;
+    private ICredentialsService credentialService;
     
     private HashMap<String,MessageQueueManagerImpl> queueManagers = new HashMap<>();
     private List<MessageQueueImpl> queues = new ArrayList<>();
@@ -57,10 +62,17 @@ public class MQManagerImpl extends AbstractManager {
     }
     
     @GenerateAnnotatedField(annotation = QueueManager.class)
-    public IMessageQueueManager generateMessageQueueManager(Field field, List<Annotation> annotations) {
+    public IMessageQueueManager generateMessageQueueManager(Field field, List<Annotation> annotations) throws MqManagerException{
     	QueueManager annotation = field.getAnnotation(QueueManager.class);
     	String tag = annotation.queueMgrTag();
-        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl("", 1, "", "",logger);
+    	
+    	ICredentials credentials;
+		try {
+			credentials = credentialService.getCredentials(tag);
+		} catch (CredentialsException e) {
+			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
+		}
+        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl("", 1, "", "",(ICredentialsUsernamePassword)credentials,logger);
         this.queueManagers.put(tag, qmgr);
         return qmgr;
     }
@@ -115,6 +127,11 @@ public class MQManagerImpl extends AbstractManager {
         }
         
         this.storedArtifactsRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+        try {
+			this.credentialService = getFramework().getCredentialsService();
+		} catch (CredentialsException e) {
+			throw new MqManagerException("Unable to access credentials service",e);
+		}
     }
 
     @Override
