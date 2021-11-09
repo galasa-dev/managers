@@ -50,4 +50,22 @@ public class MqManagerIVT {
     	assertThat(response).isEqualTo(testData);
     }
     
+    @Test
+    public void clearQueue() throws JMSException {
+    	TextMessage tm = queue.getNewTextMessage();
+    	tm.setText(testData);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	queue.sendMessage(tm);
+    	
+    	queue.clearQueue();
+    	Message m = queue.receiveMessageNoWait();
+    	assertThat(m).isNull();
+    }
+    
 }

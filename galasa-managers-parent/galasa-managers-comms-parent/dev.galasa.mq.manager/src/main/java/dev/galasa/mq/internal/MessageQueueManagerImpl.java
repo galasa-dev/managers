@@ -57,17 +57,17 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 			cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
 			cf.setStringProperty(WMQConstants.USERID, credentials.getUsername());
 			cf.setStringProperty(WMQConstants.PASSWORD, credentials.getPassword());
-			//cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, "*TLS12");
 			this.context = cf.createContext();
 		} catch (JMSException e) {
 			throw new MqManagerException("Error while constructing connection to queue manager");
 		}
+		log.info("Connection to queue manager: " + this.name + " complete");
 	}
 
 	@Override
 	public void close() {
 		log.info("Shutting down connection to queue manager: " + this.getName());
-		//this.context.close();
+		this.context.close();
 		
 	}
 	

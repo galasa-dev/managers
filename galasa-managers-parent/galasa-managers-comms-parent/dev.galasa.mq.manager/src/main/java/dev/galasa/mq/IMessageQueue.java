@@ -16,4 +16,10 @@ public interface IMessageQueue {
 	public Message receiveMessage();
 	public Message receiveMessage(long timeout);
 	public Message receiveMessageNoWait();
+	
+	/**
+	 * Clears the queue by consuming messages until queue is empty
+	 * messages consumed are not archived regardless of the '@queue' annotation
+	 */
+	public void clearQueue();
 }

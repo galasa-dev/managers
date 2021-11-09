@@ -54,6 +54,7 @@ public class MessageQueueImpl implements IMessageQueue {
 		destination = context.createQueue(QUEUE_PROTOCOL + this.queueName);
 		producer = context.createProducer();
 		consumer = context.createConsumer(destination);
+		logger.info("Connection to queue: " + this.queueName + " complete");
 	}
 
 	@Override
@@ -91,6 +92,11 @@ public class MessageQueueImpl implements IMessageQueue {
 		Message m = consumer.receiveNoWait();
 		logMessage(m, MessageDirection.INBOUND);
 		return m;
+	}
+	
+	@Override
+	public void clearQueue() {
+		while(consumer.receiveNoWait() != null) {}
 	}
 	
 	private void logMessage(Message m, MessageDirection direction) {
