@@ -19,6 +19,8 @@ import dev.galasa.mq.QueueManager;
 @Test
 public class MqManagerIVT {
 	
+	private static String testData = "Hello World";
+	
 	@QueueManager(queueMgrTag = "MAIN")
 	public IMessageQueueManager qmgr;
 	
@@ -35,15 +37,17 @@ public class MqManagerIVT {
     }
     
     @Test
-    public void testPutGetMessage() throws JMSException {
-    	String inputData = "Hello World";
+    public void testPutMessage() throws JMSException {
     	TextMessage tm = queue.getNewTextMessage();
-    	tm.setText(inputData);
+    	tm.setText(testData);
     	queue.sendMessage(tm);
-    	
+    }
+    
+    @Test
+    public void testGetMessage() throws JMSException {
     	Message m = queue.receiveMessage();
     	String response = m.getBody(String.class);
-    	assertThat(response).isEqualTo(inputData);
+    	assertThat(response).isEqualTo(testData);
     }
     
 }

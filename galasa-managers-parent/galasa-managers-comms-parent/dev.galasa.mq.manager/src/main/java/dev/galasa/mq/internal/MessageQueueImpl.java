@@ -33,6 +33,7 @@ public class MessageQueueImpl implements IMessageQueue {
 	private int numberOfMessagesLoggedInThisMethod = 0;
 	
 	private static String QUEUE_PROTOCOL = "queue:///";
+	private static String RAS_TOP_LEVEL = "messages";
 	
 	//Generated Fields
 	private Destination destination;
@@ -95,9 +96,10 @@ public class MessageQueueImpl implements IMessageQueue {
 	private void logMessage(Message m, MessageDirection direction) {
 		if(m == null || !archive)
 			return;
-		Path folder = storedArtifactsRoot.resolve(currentMethodName)
+		Path folder = storedArtifactsRoot.resolve(RAS_TOP_LEVEL)
+									     .resolve(currentMethodName)
 										 .resolve(direction.toString())
-										 .resolve(Integer.toString(numberOfMessagesLoggedInThisMethod));
+										 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
 		try {
 			Files.write(folder, m.getBody(String.class).getBytes(), StandardOpenOption.CREATE);
 		} catch (Exception e) {
