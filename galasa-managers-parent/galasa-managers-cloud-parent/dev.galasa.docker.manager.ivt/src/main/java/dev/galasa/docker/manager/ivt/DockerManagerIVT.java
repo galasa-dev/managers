@@ -34,7 +34,7 @@ import dev.galasa.http.HttpClientException;
 import dev.galasa.http.IHttpClient;
 
 /**
- * IVT for the Docker Manager
+ * IVT for the Docker Manager -boo
  * 
  * This IVT will use the standard Apache httpd Docker Image to ensure the basic
  * functionality of the Docker Manager is working correctly.<br>
