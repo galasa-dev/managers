@@ -62,6 +62,8 @@ public class MQManagerImpl extends AbstractManager {
     	if(!queueManagers.containsKey(qmgrTag)) {
     		throw new MqManagerException("Unable to provision queue: " + annotation.name() + " no QMGR found tagged: " + qmgrTag);
     	}
+    	
+    	//construct the queue and add it to our list
         MessageQueueImpl queue = new MessageQueueImpl(annotation.name(),queueManagers.get(qmgrTag), Boolean.parseBoolean(annotation.archive()), storedArtifactsRoot, logger);
         this.queues.add(queue);
         return queue;
@@ -69,19 +71,25 @@ public class MQManagerImpl extends AbstractManager {
     
     @GenerateAnnotatedField(annotation = QueueManager.class)
     public IMessageQueueManager generateMessageQueueManager(Field field, List<Annotation> annotations) throws MqManagerException{
+    	//obtain the tag for this queue manager
     	QueueManager annotation = field.getAnnotation(QueueManager.class);
     	String tag = annotation.queueMgrTag();
     	
+    	//pull the access credentials
     	ICredentials credentials;
 		try {
 			credentials = credentialService.getCredentials(tag);
 		} catch (CredentialsException e) {
 			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
 		}
+		
+		//obtain the configuration for this queue manager
 		String host = HostForTag.get(tag);
 		int port = PortForTag.get(tag);
 		String channel = ChannelForTag.get(tag);
 		String name = NameForTag.get(tag);
+		
+		//construct the queue manager and add it to the list
         MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(host, port, channel, name,(ICredentialsUsernamePassword)credentials,logger);
         this.queueManagers.put(tag, qmgr);
         return qmgr;
@@ -164,6 +172,13 @@ public class MQManagerImpl extends AbstractManager {
     
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
+    	/*
+    	 * This method of starting the qmgrs and then the queues is not the most effective
+    	 * If we had a test with lots of qmgrs and queues then it would be better to 
+    	 * start the qmgrs async and on completion start the required queues, however this 
+    	 * is unlikely to be a real issue
+    	 */
+    	//start the queue managers first 
     	for(Entry<String, MessageQueueManagerImpl> entry : this.queueManagers.entrySet()) {
     		MessageQueueManagerImpl qmgr = entry.getValue();
     		try {
@@ -173,6 +188,8 @@ public class MQManagerImpl extends AbstractManager {
     			throw mqme;
     		}	
     	}
+    	
+    	//Now that the queue managers are active start the queues
     	for(MessageQueueImpl queue : this.queues) {
     		queue.startup();
     	}

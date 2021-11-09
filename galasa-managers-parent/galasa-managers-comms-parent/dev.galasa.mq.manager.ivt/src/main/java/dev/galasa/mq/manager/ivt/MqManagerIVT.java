@@ -11,10 +11,12 @@ import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 
+import dev.galasa.Before;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.mq.IMessageQueue;
 import dev.galasa.mq.IMessageQueueManager;
+import dev.galasa.mq.MqManagerException;
 import dev.galasa.mq.Queue;
 import dev.galasa.mq.QueueManager;
 
@@ -29,34 +31,42 @@ public class MqManagerIVT {
 	
 	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE", queueMgrTag = "MAIN")
 	public IMessageQueue queue;
+	
+	@Queue(archive = "false", name = "GALASA.INPUT.QUEUE2", queueMgrTag = "MAIN")
+	public IMessageQueue queue2;
 
     @Logger
     public Log logger;
 
 
+    @Before
+    public void clearQueues() {
+    	queue.clearQueue();
+    	queue2.clearQueue();
+    }
+    
     @Test
     public void checkNotNull(){
         assertThat(logger).isNotNull();
     }
     
     @Test
-    public void testPutMessage() throws JMSException {
-    	TextMessage tm = queue.getNewTextMessage();
-    	tm.setText(testData);
+    public void testPutMessage() throws MqManagerException {
+    	TextMessage tm = queue.createTextMessage(testData);
     	queue.sendMessage(tm);
     }
     
     @Test
-    public void testGetMessage() throws JMSException {
-    	Message m = queue.receiveMessage();
+    public void testGetMessage() throws MqManagerException, JMSException {
+    	testPutMessage();
+    	Message m = queue.getMessage();
     	String response = m.getBody(String.class);
     	assertThat(response).isEqualTo(testData);
     }
     
     @Test
-    public void clearQueue() throws JMSException {
-    	TextMessage tm = queue.getNewTextMessage();
-    	tm.setText(testData);
+    public void clearQueue() throws MqManagerException {
+    	TextMessage tm = queue.createTextMessage(testData);
     	queue.sendMessage(tm);
     	queue.sendMessage(tm);
     	queue.sendMessage(tm);
@@ -67,8 +77,15 @@ public class MqManagerIVT {
     	queue.sendMessage(tm);
     	
     	queue.clearQueue();
-    	Message m = queue.receiveMessageNoWait();
+    	Message m = queue.getMessageNoWait();
     	assertThat(m).isNull();
     }
     
+    @Test
+    public void checkQueuesAreSeparate() throws MqManagerException {
+    	TextMessage m = queue.createTextMessage("This message is on queue1");
+    	queue.sendMessage(m);
+    	
+    	assertThat(queue2.getMessageNoWait()).isNull();
+    }   
 }

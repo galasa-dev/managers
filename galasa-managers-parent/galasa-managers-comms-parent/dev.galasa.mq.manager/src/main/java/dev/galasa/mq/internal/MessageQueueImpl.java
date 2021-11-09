@@ -57,6 +57,7 @@ public class MessageQueueImpl implements IMessageQueue {
 	public void startup() {
 		if(started) {
 			logger.info("Connection to queue: " + this.queueName + " already started");
+			return;
 		}
 		this.context = qmgr.getContext();
 		destination = context.createQueue(QUEUE_PROTOCOL + this.queueName);
