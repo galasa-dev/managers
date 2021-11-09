@@ -55,10 +55,8 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 			cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, name);
 			cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsPutGet (JMS)");
 			cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-//			cf.setStringProperty(WMQConstants.USERID, credentials.getUsername());
-//			cf.setStringProperty(WMQConstants.PASSWORD, credentials.getPassword());
-			cf.setStringProperty(WMQConstants.USERID, "hobbit");
-			cf.setStringProperty(WMQConstants.PASSWORD, "un1cycle");
+			cf.setStringProperty(WMQConstants.USERID, credentials.getUsername());
+			cf.setStringProperty(WMQConstants.PASSWORD, credentials.getPassword());
 			//cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, "*TLS12");
 			this.context = cf.createContext();
 		} catch (JMSException e) {
