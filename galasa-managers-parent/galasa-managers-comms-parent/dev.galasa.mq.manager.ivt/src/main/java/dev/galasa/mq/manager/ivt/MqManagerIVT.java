@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.mq.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
