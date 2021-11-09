@@ -72,7 +72,7 @@ public class MQManagerImpl extends AbstractManager {
 		} catch (CredentialsException e) {
 			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
 		}
-        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl("", 1, "", "",(ICredentialsUsernamePassword)credentials,logger);
+        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl("127.0.0.1", 1414, "DEV.APP.SVRCONN", "QM1",(ICredentialsUsernamePassword)credentials,logger);
         this.queueManagers.put(tag, qmgr);
         return qmgr;
     }
@@ -159,6 +159,10 @@ public class MQManagerImpl extends AbstractManager {
     			throw mqme;
     		}	
     	}
+    	for(MessageQueueImpl queue : this.queues) {
+    		queue.startup();
+    	}
+    	
     }
     
     @Override
@@ -173,7 +177,7 @@ public class MQManagerImpl extends AbstractManager {
     public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
     	super.startOfTestMethod(galasaMethod);
     	for(MessageQueueImpl queue : queues) {
-    		queue.startOfNewMethod(galasaMethod.getJavaTestMethod().getName());
+    		queue.startOfNewMethod(galasaMethod.getJavaExecutionMethod().getName());
     	}
     }
 

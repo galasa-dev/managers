@@ -10,6 +10,7 @@ pluginManagement {
     }
 }
 
+
 rootProject.name = 'galasa-managers-parent'
 
 // galasa-managers-core-parent
@@ -23,6 +24,7 @@ include 'galasa-managers-comms-parent:dev.galasa.ipnetwork.manager'
 include 'galasa-managers-comms-parent:dev.galasa.http.manager'
 include 'galasa-managers-comms-parent:dev.galasa.http.manager.ivt'
 include 'galasa-managers-comms-parent:dev.galasa.mq.manager'
+include 'galasa-managers-comms-parent:dev.galasa.mq.manager.ivt'
 // galasa-managers-logging-parent
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager'
 include 'galasa-managers-logging-parent:dev.galasa.elasticlog.manager.ivt'
