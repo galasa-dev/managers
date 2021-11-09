@@ -8,6 +8,7 @@ Export-Package: !dev.galasa.mq.internal*,\
 Import-Package: !javax.validation.constraints,\
         dev.galasa,\
         dev.galasa.framework.spi,\
+        dev.galasa.framework.spi.cps,\
         dev.galasa.framework.spi.creds,\
         dev.galasa.framework.spi.language,\
         org.apache.commons.logging.*,\

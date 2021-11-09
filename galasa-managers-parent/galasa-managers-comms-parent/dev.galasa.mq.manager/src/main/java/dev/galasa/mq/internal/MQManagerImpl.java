@@ -22,6 +22,7 @@ import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
@@ -36,6 +37,11 @@ import dev.galasa.mq.MqManagerException;
 import dev.galasa.mq.MqManagerField;
 import dev.galasa.mq.Queue;
 import dev.galasa.mq.QueueManager;
+import dev.galasa.mq.internal.properties.ChannelForTag;
+import dev.galasa.mq.internal.properties.HostForTag;
+import dev.galasa.mq.internal.properties.MqPropertiesSingleton;
+import dev.galasa.mq.internal.properties.NameForTag;
+import dev.galasa.mq.internal.properties.PortForTag;
 
 @Component(service = { IManager.class })
 public class MQManagerImpl extends AbstractManager {
@@ -72,7 +78,11 @@ public class MQManagerImpl extends AbstractManager {
 		} catch (CredentialsException e) {
 			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
 		}
-        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl("127.0.0.1", 1414, "DEV.APP.SVRCONN", "QM1",(ICredentialsUsernamePassword)credentials,logger);
+		String host = HostForTag.get(tag);
+		int port = PortForTag.get(tag);
+		String channel = ChannelForTag.get(tag);
+		String name = NameForTag.get(tag);
+        MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(host, port, channel, name,(ICredentialsUsernamePassword)credentials,logger);
         this.queueManagers.put(tag, qmgr);
         return qmgr;
     }
@@ -118,7 +128,11 @@ public class MQManagerImpl extends AbstractManager {
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-
+        try {
+			MqPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService("mq"));
+		} catch (ConfigurationPropertyStoreException e1) {
+			throw new MqManagerException("Unable to access framework services", e1); 	
+		}
         if(galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(MqManagerField.class);
             if (!ourFields.isEmpty()) {

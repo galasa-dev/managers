@@ -7,16 +7,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
+import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 
 import dev.galasa.mq.IMessageQueue;
+import dev.galasa.mq.MqManagerException;
 
 public class MessageQueueImpl implements IMessageQueue {
 	
@@ -40,6 +44,8 @@ public class MessageQueueImpl implements IMessageQueue {
 	private JMSConsumer consumer;
 	private JMSProducer producer;
 	
+	private boolean started = false;
+	
 	public MessageQueueImpl(String name, MessageQueueManagerImpl qmgr, boolean archive, Path storedArtifactRoot, Log log) {
 		this.queueName = name;
 		this.qmgr = qmgr;
@@ -49,22 +55,38 @@ public class MessageQueueImpl implements IMessageQueue {
 	}
 	
 	public void startup() {
-		logger.info("Starting a connection to queue: " + this.queueName + " on queue manager: " + qmgr.getName());
+		if(started) {
+			logger.info("Connection to queue: " + this.queueName + " already started");
+		}
 		this.context = qmgr.getContext();
 		destination = context.createQueue(QUEUE_PROTOCOL + this.queueName);
 		producer = context.createProducer();
 		consumer = context.createConsumer(destination);
+		this.started = true;
 		logger.info("Connection to queue: " + this.queueName + " complete");
 	}
 
 	@Override
-	public TextMessage getNewTextMessage() {
-		return context.createTextMessage();
+	public TextMessage createTextMessage(String messageContent) throws MqManagerException {
+		TextMessage message = context.createTextMessage();
+		try {
+			message.setText(messageContent);
+		}catch(JMSException e) {
+			throw new MqManagerException("Unable to create a new Text Message for queue: " + this.queueName, e);
+		}
+		
+		return message;
 	}
-
+	
 	@Override
-	public Message getNewMessage() {
-		return context.createMessage();
+	public BytesMessage createBytesMessage(byte[] input) throws MqManagerException {
+		BytesMessage message = context.createBytesMessage();
+		try {
+			message.writeBytes(input);
+		} catch (JMSException e) {
+			throw new MqManagerException("Unable to create a new Bytes Message for queue: " + this.queueName, e);
+		}
+		return message;
 	}
 
 	@Override
@@ -74,21 +96,21 @@ public class MessageQueueImpl implements IMessageQueue {
 	}
 
 	@Override
-	public Message receiveMessage() {
+	public Message getMessage() {
 		Message m = consumer.receive();
 		logMessage(m, MessageDirection.INBOUND);
 		return m;
 	}
 
 	@Override
-	public Message receiveMessage(long timeout) {
+	public Message getMessage(long timeout) {
 		Message m = consumer.receive(timeout);
 		logMessage(m, MessageDirection.INBOUND);
 		return m;
 	}
 
 	@Override
-	public Message receiveMessageNoWait() {
+	public Message getMessageNoWait() {
 		Message m = consumer.receiveNoWait();
 		logMessage(m, MessageDirection.INBOUND);
 		return m;
@@ -118,5 +140,4 @@ public class MessageQueueImpl implements IMessageQueue {
 		this.currentMethodName = methodName;
 		this.numberOfMessagesLoggedInThisMethod = 0;
 	}
-
 }
