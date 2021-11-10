@@ -43,7 +43,7 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 	
 	/*
 	 * Readies this queue manager for operation
-	 * constructs and 
+	 * by constructing the JMSContext
 	 */
 	public void startup() throws MqManagerException{
 		log.info("Starting connection to queue manager: " + this.name);

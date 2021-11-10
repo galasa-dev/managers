@@ -12,6 +12,7 @@ import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,9 +27,6 @@ public class MessageQueueImpl implements IMessageQueue {
 	private boolean archive;
 	private MQManagerImpl manager;
 	
-	//Fields received from MessageQueueManagerImpl
-	private JMSContext context;
-	
 	private static String QUEUE_PROTOCOL = "queue:///";
 	private static String RAS_TOP_LEVEL = "messages";
 	
@@ -37,6 +35,7 @@ public class MessageQueueImpl implements IMessageQueue {
 	private JMSConsumer consumer;
 	private JMSProducer producer;
 	
+	//Internal State
 	private boolean started = false;
 	private String currentMethod = new String();
 	private int numberOfMessagesLoggedInThisMethod = 1;
@@ -50,12 +49,16 @@ public class MessageQueueImpl implements IMessageQueue {
 		this.manager = manager;
 	}
 	
+	/**
+	 * Starts the connection to the queue by obtaining the context from the qmgr
+	 * If we have already been started then just exit
+	 */
 	public void startup() {
 		if(started) {
 			logger.info("Connection to queue: " + this.queueName + " already started");
 			return;
 		}
-		this.context = qmgr.getContext();
+		JMSContext context = qmgr.getContext();
 		destination = context.createQueue(QUEUE_PROTOCOL + this.queueName);
 		producer = context.createProducer();
 		consumer = context.createConsumer(destination);
@@ -95,6 +98,22 @@ public class MessageQueueImpl implements IMessageQueue {
 		while(consumer.receiveNoWait() != null) {}
 	}
 	
+	/**
+	 * If archival has been set in the annotation for this queue then 
+	 * we archive this message in the RAS in the structure:
+	 * 
+	 * messages
+	 * |
+	 * ---<method name>
+	 *      |
+	 *      ---<queue name>
+	 *           |
+	 *           ---<inbound/outbound>
+	 *               |
+	 *               ---message: <id>
+	 * @param m the message we are archiving
+	 * @param direction the direction in which this message is travelling from the perspecitive of the test
+	 */
 	private void archiveMessage(Message m, MessageDirection direction) {
 		if(m == null || !archive)
 			return;
@@ -112,6 +131,12 @@ public class MessageQueueImpl implements IMessageQueue {
 		this.numberOfMessagesLoggedInThisMethod++;
 	}
 	
+	/**
+	 * Internal check that the current method is the same as the 
+	 * method that we last checked  This allows us to create an index of the 
+	 * messages we have archived
+	 * @return
+	 */
 	private String getCurrentMethod() {
 		String managerCurrentMethod = this.manager.getCurrentMethod();
 		if(this.currentMethod.equals(managerCurrentMethod)) {
@@ -121,5 +146,11 @@ public class MessageQueueImpl implements IMessageQueue {
 			this.numberOfMessagesLoggedInThisMethod = 1;
 		}
 		return this.currentMethod;
+	}
+
+	@Override
+	public void sendBytes(byte[] messageBytes) {
+		// TODO Auto-generated method stub
+		
 	}
 }
