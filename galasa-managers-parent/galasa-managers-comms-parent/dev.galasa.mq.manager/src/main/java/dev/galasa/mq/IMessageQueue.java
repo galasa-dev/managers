@@ -3,24 +3,9 @@
  */
 package dev.galasa.mq;
 
-import javax.jms.BytesMessage;
 import javax.jms.Message;
-import javax.jms.TextMessage;
 
 public interface IMessageQueue {
-	
-	/**
-	 * creates a new JMS Message of type TEXT
-	 * @return the message
-	 * @throws MqManagerException 
-	 */
-	public TextMessage createTextMessage(String content) throws MqManagerException;
-	
-	/**
-	 * creates a new JMS Message
-	 * @return the message
-	 */
-	public BytesMessage createBytesMessage(byte [] input) throws MqManagerException;
 	
 	/**
 	 * puts the provided message onto the queue

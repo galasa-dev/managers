@@ -54,7 +54,7 @@ public class MqManagerIVT {
     @Test
     public void testPutMessage() throws MqManagerException {
     	//should the queue be where the create method come from
-    	TextMessage tm = queue.createTextMessage(testData);
+    	TextMessage tm = qmgr.createTextMessage(testData);
     	queue.sendMessage(tm);
     }
     
@@ -68,7 +68,7 @@ public class MqManagerIVT {
     
     @Test
     public void clearQueue() throws MqManagerException {
-    	TextMessage tm = queue.createTextMessage(testData);
+    	TextMessage tm = qmgr.createTextMessage(testData);
     	queue.sendMessage(tm);
     	queue.sendMessage(tm);
     	queue.sendMessage(tm);
@@ -85,7 +85,7 @@ public class MqManagerIVT {
     
     @Test
     public void checkQueuesAreSeparate() throws MqManagerException {
-    	TextMessage m = queue.createTextMessage("This message is on queue1");
+    	TextMessage m = qmgr.createTextMessage("This message is on queue1");
     	queue.sendMessage(m);
     	
     	assertThat(queue2.getMessageNoWait()).isNull();

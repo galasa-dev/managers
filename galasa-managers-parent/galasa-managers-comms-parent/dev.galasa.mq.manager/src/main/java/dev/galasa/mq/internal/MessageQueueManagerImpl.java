@@ -3,8 +3,10 @@
  */
 package dev.galasa.mq.internal;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,6 +76,29 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 		log.info("Shutting down connection to queue manager: " + this.getName());
 		this.context.close();
 		
+	}
+	
+	@Override
+	public TextMessage createTextMessage(String messageContent) throws MqManagerException {
+		TextMessage message = context.createTextMessage();
+		try {
+			message.setText(messageContent);
+		}catch(JMSException e) {
+			throw new MqManagerException("Unable to create a new Text Message for queue manager: " + this.name, e);
+		}
+		
+		return message;
+	}
+	
+	@Override
+	public BytesMessage createBytesMessage(byte[] input) throws MqManagerException {
+		BytesMessage message = context.createBytesMessage();
+		try {
+			message.writeBytes(input);
+		} catch (JMSException e) {
+			throw new MqManagerException("Unable to create a new Bytes Message for queue manager: " + this.name, e);
+		}
+		return message;
 	}
 	
 	protected JMSContext getContext() {
