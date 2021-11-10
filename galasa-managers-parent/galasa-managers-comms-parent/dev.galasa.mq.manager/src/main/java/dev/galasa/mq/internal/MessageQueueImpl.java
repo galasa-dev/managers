@@ -12,7 +12,6 @@ import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
-import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -146,11 +145,5 @@ public class MessageQueueImpl implements IMessageQueue {
 			this.numberOfMessagesLoggedInThisMethod = 1;
 		}
 		return this.currentMethod;
-	}
-
-	@Override
-	public void sendBytes(byte[] messageBytes) {
-		// TODO Auto-generated method stub
-		
 	}
 }
