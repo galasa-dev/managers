@@ -26,13 +26,13 @@ public class MqManagerIVT {
 	
 	private static String testData = "Hello World";
 	
-	@QueueManager(queueMgrTag = "MAIN")
+	@QueueManager()
 	public IMessageQueueManager qmgr;
 	
-	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE", queueMgrTag = "MAIN")
+	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE")
 	public IMessageQueue queue;
 	
-	@Queue(archive = "false", name = "GALASA.INPUT.QUEUE2", queueMgrTag = "MAIN")
+	@Queue(archive = "false", name = "GALASA.INPUT.QUEUE2")
 	public IMessageQueue queue2;
 
     @Logger
