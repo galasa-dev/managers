@@ -28,7 +28,6 @@ public class MessageQueueImpl implements IMessageQueue {
 	
 	//Fields received from MessageQueueManagerImpl
 	private JMSContext context;
-	private int numberOfMessagesLoggedInThisMethod = 0;
 	
 	private static String QUEUE_PROTOCOL = "queue:///";
 	private static String RAS_TOP_LEVEL = "messages";
@@ -39,6 +38,8 @@ public class MessageQueueImpl implements IMessageQueue {
 	private JMSProducer producer;
 	
 	private boolean started = false;
+	private String currentMethod = new String();
+	private int numberOfMessagesLoggedInThisMethod = 1;
 	
 	private static final Log  logger = LogFactory.getLog(MessageQueueImpl.class);
 	
@@ -99,7 +100,7 @@ public class MessageQueueImpl implements IMessageQueue {
 			return;
 		Path folder = manager.getStoredArtifactRoot()
 							 .resolve(RAS_TOP_LEVEL)
-							 .resolve(manager.getCurrentMethod())
+							 .resolve(getCurrentMethod())
 							 .resolve(this.queueName)
 							 .resolve(direction.toString().toLowerCase())
 							 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
@@ -109,5 +110,16 @@ public class MessageQueueImpl implements IMessageQueue {
 			logger.info("Unable to log message for a queue", e);
 		} 
 		this.numberOfMessagesLoggedInThisMethod++;
+	}
+	
+	private String getCurrentMethod() {
+		String managerCurrentMethod = this.manager.getCurrentMethod();
+		if(this.currentMethod.equals(managerCurrentMethod)) {
+			return currentMethod;
+		}else {
+			this.currentMethod = managerCurrentMethod;
+			this.numberOfMessagesLoggedInThisMethod = 1;
+		}
+		return this.currentMethod;
 	}
 }
