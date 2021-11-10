@@ -37,16 +37,18 @@ import dev.galasa.mq.MqManagerException;
 import dev.galasa.mq.MqManagerField;
 import dev.galasa.mq.Queue;
 import dev.galasa.mq.QueueManager;
-import dev.galasa.mq.internal.properties.ChannelForTag;
-import dev.galasa.mq.internal.properties.HostForTag;
+import dev.galasa.mq.internal.properties.InstanceChannelName;
+import dev.galasa.mq.internal.properties.InstanceForTag;
+import dev.galasa.mq.internal.properties.InstanceHost;
 import dev.galasa.mq.internal.properties.MqPropertiesSingleton;
-import dev.galasa.mq.internal.properties.NameForTag;
-import dev.galasa.mq.internal.properties.PortForTag;
+import dev.galasa.mq.internal.properties.InstanceName;
+import dev.galasa.mq.internal.properties.InstancePort;
 
 @Component(service = { IManager.class })
 public class MQManagerImpl extends AbstractManager {
 
     private static final Log  logger = LogFactory.getLog(MQManagerImpl.class);
+    private static final String NAMESPACE   = "mq";
     private Path storedArtifactsRoot;
     private ICredentialsService credentialService;
     
@@ -74,20 +76,31 @@ public class MQManagerImpl extends AbstractManager {
     	//obtain the tag for this queue manager
     	QueueManager annotation = field.getAnnotation(QueueManager.class);
     	String tag = annotation.queueMgrTag();
-    	
-    	//pull the access credentials
+		
+		//obtain the configuration for this queue manager
+		//obtain the instanceid for the tag
+		logger.info("Obtaining instance ID for tag: " + tag);
+		String instanceid = InstanceForTag.get(tag);
+		
+		logger.info("Obtaining configuration information for instance: " + instanceid);
+		String host = InstanceHost.get(instanceid);
+		int port = InstancePort.get(instanceid);
+		String channel = InstanceChannelName.get(instanceid);
+		String name = InstanceName.get(instanceid);
+		
+		//pull the access credentials
     	ICredentials credentials;
+    	String credentialsKey = NAMESPACE+"."+instanceid;
+    	logger.info("Obtaining credentials for namespace: " + credentialsKey);
 		try {
-			credentials = credentialService.getCredentials(tag);
+			credentials = credentialService.getCredentials(credentialsKey);
 		} catch (CredentialsException e) {
 			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
 		}
 		
-		//obtain the configuration for this queue manager
-		String host = HostForTag.get(tag);
-		int port = PortForTag.get(tag);
-		String channel = ChannelForTag.get(tag);
-		String name = NameForTag.get(tag);
+		if(credentials == null) {
+			throw new MqManagerException("Unable to obtain credentials for namespace: " + credentialsKey);
+		}
 		
 		//construct the queue manager and add it to the list
         MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(host, port, channel, name,(ICredentialsUsernamePassword)credentials,logger);
@@ -137,7 +150,7 @@ public class MQManagerImpl extends AbstractManager {
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
         try {
-			MqPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService("mq"));
+			MqPropertiesSingleton.setCps(getFramework().getConfigurationPropertyService(NAMESPACE));
 		} catch (ConfigurationPropertyStoreException e1) {
 			throw new MqManagerException("Unable to access framework services", e1); 	
 		}

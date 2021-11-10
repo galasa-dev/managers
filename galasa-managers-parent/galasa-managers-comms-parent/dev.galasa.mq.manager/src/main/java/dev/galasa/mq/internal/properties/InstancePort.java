@@ -27,7 +27,7 @@ import dev.galasa.mq.MqManagerException;
  * <code>mq.server.[tag].port=1414</code><br>
  *
  */
-public class PortForTag extends CpsProperties {
+public class InstancePort extends CpsProperties {
     
     public static int get(@NotNull String tag) throws MqManagerException {
     	return getIntWithDefault(MqPropertiesSingleton.cps(), 1414, "server", "port", tag);

@@ -28,7 +28,7 @@ import dev.galasa.mq.MqManagerException;
  * <code>mq.server.[tag].channel=DEV.APP.SVRCONN</code><br>
  *
  */
-public class ChannelForTag extends CpsProperties {
+public class InstanceChannelName extends CpsProperties {
     
     public static String get(@NotNull String tag) throws MqManagerException {
         try {

@@ -14,7 +14,6 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
-import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;

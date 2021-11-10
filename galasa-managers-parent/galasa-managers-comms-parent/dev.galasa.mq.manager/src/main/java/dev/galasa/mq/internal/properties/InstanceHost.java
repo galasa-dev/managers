@@ -28,7 +28,7 @@ import dev.galasa.mq.MqManagerException;
  * <code>mq.server.[tag].host=127.0.0.1</code><br>
  *
  */
-public class HostForTag extends CpsProperties {
+public class InstanceHost extends CpsProperties {
     
     public static String get(@NotNull String tag) throws MqManagerException {
         try {

@@ -10,13 +10,13 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.mq.MqManagerException;
 
 /**
- * The Name of the Queue Manager
+ * The Host for the queueManager
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[tag].name
+ * @galasa.name mq.server.[tag].host
  * 
- * @galasa.description The queue manager name for the specified tag
+ * @galasa.description The channel for the specified tag
  * 
  * @galasa.required Yes
  * 
@@ -25,16 +25,16 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[tag].name=QM1</code><br>
+ * <code>mq.server.[tag].host=127.0.0.1</code><br>
  *
  */
-public class NameForTag extends CpsProperties {
+public class InstanceForTag extends CpsProperties {
     
     public static String get(@NotNull String tag) throws MqManagerException {
         try {
-            return getStringNulled(MqPropertiesSingleton.cps(), "server", "name", tag);
+            return getStringNulled(MqPropertiesSingleton.cps(), "tag", "instanceid", tag);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new MqManagerException("Problem asking the CPS for the queue manager name for tag '"  + tag + "'", e);
+            throw new MqManagerException("Problem asking the CPS for the instance id for tag '"  + tag + "'", e);
         }
     }
 
