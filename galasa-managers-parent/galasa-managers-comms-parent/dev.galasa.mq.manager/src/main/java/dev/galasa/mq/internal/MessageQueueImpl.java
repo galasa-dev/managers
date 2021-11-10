@@ -126,7 +126,8 @@ public class MessageQueueImpl implements IMessageQueue {
 			return;
 		Path folder = storedArtifactsRoot.resolve(RAS_TOP_LEVEL)
 									     .resolve(currentMethodName)
-										 .resolve(direction.toString())
+									     .resolve(this.queueName)
+										 .resolve(direction.toString().toLowerCase())
 										 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
 		try {
 			Files.write(folder, m.getBody(String.class).getBytes(), StandardOpenOption.CREATE);
