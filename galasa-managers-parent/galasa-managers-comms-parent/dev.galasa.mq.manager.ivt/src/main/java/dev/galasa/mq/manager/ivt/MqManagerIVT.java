@@ -29,6 +29,7 @@ public class MqManagerIVT {
 	@QueueManager()
 	public IMessageQueueManager qmgr;
 	
+	//Add Code to specify name in CPS if not in annotation
 	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE")
 	public IMessageQueue queue;
 	
@@ -52,6 +53,7 @@ public class MqManagerIVT {
     
     @Test
     public void testPutMessage() throws MqManagerException {
+    	//should the queue be where the create method come from
     	TextMessage tm = queue.createTextMessage(testData);
     	queue.sendMessage(tm);
     }

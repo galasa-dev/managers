@@ -7,6 +7,7 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
@@ -18,23 +19,24 @@ import dev.galasa.mq.MqManagerException;
 
 public class MessageQueueManagerImpl implements IMessageQueueManager {
 	
+	private static final Log  log = LogFactory.getLog(MessageQueueManagerImpl.class);
+	
+	private String tag;
+	private String name;
 	private String host;
 	private int port;
 	private String channel;
-	private String name;
-	private Log log;
-	
-	private ICredentialsUsernamePassword credentials;
+	private MQManagerImpl manager;
 	
 	private JMSContext context;
 	
-	public MessageQueueManagerImpl(String host, int port, String channel, String name, ICredentialsUsernamePassword credentials, Log log) {
+	public MessageQueueManagerImpl(String tag, String name, String host, int port, String channel, MQManagerImpl manager) {
+		this.tag = tag;
+		this.name = name;
 		this.host = host;
 		this.port = port;
-		this.channel = channel;
-		this.name = name;
-		this.log = log;
-		this.credentials = credentials;
+		this.channel = channel;		
+		this.manager = manager;
 	}
 	
 	/*
@@ -43,6 +45,9 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 	 */
 	public void startup() throws MqManagerException{
 		log.info("Starting connection to queue manager: " + this.name);
+		
+		ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword)manager.getCredentials(this.tag);
+		
 		try {
 			JmsFactoryFactory ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
 			JmsConnectionFactory cf = ff.createConnectionFactory();
@@ -55,8 +60,8 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 			cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, name);
 			cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsPutGet (JMS)");
 			cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-			cf.setStringProperty(WMQConstants.USERID, credentials.getUsername());
-			cf.setStringProperty(WMQConstants.PASSWORD, credentials.getPassword());
+			cf.setStringProperty(WMQConstants.USERID, creds.getUsername());
+			cf.setStringProperty(WMQConstants.PASSWORD, creds.getPassword());
 			this.context = cf.createContext();
 		} catch (JMSException e) {
 			throw new MqManagerException("Error while constructing connection to queue manager");

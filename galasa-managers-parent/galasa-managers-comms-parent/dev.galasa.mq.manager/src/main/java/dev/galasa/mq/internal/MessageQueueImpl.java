@@ -17,6 +17,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.mq.IMessageQueue;
 import dev.galasa.mq.MqManagerException;
@@ -27,12 +28,10 @@ public class MessageQueueImpl implements IMessageQueue {
 	private String queueName;
 	private MessageQueueManagerImpl qmgr;
 	private boolean archive;
-	private Path storedArtifactsRoot;
-	private Log logger;
+	private MQManagerImpl manager;
 	
 	//Fields received from MessageQueueManagerImpl
 	private JMSContext context;
-	private String currentMethodName;
 	private int numberOfMessagesLoggedInThisMethod = 0;
 	
 	private static String QUEUE_PROTOCOL = "queue:///";
@@ -45,12 +44,13 @@ public class MessageQueueImpl implements IMessageQueue {
 	
 	private boolean started = false;
 	
-	public MessageQueueImpl(String name, MessageQueueManagerImpl qmgr, boolean archive, Path storedArtifactRoot, Log log) {
+	private static final Log  logger = LogFactory.getLog(MessageQueueImpl.class);
+	
+	public MessageQueueImpl(String name, MessageQueueManagerImpl qmgr, boolean archive, MQManagerImpl manager) {
 		this.queueName = name;
 		this.qmgr = qmgr;
 		this.archive = archive;
-		this.storedArtifactsRoot = storedArtifactRoot;
-		this.logger = log;
+		this.manager = manager;
 	}
 	
 	public void startup() {
@@ -91,28 +91,28 @@ public class MessageQueueImpl implements IMessageQueue {
 
 	@Override
 	public void sendMessage(Message message) {
-		logMessage(message,MessageDirection.OUTBOUND);
+		archiveMessage(message,MessageDirection.OUTBOUND);
 		producer.send(destination, message);
 	}
 
 	@Override
 	public Message getMessage() {
 		Message m = consumer.receive();
-		logMessage(m, MessageDirection.INBOUND);
+		archiveMessage(m, MessageDirection.INBOUND);
 		return m;
 	}
 
 	@Override
 	public Message getMessage(long timeout) {
 		Message m = consumer.receive(timeout);
-		logMessage(m, MessageDirection.INBOUND);
+		archiveMessage(m, MessageDirection.INBOUND);
 		return m;
 	}
 
 	@Override
 	public Message getMessageNoWait() {
 		Message m = consumer.receiveNoWait();
-		logMessage(m, MessageDirection.INBOUND);
+		archiveMessage(m, MessageDirection.INBOUND);
 		return m;
 	}
 	
@@ -121,24 +121,20 @@ public class MessageQueueImpl implements IMessageQueue {
 		while(consumer.receiveNoWait() != null) {}
 	}
 	
-	private void logMessage(Message m, MessageDirection direction) {
+	private void archiveMessage(Message m, MessageDirection direction) {
 		if(m == null || !archive)
 			return;
-		Path folder = storedArtifactsRoot.resolve(RAS_TOP_LEVEL)
-									     .resolve(currentMethodName)
-									     .resolve(this.queueName)
-										 .resolve(direction.toString().toLowerCase())
-										 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
+		Path folder = manager.getStoredArtifactRoot()
+							 .resolve(RAS_TOP_LEVEL)
+							 .resolve(manager.getCurrentMethod())
+							 .resolve(this.queueName)
+							 .resolve(direction.toString().toLowerCase())
+							 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
 		try {
 			Files.write(folder, m.getBody(String.class).getBytes(), StandardOpenOption.CREATE);
 		} catch (Exception e) {
 			logger.info("Unable to log message for a queue", e);
 		} 
 		this.numberOfMessagesLoggedInThisMethod++;
-	}
-	
-	public void startOfNewMethod(String methodName) {
-		this.currentMethodName = methodName;
-		this.numberOfMessagesLoggedInThisMethod = 0;
 	}
 }
