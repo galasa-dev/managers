@@ -40,6 +40,7 @@ import dev.galasa.mq.internal.properties.InstanceChannelName;
 import dev.galasa.mq.internal.properties.InstanceForTag;
 import dev.galasa.mq.internal.properties.InstanceHost;
 import dev.galasa.mq.internal.properties.MqPropertiesSingleton;
+import dev.galasa.mq.internal.properties.QueueNameForTag;
 import dev.galasa.mq.internal.properties.InstanceName;
 import dev.galasa.mq.internal.properties.InstancePort;
 
@@ -67,9 +68,28 @@ public class MQManagerImpl extends AbstractManager {
     		throw new MqManagerException("Unable to provision queue: " + annotation.name() + " no QMGR found tagged: " + qmgrTag);
     	}
     	
+    	//check if the name is specified in the queue or in the CPS
+    	String queueName = annotation.name();
+    	String queueTag = annotation.tag();
+    	
+    	if(queueName.isEmpty() && queueTag.isEmpty())
+    		throw new MqManagerException("Either name or tag must be specified in @Queue annotation");
+    	
+    	if(!queueName.isEmpty() && !queueTag.isEmpty())
+    		throw new MqManagerException("Both name and tag are specified in @Queue annotation, these are mutually exclusive");
+    	
+    	String name = queueName;
+    	if(queueTag.length() > 0){
+    		name = QueueNameForTag.get(queueTag);
+    		if(name == null) {
+    			throw new MqManagerException("No queue tag for " + queueTag);
+    		}
+    	}
+    	
     	//construct the queue and add it to our list
-        MessageQueueImpl queue = new MessageQueueImpl(annotation.name(),queueManagers.get(qmgrTag), Boolean.parseBoolean(annotation.archive()), this);
+        MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), Boolean.parseBoolean(annotation.archive()), this);
         this.queues.add(queue);
+        registerAnnotatedField(field, queue);
         return queue;
     }
     
@@ -90,6 +110,7 @@ public class MQManagerImpl extends AbstractManager {
 		//construct the queue manager and add it to the list
         MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(tag, name, host, port, channel, this);
         this.queueManagers.put(tag, qmgr);
+        registerAnnotatedField(field, qmgr);
         return qmgr;
     }
 
@@ -103,25 +124,11 @@ public class MQManagerImpl extends AbstractManager {
     		if(f.getType() == IMessageQueueManager.class) {
     			QueueManager annotation = f.getAnnotation(QueueManager.class);
     			if(annotation != null) {
-    				IMessageQueueManager qmgr = generateMessageQueueManager(f, af.getAnnotations());
-    				registerAnnotatedField(f, qmgr);
+    				generateMessageQueueManager(f, af.getAnnotations());
     			}
     			
     		}
     	}
-    	
-    	//Now generate the queues
-    	for(AnnotatedField af : annotatedFields) {
-    		Field f = af.getField();
-    		if(f.getType() == IMessageQueue.class) {
-    			Queue annotation = f.getAnnotation(Queue.class);
-    			if(annotation != null) {
-    				IMessageQueue queue = generateMessageQueue(f, af.getAnnotations());
-    				registerAnnotatedField(f, queue);
-    			}
-    		}
-    	}
-    	
         generateAnnotatedFields(MqManagerField.class);
     }
 

@@ -8,10 +8,10 @@ import javax.jms.Message;
 public interface IMessageQueue {
 	
 	/**
-	 * puts the provided message onto the queue
-	 * @param message the message to send
+	 * puts the provided messages onto the queue
+	 * @param messages the set of messages to send
 	 */
-	public void sendMessage(Message message);
+	public void sendMessage(Message... messages);
 	
 	/**
 	 * Retrieves the first message from the queue, waiting until a message is ready

@@ -5,6 +5,7 @@ package dev.galasa.mq.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
@@ -29,13 +30,16 @@ public class MqManagerIVT {
 	@QueueManager()
 	public IMessageQueueManager qmgr;
 	
-	//Add Code to specify name in CPS if not in annotation
 	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE")
 	public IMessageQueue queue;
 	
 	@Queue(archive = "false", name = "GALASA.INPUT.QUEUE2")
 	public IMessageQueue queue2;
-
+	
+	//change queueTag to tag - also ammend cicsTag
+	@Queue(tag = "NEWQUEUE")
+	public IMessageQueue queue3;
+	
     @Logger
     public Log logger;
 
@@ -47,13 +51,7 @@ public class MqManagerIVT {
     }
     
     @Test
-    public void checkNotNull(){
-        assertThat(logger).isNotNull();
-    }
-    
-    @Test
     public void testPutMessage() throws MqManagerException {
-    	//should the queue be where the create method come from
     	TextMessage tm = qmgr.createTextMessage(testData);
     	queue.sendMessage(tm);
     }
@@ -69,14 +67,7 @@ public class MqManagerIVT {
     @Test
     public void clearQueue() throws MqManagerException {
     	TextMessage tm = qmgr.createTextMessage(testData);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
-    	queue.sendMessage(tm);
+    	queue.sendMessage(tm,tm,tm,tm,tm,tm,tm,tm);
     	
     	queue.clearQueue();
     	Message m = queue.getMessageNoWait();
@@ -90,4 +81,13 @@ public class MqManagerIVT {
     	
     	assertThat(queue2.getMessageNoWait()).isNull();
     }   
+    
+    @Test
+    public void putGetBinary() throws MqManagerException{
+    	byte[] input = {41,01,33,76};
+    	BytesMessage m = qmgr.createBytesMessage(input);
+    	
+    	queue.sendMessage(m);
+    	queue.getMessageNoWait();
+    }
 }

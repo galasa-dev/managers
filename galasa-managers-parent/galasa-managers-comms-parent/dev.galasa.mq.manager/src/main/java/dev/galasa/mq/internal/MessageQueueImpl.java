@@ -6,12 +6,16 @@ package dev.galasa.mq.internal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
+import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,7 +31,8 @@ public class MessageQueueImpl implements IMessageQueue {
 	private MQManagerImpl manager;
 	
 	private static String QUEUE_PROTOCOL = "queue:///";
-	private static String RAS_TOP_LEVEL = "messages";
+	private static String RAS_NAMESPACE = "mq";
+	private static String RAS_MESSAGING = "messages";
 	
 	//Generated Fields
 	private Destination destination;
@@ -66,9 +71,11 @@ public class MessageQueueImpl implements IMessageQueue {
 	}
 
 	@Override
-	public void sendMessage(Message message) {
-		archiveMessage(message,MessageDirection.OUTBOUND);
-		producer.send(destination, message);
+	public void sendMessage(Message... messages) {
+		for(Message message : messages) {
+			archiveMessage(message,MessageDirection.OUTBOUND);
+			producer.send(destination, message);
+		}
 	}
 
 	@Override
@@ -111,23 +118,49 @@ public class MessageQueueImpl implements IMessageQueue {
 	 *               |
 	 *               ---message: <id>
 	 * @param m the message we are archiving
-	 * @param direction the direction in which this message is travelling from the perspecitive of the test
+	 * @param direction the direction in which this message is traveling from the perspective of the test
 	 */
 	private void archiveMessage(Message m, MessageDirection direction) {
 		if(m == null || !archive)
+			return;		
+		byte[] content;
+		try {
+			content = getContentOfMessage(m);
+		}catch (JMSException e) {
+			logger.warn("Unable to retrieve the content of a message while archiving");
 			return;
+		}
+		
 		Path folder = manager.getStoredArtifactRoot()
-							 .resolve(RAS_TOP_LEVEL)
+							 .resolve(RAS_NAMESPACE)
+							 .resolve(RAS_MESSAGING)
 							 .resolve(getCurrentMethod())
 							 .resolve(this.queueName)
 							 .resolve(direction.toString().toLowerCase())
 							 .resolve("message:" + Integer.toString(numberOfMessagesLoggedInThisMethod));
 		try {
-			Files.write(folder, m.getBody(String.class).getBytes(), StandardOpenOption.CREATE);
+			Files.write(folder, content, StandardOpenOption.CREATE);
 		} catch (Exception e) {
 			logger.info("Unable to log message for a queue", e);
 		} 
 		this.numberOfMessagesLoggedInThisMethod++;
+	}
+	
+	private byte[] getContentOfMessage(Message m) throws JMSException {
+		byte[] content = new byte[0];
+		
+		if(m instanceof TextMessage) {
+			content = m.getBody(String.class).getBytes();
+		}
+		
+		if(m instanceof BytesMessage) {
+			BytesMessage bm = (BytesMessage)m;
+			bm.reset();
+			content = new byte[Math.toIntExact(bm.getBodyLength())];
+			bm.readBytes(content);
+			content = Arrays.toString(content).getBytes();
+		}
+		return content;
 	}
 	
 	/**

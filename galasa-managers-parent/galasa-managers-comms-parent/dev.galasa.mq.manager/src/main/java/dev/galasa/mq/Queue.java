@@ -17,7 +17,8 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 public @interface Queue {
 
     String queueMgrTag() default "PRIMARY";
-    String name();
+    String name() default "";
+    String tag() default "";
     String archive() default "true";
 
 }
