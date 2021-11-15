@@ -7,6 +7,7 @@ package dev.galasa.http.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.http.HttpClient;
 import dev.galasa.http.IHttpClient;
@@ -35,6 +37,9 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     private static final int  DEFAULT_TIMEOUT     = 180000;
     private static final boolean DEFAULT_ARCHIVE  = false;
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
+    
+    private String currentMethod                  = new String();
+    private Path storedArtifactRoot;
 
     @GenerateAnnotatedField(annotation = HttpClient.class)
     public IHttpClient generateHttpClient(Field field, List<Annotation> annotations) {
@@ -63,7 +68,7 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
         super.initialise(framework, allManagers, activeManagers, galasaTest);
-
+        this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
         if(galasaTest.isJava()) {
             List<AnnotatedField> ourFields = findAnnotatedFields(HttpManagerField.class);
             if (!ourFields.isEmpty()) {
@@ -99,9 +104,22 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     
     @Override
     public @NotNull IHttpClient newHttpClient(int timeout, boolean archiveHeaders) {
-        IHttpClient client = new HttpClientImpl(timeout, archiveHeaders, logger);
+        IHttpClient client = new HttpClientImpl(timeout, archiveHeaders, logger, this);
         instantiatedClients.add(client);
         return client;
+    }
+    
+    @Override
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
+    	this.currentMethod = galasaMethod.getJavaExecutionMethod().getName();
+    }
+    
+    public String getCurrentMethod() {
+    	return this.currentMethod;
+    }
+    
+    public Path getStoredArtifactRoot() {
+    	return this.storedArtifactRoot;
     }
     
     @Override

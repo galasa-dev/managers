@@ -14,6 +14,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -74,6 +77,7 @@ import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
+import dev.galasa.http.IHttpManager;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -89,6 +93,11 @@ public class HttpClientImpl implements IHttpClient {
 
     private final int           timeout;
     private final boolean 		archive;
+    private final HttpManagerImpl manager;
+    private final static String RAS_NAMESPACE = "http";
+    private final static String RAS_HEADERS   = "headers";
+    private Header[]            tempHeaders   = {};
+    
 
     private BasicCookieStore    cookieStore;
     private SSLContext          sslContext;
@@ -98,11 +107,14 @@ public class HttpClientImpl implements IHttpClient {
     private Set<Integer>        okResponseCodes      = new HashSet<>();
 
     private Log                 logger;
+    private String              currentMethod        = new String();
+    private int                 archiveIndex         = 1;
 
-    public HttpClientImpl(int timeout, boolean archive, Log log) {
+    public HttpClientImpl(int timeout, boolean archive, Log log, HttpManagerImpl manager) {
         this.timeout = timeout;
         this.archive = archive;
         this.logger = log;
+        this.manager = manager;
         this.cookieStore = new BasicCookieStore();
     }
 
@@ -850,8 +862,11 @@ public class HttpClientImpl implements IHttpClient {
 
     private CloseableHttpResponse execute(HttpUriRequest request) throws HttpClientException {
         this.build();
+        archive(request);
         try {
-            return httpClient.execute(request, httpContext);
+            CloseableHttpResponse response = httpClient.execute(request, httpContext);
+            archive(response);
+            return response;
         } catch (IOException e) {
             throw new HttpClientException("Error executing http request", e);
         }
@@ -868,6 +883,60 @@ public class HttpClientImpl implements IHttpClient {
         } catch (IOException e) {
         }
 
+    }
+    
+    private void archive(HttpUriRequest req) {
+    	if(!archive) {
+    		return;
+    	}
+    	tempHeaders = req.getAllHeaders();
+    }
+    
+    private void archive(CloseableHttpResponse resp) {
+    	if(!archive) {
+    		return;
+    	}
+    	archiveTheseHeaders(tempHeaders,resp.getAllHeaders());
+    }
+    
+    private void archiveTheseHeaders(Header[] requestHeaders, Header[] responseHeaders) {
+    	String requestData = createArchiveString(requestHeaders);
+    	String responseData = createArchiveString(responseHeaders);
+    	
+    	Path folder = manager.getStoredArtifactRoot()
+    			             .resolve(RAS_NAMESPACE)
+    			             .resolve(RAS_HEADERS)
+    			             .resolve(getCurrentMethod())
+    			             .resolve("request:" + archiveIndex);
+    	try {
+    		Files.write(folder.resolve("RequestHeaders"), requestData.getBytes(), StandardOpenOption.CREATE);
+    		Files.write(folder.resolve("ResponseHeaders"), responseData.getBytes(), StandardOpenOption.CREATE);
+    	} catch(IOException e) {
+    		logger.info("Unable to log headers for a request",e);
+    	}
+    	
+    }
+    
+    private String createArchiveString(Header [] headers) {
+    	StringBuilder sb = new StringBuilder();
+    	for(Header h : headers) {
+    		sb.append(h.getName());
+    		sb.append(":");
+    		sb.append(h.getValue());
+    		sb.append("/n");
+    	}
+    	return sb.toString();
+    }
+    
+    private String getCurrentMethod() {
+    	String managerCurrentMethod = manager.getCurrentMethod();
+    	if(this.currentMethod.contentEquals(managerCurrentMethod)) {
+    		return this.currentMethod;
+    	} else {
+    		this.currentMethod = managerCurrentMethod;
+    		this.archiveIndex = 1;
+    	}
+    	return this.currentMethod;
     }
 
 }
