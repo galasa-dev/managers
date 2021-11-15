@@ -14,8 +14,8 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 import dev.galasa.http.internal.HttpManagerField;
 
 /**
- * Used to annotate annotations that are to be used for Test Class fields. To be
- * populated by the Manager.
+ * archiveHeaders attribute allows for the headers of 
+ * a request to be logged in the RAS
  *
  * @author William Yates
  *
@@ -25,5 +25,6 @@ import dev.galasa.http.internal.HttpManagerField;
 @HttpManagerField
 @ValidAnnotatedFields({ IHttpClient.class })
 public @interface HttpClient {
+	String archiveHeaders() default "FALSE";
 
 }

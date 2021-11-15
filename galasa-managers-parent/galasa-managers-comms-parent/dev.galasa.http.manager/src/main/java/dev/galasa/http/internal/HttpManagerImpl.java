@@ -32,11 +32,19 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi {
 
     private static final Log  logger              = LogFactory.getLog(HttpManagerImpl.class);
+    private static final int  DEFAULT_TIMEOUT     = 180000;
+    private static final boolean DEFAULT_ARCHIVE  = false;
     private List<IHttpClient> instantiatedClients = new ArrayList<>();
 
     @GenerateAnnotatedField(annotation = HttpClient.class)
     public IHttpClient generateHttpClient(Field field, List<Annotation> annotations) {
-        return newHttpClient();
+    	boolean archiveHeaders = false;
+    	for(Annotation a : annotations) {
+    		if(a instanceof HttpClient) {
+    			archiveHeaders = Boolean.parseBoolean(((HttpClient)a).archiveHeaders());
+    		}
+    	}
+        return newHttpClient(archiveHeaders);
     }
 
     @Override
@@ -73,17 +81,25 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
 
         activeManagers.add(this);
     }
-
+    
     @Override
     public @NotNull IHttpClient newHttpClient() {
-        IHttpClient client = new HttpClientImpl(180000, logger);
-        instantiatedClients.add(client);
-        return client;
+        return newHttpClient(DEFAULT_TIMEOUT, DEFAULT_ARCHIVE);
     }
     
     @Override
-    public @NotNull IHttpClient newHttpClient(int timeout) {
-        IHttpClient client = new HttpClientImpl(timeout, logger);
+    public @NotNull IHttpClient newHttpClient(boolean archiveHeaders){
+    	return newHttpClient(DEFAULT_TIMEOUT, archiveHeaders);
+    }
+    
+    @Override
+	public @NotNull IHttpClient newHttpClient(int timeout) {
+		return newHttpClient(timeout, DEFAULT_ARCHIVE);
+    }
+    
+    @Override
+    public @NotNull IHttpClient newHttpClient(int timeout, boolean archiveHeaders) {
+        IHttpClient client = new HttpClientImpl(timeout, archiveHeaders, logger);
         instantiatedClients.add(client);
         return client;
     }
@@ -92,5 +108,7 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     public boolean doYouSupportSharedEnvironments() {
         return true;   // this manager does not provision resources, therefore support environments 
     }
+
+	
 
 }

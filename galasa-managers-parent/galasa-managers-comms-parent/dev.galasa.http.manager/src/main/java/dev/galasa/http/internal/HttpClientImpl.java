@@ -88,6 +88,7 @@ public class HttpClientImpl implements IHttpClient {
     private final List<Header>  commonHeaders        = new ArrayList<>();
 
     private final int           timeout;
+    private final boolean 		archive;
 
     private BasicCookieStore    cookieStore;
     private SSLContext          sslContext;
@@ -98,8 +99,9 @@ public class HttpClientImpl implements IHttpClient {
 
     private Log                 logger;
 
-    public HttpClientImpl(int timeout, Log log) {
+    public HttpClientImpl(int timeout, boolean archive, Log log) {
         this.timeout = timeout;
+        this.archive = archive;
         this.logger = log;
         this.cookieStore = new BasicCookieStore();
     }

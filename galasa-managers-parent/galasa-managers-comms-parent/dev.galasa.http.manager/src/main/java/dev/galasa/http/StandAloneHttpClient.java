@@ -10,7 +10,7 @@ import dev.galasa.http.internal.HttpClientImpl;
 public class StandAloneHttpClient {
 
     public static IHttpClient getHttpClient(int timeout, Log log) {
-        return new HttpClientImpl(timeout, log);
+        return new HttpClientImpl(timeout, false, log);
     }
     
 }

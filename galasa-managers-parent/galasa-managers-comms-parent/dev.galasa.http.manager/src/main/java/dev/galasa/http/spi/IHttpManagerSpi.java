@@ -17,5 +17,11 @@ public interface IHttpManagerSpi extends IHttpManager {
 
     @NotNull
     IHttpClient newHttpClient(int timeout);
+    
+    @NotNull
+    IHttpClient newHttpClient(boolean archiveHeaders);
+    
+    @NotNull
+    IHttpClient newHttpClient(int timeout, boolean archiveHeaders);
 
 }
