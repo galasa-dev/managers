@@ -104,6 +104,13 @@ public class MessageQueueImpl implements IMessageQueue {
 		while(consumer.receiveNoWait() != null) {}
 	}
 	
+	public String getName() {
+		return this.queueName;
+	}
+	
+	public MessageQueueManagerImpl getQmgr() {
+		return this.qmgr;
+	}
 	/**
 	 * If archival has been set in the annotation for this queue then 
 	 * we archive this message in the RAS in the structure:

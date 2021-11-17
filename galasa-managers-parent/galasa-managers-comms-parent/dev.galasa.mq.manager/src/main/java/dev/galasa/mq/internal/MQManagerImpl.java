@@ -89,9 +89,21 @@ public class MQManagerImpl extends AbstractManager {
     	
     	//construct the queue and add it to our list
         MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), annotation.archive(), this);
+        queue = queueAlreadyProvisioned(queue);
         this.queues.add(queue);
         registerAnnotatedField(field, queue);
         return queue;
+    }
+    
+    private MessageQueueImpl queueAlreadyProvisioned(MessageQueueImpl queue) {
+    	for(MessageQueueImpl q : this.queues) {
+    		if(q.getName().equals(queue.getName()) && q.getQmgr().getName().equals(queue.getQmgr().getName())) {
+    			logger.info("Queue: " + queue.getName() + " on qmgr: " + queue.getQmgr().getName() + " already exists");
+    			return q;
+    		}
+    	}
+    	return queue;
+    	
     }
     
     @GenerateAnnotatedField(annotation = QueueManager.class)
@@ -206,7 +218,7 @@ public class MQManagerImpl extends AbstractManager {
     	for(MessageQueueImpl queue : this.queues) {
     		queue.startup();
     	}
-    	
+  	
     }
     
     @Override
