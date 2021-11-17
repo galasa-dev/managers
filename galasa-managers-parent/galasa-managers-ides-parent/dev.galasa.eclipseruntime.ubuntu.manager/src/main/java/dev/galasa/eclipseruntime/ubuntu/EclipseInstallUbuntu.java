@@ -33,7 +33,7 @@ public @interface EclipseInstallUbuntu {
 	/**
 	 * The version of Eclipse that should be installed format - %%%
 	 */
-	EclipseVersion eclipseVersion() default EclipseVersion.v4_16;
+	EclipseVersion eclipseVersion() default EclipseVersion.V201909;
 	
 	/**
 	 * The type of eclipse to install.

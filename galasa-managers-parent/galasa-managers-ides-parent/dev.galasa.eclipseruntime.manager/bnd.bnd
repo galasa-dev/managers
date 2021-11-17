@@ -1,6 +1,8 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Eclipse Manager
-Export-Package: dev.galasa.eclipseruntime
-Import-Package:
+Export-Package: dev.galasa.eclipseruntime, \
+				dev.galasa.eclipseruntime.spi
+Import-Package: !javax.validation.constraints,\
+                *
 
 
