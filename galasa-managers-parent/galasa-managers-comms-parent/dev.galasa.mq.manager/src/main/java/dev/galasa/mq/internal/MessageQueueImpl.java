@@ -108,6 +108,8 @@ public class MessageQueueImpl implements IMessageQueue {
 	 * If archival has been set in the annotation for this queue then 
 	 * we archive this message in the RAS in the structure:
 	 * 
+	 * mq
+	 * |
 	 * messages
 	 * |
 	 * ---<method name>
@@ -158,9 +160,24 @@ public class MessageQueueImpl implements IMessageQueue {
 			bm.reset();
 			content = new byte[Math.toIntExact(bm.getBodyLength())];
 			bm.readBytes(content);
-			content = Arrays.toString(content).getBytes();
+			content = getHexBytes(content).getBytes();
 		}
 		return content;
+	}
+	
+	private String getHexBytes(byte[] input) {
+		StringBuilder sb = new StringBuilder();
+		for(byte b : input) {
+			sb.append(getHexBytes(b));
+		}
+		return sb.toString();
+	}
+	
+	private String getHexBytes(byte input) {
+		char[] hexDigits = new char[2];
+	    hexDigits[0] = Character.forDigit((input >> 4) & 0xF, 16);
+	    hexDigits[1] = Character.forDigit((input & 0xF), 16);
+	    return new String(hexDigits);
 	}
 	
 	/**

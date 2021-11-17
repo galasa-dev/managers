@@ -74,7 +74,10 @@ public class MessageQueueManagerImpl implements IMessageQueueManager {
 	@Override
 	public void close() {
 		log.info("Shutting down connection to queue manager: " + this.getName());
-		this.context.close();
+		if(this.context == null)
+			return;
+		else
+			this.context.close();
 		
 	}
 	

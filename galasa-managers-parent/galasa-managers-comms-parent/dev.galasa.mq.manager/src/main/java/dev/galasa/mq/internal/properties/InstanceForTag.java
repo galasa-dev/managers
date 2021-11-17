@@ -10,13 +10,13 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.mq.MqManagerException;
 
 /**
- * The Host for the queueManager
+ * The instanceid  for the tag
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[tag].host
+ * @galasa.name mq.tag.[tag].instanceid
  * 
- * @galasa.description The channel for the specified tag
+ * @galasa.description The instance for the specified tag
  * 
  * @galasa.required Yes
  * 
@@ -25,7 +25,7 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[tag].host=127.0.0.1</code><br>
+ * <code>mq.tag.[tag].instanceid=QUEUEMGR1</code><br>
  *
  */
 public class InstanceForTag extends CpsProperties {

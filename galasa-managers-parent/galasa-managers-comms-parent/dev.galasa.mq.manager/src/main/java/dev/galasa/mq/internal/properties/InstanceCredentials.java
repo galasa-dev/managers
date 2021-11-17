@@ -10,13 +10,13 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.mq.MqManagerException;
 
 /**
- * The Name of the Queue Manager
+ * The credentials for the queueManager
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[instanceid].name
+ * @galasa.name mq.server.[instanceid].credentials.id
  * 
- * @galasa.description The queue manager name for the specified tag
+ * @galasa.description The channel for the specified tag
  * 
  * @galasa.required Yes
  * 
@@ -25,16 +25,16 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[instanceid].name=QM1</code><br>
+ * <code>mq.server.[instanceid].credentials.id=CRED1</code><br>
  *
  */
-public class InstanceName extends CpsProperties {
+public class InstanceCredentials extends CpsProperties {
     
     public static String get(@NotNull String instanceid) throws MqManagerException {
         try {
-            return getStringNulled(MqPropertiesSingleton.cps(), "server", "name", instanceid);
+            return getStringNulled(MqPropertiesSingleton.cps(), "server", "credentials.id", instanceid);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new MqManagerException("Problem asking the CPS for the queue manager name for instance '"  + instanceid + "'", e);
+            throw new MqManagerException("Problem asking the CPS for the credentials ID for instance: '"  + instanceid + "'", e);
         }
     }
 

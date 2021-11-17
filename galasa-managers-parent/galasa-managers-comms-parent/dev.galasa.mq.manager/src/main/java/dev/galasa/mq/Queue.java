@@ -19,6 +19,6 @@ public @interface Queue {
     String queueMgrTag() default "PRIMARY";
     String name() default "";
     String tag() default "";
-    String archive() default "true";
+    boolean archive() default true;
 
 }

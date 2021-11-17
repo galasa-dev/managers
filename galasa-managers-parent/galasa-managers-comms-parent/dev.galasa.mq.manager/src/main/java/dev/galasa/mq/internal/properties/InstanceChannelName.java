@@ -14,7 +14,7 @@ import dev.galasa.mq.MqManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[tag].channel
+ * @galasa.name mq.server.[instanceid].channel
  * 
  * @galasa.description The channel for the specified tag
  * 
@@ -25,16 +25,16 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[tag].channel=DEV.APP.SVRCONN</code><br>
+ * <code>mq.server.[instanceid].channel=DEV.APP.SVRCONN</code><br>
  *
  */
 public class InstanceChannelName extends CpsProperties {
     
-    public static String get(@NotNull String tag) throws MqManagerException {
+    public static String get(@NotNull String instanceid) throws MqManagerException {
         try {
-            return getStringNulled(MqPropertiesSingleton.cps(), "server", "channel", tag);
+            return getStringNulled(MqPropertiesSingleton.cps(), "server", "channel", instanceid);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new MqManagerException("Problem asking the CPS for the channel for tag '"  + tag + "'", e);
+            throw new MqManagerException("Problem asking the CPS for the channel for tag '"  + instanceid + "'", e);
         }
     }
 

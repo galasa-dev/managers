@@ -14,7 +14,7 @@ import dev.galasa.mq.MqManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[tag].host
+ * @galasa.name mq.server.[instanceid].host
  * 
  * @galasa.description The channel for the specified tag
  * 
@@ -25,16 +25,16 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[tag].host=127.0.0.1</code><br>
+ * <code>mq.server.[instanceid].host=127.0.0.1</code><br>
  *
  */
 public class InstanceHost extends CpsProperties {
     
-    public static String get(@NotNull String tag) throws MqManagerException {
+    public static String get(@NotNull String instanceid) throws MqManagerException {
         try {
-            return getStringNulled(MqPropertiesSingleton.cps(), "server", "host", tag);
+            return getStringNulled(MqPropertiesSingleton.cps(), "server", "host", instanceid);
         } catch (ConfigurationPropertyStoreException e) {
-            throw new MqManagerException("Problem asking the CPS for the host address for tag '"  + tag + "'", e);
+            throw new MqManagerException("Problem asking the CPS for the host address for tag '"  + instanceid + "'", e);
         }
     }
 

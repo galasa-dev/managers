@@ -37,6 +37,7 @@ import dev.galasa.mq.MqManagerField;
 import dev.galasa.mq.Queue;
 import dev.galasa.mq.QueueManager;
 import dev.galasa.mq.internal.properties.InstanceChannelName;
+import dev.galasa.mq.internal.properties.InstanceCredentials;
 import dev.galasa.mq.internal.properties.InstanceForTag;
 import dev.galasa.mq.internal.properties.InstanceHost;
 import dev.galasa.mq.internal.properties.MqPropertiesSingleton;
@@ -87,7 +88,7 @@ public class MQManagerImpl extends AbstractManager {
     	}
     	
     	//construct the queue and add it to our list
-        MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), Boolean.parseBoolean(annotation.archive()), this);
+        MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), annotation.archive(), this);
         this.queues.add(queue);
         registerAnnotatedField(field, queue);
         return queue;
@@ -220,18 +221,22 @@ public class MQManagerImpl extends AbstractManager {
 	}
 	
 	public ICredentials getCredentials(String tag) throws MqManagerException {
+		
+		//get the credentials id for this instance
+		String instanceid = getInstanceForTag(tag);
+		String credentialsid = InstanceCredentials.get(instanceid);
+		
 		//pull the access credentials
-    	ICredentials credentials;
-    	String credentialsKey = NAMESPACE+"."+getInstanceForTag(tag);
-    	logger.info("Obtaining credentials for namespace: " + credentialsKey);
+    	ICredentials credentials;;
+    	logger.info("Obtaining credentials for id: " + credentialsid);
 		try {
-			credentials = credentialService.getCredentials(credentialsKey);
+			credentials = credentialService.getCredentials(credentialsid);
 		} catch (CredentialsException e) {
 			throw new MqManagerException("Unable to locate credentials for MQ Queue Manager with tag: " + tag);
 		}
 		
 		if(credentials == null) {
-			throw new MqManagerException("Unable to obtain credentials for namespace: " + credentialsKey);
+			throw new MqManagerException("Unable to obtain credentials for namespace: " + credentialsid);
 		}
 		return credentials;
 	}

@@ -30,10 +30,10 @@ public class MqManagerIVT {
 	@QueueManager()
 	public IMessageQueueManager qmgr;
 	
-	@Queue(archive = "true", name = "GALASA.INPUT.QUEUE")
+	@Queue(archive = true, name = "GALASA.INPUT.QUEUE")
 	public IMessageQueue queue;
 	
-	@Queue(archive = "false", name = "GALASA.INPUT.QUEUE2")
+	@Queue(archive = false, name = "GALASA.INPUT.QUEUE2")
 	public IMessageQueue queue2;
 	
 	//change queueTag to tag - also ammend cicsTag
