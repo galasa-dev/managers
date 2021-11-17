@@ -99,16 +99,23 @@ public class MQManagerImpl extends AbstractManager {
     	//obtain the tag for this queue manager
     	QueueManager annotation = field.getAnnotation(QueueManager.class);
     	String tag = annotation.queueMgrTag();
+    	
+    	//if we already have created a qmgr for this tag just return it
+    	if(this.queueManagers.get(tag) != null) {
+    		logger.trace("Re-using queue manager for tag: " + tag);
+    		return this.queueManagers.get(tag);
+    	}
 		
 		//obtain the configuration for this queue manager
 		String instanceid = getInstanceForTag(tag);
-		logger.info("Obtaining configuration information for instance: " + instanceid);
+		logger.trace("Obtaining configuration information for instance: " + instanceid);
 		String host = InstanceHost.get(instanceid);
 		int port = InstancePort.get(instanceid);
 		String channel = InstanceChannelName.get(instanceid);
 		String name = InstanceName.get(instanceid);
 
 		//construct the queue manager and add it to the list
+		logger.trace("Queue manager tagged: " + tag + " is name: " + name + " (" + host + ":" + port + ")");
         MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(tag, name, host, port, channel, this);
         this.queueManagers.put(tag, qmgr);
         registerAnnotatedField(field, qmgr);
@@ -228,7 +235,7 @@ public class MQManagerImpl extends AbstractManager {
 		
 		//pull the access credentials
     	ICredentials credentials;;
-    	logger.info("Obtaining credentials for id: " + credentialsid);
+    	logger.trace("Obtaining credentials for id: " + credentialsid);
 		try {
 			credentials = credentialService.getCredentials(credentialsid);
 		} catch (CredentialsException e) {
@@ -247,7 +254,7 @@ public class MQManagerImpl extends AbstractManager {
 	
 	private String getInstanceForTag(String tag) throws MqManagerException {
     	//obtain the instanceid for the tag
-    	logger.info("Obtaining instance ID for tag: " + tag);
+    	logger.trace("Obtaining instance ID for tag: " + tag);
     	String instanceid = InstanceForTag.get(tag);
     	if(instanceid == null) {
     		throw new MqManagerException("Could not find an instance for tag: " + tag);

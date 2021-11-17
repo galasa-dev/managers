@@ -11,6 +11,7 @@ Import-Package: !javax.validation.constraints,\
         dev.galasa.framework.spi.creds,\
         dev.galasa.framework.spi.language,\
         org.apache.commons.logging.*,\
+        org.apache.commons.codec.binary,\
         javax.management,\
         javax.naming,\
         javax.net.ssl,\
