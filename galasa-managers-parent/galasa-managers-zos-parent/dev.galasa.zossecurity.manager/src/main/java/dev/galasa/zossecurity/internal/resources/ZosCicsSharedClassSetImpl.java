@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.zossecurity.internal.resources;
 
 import java.util.ArrayList;
