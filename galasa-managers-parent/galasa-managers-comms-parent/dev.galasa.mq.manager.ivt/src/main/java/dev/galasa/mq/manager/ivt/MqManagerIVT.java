@@ -27,18 +27,17 @@ public class MqManagerIVT {
 	
 	private static String testData = "Hello World";
 	
-	@QueueManager()
+	@QueueManager(tag = "bob")
 	public IMessageQueueManager qmgr;
 	
-	@Queue(archive = true, name = "GALASA.INPUT.QUEUE")
+	@Queue(archive = true, name = "GALASA.INPUT.QUEUE", tag = "ggbvg", queueMgrTag = "bob")
 	public IMessageQueue queue;
 	
 	@Queue(archive = false, name = "GALASA.INPUT.QUEUE2")
 	public IMessageQueue queue2;
 	
-	//change queueTag to tag - also ammend cicsTag
-	@Queue(tag = "NEWQUEUE")
-	public IMessageQueue queue3;
+//	@Queue(tag = "NEWQUEUE")
+//	public IMessageQueue queue3;
 	
     @Logger
     public Log logger;

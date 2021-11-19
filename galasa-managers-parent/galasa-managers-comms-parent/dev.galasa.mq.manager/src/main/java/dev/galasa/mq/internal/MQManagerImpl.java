@@ -6,7 +6,6 @@ package dev.galasa.mq.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -55,7 +54,9 @@ public class MQManagerImpl extends AbstractManager {
     private ICredentialsService credentialService;
     
     private HashMap<String,MessageQueueManagerImpl> queueManagers = new HashMap<>();
-    private List<MessageQueueImpl> queues = new ArrayList<>();
+    private HashMap<String,MessageQueueImpl> queuesByName = new HashMap<>();
+    private HashMap<String,MessageQueueImpl> queuesByTag = new HashMap<>();
+    //private List<MessageQueueImpl> queues = new ArrayList<>();
     
     private String currentMethod = new String();
 
@@ -73,48 +74,44 @@ public class MQManagerImpl extends AbstractManager {
     	String queueName = annotation.name();
     	String queueTag = annotation.tag();
     	
+    	//check that either queueName OR queueTag is specified
     	if(queueName.isEmpty() && queueTag.isEmpty())
     		throw new MqManagerException("Either name or tag must be specified in @Queue annotation");
     	
     	if(!queueName.isEmpty() && !queueTag.isEmpty())
     		throw new MqManagerException("Both name and tag are specified in @Queue annotation, these are mutually exclusive");
-    	
-    	String name = queueName;
-    	if(queueTag.length() > 0){
-    		name = QueueNameForTag.get(queueTag);
-    		if(name == null) {
-    			throw new MqManagerException("No queue tag for " + queueTag);
+
+    	//if queueName was specified generate the queue
+    	if(!queueName.isEmpty()) {
+    		MessageQueueImpl queue = new MessageQueueImpl(queueName,queueManagers.get(qmgrTag), annotation.archive(), this);
+    		this.queuesByName.put(queueName, queue);
+    		registerAnnotatedField(field, queue);
+    		return queue;
+    	}else {
+    		//if the queue name was empty then the tag will have been filled
+    		if(queuesByTag.get(queueTag) != null) {
+    			registerAnnotatedField(field, queuesByTag.get(queueTag));
+    			return queuesByTag.get(queueTag);
+    		} else {
+    			String name = QueueNameForTag.get(queueTag);
+    			MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), annotation.archive(), this);
+    			this.queuesByTag.put(queueTag, queue);
+    			registerAnnotatedField(field, queue);
+    			return queue;
     		}
     	}
     	
-    	//construct the queue and add it to our list
-        MessageQueueImpl queue = new MessageQueueImpl(name,queueManagers.get(qmgrTag), annotation.archive(), this);
-        queue = queueAlreadyProvisioned(queue);
-        this.queues.add(queue);
-        registerAnnotatedField(field, queue);
-        return queue;
-    }
-    
-    private MessageQueueImpl queueAlreadyProvisioned(MessageQueueImpl queue) {
-    	for(MessageQueueImpl q : this.queues) {
-    		if(q.getName().equals(queue.getName()) && q.getQmgr().getName().equals(queue.getQmgr().getName())) {
-    			logger.info("Queue: " + queue.getName() + " on qmgr: " + queue.getQmgr().getName() + " already exists");
-    			return q;
-    		}
-    	}
-    	return queue;
-    	
+    	//if only tag was specified, see if we have provisioned a queue with the same tag
     }
     
     @GenerateAnnotatedField(annotation = QueueManager.class)
     public IMessageQueueManager generateMessageQueueManager(Field field, List<Annotation> annotations) throws MqManagerException{
     	//obtain the tag for this queue manager
     	QueueManager annotation = field.getAnnotation(QueueManager.class);
-    	String tag = annotation.queueMgrTag();
+    	String tag = annotation.tag();
     	
     	//if we already have created a qmgr for this tag just return it
     	if(this.queueManagers.get(tag) != null) {
-    		logger.trace("Re-using queue manager for tag: " + tag);
     		return this.queueManagers.get(tag);
     	}
 		
@@ -127,7 +124,7 @@ public class MQManagerImpl extends AbstractManager {
 		String name = InstanceName.get(instanceid);
 
 		//construct the queue manager and add it to the list
-		logger.trace("Queue manager tagged: " + tag + " is name: " + name + " (" + host + ":" + port + ")");
+		logger.info("Queue manager tagged: " + tag + " is name: " + name + " (" + host + ":" + port + ")");
         MessageQueueManagerImpl qmgr = new MessageQueueManagerImpl(tag, name, host, port, channel, this);
         this.queueManagers.put(tag, qmgr);
         registerAnnotatedField(field, qmgr);
@@ -215,10 +212,16 @@ public class MQManagerImpl extends AbstractManager {
     	}
     	
     	//Now that the queue managers are active start the queues
-    	for(MessageQueueImpl queue : this.queues) {
+    	//begin with the queues by name
+    	for(Entry<String, MessageQueueImpl> entry : this.queuesByName.entrySet()) {
+    		MessageQueueImpl queue = entry.getValue();
     		queue.startup();
     	}
-  	
+    	//Now the queues by tag
+    	for(Entry<String, MessageQueueImpl> entry : this.queuesByTag.entrySet()) {
+    		MessageQueueImpl queue = entry.getValue();
+    		queue.startup();
+    	}
     }
     
     @Override

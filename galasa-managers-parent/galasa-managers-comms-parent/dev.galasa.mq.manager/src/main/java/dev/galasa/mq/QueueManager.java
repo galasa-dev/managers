@@ -16,6 +16,6 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @ValidAnnotatedFields({ IMessageQueueManager.class })
 public @interface QueueManager {
 
-    String queueMgrTag() default "PRIMARY";
+    String tag() default "PRIMARY";
 
 }
