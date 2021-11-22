@@ -37,6 +37,7 @@ import javax.net.ssl.TrustManager;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -82,39 +83,34 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.annotation.XmlType;
 
-public class HttpClientImpl implements IHttpClient {
+public abstract class HttpClientImpl implements IHttpClient {
 
-    private static final String JAVA_VENDOR_PROPERTY = "java.vendor";
+	protected static final String JAVA_VENDOR_PROPERTY = "java.vendor";
 
-    private CloseableHttpClient httpClient;
+	protected CloseableHttpClient httpClient;
     protected URI               host                 = null;
 
-    private final List<Header>  commonHeaders        = new ArrayList<>();
+    protected final List<Header>  commonHeaders        = new ArrayList<>();
 
-    private final int           timeout;
-    private final boolean 		archive;
-    private final HttpManagerImpl manager;
-    private final static String RAS_NAMESPACE = "http";
-    private final static String RAS_HEADERS   = "headers";
-    private Header[]            tempHeaders   = {};
+    protected final int           timeout;
+    protected final static String RAS_NAMESPACE = "http";
+    protected final static String RAS_HEADERS   = "headers";
+    protected Header[]            tempHeaders   = {};
     
 
-    private BasicCookieStore    cookieStore;
-    private SSLContext          sslContext;
-    private HostnameVerifier    hostnameVerifier     = NoopHostnameVerifier.INSTANCE;
-    private CredentialsProvider credentialsProvider  = new BasicCredentialsProvider();
-    private HttpClientContext   httpContext          = null;
-    private Set<Integer>        okResponseCodes      = new HashSet<>();
+    protected BasicCookieStore    cookieStore;
+    protected SSLContext          sslContext;
+    protected HostnameVerifier    hostnameVerifier     = NoopHostnameVerifier.INSTANCE;
+    protected CredentialsProvider credentialsProvider  = new BasicCredentialsProvider();
+    protected HttpClientContext   httpContext          = null;
+    protected Set<Integer>        okResponseCodes      = new HashSet<>();
 
-    private Log                 logger;
-    private String              currentMethod        = new String();
-    private int                 archiveIndex         = 1;
+    protected static final Log  logger = LogFactory.getLog(HttpClientImpl.class);
+    protected String              currentMethod        = new String();
+    protected int                 archiveIndex         = 1;
 
-    public HttpClientImpl(int timeout, boolean archive, Log log, HttpManagerImpl manager) {
+    public HttpClientImpl(int timeout) {
         this.timeout = timeout;
-        this.archive = archive;
-        this.logger = log;
-        this.manager = manager;
         this.cookieStore = new BasicCookieStore();
     }
 
@@ -871,6 +867,12 @@ public class HttpClientImpl implements IHttpClient {
             throw new HttpClientException("Error executing http request", e);
         }
     }
+    
+    private void archive(HttpUriRequest request) {
+    }
+    
+    private void archive(CloseableHttpResponse response) {
+    }
 
     @Override
     public void close() {
@@ -884,59 +886,4 @@ public class HttpClientImpl implements IHttpClient {
         }
 
     }
-    
-    private void archive(HttpUriRequest req) {
-    	if(!archive) {
-    		return;
-    	}
-    	tempHeaders = req.getAllHeaders();
-    }
-    
-    private void archive(CloseableHttpResponse resp) {
-    	if(!archive) {
-    		return;
-    	}
-    	archiveTheseHeaders(tempHeaders,resp.getAllHeaders());
-    }
-    
-    private void archiveTheseHeaders(Header[] requestHeaders, Header[] responseHeaders) {
-    	String requestData = createArchiveString(requestHeaders);
-    	String responseData = createArchiveString(responseHeaders);
-    	
-    	Path folder = manager.getStoredArtifactRoot()
-    			             .resolve(RAS_NAMESPACE)
-    			             .resolve(RAS_HEADERS)
-    			             .resolve(getCurrentMethod())
-    			             .resolve("request:" + archiveIndex);
-    	try {
-    		Files.write(folder.resolve("RequestHeaders"), requestData.getBytes(), StandardOpenOption.CREATE);
-    		Files.write(folder.resolve("ResponseHeaders"), responseData.getBytes(), StandardOpenOption.CREATE);
-    	} catch(IOException e) {
-    		logger.info("Unable to log headers for a request",e);
-    	}
-    	
-    }
-    
-    private String createArchiveString(Header [] headers) {
-    	StringBuilder sb = new StringBuilder();
-    	for(Header h : headers) {
-    		sb.append(h.getName());
-    		sb.append(":");
-    		sb.append(h.getValue());
-    		sb.append("/n");
-    	}
-    	return sb.toString();
-    }
-    
-    private String getCurrentMethod() {
-    	String managerCurrentMethod = manager.getCurrentMethod();
-    	if(this.currentMethod.contentEquals(managerCurrentMethod)) {
-    		return this.currentMethod;
-    	} else {
-    		this.currentMethod = managerCurrentMethod;
-    		this.archiveIndex = 1;
-    	}
-    	return this.currentMethod;
-    }
-
 }
