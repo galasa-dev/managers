@@ -14,7 +14,7 @@ import dev.galasa.mq.MqManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[tag].queuename
+ * @galasa.name mq.queue.[tag].queuename
  * 
  * @galasa.description The channel for the specified tag
  * 
@@ -25,7 +25,7 @@ import dev.galasa.mq.MqManagerException;
  * @galasa.valid_values 
  * 
  * @galasa.examples 
- * <code>mq.server.[tag].queuename=GALASA.INPUT.QUEUE</code><br>
+ * <code>mq.queue.[tag].queuename=GALASA.INPUT.QUEUE</code><br>
  *
  */
 public class QueueNameForTag extends CpsProperties {
