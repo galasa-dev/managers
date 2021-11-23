@@ -14,9 +14,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -78,7 +75,6 @@ import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
-import dev.galasa.http.IHttpManager;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -868,10 +864,11 @@ public abstract class HttpClientImpl implements IHttpClient {
         }
     }
     
-    private void archive(HttpUriRequest request) {
+    protected void archive(HttpUriRequest request) {
+    	
     }
     
-    private void archive(CloseableHttpResponse response) {
+    protected void archive(CloseableHttpResponse response) {
     }
 
     @Override

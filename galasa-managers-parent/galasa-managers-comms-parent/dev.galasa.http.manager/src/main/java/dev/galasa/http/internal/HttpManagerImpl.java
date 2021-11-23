@@ -46,7 +46,7 @@ public class HttpManagerImpl extends AbstractManager implements IHttpManagerSpi 
     	boolean archiveHeaders = false;
     	for(Annotation a : annotations) {
     		if(a instanceof HttpClient) {
-    			archiveHeaders = Boolean.parseBoolean(((HttpClient)a).archiveHeaders());
+    			archiveHeaders = ((HttpClient)a).archiveHeaders();
     		}
     	}
         return newHttpClient(archiveHeaders);

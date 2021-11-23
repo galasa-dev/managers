@@ -28,7 +28,7 @@ public class HttpManagerIVT {
     @Logger
     public Log logger;
 
-    @HttpClient
+    @HttpClient(archiveHeaders = true)
     public IHttpClient client;
 
     @Test

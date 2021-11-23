@@ -62,7 +62,7 @@ public class FrameworkHttpClientImpl extends HttpClientImpl {
     		sb.append(h.getName());
     		sb.append(":");
     		sb.append(h.getValue());
-    		sb.append("/n");
+    		sb.append("\n");
     	}
     	return sb.toString();
     }

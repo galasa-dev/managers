@@ -25,6 +25,6 @@ import dev.galasa.http.internal.HttpManagerField;
 @HttpManagerField
 @ValidAnnotatedFields({ IHttpClient.class })
 public @interface HttpClient {
-	String archiveHeaders() default "FALSE";
+	boolean archiveHeaders() default false;
 
 }
