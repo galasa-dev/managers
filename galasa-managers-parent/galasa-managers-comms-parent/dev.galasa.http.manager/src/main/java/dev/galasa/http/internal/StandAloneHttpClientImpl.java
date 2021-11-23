@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.http.internal;
 
 import org.apache.commons.logging.Log;
