@@ -55,7 +55,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.cicsts.ceda.manager.ivt
-    version: 0.17.0
+    version: 0.19.0
     obr: true
     isolated: true
     
@@ -67,7 +67,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.cicsts.cemt.manager.ivt
-    version: 0.15.0
+    version: 0.19.0
     obr: true
     isolated: true
     
