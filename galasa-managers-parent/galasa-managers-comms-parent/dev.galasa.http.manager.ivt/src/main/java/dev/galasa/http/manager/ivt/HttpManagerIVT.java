@@ -22,6 +22,9 @@ import dev.galasa.http.IHttpClient;
 import dev.galasa.http.StandAloneHttpClient;
 
 
+/*
+ * Copyright contributors to the Galasa project
+ */
 @Test
 public class HttpManagerIVT {
 
