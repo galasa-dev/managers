@@ -79,19 +79,26 @@ public class CedaManagerIVT {
       runName = coreManager.getRunName();
       logger.info("Using Run ID of: " + runName);
       
-      programName = "P" + runName.replaceAll("[^\\d.]", "");
+      programName = getUniqueName(runName, 8);
       
-      programA = "P" + runName.replaceAll("[^\\d.]", "") + "A";
-      programB = "P" + runName.replaceAll("[^\\d.]", "") + "B";
-      programC = "P" + runName.replaceAll("[^\\d.]", "") + "C";
-      programD = "P" + runName.replaceAll("[^\\d.]", "") + "D";
+      programA = getUniqueName(runName, 7) + "A";
+      programB = getUniqueName(runName, 7) + "B";
+      programC = getUniqueName(runName, 7) + "C";
+      programD = getUniqueName(runName, 7) + "D";
       
-      transactionName = runName.replaceAll("[^\\d.]", "");
-      if (transactionName.length() > 4) {
-    	  transactionName = transactionName.substring(transactionName.length()-4);
-      }
+      // Remove letters in case run name begins with C
+      // Transaction names cannot begin with C
+      transactionName = getUniqueName(runName.replaceAll("[^\\d.]", ""), 4);
       
-      libraryName = "L" + runName.replaceAll("[^\\d.]", "");
+      libraryName = getUniqueName(runName, 8);
+   }
+   
+   private String getUniqueName(String runName, int maxLength) {
+	   String uniqueName = runName;
+	   if (uniqueName.length() > maxLength) {
+		   uniqueName = uniqueName.substring(uniqueName.length() - maxLength);
+	   }
+	   return uniqueName;
    }
 
    @Before

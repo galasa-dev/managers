@@ -70,8 +70,11 @@ public class CEMTManagerIVT {
       runName = coreManager.getRunName();
       logger.info("Using Run ID of: " + runName);
       
-      programName = "P" + runName.replaceAll("[^\\d.]", "");
-      logger.info("Using unique name for resources: " + programName);
+      programName = runName;
+      if (programName.length() > 8) {
+    	  programName = programName.substring(programName.length() - 8);
+	   }
+      logger.info("Using unique name for Programs: " + programName);
    }
    
    @Before
