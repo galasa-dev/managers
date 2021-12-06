@@ -48,6 +48,7 @@ include 'galasa-managers-zos-parent:dev.galasa.zosfile.rseapi.manager'
 include 'galasa-managers-zos-parent:dev.galasa.zossecurity.manager'
 // galasa-managers-cicsts-parent
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.manager'
+include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.manager.ivt'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceci.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager'
 include 'galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager'
