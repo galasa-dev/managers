@@ -373,7 +373,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zossecurity.manager
-    version: 0.16.0
+    version: 0.19.0
     obr: true
     bom: true
     mvp: true
