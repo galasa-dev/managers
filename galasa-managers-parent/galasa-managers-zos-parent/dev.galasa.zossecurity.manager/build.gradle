@@ -28,9 +28,4 @@ dependencies {
             strictly '1.69'
         }
     }
-    implementation ('org.bouncycastle:bcpkix-jdk15on') {
-        version {
-            strictly '1.69'
-        }
-    }
 }
