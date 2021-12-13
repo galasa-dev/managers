@@ -378,6 +378,14 @@ managers:
     isolated: true
     codecoverage: true
     
+  - artifact: dev.galasa.zossecurity.manager
+    version: 0.19.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+    codecoverage: true
+    
   - artifact: dev.galasa.zostsocommand.ssh.manager
     version: 0.15.0
     obr: true
