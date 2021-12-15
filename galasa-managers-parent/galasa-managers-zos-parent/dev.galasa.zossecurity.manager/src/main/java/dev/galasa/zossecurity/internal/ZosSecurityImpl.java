@@ -73,6 +73,7 @@ import dev.galasa.zossecurity.datatypes.RACFAccessType;
 import dev.galasa.zossecurity.datatypes.RACFCertificateTrust;
 import dev.galasa.zossecurity.datatypes.RACFCertificateType;
 import dev.galasa.zossecurity.internal.properties.CicsSharedClassets;
+import dev.galasa.zossecurity.internal.properties.CreateUserid;
 import dev.galasa.zossecurity.internal.properties.KerberosDomainController;
 import dev.galasa.zossecurity.internal.properties.KerberosRealm;
 import dev.galasa.zossecurity.internal.properties.OutputReporting;
@@ -81,6 +82,8 @@ import dev.galasa.zossecurity.internal.properties.ResourceReporting;
 import dev.galasa.zossecurity.internal.properties.ServerApikey;
 import dev.galasa.zossecurity.internal.properties.ServerUrl;
 import dev.galasa.zossecurity.internal.properties.SetroptsDelay;
+import dev.galasa.zossecurity.internal.properties.UseridDefaultGroup;
+import dev.galasa.zossecurity.internal.properties.UseridDefaultGroups;
 import dev.galasa.zossecurity.internal.properties.UseridPool;
 import dev.galasa.zossecurity.internal.resources.RacfOutputProcessing;
 import dev.galasa.zossecurity.internal.resources.ZosCertificateImpl;
@@ -155,7 +158,6 @@ public class ZosSecurityImpl implements IZosSecurity {
 
 	private boolean resourceReporting;
 	private boolean outputReporting;
-
 	private final Map<String, String> zosSecurityServerQueryParams = new HashMap<String, String>();
 
 	private int setroptsDelay;
@@ -163,6 +165,9 @@ public class ZosSecurityImpl implements IZosSecurity {
 	private String runDatasetHLQ;
 	private List<String> useridPool;
 	private List<String> cicsSharedClassSets;
+	private boolean createUserid;
+	private String useridDefaultGroup;
+	private List<String> useridDefaultGroups;
 
 	public ZosSecurityImpl(ZosSecurityManagerImpl zosSecurityManagerImpl, IZosImage image) throws ZosSecurityManagerException {
 		this.framework = zosSecurityManagerImpl.getFramework();
@@ -177,6 +182,7 @@ public class ZosSecurityImpl implements IZosSecurity {
 			this.setroptsDelay = SetroptsDelay.get();
 			this.useridPool = UseridPool.get(image.getSysplexID());
 			this.cicsSharedClassSets = CicsSharedClassets.get(image.getSysplexID());
+			this.createUserid = CreateUserid.get();
 		} catch(ZosSecurityManagerException e) {
 			throw new ZosSecurityManagerException("Unable to obtain manager properties", e);
 		}
@@ -1027,7 +1033,7 @@ public class ZosSecurityImpl implements IZosSecurity {
 		return this.useridPool;
 	}
 
-	public String getUseridFromPool() throws ZosSecurityManagerException {
+	public String getUseridFromPool(boolean createUserid) throws ZosSecurityManagerException {
 		String sysplexId = getZosImage().getSysplexID();
 		String resourceType = ResourceType.ZOS_USERID.getName();
 		for (String userName: this.useridPool) {
@@ -1063,5 +1069,23 @@ public class ZosSecurityImpl implements IZosSecurity {
 			}
 		}
 		throw new ZosSecurityManagerException("No CICS Class Sets available in pool for image " + getZosImage());
+	}
+
+	public boolean createUserid() {
+		return createUserid;
+	}
+
+	public String getUseridDefaultGroup() throws ZosSecurityManagerException {
+		if (useridDefaultGroup == null) {
+			useridDefaultGroup = UseridDefaultGroup.get();
+		}
+		return useridDefaultGroup;
+	}
+
+	public List<String> getUseridGroups() throws ZosSecurityManagerException {
+		if (useridDefaultGroups == null) {
+			useridDefaultGroups = UseridDefaultGroups.get();
+		}
+		return useridDefaultGroups;
 	}
 }
