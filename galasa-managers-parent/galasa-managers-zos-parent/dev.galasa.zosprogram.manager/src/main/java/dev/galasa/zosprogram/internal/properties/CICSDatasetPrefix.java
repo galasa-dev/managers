@@ -12,19 +12,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 //TODO: Should we get this from the CICS Manager?
 /**
- * zOS CICS data set Prefix
+ * zOS CICS data set prefix
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosprogram.cics.[imageid].dataset.prefix
  * 
- * @galasa.description zOS CICS data set prefix
+ * @galasa.description  The prefix of the CICS zOS data sets containing load modules (SDFHLOAD) and source 
+ * copybooks, macros, link SYSIN etc (SDFHC370, SDFHCOB, SDFHPL1, SDFHMAC, SDFHSAMP) to be used in program compile and link JCL
+ *  
+ * @galasa.required Yes, for CICS programs only
  * 
- * @galasa.required Yes
+ * @galasa.default For CICS programs, defaults to 'CICS'. Not used in non CICS programs
  * 
- * @galasa.default None
- * 
- * @galasa.valid_values
+ * @galasa.valid_values a comma separated list of one or more valid zOS data set prefixes
  * 
  * @galasa.examples 
  * <code>zosprogram.cics.MVSA.dataset.prefix=CICS</code><br>

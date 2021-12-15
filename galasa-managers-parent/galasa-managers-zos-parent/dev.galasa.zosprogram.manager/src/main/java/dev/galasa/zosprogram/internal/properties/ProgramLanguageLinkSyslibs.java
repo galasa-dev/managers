@@ -13,19 +13,20 @@ import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 
 /**
- * zOS Program LanguageExtended specific custom link syslibs
+ * The site and language specific custom zOS program link SYSLIBs
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosprogram.[language].[imageid].link.syslibs
  * 
- * @galasa.description zOS Program LanguageExtended data set prefix
+ * @galasa.description The site specific and language specific (COBOL, C, PL1, ASSEMBLER) custom zOS data sets containing load
+ * modules used in the link SYSLIB concatenation in the zOS program compile and link JCL
  * 
  * @galasa.required No
  * 
  * @galasa.default None
  * 
- * @galasa.valid_values
+ * @galasa.valid_values a comma separated list of zOS data sets
  * 
  * @galasa.examples 
  * <code>zosprogram.cobol.MVSA.link.syslibs=TEAM.LOADLIB</code><br>
