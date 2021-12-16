@@ -27,8 +27,8 @@ spec:
           httpGet:
             path: /
             port: 5984
-          initialDelaySeconds: 60
-          periodSeconds: 60
+          initialDelaySeconds: 5
+          periodSeconds: 5
         volumeMounts:
         - mountPath: /opt/couchdb/data
           name: data-disk

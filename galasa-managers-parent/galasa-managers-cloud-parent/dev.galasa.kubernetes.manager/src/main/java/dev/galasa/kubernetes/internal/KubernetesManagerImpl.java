@@ -44,6 +44,7 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.util.ModelMapper;
 import io.kubernetes.client.util.Yaml;
 
 /**
@@ -107,13 +108,14 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
             throw new KubernetesManagerException("Unable to provide the DSS for the Kubernetes Manager", e);
         }
 
+        
         //*** Load the YAML supported types so that the YAML can serialize
-        Yaml.addModelMap("v1", "ConfigMap", V1ConfigMap.class);
-        Yaml.addModelMap("v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
-        Yaml.addModelMap("v1", "Service", V1Service.class);
-        Yaml.addModelMap("v1", "Secret", V1Secret.class);
-        Yaml.addModelMap("v1", "Deployment", V1Deployment.class);
-        Yaml.addModelMap("v1", "StatefulSet", V1StatefulSet.class);
+        Yaml.addModelMap("/v1", "ConfigMap", V1ConfigMap.class);
+        Yaml.addModelMap("/v1", "PersistentVolumeClaim", V1PersistentVolumeClaim.class);
+        Yaml.addModelMap("/v1", "Service", V1Service.class);
+        Yaml.addModelMap("/v1", "Secret", V1Secret.class);
+        Yaml.addModelMap("apps/v1", "Deployment", V1Deployment.class);
+        Yaml.addModelMap("apps/v1", "StatefulSet", V1StatefulSet.class);
 
         this.logger.info("Kubernetes Manager initialised");
 

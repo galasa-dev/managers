@@ -69,7 +69,6 @@ import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.openapi.models.V1StatefulSetList;
 import io.kubernetes.client.openapi.models.V1StatefulSetSpec;
-import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.proto.V1.Namespace;
 import io.kubernetes.client.util.Yaml;
 
@@ -217,7 +216,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
         try {
             //*** Delete all configmaps that exist in the namespace
-            V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1ConfigMap configMap : configMapList.getItems()) {
                 logger.debug("Deleting ConfigMap " + this.cluster.getId() + "/" + this.namespaceId + "/" + configMap.getMetadata().getName());
@@ -227,7 +226,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all secrets that exist in the namespace
-            V1SecretList secretList = coreApi.listNamespacedSecret(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1SecretList secretList = coreApi.listNamespacedSecret(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Secret secret : secretList.getItems()) {
                 // Check the secret is not for a service account
@@ -246,7 +245,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all Deployments that exist in the namespace
-            V1DeploymentList deploymentList = appsApi.listNamespacedDeployment(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1DeploymentList deploymentList = appsApi.listNamespacedDeployment(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Deployment deployment : deploymentList.getItems()) {
                 logger.debug("Deleting Deployment " + this.cluster.getId() + "/" + this.namespaceId + "/" + deployment.getMetadata().getName());
@@ -256,7 +255,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all StatefulSets that exist in the namespace
-            V1StatefulSetList statefulsetList = appsApi.listNamespacedStatefulSet(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1StatefulSetList statefulsetList = appsApi.listNamespacedStatefulSet(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1StatefulSet statefulset : statefulsetList.getItems()) {
                 logger.debug("Deleting StatefulSet " + this.cluster.getId() + "/" + this.namespaceId + "/" + statefulset.getMetadata().getName());
@@ -266,7 +265,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all Services that exist in the namespace
-            V1ServiceList serviceList = coreApi.listNamespacedService(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1ServiceList serviceList = coreApi.listNamespacedService(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Service service : serviceList.getItems()) {
                 logger.debug("Deleting Service " + this.cluster.getId() + "/" + this.namespaceId + "/" + service.getMetadata().getName());
@@ -274,7 +273,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all PVCs that exist in the namespace
-            V1PersistentVolumeClaimList pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1PersistentVolumeClaimList pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1PersistentVolumeClaim pvc : pvcList.getItems()) {
                 logger.debug("Deleting PVC " + this.cluster.getId() + "/" + this.namespaceId + "/" + pvc.getMetadata().getName());
@@ -290,7 +289,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             }
 
             //*** Delete all remaining pods
-            V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
             for(V1Pod pod : pods.getItems()) {
                 logger.debug("Deleting POD " + this.cluster.getId() + "/" + this.namespaceId + "/" + pod.getMetadata().getName());
                 V1DeleteOptions options = new V1DeleteOptions();
@@ -316,9 +315,9 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             Instant check = Instant.now().plusSeconds(checkSeconds);
 
             while(timeout.isAfter(Instant.now())) {
-                V1PodList podList = coreApi.listNamespacedPod(namespaceId, null, null, null, null, null, null, null, null, null);
-                V1ReplicaSetList replicaSetList = appsApi.listNamespacedReplicaSet(this.namespaceId, null, null, null, null, null, null, null, null, null);
-                pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null);
+                V1PodList podList = coreApi.listNamespacedPod(namespaceId, null, null, null, null, null, null, null, null, null, null);
+                V1ReplicaSetList replicaSetList = appsApi.listNamespacedReplicaSet(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
+                pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
                 if (podList.getItems().isEmpty() 
                         && replicaSetList.getItems().isEmpty()
@@ -597,7 +596,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespaceConfigMap(CoreV1Api coreApi, Path directory) {
         try {
-            V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1ConfigMap configMap : configMapList.getItems()) {
                 saveNamespaceFile(directory, configMap, "configmap_", configMap.getMetadata());
@@ -609,7 +608,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespacePersistentVolumeClaim(CoreV1Api coreApi, Path directory) {
         try {
-            V1PersistentVolumeClaimList pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1PersistentVolumeClaimList pvcList = coreApi.listNamespacedPersistentVolumeClaim(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1PersistentVolumeClaim pvc : pvcList.getItems()) {
                 saveNamespaceFile(directory, pvc, "pvc_", pvc.getMetadata());
@@ -621,7 +620,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespaceSecret(CoreV1Api coreApi, Path directory) {
         try {
-            V1SecretList secretList = coreApi.listNamespacedSecret(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1SecretList secretList = coreApi.listNamespacedSecret(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Secret secret : secretList.getItems()) {
                 // Check the secret is not for a service account
@@ -642,7 +641,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespaceService(CoreV1Api coreApi, Path directory) {
         try {
-            V1ServiceList serviceList = coreApi.listNamespacedService(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1ServiceList serviceList = coreApi.listNamespacedService(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Service service : serviceList.getItems()) {
                 saveNamespaceFile(directory, service, "service_", service.getMetadata());
@@ -654,7 +653,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespaceDeployment(AppsV1Api appsApi, CoreV1Api coreApi, Path directory) {
         try {
-            V1DeploymentList deploymentList = appsApi.listNamespacedDeployment(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1DeploymentList deploymentList = appsApi.listNamespacedDeployment(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1Deployment deployment : deploymentList.getItems()) {
                 saveNamespaceFile(directory, deployment, "deployment_", deployment.getMetadata());
@@ -670,7 +669,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
     private void saveNamespacePods(CoreV1Api coreApi, Path directory, V1LabelSelector labelSelector, String prefix) throws KubernetesManagerException, ApiException, IOException {
         String convertedLabelSelector = Utility.convertLabelSelector(labelSelector);
 
-        V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, convertedLabelSelector, null, null, null, null);
+        V1PodList pods = coreApi.listNamespacedPod(this.namespaceId, null, null, null, null, convertedLabelSelector, null, null, null, null, null);
         for(V1Pod pod : pods.getItems()) {
             String name = pod.getMetadata().getName();
 
@@ -696,7 +695,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         Path path = directory.resolve(filename + ".log");
 
         try {
-            String log = coreApi.readNamespacedPodLog(pod, this.namespaceId, container, null, null, null, null, null, null, null);
+            String log = coreApi.readNamespacedPodLog(pod, this.namespaceId, container, null, null, null, null, null, null, null, null);
             if (log != null) {
                 Files.write(path, log.getBytes(), StandardOpenOption.CREATE, new SetContentType(ResultArchiveStoreContentType.TEXT));
             }
@@ -709,7 +708,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
     private void saveNamespaceStatefulSet(AppsV1Api appsApi, CoreV1Api coreApi, Path directory) {
         try {
-            V1StatefulSetList statefulsetList = appsApi.listNamespacedStatefulSet(this.namespaceId, null, null, null, null, null, null, null, null, null);
+            V1StatefulSetList statefulsetList = appsApi.listNamespacedStatefulSet(this.namespaceId, null, null, null, null, null, null, null, null, null, null);
 
             for(V1StatefulSet statefulset : statefulsetList.getItems()) {
                 saveNamespaceFile(directory, statefulset, "statefulset_", statefulset.getMetadata());

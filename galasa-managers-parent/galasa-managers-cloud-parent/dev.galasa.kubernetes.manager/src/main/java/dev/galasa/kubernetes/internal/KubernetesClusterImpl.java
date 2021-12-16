@@ -7,6 +7,7 @@ package dev.galasa.kubernetes.internal;
 
 import java.net.URL;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,8 +17,6 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -232,10 +231,9 @@ public class KubernetesClusterImpl {
         Gson gson = json.getGson();
         
         GsonBuilder newGsonBuilder = JSON.createGson();
+        newGsonBuilder.registerTypeAdapter(OffsetDateTime.class, gson.getAdapter(OffsetDateTime.class));
         newGsonBuilder.registerTypeAdapter(Date.class, gson.getAdapter(Date.class));
         newGsonBuilder.registerTypeAdapter(java.sql.Date.class, gson.getAdapter(java.sql.Date.class));
-        newGsonBuilder.registerTypeAdapter(DateTime.class, gson.getAdapter(DateTime.class));
-        newGsonBuilder.registerTypeAdapter(LocalDate.class, gson.getAdapter(LocalDate.class));
         newGsonBuilder.registerTypeAdapter(byte[].class, gson.getAdapter(byte[].class));
         newGsonBuilder.registerTypeAdapter(Quantity.class, new Quantity.QuantityAdapter());
         newGsonBuilder.registerTypeAdapter(IntOrString.class, new IntOrString.IntOrStringAdapter());
