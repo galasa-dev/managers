@@ -19,9 +19,9 @@ public class TestExeptionsAndEnums {
     
     @Test
     public void testLanguage() {
-        Assert.assertEquals("Problem with LanguageExtended", ".cbl", Language.COBOL.getFileExtension());
+        Assert.assertEquals("Problem with Language", ".cbl", Language.COBOL.getFileExtension());
 
-        Assert.assertEquals("Problem with LanguageExtended", Language.COBOL, Language.fromExtension(".cbl"));
+        Assert.assertEquals("Problem with Language", Language.COBOL, Language.fromExtension(".cbl"));
         
         String extension = ".xxx";
     	String expectedMessage = "Extension " + extension  + " does not match supported languages";
