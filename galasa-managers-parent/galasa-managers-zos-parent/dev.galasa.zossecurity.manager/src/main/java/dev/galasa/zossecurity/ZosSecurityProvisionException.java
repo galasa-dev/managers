@@ -3,7 +3,7 @@
  */
 package dev.galasa.zossecurity;
 
-public class ZosSecurityProvisionException extends Exception /* TODO ProvisionException */ {
+public class ZosSecurityProvisionException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	public ZosSecurityProvisionException() {

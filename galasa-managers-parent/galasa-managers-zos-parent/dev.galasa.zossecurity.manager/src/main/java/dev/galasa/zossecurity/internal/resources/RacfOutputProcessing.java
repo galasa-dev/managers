@@ -24,6 +24,7 @@ public class RacfOutputProcessing {
 	private static final Log logger = LogFactory.getLog(RacfOutputProcessing.class);
 	
 	public enum COMMAND {
+		ADDUSER,
 		ALTUSER,
 		LISTUSER,
 		CONNECT,
@@ -32,7 +33,8 @@ public class RacfOutputProcessing {
 		RLIST, 
 		RALTER, 
 		PERMIT, 
-		RDELETE, 
+		RDELETE,
+		DELUSER,
 		REFRESH, 
 		RACDCERT_ADDRING, 
 		RACDCERT_LISTRING, 
