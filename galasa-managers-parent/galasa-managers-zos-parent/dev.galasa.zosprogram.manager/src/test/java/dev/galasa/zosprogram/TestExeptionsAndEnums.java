@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram;
 
@@ -19,9 +17,9 @@ public class TestExeptionsAndEnums {
     
     @Test
     public void testLanguage() {
-        Assert.assertEquals("Problem with LanguageExtended", ".cbl", Language.COBOL.getFileExtension());
+        Assert.assertEquals("Problem with Language", ".cbl", Language.COBOL.getFileExtension());
 
-        Assert.assertEquals("Problem with LanguageExtended", Language.COBOL, Language.fromExtension(".cbl"));
+        Assert.assertEquals("Problem with Language", Language.COBOL, Language.fromExtension(".cbl"));
         
         String extension = ".xxx";
     	String expectedMessage = "Extension " + extension  + " does not match supported languages";

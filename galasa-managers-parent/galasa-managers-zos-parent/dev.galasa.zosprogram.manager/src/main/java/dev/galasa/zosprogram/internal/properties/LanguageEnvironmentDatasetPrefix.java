@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram.internal.properties;
 
@@ -12,19 +10,20 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 
 /**
- * zOS LanguageExtended Environment data set prefix
+ * zOS Language Environment data set prefix
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosprogram.le.[imageid].dataset.prefix
  * 
- * @galasa.description zOS LanguageExtended Environment data set prefix
+ * @galasa.description The prefix of the Language Environment zOS data sets containing load modules (SCEERUN, SCEERUN2) and source
+ * copybooks, macros, link SYSIN etc (SCEESAMP) to be used in program compile and link JCL
  * 
  * @galasa.required Yes
  * 
- * @galasa.default None
+ * @galasa.default Defaults to 'CEE'
  * 
- * @galasa.valid_values
+ * @galasa.valid_values a comma separated list of one or more valid zOS data set prefixes
  * 
  * @galasa.examples 
  * <code>zosprogram.le.MVSA.dataset.prefix=CEE</code><br>
@@ -41,7 +40,7 @@ public class LanguageEnvironmentDatasetPrefix extends CpsProperties {
             }
             return datasetPrefixValue;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosProgramManagerException("Problem asking the CPS for the zOS LanguageExtended Environment dataset prefix for zOS image "  + imageId, e);
+            throw new ZosProgramManagerException("Problem asking the CPS for the zOS Language Environment dataset prefix for zOS image "  + imageId, e);
         }
     }
 
