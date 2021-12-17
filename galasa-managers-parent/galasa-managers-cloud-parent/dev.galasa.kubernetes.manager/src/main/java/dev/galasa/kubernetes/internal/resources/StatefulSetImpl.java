@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -51,7 +49,7 @@ public class StatefulSetImpl extends ReplicaSetHolder implements IStatefulSet {
        try {
            AppsV1Api api = new AppsV1Api(namespace.getCluster().getApi());
            
-           V1StatefulSet newSet = api.readNamespacedStatefulSet(getName(), namespace.getId(), null, null, null);
+           V1StatefulSet newSet = api.readNamespacedStatefulSet(getName(), namespace.getId(), null);
            
            this.statefulSet = newSet;
        } catch(Exception e) {

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -47,13 +45,13 @@ public abstract class ReplicaSetHolder {
             
             String convertedLabelSelector = Utility.convertLabelSelector(labelSelector);
             
-            V1PodList pods = coreApi.listNamespacedPod(namespace, null, null, null, null, convertedLabelSelector, null, null, null, null);
+            V1PodList pods = coreApi.listNamespacedPod(namespace, null, null, null, null, convertedLabelSelector, null, null, null, null, null);
             for(V1Pod pod : pods.getItems()) {
                 String name = pod.getMetadata().getName();
                 String log = null;
                 
                 try {
-                    log = coreApi.readNamespacedPodLog(name, namespace, container, null, null, null, null, null, null, null);
+                    log = coreApi.readNamespacedPodLog(name, namespace, container, null, null, null, null, null, null, null, null);
                 } catch(ApiException e) {
                 }
                 
