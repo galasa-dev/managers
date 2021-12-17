@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram.internal.properties;
 
@@ -13,19 +11,23 @@ import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 
 /**
- * zOS Program LanguageExtended data set prefix
+ * zOS Program Language data set prefix
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosprogram.[language].[imageid].dataset.prefix
  * 
- * @galasa.description zOS Program LanguageExtended data set High Level Qualifier
+ * @galasa.description The prefix of the language specific zOS data sets containing STEPLIB load modules used in program compile
+ * and link JCL, e.g.<br>
+ * COBOL - SIGYCOMP<br>
+ * C - SCCNCMP<br>
+ * PL1 - SIBMZCMP<br>
  * 
- * @galasa.required Yes
+ * @galasa.required An entry required for each language used e,g, COBOL, C, PL1, ASSEMBLER
  * 
  * @galasa.default None
  * 
- * @galasa.valid_values
+ * @galasa.valid_values a comma separated list of one or more valid zOS data set prefixes
  * 
  * @galasa.examples 
  * <code>zosprogram.cobol.MVSA.dataset.prefix=IGY.V6R3M0</code><br>

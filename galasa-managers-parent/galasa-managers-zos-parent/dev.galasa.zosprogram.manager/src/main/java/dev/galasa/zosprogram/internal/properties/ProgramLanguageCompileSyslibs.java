@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram.internal.properties;
 
@@ -13,19 +11,20 @@ import dev.galasa.zosprogram.ZosProgram.Language;
 import dev.galasa.zosprogram.ZosProgramManagerException;
 
 /**
- * zOS Program LanguageExtended specific custom compile syslibs
+ * The site and language specific custom zOS program compile SYSLIBs
  * 
  * @galasa.cps.property
  * 
  * @galasa.name zosprogram.[language].[imageid].compile.syslibs
  * 
- * @galasa.description zOS Program LanguageExtended data set prefix
+ * @galasa.description The site specific and language specific (COBOL, C, PL1, ASSEMBLER) custom zOS data sets containing source
+ * copybooks and macros etc used in the compile SYSLIB concatenation in the zOS program compile and link JCL
  * 
  * @galasa.required No
  * 
  * @galasa.default None
  * 
- * @galasa.valid_values
+ * @galasa.valid_values a comma separated list of one or more valid zOS data sets
  * 
  * @galasa.examples 
  * <code>zosprogram.cobol.MVSA.compile.syslibs=TEAM.COPYBOOK</code><br>

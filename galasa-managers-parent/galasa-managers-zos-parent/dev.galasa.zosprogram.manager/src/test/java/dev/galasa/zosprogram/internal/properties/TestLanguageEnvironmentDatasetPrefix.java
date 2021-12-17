@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram.internal.properties;
 
@@ -56,7 +54,7 @@ public class TestLanguageEnvironmentDatasetPrefix {
     
     @Test
     public void testException() throws Exception {
-        String expectedMessage = "Problem asking the CPS for the zOS LanguageExtended Environment dataset prefix for zOS image " + IMAGE_ID;
+        String expectedMessage = "Problem asking the CPS for the zOS Language Environment dataset prefix for zOS image " + IMAGE_ID;
         ZosProgramManagerException expectedException = Assert.assertThrows("expected exception should be thrown", ZosProgramManagerException.class, ()->{
         	getProperty(Arrays.asList("ANY"), true);
         });

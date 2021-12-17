@@ -357,7 +357,7 @@ public class ZosProfileImpl implements IZosProfile {
 				}
 			}	
 		} catch (ZosSecurityManagerException e) {
-//			throw new ZosSecurityManagerException("RDEFINE of " + getClassProfileName() + " failed", e);
+			throw new ZosSecurityManagerException("RDEFINE of " + getClassProfileName() + " failed", e);
 		}
 	}
 

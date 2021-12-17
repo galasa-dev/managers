@@ -1,6 +1,6 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project 
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.InputStream;
@@ -123,14 +123,14 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankWebUrl;
     private InetSocketAddress                simbankDatabasePort;
     private URL                              simbankManagementFacilityUrl;
-    
+
     private RunIdPrefixImpl                  runIdPrefix;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
         super(manager, tag, null, null);
         this.namespace = namespace;
     }
-    
+
     protected void reserveRunIdPrefix() throws InsufficientResourcesAvailableException, GalasaEcosystemManagerException {
         this.runIdPrefix = new RunIdPrefixImpl(getEcosystemManager().getFramework(), getEcosystemManager().getDss());
     }
@@ -521,16 +521,43 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
 
     private void storeCpsProperty(@NotNull String key, @NotNull String value) throws GalasaEcosystemManagerException {
         try {
+
             Encoder encoder = Base64.getEncoder();
             IHttpClient httpClient = getEtcdHttpClient();
 
-            JsonObject dssJson = new JsonObject();
-            dssJson.addProperty("key", new String(encoder.encode(key.getBytes())));
-            dssJson.addProperty("value", new String(encoder.encode(value.getBytes())));
+            Instant timeout = Instant.now().plusSeconds(180);
+            Instant waitMessage = Instant.now().plusSeconds(30);
+            Exception lastException = null;
+            while(timeout.isAfter(Instant.now())) {
 
-            httpClient.postJson("/v3/kv/put", dssJson);
+                JsonObject dssJson = new JsonObject();
+                dssJson.addProperty("key", new String(encoder.encode(key.getBytes())));
+                dssJson.addProperty("value", new String(encoder.encode(value.getBytes())));
 
-        } catch (KubernetesManagerException | HttpClientException e) {
+                try {
+                    httpClient.postJson("/v3/kv/put", dssJson);
+                    logger.info("Set CPS key '" + key + "' to '" + value + "'");
+                    return;
+                } catch(HttpClientException e) {
+                    lastException = e;
+                }
+                
+                if (waitMessage.isBefore(Instant.now())) {
+                    logger.debug("Waiting for detcd port to open");
+                    waitMessage = Instant.now().plusSeconds(30);
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new GalasaEcosystemManagerException("wait for etcd port interrupted",e);
+                }
+            }
+            
+            throw new GalasaEcosystemManagerException("The etcd3 http port did not open in time, last exception was:-",lastException);
+
+        } catch (KubernetesManagerException e) {
             throw new GalasaEcosystemManagerException("Problem setting CPS property " + key + "=" + value, e);
         }
     }
@@ -1138,7 +1165,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
         } catch(KubernetesManagerException | UnsupportedEncodingException | HttpClientException e) {
             throw new GalasaEcosystemManagerException("Failed to submit test", e);
         }
-        
+
         return null;
     }
 
