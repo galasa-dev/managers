@@ -8,15 +8,15 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.zossecurity.ZosSecurityManagerException;
 
 /**
- * zOS Security Userid Bypass Password
+ * zOS Security Userid Bypass Cleanup
  */
-public class UseridBypassPassword extends CpsProperties {
+public class UseridBypassCleanup extends CpsProperties {
     
     public static boolean get() throws ZosSecurityManagerException {
         try {
-        	return Boolean.parseBoolean(getStringNulled(ZosSecurityPropertiesSingleton.cps(), "userid", "allocate.bypass.password"));
+        	return Boolean.parseBoolean(getStringNulled(ZosSecurityPropertiesSingleton.cps(), "userid", "bypass.cleanup"));
         } catch (ConfigurationPropertyStoreException e) {
-            throw new ZosSecurityManagerException("Problem asking the CPS for the zOS Security Userid Bypass Password");
+            throw new ZosSecurityManagerException("Problem asking the CPS for the zOS Security Userid Bypass Cleanup");
         }
     }
 
