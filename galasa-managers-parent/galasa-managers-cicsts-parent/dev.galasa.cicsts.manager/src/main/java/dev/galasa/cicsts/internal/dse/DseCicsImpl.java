@@ -118,7 +118,7 @@ public class DseCicsImpl extends BaseCicsImpl {
 	public IZosBatchJob getRegionJob() throws CicstsManagerException {
 		if (this.regionJob == null) {
 			try {
-				List<IZosBatchJob> jobs = this.cicstsManager.getZosBatch(this).getJobs(getApplid(), null);
+				List<IZosBatchJob> jobs = this.cicstsManager.getZosBatch(this).getJobs(getApplid(), "*");
 				for (IZosBatchJob job : jobs) {
 					if (job.getStatus().equals(JobStatus.ACTIVE)) {
 						String jesmsglg = job.getSpoolFile("JESMSGLG").getRecords();
