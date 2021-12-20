@@ -33,9 +33,6 @@ import dev.galasa.zos3270.spi.NetworkException;
 
 @Test
 public class CedaManagerIVT {
-	
-   @Logger
-   public Log logger;
 
    @CicsRegion()
    public ICicsRegion cics;
@@ -49,22 +46,6 @@ public class CedaManagerIVT {
    @CicsTerminal()
    public ICicsTerminal terminal;
    
-   @CoreManager
-   public ICoreManager coreManager;
-   
-   private String runName  = new String();
-   
-   private String programName = new String();
-   
-   private String programA = new String();
-   private String programB = new String();
-   private String programC = new String();
-   private String programD = new String();
-   
-   private String transactionName = new String();
-   
-   private String libraryName = new String();
-   
    @BeforeClass
    public void login() throws Exception {
       cedaTerminal.clear();
@@ -72,33 +53,7 @@ public class CedaManagerIVT {
       
       cemtTerminal.clear();
       cemtTerminal.waitForKeyboard();
-      
-      terminal.clear();
-      terminal.waitForKeyboard();
-      
-      runName = coreManager.getRunName();
-      logger.info("Using Run ID of: " + runName);
-      
-      programName = getUniqueName(runName, 8);
-      
-      programA = getUniqueName(runName, 7) + "A";
-      programB = getUniqueName(runName, 7) + "B";
-      programC = getUniqueName(runName, 7) + "C";
-      programD = getUniqueName(runName, 7) + "D";
-      
-      // Remove letters in case run name begins with C
-      // Transaction names cannot begin with C
-      transactionName = getUniqueName(runName.replaceAll("[^\\d.]", ""), 4);
-      
-      libraryName = getUniqueName(runName, 8);
-   }
    
-   private String getUniqueName(String runName, int maxLength) {
-	   String uniqueName = runName;
-	   if (uniqueName.length() > maxLength) {
-		   uniqueName = uniqueName.substring(uniqueName.length() - maxLength);
-	   }
-	   return uniqueName;
    }
 
    @Before
@@ -111,196 +66,185 @@ public class CedaManagerIVT {
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
       terminal.type("CEDA DELETE GROUP(noIVT) ALL").enter().waitForKeyboard();
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD prog(Program," + programA + "," + programB + "," + programC + "," + programD + ")").enter().waitForKeyboard();
+      terminal.type("CEMT DISCARD prog(Program,prg1,prg2,prg3,prg4)").enter().waitForKeyboard();
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD transaction(" + transactionName + ")").enter().waitForKeyboard();
+      terminal.type("CEMT DISCARD transaction(trx1)").enter().waitForKeyboard();
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD LIBRARY(" + libraryName + ")").enter().waitForKeyboard();
+      terminal.type("CEMT DISCARD LIBRARY(lib1)").enter().waitForKeyboard();
       terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
    }
 
    @Test
 	public void checkCECINotNull() throws CicstsManagerException {
-      assertThat(cics).isNotNull();
-      assertThat(cics.ceda()).isNotNull();
-      assertThat(cics.cemt()).isNotNull();
-      assertThat(cemtTerminal).isNotNull();
-      assertThat(cedaTerminal).isNotNull();
+     assertThat(cics).isNotNull();
+     assertThat(cics.ceda()).isNotNull();
+     assertThat(cics.cemt()).isNotNull();
+     assertThat(cemtTerminal).isNotNull();
+     assertThat(cedaTerminal).isNotNull();
    }
-
-   @Test
+  @Test
 	public void testResourceProgram() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
-      String resourceType = "PROGRAM";
-      String groupName = "Test";
-      String resourceParameters = null;
-      boolean response = false;
-      
-      logger.info("Using unique Program name: " + programName);
-      
-      try {
+     String resourceType = "PROGRAM";
+     String resourceName = "Program";
+     String groupName = "Test";
+     String resourceParameters = null;
+     boolean response = false;
+
+     try {
+        // Testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
+        assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
+
+        cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+        assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
+
+        cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+        if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) != null) {
+           response = true;
+        }
+        assertThat(response).isEqualTo(true);
+        
+        // If resource was installed successfully, then tests the delete method by discarding resource from CEMT,
+        // deleting and then trying to install and checking if the resource appeared on CEMT
+        if (response) {
+           response = false;
+           cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
+           if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
+              cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+              cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+              if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
+                 response = true;
+              }
+              assertThat(response).isEqualTo(true);
+
+              } else Fail.fail("Failed to discard resource");
+
+        } else Fail.fail("Failed to intsall / delete resource");
+
+        } catch (CedaException | CemtException e) {
+           e.printStackTrace();
+        }
+     
+  }
+
+  @Test
+  public void testResourceTransaction() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
+     String resourceType = "TRANSACTION";
+     String resourceName = "trx1";
+     String groupName = "Test";
+     String resourceParameters = "PROGRAM(PRG1)";
+     boolean response = false;
+     try {
          // Testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
-         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, programName, groupName)).isEqualTo(false);
+         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
 
-         cics.ceda().createResource(cedaTerminal, resourceType, programName, groupName, resourceParameters);
-         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, programName, groupName)).isEqualTo(true);
+         cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
 
-         cics.ceda().installResource(cedaTerminal, resourceType, programName, groupName);
-         if (cics.cemt().inquireResource(cemtTerminal, resourceType, programName) != null) {
+         cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+         if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) != null) {
             response = true;
          }
          assertThat(response).isEqualTo(true);
-         
          // If resource was installed successfully, then tests the delete method by discarding resource from CEMT,
          // deleting and then trying to install and checking if the resource appeared on CEMT
+
          if (response) {
-            response = false;
-            cics.cemt().discardResource(cemtTerminal, resourceType, programName);
-            if (cics.cemt().inquireResource(cemtTerminal, resourceType, programName) == null) {
-               cics.ceda().deleteResource(cedaTerminal, resourceType, programName, groupName);
-               cics.ceda().installResource(cedaTerminal, resourceType, programName, groupName);
-               if (cics.cemt().inquireResource(cemtTerminal, resourceType, programName) == null) {
+            response=false;
+            cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
+            if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
+               cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+               cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+               if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
                   response = true;
                }
                assertThat(response).isEqualTo(true);
 
                } else Fail.fail("Failed to discard resource");
 
-         } else Fail.fail("Failed to install / delete resource");
+           } else Fail.fail("Failed to intsall / delete resource");
 
-         } catch (CedaException | CemtException e) {
-            e.printStackTrace();
-         }
-      
-   }
+     } catch (CedaException | CemtException e) {
+        e.printStackTrace();
+     }
+  }
 
-   @Test
-   public void testResourceTransaction() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
-      String resourceType = "TRANSACTION";
-      String groupName = "Test";
-      String resourceParameters = "PROGRAM(" + programName + ")";
-      boolean response = false;
-      
-      logger.info("Using unique Transaction name: " + transactionName);
-      
-      try {
-          // Testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
-          assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, transactionName, groupName)).isEqualTo(false);
+  @Test
+  public void testResourceLibrary() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
+     String resourceType = "LIBRARY";
+     String resourceName = "lib1";
+     String groupName = "Test";
+     String resourceParameters = "DSNAME01(CTS.USER.APPL1.CICS.LOAD)";
+     boolean response = false;
+     try {
+        // Testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
+        assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
 
-          cics.ceda().createResource(cedaTerminal, resourceType, transactionName, groupName, resourceParameters);
-          assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, transactionName, groupName)).isEqualTo(true);
+        cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
+        assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(true);
 
-          cics.ceda().installResource(cedaTerminal, resourceType, transactionName, groupName);
-          if (cics.cemt().inquireResource(cemtTerminal, resourceType, transactionName) != null) {
-             response = true;
-          }
-          assertThat(response).isEqualTo(true);
-
-          // If resource was installed successfully, then tests the delete method by discarding resource from CEMT,
-          // deleting and then trying to install and checking if the resource appeared on CEMT
-
-          if (response) {
-             response = false;
-             cics.cemt().discardResource(cemtTerminal, resourceType, transactionName);
-             if (cics.cemt().inquireResource(cemtTerminal, resourceType, transactionName) == null) {
-                cics.ceda().deleteResource(cedaTerminal, resourceType, transactionName, groupName);
-                cics.ceda().installResource(cedaTerminal, resourceType, transactionName, groupName);
-                if (cics.cemt().inquireResource(cemtTerminal, resourceType, transactionName) == null) {
-                   response = true;
-                }
-                assertThat(response).isEqualTo(true);
-
-                } else Fail.fail("Failed to discard resource");
-
-            } else Fail.fail("Failed to install / delete resource");
-
-      } catch (CedaException | CemtException e) {
-         e.printStackTrace();
-      }
-
-   }
-
-   @Test
-   public void testResourceLibrary() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
-      String resourceType = "LIBRARY";
-      String groupName = "Test";
-      String resourceParameters = "DSNAME01(CTS.USER.APPL1.CICS.LOAD)";
-      boolean response = false;
-      
-      logger.info("Using unique Library name: " + libraryName);
-      
-      try {
-         // Testing create and install resource by creating it, installing it and then checking if it appeared on CEMT
-         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, libraryName, groupName)).isEqualTo(false);
-
-         cics.ceda().createResource(cedaTerminal, resourceType, libraryName, groupName, resourceParameters);
-         assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, libraryName, groupName)).isEqualTo(true);
-
-         cics.ceda().installResource(cedaTerminal, resourceType, libraryName, groupName);
-         if (cics.cemt().inquireResource(cemtTerminal, resourceType, libraryName) != null) {
-            response = true;
-         }
-         assertThat(response).isEqualTo(true);
+        cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+        if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) != null) {
+           response = true;
+        }
+        assertThat(response).isEqualTo(true);
 			
-         // If resource was installed successfully, then tests the delete method by discarding resource from CEMT, 
-         // deleting and then trying to install and checking if the resource appeared on CEMT
+        // If resource was installed successfully, then tests the delete method by discarding resource from CEMT, 
+        // deleting and then trying to install and checking if the resource appeared on CEMT
 
-         if (response) {
-            response = false;
-            cics.cemt().discardResource(cemtTerminal, resourceType, libraryName);
+        if (response) {
+           response=false;
+           cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
 
-            if (cics.cemt().inquireResource(cemtTerminal, resourceType, libraryName) == null) {
-               cics.ceda().deleteResource(cedaTerminal, resourceType, libraryName, groupName);
-               cics.ceda().installResource(cedaTerminal, resourceType, libraryName, groupName);
-               if (cics.cemt().inquireResource(cemtTerminal, resourceType, libraryName) == null) {
-                  response = true;
-               }
-               assertThat(response).isEqualTo(true);
+           if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
+              cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+              cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
+              if (cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName) == null) {
+                 response = true;
+              }
+              assertThat(response).isEqualTo(true);
 
-               } else Fail.fail("Failed to discard resource");
+              } else Fail.fail("Failed to discard resource");
 
-         } else Fail.fail("Failed to install / delete resource");
+        } else Fail.fail("Failed to intsall / delete resource");
 
-      } catch (CedaException | CemtException e) {
-         e.printStackTrace();
-      }
+     } catch (CedaException | CemtException e) {
+        e.printStackTrace();
+     }
+  }
 
-   }
+  @Test
+  public void testGroup() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
+     String resourceType = "prog";
+     String resourceName = "prg1";
+     String resourceName2 = "prg2";
+     String resourceName3 = "prg3";
+     String resourceName4 = "prg4";
+     String groupName = "IVT";
+     String groupName2 = "noIVT";
+     boolean result = false;
+     // Creating different resources in two different groups
+     cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, null);
+     cics.ceda().createResource(cedaTerminal, resourceType, resourceName2, groupName, null);
+     cics.ceda().createResource(cedaTerminal, resourceType, resourceName3, groupName, null);
+     /** Different group **/
+     cics.ceda().createResource(cedaTerminal, resourceType, resourceName4, groupName2, null);
+     // Installing only one group and check if installed group appeared in CEMT and not installed one did not
+     cics.ceda().installGroup(cedaTerminal, groupName);
+     if (cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName).containsValue(resourceName.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName2).containsValue(resourceName2.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName3).containsValue(resourceName3.toUpperCase())&&cics.cemt().inquireResource(cemtTerminal,resourceType, resourceName4)==null) {
+        result =true;
+     }
+     assertThat(result).isEqualTo(true);
 
-   @Test
-   public void testGroup() throws TextNotFoundException, ErrorTextFoundException, Zos3270Exception, InterruptedException, CicstsManagerException {
-      String resourceType = "prog";
-      String groupName = "IVT";
-      String groupName2 = "noIVT";
-      boolean result = false;
-      
-      // Creating different resources in two different groups
-      cics.ceda().createResource(cedaTerminal, resourceType, programA, groupName, null);
-      cics.ceda().createResource(cedaTerminal, resourceType, programB, groupName, null);
-      cics.ceda().createResource(cedaTerminal, resourceType, programC, groupName, null);
-      /** Different group **/
-      cics.ceda().createResource(cedaTerminal, resourceType, programD, groupName2, null);
-      // Installing only one group and check if installed group appeared in CEMT and not installed one did not
-      cics.ceda().installGroup(cedaTerminal, groupName);
-      if (cics.cemt().inquireResource(cemtTerminal, resourceType, programA).containsValue(programA.toUpperCase())
-    		  && cics.cemt().inquireResource(cemtTerminal, resourceType, programB).containsValue(programB.toUpperCase())
-    		  && cics.cemt().inquireResource(cemtTerminal, resourceType, programC).containsValue(programC.toUpperCase())
-    		  && cics.cemt().inquireResource(cemtTerminal, resourceType, programD) == null) {
-         result = true;
-      }
-      assertThat(result).isEqualTo(true);
-
-      // Checking if group delete works by discarding elements from CEMT and deleting group from CEDA, checking by installing group
-      if (result) {
-        result = false;
-        cics.ceda().deleteGroup(cedaTerminal, groupName);
-        cics.cemt().discardResource(cemtTerminal, resourceType, programA);
-        cics.cemt().discardResource(cemtTerminal, resourceType, programB);
-        cics.cemt().discardResource(cemtTerminal, resourceType, programC);
-        assertThatThrownBy(() -> {
-           cics.ceda().installGroup(cedaTerminal, groupName);
-        }).isInstanceOf(CedaException.class).hasMessageContaining("Problem determining the result from the CEDA command");
-
-      } else Fail.fail("CEDA Group Install/Delete failed");
-   }
-
+     // Checking if group delete works by discarding elements from CEMT and deleting group from CEDA, checking by installing group
+     if (result) {
+        result=false;
+       cics.ceda().deleteGroup(cedaTerminal, groupName);
+       cics.cemt().discardResource(cemtTerminal, resourceType, resourceName);
+       cics.cemt().discardResource(cemtTerminal, resourceType, resourceName2);
+       cics.cemt().discardResource(cemtTerminal, resourceType, resourceName3);
+       assertThatThrownBy(() -> {
+          cics.ceda().installGroup(cedaTerminal, groupName);
+       }).isInstanceOf(CedaException.class).hasMessageContaining("Problem determining the result from the CEDA command");
+     } else Fail.fail("CEDA Group Install/Delete failed");
+  }
 }
