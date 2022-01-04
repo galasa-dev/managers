@@ -13,8 +13,7 @@ spec:
         app: grafana 
     spec:
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
-        platform: hdc
+        kubernetes.io/arch: amd64
       initContainers:
         - name: init-chown-data
           image: ${dockerRegistry}/busybox:1.32.0

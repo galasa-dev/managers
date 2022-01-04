@@ -19,7 +19,7 @@ spec:
         app: simbank
     spec:
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
+        kubernetes.io/arch: amd64
       containers:
       - name: simbank
         image: ${dockerRegistry}/galasa-simplatform-amd64:${simplatformDockerVersion}

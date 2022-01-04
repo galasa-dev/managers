@@ -20,8 +20,7 @@ spec:
         app: cps
     spec:
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
-        platform: hdc
+        kubernetes.io/arch: amd64
       containers:
       - name: etcd
         image: ${dockerRegistry}/etcd:v3.4.3
@@ -31,11 +30,6 @@ spec:
           name: peer
         - containerPort: 2380
           name: client
-        livenessProbe:
-          tcpSocket:
-            port: 2379
-          initialDelaySeconds: 5
-          periodSeconds: 5
         env:
         - name: INITIAL_CLUSTER_SIZE
           value: "1"
@@ -187,17 +181,16 @@ spec:
       resources:
         requests:
           # upstream recommended max is 700M
-          storage: 700M
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-metadata:
   name: cps
   labels:
     app: cps
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   ports:
   - port: 2379

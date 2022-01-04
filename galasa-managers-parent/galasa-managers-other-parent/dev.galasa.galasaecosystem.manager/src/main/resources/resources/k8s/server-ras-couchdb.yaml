@@ -36,8 +36,7 @@ spec:
         - mountPath: /opt/couchdb/data
           name: data-disk
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
-        platform: hdc
+        kubernetes.io/arch: amd64
       volumes:
       - name: data-disk
         persistentVolumeClaim:
