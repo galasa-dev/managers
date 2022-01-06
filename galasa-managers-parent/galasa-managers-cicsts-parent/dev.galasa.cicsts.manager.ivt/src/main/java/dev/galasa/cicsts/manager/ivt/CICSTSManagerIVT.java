@@ -20,12 +20,8 @@ import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
-import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
-import dev.galasa.zosbatch.ZosBatch;
 import dev.galasa.zosbatch.ZosBatchException;
-import dev.galasa.zosbatch.ZosBatchJobname;
-import dev.galasa.zosbatch.IZosBatchJobname;
 
 import org.apache.commons.logging.Log;
 
@@ -40,13 +36,7 @@ public class CICSTSManagerIVT {
 
    @CicsTerminal
    public ICicsTerminal terminal;
-   
-   @ZosBatch(imageTag = "PRIMARY")
-   public IZosBatch batch;
-   
-   @ZosBatchJobname(imageTag = "PRIMARY")
-   public IZosBatchJobname jobName;
-   
+  
    @BeforeClass
    public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
       terminal.clear();
@@ -73,9 +63,8 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS TS Manager gets the correct APPLID for the CICS Region");
 	   String testApplid = cics.getApplid();
 	   logger.info("APPLID retrieved by the CICS TS Manager: " + testApplid);
-	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();
-	   String terminalScreen = terminal.retrieveScreen();
-	   assertThat(terminalScreen.contains(testApplid)).isTrue();
+	   checkTerminalScreenContains(testApplid);
+	   logger.info("The correct APPLID was obtained");
    }
    
    /**
@@ -87,6 +76,7 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS TS Manager retrieves a CICS Resource");
 	   ICicsResource cicsResource = cics.cicsResource();
 	   assertThat(cicsResource).isNotNull();
+	   logger.info("CICS Resource obtained");
    }
    
    /**
@@ -102,15 +92,15 @@ public class CICSTSManagerIVT {
    public void testGetRegionJob() throws CicstsManagerException, ZosBatchException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   logger.info("Testing that the CICS TS Manager finds the DSE CICS job for the CICS Region");
 	   logger.info("There should be an active job as the CICS Region is running");
-	   boolean exceptionThrown = false;
-	   IZosBatchJob regionJob = null;
-	   try {
-		   regionJob = cics.getRegionJob();
-	   } catch (CicstsManagerException e) {
-		   exceptionThrown = true;
-	   }
-	   assertThat(exceptionThrown).isFalse();
-	   assertThat(regionJob).isNotNull();	   
+	   IZosBatchJob regionJob = cics.getRegionJob();
+	   assertThat(regionJob).isNotNull();	
+	   logger.info("CICS Region job obtained");
+	   
+	   logger.info("Testing that the CICS Region job information is correct");
+	   assertThat(regionJob.getJobname().toString()).isEqualTo(cics.getApplid());
+	   assertThat(regionJob.getType()).isEqualTo("JOB");
+	   assertThat(regionJob.getStatusString()).isEqualTo("ACTIVE");
+	   logger.info("Job information is correct");
    }
    
    /**
@@ -126,8 +116,8 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS Terminal gets the correct CICS Region");
 	   String testCicsRegion = terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "");
 	   logger.info("CICS Region retrieved by the ICicsTerminal: " + testCicsRegion);
-	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();
-	   assertThat(terminal.retrieveScreen().contains(testCicsRegion)).isTrue();
+	   checkTerminalScreenContains(testCicsRegion);
+	   logger.info("Correct CICS Region obtained");
    }
    
    /**
@@ -140,13 +130,17 @@ public class CICSTSManagerIVT {
     */
    @Test
    public void testConnectToCicsRegion() throws CicstsManagerException, TerminalInterruptedException, KeyboardLockedException, NetworkException, TimeoutException {
-	   logger.info("Testing that the CICS Terminal connects to the CICS Region");
-	   logger.info("First, need to disconnect from the CICS Region");
+	   logger.info("Testing that the CICS Terminal connects to the same CICS Region after being disconnected");
+	   logger.info("Disconnecting from the CICS Region");
 	   terminal.disconnect();
 	   assertThat(terminal.isConnected()).isFalse();
+	   logger.info("Reconnecting to the CICS Region");
 	   terminal.connectToCicsRegion();
 	   assertThat(terminal.isConnected()).isTrue();
 	   assertThat(terminal.isClearScreen()).isTrue();
+	   assertThat(terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "")).isEqualTo(cics.getApplid());
+	   logger.info("Terminal reconnected to the correct CICS Region");
+	   
    }
    
    /**
@@ -156,43 +150,62 @@ public class CICSTSManagerIVT {
     * @throws TerminalInterruptedException 
     * @throws KeyboardLockedException 
     * @throws TimeoutException 
+    * @throws CicstsManagerException 
     */
    @Test
-   public void testResetAndClear() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+   public void testResetAndClear() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
 	   logger.info("Testing that the CICS Terminal resets and clears screen correctly");
-	   boolean exceptionThrown = false;
-	   try {
-		   terminal.resetAndClear();
-	   } catch (CicstsManagerException e) {
-		   exceptionThrown = true;
-	   }
-	   assertThat(exceptionThrown).isFalse();
+	   logger.info("About to reset and clear the screen");
+	   terminal.resetAndClear();
 	   assertThat(terminal.isClearScreen()).isTrue();
+	   logger.info("Reset and clear was successful");
    }
    
    /**
     * Tests that the CICS Terminal in the CICS TS Manager sets uppercase translation correctly
     * @throws CicstsManagerException 
+    * @throws FieldNotFoundException 
+    * @throws NetworkException 
+    * @throws TerminalInterruptedException 
+    * @throws KeyboardLockedException 
+    * @throws TimeoutException 
     */
    @Test
-   public void testUppercaseTranslation() throws CicstsManagerException {
+   public void testUppercaseTranslation() throws CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   logger.info("Testing that the CICS Terminal sets uppercase translation correctly");
-	   boolean exceptionThrown = false;
-	   try {
-		   terminal.setUppercaseTranslation(true);
-	   } catch (Exception e) {
-		   exceptionThrown = true;
-	   }
-	   assertThat(exceptionThrown).isFalse();
+	   logger.info("Setting uppercase translation to true");
+	   terminal.setUppercaseTranslation(true);
 	   assertThat(terminal.isUppercaseTranslation()).isTrue();
 	   
-	   try {
-		   terminal.setUppercaseTranslation(false);
-	   } catch (Exception e) {
-		   exceptionThrown = true;
-	   }
-	   assertThat(exceptionThrown).isFalse();
+	   logger.info("Testing that uppercase translation is on");
+	   String variableName = "INPUT";
+	   String variableValue = "lowercasegalasa";
+	   startCeciSession();
+	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
+	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isUpperCase();
+	   logger.info("Lower case characters were translated to upper case");
+	   
+	   logger.info("Setting uppercase translation to false");
+	   terminal.setUppercaseTranslation(false);
 	   assertThat(terminal.isUppercaseTranslation()).isFalse();
+	   
+	   logger.info("Testing that uppercase translation is off");
+	   variableName = "INPUT2";
+	   startCeciSession();
+	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
+	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
+	   logger.info("Lower case characters were not translated to upper case");
+   }
+   
+   private void checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();
+	   assertThat(terminal.retrieveScreen().contains(expectedString)).isTrue();
+   }
+   
+   private void startCeciSession() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+	   terminal.clear();
+	   terminal.waitForKeyboard();
+	   terminal.type("CECI").enter().waitForKeyboard();
    }
  
 
