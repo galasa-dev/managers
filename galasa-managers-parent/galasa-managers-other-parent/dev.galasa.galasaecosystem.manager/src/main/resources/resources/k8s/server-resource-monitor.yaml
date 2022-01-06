@@ -1,3 +1,6 @@
+#
+# Copyright contributors to the Galasa project 
+#
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +19,7 @@ spec:
         app: resource-monitor
     spec:
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
+        kubernetes.io/arch: amd64
       containers:
       - name: resource-monitor
         image: ${dockerRegistry}/galasa-boot-embedded-amd64:${dockerVersion}
