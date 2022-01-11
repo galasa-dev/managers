@@ -18,7 +18,7 @@
  *                     determine if a particular web page contains (or does not
  *                     contain) some specific content. This is exactly how it is
  *                     used in the <a href=
- *                     "https://github.com/galasa-dev/managers/blob/master/galasa-managers-parent/galasa-managers-cloud-parent/dev.galasa.docker.manager.ivt/src/main/java/dev/galasa/docker/manager/ivt/DockerManagerIVT.java"
+ *                     "https://github.com/galasa-dev/managers/blob/main/galasa-managers-parent/galasa-managers-cloud-parent/dev.galasa.docker.manager.ivt/src/main/java/dev/galasa/docker/manager/ivt/DockerManagerIVT.java"
  *                     target="_blank" rel="noopener noreferrer"> Docker Manager
  *                     IVT</a> (Installation Verification Test). As well as
  *                     providing client functionality to people who write tests,
