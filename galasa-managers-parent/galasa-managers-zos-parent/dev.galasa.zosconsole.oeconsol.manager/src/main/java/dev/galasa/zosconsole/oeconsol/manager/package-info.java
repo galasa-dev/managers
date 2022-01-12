@@ -33,6 +33,6 @@
 *   </li>
 * </ul>   
 * <p>
-* See <a href="https://github.com/IBM/IBM-Z-zOS/tree/master/zOS-Tools-and-Toys/oeconsol">oeconsol</a> for documentation and download
+* See <a href="https://github.com/IBM/IBM-Z-zOS/tree/main/zOS-Tools-and-Toys/oeconsol">oeconsol</a> for documentation and download
  */
 package dev.galasa.zosconsole.oeconsol.manager;
