@@ -62,8 +62,7 @@ public class CICSTSManagerIVT {
    public void testGetApplid() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
 	   logger.info("Testing that the CICS TS Manager gets the correct APPLID for the CICS Region");
 	   String testApplid = cics.getApplid();
-	   logger.info("APPLID retrieved by the CICS TS Manager: " + testApplid);
-	   checkTerminalScreenContains(testApplid);
+	   assertThat(checkTerminalScreenContains(testApplid)).isTrue();
 	   logger.info("The correct APPLID was obtained");
    }
    
@@ -90,17 +89,16 @@ public class CICSTSManagerIVT {
     */
    @Test
    public void testGetRegionJob() throws CicstsManagerException, ZosBatchException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that the CICS TS Manager finds the DSE CICS job for the CICS Region");
-	   logger.info("There should be an active job as the CICS Region is running");
+	   logger.info("Testing that the CICS TS Manager finds the DSE CICS job for the CICS Region - there should be an active job as the CICS Region is running");
 	   IZosBatchJob regionJob = cics.getRegionJob();
-	   assertThat(regionJob).isNotNull();	
-	   logger.info("CICS Region job obtained");
+	   assertThat(regionJob).isNotNull();
+	   logger.info("Region job obtained");
 	   
 	   logger.info("Testing that the CICS Region job information is correct");
-	   assertThat(regionJob.getJobname().toString()).isEqualTo(cics.getApplid());
-	   assertThat(regionJob.getType()).isEqualTo("JOB");
-	   assertThat(regionJob.getStatusString()).isEqualTo("ACTIVE");
-	   logger.info("Job information is correct");
+	   assertThat(regionJob.getJobname().toString()).isEqualToIgnoringCase(cics.getApplid());
+	   assertThat(regionJob.getType()).isEqualToIgnoringCase("JOB");
+	   assertThat(regionJob.getStatusString()).isEqualToIgnoringCase("ACTIVE");
+	   logger.info("Region job information correct");
    }
    
    /**
@@ -115,8 +113,7 @@ public class CICSTSManagerIVT {
    public void testGetCicsRegion() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   logger.info("Testing that the CICS Terminal gets the correct CICS Region");
 	   String testCicsRegion = terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "");
-	   logger.info("CICS Region retrieved by the ICicsTerminal: " + testCicsRegion);
-	   checkTerminalScreenContains(testCicsRegion);
+	   assertThat(checkTerminalScreenContains(testCicsRegion)).isTrue();
 	   logger.info("Correct CICS Region obtained");
    }
    
@@ -131,16 +128,15 @@ public class CICSTSManagerIVT {
    @Test
    public void testConnectToCicsRegion() throws CicstsManagerException, TerminalInterruptedException, KeyboardLockedException, NetworkException, TimeoutException {
 	   logger.info("Testing that the CICS Terminal connects to the same CICS Region after being disconnected");
-	   logger.info("Disconnecting from the CICS Region");
+	   
 	   terminal.disconnect();
 	   assertThat(terminal.isConnected()).isFalse();
-	   logger.info("Reconnecting to the CICS Region");
+	   
 	   terminal.connectToCicsRegion();
 	   assertThat(terminal.isConnected()).isTrue();
 	   assertThat(terminal.isClearScreen()).isTrue();
 	   assertThat(terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "")).isEqualTo(cics.getApplid());
-	   logger.info("Terminal reconnected to the correct CICS Region");
-	   
+	   logger.info("Terminal reconnected to the correct CICS Region"); 
    }
    
    /**
@@ -155,7 +151,6 @@ public class CICSTSManagerIVT {
    @Test
    public void testResetAndClear() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
 	   logger.info("Testing that the CICS Terminal resets and clears screen correctly");
-	   logger.info("About to reset and clear the screen");
 	   terminal.resetAndClear();
 	   assertThat(terminal.isClearScreen()).isTrue();
 	   logger.info("Reset and clear was successful");
@@ -197,9 +192,13 @@ public class CICSTSManagerIVT {
 	   logger.info("Lower case characters were not translated to upper case");
    }
    
-   private void checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+   private boolean checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();
-	   assertThat(terminal.retrieveScreen().contains(expectedString)).isTrue();
+	   if (terminal.retrieveScreen().contains(expectedString)) {
+		   return true;
+	   } else {
+		   return false;
+	   }
    }
    
    private void startCeciSession() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
