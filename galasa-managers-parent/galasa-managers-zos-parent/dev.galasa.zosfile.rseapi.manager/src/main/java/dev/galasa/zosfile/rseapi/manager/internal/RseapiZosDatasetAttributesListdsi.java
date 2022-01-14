@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -97,6 +95,7 @@ public class RseapiZosDatasetAttributesListdsi {
     
     private static final String PROP_OUTPUT = "output";
     private static final String PROP_STDOUT = "stdout";
+    private static final String PROP_STDERR = "stderr";
     
     private static final Log logger = LogFactory.getLog(RseapiZosDatasetAttributesListdsi.class);
     
@@ -313,7 +312,8 @@ public class RseapiZosDatasetAttributesListdsi {
     }
 
     protected JsonObject execListdsi(String dsname) throws ZosDatasetException {
-        String command = "tsocmd \"EXEC '" + execDatasetName + "(" + LISTDSI_EXEC_NAME + ")' '" + dsname + "'\" 2>/dev/null;echo RC=$?";
+		String tsocmd = "EXEC '" + execDatasetName  + "(" + LISTDSI_EXEC_NAME  + ")' '" + dsname + "'";
+        String command = "tsocmd \"" + tsocmd + "\";echo RC=$?";
 
     	RseapiZosUnixCommand zosUnixCommand = new RseapiZosUnixCommand(this.zosFileHandler);
     	JsonObject responseBody;
@@ -324,23 +324,30 @@ public class RseapiZosDatasetAttributesListdsi {
 		}
         
         logger.trace(responseBody);
-        if (!getExitRc(responseBody).equals("RC=0")) {
-        	String displayMessage = "Unable to get data set attibutes. Response body:\n" + responseBody;
-            logger.error(displayMessage);
-            throw new ZosDatasetException(displayMessage);
+    	String errorMessage = "Unable to get data set attibutes. Response body:\n" + responseBody;
+        if (!getOutputProperty(responseBody, PROP_STDOUT).equals("RC=0")) {
+            logger.error(errorMessage);
+            throw new ZosDatasetException(errorMessage);
         }
+
+        if (!getOutputProperty(responseBody, PROP_STDERR).equals(tsocmd)) {
+            logger.error(errorMessage);
+            throw new ZosDatasetException(errorMessage);
+        }        
+        
         String json = execDataset.memberRetrieveAsText("JSON");
         logger.debug("LISTDSI JSON:\n" + json);
+        
         return new JsonParser().parse(json).getAsJsonObject();
     }
 
-    protected String getExitRc(JsonObject responseBody) {
-    	String exitRc = "UNKNOWN";
+    protected String getOutputProperty(JsonObject responseBody, String memberName) {
+    	String propertyValue = "UNKNOWN";
     	JsonObject output = responseBody.getAsJsonObject(PROP_OUTPUT);
-    	if (output !=  null && output.get(PROP_STDOUT) != null) {
-			exitRc = output.get(PROP_STDOUT).getAsString();
+    	if (output !=  null && output.get(memberName) != null) {
+			propertyValue = output.get(memberName).getAsString();
     	}
-    	return exitRc;
+    	return propertyValue;
 	}
 
 	protected void createExecDataset() throws ZosDatasetException {
