@@ -48,7 +48,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.cicsts.ceci.manager.ivt
-    version: 0.19.0
+    version: 0.20.0
     obr: true
     bom: true
     isolated: true
