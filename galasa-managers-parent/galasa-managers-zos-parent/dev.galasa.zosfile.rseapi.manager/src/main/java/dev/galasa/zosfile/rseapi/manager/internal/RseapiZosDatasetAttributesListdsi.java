@@ -330,7 +330,8 @@ public class RseapiZosDatasetAttributesListdsi {
             throw new ZosDatasetException(errorMessage);
         }
 
-        if (!getOutputProperty(responseBody, PROP_STDERR).equals(tsocmd)) {
+        if (!getOutputProperty(responseBody, PROP_STDERR).trim().equals(tsocmd)) {
+        	errorMessage = "Unable to get data set attibutes - stdout should contain the issued command. Response body:\n" + responseBody;
             logger.error(errorMessage);
             throw new ZosDatasetException(errorMessage);
         }        
