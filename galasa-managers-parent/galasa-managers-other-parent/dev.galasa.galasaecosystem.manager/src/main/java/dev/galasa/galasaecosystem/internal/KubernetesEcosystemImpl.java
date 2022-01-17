@@ -1241,7 +1241,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     }
 
     @Override
-    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+    public ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
         throw new GalasaEcosystemManagerException("Command shell is not relevant in the Kubernetes Ecosystem"); 
     }
 
