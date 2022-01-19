@@ -199,21 +199,27 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         CicsTerminal annotation = field.getAnnotation(CicsTerminal.class);
 
         String tag = defaultString(annotation.cicsTag(), "PRIMARY").toUpperCase();
+        
+        return generateCicTerminal(tag);
+       
+    }
+    
+    @Override
+    public ICicsTerminal generateCicsTerminal(String tag) throws ManagerException{
+    	 ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
+         if (region == null) {
+             throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
+             + ", tagged region " + tag + " was not provisioned");
+         }
 
-        ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
-        if (region == null) {
-            throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
-            + ", tagged region " + tag + " was not provisioned");
-        }
-
-        try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup());
-            this.terminals.add(newTerminal);
-            return newTerminal;
-        } catch (TerminalInterruptedException e) {
-            throw new CicstsManagerException(
-                    "Unable to setup CICS Terminal for field " + field.getName() + ", tagged region " + tag, e);
-        }
+         try {
+             CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup());
+             this.terminals.add(newTerminal);
+             return newTerminal;
+         } catch (TerminalInterruptedException e) {
+             throw new CicstsManagerException(
+                     "Unable to setup CICS Terminal for field " + field.getName() + ", tagged region " + tag, e);
+         }
     }
     
     @Override
