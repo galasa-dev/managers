@@ -16,13 +16,13 @@ spec:
     type: string
   - name: mavenCentralRepo
     type: string
-    default: https://nexus.cics-ts.hur.hdclab.intranet.ibm.com/repository/proxy/
+    default: https://artifactory-cicsk8s.hursley.ibm.com/artifactory/maven-proxy/
   - name: extensionsSourceRepo
     type: string
     default: https://repo.maven.apache.org/maven2/
   - name: dockerRepo
     type: string
-    default: nexus.cics-ts.hur.hdclab.intranet.ibm.com:8080
+    default: harbor-cicsk8s.hursley.ibm.com
   - name: noPush
     type: string
     default: ""
@@ -35,7 +35,7 @@ spec:
   steps:
   - name: get-commit
     workingDir: /workspace/git/managers
-    image: $(params.dockerRepo)/galasa/galasa-build
+    image: $(params.dockerRepo)/galasadev/galasa-build
     script: |
       #!/bin/sh
       set +e
@@ -44,7 +44,7 @@ spec:
       echo commit is $COMMIT
   - name: gradle-build
     workingDir: /workspace/git/managers/galasa-managers-parent
-    image: $(params.dockerRepo)/galasa/galasa-build
+    image: $(params.dockerRepo)/galasadev/galasa-build
     command:
     - gradle
     - --no-daemon
@@ -65,10 +65,10 @@ spec:
       subPath: gradle.properties
   - name: docker-build
     workingDir: /workspace/git/managers/docker
-    image: $(params.dockerRepo)/library/kaniko-executor:latest
+    image: $(params.dockerRepo)/common/kaniko-project/executor:latest
     env:
     - name: DOCKER_CONFIG
-      value: /tekton/home/.docker
+      value: /tekton/creds/.docker
     command:
     - /kaniko/executor
     - --dockerfile=./Dockerfile

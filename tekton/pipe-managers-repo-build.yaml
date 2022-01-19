@@ -51,7 +51,7 @@ spec:
     - name: distBranch
       value: $(params.distBranch)
     - name: extensionsSourceRepo
-      value: http://maven-main-extensions.galasa-development.svc.cluster.local/galasadev/$(params.distBranch)/maven/extensions/
+      value: http://galasadev-cicsk8s.hursley.ibm.com/$(params.distBranch)/maven/extensions/
     - name: noPush
       value: $(params.noPush)
     - name: jacocoEnabled
@@ -72,6 +72,6 @@ spec:
       values: ["--no-push"]
     params:
     - name: namespace
-      value: galasa-development
+      value: galasa-branch-$(params.distBranch)
     - name: deployment
       value: maven-$(params.distBranch)-managers
