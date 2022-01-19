@@ -11,7 +11,6 @@ import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
-import dev.galasa.cicsts.internal.ManagerException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosfile.IZosFileHandler;
 
@@ -92,5 +91,5 @@ public interface ICicstsManagerSpi {
 
 	public IZosFileHandler getZosFileHandler() throws CicstsManagerException;
 	
-	public ICicsTerminal generateCicsTerminal(String tag) throws ManagerException;
+	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;;
 }
