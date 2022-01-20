@@ -47,3 +47,4 @@ public class EclipsePropertiesSingleton {
 		throw new EclipseManagerException("Attempt to set manager CPS before instance created");
 	}
 }
+

@@ -11,6 +11,5 @@ public interface IEclipseruntimeManagerSpi {
 	
 	@NotNull
 	Path getEclipseInstallLocation();
-	
-	//Maybe need a way to get the java manager as well?? but where to put it.
 }
+

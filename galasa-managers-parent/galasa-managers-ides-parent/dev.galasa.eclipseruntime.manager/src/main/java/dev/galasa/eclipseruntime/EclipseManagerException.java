@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.eclipseruntime;
 
 import dev.galasa.ManagerException;
@@ -25,3 +23,4 @@ public class EclipseManagerException extends ManagerException {
     	super(message, cause);
     }
 }
+

@@ -31,3 +31,4 @@ public class EclipseruntimeManagerIVT {
 		assertThat(instance).isNotNull();
 	}
 }
+

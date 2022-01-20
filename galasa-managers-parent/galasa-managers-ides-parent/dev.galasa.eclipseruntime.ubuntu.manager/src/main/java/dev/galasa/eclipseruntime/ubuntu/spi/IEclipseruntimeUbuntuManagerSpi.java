@@ -6,3 +6,4 @@ package dev.galasa.eclipseruntime.ubuntu.spi;
 public interface IEclipseruntimeUbuntuManagerSpi {
     
 }
+
