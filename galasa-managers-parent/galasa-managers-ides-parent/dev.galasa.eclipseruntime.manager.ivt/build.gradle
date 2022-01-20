@@ -10,4 +10,5 @@ dependencies {
 	implementation project(':galasa-managers-ides-parent:dev.galasa.eclipseruntime.manager')
     implementation project(':galasa-managers-ides-parent:dev.galasa.eclipseruntime.ubuntu.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.core.manager')
+    implementation project(':galasa-managers-unix-parent:dev.galasa.linux.manager')
 }

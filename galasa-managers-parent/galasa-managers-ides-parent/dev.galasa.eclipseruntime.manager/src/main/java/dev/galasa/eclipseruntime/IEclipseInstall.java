@@ -5,6 +5,7 @@
 package dev.galasa.eclipseruntime;
 
 import dev.galasa.java.IJavaInstallation;
+import dev.galasa.java.JavaManagerException;
 
 /**
  * 
@@ -29,6 +30,6 @@ public interface IEclipseInstall {
 	 * Returns the Instance of java being used
 	 * @return String
 	 */
-	IJavaInstallation getJavaInstallation();
+	IJavaInstallation getJavaInstallation() throws JavaManagerException;
 }
 

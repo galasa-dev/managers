@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.eclipseruntime.ubuntu.internal;
 
 import java.lang.annotation.Annotation;
@@ -45,13 +43,6 @@ public class EclipseUbuntuManagerImpl extends AbstractManager implements IEclips
 	private EclipseUbuntuInstallImpl install;
 	private Class<?> test;
 	
-	/*
-     * (non-Javadoc)
-     * 
-     * @see
-     * dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.
-     * IFramework, java.util.List, java.util.List, java.lang.Class)
-     */
     @Override
     public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
@@ -114,25 +105,19 @@ public class EclipseUbuntuManagerImpl extends AbstractManager implements IEclips
 
 		installation = new EclipseUbuntuInstallImpl(this, annotation.eclipseVersion(), annotation.eclipseType(), annotation.javaInstallationTag(), annotation.linuxImageTag());
 		registerAnnotatedField(field, installation);
+		this.install = installation; 
 		
-    	return installation;//installation; 
+    	return installation;
     }
     
     @Override
     public void provisionBuild() throws ManagerException, ResourceUnavailableException {
-    	//install.build();
-    	//Build() has not been implemented yet.
+    	install.build();
     }
-    
-    public void build()
-    {
-    	//TODO
-    }
-    
+
     @Override
     public void provisionDiscard() {
-    	//install.discard();
-    	//discard() has not been implemented yet.
+    	install.discard();
     }
     
     public IEclipseruntimeManagerSpi getEclipseManager() {

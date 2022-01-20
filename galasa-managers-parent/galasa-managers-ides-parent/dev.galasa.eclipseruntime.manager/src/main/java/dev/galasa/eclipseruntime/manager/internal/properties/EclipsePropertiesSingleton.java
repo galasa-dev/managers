@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.eclipseruntime.manager.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
@@ -37,7 +35,7 @@ public class EclipsePropertiesSingleton {
 			return singletonInstance.cps;
 		}
 		
-		throw new EclipseManagerException("Attempt to access manager CPS before it has been initialised");
+		throw new EclipseManagerException("Attempted to access manager CPS before it has been initialised");
 	}
 	
 	public static void setCps(IConfigurationPropertyStoreService cps) throws EclipseManagerException {

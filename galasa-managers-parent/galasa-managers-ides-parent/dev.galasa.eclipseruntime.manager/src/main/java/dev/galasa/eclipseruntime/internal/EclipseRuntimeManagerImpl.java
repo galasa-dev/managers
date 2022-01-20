@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.eclipseruntime.internal;
 
 import dev.galasa.framework.spi.AbstractManager;
@@ -35,7 +33,7 @@ import dev.galasa.linux.spi.ILinuxManagerSpi;
 @Component(service = {IManager.class})
 public class EclipseRuntimeManagerImpl extends AbstractManager implements IEclipseruntimeManagerSpi {
 	protected final String NAMESPACE = "eclipseruntime";	
-	//private final static Log logger = LogFactory.getLog(EclipseRuntimeManagerImpl.class); Possibly Needed later on when Impl is written.
+	private final static Log logger = LogFactory.getLog(EclipseRuntimeManagerImpl.class);
 	private IJavaManagerSpi javaManager;
 	private IHttpManagerSpi httpManager;
 	private ILinuxManagerSpi linuxManager;
@@ -92,7 +90,6 @@ public class EclipseRuntimeManagerImpl extends AbstractManager implements IEclip
 
 	@Override
 	public @NotNull Path getEclipseInstallLocation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

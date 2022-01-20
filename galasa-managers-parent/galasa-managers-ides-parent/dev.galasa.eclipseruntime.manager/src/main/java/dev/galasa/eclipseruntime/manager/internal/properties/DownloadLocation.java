@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.eclipseruntime.manager.internal.properties;
 
 import dev.galasa.CpuArchitecture;
@@ -27,16 +25,10 @@ public class DownloadLocation extends CpsProperties {
     		OperatingSystem os,
     		CpuArchitecture cpuType) throws EclipseManagerException {
         
-        String propertyName = type.name()+"."
-        +os.name()+"."
-        +cpuType.name()+"."
-        +version.getFriendlyString()+".location";
-        //javaDev.linux.x86.2018-09.location
-        
         try {
-            return getStringNulled(EclipsePropertiesSingleton.cps(), "archive", propertyName) ;
+            return getStringNulled(EclipsePropertiesSingleton.cps(), type.name(), "location",  os.name(), cpuType.name(), version.getFriendlyString()) ;
         } catch (ConfigurationPropertyStoreException e) {
-            throw new EclipseManagerException("Problem retrieving the eclipse archive " + propertyName, e);
+            throw new EclipseManagerException("Problem retrieving the eclipse archive " + e);
         }
     }
 }

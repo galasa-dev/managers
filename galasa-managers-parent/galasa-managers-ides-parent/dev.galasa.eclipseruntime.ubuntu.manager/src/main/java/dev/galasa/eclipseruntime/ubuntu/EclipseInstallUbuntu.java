@@ -48,6 +48,6 @@ public @interface EclipseInstallUbuntu {
 	/**
 	 * The version of java to be used with the eclipse installation.
 	 */
-	String linuxImageTag() default "PRIMARY";
+	String linuxImageTag() default "REECE";
 }
 
