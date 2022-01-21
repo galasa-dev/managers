@@ -33,6 +33,10 @@ public class CoreTestCatalogBuilder implements ITestCatalogBuilder {
 			jsonRoot.add("tags", rootTag);
 		}
 		
+		// Add a tags array to the test class json object
+		JsonArray classTags = new JsonArray();
+		jsonTestClass.add("tags", classTags);
+		
 		
 		for(String tag : annotationTag.value() ) {
 			if (tag == null) {
@@ -43,6 +47,12 @@ public class CoreTestCatalogBuilder implements ITestCatalogBuilder {
 			if (tag.isEmpty()) {
 				continue;
 			}
+			
+			// add it to the class tags array
+			classTags.add(tag);
+			
+			
+			// add it to the root tags array
 			
 			JsonArray jsonTag = rootTag.getAsJsonArray(tag);
 			if (jsonTag == null) {
