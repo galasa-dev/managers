@@ -423,3 +423,10 @@ managers:
     obr: true
     mvp: true
     isolated: true
+
+  - artifact: dev.galasa.vtp.manager
+    version: 0.20.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
