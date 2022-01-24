@@ -237,6 +237,15 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
     
     @Override
+    public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException {
+    	ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
+        if (region == null) {
+            throw new CicstsManagerException("Unable to setup CICS Terminal for tag " + tag + ", no region was provisioned");
+        }
+        return region;
+    }
+    
+    @Override
     public void provisionBuild() throws ManagerException, ResourceUnavailableException {
         // First, give the provisioners the opportunity to build CICS regions
         for (ICicsRegionProvisioner provisioner : provisioners) {

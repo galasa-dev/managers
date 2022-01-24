@@ -91,5 +91,7 @@ public interface ICicstsManagerSpi {
 
 	public IZosFileHandler getZosFileHandler() throws CicstsManagerException;
 	
-	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;;
+	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;
+
+	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;;
 }

@@ -17,8 +17,11 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
+import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CicsRegion;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.CicstsManagerField;
+import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
@@ -34,6 +37,12 @@ import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.mq.internal.properties.VtpEnable;
 import dev.galasa.mq.internal.properties.VtpPropertiesSingleton;
 import dev.galasa.vtp.manager.VtpManagerException;
+import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.TimeoutException;
+import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
+import dev.galasa.zos3270.spi.NetworkException;
 
 @Component(service = { IManager.class })
 public class VtpManagerImpl extends AbstractManager {
@@ -46,7 +55,7 @@ public class VtpManagerImpl extends AbstractManager {
 	private IConfigurationPropertyStoreService cps;
 	private Path storedArtifactRoot;
 
-	private HashMap<String,ICicsTerminal> recordingTerminals = new HashMap<>();
+	private HashMap<ICicsRegion,ICicsTerminal> recordingTerminals = new HashMap<>();
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
@@ -57,7 +66,8 @@ public class VtpManagerImpl extends AbstractManager {
 				CicsRegion annotation = field.getAnnotation(CicsRegion.class);
 				String tag = annotation.cicsTag();
 				ICicsTerminal terminal = cicsManager.generateCicsTerminal(tag);
-				recordingTerminals.put(tag, terminal);
+				ICicsRegion region = cicsManager.locateCicsRegion(tag);
+				recordingTerminals.put(region, terminal);
 			}
 		}
 		if (recordingTerminals.size() == 0) {
@@ -67,7 +77,6 @@ public class VtpManagerImpl extends AbstractManager {
 
 	@Override
 	public void provisionStart() throws ManagerException, ResourceUnavailableException {
-
 	}
 
 	@Override
@@ -111,7 +120,7 @@ public class VtpManagerImpl extends AbstractManager {
 
 	@Override
 	public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
-		if (otherManager instanceof ICicstsManagerSpi) {
+		if (otherManager instanceof ICicstsManagerSpi || otherManager instanceof IZos3270ManagerSpi) {
 			return true;
 		}
 
@@ -138,8 +147,7 @@ public class VtpManagerImpl extends AbstractManager {
 		if(!method.isJava()) {
 			return false;
 		}
-		
-		for(Annotation a : method.getJavaTestMethod().getAnnotations()) {
+		for(Annotation a : method.getJavaExecutionMethod().getAnnotations()) {
 			if(a instanceof Test) {
 				return true;
 			}
@@ -152,7 +160,7 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void startRecordingAllTerminals() {
-		for(String tag : recordingTerminals.keySet()) {
+		for(ICicsRegion tag : recordingTerminals.keySet()) {
 			startRecording(recordingTerminals.get(tag));
 		}
 	}
@@ -166,13 +174,51 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void stopRecordingAllTerminals() {
-		for(String tag : recordingTerminals.keySet()) {
+		for(ICicsRegion tag : recordingTerminals.keySet()) {
 			stopRecording(recordingTerminals.get(tag));
 		}
 	}
 	
 	private void stopRecording(ICicsTerminal t) {
 		
+	}
+	
+	private void getVTPVersion() {
+		ICicsRegion region = recordingTerminals.keySet().iterator().next();
+		ICicsTerminal terminal = recordingTerminals.get(region);
+		try {
+			logger.info("Checking VTP Version");
+			region.ceci().defineVariableText(terminal, "&DATA", "VERS              ");
+			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
+			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+			String vtpVersion = responseData.substring(responseData.length()-2);
+			logger.info("VTP returned version: " + vtpVersion);
+		} catch (CeciException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CicstsManagerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public void startOfTestClass() throws ManagerException {
+		for(ICicsRegion region : recordingTerminals.keySet()) {
+			ICicsTerminal terminal = recordingTerminals.get(region);			
+			try {
+				if(!terminal.isConnected()) {
+					terminal.connect();
+				}
+				terminal.type("CECI").enter().wfk();
+			} catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException
+					| FieldNotFoundException e) {
+				// TODO Auto-generated catch block
+				throw new VtpManagerException("Unable to initiate CECI on a recording terminal",e);
+			}
+		}
+		getVTPVersion();
 	}
 
 }
