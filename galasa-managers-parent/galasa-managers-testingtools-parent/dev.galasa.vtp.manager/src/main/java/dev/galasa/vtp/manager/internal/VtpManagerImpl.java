@@ -82,7 +82,7 @@ public class VtpManagerImpl extends AbstractManager {
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, galasaTest);
-
+		logger.info("In initialise method of VTP Manager");
 		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
 		try {
 			this.cps = getFramework().getConfigurationPropertyService(NAMESPACE);
