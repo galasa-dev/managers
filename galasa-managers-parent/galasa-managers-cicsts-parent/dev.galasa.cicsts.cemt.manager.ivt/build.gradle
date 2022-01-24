@@ -4,12 +4,12 @@ plugins {
 
 description = 'Galasa CEMT Manager IVTs'
 
-version = '0.15.0'
+version = '0.20.0'
 
 dependencies {
+    implementation project (':galasa-managers-core-parent:dev.galasa.core.manager')
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager')
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.cemt.manager')
-    implementation project (':galasa-managers-core-parent:dev.galasa.core.manager')
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
 }

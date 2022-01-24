@@ -40,3 +40,4 @@ json.0 = 34
 parse source with . . . execDsn .
 address TSO "ALLOC DD(JSON) DSN('" || execDsn || "(JSON)') SHR"
 address TSO "EXECIO * DISKW JSON (STEM json. FINIS)"
+exit listdsiRc

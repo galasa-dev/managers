@@ -56,7 +56,7 @@ public class LocalWindowsEcosystemImpl extends LocalEcosystemImpl {
     }
 
     @Override
-    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+    public ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
         try {
             return this.windowsImage.getCommandShell();
         } catch (WindowsManagerException e) {
