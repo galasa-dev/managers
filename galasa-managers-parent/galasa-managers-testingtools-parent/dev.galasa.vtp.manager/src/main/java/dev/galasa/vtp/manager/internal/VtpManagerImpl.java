@@ -18,6 +18,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
 import dev.galasa.cicsts.CicsRegion;
+import dev.galasa.cicsts.CicstsManagerField;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
@@ -45,22 +46,18 @@ public class VtpManagerImpl extends AbstractManager {
 	private IConfigurationPropertyStoreService cps;
 	private Path storedArtifactRoot;
 
-	private HashMap<ICicsRegion,ICicsTerminal> recordingTerminals = new HashMap<>();
+	private HashMap<String,ICicsTerminal> recordingTerminals = new HashMap<>();
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		List<AnnotatedField> foundAnnotatedFields = findAnnotatedFields(CicsRegion.class);
+		List<AnnotatedField> foundAnnotatedFields = findAnnotatedFields(CicstsManagerField.class);
 		for (AnnotatedField annotatedField : foundAnnotatedFields) {
 			Field field = annotatedField.getField();
 			if (field.getType() == ICicsRegion.class) {
-				try {
-					ICicsRegion region = (ICicsRegion) field.get(ICicsRegion.class.newInstance());
-					ICicsTerminal terminal = cicsManager.generateCicsTerminal(region.getTag());
-					recordingTerminals.put(region, terminal);
-				} catch (Exception e) {
-					throw new VtpManagerException("Unable to access CICS object for field: " + field.getName(), e);
-				}
-
+				CicsRegion annotation = field.getAnnotation(CicsRegion.class);
+				String tag = annotation.cicsTag();
+				ICicsTerminal terminal = cicsManager.generateCicsTerminal(tag);
+				recordingTerminals.put(tag, terminal);
 			}
 		}
 		if (recordingTerminals.size() == 0) {
@@ -155,8 +152,8 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void startRecordingAllTerminals() {
-		for(ICicsRegion region : recordingTerminals.keySet()) {
-			startRecording(recordingTerminals.get(region));
+		for(String tag : recordingTerminals.keySet()) {
+			startRecording(recordingTerminals.get(tag));
 		}
 	}
 	
@@ -169,8 +166,8 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void stopRecordingAllTerminals() {
-		for(ICicsRegion region : recordingTerminals.keySet()) {
-			stopRecording(recordingTerminals.get(region));
+		for(String tag : recordingTerminals.keySet()) {
+			stopRecording(recordingTerminals.get(tag));
 		}
 	}
 	
