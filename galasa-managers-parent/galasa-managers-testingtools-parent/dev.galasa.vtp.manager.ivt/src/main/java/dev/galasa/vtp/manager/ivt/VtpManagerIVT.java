@@ -4,13 +4,35 @@
 
 package dev.galasa.vtp.manager.ivt;
 
+import org.apache.commons.logging.Log;
+
 import dev.galasa.Test;
+import dev.galasa.cicsts.CicsRegion;
+import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.ICicsTerminal;
+import dev.galasa.core.manager.Logger;
+import dev.galasa.zos3270.FieldNotFoundException;
+import dev.galasa.zos3270.KeyboardLockedException;
+import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.TimeoutException;
+import dev.galasa.zos3270.spi.NetworkException;
 
  @Test
  public class VtpManagerIVT {
+	 
+	 @Logger
+	 public Log logger;
+
+	 @CicsRegion
+	 public ICicsRegion cics;
+
+	 @CicsTerminal
+	 public ICicsTerminal terminal;
 
     @Test
-    public void test1() {
+    public void test1() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+    	terminal.type("TRN1").enter().wfk();
       
     }
   

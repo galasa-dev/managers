@@ -207,13 +207,17 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void getVTPVersion() throws VtpManagerException {
+		String dataName = "&VTPVERS";
 		ICicsRegion region = recordingTerminals.keySet().iterator().next();
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
 			logger.info("Checking VTP API Version");
-			region.ceci().defineVariableText(terminal, "&DATA", "VERS              ");
-			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
-			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+			region.ceci().defineVariableText(terminal, dataName, "VERS              ");
+			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(" + dataName + ")");
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while inquiring VTP API Version, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
+			String responseData = region.ceci().retrieveVariableText(terminal, dataName);
 			String vtpVersion = responseData.substring(responseData.length()-2);
 			logger.info("VTP returned version: " + vtpVersion);
 		} catch (CicstsManagerException e) {
