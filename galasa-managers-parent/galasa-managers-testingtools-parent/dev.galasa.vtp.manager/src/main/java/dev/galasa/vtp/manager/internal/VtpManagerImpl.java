@@ -17,7 +17,6 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
-import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.CicstsManagerField;
@@ -160,13 +159,25 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void startRecordingAllTerminals() {
-		for(ICicsRegion tag : recordingTerminals.keySet()) {
-			startRecording(recordingTerminals.get(tag));
+		for(ICicsRegion region : recordingTerminals.keySet()) {
+			try {
+				startRecording(region);
+			} catch (VtpManagerException e) {
+				logger.error("Unable to start recording");
+			}
 		}
 	}
 	
-	private void startRecording(ICicsTerminal t) {
-		
+	private void startRecording(ICicsRegion region) throws VtpManagerException {
+		ICicsTerminal terminal = recordingTerminals.get(region);
+		try {
+			logger.info("Starting VTP Recording");
+			region.ceci().defineVariableText(terminal, "&DATA", "STRT              ");
+			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
+			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to start VTP recording",e);
+		} 
 	}
 	
 	private void stopRecording() {
@@ -174,37 +185,51 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	private void stopRecordingAllTerminals() {
-		for(ICicsRegion tag : recordingTerminals.keySet()) {
-			stopRecording(recordingTerminals.get(tag));
+		for(ICicsRegion region : recordingTerminals.keySet()) {
+			try {
+				stopRecording(region);
+			} catch (VtpManagerException e) {
+				logger.error("Unable to stop recording");
+			}
 		}
 	}
 	
-	private void stopRecording(ICicsTerminal t) {
-		
+	private void stopRecording(ICicsRegion region) throws VtpManagerException {
+		ICicsTerminal terminal = recordingTerminals.get(region);
+		try {
+			logger.info("Starting VTP Recording");
+			region.ceci().defineVariableText(terminal, "&DATA", "STOP              ");
+			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
+			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to start VTP recording",e);
+		} 
 	}
 	
-	private void getVTPVersion() {
+	private void getVTPVersion() throws VtpManagerException {
 		ICicsRegion region = recordingTerminals.keySet().iterator().next();
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
-			logger.info("Checking VTP Version");
+			logger.info("Checking VTP API Version");
 			region.ceci().defineVariableText(terminal, "&DATA", "VERS              ");
 			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
 			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
 			String vtpVersion = responseData.substring(responseData.length()-2);
 			logger.info("VTP returned version: " + vtpVersion);
-		} catch (CeciException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (CicstsManagerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			throw new VtpManagerException("Unable to obtain VTP Version",e);
+		} 
 		
 	}
 
+	/**
+	 * Before the test starts, ensure that the recording terminal
+	 * is connected and moved to the CECI screen.
+	 * Then obtain the VTP API version
+	 */
 	@Override
 	public void startOfTestClass() throws ManagerException {
+		
 		for(ICicsRegion region : recordingTerminals.keySet()) {
 			ICicsTerminal terminal = recordingTerminals.get(region);			
 			try {
