@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -159,7 +157,8 @@ public class TestRseapiZosDatasetAttributesListdsi {
     	Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(0));
         JsonObject jsonObject = buildListdsiJsonObject(false);
         Mockito.when(execDatasetMock.memberRetrieveAsText(Mockito.any())).thenReturn(jsonObject.toString());
-        Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "execDataset", execDatasetMock );
+        Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "execDataset", execDatasetMock);
+        Whitebox.setInternalState(zosDatasetAttributesListdsiSpy, "execDatasetName", DATASET_NAME);
         Assert.assertEquals("get() should return the expected object", jsonObject, zosDatasetAttributesListdsiSpy.execListdsi(DATASET_NAME));
         
         Mockito.when(rseapiResponseMock.getJsonContent()).thenReturn(getCommandJsonObject(99));
@@ -195,17 +194,17 @@ public class TestRseapiZosDatasetAttributesListdsi {
     @Test
     public void testGetExitRc() {
         JsonObject responseBody = getCommandJsonObject(0);
-        Assert.assertEquals("getExitRc() should return the expected object", "RC=0", zosDatasetAttributesListdsiSpy.getExitRc(responseBody));
+        Assert.assertEquals("getExitRc() should return the expected object", "RC=0", zosDatasetAttributesListdsiSpy.getOutputProperty(responseBody, PROP_STDOUT));
 
         responseBody.remove(PROP_OUTPUT);
-        Assert.assertEquals("getExitRc() should return the expected object", "UNKNOWN", zosDatasetAttributesListdsiSpy.getExitRc(responseBody));
+        Assert.assertEquals("getExitRc() should return the expected object", "UNKNOWN", zosDatasetAttributesListdsiSpy.getOutputProperty(responseBody, PROP_STDOUT));
 
         responseBody.addProperty(PROP_OUTPUT, PROP_OUTPUT);
 
 		JsonObject output = new JsonObject();
 		output.addProperty(PROP_STDERR, "");
 		responseBody.add(PROP_OUTPUT, output);
-        Assert.assertEquals("getExitRc() should return the expected object", "UNKNOWN", zosDatasetAttributesListdsiSpy.getExitRc(responseBody));
+        Assert.assertEquals("getExitRc() should return the expected object", "UNKNOWN", zosDatasetAttributesListdsiSpy.getOutputProperty(responseBody, PROP_STDOUT));
     }
     
     @Test
@@ -252,7 +251,7 @@ public class TestRseapiZosDatasetAttributesListdsi {
     private JsonObject getCommandJsonObject(int rc) {
 		JsonObject output = new JsonObject();
 		output.addProperty(PROP_STDOUT, "RC=" + rc);
-		output.addProperty(PROP_STDERR, "");
+		output.addProperty(PROP_STDERR, "EXEC '" + DATASET_NAME + "(LISTDSI)' '" + DATASET_NAME + "'");
 		JsonObject responseBody = new JsonObject();
 		responseBody.add(PROP_OUTPUT, output);
 		responseBody.addProperty(PROP_PATH, "path");
