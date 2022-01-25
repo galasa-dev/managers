@@ -26,6 +26,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.DockerNotFoundException;
 import dev.galasa.docker.DockerProvisionException;
 import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerDSEEngine;
@@ -472,8 +473,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException(response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + response.getAsString());
@@ -506,8 +508,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return resp;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException(response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + resp);
