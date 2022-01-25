@@ -473,7 +473,7 @@ public class DockerEngineImpl implements IDockerEngine {
 			case HttpStatus.SC_NO_CONTENT:
 				return null;
 			case HttpStatus.SC_NOT_FOUND:
-				throw new DockerNotFoundException("Docker engine not found: " + response.toString());
+				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + response.getAsString());
@@ -508,7 +508,7 @@ public class DockerEngineImpl implements IDockerEngine {
 			case HttpStatus.SC_NO_CONTENT:
 				return null;
 			case HttpStatus.SC_NOT_FOUND:
-				throw new DockerNotFoundException("Docker engine not found: " + resp.toString());
+				throw new DockerNotFoundException("Docker API post returned 'not found':" + resp.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + resp);
