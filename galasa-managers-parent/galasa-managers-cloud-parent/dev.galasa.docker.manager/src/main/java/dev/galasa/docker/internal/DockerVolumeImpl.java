@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.logging.Log;
@@ -163,7 +164,14 @@ public class DockerVolumeImpl implements IDockerVolume {
 
         //  Run the busybox, then remove it
         JsonObject json = engine.createContainer(this.volumeName + "_LOADER", generateMetadata("galasa-volume-loader"));
-        String containerId = json.get("Id").getAsString();
+        if (json == null) {
+        	throw new DockerManagerException("Create container did not return JSON object.");
+        }
+        JsonElement oId = json.get("Id");
+        if (oId == null) {
+        	throw new DockerManagerException("Id property missing from create container JSON :-\n" + json.toString());
+        }
+        String containerId = oId.getAsString();
 
         String status = "";
         engine.startContainer(containerId);
