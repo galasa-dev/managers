@@ -86,7 +86,7 @@ public class DockerImageImpl implements IDockerImage {
 		List<DockerRegistryImpl> registries = dockerManager.getRegistries();
 		for(DockerRegistryImpl registry : registries) {
 			if (registry.doYouHave(this)) {
-                this.fullName = registry.getHost() + "/" + workingName;
+                this.fullName = registry.getHost() + "/" + registry.getPrefix() + workingName;
                 this.authToken = registry.getAuthToken();
                 if (this.authToken != null) {
                     authRequired = true;

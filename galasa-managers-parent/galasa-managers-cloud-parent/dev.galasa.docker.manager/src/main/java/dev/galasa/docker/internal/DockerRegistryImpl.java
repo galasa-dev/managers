@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -25,6 +23,7 @@ import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
+import dev.galasa.docker.internal.properties.DockerRegistryPrefix;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -45,6 +44,7 @@ public class DockerRegistryImpl {
 	private DockerManagerImpl 					dockerManager;
 	private URL 								registryUrl;
 	private String 								registryId;
+	private String 								prefix;
 
 	private ICredentialsService 				credService;
 
@@ -72,6 +72,7 @@ public class DockerRegistryImpl {
 		this.dockerManager = dockerManager;
 		this.registryId = registryId;
 		this.registryUrl = DockerRegistryURL.get(this);
+		this.prefix = DockerRegistryPrefix.get(this);
 
 		this.client = dockerManager.httpManager.newHttpClient();
 		this.realmClient = dockerManager.httpManager.newHttpClient();
@@ -330,6 +331,14 @@ public class DockerRegistryImpl {
 			return this.registryUrl.getHost();
         }
 	}   
+    
+    /**
+     * Returns the prefix of the registry
+     * @return String
+     */
+    public String getPrefix() {
+    	return this.prefix;
+    }
 	
 	/**
 	 * Returns the auth token
