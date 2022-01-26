@@ -55,6 +55,20 @@ public class VtpManagerImpl extends AbstractManager {
 	private Path storedArtifactRoot;
 
 	private HashMap<ICicsRegion,ICicsTerminal> recordingTerminals = new HashMap<>();
+	private HashMap<ICicsRegion,String> recordingTokens = new HashMap<>();
+	
+	private static final String VtpApiCommandStart = "LINK PROG(BZUCIDRP) COM(";
+	private static final String VtpApiCommandEnd   = ")";
+	
+	private static final String VtpApiVersionData         = "VERS              ";
+	private static final String VtpApiStartRecordingData  = "STRT                    ";
+	private static final String VtpApiStopRecordingData   = "STOP            ";
+	
+	private static final String VtpVersionName  = "&VTPVERS";
+	private static final String VtpStartName  = "&VTPSTRT";
+	private static final String VtpStopName  = "&VTPSTOP";
+	
+	private static final String PASSED_RESULT = "Passed";
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
@@ -139,6 +153,10 @@ public class VtpManagerImpl extends AbstractManager {
 		if(isTestMethod(galasaMethod)) {
 			stopRecording();
 		}
+		
+		if(PASSED_RESULT.equalsIgnoreCase(currentResult)) {
+			
+		}
 		return null;
 	}
 	
@@ -172,9 +190,12 @@ public class VtpManagerImpl extends AbstractManager {
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
 			logger.info("Starting VTP Recording");
-			region.ceci().defineVariableText(terminal, "&DATA", "STRT              ");
-			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
-			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+			region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStartName + VtpApiCommandEnd);
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpStartName);
+			String recordingToken = responseData.substring(responseData.length()-8);
+			this.recordingTokens.remove(region);
+			this.recordingTokens.put(region, recordingToken);
 		} catch (CicstsManagerException e) {
 			throw new VtpManagerException("Unable to start VTP recording",e);
 		} 
@@ -197,27 +218,27 @@ public class VtpManagerImpl extends AbstractManager {
 	private void stopRecording(ICicsRegion region) throws VtpManagerException {
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
-			logger.info("Starting VTP Recording");
-			region.ceci().defineVariableText(terminal, "&DATA", "STOP              ");
-			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(&DATA)");
-			String responseData = region.ceci().retrieveVariableText(terminal, "&DATA");
+			logger.info("Stopping VTP Recording");
+			String recordingToken = recordingTokens.get(region);
+			region.ceci().defineVariableText(terminal, VtpStopName, VtpApiStopRecordingData+recordingToken);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStopName + VtpApiCommandEnd);
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpStopName);
 		} catch (CicstsManagerException e) {
 			throw new VtpManagerException("Unable to start VTP recording",e);
 		} 
 	}
 	
 	private void getVTPVersion() throws VtpManagerException {
-		String dataName = "&VTPVERS";
 		ICicsRegion region = recordingTerminals.keySet().iterator().next();
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
 			logger.info("Checking VTP API Version");
-			region.ceci().defineVariableText(terminal, dataName, "VERS              ");
-			ICeciResponse response = region.ceci().issueCommand(terminal, "LINK PROG(BZUCIDRP) COM(" + dataName + ")");
+			region.ceci().defineVariableText(terminal, VtpVersionName, VtpApiVersionData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpVersionName + VtpApiCommandEnd);
 			if(!response.isNormal()) {
 				throw new VtpManagerException("Non normal response from CECI while inquiring VTP API Version, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
 			}
-			String responseData = region.ceci().retrieveVariableText(terminal, dataName);
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpVersionName);
 			String vtpVersion = responseData.substring(responseData.length()-2);
 			logger.info("VTP returned version: " + vtpVersion);
 		} catch (CicstsManagerException e) {
@@ -235,7 +256,7 @@ public class VtpManagerImpl extends AbstractManager {
 	public void startOfTestClass() throws ManagerException {
 		
 		for(ICicsRegion region : recordingTerminals.keySet()) {
-			ICicsTerminal terminal = recordingTerminals.get(region);			
+			ICicsTerminal terminal = recordingTerminals.get(region);
 			try {
 				if(!terminal.isConnected()) {
 					terminal.connect();
@@ -249,5 +270,4 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 		getVTPVersion();
 	}
-
 }
