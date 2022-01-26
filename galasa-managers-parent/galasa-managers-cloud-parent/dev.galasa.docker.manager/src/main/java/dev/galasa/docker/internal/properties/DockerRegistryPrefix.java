@@ -42,7 +42,7 @@ public class DockerRegistryPrefix extends CpsProperties {
             if (dockerRegistryPrefix == null) {
             	return "";
             }
-            return dockerRegistryPrefix;
+            return dockerRegistryPrefix + "/";
         } catch (ConfigurationPropertyStoreException e) {
             throw new DockerManagerException("Problem asking the CPS for the docker registry type", e);
         }
