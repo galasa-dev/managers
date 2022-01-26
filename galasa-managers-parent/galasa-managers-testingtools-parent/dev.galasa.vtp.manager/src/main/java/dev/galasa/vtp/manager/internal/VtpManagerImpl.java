@@ -6,6 +6,7 @@ package dev.galasa.vtp.manager.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class VtpManagerImpl extends AbstractManager {
 	private Path storedArtifactRoot;
 
 	private HashMap<ICicsRegion,ICicsTerminal> recordingTerminals = new HashMap<>();
-	private HashMap<ICicsRegion,String> recordingTokens = new HashMap<>();
+	private HashMap<ICicsRegion,char[]> recordingTokens = new HashMap<>();
 	
 	private static final String VtpApiCommandStart = "LINK PROG(BZUCIDRP) COM(";
 	private static final String VtpApiCommandEnd   = ")";
@@ -67,6 +68,9 @@ public class VtpManagerImpl extends AbstractManager {
 	private static final String VtpVersionName  = "&VTPVERS";
 	private static final String VtpStartName  = "&VTPSTRT";
 	private static final String VtpStopName  = "&VTPSTOP";
+	
+	private static final int    VtpTokenIndexStart = 16;
+	private static final int    VtpTokenIndexEnd   = 24;
 	
 	private static final String PASSED_RESULT = "Passed";
 
@@ -193,7 +197,8 @@ public class VtpManagerImpl extends AbstractManager {
 			region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
 			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStartName + VtpApiCommandEnd);
 			String responseData = region.ceci().retrieveVariableText(terminal, VtpStartName);
-			String recordingToken = responseData.substring(responseData.length()-8);
+			char[] binaryResponse = region.ceci().retrieveVariableBinary(terminal, VtpStartName);
+			char[] recordingToken = Arrays.copyOfRange(binaryResponse, VtpTokenIndexStart, VtpTokenIndexEnd);
 			this.recordingTokens.remove(region);
 			this.recordingTokens.put(region, recordingToken);
 		} catch (CicstsManagerException e) {
@@ -219,8 +224,16 @@ public class VtpManagerImpl extends AbstractManager {
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
 			logger.info("Stopping VTP Recording");
-			String recordingToken = recordingTokens.get(region);
-			region.ceci().defineVariableText(terminal, VtpStopName, VtpApiStopRecordingData+recordingToken);
+			char[] recordingToken = recordingTokens.get(region);
+			char[] recordingData  = new char[24];
+			
+			char blank = 40;
+			Arrays.fill(recordingData, blank);
+			
+			System.arraycopy(new char[]{226,227,214,215}, 0, recordingData, 0, 4);
+			System.arraycopy(recordingToken, 0, recordingData, 16, 8);
+			
+			region.ceci().defineVariableBinary(terminal, VtpStopName, recordingData);
 			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStopName + VtpApiCommandEnd);
 			String responseData = region.ceci().retrieveVariableText(terminal, VtpStopName);
 		} catch (CicstsManagerException e) {
