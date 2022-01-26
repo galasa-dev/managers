@@ -37,12 +37,12 @@ public class DockerRegistryPrefix extends CpsProperties {
         String id = dockerRegistry.getId();
         String dockerRegistryPrefix = "";
         try {
-            dockerRegistryPrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "prefix", "image", id);
+            dockerRegistryPrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "prefix", id, "image");
             // Default value
             if (dockerRegistryPrefix == null) {
             	return "";
             }
-            return dockerRegistryPrefix + "/";
+            return dockerRegistryPrefix;
         } catch (ConfigurationPropertyStoreException e) {
             throw new DockerManagerException("Problem asking the CPS for the docker registry type", e);
         }

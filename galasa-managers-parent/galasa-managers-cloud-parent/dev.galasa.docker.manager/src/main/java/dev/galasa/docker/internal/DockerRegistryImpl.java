@@ -103,7 +103,7 @@ public class DockerRegistryImpl {
 		try {
 			registryAuthenticate(image);
 
-			String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+			String path = this.getPrefix() + "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
