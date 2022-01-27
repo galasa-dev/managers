@@ -235,8 +235,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + resp.getStatusLine());
