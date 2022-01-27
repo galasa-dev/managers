@@ -818,7 +818,9 @@ public class CeciImpl implements ICeci {
                     int byteCount = 0;
                     StringBuilder sb = new StringBuilder();
                     while (pos < value.length && byteCount < 4) {
-                        sb.append(Integer.toHexString((int) value[pos]).toUpperCase());                
+                        String hex = Integer.toHexString(value[pos]);
+                    	hex = String.format("%2S", hex).replaceAll(" ", "0");
+                        sb.append(hex.toUpperCase());   
                         pos++;
                         byteCount++;
                     }

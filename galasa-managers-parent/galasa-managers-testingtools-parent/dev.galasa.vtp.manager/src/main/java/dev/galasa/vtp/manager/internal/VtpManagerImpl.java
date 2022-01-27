@@ -63,7 +63,6 @@ public class VtpManagerImpl extends AbstractManager {
 	
 	private static final String VtpApiVersionData         = "VERS              ";
 	private static final String VtpApiStartRecordingData  = "STRT                    ";
-	private static final String VtpApiStopRecordingData   = "STOP            ";
 	
 	private static final String VtpVersionName  = "&VTPVERS";
 	private static final String VtpStartName  = "&VTPSTRT";
@@ -73,6 +72,8 @@ public class VtpManagerImpl extends AbstractManager {
 	private static final int    VtpTokenIndexEnd   = 24;
 	
 	private static final String PASSED_RESULT = "Passed";
+	
+	private boolean skipRecordings = false;
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
@@ -88,7 +89,8 @@ public class VtpManagerImpl extends AbstractManager {
 			}
 		}
 		if (recordingTerminals.size() == 0) {
-			throw new VtpManagerException("VTP Manager is enabled but no recordable CICS regions found in the test");
+			logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
+			skipRecordings = true;
 		}
 	}
 
@@ -115,8 +117,13 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 
 		if (galasaTest.isJava()) {
-			if (VtpEnable.get()) {
-				youAreRequired(allManagers, activeManagers, galasaTest);
+			//If VTP recording is enabled and there are recordable CICS regions then enable the manager 
+			if (VtpEnable.get() && findAnnotatedFields(CicstsManagerField.class).size() > 0) {
+				if(findAnnotatedFields(CicstsManagerField.class).size() > 0) {
+					youAreRequired(allManagers, activeManagers, galasaTest);
+				}else {
+					logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
+				}
 			}
 		}
 	}
@@ -146,6 +153,9 @@ public class VtpManagerImpl extends AbstractManager {
 
 	@Override
 	public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
+		if(skipRecordings) {
+			return;
+		}
 		if(isTestMethod(galasaMethod)) {
 			startRecording();
 		}
@@ -154,6 +164,9 @@ public class VtpManagerImpl extends AbstractManager {
 	@Override
 	public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
 			Throwable currentException) throws ManagerException {
+		if(skipRecordings) {
+			return null;
+		}
 		if(isTestMethod(galasaMethod)) {
 			stopRecording();
 		}
@@ -185,7 +198,7 @@ public class VtpManagerImpl extends AbstractManager {
 			try {
 				startRecording(region);
 			} catch (VtpManagerException e) {
-				logger.error("Unable to start recording");
+				logger.error("Unable to start recording for region tagged: " + region.getTag());
 			}
 		}
 	}
@@ -196,6 +209,10 @@ public class VtpManagerImpl extends AbstractManager {
 			logger.info("Starting VTP Recording");
 			region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
 			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStartName + VtpApiCommandEnd);
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while starting recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
+			
 			String responseData = region.ceci().retrieveVariableText(terminal, VtpStartName);
 			char[] binaryResponse = region.ceci().retrieveVariableBinary(terminal, VtpStartName);
 			char[] recordingToken = Arrays.copyOfRange(binaryResponse, VtpTokenIndexStart, VtpTokenIndexEnd);
@@ -224,21 +241,36 @@ public class VtpManagerImpl extends AbstractManager {
 		ICicsTerminal terminal = recordingTerminals.get(region);
 		try {
 			logger.info("Stopping VTP Recording");
+			//obtain recording token
 			char[] recordingToken = recordingTokens.get(region);
+			if(recordingToken == null) {
+				logger.error("No recording token saved for region tagged: " + region.getTag() + ". Not attempting to stop recording");
+				return;
+			}
+			
+			//fill in the API data 
 			char[] recordingData  = new char[24];
-			
-			char blank = 40;
+			char blank = 0;
 			Arrays.fill(recordingData, blank);
-			
+			//first four characters are STOP
 			System.arraycopy(new char[]{226,227,214,215}, 0, recordingData, 0, 4);
+			//put the recording token at the end
 			System.arraycopy(recordingToken, 0, recordingData, 16, 8);
 			
 			region.ceci().defineVariableBinary(terminal, VtpStopName, recordingData);
 			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStopName + VtpApiCommandEnd);
+			
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while stopping recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
 			String responseData = region.ceci().retrieveVariableText(terminal, VtpStopName);
 		} catch (CicstsManagerException e) {
 			throw new VtpManagerException("Unable to start VTP recording",e);
 		} 
+	}
+	
+	private void exportRecording(ICicsRegion region) {
+		
 	}
 	
 	private void getVTPVersion() throws VtpManagerException {

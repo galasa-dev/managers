@@ -32,7 +32,7 @@ import dev.galasa.zos3270.spi.NetworkException;
 
     @Test
     public void test1() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-    	terminal.type("TRN1").enter().wfk();
+    	terminal.type("TSQT").enter().wfk().clear();
       
     }
   
