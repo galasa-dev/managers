@@ -103,7 +103,7 @@ public class DockerRegistryImpl {
 		try {
 			registryAuthenticate(image);
 
-			String path = this.getPrefix() + "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+			String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
@@ -116,7 +116,7 @@ public class DockerRegistryImpl {
 			return false;
 		} catch (DockerManagerException e) {
 			logger.trace(e);
-			logger.error("Failed to access registry");
+			logger.warn("Failed to access registry");
 			return false;
 		} catch (ClassCastException e) {
 			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
@@ -245,7 +245,7 @@ public class DockerRegistryImpl {
 	 * @throws DockerManagerException
 	 */
 	private boolean retrieveRealm(DockerImageImpl image) throws DockerManagerException {
-		String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+		String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 		try {
 			HttpClientResponse<JsonObject> response = this.client.getJson(path);
