@@ -9,7 +9,7 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * Docker Registry Prefix CPS Property
+ * Docker Image Prefix CPS Property
  * 
  * @galasa.cps.property
  * 
@@ -28,16 +28,16 @@ public class DockerImagePrefix extends CpsProperties {
 
     public static String get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {
         String id = dockerRegistry.getId();
-        String dockerRegistryPrefix = "";
+        String dockerImagePrefix = "";
         try {
-            dockerRegistryPrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "image.prefix", id);
+        	dockerImagePrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "image.prefix", id);
             // Default value
-            if (dockerRegistryPrefix == null) {
+            if (dockerImagePrefix == null) {
             	return "";
             }
-            return dockerRegistryPrefix + "/";
+            return dockerImagePrefix + "/";
         } catch (ConfigurationPropertyStoreException e) {
-            throw new DockerManagerException("Problem asking the CPS for the docker registry type", e);
+            throw new DockerManagerException("Problem asking the CPS for the docker image prefix", e);
         }
     }
 }
