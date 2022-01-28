@@ -15,21 +15,14 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.name docker.registry.ID.prefix
  * 
- * @galasa.description Provides the prefix of a Docker Registry that is used by the Docker Manager.
+ * @galasa.description Provides a prefix to be applied to all image names, particularly useful if you have a dockerhub proxy.
  * 
- * @galasa.required Yes if the Registry ID is used in the CPS Property <code>docker.default.registries</code>.
- * 
- * @galasa.default None, except for DOCKERHUB where the default is <code>https://registry.hub.docker.com</code>
+ * @galasa.default None
  * 
  * @galasa.valid_values A valid String
  * 
  * @galasa.examples 
  * <code>docker.registry.LOCAL.prefix=dockerhub/</code>
- * 
- * @galasa.extra
- * If the Docker Registry requires credentials for authentication, then the id for the credentials must be provided using the CPS property 
- * <code>docker.registry.ID.credentials</code> or <code>docker.registry.credentials</code>
- * 
  */
 public class DockerRegistryPrefix extends CpsProperties {
 
@@ -37,7 +30,7 @@ public class DockerRegistryPrefix extends CpsProperties {
         String id = dockerRegistry.getId();
         String dockerRegistryPrefix = "";
         try {
-            dockerRegistryPrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "prefix", id, "image");
+            dockerRegistryPrefix = getStringNulled(DockerPropertiesSingleton.cps(), "registry", "image.prefix", id);
             // Default value
             if (dockerRegistryPrefix == null) {
             	return "";
