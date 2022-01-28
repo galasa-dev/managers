@@ -28,7 +28,7 @@ public class CemtImpl implements ICemt {
 
     protected CicstsHashMap getAttributes(String string, String resourceName, CicstsHashMap map) throws Exception {
 
-        Pattern pattern = Pattern.compile("\\w*\\(\\s*[a-zA-z0-9]*\\s*\\)");
+        Pattern pattern = Pattern.compile("\\w*\\(\\s*[a-zA-z0-9.#:// ]*\\s*\\)");
 
         Matcher matcher = pattern.matcher(string);
 

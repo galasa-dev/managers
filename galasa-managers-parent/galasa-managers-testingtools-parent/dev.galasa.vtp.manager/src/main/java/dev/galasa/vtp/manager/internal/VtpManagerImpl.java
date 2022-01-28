@@ -20,7 +20,9 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
+import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
+import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.CicstsManagerField;
 import dev.galasa.cicsts.ICeciResponse;
@@ -50,6 +52,7 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
+import dev.galasa.zosbatch.spi.IZosBatchSpi;
 
 @Component(service = { IManager.class })
 public class VtpManagerImpl extends AbstractManager {
@@ -59,6 +62,7 @@ public class VtpManagerImpl extends AbstractManager {
 	public final static String NAMESPACE = "vtp";
 
 	private ICicstsManagerSpi cicsManager;
+	private IZosBatchSpi      batchManager;
 	private IConfigurationPropertyStoreService cps;
 	private Path storedArtifactRoot;
 
@@ -156,6 +160,8 @@ public class VtpManagerImpl extends AbstractManager {
 		if (cicsManager == null) {
 			throw new VtpManagerException("The CICS Manager is not available");
 		}
+		
+		batchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
 	}
 
 	@Override
@@ -377,22 +383,18 @@ public class VtpManagerImpl extends AbstractManager {
 				terminal.type("BZUW").enter();
 				terminal.waitForTextInField("RECORDS WRITTEN");
 				terminal.clear();
-			} catch (FieldNotFoundException | KeyboardLockedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TerminalInterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TextNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ErrorTextFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
+				tdqAttrs.get("Dsname");
 			} catch (Zos3270Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			} catch (CemtException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CicstsManagerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 			
 		}
 	}
