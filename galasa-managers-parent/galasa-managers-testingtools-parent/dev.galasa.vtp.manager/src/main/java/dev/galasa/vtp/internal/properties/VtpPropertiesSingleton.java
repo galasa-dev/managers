@@ -1,7 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
  */
-package dev.galasa.mq.internal.properties;
+package dev.galasa.vtp.internal.properties;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

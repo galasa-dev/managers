@@ -1,7 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
  */
-package dev.galasa.mq.internal.properties;
+package dev.galasa.vtp.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
@@ -26,15 +26,15 @@ import dev.galasa.vtp.manager.VtpManagerException;
  * <code>zos.bundle.extra.batch.manager=dev.galasa.common.zosbatch.zosmf.manager</code><br>
  *
  */
-public class VtpEnable extends CpsProperties {
+public class VtpAPI extends CpsProperties {
     
     public static boolean get() throws VtpManagerException {
         try {
-            String vtpEnable = getStringNulled(VtpPropertiesSingleton.cps(), "recording", "enable");
-            if (vtpEnable == null)  {
+            String vtpAPI = getStringNulled(VtpPropertiesSingleton.cps(), "API", "enable");
+            if (vtpAPI == null)  {
                 return false;
             }
-            return Boolean.parseBoolean(vtpEnable);
+            return Boolean.parseBoolean(vtpAPI);
         } catch (ConfigurationPropertyStoreException e) {
             throw new VtpManagerException("Problem asking CPS for the VTP recording enable status", e); 
         }
