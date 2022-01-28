@@ -23,7 +23,7 @@ import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
-import dev.galasa.docker.internal.properties.DockerRegistryPrefix;
+import dev.galasa.docker.internal.properties.DockerImagePrefix;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -72,7 +72,7 @@ public class DockerRegistryImpl {
 		this.dockerManager = dockerManager;
 		this.registryId = registryId;
 		this.registryUrl = DockerRegistryURL.get(this);
-		this.prefix = DockerRegistryPrefix.get(this);
+		this.prefix = DockerImagePrefix.get(this);
 
 		this.client = dockerManager.httpManager.newHttpClient();
 		this.realmClient = dockerManager.httpManager.newHttpClient();

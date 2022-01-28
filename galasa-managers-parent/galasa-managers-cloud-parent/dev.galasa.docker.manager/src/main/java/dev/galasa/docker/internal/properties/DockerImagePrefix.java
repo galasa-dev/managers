@@ -13,7 +13,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name docker.registry.ID.prefix
+ * @galasa.name docker.registry.ID.image.prefix
  * 
  * @galasa.description Provides a prefix to be applied to all image names, particularly useful if you have a dockerhub proxy.
  * 
@@ -22,9 +22,9 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A valid String
  * 
  * @galasa.examples 
- * <code>docker.registry.LOCAL.prefix=dockerhub/</code>
+ * <code>docker.registry.LOCAL.image.prefix=dockerhub/</code>
  */
-public class DockerRegistryPrefix extends CpsProperties {
+public class DockerImagePrefix extends CpsProperties {
 
     public static String get(DockerRegistryImpl dockerRegistry) throws DockerManagerException {
         String id = dockerRegistry.getId();
