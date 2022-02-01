@@ -39,7 +39,7 @@ public class ResourceStringPattern extends CpsProperties {
 
 	public static List<String> get(final int length) throws CoreManagerException {
 		try {
-			List<String> pattern = getStringList(CorePropertiesSingleton.cps(), "core.resource.string." + Integer.toString(length), "pattern");
+			List<String> pattern = getStringList(CorePropertiesSingleton.cps(), "resource.string." + Integer.toString(length), "pattern");
 			if (!pattern.isEmpty()) {
 				return pattern;
 			}
