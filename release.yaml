@@ -97,6 +97,18 @@ managers:
     obr: true
     mvp: true
     isolated: true
+
+  - artifact: dev.galasa.db2.manager
+    version: 0.20.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.db2.manager.ivt
+    version: 0.20.0
+    obr: true
+    mvp: true
+    isolated: true
     
   - artifact: dev.galasa.docker.manager
     version: 0.20.0
