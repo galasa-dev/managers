@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.apache.commons.logging.Log;
 
-import dev.galasa.Before;
+import dev.galasa.After;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
@@ -51,24 +51,6 @@ public class CedaManagerIVT {
       cemtTerminal.waitForKeyboard();
    }
 
-   @Before
-   public void before() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Clearing the resources to be used in the tests in case they already exist");
-	  terminal.clear().waitForKeyboard();
-      terminal.type("CEDA DELETE GROUP(Test) ALL").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEDA DELETE GROUP(IVT) ALL").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEDA DELETE GROUP(noIVT) ALL").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD prog(Program,prg1,prg2,prg3,prg4)").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD transaction(trx1)").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      terminal.type("CEMT DISCARD LIBRARY(lib1)").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-   }
-
    @Test
    public void checkCECINotNull() throws CicstsManagerException {
       assertThat(cics).isNotNull();
@@ -97,7 +79,7 @@ public class CedaManagerIVT {
       String groupName = "Test";
       String resourceParameters = null;
 
-      logger.info("Creating and installing a program resource using CEDA, and testing that it worked using CEMT");
+      logger.info("Creating and installing a program resource using CEDA, and testing that it worked using CEMT. Finally, deleting the program resource.");
       assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
 
       cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
@@ -109,8 +91,9 @@ public class CedaManagerIVT {
       logger.info("Manually testing that the resource was installed using CEMT");
       terminal.type("CEMT INQUIRE PROGRAM(PROGRAM)").enter().waitForKeyboard();
       assertThat(terminal.retrieveScreen().contains("RESPONSE: NORMAL")).isTrue();
-     
-      logger.info("Resource was created and installed successfully");
+      
+      cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+      assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
    }
 
    /**
@@ -125,7 +108,7 @@ public class CedaManagerIVT {
       String groupName = "Test";
       String resourceParameters = "PROGRAM(PRG1)";
      
-      logger.info("Creating and installing a transaction resource using CEDA, and testing that it worked using CEMT");
+      logger.info("Creating and installing a transaction resource using CEDA, and testing that it worked using CEMT. Finally, deleting the transaction resource.");
       assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
 
       cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
@@ -134,7 +117,8 @@ public class CedaManagerIVT {
       cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
       assertThat(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName).get("transaction")).isEqualToIgnoringCase(resourceName);
       
-      logger.info("Resource was created and installed successfully");
+      cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+      assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
    }
 
    /**
@@ -149,7 +133,7 @@ public class CedaManagerIVT {
       String groupName = "Test";
       String resourceParameters = "DSNAME01(CTS.USER.APPL1.CICS.LOAD)";
      
-      logger.info("Creating and installing a library resource using CEDA, and testing that it worked by using CEMT");
+      logger.info("Creating and installing a library resource using CEDA, and testing that it worked by using CEMT. Finally, deleting the library resource.");
       assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
 
       cics.ceda().createResource(cedaTerminal, resourceType, resourceName, groupName, resourceParameters);
@@ -158,7 +142,8 @@ public class CedaManagerIVT {
       cics.ceda().installResource(cedaTerminal, resourceType, resourceName, groupName);
       assertThat(cics.cemt().inquireResource(cemtTerminal, resourceType, resourceName).get("library")).isEqualToIgnoringCase(resourceName);
 
-      logger.info("Resource was created and installed successfully");
+      cics.ceda().deleteResource(cedaTerminal, resourceType, resourceName, groupName);
+      assertThat(cics.ceda().resourceExists(cedaTerminal, resourceType, resourceName, groupName)).isEqualTo(false);
    }
 
    /**
@@ -209,5 +194,23 @@ public class CedaManagerIVT {
       assertThatThrownBy(() -> {
          cics.ceda().installGroup(cedaTerminal, groupName);
       }).isInstanceOf(CedaException.class).hasMessageContaining("Problem determining the result from the CEDA command");
+   }
+   
+   @After
+   public void cleanUpResources() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+	  logger.info("Clearing all resources after the test");
+	  terminal.clear().waitForKeyboard();
+      terminal.type("CEDA DELETE GROUP(Test) ALL").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
+      terminal.type("CEDA DELETE GROUP(IVT) ALL").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
+      terminal.type("CEDA DELETE GROUP(noIVT) ALL").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
+      terminal.type("CEMT DISCARD prog(Program,prg1,prg2,prg3,prg4)").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
+      terminal.type("CEMT DISCARD transaction(trx1)").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
+      terminal.type("CEMT DISCARD LIBRARY(lib1)").enter().waitForKeyboard();
+      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
    }
 }

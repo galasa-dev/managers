@@ -8,6 +8,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -16,12 +19,14 @@ import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
+import dev.galasa.cicsts.IExecInterfaceBlock;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -55,7 +60,7 @@ public class CECIManagerIVT {
    @BeforeClass
    public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
 	   ceciTerminal.clear().waitForKeyboard();
-	   ceciTerminal.type("CECI").enter().waitForKeyboard();
+	   // We will start the CECI session in a test method
       
        otherTerminal.clear().waitForKeyboard();
    }
@@ -74,6 +79,22 @@ public class CECIManagerIVT {
       assertThat(otherTerminal).isNotNull();
       assertThat(batch).isNotNull();
    } 
+   
+   /**
+    * Starts the CECI session.
+    * 
+    * @throws CicstsManagerException 
+    * @throws CeciException 
+    */
+   @Test
+   public void testStartCeciSession() throws CeciException, CicstsManagerException {
+	   logger.info("Testing starting a CECI session");
+	   cics.ceci().startCECISession(ceciTerminal);
+	   
+	   logger.info("If the CECI session started successfully, the terminal should be able to process a CECI command");
+	   ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
+	   resp.checkNormal();
+   }
    
    /**
     * Defines a variable, then retrieves the variable and tests that the stored text is correct.
@@ -144,7 +165,6 @@ public class CECIManagerIVT {
     */
   @Test
    public void testBinaryDataTypeVariable() throws CeciException, CicstsManagerException {
-	  logger.info("Testing defining a binary data type value with CECI");
       String variableName = "BINARY";
       String variableValue = "BinaryString";
       cics.ceci().defineVariableBinary(ceciTerminal, variableName, variableValue.toCharArray());
@@ -152,7 +172,7 @@ public class CECIManagerIVT {
       assertThat(response).isEqualTo(variableValue);
 
       cics.ceci().deleteVariable(ceciTerminal, variableName);
-      logger.info("Testing that when you define a binary data type variable longer than allowed than an exception is thrown");
+      logger.info("Testing that when you define a binary data type variable longer than allowed that an exception is thrown");
       assertThatThrownBy(() -> {
     	  cics.ceci().defineVariableBinary(ceciTerminal, variableName, constructRandomString(32768).toCharArray());
 	  }).isInstanceOf(CeciException.class).hasMessageContaining("CECI variable value length 32768 greater than maximum 32767");
@@ -167,7 +187,6 @@ public class CECIManagerIVT {
     */
   @Test
    public void testDoubleDataTypeVariable() throws CeciException, CicstsManagerException {
-	  logger.info("Testing defining a double data type variable");
       String variableName = "DOUBLE";
       long variableValue = 9223372036854775807L;
       cics.ceci().defineVariableDoubleWord(ceciTerminal, variableName, variableValue);
@@ -183,7 +202,6 @@ public class CECIManagerIVT {
     */
   @Test
    public void testFullDataTypeVariable() throws CeciException, CicstsManagerException {
-	  logger.info("Testing defining a full data type variable");
       String variableName = "FULL";
       int variableValue = Integer.MAX_VALUE;
       cics.ceci().defineVariableFullWord(ceciTerminal, variableName, variableValue);
@@ -199,13 +217,56 @@ public class CECIManagerIVT {
     */
   @Test
    public void testHalfDataTypeVariable() throws CeciException, CicstsManagerException {
-	  logger.info("Testing defining a half data type variable");
       String variableName = "HALF";
-      int variableValue = 32766;
+      int variableValue = 32767;
       cics.ceci().defineVariableHalfWord(ceciTerminal, variableName, variableValue);
       int response = cics.ceci().retrieveVariableHalfWord(ceciTerminal, variableName);
       assertThat(response).isEqualTo(variableValue);
    }
+  
+  /**
+   * Tests defining a 4 byte packed data type variable.
+   * 
+   * @throws CicstsManagerException 
+   * @throws CeciException 
+   */
+  @Test
+  public void test4BytePackedVariable() throws CeciException, CicstsManagerException {
+	  String variableName = "4byte";
+	  int variableValue = 9999999;
+	  cics.ceci().defineVariable4BytePacked(ceciTerminal, variableName, variableValue);
+	  int response = cics.ceci().retrieveVariable4BytePacked(ceciTerminal, variableName);
+	  assertThat(response).isEqualTo(variableValue);
+	 
+	  cics.ceci().deleteVariable(ceciTerminal, variableName);
+      logger.info("Testing that when you define a 4 byte packed data type variable longer than allowed that an exception is thrown");
+      assertThatThrownBy(() -> {
+    	  cics.ceci().defineVariable4BytePacked(ceciTerminal, variableName, 10000000);
+	  }).isInstanceOf(CeciException.class).hasMessageContaining("CECI variable value length 9 greater than maximum of 8 for type \"P\"");
+	  
+  }
+  
+  /**
+   * Tests defining an 8 byte packed data type variable.
+   * 
+   * @throws CicstsManagerException 
+   * @throws CeciException 
+   */
+  @Test
+  public void test8BytePackedVariable() throws CeciException, CicstsManagerException {
+	  String variableName = "8byte";
+	  long variableValue = 999999999999999L;
+	  cics.ceci().defineVariable8BytePacked(ceciTerminal, variableName, variableValue);
+	  long response = cics.ceci().retrieveVariable8BytePacked(ceciTerminal, variableName);
+	  assertThat(response).isEqualTo(variableValue);
+	 
+	  cics.ceci().deleteVariable(ceciTerminal, variableName);
+      logger.info("Testing that when you define an 8 byte packed data type variable longer than allowed that an exception is thrown");
+      assertThatThrownBy(() -> {
+    	  cics.ceci().defineVariable8BytePacked(ceciTerminal, variableName, 1000000000000000L);
+	  }).isInstanceOf(CeciException.class).hasMessageContaining("CECI variable value length 17 greater than maximum of 16 for type \"D\"");
+	  
+  }
 
    /**
     * Tests the execution of a basic CECI command.
@@ -214,7 +275,7 @@ public class CECIManagerIVT {
     * @throws CeciException 
     */
    @Test
-   public void testBasicCommand() throws CeciException, CicstsManagerException  {
+   public void testCommand() throws CeciException, CicstsManagerException  {
 	  logger.info("Testing the execution of a basic CECI command");
       String userVariable = "USERID";
       String ceciCommand = "ASSIGN USERID(&" + userVariable + ")";
@@ -224,19 +285,19 @@ public class CECIManagerIVT {
    }
 
    /**
-    * Tests the execution of a basic documentation CECI command.
+    * Tests the execution of a documentation CECI command.
     * 
     * @throws CicstsManagerException 
     * @throws CeciException 
     * @throws ZosBatchException 
     */
    @Test
-   public void testDocumentationBasicCommand() throws CeciException, CicstsManagerException, ZosBatchException  {
-	  logger.info("Testing the execution of a basic documentation CECI command");
+   public void testDocumentationCommand() throws CeciException, CicstsManagerException, ZosBatchException  {
+      logger.info("Testing the execution of a basic documentation CECI command");
 	  String message = "GALASA TEST " + Instant.now().toString();
-      String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('" + message + "')";
-      ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand);
-      assertThat(resp.isNormal()).isTrue();
+	  String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('" + message + "')";
+	  ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand);
+	  assertThat(resp.isNormal()).isTrue();
 
       logger.info("Checking that the message was written to the CICS log");
       boolean messageFound = false;
@@ -249,6 +310,34 @@ public class CECIManagerIVT {
          }
       }
       assertThat(messageFound).isTrue();
+   }
+   
+   /**
+    * Tests the execution of a CECI command with options.
+    * 
+    * @throws CicstsManagerException 
+    * @throws CeciException 
+    */
+   @Test
+   public void testCommandWithOptions() throws CeciException, CicstsManagerException {
+	   logger.info("Testing the execution of a CECI command with options");
+	   
+	   String ceciCommand = "PUT";
+	   HashMap<String, Object> options = new HashMap<String, Object>();
+	   options.put("CONTAINER", "FRED");
+	   options.put("CHANNEL", "FRED");
+	   options.put("FROM", "'HELLO'");
+	   ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand, options);
+	   assertThat(resp.isNormal()).isTrue();
+	   
+	   ceciCommand = "GET";
+	   options.clear();
+	   options.put("CONTAINER", "FRED");
+	   options.put("CHANNEL", "FRED");
+	   options.put("INTO", "&FRED");
+	   resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand, options);
+	   assertThat(resp.isNormal()).isTrue();
+	   assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "FRED")).isEqualTo("HELLO");
    }
    
    /**
@@ -306,15 +395,15 @@ public class CECIManagerIVT {
 	  String content = "my-content";
 	  
 	  ICeciResponse resp = cics.ceci().putContainer(ceciTerminal, channelName, containerName, content, null, null, null);
-      assertThat(resp.isNormal()).isTrue();
+      resp.checkNormal();
 	  
 	  String programName = "CONTTEST";
       resp = cics.ceci().linkProgramWithChannel(ceciTerminal, programName, channelName, null, null, false);
-      assertThat(resp.isNormal()).isTrue();
+      resp.checkNormal();
 	  
 	  String variableName = "&OUTPUT";
       resp = cics.ceci().getContainer(ceciTerminal, channelName, containerName, variableName, null, null);
-      assertThat(resp.isNormal()).isTrue();
+      resp.checkNormal();
       assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).isUpperCase();
       assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).startsWith(content.toUpperCase());
       
@@ -341,6 +430,46 @@ public class CECIManagerIVT {
       assertThat(outputData).isUpperCase();
       assertThat(outputData).startsWith(variableValue.toUpperCase());
    } 
+   
+   /**
+    * Tests that the EIB fields are retrieved correctly.
+    * 
+    * @throws CicstsManagerException 
+    * @throws CeciException
+    * @throws FieldNotFoundException 
+    * @throws NetworkException 
+    * @throws TerminalInterruptedException 
+    * @throws KeyboardLockedException 
+    * @throws TimeoutException 
+    */
+   @Test
+   public void testGetEIBFields() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+	   logger.info("Testing that important fields from the Exec Interface Block are retrieved correctly");
+	   
+	   cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
+	   IExecInterfaceBlock eib = cics.ceci().getEIB(ceciTerminal);
+	  
+	   assertThat(eib.getResponse()).isEqualTo("NORMAL");
+	   assertThat(eib.getEIBRESP()).isEqualTo(0);
+	   assertThat(eib.getEIBRESP2()).isEqualTo(0);
+	   
+	   assertThat(eib.getEIBTRNID(false)).isEqualTo("CECI");
+	   
+	   otherTerminal.clear().waitForKeyboard();
+	   otherTerminal.type("CEMT INQUIRE SYSTEM").enter().waitForKeyboard();
+	   String screen = otherTerminal.retrieveScreen();
+	   if (!screen.contains("DATE:")) {
+		   throw new CemtException("CEMT INQUIRE SYSTEM did not navigate to correct screen");
+	   }
+	   String dateString = screen.substring(screen.lastIndexOf("DATE: ") + 6, screen.lastIndexOf("DATE: ") + 14);
+	   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+	   LocalDate date = LocalDate.parse(dateString, formatter);
+	   // EIBDATE is in packed decimal format
+	   String expectedEIBDate = (date.getYear() <= 1999 ? "0" : "1")
+			   					+ Integer.toString(date.getYear()).substring(2)
+			   					+ (date.getDayOfYear() <= 99 ? "0" + date.getDayOfYear() : date.getDayOfYear());
+	   assertThat(eib.getEIBDATE()).isEqualTo(Integer.parseInt(expectedEIBDate));
+   }
 
    private String constructRandomString(int length) {
       String alphabet = "abcdefghijklmnopqrstuvwxyz";
