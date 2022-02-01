@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.db2;
 
 import java.lang.annotation.ElementType;
