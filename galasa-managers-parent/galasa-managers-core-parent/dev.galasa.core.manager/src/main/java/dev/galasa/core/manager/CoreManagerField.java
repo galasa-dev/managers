@@ -1,9 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
-package dev.galasa.core.manager.internal;
+* Copyright contributors to the Galasa project 
+*/
+package dev.galasa.core.manager;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

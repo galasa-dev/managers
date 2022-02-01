@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.core.manager.internal.gherkin;
 
 import java.util.Map;
@@ -8,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ManagerException;
-import dev.galasa.core.manager.internal.CoreManager;
+import dev.galasa.core.manager.internal.CoreManagerImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IGherkinExecutable;
@@ -25,7 +28,7 @@ public class CoreStatementOwner implements IStatementOwner {
     private IManager owningManager;
     private IConfigurationPropertyStoreService cpsTest;
 
-    public CoreStatementOwner(CoreManager manager, IConfigurationPropertyStoreService cps) {
+    public CoreStatementOwner(CoreManagerImpl manager, IConfigurationPropertyStoreService cps) {
         this.owningManager = manager;
         this.cpsTest = cps;
     }

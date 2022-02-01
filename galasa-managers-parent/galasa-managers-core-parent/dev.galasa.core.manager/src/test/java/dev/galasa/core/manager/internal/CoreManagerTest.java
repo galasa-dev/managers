@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.core.manager.internal;
 
 import static org.mockito.Mockito.when;
@@ -47,11 +45,12 @@ public class CoreManagerTest {
         when(framework.getTestRunName()).thenReturn(runName);
         when(framework.getResultArchiveStore()).thenReturn(ras);
         when(ras.getStoredArtifactsRoot()).thenReturn(Paths.get("a", "root", "dir"));
+        new CorePropertiesSingleton().activate();
     }
     
     @Test
     public void testCoreManagerInitialise() throws ManagerException {
-        CoreManager coreManager = new CoreManager();
+        CoreManagerImpl coreManager = new CoreManagerImpl();
         
         ArrayList<IManager> activeManagers = new ArrayList<>();
         coreManager.initialise(framework, null, activeManagers, new GalasaTest(this.getClass()));
@@ -61,8 +60,9 @@ public class CoreManagerTest {
 
     @Test
     public void testCoreManagerGenerate() throws ManagerException, ResourceUnavailableException {
-        CoreManager coreManager = new CoreManager();
+        CoreManagerImpl coreManager = new CoreManagerImpl();
         TestClass testClass = new TestClass();
+        
         
         ArrayList<IManager> activeManagers = new ArrayList<>();
         coreManager.initialise(framework, null, activeManagers, new GalasaTest(testClass.getClass()));
