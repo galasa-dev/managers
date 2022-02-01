@@ -266,7 +266,7 @@ public class LocalLinuxEcosystemImpl extends LocalEcosystemImpl {
     }
 
     @Override
-    protected ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
+    public ICommandShell getCommandShell() throws GalasaEcosystemManagerException {
         try {
             return this.linuxImage.getCommandShell();
         } catch (LinuxManagerException e) {

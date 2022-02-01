@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.core.manager.internal;
 
 import java.lang.annotation.Annotation;
@@ -22,17 +20,22 @@ import dev.galasa.ManagerException;
 import dev.galasa.Tags;
 import dev.galasa.TestAreas;
 import dev.galasa.core.manager.CoreManagerException;
+import dev.galasa.core.manager.CoreManagerField;
 import dev.galasa.core.manager.ICoreManager;
+import dev.galasa.core.manager.IResourceString;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.ResourceString;
 import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.StoredArtifactRoot;
 import dev.galasa.core.manager.TestProperty;
 import dev.galasa.core.manager.internal.gherkin.CoreStatementOwner;
 import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
+import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.ILoggingManager;
@@ -43,12 +46,18 @@ import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.language.GalasaTest;
 
 @Component(service = { IManager.class, IGherkinManager.class })
-public class CoreManager extends AbstractGherkinManager implements ICoreManager, ILoggingManager {
+public class CoreManagerImpl extends AbstractGherkinManager implements ICoreManager, ILoggingManager {
+    public final static String                 NAMESPACE    = "core";
 
 	private IConfigurationPropertyStoreService cpsTest;
 	private IConfidentialTextService           ctf;
+	private IConfigurationPropertyStoreService cps;
+	private IDynamicStatusStoreService         dss;
 	
 	private Class<?> testClass;
+	
+	private ResourceStringGenerator            resourceStringGenerator = new ResourceStringGenerator(this);
+
 
 	/*
 	 * (non-Javadoc)
@@ -63,8 +72,15 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 
 		try {
 			this.cpsTest = framework.getConfigurationPropertyService("test");
+			this.cps     = framework.getConfigurationPropertyService(NAMESPACE);
+			CorePropertiesSingleton.setCps(this.cps);			
 		} catch (ConfigurationPropertyStoreException e) {
 			throw new CoreManagerException("Unable to initialise the CPS for Core Manager",e);
+		}
+		try {
+			this.dss = framework.getDynamicStatusStoreService(NAMESPACE);
+		} catch (DynamicStatusStoreException e) {
+			throw new CoreManagerException("Unable to initialise the DSS for Core Manager",e);
 		}
 		this.ctf = framework.getConfidentialTextService();
 
@@ -85,7 +101,15 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
+		// Make use of the inbuilt field generation routines - createResourceString & createLogField methods will be called automatically
 		generateAnnotatedFields(CoreManagerField.class);
+	}
+	
+	@Override
+	public void provisionDiscard() {
+		this.resourceStringGenerator.discard(); // Discard all the resource strings we generated
+		
+		super.provisionDiscard();
 	}
 
 	/**
@@ -98,6 +122,20 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
 	@GenerateAnnotatedField(annotation = Logger.class)
 	public Log createLogField(Field field, List<Annotation> annotations) {
 		return LogFactory.getLog(getTestClass());
+	}
+
+	/**
+	 * Generates and locks a random string
+	 *
+	 * @param field       The field in question
+	 * @param annotations All the Manager annotations associated with the field
+	 * @return The Object the field needs to be filled with
+	 * @throws ResourceUnavailableException 
+	 */
+	@GenerateAnnotatedField(annotation = ResourceString.class)
+	public IResourceString createResourceString(Field field, List<Annotation> annotations) throws CoreManagerException, ResourceUnavailableException {
+		// Hand control to the dedicated Resource String generator
+		return this.resourceStringGenerator.generateString(field);
 	}
 
 	/**
@@ -292,5 +330,9 @@ public class CoreManager extends AbstractGherkinManager implements ICoreManager,
         
         return tags;
     }
+
+	public IDynamicStatusStoreService getDss() {
+		return this.dss;
+	}
 
 }

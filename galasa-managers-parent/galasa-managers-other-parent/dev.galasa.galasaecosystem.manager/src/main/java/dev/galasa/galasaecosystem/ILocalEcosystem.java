@@ -1,9 +1,9 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project 
  */
 package dev.galasa.galasaecosystem;
+
+import dev.galasa.ipnetwork.ICommandShell;
 
 /**
  * Kubernetes Ecosystem TPI
@@ -25,5 +25,7 @@ public interface ILocalEcosystem extends IGenericEcosystem {
      * @return string
      * */
     public String getIsolatedDirectory();
+    
+    public ICommandShell getCommandShell() throws GalasaEcosystemManagerException;
     
 }

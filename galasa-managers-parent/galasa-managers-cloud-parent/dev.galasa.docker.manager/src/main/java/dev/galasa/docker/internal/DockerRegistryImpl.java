@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -25,6 +23,7 @@ import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
+import dev.galasa.docker.internal.properties.DockerImagePrefix;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -45,6 +44,7 @@ public class DockerRegistryImpl {
 	private DockerManagerImpl 					dockerManager;
 	private URL 								registryUrl;
 	private String 								registryId;
+	private String 								prefix;
 
 	private ICredentialsService 				credService;
 
@@ -72,6 +72,7 @@ public class DockerRegistryImpl {
 		this.dockerManager = dockerManager;
 		this.registryId = registryId;
 		this.registryUrl = DockerRegistryURL.get(this);
+		this.prefix = DockerImagePrefix.get(this);
 
 		this.client = dockerManager.httpManager.newHttpClient();
 		this.realmClient = dockerManager.httpManager.newHttpClient();
@@ -102,7 +103,7 @@ public class DockerRegistryImpl {
 		try {
 			registryAuthenticate(image);
 
-			String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+			String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
@@ -115,7 +116,7 @@ public class DockerRegistryImpl {
 			return false;
 		} catch (DockerManagerException e) {
 			logger.trace(e);
-			logger.error("Failed to access registry");
+			logger.warn("Failed to access registry");
 			return false;
 		} catch (ClassCastException e) {
 			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
@@ -244,7 +245,7 @@ public class DockerRegistryImpl {
 	 * @throws DockerManagerException
 	 */
 	private boolean retrieveRealm(DockerImageImpl image) throws DockerManagerException {
-		String path = "/v2/" + image.getImageName() + "/manifests/" + image.getTag();
+		String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 		try {
 			HttpClientResponse<JsonObject> response = this.client.getJson(path);
@@ -330,6 +331,14 @@ public class DockerRegistryImpl {
 			return this.registryUrl.getHost();
         }
 	}   
+    
+    /**
+     * Returns the prefix of the registry
+     * @return String
+     */
+    public String getPrefix() {
+    	return this.prefix;
+    }
 	
 	/**
 	 * Returns the auth token

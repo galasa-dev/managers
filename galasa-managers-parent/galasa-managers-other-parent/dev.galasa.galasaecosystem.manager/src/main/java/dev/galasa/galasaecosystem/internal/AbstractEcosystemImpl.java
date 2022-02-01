@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project 
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.util.Random;
@@ -49,7 +52,7 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
         return this.manager;
     }
 
-    protected abstract ICommandShell getCommandShell() throws GalasaEcosystemManagerException;
+    public abstract ICommandShell getCommandShell() throws GalasaEcosystemManagerException;
 
     protected IJavaInstallation getJavaInstallation() {
         return this.javaInstallation;

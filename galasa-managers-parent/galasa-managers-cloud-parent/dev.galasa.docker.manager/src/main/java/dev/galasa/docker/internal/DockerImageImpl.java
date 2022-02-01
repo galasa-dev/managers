@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -86,7 +84,7 @@ public class DockerImageImpl implements IDockerImage {
 		List<DockerRegistryImpl> registries = dockerManager.getRegistries();
 		for(DockerRegistryImpl registry : registries) {
 			if (registry.doYouHave(this)) {
-                this.fullName = registry.getHost() + "/" + workingName;
+                this.fullName = registry.getHost() + "/" + registry.getPrefix() + workingName;
                 this.authToken = registry.getAuthToken();
                 if (this.authToken != null) {
                     authRequired = true;
