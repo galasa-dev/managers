@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Random;
 
 import dev.galasa.AfterClass;
-import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.cicsts.CeciException;
@@ -57,14 +56,6 @@ public class CECIManagerIVT {
    @ZosBatch(imageTag = "PRIMARY")
    public IZosBatch batch;
 
-   @BeforeClass
-   public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
-	   ceciTerminal.clear().waitForKeyboard();
-	   // We will start the CECI session in a test method
-      
-       otherTerminal.clear().waitForKeyboard();
-   }
-
    /**
     * Ensures that we have an instance of CECI, CICS and a Terminal.
     * 
@@ -85,15 +76,19 @@ public class CECIManagerIVT {
     * 
     * @throws CicstsManagerException 
     * @throws CeciException 
+    * @throws FieldNotFoundException 
+    * @throws NetworkException 
+    * @throws TerminalInterruptedException 
+    * @throws KeyboardLockedException 
+    * @throws TimeoutException 
     */
    @Test
-   public void testStartCeciSession() throws CeciException, CicstsManagerException {
-	   logger.info("Testing starting a CECI session");
+   public void testStartCeciSession() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   cics.ceci().startCECISession(ceciTerminal);
 	   
 	   logger.info("If the CECI session started successfully, the terminal should be able to process a CECI command");
-	   ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
-	   resp.checkNormal();
+	   ceciTerminal.type("DEF").enter().waitForKeyboard();
+	   assertThat(ceciTerminal.retrieveScreen().contains("ENTER ONE OF THE FOLLOWING")).isTrue();
    }
    
    /**
@@ -104,8 +99,7 @@ public class CECIManagerIVT {
     * @throws CeciException 
     */
   @Test 
-   public void testDefineRetrieveAndDeleteVariable() throws CeciException, CicstsManagerException {
-	  logger.info("Testing defining, retrieving and deleting a variable using CECI");
+   public void testDefineRetrieveDeleteTextVariable() throws CeciException, CicstsManagerException {
       String variableName = "TESTNAME";
       String variableValue = "THIS IS A TEXT STRING";
       
@@ -276,7 +270,6 @@ public class CECIManagerIVT {
     */
    @Test
    public void testCommand() throws CeciException, CicstsManagerException  {
-	  logger.info("Testing the execution of a basic CECI command");
       String userVariable = "USERID";
       String ceciCommand = "ASSIGN USERID(&" + userVariable + ")";
       cics.ceci().issueCommand(ceciTerminal, ceciCommand, false);
@@ -293,7 +286,6 @@ public class CECIManagerIVT {
     */
    @Test
    public void testDocumentationCommand() throws CeciException, CicstsManagerException, ZosBatchException  {
-      logger.info("Testing the execution of a basic documentation CECI command");
 	  String message = "GALASA TEST " + Instant.now().toString();
 	  String ceciCommand = "EXEC CICS WRITE OPERATOR TEXT('" + message + "')";
 	  ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand);
@@ -320,8 +312,7 @@ public class CECIManagerIVT {
     */
    @Test
    public void testCommandWithOptions() throws CeciException, CicstsManagerException {
-	   logger.info("Testing the execution of a CECI command with options");
-	   
+  
 	   String ceciCommand = "PUT";
 	   HashMap<String, Object> options = new HashMap<String, Object>();
 	   options.put("CONTAINER", "FRED");
@@ -353,7 +344,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testWriteToTSQ() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing writing data to a Temporary Storage Queue");
+	  logger.info("Testing writing data to a Temporary Storage Queue called QUEUE1");
       String queueName = "QUEUE1";
       String variableName = "TSQDATA";
       String dataToWrite = "THIS IS A GALASA TEST";
@@ -371,6 +362,7 @@ public class CECIManagerIVT {
 
       otherTerminal.type("CEBR " + queueName).enter().waitForKeyboard();
       assertThat(otherTerminal.retrieveScreen().contains("DOES NOT EXIST")).isTrue();
+      otherTerminal.resetAndClear();
    }
 
    /**
@@ -443,8 +435,8 @@ public class CECIManagerIVT {
     * @throws TimeoutException 
     */
    @Test
-   public void testGetEIBFields() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that important fields from the Exec Interface Block are retrieved correctly");
+   public void testGetEIBFields() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException{
+	   logger.info("Testing that fields from the Exec Interface Block are retrieved correctly, first testing on a good command");
 	   
 	   cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
 	   IExecInterfaceBlock eib = cics.ceci().getEIB(ceciTerminal);
@@ -454,13 +446,28 @@ public class CECIManagerIVT {
 	   assertThat(eib.getEIBRESP2()).isEqualTo(0);
 	   
 	   assertThat(eib.getEIBTRNID(false)).isEqualTo("CECI");
+	  
+	   int expectedEIBDate = getExpectedEIBDate();
+	   assertThat(eib.getEIBDATE()).isEqualTo(expectedEIBDate);
 	   
+	   logger.info("Testing the EIB fields on a bad command - linking to a program that doesn't exist");
+	   
+	   cics.ceci().linkProgramWithChannel(ceciTerminal, "NOEXIST", "MY-CHANNEL", null, null, false);
+	   eib = cics.ceci().getEIB(ceciTerminal);
+	   
+	   assertThat(eib.getResponse()).isEqualTo("PGMIDERR");
+	   assertThat(eib.getEIBRESP()).isEqualTo(27);
+	   assertThat(eib.getEIBRESP2()).isEqualTo(3);
+   }
+   
+   private int getExpectedEIBDate() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
 	   otherTerminal.clear().waitForKeyboard();
 	   otherTerminal.type("CEMT INQUIRE SYSTEM").enter().waitForKeyboard();
 	   String screen = otherTerminal.retrieveScreen();
 	   if (!screen.contains("DATE:")) {
 		   throw new CemtException("CEMT INQUIRE SYSTEM did not navigate to correct screen");
 	   }
+	   otherTerminal.resetAndClear();
 	   String dateString = screen.substring(screen.lastIndexOf("DATE: ") + 6, screen.lastIndexOf("DATE: ") + 14);
 	   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
 	   LocalDate date = LocalDate.parse(dateString, formatter);
@@ -468,7 +475,8 @@ public class CECIManagerIVT {
 	   String expectedEIBDate = (date.getYear() <= 1999 ? "0" : "1")
 			   					+ Integer.toString(date.getYear()).substring(2)
 			   					+ (date.getDayOfYear() <= 99 ? "0" + date.getDayOfYear() : date.getDayOfYear());
-	   assertThat(eib.getEIBDATE()).isEqualTo(Integer.parseInt(expectedEIBDate));
+	   
+	   return Integer.parseInt(expectedEIBDate);
    }
 
    private String constructRandomString(int length) {
