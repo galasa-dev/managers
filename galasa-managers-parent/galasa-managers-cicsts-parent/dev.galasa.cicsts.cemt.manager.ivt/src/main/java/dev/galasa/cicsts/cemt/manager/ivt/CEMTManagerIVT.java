@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
-import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.assertj.core.api.Fail;
@@ -20,10 +19,12 @@ import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
+import dev.galasa.cicsts.CedaException;
 import dev.galasa.cicsts.CemtException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
@@ -97,15 +98,15 @@ public class CEMTManagerIVT {
    @Test
    public void testInquireResource() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	  logger.info("Testing the inquire resource method on Program 'Example'");
-      HashMap<String, String> resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-	  assertThat(resource.get("program")).isEqualToIgnoringCase("EXAMPLE");
-	  assertThat(resource.get("length")).isEqualToIgnoringCase("0000000000");
-	  assertThat(resource.get("language")).isEqualToIgnoringCase("Notdefined");
-	  assertThat(resource.get("progtype")).isEqualToIgnoringCase("Program");
-	  assertThat(resource.get("status")).isEqualToIgnoringCase("Enabled");
-	  assertThat(resource.get("sharestatus")).isEqualToIgnoringCase("Private");
-	  
-	  logger.info("Manually testing the CEMT INQUIRE command on Program 'Example'");
+      CicstsHashMap resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
+      assertThat(resource.isParameterEquals("program", "EXAMPLE")).isTrue();
+      assertThat(resource.isParameterEquals("length", "0000000000")).isTrue();
+      assertThat(resource.isParameterEquals("language", "Notdefined")).isTrue();
+      assertThat(resource.isParameterEquals("progtype", "Program")).isTrue();
+      assertThat(resource.isParameterEquals("status", "Enabled")).isTrue();
+      assertThat(resource.isParameterEquals("sharestatus", "Private")).isTrue();
+      
+      logger.info("Manually testing the CEMT INQUIRE command on Program 'Example'");
 	  assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE)", "RESPONSE: NORMAL")).isTrue();
    }
    
@@ -208,18 +209,18 @@ public class CEMTManagerIVT {
    @Test
    public void testSetResource() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	  logger.info("Testing the set resource method on Program 'Example'");
-      HashMap<String, String> resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
+      CicstsHashMap resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
 
       if (resource.get("status").equals("Disabled")) {
          cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "ENABLED");
          resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-         assertThat(resource.get("status")).isEqualTo("Enabled");
+         resource.checkParameterEquals("status", "Enabled");
          assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) ENABLED", "RESPONSE: NORMAL")).isTrue();
          assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) DISABLED", "RESPONSE: 1 ERROR")).isTrue();
       } else {
          cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "DISABLED");
          resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-         assertThat(resource.get("status")).isEqualTo("Disabled");
+         resource.checkParameterEquals("status", "Disabled");
          assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) DISABLED", "RESPONSE: NORMAL")).isTrue();
          assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) ENABLED", "RESPONSE: 1 ERROR")).isTrue();
       }
