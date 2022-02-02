@@ -9,12 +9,12 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.Map;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsToken;
@@ -22,8 +22,8 @@ import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
-import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
 import dev.galasa.docker.internal.properties.DockerImagePrefix;
+import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -100,10 +100,11 @@ public class DockerRegistryImpl {
 	 */
 	public boolean doYouHave(DockerImageImpl image) {
 		String resp = null;
+		String path = "";
 		try {
 			registryAuthenticate(image);
 
-			String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
+			path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
@@ -115,11 +116,10 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.trace(e);
-			logger.warn("Failed to access registry");
+			logger.trace("Failed to access registry at: " + path, e);
 			return false;
 		} catch (ClassCastException e) {
-			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
+			logger.trace("Invalid JSON returned from Docker Registry\n" + resp, e);
 			return false;
 		}
 	}
@@ -266,7 +266,7 @@ public class DockerRegistryImpl {
 			}
 			throw new DockerManagerException("Failed to authenticate, and authentication is required.");
 		} catch (HttpClientException | MalformedURLException | JsonSyntaxException e) {
-			throw new DockerManagerException("Failed to connect to registry", e);
+			throw new DockerManagerException("Failed to connect to registry.", e);
 		}
 	}
 
