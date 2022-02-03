@@ -2,4 +2,5 @@
 Bundle-Name: Galasa Db2 Manager
 Export-Package: dev.galasa.db2
 Import-Package: !javax.validation.constraints, \
+				com.ibm.db2.jcc, \
                 *

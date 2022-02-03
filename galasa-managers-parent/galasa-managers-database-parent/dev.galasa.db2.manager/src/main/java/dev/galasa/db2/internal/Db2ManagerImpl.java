@@ -65,7 +65,7 @@ public class Db2ManagerImpl extends AbstractManager{
 	}
 	
 	// Creates Stubs for now
-	private void generateDb2Fields() {
+	private void generateDb2Fields() throws Db2ManagerException{
 		List<AnnotatedField> annotatedFields = findAnnotatedFields(Db2ManagerField.class);
 		
 		for (AnnotatedField annotatedField: annotatedFields) {

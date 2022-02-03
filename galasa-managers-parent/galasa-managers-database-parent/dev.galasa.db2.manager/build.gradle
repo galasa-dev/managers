@@ -7,5 +7,5 @@ description = 'Galasa Db2 Manager'
 version = '0.20.0'
 
 dependencies {
-    
+    implementation group: 'com.ibm.db2.jcc', name: 'db2jcc', version: 'db2jcc4'
 }
