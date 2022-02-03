@@ -283,10 +283,10 @@ public class DockerManagerIVT {
     }
 
     @Test
-    public void testANonCleanShutDownRestart() throws DockerManagerException {
+    public void testANonCleanShutDownRestart() throws DockerManagerException, InterruptedException {
         container.start();
         IDockerExec cmd = container.exec("/usr/local/apache2/bin/httpd", "-k", "stop");
-        cmd.waitForExec();
+        Thread.sleep(10000);
         String output = cmd.getCurrentOutput();
         long code = cmd.getExitCode();
         logger.trace("Command output: " + output + " with error code: " + code);
