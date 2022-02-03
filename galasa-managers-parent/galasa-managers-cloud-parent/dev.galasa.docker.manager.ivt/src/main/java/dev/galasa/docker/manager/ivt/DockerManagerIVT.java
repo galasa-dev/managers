@@ -285,7 +285,11 @@ public class DockerManagerIVT {
     @Test
     public void testANonCleanShutDownRestart() throws DockerManagerException {
         container.start();
-        container.exec("/usr/local/apache2/bin/httpd", "-k", "stop").waitForExec();
+        IDockerExec cmd = container.exec("/usr/local/apache2/bin/httpd", "-k", "stop");
+        cmd.waitForExec();
+        String output = cmd.getCurrentOutput();
+        long code = cmd.getExitCode();
+        logger.trace("Command output: " + output + " with error code: " + code);
         assertThat(container.isRunning()).isEqualTo(false);
 
         container.startWithConfig(config1);
