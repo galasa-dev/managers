@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -26,6 +24,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import dev.galasa.docker.DockerManagerException;
+import dev.galasa.docker.DockerNotFoundException;
 import dev.galasa.docker.DockerProvisionException;
 import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerDSEEngine;
@@ -236,8 +235,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + resp.getStatusLine());
@@ -472,8 +472,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + response.getAsString());
@@ -506,8 +507,9 @@ public class DockerEngineImpl implements IDockerEngine {
 				}
 				return resp;
 			case HttpStatus.SC_NO_CONTENT:
-			case HttpStatus.SC_NOT_FOUND:
 				return null;
+			case HttpStatus.SC_NOT_FOUND:
+				throw new DockerNotFoundException("Docker API post returned 'not found':" + resp.toString());
 			}
 
 			logger.error("Post failed to docker engine - " + resp);

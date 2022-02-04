@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Db2 Manager'
+
+version = '0.20.0'
+
+dependencies {
+    
+}

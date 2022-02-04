@@ -1,0 +1,11 @@
+plugins {
+    id 'galasa.manager.ivt'
+}
+
+description = 'Galasa Db2 Manager IVTs'
+
+version = '0.20.0'
+
+dependencies {
+    implementation project(':galasa-managers-database-parent:dev.galasa.db2.manager')
+}

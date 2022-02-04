@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
 import java.io.IOException;
@@ -80,6 +78,7 @@ public class DockerExecImpl implements IDockerExec {
                 throw new DockerManagerException("Did not receive a response from exec start for command");
             }
 
+            // command ID not container ID
             id = response.get("Id").getAsString();
             if (id == null || id.trim().isEmpty()) {
                 throw new DockerManagerException("Invalid response received from exec start for command - " + response.getAsString());
