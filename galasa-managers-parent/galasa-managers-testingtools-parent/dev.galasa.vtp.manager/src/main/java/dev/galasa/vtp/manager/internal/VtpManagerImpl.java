@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
 import dev.galasa.cicsts.CeciException;
-import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
@@ -123,37 +122,51 @@ public class VtpManagerImpl extends AbstractManager {
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, galasaTest);
-		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+		
+		//get access to the CPS so we can configure ourself
 		try {
 			this.cps = getFramework().getConfigurationPropertyService(NAMESPACE);
 			VtpPropertiesSingleton.setCps(this.cps);
 		} catch (ConfigurationPropertyStoreException e1) {
 			throw new VtpManagerException("Unable to access framework services", e1);
 		}
-
-		if (galasaTest.isJava()) {
-			//If VTP recording is enabled and there are recordable CICS regions then enable the manager 
-			if (VtpEnable.get()) {
-				if(findAnnotatedFields(CicstsManagerField.class).size() > 0) {
-					youAreRequired(allManagers, activeManagers, galasaTest);
-					
-					useAPI = VtpAPI.get();
-					if(useAPI) {
-						logger.info("VTP Manager will use the VTP API to configure VTP");
-					}else {
-						logger.info("VTP Manager will use CICS transactions to configure VTP");
-					}
-					
-					dumpDataSetHLQ = DataSetHLQ.get();
-					if(dumpDataSetHLQ.isEmpty()) {
-						logger.error("VTP recording is enabled but no playback HLQ provided");
-					}
-					
-				}else {
-					logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
-				}
-			}
+		
+		//if VTP recording is not enabled then exit
+		if(!VtpEnable.get()) {
+			return;
 		}
+		
+		//if this is not a java galasa test then exit
+		if(!galasaTest.isJava()) {
+			logger.info("VTP recording is requested but is not eligible as this is not a Java test");
+			return;
+		}
+		
+		//we are only required if there is a CICS object we can record against
+		if(findAnnotatedFields(CicstsManagerField.class).size() <= 0) {
+			logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
+			return;
+		}
+		
+		//ensure that there is a dump playback hlq specified
+		dumpDataSetHLQ = DataSetHLQ.get();
+		if(dumpDataSetHLQ.isEmpty()) {
+			logger.error("VTP recording is enabled but no playback HLQ provided");
+			return;
+		}
+		
+		//Find out if we are using the VTP API or the txns to control VTP
+		useAPI = VtpAPI.get();
+		if(useAPI) {
+			logger.info("VTP Manager will use the VTP API to configure VTP");
+		}else {
+			logger.info("VTP Manager will use CICS transactions to configure VTP");
+		}
+		
+		//if we get here then we are required so add ourself to the list of active managers
+		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+		youAreRequired(allManagers, activeManagers, galasaTest);
+		
 	}
 
 	@Override
@@ -170,6 +183,9 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 		
 		batchManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
+		if (batchManager == null) {
+			throw new VtpManagerException("The z/OS Batch Manager is not available");
+		}
 	}
 
 	@Override
