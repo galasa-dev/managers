@@ -291,7 +291,7 @@ public class DockerManagerIVT {
         // Adding a wait for low performance platforms
         Instant restartTimer = Instant.now().plus(5, ChronoUnit.SECONDS);
         while(Instant.now().isBefore(restartTimer)) {
-        	if(container.isRunning()) {
+        	if(!container.isRunning()) {
         		break;
         	}
         }
