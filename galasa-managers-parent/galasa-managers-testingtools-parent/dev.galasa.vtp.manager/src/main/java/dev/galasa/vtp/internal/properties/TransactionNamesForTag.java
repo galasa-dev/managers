@@ -10,22 +10,22 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.vtp.manager.VtpManagerException;
 
 /**
- * The Name of the Queue Manager
+ * Transactions that should be recorded for this CICS region
  * 
  * @galasa.cps.property
  * 
- * @galasa.name mq.server.[instanceid].name
+ * @galasa.name vtp.cics.[instanceid].transactions
  * 
- * @galasa.description The queue manager name for the specified tag
+ * @galasa.description A list of transactions that we should record in this CICS region
  * 
- * @galasa.required Yes
+ * @galasa.required No
  * 
  * @galasa.default None
  * 
- * @galasa.valid_values 
+ * @galasa.valid_values trx1,trx2
  * 
  * @galasa.examples 
- * <code>mq.server.[instanceid].name=QM1</code><br>
+ * <code>vtp.cics.PRIMARY.transactions=TSQT,TSQD</code><br>
  *
  */
 public class TransactionNamesForTag extends CpsProperties {

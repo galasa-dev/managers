@@ -8,22 +8,22 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.vtp.manager.VtpManagerException;
 
 /**
- * Extra bundle required to implement the zOS Batch Manager
+ * Should the VTP manager be enabled
  * 
  * @galasa.cps.property
  * 
- * @galasa.name zos.bundle.extra.batch.manager
+ * @galasa.name vtp.recording.enable
  * 
- * @galasa.description The name of the Bundle that implements the zOS Batch Manager
+ * @galasa.description Should the VTP manager be activated for this run
  * 
  * @galasa.required No
  * 
- * @galasa.default dev.galasa.common.zosbatch.zosmf.manager
+ * @galasa.default false
  * 
- * @galasa.valid_values 
+ * @galasa.valid_values true, false
  * 
  * @galasa.examples 
- * <code>zos.bundle.extra.batch.manager=dev.galasa.common.zosbatch.zosmf.manager</code><br>
+ * <code>vtp.recording.enable=true</code><br>
  *
  */
 public class VtpEnable extends CpsProperties {

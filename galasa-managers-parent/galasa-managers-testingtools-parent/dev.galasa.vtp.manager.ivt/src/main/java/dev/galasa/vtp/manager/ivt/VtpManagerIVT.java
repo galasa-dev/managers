@@ -16,6 +16,7 @@ import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
+import dev.galasa.zos3270.Zos3270Terminal;
 import dev.galasa.zos3270.spi.NetworkException;
 
  @Test

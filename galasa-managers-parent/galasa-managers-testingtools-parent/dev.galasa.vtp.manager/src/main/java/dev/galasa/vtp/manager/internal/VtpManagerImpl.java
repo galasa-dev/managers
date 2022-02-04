@@ -20,6 +20,7 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
+import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicstsHashMap;
@@ -43,12 +44,6 @@ import dev.galasa.vtp.internal.properties.VtpAPI;
 import dev.galasa.vtp.internal.properties.VtpEnable;
 import dev.galasa.vtp.internal.properties.VtpPropertiesSingleton;
 import dev.galasa.vtp.manager.VtpManagerException;
-import dev.galasa.zos3270.ErrorTextFoundException;
-import dev.galasa.zos3270.FieldNotFoundException;
-import dev.galasa.zos3270.KeyboardLockedException;
-import dev.galasa.zos3270.TerminalInterruptedException;
-import dev.galasa.zos3270.TextNotFoundException;
-import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
@@ -126,7 +121,6 @@ public class VtpManagerImpl extends AbstractManager {
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
 		super.initialise(framework, allManagers, activeManagers, galasaTest);
-		logger.info("In initialise method of VTP Manager");
 		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
 		try {
 			this.cps = getFramework().getConfigurationPropertyService(NAMESPACE);
@@ -140,7 +134,14 @@ public class VtpManagerImpl extends AbstractManager {
 			if (VtpEnable.get()) {
 				if(findAnnotatedFields(CicstsManagerField.class).size() > 0) {
 					youAreRequired(allManagers, activeManagers, galasaTest);
+					
 					useAPI = VtpAPI.get();
+					if(useAPI) {
+						logger.info("VTP Manager will use the VTP API to configure VTP");
+					}else {
+						logger.info("VTP Manager will use CICS transactions to configure VTP");
+					}
+					
 				}else {
 					logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
 				}
@@ -196,9 +197,16 @@ public class VtpManagerImpl extends AbstractManager {
 		if(PASSED_RESULT.equalsIgnoreCase(currentResult)) {
 			exportRecording();
 		}
+		//we do not need to alter the test result
 		return null;
 	}
 	
+	/**
+	 * Utility method that checks that the passed method is in fact
+	 * a java method and has been annotated @Test
+	 * @param method the method to test
+	 * @return true if method is java and annotated @Test else false
+	 */
 	private boolean isTestMethod(GalasaMethod method) {
 		if(!method.isJava()) {
 			return false;
@@ -211,6 +219,10 @@ public class VtpManagerImpl extends AbstractManager {
 		return false;
 	}
 	
+	/**
+	 * Start recording on all the regions
+	 * 
+	 */
 	private void startRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			try {
@@ -221,9 +233,16 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 	}
 	
+	/**
+	 * Using either the VTP API or the CICS txns enable recording on the 
+	 * requested CICS region
+	 * @param region The CICS region we want to start recording on
+	 * @throws VtpManagerException
+	 */
 	private void startRecording(ICicsRegion region) throws VtpManagerException {
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
 		logger.info("Starting VTP Recording");
+		
 		if(useAPI) {
 			try {
 				region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
@@ -258,6 +277,14 @@ public class VtpManagerImpl extends AbstractManager {
 		
 	}
 	
+	/**
+	 * Retrieves the CPS property listing the comma separated list of transactions that 
+	 * we want to record.  We check that each transaction is 4 characters in length and
+	 * return an ArrayList of transactions
+	 * @param tag the tag of the region we want to record against
+	 * @return a list of Strings that represent the transactions retrieved
+	 * @throws VtpManagerException
+	 */
 	private ArrayList<String> getTransactionsForTag(String tag) throws VtpManagerException{
 		ArrayList<String> transactions = new ArrayList<String>();
 		String rawData = TransactionNamesForTag.get(tag);
@@ -271,6 +298,10 @@ public class VtpManagerImpl extends AbstractManager {
 		return transactions;
 	}
 	
+	/*
+	 * Stop recording on each of the recording regions 
+	 * in turn
+	 */
 	private void stopRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			try {
@@ -281,6 +312,12 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 	}
 	
+	/**
+	 * using either the VTP API or CICS transactions stop recording on
+	 * the specified region
+	 * @param region the region we want to stop recording on
+	 * @throws VtpManagerException
+	 */
 	private void stopRecording(ICicsRegion region) throws VtpManagerException {
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
 		logger.info("Stopping VTP Recording");
@@ -327,7 +364,10 @@ public class VtpManagerImpl extends AbstractManager {
 		 
 	}
 	
-	
+	/**
+	 * Loop through all the recording regions and call exportRecording
+	 * for each of them
+	 */
 	private void exportRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			try {
@@ -338,6 +378,12 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 	}
 	
+	/**
+	 * Uses either the VTP API or the CICS transactions to export the recorded data
+	 * created by the region passed as a parameter to a flat file
+	 * @param region
+	 * @throws VtpManagerException
+	 */
 	private void exportRecording(ICicsRegion region) throws VtpManagerException {
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
 		if(useAPI) {
@@ -384,7 +430,7 @@ public class VtpManagerImpl extends AbstractManager {
 				terminal.waitForTextInField("RECORDS WRITTEN");
 				terminal.clear();
 				CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
-				tdqAttrs.get("Dsname");
+				String dsName = tdqAttrs.get("dsname");
 			} catch (Zos3270Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -399,6 +445,12 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 	}
 	
+	
+	/**
+	 * Use the VTP API to obtain the VTP API version for the first
+	 * region that we might record against.  The version is logged
+	 * @throws VtpManagerException
+	 */
 	private void getVTPVersion() throws VtpManagerException {
 		ICicsRegion region = recordingRegions.keySet().iterator().next();
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
@@ -433,18 +485,17 @@ public class VtpManagerImpl extends AbstractManager {
 					terminal.connect();
 				}
 				if(useAPI) {
-					terminal.type("CECI").enter().wfk();
+					region.ceci().startCECISession(terminal);
 					getVTPVersion();
 				}
 				if(!useAPI) {
 					ArrayList<String> transactions = getTransactionsForTag(region.getTag());
 					recordingRegions.get(region).setRecordingTransactions(transactions);
 				}
-			} catch (TimeoutException | KeyboardLockedException | TerminalInterruptedException | NetworkException
-					| FieldNotFoundException e) {
+			} catch (CeciException | NetworkException e) {
 				// TODO Auto-generated catch block
 				throw new VtpManagerException("Unable to initiate CECI on a recording terminal",e);
-			}
+			} 
 		}
 		
 	}

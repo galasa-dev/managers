@@ -35,7 +35,6 @@ public class RecordingData {
 	}
 
 	public RecordingData() {
-		// TODO Auto-generated constructor stub
 	}
 
 }
