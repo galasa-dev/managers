@@ -39,6 +39,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.vtp.internal.properties.DataSetHLQ;
 import dev.galasa.vtp.internal.properties.TransactionNamesForTag;
 import dev.galasa.vtp.internal.properties.VtpAPI;
 import dev.galasa.vtp.internal.properties.VtpEnable;
@@ -85,6 +86,7 @@ public class VtpManagerImpl extends AbstractManager {
 	private boolean useAPI         = false;
 	
 	private String runID = new String();
+	private String dumpDataSetHLQ = new String();
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
@@ -142,6 +144,11 @@ public class VtpManagerImpl extends AbstractManager {
 						logger.info("VTP Manager will use CICS transactions to configure VTP");
 					}
 					
+					dumpDataSetHLQ = DataSetHLQ.get();
+					if(dumpDataSetHLQ.isEmpty()) {
+						logger.error("VTP recording is enabled but no playback HLQ provided");
+					}
+					
 				}else {
 					logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
 				}
@@ -188,6 +195,7 @@ public class VtpManagerImpl extends AbstractManager {
 	public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
 			Throwable currentException) throws ManagerException {
 		if(skipRecordings) {
+			//we are not going to do anything and don't need to change the status
 			return null;
 		}
 		if(isTestMethod(galasaMethod)) {
@@ -244,37 +252,44 @@ public class VtpManagerImpl extends AbstractManager {
 		logger.info("Starting VTP Recording");
 		
 		if(useAPI) {
-			try {
-				region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
-				ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStartName + VtpApiCommandEnd);
-				if(!response.isNormal()) {
-					throw new VtpManagerException("Non normal response from CECI while starting recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
-				}
-				
-				String responseData = region.ceci().retrieveVariableText(terminal, VtpStartName);
-				char[] binaryResponse = region.ceci().retrieveVariableBinary(terminal, VtpStartName);
-				char[] recordingToken = Arrays.copyOfRange(binaryResponse, VtpTokenIndexStart, VtpTokenIndexEnd);
-				recordingRegions.get(region).setRecordingToken(recordingToken);
-			} catch (CicstsManagerException e) {
-				throw new VtpManagerException("Unable to start VTP recording",e);
-			} 
-		} else {
-			for(String transaction : recordingRegions.get(region).getRecordingTransactions()) {
-				String command = "BZUT " + transaction;
-				String expectedResponse = "RECORDING STARTED FOR TRANSACTION " + transaction;
-				try {
-					terminal.type(command).enter();
-					terminal.waitForTextInField(expectedResponse);
-					terminal.clear().wfk();
-				} catch (Zos3270Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
+			startRecordingUsingAPI(region, terminal);
+		} 
+		
+		if(!useAPI) {
+			startRecordingUsingTxn(region, terminal);
+		}
+	}
+	
+	private void startRecordingUsingAPI(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
+		try {
+			region.ceci().defineVariableText(terminal, VtpStartName, VtpApiStartRecordingData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStartName + VtpApiCommandEnd);
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while starting recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
 			}
 			
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpStartName);
+			char[] binaryResponse = region.ceci().retrieveVariableBinary(terminal, VtpStartName);
+			char[] recordingToken = Arrays.copyOfRange(binaryResponse, VtpTokenIndexStart, VtpTokenIndexEnd);
+			recordingRegions.get(region).setRecordingToken(recordingToken);
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to start VTP recording",e);
+		} 
+	}
+	
+	private void startRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) {
+		for(String transaction : recordingRegions.get(region).getRecordingTransactions()) {
+			String command = "BZUT " + transaction;
+			String expectedResponse = "RECORDING STARTED FOR TRANSACTION " + transaction;
+			try {
+				terminal.type(command).enter();
+				terminal.waitForTextInField(expectedResponse);
+				terminal.clear().wfk();
+			} catch (Zos3270Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
 	}
 	
 	/**
@@ -322,46 +337,53 @@ public class VtpManagerImpl extends AbstractManager {
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
 		logger.info("Stopping VTP Recording");
 		if(useAPI) {
-			try {
-				
-				//obtain recording token
-				char[] recordingToken = recordingRegions.get(region).getRecordingToken();
-				if(recordingToken == null) {
-					logger.error("No recording token saved for region tagged: " + region.getTag() + ". Not attempting to stop recording");
-					return;
-				}
-				
-				//fill in the API data 
-				char[] recordingData  = new char[24];
-				char blank = 0;
-				Arrays.fill(recordingData, blank);
-				//first four characters are STOP
-				System.arraycopy(new char[]{226,227,214,215}, 0, recordingData, 0, 4);
-				//put the recording token at the end
-				System.arraycopy(recordingToken, 0, recordingData, 16, 8);
-				
-				region.ceci().defineVariableBinary(terminal, VtpStopName, recordingData);
-				ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStopName + VtpApiCommandEnd);
-				
-				if(!response.isNormal()) {
-					throw new VtpManagerException("Non normal response from CECI while stopping recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
-				}
-				String responseData = region.ceci().retrieveVariableText(terminal, VtpStopName);
-			} catch (CicstsManagerException e) {
-				throw new VtpManagerException("Unable to start VTP recording",e);
-			}
-		} else {
-			try {
-				terminal.type("BZUE").enter();
-				terminal.waitForTextInField("RECORDING STOPPED");
-				terminal.clear().wfk();
-			} catch (Zos3270Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			stopRecordingUsingAPI(region, terminal);
+		} 
+		
+		if(!useAPI) {
+			stopRecordingUsingTxn(region, terminal);
+		}
+	}
+	
+	private void stopRecordingUsingAPI(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
+		try {				
+			//obtain recording token
+			char[] recordingToken = recordingRegions.get(region).getRecordingToken();
+			if(recordingToken == null) {
+				logger.error("No recording token saved for region tagged: " + region.getTag() + ". Not attempting to stop recording");
+				return;
 			}
 			
+			//fill in the API data 
+			char[] recordingData  = new char[24];
+			char blank = 0;
+			Arrays.fill(recordingData, blank);
+			//first four characters are STOP
+			System.arraycopy(new char[]{226,227,214,215}, 0, recordingData, 0, 4);
+			//put the recording token at the end
+			System.arraycopy(recordingToken, 0, recordingData, 16, 8);
+			
+			region.ceci().defineVariableBinary(terminal, VtpStopName, recordingData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpStopName + VtpApiCommandEnd);
+			
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while stopping recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpStopName);
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to start VTP recording",e);
 		}
-		 
+	}
+	
+	private void stopRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) {
+		try {
+			terminal.type("BZUE").enter();
+			terminal.waitForTextInField("RECORDING STOPPED");
+			terminal.clear().wfk();
+		} catch (Zos3270Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -387,64 +409,74 @@ public class VtpManagerImpl extends AbstractManager {
 	private void exportRecording(ICicsRegion region) throws VtpManagerException {
 		ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
 		if(useAPI) {
-			try {
-				region.ceci().defineVariableText(terminal, VtpExportName, VtpApiListRecordingData);
-				ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpExportName + VtpApiCommandEnd);
-				if(!response.isNormal()) {
-					throw new VtpManagerException("Non normal response from CECI while exporting VTP Recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
-				}
-				char[] responseData = region.ceci().retrieveVariableBinary(terminal, VtpExportName);
-				StringBuilder responseDataStringBuilder = new StringBuilder();
-				for(char c : responseData) {
-					 String hex = Integer.toHexString(c);
-					 hex = String.format("%2S", hex).replaceAll(" ", "0");
-	                 responseDataStringBuilder.append(hex.toUpperCase());   
-				}
-				logger.info("VTP returned: " + responseDataStringBuilder.toString());
-				} 
-			catch (CicstsManagerException e) {
-				throw new VtpManagerException("Unable to export VTP recording",e);
-			}
-			
-			try {
-				region.ceci().defineVariableText(terminal, VtpExportName, VtpApiExportRecordingData);
-				ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpExportName + VtpApiCommandEnd);
-				if(!response.isNormal()) {
-					throw new VtpManagerException("Non normal response from CECI while exporting VTP Recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
-				}
-				String responseData = region.ceci().retrieveVariableText(terminal, VtpExportName);
-				char[] binaryResponseData = region.ceci().retrieveVariableBinary(terminal, VtpExportName);
-				for(char c : binaryResponseData) {
-					int d = c+0;
-					logger.info((int)c);
-				}
-
-				logger.info("VTP returned: " + responseData);
-			} catch (CicstsManagerException e) {
-				throw new VtpManagerException("Unable to export VTP recording",e);
-			} 
-
-		} else {
-			try {
-				terminal.type("BZUW").enter();
-				terminal.waitForTextInField("RECORDS WRITTEN");
-				terminal.clear();
-				CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
-				String dsName = tdqAttrs.get("dsname");
-			} catch (Zos3270Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (CemtException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (CicstsManagerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-			
+			writeRecordingUsingAPI(region, terminal);
+		} 
+		
+		if(!useAPI) {
+			writeRecordingUsingTxn(region, terminal);
 		}
+		
+		//now copy the recording
+		CicstsHashMap tdqAttrs;
+		try {
+			tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
+			String dsName = tdqAttrs.get("dsname");
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("unable to get dsname of TDQ BZUQ",e);
+		}
+		
 	}
 	
+	private void writeRecordingUsingAPI(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
+		try {
+			region.ceci().defineVariableText(terminal, VtpExportName, VtpApiListRecordingData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpExportName + VtpApiCommandEnd);
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while exporting VTP Recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
+			char[] responseData = region.ceci().retrieveVariableBinary(terminal, VtpExportName);
+			StringBuilder responseDataStringBuilder = new StringBuilder();
+			for(char c : responseData) {
+				 String hex = Integer.toHexString(c);
+				 hex = String.format("%2S", hex).replaceAll(" ", "0");
+                 responseDataStringBuilder.append(hex.toUpperCase());   
+			}
+			logger.info("VTP returned: " + responseDataStringBuilder.toString());
+			} 
+		catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to export VTP recording",e);
+		}
+		
+		try {
+			region.ceci().defineVariableText(terminal, VtpExportName, VtpApiExportRecordingData);
+			ICeciResponse response = region.ceci().issueCommand(terminal, VtpApiCommandStart + VtpExportName + VtpApiCommandEnd);
+			if(!response.isNormal()) {
+				throw new VtpManagerException("Non normal response from CECI while exporting VTP Recording, EIBRESP: " + response.getEIBRESP() + " EIBRESP2:" + response.getEIBRESP2());
+			}
+			String responseData = region.ceci().retrieveVariableText(terminal, VtpExportName);
+			char[] binaryResponseData = region.ceci().retrieveVariableBinary(terminal, VtpExportName);
+			for(char c : binaryResponseData) {
+				int d = c+0;
+				logger.info((int)c);
+			}
+
+			logger.info("VTP returned: " + responseData);
+		} catch (CicstsManagerException e) {
+			throw new VtpManagerException("Unable to export VTP recording",e);
+		} 
+	}
+	
+	private void writeRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) {
+		try {
+			terminal.type("BZUW").enter();
+			terminal.waitForTextInField("RECORDS WRITTEN");
+			terminal.clear();
+			
+		} catch (Zos3270Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
 	
 	/**
 	 * Use the VTP API to obtain the VTP API version for the first
