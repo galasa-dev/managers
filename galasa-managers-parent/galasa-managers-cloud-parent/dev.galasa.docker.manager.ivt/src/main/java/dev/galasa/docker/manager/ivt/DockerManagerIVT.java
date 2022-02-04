@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -285,11 +287,14 @@ public class DockerManagerIVT {
     @Test
     public void testANonCleanShutDownRestart() throws DockerManagerException, InterruptedException {
         container.start();
-        IDockerExec cmd = container.exec("/usr/local/apache2/bin/httpd", "-k", "stop");
-        Thread.sleep(10000);
-        String output = cmd.getCurrentOutput();
-        long code = cmd.getExitCode();
-        logger.trace("Command output: " + output + " with error code: " + code);
+        container.exec("/usr/local/apache2/bin/httpd", "-k", "stop").waitForExec();
+        // Adding a wait for low performance platforms
+        Instant restartTimer = Instant.now().plus(5, ChronoUnit.SECONDS);
+        while(Instant.now().isBefore(restartTimer)) {
+        	if(!container.isRunning()) {
+        		break;
+        	}
+        }
         assertThat(container.isRunning()).isEqualTo(false);
 
         container.startWithConfig(config1);
