@@ -5,7 +5,9 @@ package dev.galasa.vtp.manager.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -170,7 +172,7 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 		
 		//if we get here then we are required so add ourself to the list of active managers
-		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot();
+		this.storedArtifactRoot = getFramework().getResultArchiveStore().getStoredArtifactsRoot().resolve(VtpManagerImpl.NAMESPACE);
 		youAreRequired(allManagers, activeManagers, galasaTest);
 		
 	}
@@ -463,6 +465,22 @@ public class VtpManagerImpl extends AbstractManager {
 		
 	}
 	
+	@Override
+	public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+		for(ICicsRegion region : recordingRegions.keySet()) {
+			String applid = region.getApplid();
+			String content = recordingRegions.get(region).getExportedRecordings();
+			Path f = this.storedArtifactRoot.resolve(applid);
+			try {
+				Files.write(f, content.getBytes(), StandardOpenOption.CREATE);
+			} catch (Exception e) {
+				logger.info("Unable to record exported recordings", e);
+			} 
+		}
+		//We are not going to change the result
+		return super.endOfTestClass(currentResult, currentException);
+	}
+
 	private void writeRecordingUsingAPI(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
 		try {
 			region.ceci().defineVariableText(terminal, VtpExportName, VtpApiListRecordingData);

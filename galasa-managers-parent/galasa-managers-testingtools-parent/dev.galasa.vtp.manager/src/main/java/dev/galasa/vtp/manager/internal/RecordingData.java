@@ -5,6 +5,7 @@ package dev.galasa.vtp.manager.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import dev.galasa.cicsts.ICicsTerminal;
 
@@ -13,7 +14,7 @@ public class RecordingData {
 	private char [] recordingToken;
 	private ICicsTerminal   recordingTerminal;
 	private ArrayList<String> recordingTransactions;
-	private HashMap<String, String> exportedRecordings = new HashMap<>();
+	private List<String> exportedRecordings = new ArrayList<>();
 
 	public char[] getRecordingToken() {
 		return recordingToken;
@@ -40,7 +41,17 @@ public class RecordingData {
 	}
 	
 	public void addExportedRecording(String dsName, String method) {
-		this.exportedRecordings.put(dsName, method);
+		String info = "Method: " + method + " exported as: " + dsName;
+		this.exportedRecordings.add(info);
+	}
+	
+	public String getExportedRecordings() {
+		StringBuilder result = new StringBuilder();
+		for(String s : exportedRecordings) {
+			result.append(s);
+			result.append(System.lineSeparator());
+		}
+		return result.toString();
 	}
 
 	public RecordingData() {
