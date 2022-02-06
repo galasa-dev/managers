@@ -20,6 +20,7 @@ import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
+import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicstsHashMap;
@@ -47,6 +48,7 @@ import dev.galasa.vtp.manager.VtpManagerException;
 import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
+import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
 
 @Component(service = { IManager.class })
@@ -58,6 +60,7 @@ public class VtpManagerImpl extends AbstractManager {
 
 	private ICicstsManagerSpi cicsManager;
 	private IZosBatchSpi      batchManager;
+	private IArtifactManager  artifactManager;
 	private IConfigurationPropertyStoreService cps;
 	private Path storedArtifactRoot;
 
@@ -86,6 +89,9 @@ public class VtpManagerImpl extends AbstractManager {
 	
 	private String runID = new String();
 	private String dumpDataSetHLQ = new String();
+	private int    recordingID    = 1;
+
+	private String currentMethod;
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
@@ -150,7 +156,7 @@ public class VtpManagerImpl extends AbstractManager {
 		
 		//ensure that there is a dump playback hlq specified
 		dumpDataSetHLQ = DataSetHLQ.get();
-		if(dumpDataSetHLQ.isEmpty()) {
+		if(dumpDataSetHLQ == null || dumpDataSetHLQ.isEmpty()) {
 			logger.error("VTP recording is enabled but no playback HLQ provided");
 			return;
 		}
@@ -186,6 +192,11 @@ public class VtpManagerImpl extends AbstractManager {
 		if (batchManager == null) {
 			throw new VtpManagerException("The z/OS Batch Manager is not available");
 		}
+		
+		artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
+		if(artifactManager == null) {
+			throw new VtpManagerException("The Artifact Manager is not available");
+		}
 	}
 
 	@Override
@@ -219,6 +230,7 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 		
 		if(PASSED_RESULT.equalsIgnoreCase(currentResult)) {
+			this.currentMethod = galasaMethod.getJavaExecutionMethod().getName();
 			exportRecording();
 		}
 		//we do not need to alter the test result
@@ -411,7 +423,7 @@ public class VtpManagerImpl extends AbstractManager {
 			try {
 				exportRecording(region);
 			} catch (VtpManagerException e) {
-				logger.error("Unable to stop recording");
+				logger.error("Unable to export recording");
 			}
 		}
 	}
@@ -433,11 +445,19 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 		
 		//now copy the recording
-		CicstsHashMap tdqAttrs;
 		try {
-			tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
+			CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
 			String dsName = tdqAttrs.get("dsname");
-		} catch (CicstsManagerException e) {
+			region.cemt().setResource(terminal, "TDQ", "BZUQ", "CLOSED");
+			String dumpTargetDSName = this.dumpDataSetHLQ + "." + this.runID + ".R" + this.recordingID;
+			HashMap<String, Object> attrs = new HashMap<>();
+			attrs.put("SOURCE", dsName);
+			attrs.put("TARGET", dumpTargetDSName);
+			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs);
+			IZosBatchJob job = batchManager.getZosBatch(region.getZosImage()).submitJob(jcl, null);
+			int rc = job.waitForJob();
+			this.recordingRegions.get(region).addExportedRecording(dumpTargetDSName, this.currentMethod);
+		} catch (Exception e) {
 			throw new VtpManagerException("unable to get dsname of TDQ BZUQ",e);
 		}
 		
@@ -486,7 +506,7 @@ public class VtpManagerImpl extends AbstractManager {
 		try {
 			terminal.type("BZUW").enter();
 			terminal.waitForTextInField("RECORDS WRITTEN");
-			terminal.clear();
+			terminal.clear().wfk();
 			
 		} catch (Zos3270Exception e) {
 			// TODO Auto-generated catch block
