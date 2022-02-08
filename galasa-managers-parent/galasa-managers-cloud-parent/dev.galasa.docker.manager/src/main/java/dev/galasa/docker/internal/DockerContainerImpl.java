@@ -553,7 +553,6 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Check to see if a flag was set to leave the container running post test.
      * 
-     * @throws DynamicStatusStoreException
      * @throws DockerManagerException 
      */
     private void checkLeaveRunning() throws DockerManagerException {
