@@ -36,12 +36,20 @@ import java.net.InetSocketAddress;
  *
  */
 public interface IDockerContainer {
+	
     /**
 	 * Fetch the Resource Object representing the Docker Image of this container.
 	 * 
 	 * @return a {@link IDockerImage} for this container - never null
 	 */
 	public IDockerImage getDockerImage();
+	
+	/**
+	 *  Fetch the docker containers tag
+	 *  
+	 *  @return a @string of the docker tag for this container
+	 */
+	public String getContainerTag();
 
 	/**
 	 * Returns a map of all the exposed ports of the container and the real host ports

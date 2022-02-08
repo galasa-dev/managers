@@ -42,6 +42,7 @@ import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerExec;
 import dev.galasa.docker.IDockerImage;
 import dev.galasa.docker.IDockerVolume;
+import dev.galasa.docker.internal.properties.DockerLeaveRunning;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -320,6 +321,13 @@ public class DockerContainerImpl implements IDockerContainer {
     public IDockerImage getDockerImage() {
         return this.image;
     }
+    
+    /**
+     * Returns the container tag.
+     */
+    public String getContainerTag() {
+    	return this.tag;
+    }
 
     /**
      * Once a container is started, this method is used to query the container
@@ -546,9 +554,10 @@ public class DockerContainerImpl implements IDockerContainer {
      * Check to see if a flag was set to leave the container running post test.
      * 
      * @throws DynamicStatusStoreException
+     * @throws DockerManagerException 
      */
-    private void checkLeaveRunning() throws DynamicStatusStoreException {
-        String flag = dss.get("container." + tag + ".leave.running");
+    private void checkLeaveRunning() throws DynamicStatusStoreException, DockerManagerException {
+        String flag = DockerLeaveRunning.get(this);
         if (flag != null) {
             logger.debug("Requested leaveRunning state: " + flag);
             leaveRunning = Boolean.parseBoolean(flag);
