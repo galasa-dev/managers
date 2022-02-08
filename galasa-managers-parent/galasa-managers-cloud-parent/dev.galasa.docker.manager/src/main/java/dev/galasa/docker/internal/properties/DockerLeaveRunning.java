@@ -3,6 +3,8 @@
 */
 package dev.galasa.docker.internal.properties;
 
+import java.util.Map;
+
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.internal.DockerContainerImpl;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -31,7 +33,8 @@ public class DockerLeaveRunning extends CpsProperties {
     public static String get(final DockerContainerImpl dockerContainerImpl) throws DockerManagerException {
 		try {
             // Check for a DSE defined container leave running state
-			final String leaveRunning = getStringNulled(DockerPropertiesSingleton.cps(), "container", dockerContainerImpl.getContainerTag(), "leave.running");
+			String containerTag = dockerContainerImpl.getContainerTag();
+			final String leaveRunning = getStringNulled(DockerPropertiesSingleton.cps(), "container", "leave.running", containerTag);
 			return leaveRunning;
 		} catch (final ConfigurationPropertyStoreException e) {
 			throw new DockerManagerException("Problem asking the CPS for the container leave running value", e);
