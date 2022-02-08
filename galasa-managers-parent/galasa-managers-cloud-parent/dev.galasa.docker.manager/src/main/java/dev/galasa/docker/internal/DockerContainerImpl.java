@@ -223,7 +223,7 @@ public class DockerContainerImpl implements IDockerContainer {
             }
 
             logger.info("Container '" + tag + "' created under name '" + containerName + "'");
-        } catch (DockerManagerException | DynamicStatusStoreException e) {
+        } catch (DockerManagerException e) {
             throw new DockerProvisionException("Unable to prepare the Docker Container '" + this.tag + "'", e);
         }
     }
