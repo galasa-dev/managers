@@ -556,7 +556,7 @@ public class DockerContainerImpl implements IDockerContainer {
      * @throws DynamicStatusStoreException
      * @throws DockerManagerException 
      */
-    private void checkLeaveRunning() throws DynamicStatusStoreException, DockerManagerException {
+    private void checkLeaveRunning() throws DockerManagerException {
         String flag = DockerLeaveRunning.get(this);
         if (flag != null) {
             logger.debug("Requested leaveRunning state: " + flag);
