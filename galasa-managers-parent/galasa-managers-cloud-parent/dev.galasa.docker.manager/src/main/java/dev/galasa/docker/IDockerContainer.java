@@ -36,7 +36,6 @@ import java.net.InetSocketAddress;
  *
  */
 public interface IDockerContainer {
-	
     /**
 	 * Fetch the Resource Object representing the Docker Image of this container.
 	 * 
