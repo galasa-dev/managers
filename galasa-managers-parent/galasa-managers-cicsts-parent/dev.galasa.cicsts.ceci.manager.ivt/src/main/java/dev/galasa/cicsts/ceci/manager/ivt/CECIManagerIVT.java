@@ -14,9 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import dev.galasa.After;
 import dev.galasa.AfterClass;
+import dev.galasa.BeforeClass;
 import dev.galasa.Test;
+import dev.galasa.core.manager.IResourceString;
+import dev.galasa.core.manager.ResourceString;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.TestProperty;
 import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
@@ -55,6 +60,40 @@ public class CECIManagerIVT {
 
    @ZosBatch(imageTag = "PRIMARY")
    public IZosBatch batch;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "VARNAME", required = false)
+   public String providedResourceString1;
+   @ResourceString(tag = "VARNAME", length = 8)
+   public IResourceString resourceString1;
+   
+   public String variableName;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "QUEUENAME", required = false)
+   public String providedResourceString2;
+   @ResourceString(tag = "QUEUENAME", length = 8)
+   public IResourceString resourceString2;
+   
+   public String queueName;
+   
+   @BeforeClass
+   public void setUp() throws CeciException, CicstsManagerException {
+	   cics.ceci().startCECISession(ceciTerminal);
+	   
+	   // Get and set unique resource strings
+	   if (providedResourceString1 != null) {
+	      variableName = providedResourceString1;
+	   } else {
+	      variableName = resourceString1.getString();
+	   }
+	   logger.info("Unique CECI variable name to be used in the tests: " + variableName);
+	   
+	   if (providedResourceString2 != null) {
+	      queueName = providedResourceString2;
+	   } else {
+	      queueName = resourceString2.getString();
+	   }
+	   logger.info("Unique TSQUEUE name to be used in the tests: " + queueName);
+   }
 
    /**
     * Ensures that we have an instance of CECI, CICS and a Terminal.
@@ -74,8 +113,6 @@ public class CECIManagerIVT {
    /**
     * Starts the CECI session.
     * 
-    * @throws CicstsManagerException 
-    * @throws CeciException 
     * @throws FieldNotFoundException 
     * @throws NetworkException 
     * @throws TerminalInterruptedException 
@@ -83,9 +120,7 @@ public class CECIManagerIVT {
     * @throws TimeoutException 
     */
    @Test
-   public void testStartCeciSession() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   cics.ceci().startCECISession(ceciTerminal);
-	   
+   public void testStartCeciSession() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   logger.info("If the CECI session started successfully, the terminal should be able to process a CECI command");
 	   ceciTerminal.type("DEF").enter().waitForKeyboard();
 	   assertThat(ceciTerminal.retrieveScreen().contains("ENTER ONE OF THE FOLLOWING")).isTrue();
@@ -100,7 +135,7 @@ public class CECIManagerIVT {
     */
   @Test 
    public void testDefineRetrieveDeleteTextVariable() throws CeciException, CicstsManagerException {
-      String variableName = "TESTNAME";
+	  logger.info("Defining, retrieving then deleting the variable " + variableName + " using CECI");
       String variableValue = "THIS IS A TEXT STRING";
       
       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
@@ -109,7 +144,7 @@ public class CECIManagerIVT {
       cics.ceci().deleteVariable(ceciTerminal, variableName);
       assertThatThrownBy(() -> {
     	  cics.ceci().retrieveVariableText(ceciTerminal, variableName);
-	  }).isInstanceOf(CeciException.class).hasMessageContaining("Unable to find variable &TESTNAME");
+	  }).isInstanceOf(CeciException.class).hasMessageContaining("Unable to find variable &" + variableName);
    }
    
    /**
@@ -137,8 +172,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testDefineTwoVariablesWithSameName() throws CeciException, CicstsManagerException {
-	  logger.info("Testing that when you define two variables with CECI with the same name that the value is overwritten with the second value");
-      String variableName = "NOTUNIQUE";
+	  logger.info("Defining two variables with the name " + variableName + " using CECI. The value should be overwritten with the second definition");
       String value1 = "A VALUE";
       String value2 = "A LONGER VALUE";
       int length = 0;
@@ -159,7 +193,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testBinaryDataTypeVariable() throws CeciException, CicstsManagerException {
-      String variableName = "BINARY";
+	  logger.info("Defining a binary variable with the name " + variableName);
       String variableValue = "BinaryString";
       cics.ceci().defineVariableBinary(ceciTerminal, variableName, variableValue.toCharArray());
       String response = new String(cics.ceci().retrieveVariableBinary(ceciTerminal, variableName));
@@ -181,7 +215,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testDoubleDataTypeVariable() throws CeciException, CicstsManagerException {
-      String variableName = "DOUBLE";
+	  logger.info("Defining a double variable with the name " + variableName);
       long variableValue = 9223372036854775807L;
       cics.ceci().defineVariableDoubleWord(ceciTerminal, variableName, variableValue);
       long response = cics.ceci().retrieveVariableDoubleWord(ceciTerminal, variableName);
@@ -196,7 +230,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testFullDataTypeVariable() throws CeciException, CicstsManagerException {
-      String variableName = "FULL";
+	  logger.info("Defining a full variable with the name " + variableName);
       int variableValue = Integer.MAX_VALUE;
       cics.ceci().defineVariableFullWord(ceciTerminal, variableName, variableValue);
       long response = cics.ceci().retrieveVariableFullWord(ceciTerminal, variableName);
@@ -211,7 +245,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testHalfDataTypeVariable() throws CeciException, CicstsManagerException {
-      String variableName = "HALF";
+	  logger.info("Defining a half variable with the name " + variableName);
       int variableValue = 32767;
       cics.ceci().defineVariableHalfWord(ceciTerminal, variableName, variableValue);
       int response = cics.ceci().retrieveVariableHalfWord(ceciTerminal, variableName);
@@ -226,7 +260,7 @@ public class CECIManagerIVT {
    */
   @Test
   public void test4BytePackedVariable() throws CeciException, CicstsManagerException {
-	  String variableName = "4byte";
+	  logger.info("Defining a 4-byte packed variable with the name " + variableName);
 	  int variableValue = 9999999;
 	  cics.ceci().defineVariable4BytePacked(ceciTerminal, variableName, variableValue);
 	  int response = cics.ceci().retrieveVariable4BytePacked(ceciTerminal, variableName);
@@ -248,7 +282,7 @@ public class CECIManagerIVT {
    */
   @Test
   public void test8BytePackedVariable() throws CeciException, CicstsManagerException {
-	  String variableName = "8byte";
+	  logger.info("Defining an 8-byte packed variable with the name " + variableName);
 	  long variableValue = 999999999999999L;
 	  cics.ceci().defineVariable8BytePacked(ceciTerminal, variableName, variableValue);
 	  long response = cics.ceci().retrieveVariable8BytePacked(ceciTerminal, variableName);
@@ -270,7 +304,7 @@ public class CECIManagerIVT {
     */
    @Test
    public void testCommand() throws CeciException, CicstsManagerException  {
-      String userVariable = "USERID";
+      String userVariable = variableName;
       String ceciCommand = "ASSIGN USERID(&" + userVariable + ")";
       cics.ceci().issueCommand(ceciTerminal, ceciCommand, false);
       String user = cics.ceci().retrieveVariableText(ceciTerminal, userVariable);
@@ -312,7 +346,8 @@ public class CECIManagerIVT {
     */
    @Test
    public void testCommandWithOptions() throws CeciException, CicstsManagerException {
-  
+	   logger.info("Putting and getting data from a container into variable " + variableName);
+	   
 	   String ceciCommand = "PUT";
 	   HashMap<String, Object> options = new HashMap<String, Object>();
 	   options.put("CONTAINER", "FRED");
@@ -325,10 +360,10 @@ public class CECIManagerIVT {
 	   options.clear();
 	   options.put("CONTAINER", "FRED");
 	   options.put("CHANNEL", "FRED");
-	   options.put("INTO", "&FRED");
+	   options.put("INTO", "&" + variableName);
 	   resp = cics.ceci().issueCommand(ceciTerminal, ceciCommand, options);
 	   assertThat(resp.isNormal()).isTrue();
-	   assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "FRED")).isEqualTo("HELLO");
+	   assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).isEqualTo("HELLO");
    }
    
    /**
@@ -344,9 +379,7 @@ public class CECIManagerIVT {
     */
   @Test
    public void testWriteToTSQ() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing writing data to a Temporary Storage Queue called QUEUE1");
-      String queueName = "QUEUE1";
-      String variableName = "TSQDATA";
+	  logger.info("Testing writing data to a Temporary Storage Queue called " + queueName + " from variable " + variableName);
       String dataToWrite = "THIS IS A GALASA TEST";
       
       cics.ceci().defineVariableText(ceciTerminal, variableName, dataToWrite);
@@ -378,28 +411,30 @@ public class CECIManagerIVT {
     */
    @Test
    public void testPutAndGetDataFromContainer() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
-	  // Retrieving the use count of Program 'CONTTEST' to compare with use count after the test case
-	  int programUseCountBefore = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", "CONTTEST").get("usecount"));
-	   
-	  otherTerminal.setUppercaseTranslation(false);
+	  String programName = "CONTTEST";
 	  String channelName = "MY-CHANNEL";
 	  String containerName = "HOBBIT";
 	  String content = "my-content";
+		  
+	  logger.info("Linking program " + programName + " to channel " + channelName + " then putting the output into variable " + variableName);
+	  
+	  // Retrieving the use count of Program to compare with use count after the test case
+	  int programUseCountBefore = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", programName).get("usecount"));
+	  
+	  otherTerminal.setUppercaseTranslation(false);
 	  
 	  ICeciResponse resp = cics.ceci().putContainer(ceciTerminal, channelName, containerName, content, null, null, null);
       resp.checkNormal();
 	  
-	  String programName = "CONTTEST";
       resp = cics.ceci().linkProgramWithChannel(ceciTerminal, programName, channelName, null, null, false);
       resp.checkNormal();
 	  
-	  String variableName = "&OUTPUT";
       resp = cics.ceci().getContainer(ceciTerminal, channelName, containerName, variableName, null, null);
       resp.checkNormal();
-      assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).isUpperCase();
-      assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).startsWith(content.toUpperCase());
+      assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName)).isUpperCase();
+      assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName)).startsWith(content.toUpperCase());
       
-      int programUseCountAfter = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", "CONTTEST").get("usecount"));
+      int programUseCountAfter = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", programName).get("usecount"));
 	  assertThat(programUseCountBefore < programUseCountAfter).isTrue();
    }
 
@@ -411,11 +446,12 @@ public class CECIManagerIVT {
     */
    @Test
    public void testLinkToProgramToCommarea() throws CeciException, CicstsManagerException  {
-      String variableName = "INPUT";
+	   String programName = "APITEST";
       String variableValue = "galasa";
+	   logger.info("Linking program " + programName + " to variable " + variableName);
+
       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
-     
-      ICeciResponse resp = cics.ceci().linkProgram(ceciTerminal, "APITEST", "&" + variableName, null, null, false);
+      ICeciResponse resp = cics.ceci().linkProgram(ceciTerminal, programName, "&" + variableName, null, null, false);
       assertThat(resp.getEIBRESP()).isZero();
 
       String outputData = cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName);
@@ -489,7 +525,11 @@ public class CECIManagerIVT {
       return sb.toString();
    }
 
-
+   @After
+   public void after() throws CeciException, CicstsManagerException {
+	   cics.ceci().deleteVariable(ceciTerminal, variableName);
+   }
+   
    @AfterClass
       public void afterClass() throws CicstsManagerException {
       cics.ceci().deleteAllVariables(ceciTerminal);
