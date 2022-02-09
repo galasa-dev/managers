@@ -3,7 +3,6 @@
 */
 package dev.galasa.docker.internal;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,15 +15,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.docker.DockerContainer;
-import dev.galasa.docker.DockerEngine;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
-import dev.galasa.docker.IDockerContainer;
-import dev.galasa.docker.IDockerEngine;
 import dev.galasa.docker.internal.properties.DockerSlots;
 import dev.galasa.framework.spi.DssAdd;
 import dev.galasa.framework.spi.DssDelete;
-import dev.galasa.framework.spi.DssDeletePrefix;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicResource;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
@@ -65,37 +60,6 @@ public class DockerEnvironment implements IDockerEnvironment {
             throw new DockerManagerException("Failed to create docker environment", e);
         }
 
-    }
-
-    /**
-     * Generates any docker containers found in the test class. Also parses any
-     * docker engine.
-     * 
-     * @param testClasses
-     * @throws DockerProvisionsException
-     */
-    @Override
-    public void generate(List<Class<?>> testClasses) throws DockerProvisionException {
-        logger.info("Provisioning docker objects");
-
-        for (Class<?> topTestClass : testClasses) {
-            for (Class<?> testClass = topTestClass; testClass != null; testClass = testClass.getSuperclass()) {
-                for (Field field : testClass.getDeclaredFields()) {
-                    if (field.getType() == IDockerEngine.class) {
-                        DockerEngine annotation = field.getAnnotation(DockerEngine.class);
-                        if (annotation != null) {
-                            provisionDockerEngine(annotation);
-                        }
-                    }
-                    if (field.getType() == IDockerContainer.class) {
-                        DockerContainer annotation = field.getAnnotation(DockerContainer.class);
-                        if (annotation != null) {
-                            provisionDockerContainer(annotation);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -184,6 +148,8 @@ public class DockerEnvironment implements IDockerEnvironment {
             container.discard();
         }
         for (DockerVolumeImpl volume : volumes) {
+        	logger.info("Docker volume name: " + volume.getVolumeName());
+        	logger.info("Docker volume tag: " + volume.getVolumeTag());
             removeDockerVolume(volume);
         }
     }
@@ -222,17 +188,6 @@ public class DockerEnvironment implements IDockerEnvironment {
     @Override
     public Collection<DockerContainerImpl> getContainers() {
         return containersByTag.values();
-    }
-
-    /**
-     * Builds the docker engine from the given annotation.
-     * 
-     * @param annotation
-     * @return
-     * @throws DockerProvisionException
-     */
-    private DockerEngineImpl provisionDockerEngine(DockerEngine annotation) throws DockerProvisionException {
-        return buildDockerEngine(annotation.dockerEngineTag());
     }
 
     /**

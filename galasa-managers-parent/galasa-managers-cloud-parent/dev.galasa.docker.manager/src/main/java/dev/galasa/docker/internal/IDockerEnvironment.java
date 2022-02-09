@@ -1,26 +1,15 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerProvisionException;
-import dev.galasa.docker.IDockerVolume;
 
 public interface IDockerEnvironment {
-	/**
-	 * Generate the docker containers on specified docker engines.
-	 * 
-	 * @param testClasses
-	 * @throws DockerProvisionException
-	 */
-	public void generate(List<Class<?>> testClasses) throws DockerProvisionException;
 	
 	/**
 	 * Build all docker resources, including finding and pulling images, and building containers.
