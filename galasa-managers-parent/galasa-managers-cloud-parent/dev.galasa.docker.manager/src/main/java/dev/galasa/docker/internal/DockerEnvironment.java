@@ -148,8 +148,6 @@ public class DockerEnvironment implements IDockerEnvironment {
             container.discard();
         }
         for (DockerVolumeImpl volume : volumes) {
-        	logger.info("Docker volume name: " + volume.getVolumeName());
-        	logger.info("Docker volume tag: " + volume.getVolumeTag());
             removeDockerVolume(volume);
         }
     }
