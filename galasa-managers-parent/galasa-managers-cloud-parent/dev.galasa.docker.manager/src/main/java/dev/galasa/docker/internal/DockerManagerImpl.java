@@ -60,7 +60,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     protected final String               NAMESPACE = "docker";
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
-    protected IHttpManagerSpi                   httpManager;
+    private IHttpManagerSpi                   httpManager;
     private IArtifactManager                    artifactManager;
     private IDockerEnvironment                  dockerEnvironment;
     private List<DockerRegistryImpl>            registries = new ArrayList<DockerRegistryImpl>();
@@ -216,6 +216,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      */
     private IDockerEngine getDockerEngine(String dockerEngineTag) throws DockerManagerException {
         return dockerEnvironment.getDockerEngineImpl(dockerEngineTag);
+    }
+    
+    protected IHttpManagerSpi getHttpManager() {
+    	return this.httpManager;
     }
 
     /**
