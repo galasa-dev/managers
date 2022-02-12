@@ -6,9 +6,14 @@ package dev.galasa.cicsts.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.galasa.AfterClass;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
+import dev.galasa.core.manager.IResourceString;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.ResourceString;
+import dev.galasa.core.manager.TestProperty;
+import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
@@ -36,11 +41,26 @@ public class CICSTSManagerIVT {
 
    @CicsTerminal
    public ICicsTerminal terminal;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "VARNAME", required = false)
+   public String providedResourceString1;
+   @ResourceString(tag = "VARNAME", length = 8)
+   public IResourceString resourceString1;
+   
+   public String variableName;
   
    @BeforeClass
    public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
       terminal.clear();
       terminal.waitForKeyboard();
+      
+      // Get and set unique resource strings
+	   if (providedResourceString1 != null) {
+		  variableName = providedResourceString1;
+	   } else {
+		  variableName = resourceString1.getString();
+	   }
+	   logger.info("Unique CECI variable name to be used in the tests: " + variableName);
    }
 	
    @Test
@@ -168,24 +188,20 @@ public class CICSTSManagerIVT {
    @Test
    public void testUppercaseTranslation() throws CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   logger.info("Testing that the CICS Terminal sets uppercase translation correctly");
-	   logger.info("Setting uppercase translation to true");
 	   terminal.setUppercaseTranslation(true);
 	   assertThat(terminal.isUppercaseTranslation()).isTrue();
 	   
-	   logger.info("Testing that uppercase translation is on");
-	   String variableName = "INPUT";
+	   logger.info("Testing that uppercase translation is on by defining and retrieving variable " + variableName);
 	   String variableValue = "lowercasegalasa";
 	   startCeciSession();
 	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
 	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isUpperCase();
 	   logger.info("Lower case characters were translated to upper case");
 	   
-	   logger.info("Setting uppercase translation to false");
 	   terminal.setUppercaseTranslation(false);
 	   assertThat(terminal.isUppercaseTranslation()).isFalse();
 	   
-	   logger.info("Testing that uppercase translation is off");
-	   variableName = "INPUT2";
+	   logger.info("Testing that uppercase translation is off by re-defining and retrieving variable " + variableName);
 	   startCeciSession();
 	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
 	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
@@ -205,6 +221,12 @@ public class CICSTSManagerIVT {
 	   terminal.clear();
 	   terminal.waitForKeyboard();
 	   terminal.type("CECI").enter().waitForKeyboard();
+   }
+   
+   @AfterClass
+   public void afterClass() throws CeciException, CicstsManagerException {
+	   cics.ceci().startCECISession(terminal);
+	   cics.ceci().deleteAllVariables(terminal);
    }
  
 

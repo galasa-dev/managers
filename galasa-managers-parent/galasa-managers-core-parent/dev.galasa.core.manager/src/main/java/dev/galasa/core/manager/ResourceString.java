@@ -31,9 +31,14 @@ public @interface ResourceString {
     
     
     /**
-     * The tag of the Resource String this variable is to be populated with
+     * The tag of the Resource String this variable is to be populated with.
+     * 
+     * The tag must be provided as there is no default for this resource.
+     * 
+     * The {@link java.lang.Stringdev.galasa.core.manager.IResourceString} object is keyed on the tag, so if the tag is referred to in multiple 
+     * super classes,  then the lengths must be identical otherwise an exception will be thrown.
      */
-    String tag() default "PRIMARY";
+    String tag();
     
     /**
      * Generate and lock a resource string

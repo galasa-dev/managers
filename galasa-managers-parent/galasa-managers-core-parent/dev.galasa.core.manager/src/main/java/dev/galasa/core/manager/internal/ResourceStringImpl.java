@@ -15,9 +15,11 @@ import dev.galasa.core.manager.IResourceString;
 public class ResourceStringImpl implements IResourceString {
 	
 	private final String actualString;
+	private final int    length;
 	
-	public ResourceStringImpl(String actualString) {
+	public ResourceStringImpl(String actualString, int length) {
 		this.actualString = actualString;
+		this.length       = length;
 	}
 
 	@Override
@@ -28,5 +30,9 @@ public class ResourceStringImpl implements IResourceString {
 	@Override
 	public String toString() {
 		return this.actualString;
+	}
+	
+	public int getLength() {
+		return this.length;
 	}
 }
