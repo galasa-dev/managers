@@ -16,7 +16,6 @@ import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
-import dev.galasa.zos3270.Zos3270Terminal;
 import dev.galasa.zos3270.spi.NetworkException;
 
  @Test
@@ -33,8 +32,13 @@ import dev.galasa.zos3270.spi.NetworkException;
 
     @Test
     public void test1() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-    	terminal.type("TSQT").enter().wfk().clear();
-      
+    	terminal.type("TSQT").enter().wfk().clear().wfk();
+    }
+    
+    
+    @Test
+    public void test2() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+    	terminal.type("TSQT").enter().wfk().clear().wfk();
     }
   
  }
