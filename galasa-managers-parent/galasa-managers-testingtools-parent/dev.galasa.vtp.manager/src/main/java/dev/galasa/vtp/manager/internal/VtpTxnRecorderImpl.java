@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.vtp.manager.internal;
 
 import java.util.HashMap;
@@ -110,14 +113,17 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	
 	private void exportRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
 		try {
+			HashMap<String, Object> attrs = new HashMap<>();
 			CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
 			String dsName = tdqAttrs.get("dsname");
-			region.cemt().setResource(terminal, "TDQ", "BZUQ", "CLOSED");
 			String dumpTargetDSName = this.dumpHLQ + ".R" + this.recordingNumber;
-			this.recordingNumber++;
-			HashMap<String, Object> attrs = new HashMap<>();
+			
 			attrs.put("SOURCE", dsName);
 			attrs.put("TARGET", dumpTargetDSName);
+			
+			this.recordingNumber++;
+			
+			region.cemt().setResource(terminal, "TDQ", "BZUQ", "CLOSED");
 			manager.copyDumpedPlaybackFile(region.getZosImage(), attrs);
 			this.recordingRegions.get(region).addExportedRecording(dumpTargetDSName, this.currentMethod);
 			region.cemt().setResource(terminal, "TDQ", "BZUQ", "OPEN");
