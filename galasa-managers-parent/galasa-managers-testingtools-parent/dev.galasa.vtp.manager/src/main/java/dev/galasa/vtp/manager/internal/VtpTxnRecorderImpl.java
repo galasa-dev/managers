@@ -7,15 +7,12 @@ import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 
-import dev.galasa.artifact.IArtifactManager;
+import dev.galasa.ManagerException;
 import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.vtp.manager.VtpManagerException;
 import dev.galasa.zos3270.Zos3270Exception;
-import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
-import dev.galasa.zosbatch.IZosBatchJob;
-import dev.galasa.zosbatch.spi.IZosBatchSpi;
 
 public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 
@@ -112,8 +109,8 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	}
 	
 	private void exportRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException {
+		HashMap<String, Object> attrs = new HashMap<>();
 		try {
-			HashMap<String, Object> attrs = new HashMap<>();
 			CicstsHashMap tdqAttrs = region.cemt().inquireResource(terminal, "TDQ", "BZUQ");
 			String dsName = tdqAttrs.get("dsname");
 			String dumpTargetDSName = this.dumpHLQ + ".R" + this.recordingNumber;
@@ -122,14 +119,19 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 			attrs.put("TARGET", dumpTargetDSName);
 			
 			this.recordingNumber++;
-			
+			} catch (Exception e) {
+				throw new VtpManagerException("unable to get dsname of TDQ BZUQ",e);
+			}
+		try {
 			region.cemt().setResource(terminal, "TDQ", "BZUQ", "CLOSED");
 			manager.copyDumpedPlaybackFile(region.getZosImage(), attrs);
-			this.recordingRegions.get(region).addExportedRecording(dumpTargetDSName, this.currentMethod);
+			this.recordingRegions.get(region).addExportedRecording(attrs.get("TARGET").toString(), this.currentMethod);
 			region.cemt().setResource(terminal, "TDQ", "BZUQ", "OPEN");
-		} catch (Exception e) {
-			throw new VtpManagerException("unable to get dsname of TDQ BZUQ",e);
+		}catch(ManagerException e) {
+			throw new VtpManagerException("unable to export recording for region: " + region.getApplid(),e);
 		}
+			
+		
 		
 	}
 

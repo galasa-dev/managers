@@ -283,9 +283,18 @@ public class VtpManagerImpl extends AbstractManager {
 		}
 	}
 	
-	public void copyDumpedPlaybackFile(IZosImage image, HashMap<String, Object> attrs) throws ZosBatchException, TestBundleResourceException, IOException {
-		String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs);
-		IZosBatchJob job = batchManager.getZosBatch(image).submitJob(jcl, null);
-		int rc = job.waitForJob();
+	public void copyDumpedPlaybackFile(IZosImage image, HashMap<String, Object> attrs) throws VtpManagerException {
+		try {
+			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs);
+			IZosBatchJob job = batchManager.getZosBatch(image).submitJob(jcl, null);
+			int rc = job.waitForJob();
+			if(rc > 4) {
+				logger.error("JCL to export recording fail, check artifacts for more details");
+			}
+		}catch (ZosBatchException | TestBundleResourceException | IOException e) {
+			throw new VtpManagerException("Unable to run JCL to export recording",e);
+		}
+		
+		
 	}
 }

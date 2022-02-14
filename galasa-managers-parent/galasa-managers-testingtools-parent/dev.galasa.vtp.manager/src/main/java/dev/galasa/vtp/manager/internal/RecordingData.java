@@ -4,7 +4,6 @@
 package dev.galasa.vtp.manager.internal;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import dev.galasa.cicsts.ICicsTerminal;
