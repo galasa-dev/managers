@@ -69,7 +69,7 @@ public class DockerEngineImpl implements IDockerEngine {
 		this.dockerEngineTag = dockerEngineTag;
 		this.dss = dss;
 
-		this.dockerEngineClient = dockerManager.httpManager.newHttpClient();
+		this.dockerEngineClient = dockerManager.getHttpManager().newHttpClient();
 		try {
 
 			// Get the DSE image
