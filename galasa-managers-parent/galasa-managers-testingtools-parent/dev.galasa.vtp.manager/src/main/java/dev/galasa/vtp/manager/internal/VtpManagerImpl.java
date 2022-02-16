@@ -5,7 +5,6 @@ package dev.galasa.vtp.manager.internal;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -24,13 +23,10 @@ import dev.galasa.ManagerException;
 import dev.galasa.Test;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.TestBundleResourceException;
-import dev.galasa.cicsts.CicsRegion;
-import dev.galasa.cicsts.CicstsManagerField;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
-import dev.galasa.framework.spi.AnnotatedField;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -75,18 +71,13 @@ public class VtpManagerImpl extends AbstractManager {
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		List<AnnotatedField> foundAnnotatedFields = findAnnotatedFields(CicstsManagerField.class);
-		for (AnnotatedField annotatedField : foundAnnotatedFields) {
-			Field field = annotatedField.getField();
-			if (field.getType() == ICicsRegion.class) {
-				CicsRegion annotation = field.getAnnotation(CicsRegion.class);
-				String tag = annotation.cicsTag();
-				ICicsTerminal terminal = cicsManager.generateCicsTerminal(tag);
-				ICicsRegion region = cicsManager.locateCicsRegion(tag);
-				RecordingData rd = new RecordingData();
-				rd.setRecordingTerminal(terminal);
-				recordingRegions.put(region, rd);
-			}
+		for(String s : cicsManager.getCicsRegions().keySet()) {
+			String tag = cicsManager.getCicsRegions().get(s).getTag();
+			ICicsTerminal terminal = cicsManager.generateCicsTerminal(tag);
+			ICicsRegion region = cicsManager.locateCicsRegion(tag);
+			RecordingData rd = new RecordingData();
+			rd.setRecordingTerminal(terminal);
+			recordingRegions.put(region, rd);
 		}
 		if (recordingRegions.size() == 0) {
 			logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
@@ -122,12 +113,6 @@ public class VtpManagerImpl extends AbstractManager {
 		//if this is not a java galasa test then exit
 		if(!galasaTest.isJava()) {
 			logger.info("VTP recording is requested but is not eligible as this is not a Java test");
-			return;
-		}
-		
-		//we are only required if there is a CICS object we can record against
-		if(findAnnotatedFields(CicstsManagerField.class).size() <= 0) {
-			logger.info("VTP Recording enabled but test class contains no CICS TS fields - recording will not be attempted");
 			return;
 		}
 		
@@ -285,7 +270,7 @@ public class VtpManagerImpl extends AbstractManager {
 	
 	public void copyDumpedPlaybackFile(IZosImage image, HashMap<String, Object> attrs) throws VtpManagerException {
 		try {
-			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs);
+			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs).trim();
 			IZosBatchJob job = batchManager.getZosBatch(image).submitJob(jcl, null);
 			int rc = job.waitForJob();
 			if(rc > 4) {

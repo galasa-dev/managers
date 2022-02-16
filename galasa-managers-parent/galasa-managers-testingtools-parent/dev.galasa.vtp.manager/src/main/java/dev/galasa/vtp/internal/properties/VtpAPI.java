@@ -12,7 +12,7 @@ import dev.galasa.vtp.manager.VtpManagerException;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name vtp.API.enable
+ * @galasa.name vtp.api.enable
  * 
  * @galasa.description Should the VTP manager use the VTP API
  * 
@@ -23,14 +23,14 @@ import dev.galasa.vtp.manager.VtpManagerException;
  * @galasa.valid_values true, false
  * 
  * @galasa.examples 
- * <code>vtp.API.enable=false</code><br>
+ * <code>vtp.api.enable=false</code><br>
  *
  */
 public class VtpAPI extends CpsProperties {
     
     public static boolean get() throws VtpManagerException {
         try {
-            String vtpAPI = getStringNulled(VtpPropertiesSingleton.cps(), "API", "enable");
+            String vtpAPI = getStringNulled(VtpPropertiesSingleton.cps(), "api", "enable");
             if (vtpAPI == null)  {
                 return false;
             }

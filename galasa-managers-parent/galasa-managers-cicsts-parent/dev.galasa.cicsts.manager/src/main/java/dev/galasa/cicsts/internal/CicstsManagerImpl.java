@@ -427,4 +427,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 		}
 	}
 
+	@Override
+	public HashMap<String, ICicsRegionProvisioned> getCicsRegions() {
+		return this.provisionedCicsRegions;
+	}
+
 }

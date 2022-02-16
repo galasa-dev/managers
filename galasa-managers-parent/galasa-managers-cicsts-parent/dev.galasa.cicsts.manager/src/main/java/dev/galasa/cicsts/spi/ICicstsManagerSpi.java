@@ -3,6 +3,7 @@
  */
 package dev.galasa.cicsts.spi;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -92,6 +93,8 @@ public interface ICicstsManagerSpi {
 	public IZosFileHandler getZosFileHandler() throws CicstsManagerException;
 	
 	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;
+	
+	public HashMap<String, ICicsRegionProvisioned> getCicsRegions();
 
-	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;;
+	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;
 }
