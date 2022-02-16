@@ -11,6 +11,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
+import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
@@ -71,10 +73,10 @@ public class VtpManagerImpl extends AbstractManager {
 
 	@Override
 	public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-		for(String s : cicsManager.getCicsRegions().keySet()) {
-			String tag = cicsManager.getCicsRegions().get(s).getTag();
-			ICicsTerminal terminal = cicsManager.generateCicsTerminal(tag);
-			ICicsRegion region = cicsManager.locateCicsRegion(tag);
+		
+		for(Map.Entry<String, ICicsRegionProvisioned> entry : cicsManager.getTaggedCicsRegions().entrySet()) {
+			ICicsTerminal terminal = cicsManager.generateCicsTerminal(entry.getKey());
+			ICicsRegion region = entry.getValue();
 			RecordingData rd = new RecordingData();
 			rd.setRecordingTerminal(terminal);
 			recordingRegions.put(region, rd);

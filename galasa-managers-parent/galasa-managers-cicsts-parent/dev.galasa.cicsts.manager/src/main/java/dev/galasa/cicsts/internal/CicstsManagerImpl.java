@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -428,8 +429,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 	}
 
 	@Override
-	public HashMap<String, ICicsRegionProvisioned> getCicsRegions() {
-		return this.provisionedCicsRegions;
+	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions() {
+		HashMap<String, ICicsRegionProvisioned> clonedTaggedCicsRegions = new HashMap<>();
+		for(Map.Entry<String, ICicsRegionProvisioned> entry : this.provisionedCicsRegions.entrySet()) {
+			clonedTaggedCicsRegions.put(entry.getKey(), entry.getValue());
+		}		
+		return clonedTaggedCicsRegions;
 	}
-
 }

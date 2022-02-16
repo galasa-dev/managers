@@ -5,6 +5,7 @@ package dev.galasa.cicsts.spi;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -94,7 +95,7 @@ public interface ICicstsManagerSpi {
 	
 	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;
 	
-	public HashMap<String, ICicsRegionProvisioned> getCicsRegions();
+	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions();
 
 	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;
 }
