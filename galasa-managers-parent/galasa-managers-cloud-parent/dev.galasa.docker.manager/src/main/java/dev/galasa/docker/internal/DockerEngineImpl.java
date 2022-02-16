@@ -381,12 +381,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	public String getBusybox() throws DockerManagerException {
 		DockerImageImpl image = new DockerImageImpl(framework, dockerManager, this, "busybox:latest");
 		image.locateImage();
-		String fullName = image.getFullName();
-		if(fullName != null) {
-			return fullName;
-		} else {
-			return "busybox:latest";
-		}
+		return image.getFullName();
 	}
 
 	/**

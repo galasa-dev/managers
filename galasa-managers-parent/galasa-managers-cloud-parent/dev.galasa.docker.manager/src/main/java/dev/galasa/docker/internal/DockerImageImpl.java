@@ -104,7 +104,7 @@ public class DockerImageImpl implements IDockerImage {
 			return;
 		}
 
-		throw new DockerManagerException("Unable to locate Docker Image '" + this.fullName + "'");
+		throw new DockerManagerException("Unable to locate Docker Image '" + this.fullImageName + "'");
     }
 
     private String getWorkingName(String fullImageName) {
