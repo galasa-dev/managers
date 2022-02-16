@@ -143,16 +143,11 @@ public class DockerVolumeImpl implements IDockerVolume {
      */
     @Override
     public void LoadFile(String fileName, InputStream data) throws DockerManagerException {
-        File volumeDir = new File("/tmp/" + this.tag);
         DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
-
-        if (volumeDir.exists()) {
-            volumeDir.delete();
-        }
-        volumeDir.mkdir();
         
         Map<String,String> subs = new HashMap<>();
         
+        subs.put("${BUSYBOX}", this.engine.getBusybox());
         subs.put("${FILENAME}", fileName);
         subs.put("${MOUNTPATH}", this.mountPath);
         
@@ -263,6 +258,7 @@ public class DockerVolumeImpl implements IDockerVolume {
         DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
         
         Map<String,String> subs = new HashMap<>();
+        subs.put("${BUSYBOX}", engine.getBusybox());
         subs.put("${COMMAND}", command);
         logger.info("Command: " + command);
 

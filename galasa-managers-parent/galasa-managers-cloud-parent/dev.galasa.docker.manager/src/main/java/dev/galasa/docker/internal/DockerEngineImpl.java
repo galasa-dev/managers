@@ -230,9 +230,6 @@ public class DockerEngineImpl implements IDockerEngine {
 			switch (resp.getStatusCode()) {
 			case HttpStatus.SC_OK:
 			case HttpStatus.SC_CREATED:
-				if (response == null) {
-					return null;
-				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
 				return null;
@@ -380,6 +377,12 @@ public class DockerEngineImpl implements IDockerEngine {
 	public String getHost() {
 		return this.uri.getHost();
 	}
+	
+	public String getBusybox() throws DockerManagerException {
+		DockerImageImpl image = new DockerImageImpl(framework, dockerManager, this, "busybox:latest");
+		image.locateImage();
+		return image.getFullName();
+	}
 
 	/**
 	 * returns the docker engine URI
@@ -406,9 +409,6 @@ public class DockerEngineImpl implements IDockerEngine {
 			switch (response.getStatusCode()) {
 			case HttpStatus.SC_OK:
 			case HttpStatus.SC_CREATED:
-				if (resp == null) {
-					return null;
-				}
 				return resp;
 			case HttpStatus.SC_NO_CONTENT:
 			case HttpStatus.SC_NOT_FOUND:
@@ -467,9 +467,6 @@ public class DockerEngineImpl implements IDockerEngine {
 			switch (json.getStatusCode()) {
 			case HttpStatus.SC_OK:
 			case HttpStatus.SC_CREATED:
-				if (response == null) {
-					return null;
-				}
 				return response;
 			case HttpStatus.SC_NO_CONTENT:
 				return null;
@@ -502,9 +499,6 @@ public class DockerEngineImpl implements IDockerEngine {
 			switch (response.getStatusCode()) {
 			case HttpStatus.SC_OK:
 			case HttpStatus.SC_CREATED:
-				if (resp == null) {
-					return null;
-				}
 				return resp;
 			case HttpStatus.SC_NO_CONTENT:
 				return null;
