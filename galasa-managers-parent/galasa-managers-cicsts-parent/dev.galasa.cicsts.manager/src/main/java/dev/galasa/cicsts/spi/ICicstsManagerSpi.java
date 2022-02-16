@@ -3,13 +3,16 @@
  */
 package dev.galasa.cicsts.spi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
+import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosfile.IZosFileHandler;
 
@@ -89,5 +92,10 @@ public interface ICicstsManagerSpi {
 	public IZosBatch getZosBatch(ICicsRegion region) throws CicstsManagerException;
 
 	public IZosFileHandler getZosFileHandler() throws CicstsManagerException;
+	
+	public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException;
+	
+	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions();
 
+	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;
 }
