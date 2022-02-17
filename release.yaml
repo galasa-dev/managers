@@ -31,6 +31,7 @@ managers:
   - artifact: dev.galasa.cicsts.manager
     version: 0.20.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -39,12 +40,14 @@ managers:
   - artifact: dev.galasa.cicsts.manager.ivt
     version: 0.20.0
     obr: true
+    mvp: true
     bom: true
     isolated: true
     
   - artifact: dev.galasa.cicsts.ceci.manager
     version: 0.15.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -53,12 +56,14 @@ managers:
   - artifact: dev.galasa.cicsts.ceci.manager.ivt
     version: 0.20.0
     obr: true
+    mvp: true
     bom: true
     isolated: true
     
   - artifact: dev.galasa.cicsts.ceda.manager
     version: 0.17.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -67,11 +72,13 @@ managers:
   - artifact: dev.galasa.cicsts.ceda.manager.ivt
     version: 0.20.0
     obr: true
+    mvp: true
     isolated: true
     
   - artifact: dev.galasa.cicsts.cemt.manager
     version: 0.20.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -80,6 +87,7 @@ managers:
   - artifact: dev.galasa.cicsts.cemt.manager.ivt
     version: 0.20.0
     obr: true
+    mvp: true
     isolated: true
     
   - artifact: dev.galasa.cicsts.resource.manager
@@ -235,6 +243,7 @@ managers:
   - artifact: dev.galasa.liberty.manager
     version: 0.15.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -299,6 +308,7 @@ managers:
   - artifact: dev.galasa.textscan.manager
     version: 0.16.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
@@ -363,6 +373,7 @@ managers:
   - artifact: dev.galasa.zosliberty.manager
     version: 0.19.0
     obr: true
+    mvp: true
     javadoc: true
     bom: true
     isolated: true
