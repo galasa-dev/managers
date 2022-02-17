@@ -95,6 +95,7 @@ managers:
     obr: true
     javadoc: true
     bom: true
+    mvp: true
     isolated: true
     codecoverage: true
     
