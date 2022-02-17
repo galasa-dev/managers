@@ -204,7 +204,7 @@ public class DockerVolumeImpl implements IDockerVolume {
         try {
             String dockerfileTemplate = this.dockerManager.getArtifactManager()
             .getBundleResources(this.getClass())
-            .retrieveSkeletonFileAsString("resources/", subs);
+            .retrieveSkeletonFileAsString("resources/" + dockerfile, subs);
 
             return new ByteArrayInputStream(dockerfileTemplate.getBytes());
         } catch (IOException | TestBundleResourceException e) {
