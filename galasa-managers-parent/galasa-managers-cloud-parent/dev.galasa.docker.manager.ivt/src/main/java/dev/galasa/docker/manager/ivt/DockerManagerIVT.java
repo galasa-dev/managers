@@ -1,5 +1,5 @@
 /*
-* Copyright contributors to the Galasa project 
+* Copyright contributors to the Galasa project  
 */
 package dev.galasa.docker.manager.ivt;
 
