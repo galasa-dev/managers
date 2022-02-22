@@ -436,7 +436,6 @@ public class JvmprofileImpl implements IJvmprofile {
 			delete();
 		} catch (CicsJvmserverResourceException e) {
 			logger.error("Problem in cleanup phase", e);
-			e.printStackTrace();
 		}
 	}
 }

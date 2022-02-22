@@ -4,7 +4,6 @@
 package dev.galasa.docker.internal;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -145,7 +144,7 @@ public class DockerVolumeImpl implements IDockerVolume {
     public void LoadFile(String fileName, InputStream data) throws DockerManagerException {
         DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
         
-        Map<String,String> subs = new HashMap<>();
+        Map<String,Object> subs = new HashMap<>();
         
         subs.put("${BUSYBOX}", this.engine.getBusybox());
         subs.put("${FILENAME}", fileName);
@@ -201,15 +200,11 @@ public class DockerVolumeImpl implements IDockerVolume {
      * @return
      * @throws DockerManagerException
      */
-    private InputStream createDockerfile(String dockerfile, Map<String,String> subs) throws DockerManagerException {
+    private InputStream createDockerfile(String dockerfile, Map<String,Object> subs) throws DockerManagerException {
         try {
             String dockerfileTemplate = this.dockerManager.getArtifactManager()
             .getBundleResources(this.getClass())
-            .retrieveFileAsString("resources/" + dockerfile);
-            
-            for (String key: subs.keySet()) {
-            	dockerfileTemplate = dockerfileTemplate.replace(key, subs.get(key));
-            }
+            .retrieveSkeletonFileAsString("resources/" + dockerfile, subs);
 
             return new ByteArrayInputStream(dockerfileTemplate.getBytes());
         } catch (IOException | TestBundleResourceException e) {
@@ -257,14 +252,13 @@ public class DockerVolumeImpl implements IDockerVolume {
     public void runCommand(String command) throws DockerManagerException {
         DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
         
-        Map<String,String> subs = new HashMap<>();
+        Map<String,Object> subs = new HashMap<>();
         subs.put("${BUSYBOX}", engine.getBusybox());
         subs.put("${COMMAND}", command);
         logger.info("Command: " + command);
 
         // Create a busy box image to load the volume
         InputStream dockerfile = createDockerfile("CommandBusyboxDockerfile", subs);
-        Map<String, InputStream> resources = new HashMap<>();
 
         builder.buildImage("galasa-volume-loader", dockerfile);
 

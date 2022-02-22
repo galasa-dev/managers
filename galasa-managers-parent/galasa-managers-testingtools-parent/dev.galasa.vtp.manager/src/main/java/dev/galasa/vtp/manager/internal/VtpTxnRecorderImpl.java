@@ -42,8 +42,7 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 				terminal.waitForTextInField(expectedResponse);
 				terminal.clear().wfk();
 			} catch (Zos3270Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new VtpManagerException("Error when starting recording for region: " + region.getApplid(), e);
 			}
 		}
 	}
