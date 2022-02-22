@@ -257,13 +257,13 @@ public class DockerManagerIVT {
     }
 
     @Test 
-    public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException {
+    public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException, InterruptedException {
         IDockerVolume volume = config2.getVolumeByTag("testVolume");
         InputStream in = resources.retrieveFile("resources/SampleConfig.cfg");
         volume.LoadFile("TestConfigFile.cfg", in);
-
+        Thread.sleep(10000);
         container.startWithConfig(config2);
-
+        Thread.sleep(10000);
         IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/TestConfigFile.cfg");
         cmd.waitForExec();
         assertThat(cmd.getCurrentOutput()).contains("IsThisConfig=true");
