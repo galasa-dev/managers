@@ -8,11 +8,11 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
 /**
- * DB2 DSE instance name
+ * DB2 instance url
  * 
  * @galasa.cps.property
  * 
- * @galasa.name db2.dse.instance.PRIMARY
+ * @galasa.name db2.instance.TESTDB.url
  * 
  * @galasa.description Url description including port for the database
  * 
@@ -23,18 +23,18 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A valid Db2 Url
  * 
  * @galasa.examples 
- * <code>db2.dse.instance.PRIMARY=db2://example.url.com:40100/DATABASE<br>
+ * <code>db2.instance.TESTDB.url=db2://example.url.com:40100/DATABASE<br>
  * </code>
  * */
-public class Db2DSEInstance extends CpsProperties {
+public class Db2InstanceUrl extends CpsProperties {
 
     public static String get(String tag) throws Db2ManagerException {
 		try {
 
-			final String instance = getStringNulled(Db2PropertiesSingleton.cps(), "dse.instance", tag);
+			final String instance = getStringNulled(Db2PropertiesSingleton.cps(), "instance", "url", tag);
 
 			if (instance == null) {
-				throw new Db2ManagerException("Could not DSE Db2 Instance url with Tag: " + tag);
+				throw new Db2ManagerException("Could not find Db2 Instance url with Tag: " + tag);
 			}
 			return instance;
 		} catch (final ConfigurationPropertyStoreException e) {

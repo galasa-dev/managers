@@ -3,15 +3,17 @@
  */
 package dev.galasa.db2;
 
+import java.io.InputStream;
+import java.util.List;
+
 public interface IDb2Schema {
 	
-	// Allows statements to be applied.
-	public void applyStatement(String statement);
+	public IResultMap executeSql(String stmt, Object... params) throws Db2ManagerException;
 	
-	// Returns the name of this Schema
-	public void getSchemaName();
+	public List<IResultMap> executeSqlList(String stmt, Object... params) throws Db2ManagerException;
 	
-	// Returns database name
-	public void getDatabaseName();
+	public void loadCsvData(String tableName, InputStream in) throws Db2ManagerException;
+	
+	public String getSchemaName();
 	
 }

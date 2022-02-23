@@ -8,4 +8,5 @@ version = '0.20.0'
 
 dependencies {
     implementation project(':galasa-managers-database-parent:dev.galasa.db2.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
 }

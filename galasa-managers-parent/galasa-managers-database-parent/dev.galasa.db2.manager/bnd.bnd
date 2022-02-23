@@ -1,10 +1,27 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Db2 Manager
-Export-Package: dev.galasa.db2
+Export-Package: !dev.galasa.db2.internal*,\
+        dev.galasa.db2*,\
 Import-Package: !javax.validation.constraints, \
-				com.ibm.db2.jcc, \
-                *
+		com.ibm.dataaccess, \
+		COM.ibm.db2os390.sqlj.runtime ,\
+		com.ibm.net ,\
+		sun.io ,\
+		sqlj.framework.options ,\
+		com.ibm.zos.batch.container.support.transaction ,\
+		sun.security.action ,\
+		sqlj.mesg ,\
+		com.ibm.bidiTools.bdlayout, \
+		com.ibm.cics.server, \
+		com.ibm.jvm, \
+		com.ibm.websphere.interrupt, \
+		com.ibm.zos.batch.container.support, \
+		sqlj.framework.error, \
+		sqlj.framework.ide, \
+		sqlj.tools, \
+		sqlj.util.io, \
+		sqlj.mesg, \
+		dev.galasa.db2 
 Embed-Transitive: true
 Embed-Dependency: *;scope=compile
--includeresource: db2jcc-db2jcc4.jar; lib:=true,\
-    db2jcc-db2jcc4.jar; lib:=true
+-includeresource: db2jcc-db2jcc4.jar; lib:=true

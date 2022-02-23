@@ -7,6 +7,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.sql.ResultSet;
 
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
@@ -34,5 +35,11 @@ public @interface Db2Schema {
 	
 	String tag() default "PRIMARY";
 	
-	String schemaName() default "PRIMARY";
+	String db2Tag() default "PRIMARY";
+	
+	boolean archive() default false;
+	
+	int resultSetType() default ResultSet.TYPE_SCROLL_INSENSITIVE;
+	
+	int resultSetConcurrency() default ResultSet.CONCUR_READ_ONLY;
 }
