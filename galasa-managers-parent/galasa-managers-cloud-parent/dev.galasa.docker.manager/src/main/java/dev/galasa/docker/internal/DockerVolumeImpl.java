@@ -9,12 +9,12 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.docker.DockerManagerException;
@@ -146,9 +146,9 @@ public class DockerVolumeImpl implements IDockerVolume {
         
         Map<String,Object> subs = new HashMap<>();
         
-        subs.put("${BUSYBOX}", this.engine.getBusybox());
-        subs.put("${FILENAME}", fileName);
-        subs.put("${MOUNTPATH}", this.mountPath);
+        subs.put("BUSYBOX", this.engine.getBusybox());
+        subs.put("FILENAME", fileName);
+        subs.put("MOUNTPATH", this.mountPath);
         
         // Create a busy box image to load the volume
         InputStream dockerfile = createDockerfile("VolumeBusyboxDockerfile", subs);
@@ -253,8 +253,8 @@ public class DockerVolumeImpl implements IDockerVolume {
         DockerImageBuilderImpl builder = new DockerImageBuilderImpl(engine);
         
         Map<String,Object> subs = new HashMap<>();
-        subs.put("${BUSYBOX}", engine.getBusybox());
-        subs.put("${COMMAND}", command);
+        subs.put("BUSYBOX", engine.getBusybox());
+        subs.put("COMMAND", command);
         logger.info("Command: " + command);
 
         // Create a busy box image to load the volume

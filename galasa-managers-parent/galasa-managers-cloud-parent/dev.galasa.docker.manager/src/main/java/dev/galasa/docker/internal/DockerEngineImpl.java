@@ -3,7 +3,6 @@
  */
 package dev.galasa.docker.internal;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -13,15 +12,14 @@ import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
+
+import com.google.gson.JsonObject;
 
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.DockerNotFoundException;
