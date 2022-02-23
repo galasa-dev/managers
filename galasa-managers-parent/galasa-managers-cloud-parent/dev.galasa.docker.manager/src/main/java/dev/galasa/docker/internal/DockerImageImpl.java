@@ -49,6 +49,7 @@ public class DockerImageImpl implements IDockerImage {
         this.dockerManager      = dockerManager;
         this.dockerEngine       = dockerEngine;
         this.fullImageName      = fullImageName;
+        getWorkingName(this.fullImageName);
     }
 
     /**

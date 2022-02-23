@@ -3,10 +3,7 @@
 */
 package dev.galasa.docker.internal;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -72,15 +69,12 @@ public class DockerImageBuilderImpl implements IDockerImageBuilder {
      * @param buildResources
      * @return
      * @throws DockerManagerException
+     * @throws IOException 
      */
-    private Path createDockerTagGz(InputStream dockerfile, Map<String,InputStream> buildResources) throws DockerManagerException {
-        File buildDir = new File("/tmp/galasa-build-dir");
-        Path outputTar = Paths.get(buildDir.getAbsolutePath() + "/Dockerfile.tar.gz");
-
-        if (buildDir.exists()){
-            buildDir.delete();
-        }
-        buildDir.mkdir();
+    private Path createDockerTagGz(InputStream dockerfile, Map<String,InputStream> buildResources) throws DockerManagerException, IOException {
+    	Path tmp = Paths.get("/tmp");
+    	Path tmpDir = Files.createTempDirectory(tmp, "galasa-build-dir");
+        Path outputTar = Paths.get(tmpDir + "/Dockerfile.tar.gz");
 
         try {
             OutputStream fOut = Files.newOutputStream(outputTar);

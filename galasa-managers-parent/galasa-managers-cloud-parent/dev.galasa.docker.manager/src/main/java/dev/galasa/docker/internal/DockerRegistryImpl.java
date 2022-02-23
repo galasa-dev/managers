@@ -9,12 +9,12 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.Map;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsToken;
@@ -22,8 +22,8 @@ import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ICredentialsUsernameToken;
 import dev.galasa.docker.DockerManagerException;
-import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
 import dev.galasa.docker.internal.properties.DockerImagePrefix;
+import dev.galasa.docker.internal.properties.DockerRegistryCredentials;
 import dev.galasa.docker.internal.properties.DockerRegistryURL;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
@@ -73,9 +73,9 @@ public class DockerRegistryImpl {
 		this.registryId = registryId;
 		this.registryUrl = DockerRegistryURL.get(this);
 		this.prefix = DockerImagePrefix.get(this);
-
-		this.client = dockerManager.httpManager.newHttpClient();
-		this.realmClient = dockerManager.httpManager.newHttpClient();
+		
+		this.client = dockerManager.getHttpManager().newHttpClient();
+		this.realmClient = dockerManager.getHttpManager().newHttpClient();
 
 		try {
 			this.client.setURI(this.registryUrl.toURI());
@@ -100,10 +100,11 @@ public class DockerRegistryImpl {
 	 */
 	public boolean doYouHave(DockerImageImpl image) {
 		String resp = null;
+		String path = "";
 		try {
 			registryAuthenticate(image);
 
-			String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
+			path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
@@ -115,11 +116,10 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.trace(e);
-			logger.warn("Failed to access registry");
+			logger.trace("Failed to access registry at: " + path, e);
 			return false;
 		} catch (ClassCastException e) {
-			logger.warn("Invalid JSON returned from Docker Registry\n" + resp, e);
+			logger.trace("Invalid JSON returned from Docker Registry\n" + resp, e);
 			return false;
 		}
 	}
@@ -131,19 +131,19 @@ public class DockerRegistryImpl {
 	 * @param repository
 	 * @throws DockerManagerException
 	 */
-	private void registryAuthenticate(DockerImageImpl image) throws DockerManagerException {
+	public void registryAuthenticate(DockerImageImpl image) throws DockerManagerException {
 		if (!retrieveRealm(image)) {
 			logger.info("No authentication required");
 			return;
 		}
 
 		if ("Bearer realm".equalsIgnoreCase(this.registryRealmType)) {
-			this.authToken = retrieveBearerToken(this.client);
+			this.authToken = retrieveBearerToken();
 			return;
 		}
 
 		if ("Basic realm".equalsIgnoreCase(this.registryRealmType)) {
-			this.authToken = retrieveBasicToken(this.client);
+			this.authToken = retrieveBasicToken();
 			return;
 		}
 	}
@@ -156,7 +156,7 @@ public class DockerRegistryImpl {
 	 * @return String token
 	 * @throws DockerManagerException
 	 */
-	private String retrieveBearerToken(IHttpClient client) throws DockerManagerException {
+	public String retrieveBearerToken() throws DockerManagerException {
 		try {
 			this.realmClient.setURI(this.registryRealmURL.toURI());
 			HttpClientResponse<JsonObject> response = this.realmClient.getJson("");
@@ -172,7 +172,7 @@ public class DockerRegistryImpl {
 					if (key.equalsIgnoreCase("WWW-Authenticate")) {
 						String authType = parseAuthRealmType(headers.get(key));
 						if ("Basic realm".equals(authType)) {
-							return retrieveBasicToken(client);
+							return retrieveBasicToken();
 						} else {
 							throw new DockerManagerException("Dont know how to authenticate to registry: " + this.registryUrl);
 						}
@@ -192,17 +192,17 @@ public class DockerRegistryImpl {
 	 * @return String token
 	 * @throws DockerManagerException
 	 */
-	private String retrieveBasicToken(IHttpClient client) throws DockerManagerException {
+	public String retrieveBasicToken() throws DockerManagerException {
 		try {
 			
 			ICredentials creds = getCreds();
 			if (creds instanceof ICredentialsUsernamePassword) {
 
-				ICredentialsUsernamePassword userPass = (ICredentialsUsernamePassword) creds;
-				String user = userPass.getUsername();
-				String password = userPass.getPassword();
+				String user = ((ICredentialsUsername) creds).getUsername();
+				String password = ((ICredentialsUsernamePassword) creds).getPassword();
 
-				client.setAuthorisation(user, password).build();
+				this.client.setAuthorisation(user, password);
+				this.client.build();
 
 				return generateDockerRegistryAuthStructure(user, password);
 			}
@@ -232,7 +232,7 @@ public class DockerRegistryImpl {
 	 * @throws ConfigurationPropertyStoreException
 	 * @throws CredentialsException
 	 */
-	private ICredentials getCreds() throws DockerManagerException, CredentialsException {
+	public ICredentials getCreds() throws DockerManagerException, CredentialsException {
 		String credKey = DockerRegistryCredentials.get(this);
 		return credService.getCredentials(credKey);
 	}
@@ -244,7 +244,7 @@ public class DockerRegistryImpl {
 	 * @return
 	 * @throws DockerManagerException
 	 */
-	private boolean retrieveRealm(DockerImageImpl image) throws DockerManagerException {
+	boolean retrieveRealm(DockerImageImpl image) throws DockerManagerException {
 		String path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
 
 		try {
@@ -266,7 +266,7 @@ public class DockerRegistryImpl {
 			}
 			throw new DockerManagerException("Failed to authenticate, and authentication is required.");
 		} catch (HttpClientException | MalformedURLException | JsonSyntaxException e) {
-			throw new DockerManagerException("Failed to connect to registry", e);
+			throw new DockerManagerException("Failed to connect to registry.", e);
 		}
 	}
 

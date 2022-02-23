@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.ceci.internal;
 
@@ -818,7 +816,9 @@ public class CeciImpl implements ICeci {
                     int byteCount = 0;
                     StringBuilder sb = new StringBuilder();
                     while (pos < value.length && byteCount < 4) {
-                        sb.append(Integer.toHexString((int) value[pos]).toUpperCase());                
+                        String hex = Integer.toHexString(value[pos]);
+                    	hex = String.format("%2S", hex).replaceAll(" ", "0");
+                        sb.append(hex.toUpperCase());   
                         pos++;
                         byteCount++;
                     }

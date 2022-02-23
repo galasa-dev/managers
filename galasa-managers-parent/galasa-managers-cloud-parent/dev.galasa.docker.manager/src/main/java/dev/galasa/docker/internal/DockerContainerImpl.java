@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.docker.internal;
 
 import java.io.BufferedInputStream;
@@ -42,6 +40,7 @@ import dev.galasa.docker.IDockerContainerConfig;
 import dev.galasa.docker.IDockerExec;
 import dev.galasa.docker.IDockerImage;
 import dev.galasa.docker.IDockerVolume;
+import dev.galasa.docker.internal.properties.DockerLeaveRunning;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
@@ -222,7 +221,7 @@ public class DockerContainerImpl implements IDockerContainer {
             }
 
             logger.info("Container '" + tag + "' created under name '" + containerName + "'");
-        } catch (DockerManagerException | DynamicStatusStoreException e) {
+        } catch (DockerManagerException e) {
             throw new DockerProvisionException("Unable to prepare the Docker Container '" + this.tag + "'", e);
         }
     }
@@ -319,6 +318,13 @@ public class DockerContainerImpl implements IDockerContainer {
     @Override
     public IDockerImage getDockerImage() {
         return this.image;
+    }
+    
+    /**
+     * Returns the container tag.
+     */
+    public String getContainerTag() {
+    	return this.tag;
     }
 
     /**
@@ -545,10 +551,10 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Check to see if a flag was set to leave the container running post test.
      * 
-     * @throws DynamicStatusStoreException
+     * @throws DockerManagerException 
      */
-    private void checkLeaveRunning() throws DynamicStatusStoreException {
-        String flag = dss.get("container." + tag + ".leave.running");
+    private void checkLeaveRunning() throws DockerManagerException {
+        String flag = DockerLeaveRunning.get(this);
         if (flag != null) {
             logger.debug("Requested leaveRunning state: " + flag);
             leaveRunning = Boolean.parseBoolean(flag);

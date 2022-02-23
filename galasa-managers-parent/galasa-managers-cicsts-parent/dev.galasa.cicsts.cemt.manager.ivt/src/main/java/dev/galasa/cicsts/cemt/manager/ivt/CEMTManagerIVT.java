@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
-import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.assertj.core.api.Fail;
@@ -17,9 +16,13 @@ import dev.galasa.After;
 import dev.galasa.Before;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
+import dev.galasa.core.manager.IResourceString;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.ResourceString;
+import dev.galasa.core.manager.TestProperty;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeciResponse;
 import dev.galasa.cicsts.ICicsRegion;
@@ -35,6 +38,9 @@ import dev.galasa.zosbatch.ZosBatchException;
 @Test
 public class CEMTManagerIVT {
 	
+   @Logger
+   public Log logger;
+	
    @CicsRegion
    public ICicsRegion cics;
    
@@ -47,8 +53,28 @@ public class CEMTManagerIVT {
    @CicsTerminal
    public ICicsTerminal manualTestTerminal;
    
-   @Logger
-   public Log logger;
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "PROG", required = false)
+   public String providedResourceString1;
+   @ResourceString(tag = "PROG", length = 8)
+   public IResourceString resourceString1;
+   
+   public String programName;
+ 
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "TRX", required = false)
+   public String providedResourceString2;
+   @ResourceString(tag = "TRX", length = 4)
+   public IResourceString resourceString2;
+   
+   public String trxName;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "GROUP", required = false)
+   public String providedResourceString3;
+   @ResourceString(tag = "GROUP", length = 8)
+   public IResourceString resourceString3;
+   
+   public String groupName;
+   
+ 
    
    @BeforeClass
    public void login() throws Exception {
@@ -61,7 +87,27 @@ public class CEMTManagerIVT {
       manualTestTerminal.clear();
       manualTestTerminal.waitForKeyboard();
       
-      clearResources();
+      // Get and set unique resource strings
+      if (providedResourceString1 != null) {
+    	  programName = providedResourceString1;
+      } else {
+    	  programName = resourceString1.getString();
+      }
+      logger.info("Unique Program name to be used in the tests: " + programName);
+
+      if (providedResourceString2 != null) {
+    	  trxName = providedResourceString2;
+      } else {
+    	  trxName = resourceString2.getString();
+      }
+      logger.info("Unique Transaction name to be used in the tests: " + trxName);
+      
+      if (providedResourceString3 != null) {
+    	  groupName = providedResourceString3;
+      } else {
+    	  groupName = resourceString3.getString();
+      }
+      logger.info("Unique Group name to be used in the tests: " + groupName);
    }
    
    @Before
@@ -96,17 +142,17 @@ public class CEMTManagerIVT {
     */
    @Test
    public void testInquireResource() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing the inquire resource method on Program 'Example'");
-      HashMap<String, String> resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-	  assertThat(resource.get("program")).isEqualToIgnoringCase("EXAMPLE");
-	  assertThat(resource.get("length")).isEqualToIgnoringCase("0000000000");
-	  assertThat(resource.get("language")).isEqualToIgnoringCase("Notdefined");
-	  assertThat(resource.get("progtype")).isEqualToIgnoringCase("Program");
-	  assertThat(resource.get("status")).isEqualToIgnoringCase("Enabled");
-	  assertThat(resource.get("sharestatus")).isEqualToIgnoringCase("Private");
-	  
-	  logger.info("Manually testing the CEMT INQUIRE command on Program 'Example'");
-	  assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE)", "RESPONSE: NORMAL")).isTrue();
+	  logger.info("Testing the inquire resource method on Program " + programName);
+      CicstsHashMap resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName);
+      assertThat(resource.isParameterEquals("program", programName)).isTrue();
+      assertThat(resource.isParameterEquals("length", "0000000000")).isTrue();
+      assertThat(resource.isParameterEquals("language", "Notdefined")).isTrue();
+      assertThat(resource.isParameterEquals("progtype", "Program")).isTrue();
+      assertThat(resource.isParameterEquals("status", "Enabled")).isTrue();
+      assertThat(resource.isParameterEquals("sharestatus", "Private")).isTrue();
+      
+      logger.info("Manually testing the CEMT INQUIRE command on Program " + programName);
+	  assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ")", "RESPONSE: NORMAL")).isTrue();
    }
    
    /**
@@ -122,14 +168,14 @@ public class CEMTManagerIVT {
     */
    @Test
    public void testDiscardAndInquireResourceThatDoesntExist() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing the discard resource method on Program 'Example', then the inquire resource method when it no longer exists");
-      assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE")).isNotNull();
+	  logger.info("Testing the discard resource method on Program " + programName + ", then the inquire resource method when it no longer exists");
+      assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName)).isNotNull();
       
-      cics.cemt().discardResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-      assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE")).isNull();  
+      cics.cemt().discardResource(cemtTerminal, "PROGRAM", programName);
+      assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName)).isNull();  
       
-      logger.info("Manually testing the CEMT INQUIRE command retrieves nothing for Program 'Example'");
-      assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE)", "RESPONSE: 1 ERROR")).isTrue();
+      logger.info("Manually testing the CEMT INQUIRE command retrieves nothing for Program " + programName);
+      assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ")", "RESPONSE: 1 ERROR")).isTrue();
    }
    
    /**
@@ -207,21 +253,21 @@ public class CEMTManagerIVT {
     */
    @Test
    public void testSetResource() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing the set resource method on Program 'Example'");
-      HashMap<String, String> resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
+	  logger.info("Testing the set resource method on Program " + programName);
+      CicstsHashMap resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName);
 
       if (resource.get("status").equals("Disabled")) {
-         cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "ENABLED");
-         resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-         assertThat(resource.get("status")).isEqualTo("Enabled");
-         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) ENABLED", "RESPONSE: NORMAL")).isTrue();
-         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) DISABLED", "RESPONSE: 1 ERROR")).isTrue();
+         cics.cemt().setResource(cemtTerminal, "PROGRAM", programName, "ENABLED");
+         resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName);
+         resource.checkParameterEquals("status", "Enabled");
+         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ") ENABLED", "RESPONSE: NORMAL")).isTrue();
+         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ") DISABLED", "RESPONSE: 1 ERROR")).isTrue();
       } else {
-         cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "DISABLED");
-         resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE");
-         assertThat(resource.get("status")).isEqualTo("Disabled");
-         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) DISABLED", "RESPONSE: NORMAL")).isTrue();
-         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(EXAMPLE) ENABLED", "RESPONSE: 1 ERROR")).isTrue();
+         cics.cemt().setResource(cemtTerminal, "PROGRAM", programName, "DISABLED");
+         resource = cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName);
+         resource.checkParameterEquals("status", "Disabled");
+         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ") DISABLED", "RESPONSE: NORMAL")).isTrue();
+         assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ") ENABLED", "RESPONSE: 1 ERROR")).isTrue();
       }
           
    }
@@ -263,12 +309,12 @@ public class CEMTManagerIVT {
     */
    @Test
    public void testSetResourceToInvalidValues() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing the set resource method on Program 'Example' using invalid values");
+	   logger.info("Testing the set resource method on Program " + programName + " using invalid values");
 	   // Check the Program exists first
-	   assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", "EXAMPLE")).isNotNull();
+	   assertThat(cics.cemt().inquireResource(cemtTerminal, "PROGRAM", programName)).isNotNull();
 	   
 	   assertThatThrownBy(() -> {
-	      cics.cemt().setResource(cemtTerminal, "PROGRAM", "EXAMPLE", "FOO");
+	      cics.cemt().setResource(cemtTerminal, "PROGRAM", programName, "FOO");
 	   }).isInstanceOf(CemtException.class).hasMessageContaining("Problem determining the result from the CEMT command");
    }
    
@@ -285,15 +331,15 @@ public class CEMTManagerIVT {
     */
    @Test
    public void testInquireTransaction() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
-	  logger.info("Testing the inquire resource method on Transaction 'TTRX'");
+	  logger.info("Testing the inquire resource method on Transaction " + trxName);
       installTransactionResource();
-      assertThat(cics.cemt().inquireResource(cemtTerminal, "TRANSACTION", "TTRX")).isNotNull();
+      assertThat(cics.cemt().inquireResource(cemtTerminal, "TRANSACTION", trxName)).isNotNull();
 
       clearTransactionResource();
-      assertThat(cics.cemt().inquireResource(cemtTerminal, "TRANSACTION", "TTRX")).isNull();
+      assertThat(cics.cemt().inquireResource(cemtTerminal, "TRANSACTION", trxName)).isNull();
 
-      logger.info("Manually testing the CEMT INQUIRE command on Transaction 'TTRX' after deletion");
-      assertThat(manualTestUsingTerminal("CEMT INQUIRE TRANSACTION(TTRX)", "RESPONSE: 1 ERROR")).isTrue();
+      logger.info("Manually testing the CEMT INQUIRE command on Transaction " + trxName + " after deletion");
+      assertThat(manualTestUsingTerminal("CEMT INQUIRE TRANSACTION(" + trxName + ")", "RESPONSE: 1 ERROR")).isTrue();
    }
    
    /**
@@ -361,30 +407,38 @@ public class CEMTManagerIVT {
    }
    
    private void installResources() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   resourceTerminal.type("CEDA DEFINE PROGRAM(EXAMPLE) GROUP(EXGROUP)").enter().waitForKeyboard();
+	   logger.info("Now defining Program " + programName + " into the CICS Region");
+	   resourceTerminal.type("CEDA DEFINE PROGRAM(" + programName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
 	   resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-	   resourceTerminal.type("CEDA INSTALL PROGRAM(EXAMPLE) GROUP(EXGROUP)").enter().waitForKeyboard();
+	   logger.info("Now installing Program " + programName + " into the CICS Region");
+	   resourceTerminal.type("CEDA INSTALL PROGRAM(" + programName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
 	   resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();  
    }
    
    private void clearResources() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   resourceTerminal.type("CEMT DISCARD PROGRAM(EXAMPLE)").enter().waitForKeyboard();
+	   logger.info("Now discarding Program " + programName + " from the CICS Region");
+	   resourceTerminal.type("CEMT DISCARD PROGRAM(" + programName + ")").enter().waitForKeyboard();
 	   resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-	   resourceTerminal.type("CEDA DELETE PROGRAM(EXAMPLE) GROUP(exGroup)").enter().waitForKeyboard();
+	   logger.info("Now deleting Program " + programName + " from the CICS Region");
+	   resourceTerminal.type("CEDA DELETE PROGRAM(" + programName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
 	   resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();   
    }
 
    private void installTransactionResource() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-      resourceTerminal.type("CEDA DEFINE TRANSACTION(TTRX) GROUP(TXGRP) PROGRAM(EX1)").enter().waitForKeyboard();
+	  logger.info("Now defining Transaction " + trxName + " into the CICS Region");
+      resourceTerminal.type("CEDA DEFINE TRANSACTION(" + trxName + ") GROUP(" + groupName + ") PROGRAM(EX1)").enter().waitForKeyboard();
       resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      resourceTerminal.type("CEDA INSTALL TRANSACTION(TTRX) GROUP(TXGRP)").enter().waitForKeyboard();
+	  logger.info("Now installing Transaction " + trxName + " into the CICS Region");
+      resourceTerminal.type("CEDA INSTALL TRANSACTION(" + trxName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
       resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
    }
 
    private void clearTransactionResource() throws FieldNotFoundException, KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, CemtException, CicstsManagerException {
-	  resourceTerminal.type("CEMT DISCARD TRANSACTION(TTRX)").enter().waitForKeyboard();
+	  logger.info("Now discarding Transaction " + trxName + " from the CICS Region");
+	  resourceTerminal.type("CEMT DISCARD TRANSACTION(" + trxName + ")").enter().waitForKeyboard();
       resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      resourceTerminal.type("CEDA DELETE TRANSACTION(TTRX) GROUP(TXGRP)").enter().waitForKeyboard();
+      logger.info("Now deleting Transaction " + trxName + " from the CICS Region");
+      resourceTerminal.type("CEDA DELETE TRANSACTION(" + trxName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
       resourceTerminal.pf3().waitForKeyboard().clear().waitForKeyboard();
    }
    

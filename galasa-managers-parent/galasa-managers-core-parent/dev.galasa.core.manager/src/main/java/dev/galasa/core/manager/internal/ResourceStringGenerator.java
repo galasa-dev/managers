@@ -68,6 +68,9 @@ public class ResourceStringGenerator {
 		// the same tag, then they must get the same instantiated object
 		ResourceStringImpl resourceString = resourceStrings.get(tag);
 		if (resourceString != null) {
+			if (resourceString.getLength() != stringLength) {
+				throw new CoreManagerException("Resource string with tag " + tag + " used multiple times with different string lengths");
+			}
 			return resourceString;
 		}
 		
@@ -95,7 +98,7 @@ public class ResourceStringGenerator {
 					// Attempt to reserve the string
 					if (reserveResourceString(dss, runName, possibleResourceString)) {
 						// We managed to reserve it, create an instance
-						resourceString = new ResourceStringImpl(possibleResourceString);
+						resourceString = new ResourceStringImpl(possibleResourceString, stringLength);
 						// Save it in our list, for discard and duplicate fields
 						this.resourceStrings.put(tag, resourceString);
 						logger.info("Resource string '" + resourceString.getString() + "' assigned to tag " + tag);

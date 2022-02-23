@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,8 +46,10 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -195,11 +198,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
 
     @GenerateAnnotatedField(annotation = CicsTerminal.class)
-    public ICicsTerminal generateCicTerminal(Field field, List<Annotation> annotations) throws ManagerException {
+    public ICicsTerminal generateCicsTerminal(Field field, List<Annotation> annotations) throws ManagerException {
         CicsTerminal annotation = field.getAnnotation(CicsTerminal.class);
 
         String tag = defaultString(annotation.cicsTag(), "PRIMARY").toUpperCase();
-
+        
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
             throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
@@ -214,6 +217,33 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             throw new CicstsManagerException(
                     "Unable to setup CICS Terminal for field " + field.getName() + ", tagged region " + tag, e);
         }
+       
+    }
+    
+    @Override
+    public ICicsTerminal generateCicsTerminal(String tag) throws CicstsManagerException{
+    	ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
+        if (region == null) {
+            throw new CicstsManagerException("Unable to setup CICS Terminal for tag " + tag + ", no region was provisioned");
+        }
+
+        try {
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, true);
+            this.terminals.add(newTerminal);
+            return newTerminal;
+        } catch (TerminalInterruptedException | IpNetworkManagerException | Zos3270ManagerException e) {
+            throw new CicstsManagerException(
+                    "Unable to setup CICS Terminal for tagged region " + tag, e);
+        }
+    }
+    
+    @Override
+    public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException {
+    	ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
+        if (region == null) {
+            throw new CicstsManagerException("Unable to setup CICS Terminal for tag " + tag + ", no region was provisioned");
+        }
+        return region;
     }
     
     @Override
@@ -398,4 +428,12 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 		}
 	}
 
+	@Override
+	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions() {
+		HashMap<String, ICicsRegionProvisioned> clonedTaggedCicsRegions = new HashMap<>();
+		for(Map.Entry<String, ICicsRegionProvisioned> entry : this.provisionedCicsRegions.entrySet()) {
+			clonedTaggedCicsRegions.put(entry.getKey(), entry.getValue());
+		}		
+		return clonedTaggedCicsRegions;
+	}
 }

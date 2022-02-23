@@ -1,5 +1,5 @@
 /*
-* Copyright contributors to the Galasa project 
+* Copyright contributors to the Galasa project  
 */
 package dev.galasa.docker.manager.ivt;
 
@@ -10,9 +10,12 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 
@@ -64,6 +67,9 @@ public class DockerManagerIVT {
 
     @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "b", start = false)
     public IDockerContainer containerSecondry;
+    
+    @DockerContainer(image = "library/httpd:latest", dockerContainerTag = "AUTOSTART", start = true)
+    public IDockerContainer containerAutoStart;
 
     @DockerContainerConfig
     public IDockerContainerConfig config1;
@@ -90,7 +96,7 @@ public class DockerManagerIVT {
     public void checkDockerContainerNotNull() throws DockerManagerException {
         assertThat(container).as("Docker Container").isNotNull();
     }
-
+    
     /**
      * Recycle the container to ensure it will restart after being bounced
      * 
@@ -103,7 +109,26 @@ public class DockerManagerIVT {
         logger.info("Starting the Docker Container");
         container.start();
     }
+    
+    /**
+     * Ensures the auto start for containers is working
+     * 
+     * @throws DockerManagerException
+     */
+    @Test
+    public void checkContainerAutostart() throws DockerManagerException {
+    	assertThat(containerAutoStart.isRunning()).isEqualTo(true);
+    }
 
+    @Test
+    public void ensureExitCodeIsCorrect() throws DockerManagerException {
+    	container.start();
+    	container.stop();
+    	long exitCode = container.getExitCode();
+    	// Code will be 137 as stop function actually issues a kill
+    	assertThat(exitCode).isEqualTo(137);
+    }
+    
     /**
      * Store a test html file in the container for httpd to provide. issue a ls
      * command to esnure it exists on the filesystem
@@ -114,6 +139,7 @@ public class DockerManagerIVT {
      */
     @Test
     public void storeFilesInContainer() throws DockerManagerException, TestBundleResourceException {
+    	container.start();
         // Retrieve the test html file
         InputStream isHtml = resources.retrieveFile("/test1.html");
 
@@ -177,7 +203,7 @@ public class DockerManagerIVT {
         
        assertThat(htmlTest1).as("check we can pull back the file").contains("<h1>Galasa Docker Test</h1>");
     }   
-
+    
     /**
      * Start a docker container with a an empty config. Should result in normal startup
      * @throws DockerManagerException
@@ -231,13 +257,13 @@ public class DockerManagerIVT {
     }
 
     @Test 
-    public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException {
+    public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException, InterruptedException {
         IDockerVolume volume = config2.getVolumeByTag("testVolume");
         InputStream in = resources.retrieveFile("resources/SampleConfig.cfg");
         volume.LoadFile("TestConfigFile.cfg", in);
-
+        Thread.sleep(10000);
         container.startWithConfig(config2);
-
+        Thread.sleep(10000);
         IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/TestConfigFile.cfg");
         cmd.waitForExec();
         assertThat(cmd.getCurrentOutput()).contains("IsThisConfig=true");
@@ -275,17 +301,38 @@ public class DockerManagerIVT {
     public void exposePortForContainerThroughConfig() throws DockerManagerException {
         List<String> ports = new ArrayList<>();
         ports.add("8080/tcp");
+        ports.add("8081/tcp");
         config1.setExposedPorts(ports);
 
         container.startWithConfig(config1);
+        Map<String, List<InetSocketAddress>> exposedPorts = container.getExposedPorts();
+        assertThat(exposedPorts.containsKey(ports.get(0)));
+        assertThat(exposedPorts.containsKey(ports.get(1)));
         InetSocketAddress exposedPort = container.getFirstSocketForExposedPort("8080/tcp");
         assertThat(exposedPort).as("Correctly retrieved the exposed port").isNotNull();
     }
+    
+    @Test
+    public void getRandomExposedSocketFromContainer() throws DockerManagerException {
+    	List<String> ports = new ArrayList<>();
+        ports.add("8080/tcp");
+        config1.setExposedPorts(ports);
+    	container.startWithConfig(config1);
+    	InetSocketAddress randomSocket = container.getRandomSocketForExposedPort("8080/tcp");
+    	assertThat(randomSocket).isNotNull();
+    }
 
     @Test
-    public void testANonCleanShutDownRestart() throws DockerManagerException {
+    public void testANonCleanShutDownRestart() throws DockerManagerException, InterruptedException {
         container.start();
         container.exec("/usr/local/apache2/bin/httpd", "-k", "stop").waitForExec();
+        // Adding a wait for low performance platforms
+        Instant restartTimer = Instant.now().plus(5, ChronoUnit.SECONDS);
+        while(Instant.now().isBefore(restartTimer)) {
+        	if(!container.isRunning()) {
+        		break;
+        	}
+        }
         assertThat(container.isRunning()).isEqualTo(false);
 
         container.startWithConfig(config1);
