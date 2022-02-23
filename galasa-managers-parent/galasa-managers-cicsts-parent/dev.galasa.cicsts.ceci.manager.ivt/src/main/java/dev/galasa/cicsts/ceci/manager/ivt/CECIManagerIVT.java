@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import dev.galasa.After;
@@ -28,6 +29,7 @@ import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeciResponse;
+import dev.galasa.cicsts.ICeciResponseOutputValue;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.IExecInterfaceBlock;
@@ -425,7 +427,7 @@ public class CECIManagerIVT {
 	  
 	  ICeciResponse resp = cics.ceci().putContainer(ceciTerminal, channelName, containerName, content, null, null, null);
       resp.checkNormal();
-	  
+      
       resp = cics.ceci().linkProgramWithChannel(ceciTerminal, programName, channelName, null, null, false);
       resp.checkNormal();
 	  
@@ -446,9 +448,9 @@ public class CECIManagerIVT {
     */
    @Test
    public void testLinkToProgramToCommarea() throws CeciException, CicstsManagerException  {
-	   String programName = "APITEST";
+	  String programName = "APITEST";
       String variableValue = "galasa";
-	   logger.info("Linking program " + programName + " to variable " + variableName);
+	  logger.info("Linking program " + programName + " to variable " + variableName);
 
       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
       ICeciResponse resp = cics.ceci().linkProgram(ceciTerminal, programName, "&" + variableName, null, null, false);
@@ -457,6 +459,11 @@ public class CECIManagerIVT {
       String outputData = cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName);
       assertThat(outputData).isUpperCase();
       assertThat(outputData).startsWith(variableValue.toUpperCase());
+      
+	  // Validating the response output values 
+	  Map<String,ICeciResponseOutputValue> respOutputValues = resp.getResponseOutputValues();
+	  assertThat(respOutputValues.get("PROGRAM").getTextValue().trim()).isEqualTo("APITEST");
+	  assertThat(respOutputValues.get("COMMAREA").getTextValue().trim()).isEqualTo("GALASA");
    } 
    
    /**
@@ -474,26 +481,54 @@ public class CECIManagerIVT {
    public void testGetEIBFields() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException{
 	   logger.info("Testing that fields from the Exec Interface Block are retrieved correctly, first testing on a good command");
 	   
-	   cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
+	   ICeciResponse resp = cics.ceci().issueCommand(ceciTerminal, "PUT CONTAINER(BOB) CHANNEL(BOB) FROM('HELLO')");
 	   IExecInterfaceBlock eib = cics.ceci().getEIB(ceciTerminal);
-	  
+	   
 	   assertThat(eib.getResponse()).isEqualTo("NORMAL");
 	   assertThat(eib.getEIBRESP()).isEqualTo(0);
 	   assertThat(eib.getEIBRESP2()).isEqualTo(0);
+	   // Cross reference with the Ceci response
+	   assertThat(resp.getResponse()).isEqualTo("NORMAL");
+	   assertThat(resp.getEIBRESP()).isEqualTo(0);
+	   assertThat(resp.getEIBRESP2()).isEqualTo(0);
 	   
 	   assertThat(eib.getEIBTRNID(false)).isEqualTo("CECI");
 	  
 	   int expectedEIBDate = getExpectedEIBDate();
 	   assertThat(eib.getEIBDATE()).isEqualTo(expectedEIBDate);
 	   
+	   // Cannot validate the time is correct but can validate it is a correct time
+	   assertThat(eib.getEIBTIME()).isNotNull();
+	   String eibTimeString = Integer.toString(eib.getEIBTIME());
+	   int hour = Integer.parseInt(eibTimeString.substring(0,2));
+	   int minute = Integer.parseInt(eibTimeString.substring(2,4));
+	   int second = Integer.parseInt(eibTimeString.substring(4));
+	   assertThat(hour >= 0 && hour <= 23).isTrue();
+	   assertThat(minute >= 0 && minute <= 59).isTrue();
+	   assertThat(second >= 0 && second <= 59).isTrue();
+	   
+	   assertThat(eib.getEIBCALEN()).isEqualTo(0);
+	   
+	   assertThat(eib.getEIBAID()).isNotNull();
+	   assertThat(eib.getEIBCPOSN()).isNotNull();
+	   assertThat(eib.getEIBDS(false)).isNotNull();
+	   assertThat(eib.getEIBREQID(false)).isNotNull();
+	   assertThat(eib.getEIBTASKN()).isNotNull();
+	   assertThat(eib.getEIBTRMID(false)).isNotNull();
+	   
+	  
 	   logger.info("Testing the EIB fields on a bad command - linking to a program that doesn't exist");
 	   
-	   cics.ceci().linkProgramWithChannel(ceciTerminal, "NOEXIST", "MY-CHANNEL", null, null, false);
+	   resp = cics.ceci().linkProgramWithChannel(ceciTerminal, "NOEXIST", "MY-CHANNEL", null, null, false);
 	   eib = cics.ceci().getEIB(ceciTerminal);
 	   
 	   assertThat(eib.getResponse()).isEqualTo("PGMIDERR");
 	   assertThat(eib.getEIBRESP()).isEqualTo(27);
 	   assertThat(eib.getEIBRESP2()).isEqualTo(3);
+	   // Cross reference with the Ceci response
+	   assertThat(resp.getResponse()).isEqualTo("PGMIDERR");
+	   assertThat(resp.getEIBRESP()).isEqualTo(27);
+	   assertThat(resp.getEIBRESP2()).isEqualTo(3);	
    }
    
    private int getExpectedEIBDate() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
