@@ -5,6 +5,7 @@
 package dev.galasa.cicsts.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.galasa.AfterClass;
 import dev.galasa.BeforeClass;
@@ -14,8 +15,10 @@ import dev.galasa.core.manager.Logger;
 import dev.galasa.core.manager.ResourceString;
 import dev.galasa.core.manager.TestProperty;
 import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
@@ -48,6 +51,20 @@ public class CICSTSManagerIVT {
    public IResourceString resourceString1;
    
    public String variableName;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "PROG", required = false)
+   public String providedResourceString2;
+   @ResourceString(tag = "PROG", length = 8)
+   public IResourceString resourceString2;
+   
+   public String programName;
+   
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "GROUP", required = false)
+   public String providedResourceString3;
+   @ResourceString(tag = "GROUP", length = 8)
+   public IResourceString resourceString3;
+   
+   public String groupName;
   
    @BeforeClass
    public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
@@ -61,6 +78,20 @@ public class CICSTSManagerIVT {
 		  variableName = resourceString1.getString();
 	   }
 	   logger.info("Unique CECI variable name to be used in the tests: " + variableName);
+	   
+	   if (providedResourceString2 != null) {
+	      programName = providedResourceString2;
+	   } else {
+	      programName = resourceString2.getString();
+	   }
+	   logger.info("Unique Program name to be used in the tests: " + programName);
+	   
+	   if (providedResourceString3 != null) {
+	      groupName = providedResourceString3;
+	   } else {
+	      groupName = resourceString3.getString();
+	   }
+	   logger.info("Unique Group name to be used in the tests: " + groupName);
    }
 	
    @Test
@@ -206,6 +237,29 @@ public class CICSTSManagerIVT {
 	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
 	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
 	   logger.info("Lower case characters were not translated to upper case");
+   }
+   
+   /**
+    * Tests that the CICS TS Hash Map implementation
+    * @throws CicstsManagerException 
+    * @throws CemtException
+    */
+   @Test
+   public void testCicstsHashMap() throws CemtException, CicstsManagerException {
+	   cics.ceda().createResource(terminal, "PROGRAM", programName, groupName, null);
+	   assertThat(cics.ceda().resourceExists(terminal, "PROGRAM", programName, groupName)).isTrue();
+	   
+	   cics.ceda().installResource(terminal, "PROGRAM", programName, groupName);
+	   CicstsHashMap resource = cics.cemt().inquireResource(terminal, "PROGRAM", programName);
+	   assertThat(resource).isNotNull();
+	   
+	   resource.checkParameterEquals("program", programName);
+	   assertThatThrownBy(() -> {
+	      resource.checkParameterEquals("program", "WRONG");
+	   }).isInstanceOf(CicstsManagerException.class).hasMessageContaining("Parameter program does not equal WRONG"); 
+	   
+	   assertThat(resource.isParameterEquals("program", programName)).isTrue();
+	   assertThat(resource.isParameterEquals("program", "WRONG")).isFalse();
    }
    
    private boolean checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {

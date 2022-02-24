@@ -74,6 +74,13 @@ public class CEMTManagerIVT {
    
    public String groupName;
    
+   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "TDQ", required = false)
+   public String providedResourceString4;
+   @ResourceString(tag = "TDQ", length = 4)
+   public IResourceString resourceString4;
+   
+   public String tdqName;
+   
  
    
    @BeforeClass
@@ -108,6 +115,13 @@ public class CEMTManagerIVT {
     	  groupName = resourceString3.getString();
       }
       logger.info("Unique Group name to be used in the tests: " + groupName);
+      
+      if (providedResourceString4 != null) {
+    	  tdqName = providedResourceString4;
+      } else {
+    	  tdqName = resourceString4.getString();
+      }
+      logger.info("Unique TDQueue name to be used in the tests: " + tdqName);
    }
    
    @Before
@@ -155,6 +169,41 @@ public class CEMTManagerIVT {
 	  assertThat(manualTestUsingTerminal("CEMT INQUIRE PROGRAM(" + programName + ")", "RESPONSE: NORMAL")).isTrue();
    }
    
+   /**
+    * Tests that the inquire resource method retrieves fields that contain special characters
+    * 
+    * @throws CicstsManagerException 
+    * @throws CemtException 
+    * @throws FieldNotFoundException 
+    * @throws NetworkException 
+    * @throws TerminalInterruptedException 
+    * @throws KeyboardLockedException 
+    * @throws TimeoutException 
+    */
+   @Test
+   public void testInquireResourceSpecialChars() throws CemtException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
+	   logger.info("Testing the inquire resource method on TDQ " + tdqName + " fields with special characters");
+	   
+	   logger.info("Now defining TDQ " + tdqName + " into the CICS Region");
+	   cics.ceda().createResource(resourceTerminal, "TDQ", tdqName, groupName, "TYPE(EXTRA) DDNAME(TEST) DSNAME(CTS.USER.APPL1.CICS.LOAD)");
+	   assertThat(cics.ceda().resourceExists(resourceTerminal, "TDQ", tdqName, groupName)).isTrue();
+	   
+	   logger.info("Now installing TDQ " + tdqName + " into the CICS Region");
+	   cics.ceda().installResource(resourceTerminal, "TDQ", tdqName, groupName);
+	   CicstsHashMap resource = cics.cemt().inquireResource(resourceTerminal, "TDQ", tdqName);
+	   assertThat(resource).isNotNull();
+
+	   assertThat(resource.isParameterEquals("dsname", "CTS.USER.APPL1.CICS.LOAD")).isTrue();
+	   assertThat(resource.get("installtime")).isNotNull();
+	   assertThat(resource.get("definetime")).isNotNull();
+	   assertThat(resource.get("changetime")).isNotNull();
+	   
+	   logger.info("Now discarding TDQ " + tdqName + " from the CICS Region");
+	   resourceTerminal.type("CEMT DISCARD TDQ(" + tdqName + ")").enter().waitForKeyboard();
+	   logger.info("Now deleting TDQ " + tdqName + " from the CICS Region");
+	   resourceTerminal.type("CEDA DELETE TDQ(" + tdqName + ") GROUP(" + groupName + ")").enter().waitForKeyboard();
+   }
+  
    /**
     * Tests that the inquire resource method retrieves nothing for a resource that doesn't exist
     * 
