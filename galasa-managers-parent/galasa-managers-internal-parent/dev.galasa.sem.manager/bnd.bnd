@@ -1,0 +1,18 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Internal SEM Manager
+Export-Package: dev.galasa.sem
+Import-Package: dev.galasa.*,\
+                org.apache.commons.logging,\
+                org.apache.velocity*,\
+                org.w3c.dom,\
+				org.xml.sax,\
+				org.xml.sax.ext,\
+				org.xml.sax.helpers,\
+				javax.xml.datatype,\
+				javax.xml.namespace,\
+				javax.xml.parsers
+-includeresource: sem.jar; lib:=true,\
+                  org.eclipse.emf.common_2.6.0.jar; lib:=true,\
+                  org.eclipse.emf.ecore_2.6.1.jar; lib:=true,\
+                  org.eclipse.emf.ecore.xmi_2.5.0.jar; lib:=true,\
+                  org.eclipse.emf.edit_2.6.0.jar; lib:=true

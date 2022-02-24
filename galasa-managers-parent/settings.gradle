@@ -92,3 +92,5 @@ include 'galasa-managers-other-parent:dev.galasa.galasaecosystem.manager.ivt'
 include 'galasa-managers-ides-parent:dev.galasa.eclipseruntime.manager'
 include 'galasa-managers-ides-parent:dev.galasa.eclipseruntime.ubuntu.manager'
 
+// galasa-managers-internal-parent
+include 'galasa-managers-internal-parent:dev.galasa.sem.manager'

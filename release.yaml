@@ -306,6 +306,12 @@ managers:
     mvp: true
     isolated: true
     
+  - artifact: dev.galasa.sem.manager
+    version: 0.21.0
+    obr: true
+    bom: true
+    isolated: true
+    
   - artifact: dev.galasa.textscan.manager
     version: 0.16.0
     obr: true
