@@ -2,4 +2,5 @@
 Bundle-Name: Galasa Db2 Manager IVT
 Export-Package: dev.galasa.db2.manager.ivt
 Import-Package: !javax.validation.constraints, \
+                dev.galasa.*, \
                 *
