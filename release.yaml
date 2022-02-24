@@ -122,7 +122,7 @@ managers:
     isolated: true
 
   - artifact: dev.galasa.db2.manager.ivt
-    version: 0.20.0
+    version: 0.21.0
     obr: true
     mvp: true
     isolated: true
