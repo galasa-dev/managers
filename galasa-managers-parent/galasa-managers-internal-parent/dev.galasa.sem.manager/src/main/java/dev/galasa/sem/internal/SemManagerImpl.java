@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,7 +23,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -58,6 +59,10 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.creds.CredentialsUsernamePassword;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.http.HttpClientException;
+import dev.galasa.http.HttpClientResponse;
+import dev.galasa.http.IHttpClient;
+import dev.galasa.http.spi.IHttpManagerSpi;
 import dev.galasa.sem.DoNotBuild;
 import dev.galasa.sem.DoNotStartCICS;
 import dev.galasa.sem.SemManagerException;
@@ -65,6 +70,7 @@ import dev.galasa.sem.SemTopology;
 import dev.galasa.sem.internal.properties.BaseModel;
 import dev.galasa.sem.internal.properties.CicsBuild;
 import dev.galasa.sem.internal.properties.InteralVersion;
+import dev.galasa.sem.internal.properties.ModelUrl;
 import dev.galasa.sem.internal.properties.SemPropertiesSingleton;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.spi.IZosManagerSpi;
@@ -82,11 +88,10 @@ import sem.Symbolic;
 import sem.impl.SemPackageImpl;
 
 @Component(service = { IManager.class })
-public class SemManagerImpl extends AbstractManager implements ICicsRegionProvisioner{
+public class SemManagerImpl extends AbstractManager implements ICicsRegionProvisioner {
     protected static final String NAMESPACE = "sem";
 
     private static final Log logger = LogFactory.getLog(SemManagerImpl.class);
-    private static final Logger log4jLogger = Logger.getLogger(SemManagerImpl.class);
     private boolean required;
 
     private IDynamicStatusStoreService dss;
@@ -96,6 +101,7 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
     private IZosConsoleSpi zosConsole;
     private ICicstsManagerSpi cicsManager;
     private IArtifactManager artifactManager;
+    private IHttpManagerSpi  httpManager;
 
     private SemTopology semTopology;
 
@@ -112,6 +118,7 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
     private HashMap<String, SemCicsImpl> applidRegions = new HashMap<>();
 
     private IBundleResources semBundleResources;
+    private IHttpClient      httpClient;
 
     private GalasaTest galasaTest;
 
@@ -197,6 +204,11 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         this.artifactManager = addDependentManager(allManagers, activeManagers, galasaTest, IArtifactManager.class);
         if (this.artifactManager == null) {
             throw new SemManagerException("Unable to locate the Artifact Manager, required for the SEM Manager");
+        }
+
+        this.httpManager = addDependentManager(allManagers, activeManagers, galasaTest, IHttpManagerSpi.class);
+        if (this.httpManager == null) {
+            throw new SemManagerException("Unable to locate the Http Manager, required for the SEM Manager");
         }
 
         // Register this as a provisioner
@@ -395,14 +407,14 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
 
     private void generateComplex() throws SemManagerException {
         try {
-            RunOptions options = new RunOptions(log4jLogger.getLoggerRepository());
+            RunOptions options = new RunOptions(LogManager.getLoggerRepository());
             options.setBuildComplex(true);
             options.setJobPurge(false);
             options.setConrepRequired(false);
             options.setBuildCICSplex(true);
             options.setJobPrefix("GAL");
 
-            int rc = this.complex.buildComplex(environments, options, log4jLogger.getLoggerRepository());
+            int rc = this.complex.buildComplex(environments, options, LogManager.getLoggerRepository());
 
             if (rc > 4) {
                 throw new SemManagerException("SEM complex generation failed, rc=" +rc);
@@ -503,8 +515,10 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         try {
             String modelString = testBundleResources.retrieveFileAsString(model);
             this.environments.add(convertModel(modelString));
+        	logger.trace("Located SEM model '" + model + "' in test bundle");
             return;
         } catch (TestBundleResourceException e) {
+        	logger.trace("Did not find SEM model '" + model + "' in test bundle");
             // Ignore because it may not exist in the bundle
         } catch (IOException e) {
             throw new SemManagerException("Unable to read SEM model '" + model + "' from test bundle", e);
@@ -514,12 +528,45 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         try {
             String modelString = semBundleResources.retrieveFileAsString(model);
             this.environments.add(convertModel(modelString));
+        	logger.trace("Located SEM model '" + model + "' in manager bundle");
             return;
         } catch (TestBundleResourceException e) {
-            throw new SemManagerException("Unable to locate SEM model '" + model + "'");
+            // Ignore because it may not exist in the bundle
+        	logger.trace("Did not find SEM model '" + model + "' in manager bundle");
         } catch (IOException e) {
             throw new SemManagerException("Unable to read SEM model '" + model + "' from manager bundle", e);
         }
+        
+        // Find the model from an online server
+        if (this.httpClient == null) {
+        	this.httpClient = this.httpManager.newHttpClient();
+        	try {
+				this.httpClient.setURI(ModelUrl.get().toURI());
+			} catch (URISyntaxException e) {
+				throw new SemManagerException("Badly formed URI for the sem.model.url", e);
+			}
+        }
+        
+        String modelUrl = ModelUrl.get() + "/" + model;
+        
+        try {
+        	HttpClientResponse<String> response = this.httpClient.getText(model);
+        	
+        	if (response.getStatusCode() == 200) {
+                this.environments.add(convertModel(response.getContent()));
+            	logger.trace("Located SEM model '" + model + "' on website");
+                return;
+        	} else if (response.getStatusCode() == 404) {
+                // Ignore because it may not exist in the website
+            	logger.trace("Did not find SEM model '" + model + "' on website");
+        	} else {
+        		throw new SemManagerException("Unable to read SEM model '" + model + "' from url " + modelUrl + " - " + response.getStatusLine());
+        	}
+        } catch(HttpClientException e) {
+        	throw new SemManagerException("Unable to read SEM model '" + model + "' from url " + modelUrl,e);
+        }
+
+        throw new SemManagerException("Unable to locate the SEM model '" + model + "'");
     }
 
     @Override

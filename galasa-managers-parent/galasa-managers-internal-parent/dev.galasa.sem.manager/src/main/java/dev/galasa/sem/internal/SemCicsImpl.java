@@ -189,7 +189,7 @@ public class SemCicsImpl extends BaseCicsImpl {
             case UNKNOWN:
                 throw new SemManagerException("Unable to determine status of the CICS TS region");
         }
-        
+
         logger.info("Waiting for provisioned CICS TS region " + getApplid() + " to shutdown");
         
         if (waitForRegionsToStop(2)) {
@@ -199,11 +199,11 @@ public class SemCicsImpl extends BaseCicsImpl {
         logger.info("CICS TS region " + getApplid() + " did not stop within 2 minutes, trying immediate shutdown");
         
         issueShutdownCommand(true);
-
+        
         if (waitForRegionsToStop(2)) {
             return;
         }
-        
+
         logger.info("CICS TS region " + getApplid() + " did not stop within 2 minutes, trying cancel");
         
         try {
@@ -230,11 +230,10 @@ public class SemCicsImpl extends BaseCicsImpl {
                 throw new SemManagerException("Wait for CICS TS region stop interrupted", e);
             }
 
-            
             JobStatus currentStatus = job.getStatus();        
             switch(currentStatus) {
                 case ACTIVE:
-                    return true;
+                    break;
                 case OUTPUT:
                     logger.info("CICS TS region has been shutdown");
                     saveCicsRegion();
@@ -290,6 +289,12 @@ public class SemCicsImpl extends BaseCicsImpl {
 
 
     private void saveCicsRegion() {
+    	
+    	try {
+			job.saveOutputToResultsArchive("sem/cics");
+		} catch (ZosBatchException e) {
+			logger.error("Failed to save cics output to stored artifacts", e);
+		}
 
     }
 
