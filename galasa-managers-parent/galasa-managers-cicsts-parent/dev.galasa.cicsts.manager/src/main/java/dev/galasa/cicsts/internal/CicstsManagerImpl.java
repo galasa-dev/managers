@@ -257,19 +257,23 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
+        // Add the default Logon Provider incase one isn't supplied
+        this.logonProviders.add(new CicstsDefaultLogonProvider());
+
         // First, give the provisioners the opportunity to start CICS regions
         for (ICicsRegionProvisioner provisioner : provisioners) {
             provisioner.cicsProvisionStart();
         }
 
-        // Add the default Logon Provider incase one isn't supplied
-        this.logonProviders.add(new CicstsDefaultLogonProvider());
-
         // Start the CICS Regions
 
-        // Start the autoconnect terminals
+        // Start the autoconnect terminals - in case they were not started during the above provisioner code
         logger.info("Connecting CICS Terminals");
         for (CicsTerminalImpl terminal : this.terminals) {
+            if (terminal.isConnected()) {
+                continue;
+            }
+            
             if (!terminal.isConnectAtStartup()) {
                 continue;
             }
