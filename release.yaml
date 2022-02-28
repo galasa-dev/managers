@@ -114,6 +114,13 @@ managers:
     mvp: true
     isolated: true
 
+  - artifact: dev.galasa.cloud.manager
+    version: 0.21.0
+    obr: true
+    bom: true
+    isolated: true
+    codecoverage: true
+    
   - artifact: dev.galasa.db2.manager
     version: 0.20.0
     obr: true

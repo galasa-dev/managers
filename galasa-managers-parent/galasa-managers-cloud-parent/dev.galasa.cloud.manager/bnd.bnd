@@ -1,0 +1,6 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa Cloud Manager
+Export-Package: dev.galasa.cloud,\
+                dev.galasa.docker.spi
+Import-Package: !javax.validation.constraints,\
+                *
