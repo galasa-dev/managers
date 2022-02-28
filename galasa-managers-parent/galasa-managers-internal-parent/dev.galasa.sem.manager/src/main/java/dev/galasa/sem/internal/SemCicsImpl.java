@@ -148,7 +148,7 @@ public class SemCicsImpl extends BaseCicsImpl {
                 try {
                     this.semManager.getCicsManager().cicstsRegionStarted(this);
                 } catch (CicstsManagerException e) {
-                    throw new SemManagerException("Post startup for CICS TS region " + getApplid() + " failed");
+                    throw new SemManagerException("Post startup for CICS TS region " + getApplid() + " failed", e);
                 }
                 return;
             }
