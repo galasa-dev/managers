@@ -44,7 +44,7 @@ public interface ICloudManagerSpi {
 			String                tag,
 			String                provider,
 			String                image,
-			CloudContainerPort    ports[],
+			ICloudContainerPort   ports[],
 			Properties            environmentProperties,
 			String                runArguements[],
 			boolean               autoStart,
