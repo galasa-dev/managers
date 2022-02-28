@@ -12,7 +12,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.cps.property
  * 
- * @galasa.name cloud.container.override.TAG.image
+ * @galasa.name cloud.container.TAG.image
  * 
  * @galasa.description Overrides the image name used for tagged container 
  * 
@@ -23,14 +23,14 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * @galasa.valid_values A valid image name
  * 
  * @galasa.examples 
- * <code>cloud.container.override.API.image=icr.io/galasadev/demo/api:prod<br>
+ * <code>cloud.container.API.image=icr.io/galasadev/demo/api:prod<br>
  * </code>
  * */
 public class ContainerOverrideImage extends CpsProperties {
 
 	public static String get(final String tag) throws CloudManagerException {
 		try {
-			return getStringNulled(CloudPropertiesSingleton.cps(), "cloud.container.override." + tag, "image");
+			return getStringNulled(CloudPropertiesSingleton.cps(), "cloud.container." + tag, "image");
 		} catch (Exception e) {
 			throw new CloudManagerException("Problem accessing CPS for cloud container image override", e);
 		}

@@ -8,31 +8,30 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 
 
 /**
- * Default provider of cloud containers
+ * Container provider override
  * 
  * @galasa.cps.property
  * 
- * @galasa.name cloud.default.provider
+ * @galasa.name cloud.container.TAG.provider
  * 
- * @galasa.description Specifies the default provider of cloud containers
+ * @galasa.description Overrides the provider used for tagged container 
  * 
  * @galasa.required No
  * 
- * @galasa.default docker
+ * @galasa.default None
  * 
- * @galasa.valid_values A valid provider name, depending on CPS configuration could be, docker, k8s, gcprun, awsfargate etc
+ * @galasa.valid_values A valid provider name, depending on CPS configuration could be,  docker, k8s, gcprun, awsfargate etc
  * 
  * @galasa.examples 
- * <code>cloud.default.provider=k8s<br>
+ * <code>cloud.container.API.provider=k8s<br>
  * </code>
- * */
-public class ContainerOverrideProvider extends CpsProperties {
+ * */public class ContainerOverrideProvider extends CpsProperties {
 
 	public static String get(final String tag) throws CloudManagerException {
 		try {
-			return getStringNulled(CloudPropertiesSingleton.cps(), "default", "provider");
+			return getStringNulled(CloudPropertiesSingleton.cps(), "cloud.container." + tag, "provider");
 		} catch (Exception e) {
-			throw new CloudManagerException("Problem accessing CPS for default provider", e);
+			throw new CloudManagerException("Problem accessing CPS for cloud container provider override", e);
 		}
 	}
 }
