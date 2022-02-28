@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
+@CloudManagerField
 public @interface CloudContainer {
 
     /**
@@ -61,8 +62,8 @@ public @interface CloudContainer {
     
     
     /**
-     * Provides any run arguements for the container, if required.
+     * Provides any run arguments for the container, if required.
      */
-    public String[] runArguements() default {};
+    public String[] runArguments() default {};
 
 }

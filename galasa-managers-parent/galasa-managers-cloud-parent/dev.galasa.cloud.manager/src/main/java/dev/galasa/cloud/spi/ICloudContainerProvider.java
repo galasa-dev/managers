@@ -23,15 +23,15 @@ public interface ICloudContainerProvider {
 	 * @param image - The image name to use, at this stage this will be the full image name
 	 * @param ports - The ports to expose
 	 * @param environmentProperties - Environment properties to provide to the container
-	 * @param runArguements - Run arguements to provide to the container
+	 * @param runArguments - Run arguments to provide to the container
 	 * @return A ICloudContainer instance
 	 * @throws CloudManagerException
 	 */
 	public ICloudContainer generateCloudContainer(
 			String                tag,
 			String                image,
-			ICloudContainerPort   ports[],
+			ICloudContainerPort[] ports,
 			Properties            environmentProperties,
-			String                runArguements[]) throws CloudManagerException;
+			String[]              runArguments) throws CloudManagerException;
 
 }

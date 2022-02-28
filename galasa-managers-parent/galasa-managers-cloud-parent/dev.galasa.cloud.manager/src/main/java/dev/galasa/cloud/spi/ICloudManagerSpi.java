@@ -34,7 +34,7 @@ public interface ICloudManagerSpi {
 	 * @param image - The image name to use
 	 * @param ports - The ports to be exposed
 	 * @param environmentProperties - Any environment properties to provide to the container
-	 * @param runArguements - Any run arguements to start the container with
+	 * @param runArguments - Any run arguments to start the container with
 	 * @param autoStart - The container is to be started during provisionStart, only relevant if this method is called during provisionGenerate.
 	 * @param startOrder - If autoStart = true, then the order the container is to be started, only relevant if this method is called during provisionGenerate.
 	 * @return a ICloudContainer instance.
@@ -44,9 +44,9 @@ public interface ICloudManagerSpi {
 			String                tag,
 			String                provider,
 			String                image,
-			ICloudContainerPort   ports[],
+			ICloudContainerPort[] ports,
 			Properties            environmentProperties,
-			String                runArguements[],
+			String[]              runArguments,
 			boolean               autoStart,
 			int                   startOrder) throws CloudManagerException;
 
