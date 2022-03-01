@@ -31,6 +31,16 @@ import dev.galasa.db2.internal.properties.Db2InstanceUrl;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.creds.CredentialsException;
 
+/**
+ * The Db2Instance will establish a connection to a database and must be created for a IDb2Schema to
+ * be established.
+ * 
+ * This instance also provides the connection itself back to the tester for any complex usecases not 
+ * covered by the methods inside this manager.
+ * 
+ * @author jamesdavies
+ *
+ */
 public class Db2InstanceImpl implements IDb2Instance{
 	private Connection 			conn;
 	
@@ -55,6 +65,9 @@ public class Db2InstanceImpl implements IDb2Instance{
 		}
 	}
 
+	/**
+	 * Retrieves the database name from the connected database
+	 */
 	@Override
 	public String getDatabaseName() throws Db2ManagerException {
 		try {
@@ -68,6 +81,9 @@ public class Db2InstanceImpl implements IDb2Instance{
 		
 	}
 	
+	/**
+	 * Provides the standard java.sql.Connection
+	 */
 	public Connection getConnection() {
 		return this.conn;
 	}

@@ -14,7 +14,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * 
  * @galasa.name db2.dse.instance.[tag].name
  * 
- * @galasa.description Provide a DSE instance name fom
+ * @galasa.description Provide a DSE instance name
  * 
  * @galasa.required Yes
  * 

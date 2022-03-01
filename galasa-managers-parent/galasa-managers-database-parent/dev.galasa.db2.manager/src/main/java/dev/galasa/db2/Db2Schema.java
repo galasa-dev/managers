@@ -32,7 +32,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 @Db2ManagerField
 @ValidAnnotatedFields({ IDb2Schema.class })
 public @interface Db2Schema {
-	
+
 	String tag() default "PRIMARY";
 	
 	String db2Tag() default "PRIMARY";

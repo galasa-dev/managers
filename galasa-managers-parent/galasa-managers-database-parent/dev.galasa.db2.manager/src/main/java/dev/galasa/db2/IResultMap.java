@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */ 
 package dev.galasa.db2;
 
 import java.math.BigDecimal;
@@ -6,6 +9,12 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 
+/**
+ * A simple interface to provide easy access to multiple types of returns.
+ * 
+ * @author jamesdavies
+ *
+ */
 public interface IResultMap {
 
 	public String getStringValue(String columnName);

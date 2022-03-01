@@ -1,9 +1,31 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.db2.internal.properties;
 
 import dev.galasa.db2.Db2ManagerException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 
+/**
+ * DB2 DSE Schema name
+ * 
+ * @galasa.cps.property
+ * 
+ * @galasa.name db2.dse.schema.[tag].name
+ * 
+ * @galasa.description A dse TAG which refers to an existing Schema
+ * 
+ * @galasa.required no
+ * 
+ * @galasa.default None
+ * 
+ * @galasa.valid_values The name of an existing schema on the database being used.
+ * 
+ * @galasa.examples 
+ * <code>db2.dse.schema.MYSCHEMA.name=SCHEMANAME<br>
+ * </code>
+ * */
 public class Db2DSESchemaName extends CpsProperties{
 	public static String get(String tag) throws Db2ManagerException {
 		try {

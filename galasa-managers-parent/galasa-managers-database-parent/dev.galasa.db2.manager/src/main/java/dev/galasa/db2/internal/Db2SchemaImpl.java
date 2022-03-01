@@ -33,6 +33,32 @@ import dev.galasa.db2.IResultMap;
 import dev.galasa.db2.internal.properties.Db2DSESchemaName;
 import dev.galasa.framework.spi.IFramework;
 
+/**
+ * This Db2Schema class provides simple functionality to target simple SQL statements
+ * directly to a specified schema.
+ * 
+ * Interactions with this schema can be recorded to the RAS through the annotation field archive=true
+ * 
+ * Most but not all object types have been supported, to keep the methods simple:
+ * - String
+ * - Integer
+ * - Float
+ * - Double
+ * - Boolean
+ * - byte[]
+ * - BigDecimal
+ * - Date
+ * - Time
+ * - Timestamp
+ * - Long
+ * - URL
+ * 
+ * For any unsupported object types please gain a standard
+ * sql connection from the IDb2Instance
+ * 
+ * @author jamesdavies
+ *
+ */
 public class Db2SchemaImpl implements IDb2Schema{
 	private Connection 		conn;
 	private String 			schemaName;
@@ -84,7 +110,9 @@ public class Db2SchemaImpl implements IDb2Schema{
 		
 	} 
 		
-
+	/**
+	 * Executes SQL statement
+	 */
 	@Override
 	public IResultMap executeSql(String stmt, Object... params) throws Db2ManagerException {
 		ResultMap rsm = new ResultMap();
@@ -116,6 +144,9 @@ public class Db2SchemaImpl implements IDb2Schema{
 		return rsm;
 	}
 
+	/**
+	 * Executes a query that expects the return of multiple records. Returns them as a list of results
+	 */
 	@Override
 	public List<IResultMap> executeSqlList(String stmt, Object... params) throws Db2ManagerException {
 		List<IResultMap> rsmList = new ArrayList<>();
@@ -147,60 +178,23 @@ public class Db2SchemaImpl implements IDb2Schema{
 		return rsmList;
 	}
 
+	/**
+	 * Executes lines of SQL statements one by one.
+	 */
 	@Override
-	public void loadCsvData(String tableName, InputStream in) throws Db2ManagerException {
+	public List<IResultMap> executeSqlFile(InputStream in) throws Db2ManagerException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		List<IResultMap> results = new ArrayList<IResultMap>();
 		
 		try {
-			String columns = br.readLine();
-			String cols = createTable(tableName, columns.split(","));
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append("INSERT INTO "+tableName+"("+cols+") VALUES ");
 			while (br.ready()) {
-				String values = br.readLine();
-				sb.append("(");
-				sb.append(values);
-				sb.append("),");
+				String stmt = br.readLine();
+				results.add(executeSql(stmt));
 			}
-			sb.deleteCharAt(sb.lastIndexOf(","));
-			sb.append(";");
-			
-			Statement stmt = conn.createStatement();
-			stmt.executeUpdate(sb.toString());
 		} catch (IOException e) {
-			throw new Db2ManagerException("Problem reading CSV to load table. Please ensure the CSV is line seperated with the first line being column names.", e);
-		} catch (SQLException e) {
-			throw new Db2ManagerException("Failed to create table.", e);
+			throw new Db2ManagerException("Problem reading file", e);
 		}
-		
-		
-		
-	}
-	
-	private String createTable(String tablename, String[] columns) throws Db2ManagerException, SQLException {
-		StringBuilder col = new StringBuilder();
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		
-		for (String column: columns) {
-			String[] nameType = column.split(":");
-			if (nameType.length != 2) {
-				throw new Db2ManagerException("Column format incorrect. expecting <COLUMNNAME>;<COLUMNTYPE>, E.g Name;VARCHAR(20)");
-			}
-			sb.append(nameType[0] + " " + nameType[1] + ",");
-			col.append(nameType[0] + ",");
-		}
-		
-		sb.deleteCharAt(sb.lastIndexOf(","));
-		col.deleteCharAt(col.lastIndexOf(","));
-		sb.append(");");
-		
-		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("CREATE TABLE " + tablename + sb.toString());
-		
-		return col.toString();
-		
+		return results;
 	}
 	
 	private void writeCommandAndResponseToRas(String stmt, String resp) {
@@ -263,5 +257,4 @@ public class Db2SchemaImpl implements IDb2Schema{
 		}
 		return ps;
 	}
-
 }

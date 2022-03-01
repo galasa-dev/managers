@@ -7,9 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
+import dev.galasa.AfterClass;
 import dev.galasa.Test;
 import dev.galasa.artifact.BundleResources;
 import dev.galasa.artifact.IBundleResources;
@@ -77,17 +77,26 @@ public class Db2ManagerIVT {
 		assertThat(rmList).hasSize(5);
 	}
 	
+	// Run several SQL statements from file
 	@Test
+	public void CSVLoadTable() throws TestBundleResourceException, Db2ManagerException {
+		InputStream in = resources.retrieveFile("/Batch.txt");
+		schema.executeSqlFile(in);
+	}	
+	
+	// Test Parameterized Statements
+	@Test
+	public void SelectParam() throws Db2ManagerException {
+		IResultMap rm = schema.executeSql("SELECT * FROM "+this.tableName+" WHERE ID=?", 2);
+		assertThat(rm.getStringValue("NAME")).isEqualTo("steve");
+		rm = schema.executeSql("SELECT * FROM "+this.tableName+" WHERE NAME=?", "john");
+		assertThat(rm.getIntValue("ID")).isEqualTo(1);
+	}
+	
+	// Remove Tables used
+	@AfterClass
 	public void DropTable() throws SQLException, Db2ManagerException {
 		IResultMap rm = schema.executeSql("drop table "+this.tableName);
 		assertThat(rm.getIntValue("RC")).isEqualByComparingTo(0);	
 	}
-	
-	@Test
-	public void CSVLoadTable() throws TestBundleResourceException, Db2ManagerException {
-		InputStream in = resources.retrieveFile("/data.csv");
-		schema.loadCsvData("CSVDATA", in);
-	}
-	
-
 }
