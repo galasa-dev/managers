@@ -6,7 +6,7 @@ plugins {
 
 description = 'Handles the retrieval of artifacts from the OSGi bundles'
 
-version = '0.16.0'
+version = '0.21.0'
 
 dependencies {
     implementation 'org.apache.velocity:velocity:1.7'
