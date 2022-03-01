@@ -235,7 +235,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.kubernetes.manager
-    version: 0.20.0
+    version: 0.21.0
     obr: true
     javadoc: true
     bom: true
