@@ -1,0 +1,10 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Cloud Manager'
+
+version = '0.21.0'
+
+dependencies {
+}

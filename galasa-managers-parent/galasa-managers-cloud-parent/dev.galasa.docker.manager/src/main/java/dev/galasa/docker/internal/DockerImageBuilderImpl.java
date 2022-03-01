@@ -55,7 +55,8 @@ public class DockerImageBuilderImpl implements IDockerImageBuilder {
     public void buildImage(String imageName, InputStream dockerfile, Map<String,InputStream> resources)
             throws DockerManagerException {
         try {
-            engine.buildImage(imageName, createDockerTagGz(dockerfile, resources));
+        	Path dockerPath = createDockerTagGz(dockerfile, resources);
+            engine.buildImage(imageName, dockerPath);
         } catch (IOException e) {
             throw new DockerManagerException("Failed to build image", e);
         }

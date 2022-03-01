@@ -1,0 +1,22 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Galasa Internal SEM Manager'
+
+version = '0.21.0'
+
+dependencies {
+    implementation files('jars/sem.jar')
+    implementation files('jars/org.eclipse.emf.common_2.6.0.jar')
+    implementation files('jars/org.eclipse.emf.ecore_2.6.1.jar')
+    implementation files('jars/org.eclipse.emf.ecore.xmi_2.5.0.jar')
+    implementation files('jars/org.eclipse.emf.edit_2.6.0.jar')
+
+    implementation project(':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
+    implementation project(':galasa-managers-comms-parent:dev.galasa.http.manager')
+    
+    implementation 'org.apache.velocity:velocity:1.7'
+    implementation 'org.apache.logging.log4j:log4j-1.2-api:2.17.1'
+}

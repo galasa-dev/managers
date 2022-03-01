@@ -105,6 +105,7 @@ public class DockerRegistryImpl {
 			registryAuthenticate(image);
 
 			path = "/v2/" + getPrefix() + image.getImageName() + "/manifests/" + image.getTag();
+			logger.trace("Checking if image is available at location: " + path);
 
 			HttpClientResponse<JsonObject> response = client.getJson(path);
 			if (response.getStatusCode() == (HttpStatus.SC_OK)) {
@@ -116,7 +117,7 @@ public class DockerRegistryImpl {
 		} catch (IllegalStateException e) {
 			return false;
 		} catch (DockerManagerException e) {
-			logger.trace("Failed to access registry at: " + path, e);
+			logger.trace("Failed to access registry", e);
 			return false;
 		} catch (ClassCastException e) {
 			logger.trace("Invalid JSON returned from Docker Registry\n" + resp, e);
@@ -257,6 +258,9 @@ public class DockerRegistryImpl {
 				for (String key : headers.keySet()) {
 					if (key.equalsIgnoreCase("WWW-Authenticate")) {
 						this.registryRealmType = parseAuthRealmType(headers.get(key));
+						if (registryRealmType.equals("")) {
+							throw new DockerManagerException("Registry location '" + path + "' not found. Check to ensure image registry path is correct.");
+						}
 						if (!"BASIC realm".equalsIgnoreCase(this.registryRealmType)){
 							this.registryRealmURL = parseAuthRealmURL(headers.get(key));
 						}

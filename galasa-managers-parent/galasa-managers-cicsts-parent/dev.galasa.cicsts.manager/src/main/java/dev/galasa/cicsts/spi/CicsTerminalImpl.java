@@ -57,6 +57,10 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 
     @Override
     public boolean connectToCicsRegion() throws CicstsManagerException {
+    	if (this.cicstsManager.getLogonProviders().isEmpty()) {
+    		throw new CicstsManagerException("Missing a CICS TS logon provider, none have been registered");
+    	}
+    	
         try {
             for(ICicsRegionLogonProvider logonProvider : this.cicstsManager.getLogonProviders()) {
                 if (logonProvider.logonToCicsRegion(this)) {
