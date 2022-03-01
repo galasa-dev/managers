@@ -88,7 +88,6 @@ public class Db2ManagerImpl extends AbstractManager implements IDb2ManagerSpi{
 		logger.info("Db2 Manager provision Generating");
 		List<AnnotatedField> annotatedFields = findAnnotatedFields(Db2ManagerField.class);
     	
-    	//First generate the queue managers
     	for(AnnotatedField annotatedField : annotatedFields) {
     		Field field = annotatedField.getField();
     		if(field.getType() == IDb2Instance.class) {

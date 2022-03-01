@@ -13,6 +13,13 @@ import java.util.Map;
 
 import dev.galasa.db2.IResultMap;
 
+/**
+ * Result Map is a basic object for simple SQL statements returns.
+ * 
+ * 
+ * @author jamesdavies
+ *
+ */
 public class ResultMap implements IResultMap{
 	private Map<String, Object> result = new HashMap<>();;
 	
