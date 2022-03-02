@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project 
+ */
 package dev.galasa.cloud.internal;
 
 import dev.galasa.cloud.spi.ICloudContainerPort;
