@@ -447,7 +447,10 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
                 if (retrieveRecords) {
                 	records = getSpoolFileContent(id, stepname, procstep, ddname);
                 }
-                ((IZosBatchJobOutputSpi) jobOutput()).addSpoolFile(stepname, procstep, ddname, id, records);
+                if(this.jobOutput == null) {
+                	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
+                }
+                ((IZosBatchJobOutputSpi) this.jobOutput).addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else if (response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
         	return;
