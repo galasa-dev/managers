@@ -12,6 +12,15 @@ Import-Package: !javax.validation.constraints, \
                 !com.ibm.websphere.interrupt, \
                 !com.ibm.zos.batch.container.support, \
                 !com.ibm.zos.batch.container.support.transaction, \
+                !sun.io ,\
+		        !sqlj.framework.options ,\
+		        !sun.security.action ,\
+		        !sqlj.mesg ,\
+		        !sqlj.framework.error, \
+		        !sqlj.framework.ide, \
+		        !sqlj.tools, \
+		        !sqlj.util.io, \
+		        !sqlj.mesg, \
 		        * 
 Embed-Transitive: true
 Embed-Dependency: *;scope=compile
