@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,6 +18,10 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ManagerException;
+import dev.galasa.cloud.ICloudContainer;
+import dev.galasa.cloud.spi.ICloudContainerPort;
+import dev.galasa.cloud.spi.ICloudContainerProvider;
+import dev.galasa.cloud.spi.ICloudManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
@@ -26,6 +31,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.IRun;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -42,7 +48,6 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1StatefulSet;
-import io.kubernetes.client.util.ModelMapper;
 import io.kubernetes.client.util.Yaml;
 
 /**
@@ -52,7 +57,7 @@ import io.kubernetes.client.util.Yaml;
  *
  */
 @Component(service = { IManager.class })
-public class KubernetesManagerImpl extends AbstractManager implements IKubernetesManagerSpi {
+public class KubernetesManagerImpl extends AbstractManager implements IKubernetesManagerSpi, ICloudContainerProvider {
 
     protected final static String               NAMESPACE = "kubernetes";
     private final Log                           logger = LogFactory.getLog(KubernetesManagerImpl.class);
@@ -62,13 +67,14 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
     private HashSet<String> sharedEnvironmentNamespacesTags = new HashSet<>();
 
     private HashMap<String, KubernetesClusterImpl> clusters = new HashMap<>();
-
+    
     private boolean                             required         = false;
 
     /**
      * Initialise the Kubernetes Manager if the Kubernetes TPI is included in the test class
      */
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void initialise(@NotNull IFramework framework, 
             @NotNull List<IManager> allManagers,
             @NotNull List<IManager> activeManagers, 
@@ -76,7 +82,17 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         super.initialise(framework, allManagers, activeManagers, galasaTest);
 
         if(galasaTest.isJava()) {
-            //*** Check to see if we are needed
+        	
+        	//*** Check to see if the cloud manager is present, if it is, we may be required
+        	for(IManager otherManager : allManagers) {
+        		if (otherManager instanceof ICloudManagerSpi) {
+        			((ICloudManagerSpi)otherManager).registerCloudContainerProvider(this);
+        			required = true;
+        			break;
+        		}
+        	}
+        	
+            //*** Check to see if we are needed for annotated fields
             if (!required) {
                 for(Field field : galasaTest.getJavaTestClass().getFields()) {
                     if (field.getType() == IKubernetesNamespace.class) {
@@ -114,7 +130,7 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
         Yaml.addModelMap("/v1", "Secret", V1Secret.class);
         Yaml.addModelMap("apps/v1", "Deployment", V1Deployment.class);
         Yaml.addModelMap("apps/v1", "StatefulSet", V1StatefulSet.class);
-
+        
         this.logger.info("Kubernetes Manager initialised");
 
     }
@@ -308,4 +324,19 @@ public class KubernetesManagerImpl extends AbstractManager implements IKubernete
 
         return taggedNamespaces.get(tag);
     }
+
+	@Override
+	public ICloudContainer generateCloudContainer(String tag, 
+			String platform, 
+			String image, 
+			ICloudContainerPort[] ports,
+			Properties environmentProperties, 
+			String[] runArguments) throws ManagerException, InsufficientResourcesAvailableException {
+		return null;
+	}
+
+	@Override
+	public @NotNull String getName() {
+		return "Kubernetes";
+	}
 }

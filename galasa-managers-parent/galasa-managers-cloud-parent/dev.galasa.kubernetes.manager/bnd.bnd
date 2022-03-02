@@ -11,6 +11,8 @@ Import-Package: com.google.gson,\
     dev.galasa.framework.spi.creds,\
     dev.galasa.framework.spi.language,\
     dev.galasa.kubernetes,\
+    dev.galasa.cloud,\
+    dev.galasa.cloud.spi,\
     javax.naming,\
     javax.net,\
     javax.net.ssl,\
