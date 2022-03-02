@@ -10,5 +10,4 @@ dependencies {
     implementation project(':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project(':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
-    implementation 'org.apache.velocity:velocity:1.7'
 }
