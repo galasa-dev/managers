@@ -446,7 +446,11 @@ public class SemCicsImpl extends BaseCicsImpl {
 
 	@Override
 	public IZosBatchJob getRegionJob() throws CicstsManagerException {
-		throw new CicstsManagerException("Not developed yet");
+		if (this.job == null) {
+			throw new CicstsManagerException("The CICS Region job for the CICS TS region is missing");
+		}
+		
+		return this.job;
 	}
 
 }
