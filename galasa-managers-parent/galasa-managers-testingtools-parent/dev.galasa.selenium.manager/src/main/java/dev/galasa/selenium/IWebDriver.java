@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.selenium;
 
 import java.util.List;
