@@ -4,10 +4,10 @@
 package dev.galasa.openstack.manager.internal;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
@@ -381,7 +381,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             this.dss.performActions(slotNumber, computeId, runInstance);
         } catch(DynamicStatusStoreMatchException e) {
             //*** collision on either the slot increment or the instance name,  so simply retry
-            Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
+            Thread.sleep(200 + new SecureRandom().nextInt(200)); // *** To avoid race conditions
             return reserveInstance();
         }
 

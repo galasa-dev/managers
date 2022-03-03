@@ -5,7 +5,7 @@
  */
 package dev.galasa.selenium;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.selenium.internal.properties.SeleniumAvailableDrivers;
@@ -101,7 +101,7 @@ public enum Browser {
             if (availabledrivers.length < 1) {
               throw new SeleniumManagerException("No available drivers");
             }
-            Random rand = new Random();
+            SecureRandom rand = new SecureRandom();
             this.selected = Browser.valueOf(availabledrivers[rand.nextInt(availabledrivers.length)]);
     	} catch (ConfigurationPropertyStoreException e) {
     		throw new SeleniumManagerException("Failed to find avilable drivers", e); 
