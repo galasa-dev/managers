@@ -47,7 +47,7 @@ dependencies {
     }
     implementation ('org.yaml:snakeyaml'){
         version {
-            strictly '1.30'
+            strictly '1.29'
         }
     }
     implementation ('org.apache.commons:commons-compress') {
