@@ -3,11 +3,11 @@
 */
 package dev.galasa.openstack.manager.internal;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 
 import javax.validation.constraints.NotNull;
 
@@ -143,7 +143,7 @@ public abstract class OpenstackServerImpl {
             dss.performActions(slotNumber, computeName, runAllocation);
         } catch(DynamicStatusStoreMatchException e) {
             //*** collision on either the slot increment or the instance name,  so simply retry
-            Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
+            Thread.sleep(200 + new SecureRandom().nextInt(200)); // *** To avoid race conditions
             freeServerFromDss(serverName, runName, dss);
             return;
         }

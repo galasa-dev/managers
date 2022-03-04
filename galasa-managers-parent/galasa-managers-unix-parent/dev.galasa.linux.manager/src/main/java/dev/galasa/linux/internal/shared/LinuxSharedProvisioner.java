@@ -3,11 +3,11 @@
  */
 package dev.galasa.linux.internal.shared;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -242,7 +242,7 @@ public class LinuxSharedProvisioner implements ILinuxProvisioner {
                 this.dss.performActions(slotsUpdate, runImage, username, runUsername);
             } catch(DynamicStatusStoreMatchException e) {
                 //*** collision on either the slot increment or the username,  so simply retry
-                Thread.sleep(200 + new Random().nextInt(200)); // *** To avoid race conditions
+                Thread.sleep(200 + new SecureRandom().nextInt(200)); // *** To avoid race conditions
                 return provisionLinux(tag, operatingSystem, capabilities, retryCount++);
             }
             

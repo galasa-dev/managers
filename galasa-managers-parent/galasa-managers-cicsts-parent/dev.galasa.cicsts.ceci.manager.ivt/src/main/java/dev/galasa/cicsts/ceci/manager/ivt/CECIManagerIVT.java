@@ -7,13 +7,13 @@ package dev.galasa.cicsts.ceci.manager.ivt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import dev.galasa.After;
 import dev.galasa.AfterClass;
@@ -553,7 +553,7 @@ public class CECIManagerIVT {
    private String constructRandomString(int length) {
       String alphabet = "abcdefghijklmnopqrstuvwxyz";
       StringBuilder sb = new StringBuilder();
-      Random r = new Random();
+      SecureRandom r = new SecureRandom();
       for (int a = 0; a < length; a++){
          sb.append(alphabet.charAt(r.nextInt(26)));
       }

@@ -440,7 +440,10 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
                 if (retrieveRecords) {
                 	records = getOutputFileContent(this.jobFilesPath + "/" + id + "/content");
                 }
-            	((IZosBatchJobOutputSpi) jobOutput()).addSpoolFile(stepname, procstep, ddname, id, records);
+                if(this.jobOutput == null) {
+                	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
+                }
+                ((IZosBatchJobOutputSpi) this.jobOutput).addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else {            
             // Error case
