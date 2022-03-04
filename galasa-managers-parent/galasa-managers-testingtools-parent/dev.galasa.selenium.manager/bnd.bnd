@@ -4,6 +4,17 @@ Export-Package: dev.galasa.selenium,\
     dev.galasa.selenium.spi,\
     org.openqa.selenium,\
     org.openqa.selenium.interactions,\
+    org.openqa.selenium.chrome,\
+    org.openqa.selenium.edge,\
+    org.openqa.selenium.firefox,\
+    org.openqa.selenium.ie,\
+    org.openqa.selenium.opera,\
+    org.openqa.selenium.safari,\
+    org.openqa.selenium.remote,\
+    org.openqa.selenium.io,\
+    org.openqa.selenium.json,\
+    org.openqa.selenium.net,\
+    org.openqa.selenium.os,\
     org.openqa.selenium.support.ui
 Import-Package: dev.galasa,\
     dev.galasa.framework,\
@@ -24,6 +35,17 @@ Import-Package: dev.galasa,\
     org.apache.commons.logging,\
     org.openqa.selenium,\
     org.openqa.selenium.interactions,\
+    org.openqa.selenium.chrome,\
+    org.openqa.selenium.edge,\
+    org.openqa.selenium.firefox,\
+    org.openqa.selenium.ie,\
+    org.openqa.selenium.opera,\
+    org.openqa.selenium.safari,\
+    org.openqa.selenium.remote,\
+    org.openqa.selenium.io,\
+    org.openqa.selenium.json,\
+    org.openqa.selenium.net,\
+    org.openqa.selenium.os,\
     org.openqa.selenium.support.ui
 Embed-Transitive: true
 Embed-Dependency: *;scope=compile

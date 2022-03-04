@@ -50,6 +50,7 @@ import dev.galasa.selenium.IChromeOptions;
 import dev.galasa.selenium.IEdgeOptions;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.IInternetExplorerOptions;
+import dev.galasa.selenium.IOperaOptions;
 import dev.galasa.selenium.ISeleniumManager;
 import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
@@ -80,7 +81,7 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
     	this.seleniumManager = seleniumManager;
     	this.browser = browser;
     	this.driverSlotName = slotName;
-        this.screenshotRasDirectory = screenshotRasDirectory.resolve(browser.getDriverName());
+        this.screenshotRasDirectory = screenshotRasDirectory;
         this.dss = seleniumManager.getDss();
         
     	try {
@@ -268,7 +269,7 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -284,15 +285,15 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, ChromeOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IChromeOptions options) throws SeleniumManagerException {
     	RemoteWebDriver driver = null;
 
         try {
-            driver = remoteDriver(new DesiredCapabilities(options));
+            driver = remoteDriver(new DesiredCapabilities(((ChromeOptionsImpl)options).get()));
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -300,15 +301,15 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, EdgeOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IEdgeOptions options) throws SeleniumManagerException {
     	RemoteWebDriver driver = null;
 
         try {
-            driver = remoteDriver(new DesiredCapabilities(options));
+            driver = remoteDriver(new DesiredCapabilities(((EdgeOptionsImpl)options).get()));
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -316,15 +317,15 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, InternetExplorerOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IInternetExplorerOptions options) throws SeleniumManagerException {
     	RemoteWebDriver driver = null;
 
         try {
-            driver = remoteDriver(new DesiredCapabilities(options));
+            driver = remoteDriver(new DesiredCapabilities(((InternetExplorerOptionsImpl)options).get()));
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -332,15 +333,15 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, OperaOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IOperaOptions options) throws SeleniumManagerException {
     	RemoteWebDriver driver = null;
 
         try {
-            driver = remoteDriver(new DesiredCapabilities(options));
+            driver = remoteDriver(new DesiredCapabilities(((OperaOptionsImpl)options).get()));
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -348,7 +349,7 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -364,6 +365,11 @@ public class RemoteDriverImpl extends DriverImpl implements IWebDriver {
     @Override
     public IEdgeOptions getEdgeOptions() {
         return new EdgeOptionsImpl();
+    }
+    
+    @Override
+    public IOperaOptions getOperaOptions() {
+        return new OperaOptionsImpl();
     }
 
     @Override

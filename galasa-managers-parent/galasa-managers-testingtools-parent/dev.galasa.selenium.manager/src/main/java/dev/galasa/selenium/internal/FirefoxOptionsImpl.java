@@ -7,8 +7,16 @@ package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.Platform;
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
@@ -23,6 +31,10 @@ public class FirefoxOptionsImpl implements IFirefoxOptions {
 
     public FirefoxOptionsImpl() {
         this.options = new FirefoxOptions();
+    }
+    
+    protected FirefoxOptions get() {
+    	return this.options;
     }
     
     @Override
@@ -94,4 +106,64 @@ public class FirefoxOptionsImpl implements IFirefoxOptions {
     public void setLogLevel(Level level) {
         options.setLogLevel(level);
     }
+
+	@Override
+	public Map<String, Object> asMap() {
+		return options.asMap();
+	}
+
+	@Override
+	public Optional<FirefoxBinary> getBinaryOrNull() {
+		return options.getBinaryOrNull();
+	}
+
+	@Override
+	public String getBrowserName() {
+		return options.getBrowserName();
+	}
+
+	@Override
+	public Platform getPlatform() {
+		return options.getPlatform();
+	}
+
+	@Override
+	public FirefoxProfile getProfile() {
+		return options.getProfile();
+	}
+
+	@Override
+	public String getVersion() {
+		return options.getVersion();
+	}
+
+	@Override
+	public boolean is(String capabilityName) {
+		return options.is(capabilityName);
+	}
+
+	@Override
+	public boolean isJavascriptEnabled() {
+		return options.isJavascriptEnabled();
+	}
+
+	@Override
+	public boolean isLegacy() {
+		return options.isLegacy();
+	}
+
+	@Override
+	public void setPageLoadStrategy(PageLoadStrategy strategy) {
+		options.setPageLoadStrategy(strategy);
+	}
+
+	@Override
+	public void setProxy(Proxy proxy) {
+		options.setProxy(proxy);
+	}
+
+	@Override
+	public void setUnhandledPromptBehaviour(UnexpectedAlertBehaviour behaviour) {
+		options.setUnhandledPromptBehaviour(behaviour);
+	}
 }

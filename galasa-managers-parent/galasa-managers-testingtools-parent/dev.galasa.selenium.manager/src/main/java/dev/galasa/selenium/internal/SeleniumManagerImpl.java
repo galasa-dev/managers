@@ -63,6 +63,8 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     private IKubernetesManagerSpi k8Manager;
     private IArtifactManager artifactManager;
     
+    private String currentMethod;
+    
     private SeleniumEnvironment seleniumEnvironment;
 
     private boolean required = false;
@@ -154,6 +156,11 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     }
     
     @Override
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
+    	this.currentMethod = galasaMethod.getJavaExecutionMethod().getName();
+    }
+    
+    @Override
     public void provisionStop() {
     	try {
     		seleniumEnvironment.closePages();
@@ -208,6 +215,9 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     
     public IFramework getFramework() {
     	return this.framework;
+    }
+    public String getCurrentMethod() {
+    	return this.currentMethod;
     }
     public IConfigurationPropertyStoreService getCps() {
     	return this.cps;

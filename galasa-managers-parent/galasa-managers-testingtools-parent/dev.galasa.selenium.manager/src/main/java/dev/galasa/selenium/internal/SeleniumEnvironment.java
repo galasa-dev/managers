@@ -66,7 +66,7 @@ public class SeleniumEnvironment {
 	 */
 	public ISeleniumManager allocateDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		ISeleniumManager driver;
-		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
+		Path driverRasDir = screenshotRasDirectory;
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -75,7 +75,7 @@ public class SeleniumEnvironment {
 			
 			switch(SeleniumWebDriverType.get()) {
 		    case ("local"):
-		    	driver = new LocalDriverImpl(browser, driverRasDir);
+		    	driver = new LocalDriverImpl(seleniumManager, browser, driverRasDir);
 		    	break;
 		    default:
 		    	// Get a slot or fail
@@ -100,7 +100,7 @@ public class SeleniumEnvironment {
 	 */
 	public IWebDriver allocateWebDriver(Browser browser) throws ResourceUnavailableException, SeleniumManagerException {
 		IWebDriver driver;
-		Path driverRasDir = screenshotRasDirectory.resolve("driver_"+drivers.size());
+		Path driverRasDir = screenshotRasDirectory;
 		
 		try {
 			if (browser.equals(Browser.NOTSPECIFIED)) {
@@ -109,7 +109,7 @@ public class SeleniumEnvironment {
 			
 			switch(SeleniumWebDriverType.get()) {
 		    case ("local"):
-		    	driver = new LocalDriverImpl(browser, driverRasDir);
+		    	driver = new LocalDriverImpl(seleniumManager, browser, driverRasDir);
 		    	break;
 		    default:
 		    	// Get a slot or fail

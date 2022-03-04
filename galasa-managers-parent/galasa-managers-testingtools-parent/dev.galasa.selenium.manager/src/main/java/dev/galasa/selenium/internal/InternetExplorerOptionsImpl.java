@@ -5,8 +5,17 @@
  */
 package dev.galasa.selenium.internal;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.Platform;
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.ie.ElementScrollBehavior;
 import org.openqa.selenium.ie.InternetExplorerOptions;
 
 import dev.galasa.selenium.IInternetExplorerOptions;
@@ -22,10 +31,9 @@ public class InternetExplorerOptionsImpl implements IInternetExplorerOptions {
     public InternetExplorerOptionsImpl() {
         options = new InternetExplorerOptions();
     }
-
-    @Override
-    public InternetExplorerOptions getOptions() {
-        return this.options;
+    
+    protected InternetExplorerOptions get() {
+    	return this.options;
     }
 
     @Override
@@ -97,5 +105,107 @@ public class InternetExplorerOptionsImpl implements IInternetExplorerOptions {
     public void addCommandSwitches(String... switches) {
         options.addCommandSwitches(switches);
     }
+
+	@Override
+	public Map<String, Object> asMap() {
+		return options.asMap();
+	}
+
+	@Override
+	public void elementScrollTo(ElementScrollBehavior behavior) {
+		options.elementScrollTo(behavior);
+		
+	}
+
+	@Override
+	public void enableNativeEvents() {
+		options.enableNativeEvents();
+		
+	}
+
+	@Override
+	public String getBrowserName() {
+		return options.getBrowserName();
+	}
+
+	@Override
+	public Object getCapability(String capabilityName) {
+		return options.getCapability(capabilityName);
+	}
+
+	@Override
+	public Set<String> getCapabilityNames() {
+		return options.getCapabilityNames();
+	}
+
+	@Override
+	public Platform getPlatform() {
+		return options.getPlatform();
+	}
+
+	@Override
+	public String getVersion() {
+		return options.getVersion();
+	}
+
+	@Override
+	public boolean is(String capabilityName) {
+		return options.is(capabilityName);
+	}
+
+	@Override
+	public boolean isJavascriptEnabled() {
+		return options.isJavascriptEnabled();
+	}
+
+	@Override
+	public void setCapability(String capabilityName, Platform value) {
+		options.setCapability(capabilityName, value);
+	}
+
+	@Override
+	public void setPageLoadStrategy(PageLoadStrategy strategy) {
+		options.setPageLoadStrategy(strategy);
+	}
+
+	@Override
+	public void setProxy(Proxy proxy) {
+		options.setProxy(proxy);
+	}
+
+	@Override
+	public void setUnhandledPromptBehaviour(UnexpectedAlertBehaviour behaviour) {
+		options.setUnhandledPromptBehaviour(behaviour);
+	}
+
+	@Override
+	public void takeFullPageScreenshot() {
+		options.takeFullPageScreenshot();
+	}
+
+	@Override
+	public void usePerProcessProxy() {
+		options.usePerProcessProxy();
+	}
+
+	@Override
+	public void useShellWindowsApiToAttachToIe() {
+		options.useShellWindowsApiToAttachToIe();
+	}
+
+	@Override
+	public void waitForUploadDialogUpTo(Duration duration) {
+		options.waitForUploadDialogUpTo(duration);
+	}
+
+	@Override
+	public void waitForUploadDialogUpTo(Long duration, TimeUnit unit) {
+		options.waitForUploadDialogUpTo(duration, unit);
+	}
+
+	@Override
+	public void withAttachTimeout(Duration duration) {
+		options.withAttachTimeout(duration);
+	}
     
 }
