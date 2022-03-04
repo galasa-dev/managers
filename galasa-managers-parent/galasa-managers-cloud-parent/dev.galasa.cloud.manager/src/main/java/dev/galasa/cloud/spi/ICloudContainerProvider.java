@@ -5,8 +5,12 @@ package dev.galasa.cloud.spi;
 
 import java.util.Properties;
 
+import javax.validation.constraints.NotNull;
+
+import dev.galasa.ManagerException;
 import dev.galasa.cloud.CloudManagerException;
 import dev.galasa.cloud.ICloudContainer;
+import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 
 /**
  * Interface from the Cloud Manager to Cloud Container Providers 
@@ -16,10 +20,14 @@ import dev.galasa.cloud.ICloudContainer;
  */
 public interface ICloudContainerProvider {
 	
+	@NotNull
+	public String getName();
+	
 	/**
 	 * Generate a new Cloud Container
 	 * 
 	 * @param tag - The tag to assign
+	 * @param platform - The platform to install the container on
 	 * @param image - The image name to use, at this stage this will be the full image name
 	 * @param ports - The ports to expose
 	 * @param environmentProperties - Environment properties to provide to the container
@@ -28,10 +36,11 @@ public interface ICloudContainerProvider {
 	 * @throws CloudManagerException
 	 */
 	public ICloudContainer generateCloudContainer(
-			String                tag,
-			String                image,
-			ICloudContainerPort[] ports,
-			Properties            environmentProperties,
-			String[]              runArguments) throws CloudManagerException;
+			@NotNull String                tag,
+			@NotNull String                platform,
+			@NotNull String                image,
+			@NotNull ICloudContainerPort[] ports,
+			         Properties            environmentProperties,
+			         String[]              runArguments) throws ManagerException, InsufficientResourcesAvailableException;
 
 }

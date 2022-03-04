@@ -15,12 +15,12 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
 import com.google.gson.JsonArray;
@@ -72,7 +72,7 @@ public class DockerContainerImpl implements IDockerContainer {
     private boolean alreadyDefined;
 
     private Map<String, List<InetSocketAddress>> exposedPorts = new HashMap<>();
-    private Random random = new Random();
+    private SecureRandom random = new SecureRandom();
 
     private static final Log logger = LogFactory.getLog(DockerContainerImpl.class);
 

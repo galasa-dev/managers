@@ -30,7 +30,7 @@ public class ContainerOverrideImage extends CpsProperties {
 
 	public static String get(final String tag) throws CloudManagerException {
 		try {
-			return getStringNulled(CloudPropertiesSingleton.cps(), "cloud.container." + tag, "image");
+			return getStringNulled(CloudPropertiesSingleton.cps(), "container." + tag, "image");
 		} catch (Exception e) {
 			throw new CloudManagerException("Problem accessing CPS for cloud container image override", e);
 		}

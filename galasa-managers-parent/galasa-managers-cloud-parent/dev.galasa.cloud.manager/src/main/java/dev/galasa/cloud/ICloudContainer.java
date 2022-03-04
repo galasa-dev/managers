@@ -61,5 +61,10 @@ public interface ICloudContainer {
 	 * @throws CloudManagerException
 	 */
 	public void start() throws CloudManagerException;
+	
+	/**
+	 * @return The platform the container was provisioned on
+	 */
+	public String getPlatform();
 
 }

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.internal.comms;
 
@@ -644,12 +642,12 @@ public class NetworkThread extends Thread {
     }
 
     private void doIacDont(InputStream messageStream) throws NetworkException, IOException {
-        Byte iac = readByte(messageStream);
-        if (iac == null) {
+        Byte dont = readByte(messageStream);
+        if (dont == null) {
             throw new NetworkException("Unrecognised IAC DO terminated early - " + reportCommandSoFar());
         }
 
-        if (iac == TN3270E) {
+        if (dont == TN3270E) {
             logger.trace("Received IAC DONT TN3270E");
 
             if (this.selectedDeviceType != null) {
@@ -659,6 +657,11 @@ public class NetworkThread extends Thread {
 
 
             return; // IGNORE
+        }
+
+        if (dont == TIMING_MARK) {
+            // Ignore
+            return;
         }
 
         throw new NetworkException("Unrecognised IAC DONT Command - " + reportCommandSoFar());

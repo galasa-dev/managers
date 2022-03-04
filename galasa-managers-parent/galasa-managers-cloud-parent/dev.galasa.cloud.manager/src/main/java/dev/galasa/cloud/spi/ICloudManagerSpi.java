@@ -5,6 +5,8 @@ package dev.galasa.cloud.spi;
 
 import java.util.Properties;
 
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.cloud.CloudManagerException;
 import dev.galasa.cloud.ICloudContainer;
 
@@ -23,7 +25,8 @@ public interface ICloudManagerSpi {
 	 * @return the Cloud Container if found
 	 * @throws CloudManagerException - If the tag is unknown
 	 */
-	public ICloudContainer getCloudContainerByTag(String tag) throws CloudManagerException;
+	@NotNull
+	public ICloudContainer getCloudContainerByTag(@NotNull String tag) throws CloudManagerException;
 	
 	/**
 	 * Generate a new Cloud Container, normal called by an application Manager during provision generate,
@@ -40,20 +43,21 @@ public interface ICloudManagerSpi {
 	 * @return a ICloudContainer instance.
 	 * @throws CloudManagerException
 	 */
+	@NotNull
 	public ICloudContainer generateCloudContainer(
-			String                tag,
-			String                provider,
-			String                image,
-			ICloudContainerPort[] ports,
-			Properties            environmentProperties,
-			String[]              runArguments,
-			boolean               autoStart,
-			int                   startOrder) throws CloudManagerException;
+			@NotNull String                tag,
+			@NotNull String                provider,
+			@NotNull String                image,
+			@NotNull ICloudContainerPort[] ports,
+			         Properties            environmentProperties,
+			         String[]              runArguments,
+		       	     boolean               autoStart,
+			         int                   startOrder) throws CloudManagerException;
 
 	/**
 	 * Register a provider for Cloud Containers
 	 * 
 	 * @param containerProvider A Cloud Container provisioner
 	 */
-	public void registerCloudContainerProvider(ICloudContainerProvider containerProvider);
+	public void registerCloudContainerProvider(@NotNull ICloudContainerProvider containerProvider);
 }

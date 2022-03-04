@@ -3,7 +3,7 @@
  */
 package dev.galasa.galasaecosystem.internal;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -237,7 +237,7 @@ public abstract class AbstractEcosystemImpl implements IInternalEcosystem, IGene
     	if (m.matches()) {
     	    run = Integer.parseInt(m.group(1));
     	} else {
-    	    run = new Random().nextInt(1000);
+    	    run = new SecureRandom().nextInt(1000);
     	}
     	String newRunNumber = ""+--run;
     	logger.info("inserting lastUsed runID into DSS with value: " + newRunNumber);
