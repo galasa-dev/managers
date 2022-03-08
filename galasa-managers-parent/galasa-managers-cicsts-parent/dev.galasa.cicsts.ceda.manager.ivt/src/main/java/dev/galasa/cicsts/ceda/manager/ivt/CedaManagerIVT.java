@@ -8,13 +8,10 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.apache.commons.logging.Log;
 
-import dev.galasa.After;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
-import dev.galasa.core.manager.IResourceString;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.core.manager.ResourceString;
-import dev.galasa.core.manager.TestProperty;
+import dev.galasa.sem.SemTopology;
 import dev.galasa.cicsts.CedaException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
@@ -28,120 +25,50 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
 @Test
+@SemTopology
 public class CedaManagerIVT {
 	
    @Logger
    public Log logger;
 
-   @CicsRegion()
+   @CicsRegion(cicsTag = "A")
    public ICicsRegion cics;
 
-   @CicsTerminal()
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal cedaTerminal;
 
-   @CicsTerminal()
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal cemtTerminal;
 
-   @CicsTerminal()
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal terminal;
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "PROG1", required = false)
-   public String providedResourceString1;
-   @ResourceString(tag = "PROG1", length = 8)
-   public IResourceString resourceString1;
-   public String programName1;
+   public String programName1 = "PROG1";
 
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "PROG2", required = false)
-   public String providedResourceString2;
-   @ResourceString(tag = "PROG2", length = 8)
-   public IResourceString resourceString2;
-   public String programName2;
+   public String programName2 = "PROG2";
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "TRX", required = false)
-   public String providedResourceString3;
-   @ResourceString(tag = "TRX", length = 4)
-   public IResourceString resourceString3;
-   public String trxName;
+   public String trxName = "TRX1";
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "LIB", required = false)
-   public String providedResourceString4;
-   @ResourceString(tag = "LIB", length = 4)
-   public IResourceString resourceString4;
-   public String libName;
+   public String libName = "LIB1";
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "GROUP1", required = false)
-   public String providedResourceString5;
-   @ResourceString(tag = "GROUP1", length = 8)
-   public IResourceString resourceString5;
-   public String groupName1;
+   public String groupName1 = "GROUP1";
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "GROUP2", required = false)
-   public String providedResourceString6;
-   @ResourceString(tag = "GROUP2", length = 8)
-   public IResourceString resourceString6;
-   public String groupName2;
+   public String groupName2 = "GROUP2";
    
    @BeforeClass
-   public void login() throws Exception {
-      cedaTerminal.clear();
+   public void setup() throws Exception {
+	  logger.info("CICS Region provisioned for this test: " + cics.getApplid());
+      
+	  cedaTerminal.clear();
       cedaTerminal.waitForKeyboard();
       
       cemtTerminal.clear();
       cemtTerminal.waitForKeyboard();
-      
-   // Get and set unique resource strings
-      if (providedResourceString1 != null) {
-    	  programName1 = providedResourceString1;
-      } else {
-    	  programName1 = resourceString1.getString();
-      }
-      logger.info("Unique Program name 1 to be used in the tests: " + programName1);
-
-      if (providedResourceString2 != null) {
-    	  programName2 = providedResourceString2;
-      } else {
-    	  programName2 = resourceString2.getString();
-      }
-      logger.info("Unique Program name 2 to be used in the tests: " + programName2);
-      
-      if (providedResourceString3 != null) {
-    	  trxName = providedResourceString3;
-      } else {
-    	  trxName = resourceString3.getString();
-      }
-      logger.info("Unique Transaction name to be used in the tests: " + trxName);
-
-      if (providedResourceString4 != null) {
-    	  libName = providedResourceString4;
-      } else {
-    	  libName = resourceString4.getString();
-      }
-      logger.info("Unique Library name to be used in the tests: " + libName);
-      
-      if (providedResourceString5 != null) {
-    	  groupName1 = providedResourceString5;
-      } else {
-    	  groupName1 = resourceString5.getString();
-      }
-      logger.info("Unique Group name 1 to be used in the tests: " + groupName1);
-      
-      if (providedResourceString6 != null) {
-    	  groupName2 = providedResourceString6;
-      } else {
-    	  groupName2 = resourceString6.getString();
-      }
-      logger.info("Unique Group name 2 to be used in the tests: " + groupName2);
    }
 
-   @Test
-   public void checkCECINotNull() throws CicstsManagerException {
-      assertThat(cics).isNotNull();
+   @BeforeClass
+   public void checkCedaLoaded() throws CicstsManagerException {
       assertThat(cics.ceda()).isNotNull();
-      assertThat(cics.cemt()).isNotNull();
-      assertThat(cemtTerminal).isNotNull();
-      assertThat(cedaTerminal).isNotNull();
-      assertThat(terminal).isNotNull();
-      assertThat(logger).isNotNull();
    }
    
    /**
@@ -269,33 +196,5 @@ public class CedaManagerIVT {
          cics.ceda().installGroup(cedaTerminal, groupName1);
       }).isInstanceOf(CedaException.class).hasMessageContaining("Problem determining the result from the CEDA command");
    }
-   
-   @After
-   public void cleanUpResources() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  terminal.clear().waitForKeyboard();
-	  
-	  logger.info("Deleting all resources in Group " + groupName1 + " from the CICS Region");
-      terminal.type("CEDA DELETE GROUP(" + groupName1 + ") ALL").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      
-	  logger.info("Deleting all resources in Group " + groupName2 + " from the CICS Region");
-      terminal.type("CEDA DELETE GROUP(" + groupName2 + ") ALL").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      
-      logger.info("Discarding Program " + programName1 + " from the CICS Region");
-      terminal.type("CEMT DISCARD prog(" + programName1 + ")").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      
-      logger.info("Discarding Program " + programName2 + " from the CICS Region");
-      terminal.type("CEMT DISCARD prog(" + programName2 + ")").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      
-      logger.info("Discarding Transaction " + trxName + " from the CICS Region");
-      terminal.type("CEMT DISCARD transaction(" + trxName + ")").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-      
-      logger.info("Discarding Library " + libName + " from the CICS Region");
-      terminal.type("CEMT DISCARD LIBRARY(" + libName + ")").enter().waitForKeyboard();
-      terminal.pf3().waitForKeyboard().clear().waitForKeyboard();
-   }
+
 }

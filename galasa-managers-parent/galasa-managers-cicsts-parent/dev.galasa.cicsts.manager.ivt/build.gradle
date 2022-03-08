@@ -11,4 +11,5 @@ dependencies {
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
+    implementation project (':galasa-managers-internal-parent:dev.galasa.sem.manager')
 }
