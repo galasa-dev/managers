@@ -76,7 +76,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.cemt.manager
-    version: 0.20.0
+    version: 0.21.0
     obr: true
     mvp: true
     javadoc: true
