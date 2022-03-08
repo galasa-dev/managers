@@ -42,7 +42,9 @@ import dev.galasa.api.runs.ScheduleStatus;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.framework.spi.AbstractManager;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
+import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
@@ -125,10 +127,13 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
     private URL                              simbankManagementFacilityUrl;
 
     private RunIdPrefixImpl                  runIdPrefix;
+    
+    private IFramework                       framework;
 
     public KubernetesEcosystemImpl(GalasaEcosystemManagerImpl manager, String tag, IKubernetesNamespace namespace) {
         super(manager, tag, null, null);
         this.namespace = namespace;
+        this.framework = manager.getFramework();
     }
 
     protected void reserveRunIdPrefix() throws InsufficientResourcesAvailableException, GalasaEcosystemManagerException {
@@ -986,6 +991,15 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
             default:
                 throw new GalasaEcosystemManagerException("Unknown Galasa endpoint " + endpoint.toString());
         }
+    }
+    
+    @Override
+    public String getHostCpsProperty(@NotNull String namespace, @NotNull String prefix, @NotNull String suffix, String... infixes) throws GalasaEcosystemManagerException {
+    	try {
+			return this.framework.getConfigurationPropertyService(namespace).getProperty(prefix, suffix, infixes);
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new GalasaEcosystemManagerException("Problem inspecting the CPS of the parent ecosystem", e);
+		}
     }
 
     @Override
