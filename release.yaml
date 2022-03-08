@@ -102,7 +102,9 @@ managers:
   - artifact: dev.galasa.cloud.manager
     version: 0.21.0
     obr: true
+    javadoc: true
     bom: true
+    mvp: true
     isolated: true
     codecoverage: true
     
