@@ -29,6 +29,16 @@ public interface IGenericEcosystem {
      * @throws GalasaEcosystemManagerException If the endpoint is unsupported
      */
     public @NotNull Object getEndpoint(@NotNull EcosystemEndpoint endpoint) throws GalasaEcosystemManagerException;
+    
+    /**
+     * Retrieve a CPS property from the host ecosystem
+     * 
+     * @param namespace The namespace of the CPS
+     * @param property The property to retrieve
+     * @return the value of the property or null if not found
+     * @throws GalasaEcosystemManagerException if there is a problem accessing the CPS
+     */
+    public String getHostCpsProperty(@NotNull String namespace, @NotNull String prefix, @NotNull String suffix, String... infixes) throws GalasaEcosystemManagerException;
  
     /**
      * Retrieve a CPS property

@@ -40,6 +40,8 @@ import dev.galasa.SetContentType;
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
 import dev.galasa.artifact.TestBundleResourceException;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
+import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
@@ -94,6 +96,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private final ArrayList<LocalRun> localRuns = new ArrayList<>();
 
     private final RunIdPrefixImpl runIdPrefix;
+    
+    private IFramework framework;
 
     public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
             @NotNull String tag,
@@ -106,6 +110,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         this.startSimPlatform      = startSimPlatform;
 
         this.runIdPrefix           = new RunIdPrefixImpl(manager.getFramework(), manager.getDss());
+        
+        this.framework = manager.getFramework();
     }
 
 
@@ -667,7 +673,14 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         return url;
     }
 
-
+    @Override
+    public String getHostCpsProperty(@NotNull String namespace, @NotNull String prefix, @NotNull String suffix, String... infixes) throws GalasaEcosystemManagerException {
+    	try {
+			return this.framework.getConfigurationPropertyService(namespace).getProperty(prefix, suffix, infixes);
+		} catch (ConfigurationPropertyStoreException e) {
+			throw new GalasaEcosystemManagerException("Problem inspecting the CPS of the parent ecosystem", e);
+		}
+    }
 
     @Override
     public String getCpsProperty(@NotNull String property) throws GalasaEcosystemManagerException {
