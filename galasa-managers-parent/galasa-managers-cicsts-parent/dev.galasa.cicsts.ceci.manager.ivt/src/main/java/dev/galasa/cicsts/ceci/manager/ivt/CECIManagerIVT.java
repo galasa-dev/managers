@@ -15,15 +15,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dev.galasa.After;
-import dev.galasa.AfterClass;
+import dev.galasa.Before;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
-import dev.galasa.core.manager.IResourceString;
-import dev.galasa.core.manager.ResourceString;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.core.manager.TestProperty;
+import dev.galasa.sem.SemTopology;
 import dev.galasa.cicsts.CeciException;
+import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
@@ -42,78 +40,87 @@ import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatch;
+import dev.galasa.zosprogram.IZosProgram;
+import dev.galasa.zosprogram.ZosProgram;
+import dev.galasa.zosprogram.ZosProgram.Language;
 
 import org.apache.commons.logging.Log;
 
 @Test
+@SemTopology
 public class CECIManagerIVT {
 
    @Logger
    public Log logger;
 
-   @CicsRegion
+   @CicsRegion(cicsTag = "A")
    public ICicsRegion cics;
 
-   @CicsTerminal
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal ceciTerminal;
    
-   @CicsTerminal
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal otherTerminal;
 
    @ZosBatch(imageTag = "PRIMARY")
    public IZosBatch batch;
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "VARNAME", required = false)
-   public String providedResourceString1;
-   @ResourceString(tag = "VARNAME", length = 8)
-   public IResourceString resourceString1;
+   @ZosProgram(name = "APITEST", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
+   public IZosProgram APITEST;
    
-   public String variableName;
+   @ZosProgram(name = "CONTTEST", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
+   public IZosProgram CONTTEST;
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "QUEUENAME", required = false)
-   public String providedResourceString2;
-   @ResourceString(tag = "QUEUENAME", length = 8)
-   public IResourceString resourceString2;
+   @ZosProgram(name = "PRGABEND", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
+   public IZosProgram PRGABEND;
    
-   public String queueName;
+   public String tsqName = "IVTQUEUE";
+   
+   public String libName = "LIB1";
+   
+   public String groupName = "PROGGRP";
+   
+   public String variableName = "VARNAME";
    
    @BeforeClass
-   public void setUp() throws CeciException, CicstsManagerException {
+   public void setup() throws CeciException, CicstsManagerException {
+	   logger.info("CICS Region provisioned for this test: " + cics.getApplid());
+	   
+	   // Define compiled COBOL programs to CICS Region
+	   cics.ceda().createResource(otherTerminal, "PROGRAM", APITEST.getName(), groupName, null);
+	   cics.ceda().createResource(otherTerminal, "PROGRAM", CONTTEST.getName(), groupName, null);
+	   cics.ceda().createResource(otherTerminal, "PROGRAM", PRGABEND.getName(), groupName, null);
+	   // Define Library where all Programs are compiled
+	   cics.ceda().createResource(otherTerminal, "LIBRARY", libName, groupName, "DSNAME01(" + APITEST.getLoadlib().getName() + ")");
+	   // Install everything 
+	   cics.ceda().installGroup(otherTerminal, groupName);
+   }
+   
+   @BeforeClass
+   public void checkCeciLoaded() throws CicstsManagerException {
+       assertThat(cics.ceci()).isNotNull();
+   }
+   
+   @BeforeClass
+   public void checkProgramsLoaded() throws CemtException, CicstsManagerException {
+	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", APITEST.getName()).get("program")).isEqualTo(APITEST.getName());
+	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", CONTTEST.getName()).get("program")).isEqualTo(CONTTEST.getName());
+	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", PRGABEND.getName()).get("program")).isEqualTo(PRGABEND.getName());
+	   assertThat(cics.cemt().inquireResource(otherTerminal, "LIBRARY", libName).get("library")).isEqualTo(libName);  
+   }
+   
+   /**
+    * Start new CECI session and clear variables before each test
+    * @throws CicstsManagerException 
+    * @throws CeciException 
+    */
+   @Before
+   public void before() throws CeciException, CicstsManagerException  {
 	   cics.ceci().startCECISession(ceciTerminal);
-	   
-	   // Get and set unique resource strings
-	   if (providedResourceString1 != null) {
-	      variableName = providedResourceString1;
-	   } else {
-	      variableName = resourceString1.getString();
-	   }
-	   logger.info("Unique CECI variable name to be used in the tests: " + variableName);
-	   
-	   if (providedResourceString2 != null) {
-	      queueName = providedResourceString2;
-	   } else {
-	      queueName = resourceString2.getString();
-	   }
-	   logger.info("Unique TSQUEUE name to be used in the tests: " + queueName);
    }
 
    /**
-    * Ensures that we have an instance of CECI, CICS and a Terminal.
-    * 
-    * @throws CicstsManagerException 
-    */
-   @Test
-   public void testNotNull() throws CicstsManagerException  {
-      assertThat(logger).isNotNull();
-      assertThat(cics).isNotNull();
-      assertThat(cics.ceci()).isNotNull();
-      assertThat(ceciTerminal).isNotNull();
-      assertThat(otherTerminal).isNotNull();
-      assertThat(batch).isNotNull();
-   } 
-   
-   /**
-    * Starts the CECI session.
+    * Tests that the initial CECI session has started correctly
     * 
     * @throws FieldNotFoundException 
     * @throws NetworkException 
@@ -142,7 +149,7 @@ public class CECIManagerIVT {
       
       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
       assertThat(cics.ceci().retrieveVariableText(ceciTerminal, variableName)).isEqualTo(variableValue);
-
+      
       cics.ceci().deleteVariable(ceciTerminal, variableName);
       assertThatThrownBy(() -> {
     	  cics.ceci().retrieveVariableText(ceciTerminal, variableName);
@@ -381,21 +388,21 @@ public class CECIManagerIVT {
     */
   @Test
    public void testWriteToTSQ() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	  logger.info("Testing writing data to a Temporary Storage Queue called " + queueName + " from variable " + variableName);
+	  logger.info("Testing writing data to a Temporary Storage Queue called " + tsqName + " from variable " + variableName);
       String dataToWrite = "THIS IS A GALASA TEST";
       
       cics.ceci().defineVariableText(ceciTerminal, variableName, dataToWrite);
-      String command = "WRITEQ TS QUEUE('" + queueName + "') FROM(&" + variableName + ")";
+      String command = "WRITEQ TS QUEUE('" + tsqName + "') FROM(&" + variableName + ")";
       cics.ceci().issueCommand(ceciTerminal, command);
       
-      otherTerminal.type("CEBR " + queueName).enter().waitForKeyboard();
+      otherTerminal.type("CEBR " + tsqName).enter().waitForKeyboard();
       assertThat(otherTerminal.retrieveScreen()).containsIgnoringCase(dataToWrite);
       otherTerminal.pf3().waitForKeyboard();
 
-      command = "DELETEQ TS QUEUE('" + queueName + "')";
+      command = "DELETEQ TS QUEUE('" + tsqName + "')";
       cics.ceci().issueCommand(ceciTerminal, command);
 
-      otherTerminal.type("CEBR " + queueName).enter().waitForKeyboard();
+      otherTerminal.type("CEBR " + tsqName).enter().waitForKeyboard();
       assertThat(otherTerminal.retrieveScreen().contains("DOES NOT EXIST")).isTrue();
       otherTerminal.resetAndClear();
    }
@@ -413,15 +420,16 @@ public class CECIManagerIVT {
     */
    @Test
    public void testPutAndGetDataFromContainer() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
-	  String programName = "CONTTEST";
+	  String programName = CONTTEST.getName();
 	  String channelName = "MY-CHANNEL";
 	  String containerName = "HOBBIT";
 	  String content = "my-content";
 		  
 	  logger.info("Linking program " + programName + " to channel " + channelName + " then putting the output into variable " + variableName);
 	  
-	  // Retrieving the use count of Program to compare with use count after the test case
+	  // Retrieving the use count of Program, should be 0
 	  int programUseCountBefore = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", programName).get("usecount"));
+	  assertThat(programUseCountBefore).isZero();
 	  
 	  otherTerminal.setUppercaseTranslation(false);
 	  
@@ -436,8 +444,9 @@ public class CECIManagerIVT {
       assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName)).isUpperCase();
       assertThat(cics.ceci().retrieveVariableText(ceciTerminal, "&" + variableName)).startsWith(content.toUpperCase());
       
+      // Retrieving the use count of Program, should be 1
       int programUseCountAfter = Integer.parseInt(cics.cemt().inquireResource(otherTerminal, "PROGRAM", programName).get("usecount"));
-	  assertThat(programUseCountBefore < programUseCountAfter).isTrue();
+	  assertThat(programUseCountAfter).isEqualTo(1);
    }
 
    /**
@@ -448,10 +457,11 @@ public class CECIManagerIVT {
     */
    @Test
    public void testLinkToProgramToCommarea() throws CeciException, CicstsManagerException  {
-	  String programName = "APITEST";
-      String variableValue = "galasa";
+	  String programName = APITEST.getName();
+	  String variableValue = "galasa";
+		  
 	  logger.info("Linking program " + programName + " to variable " + variableName);
-
+	  
       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
       ICeciResponse resp = cics.ceci().linkProgram(ceciTerminal, programName, "&" + variableName, null, null, false);
       assertThat(resp.getEIBRESP()).isZero();
@@ -524,11 +534,39 @@ public class CECIManagerIVT {
 	   
 	   assertThat(eib.getResponse()).isEqualTo("PGMIDERR");
 	   assertThat(eib.getEIBRESP()).isEqualTo(27);
-	   assertThat(eib.getEIBRESP2()).isEqualTo(3);
+	   assertThat(eib.getEIBRESP2()).isEqualTo(1);
 	   // Cross reference with the Ceci response
 	   assertThat(resp.getResponse()).isEqualTo("PGMIDERR");
 	   assertThat(resp.getEIBRESP()).isEqualTo(27);
-	   assertThat(resp.getEIBRESP2()).isEqualTo(3);	
+	   assertThat(resp.getEIBRESP2()).isEqualTo(1);	
+   }
+   
+   /**
+    * Tests that an abend response to a Program that abends is picked up by CECI
+    * 
+    * @throws CicstsManagerException 
+    * @throws CeciException 
+    * @throws FieldNotFoundException 
+    * @throws NetworkException 
+    * @throws TerminalInterruptedException 
+    * @throws KeyboardLockedException 
+    * @throws TimeoutException 
+    */
+    @Test
+   public void testAbendResponse() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+       String programName = PRGABEND.getName();
+       String variableValue = "galasa";
+		  
+       logger.info("Testing that an abend response is picked up by CECI");
+  	  
+       cics.ceci().defineVariableText(ceciTerminal, variableName, variableValue);
+       ICeciResponse resp = cics.ceci().linkProgram(ceciTerminal, programName, "&" + variableName, null, null, false);
+	   
+	   assertThatThrownBy(() -> {
+	      resp.checkNotAbended();
+	   }).isInstanceOf(CeciManagerException.class).hasMessageContaining("CECI response is an abend");
+	   
+	   assertThat(resp.checkAbended(null)).isInstanceOf(ICeciResponse.class);
    }
    
    private int getExpectedEIBDate() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
@@ -558,16 +596,6 @@ public class CECIManagerIVT {
          sb.append(alphabet.charAt(r.nextInt(26)));
       }
       return sb.toString();
-   }
-
-   @After
-   public void after() throws CeciException, CicstsManagerException {
-	   cics.ceci().deleteVariable(ceciTerminal, variableName);
-   }
-   
-   @AfterClass
-      public void afterClass() throws CicstsManagerException {
-      cics.ceci().deleteAllVariables(ceciTerminal);
    }
    
 }

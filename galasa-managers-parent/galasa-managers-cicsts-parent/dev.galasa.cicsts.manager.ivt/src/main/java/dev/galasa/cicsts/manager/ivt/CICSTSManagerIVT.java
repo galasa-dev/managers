@@ -7,14 +7,9 @@ package dev.galasa.cicsts.manager.ivt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.galasa.AfterClass;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
-import dev.galasa.core.manager.IResourceString;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.core.manager.ResourceString;
-import dev.galasa.core.manager.TestProperty;
-import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CemtException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
@@ -23,6 +18,7 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
+import dev.galasa.sem.SemTopology;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -34,71 +30,36 @@ import dev.galasa.zosbatch.ZosBatchException;
 import org.apache.commons.logging.Log;
 
 @Test
+@SemTopology
 public class CICSTSManagerIVT {
 	
    @Logger
    public Log logger;
 
-   @CicsRegion
+   @CicsRegion(cicsTag = "A")
    public ICicsRegion cics;
 
-   @CicsTerminal
+   @CicsTerminal(cicsTag = "A")
    public ICicsTerminal terminal;
    
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "VARNAME", required = false)
-   public String providedResourceString1;
-   @ResourceString(tag = "VARNAME", length = 8)
-   public IResourceString resourceString1;
-   
-   public String variableName;
-   
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "PROG", required = false)
-   public String providedResourceString2;
-   @ResourceString(tag = "PROG", length = 8)
-   public IResourceString resourceString2;
-   
-   public String programName;
-   
-   @TestProperty(prefix = "IVT.RESOURCE.STRING", suffix = "GROUP", required = false)
-   public String providedResourceString3;
-   @ResourceString(tag = "GROUP", length = 8)
-   public IResourceString resourceString3;
-   
-   public String groupName;
+   public String variableName = "VARNAME";
+  
+   public String programName = "IVTPROG";
+
+   public String groupName = "IVTGROUP";
+  
   
    @BeforeClass
-   public void login() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {
+   public void setup() throws KeyboardLockedException, NetworkException, TerminalInterruptedException, TimeoutException, FieldNotFoundException {   
+	  logger.info("CICS Region provisioned for this test: " + cics.getApplid());
+	  
       terminal.clear();
       terminal.waitForKeyboard();
-      
-      // Get and set unique resource strings
-	   if (providedResourceString1 != null) {
-		  variableName = providedResourceString1;
-	   } else {
-		  variableName = resourceString1.getString();
-	   }
-	   logger.info("Unique CECI variable name to be used in the tests: " + variableName);
-	   
-	   if (providedResourceString2 != null) {
-	      programName = providedResourceString2;
-	   } else {
-	      programName = resourceString2.getString();
-	   }
-	   logger.info("Unique Program name to be used in the tests: " + programName);
-	   
-	   if (providedResourceString3 != null) {
-	      groupName = providedResourceString3;
-	   } else {
-	      groupName = resourceString3.getString();
-	   }
-	   logger.info("Unique Group name to be used in the tests: " + groupName);
    }
 	
-   @Test
-   public void testNotNull() {
-	   assertThat(logger).isNotNull();
+   @BeforeClass
+   public void checkCicsLoaded() {
 	   assertThat(cics).isNotNull();
-	   assertThat(terminal).isNotNull();
    }
    
    /**
@@ -114,7 +75,6 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS TS Manager gets the correct APPLID for the CICS Region");
 	   String testApplid = cics.getApplid();
 	   assertThat(checkTerminalScreenContains(testApplid)).isTrue();
-	   logger.info("The correct APPLID was obtained");
    }
    
    /**
@@ -126,7 +86,6 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS TS Manager retrieves a CICS Resource");
 	   ICicsResource cicsResource = cics.cicsResource();
 	   assertThat(cicsResource).isNotNull();
-	   logger.info("CICS Resource obtained");
    }
    
    /**
@@ -140,16 +99,14 @@ public class CICSTSManagerIVT {
     */
    @Test
    public void testGetRegionJob() throws CicstsManagerException, ZosBatchException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that the CICS TS Manager finds the DSE CICS job for the CICS Region - there should be an active job as the CICS Region is running");
+	   logger.info("Testing that the CICS TS Manager finds the CICS job for the CICS Region - there should be an active job as the CICS Region is running");
 	   IZosBatchJob regionJob = cics.getRegionJob();
 	   assertThat(regionJob).isNotNull();
-	   logger.info("Region job obtained");
 	   
 	   logger.info("Testing that the CICS Region job information is correct");
 	   assertThat(regionJob.getJobname().toString()).isEqualToIgnoringCase(cics.getApplid());
 	   assertThat(regionJob.getType()).isEqualToIgnoringCase("JOB");
 	   assertThat(regionJob.getStatusString()).isEqualToIgnoringCase("ACTIVE");
-	   logger.info("Region job information correct");
    }
    
    /**
@@ -165,7 +122,6 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS Terminal gets the correct CICS Region");
 	   String testCicsRegion = terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "");
 	   assertThat(checkTerminalScreenContains(testCicsRegion)).isTrue();
-	   logger.info("Correct CICS Region obtained");
    }
    
    /**
@@ -187,7 +143,6 @@ public class CICSTSManagerIVT {
 	   assertThat(terminal.isConnected()).isTrue();
 	   assertThat(terminal.isClearScreen()).isTrue();
 	   assertThat(terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "")).isEqualTo(cics.getApplid());
-	   logger.info("Terminal reconnected to the correct CICS Region"); 
    }
    
    /**
@@ -204,7 +159,6 @@ public class CICSTSManagerIVT {
 	   logger.info("Testing that the CICS Terminal resets and clears screen correctly");
 	   terminal.resetAndClear();
 	   assertThat(terminal.isClearScreen()).isTrue();
-	   logger.info("Reset and clear was successful");
    }
    
    /**
@@ -227,7 +181,6 @@ public class CICSTSManagerIVT {
 	   startCeciSession();
 	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
 	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isUpperCase();
-	   logger.info("Lower case characters were translated to upper case");
 	   
 	   terminal.setUppercaseTranslation(false);
 	   assertThat(terminal.isUppercaseTranslation()).isFalse();
@@ -236,7 +189,6 @@ public class CICSTSManagerIVT {
 	   startCeciSession();
 	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
 	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
-	   logger.info("Lower case characters were not translated to upper case");
    }
    
    /**
@@ -275,13 +227,6 @@ public class CICSTSManagerIVT {
 	   terminal.clear();
 	   terminal.waitForKeyboard();
 	   terminal.type("CECI").enter().waitForKeyboard();
-   }
-   
-   @AfterClass
-   public void afterClass() throws CeciException, CicstsManagerException {
-	   cics.ceci().startCECISession(terminal);
-	   cics.ceci().deleteAllVariables(terminal);
-   }
- 
+   } 
 
 }
