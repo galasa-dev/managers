@@ -13,7 +13,6 @@ import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.opera.OperaOptions;
 
 import dev.galasa.selenium.IChromeOptions;
 

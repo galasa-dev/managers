@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 
 import dev.galasa.selenium.IEdgeOptions;

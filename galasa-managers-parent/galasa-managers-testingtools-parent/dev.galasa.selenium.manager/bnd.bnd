@@ -35,12 +35,8 @@ Import-Package: dev.galasa,\
     org.apache.commons.logging,\
     org.openqa.selenium,\
     org.openqa.selenium.interactions,\
-    org.openqa.selenium.chrome,\
-    org.openqa.selenium.edge,\
     org.openqa.selenium.firefox,\
     org.openqa.selenium.ie,\
-    org.openqa.selenium.opera,\
-    org.openqa.selenium.safari,\
     org.openqa.selenium.remote,\
     org.openqa.selenium.io,\
     org.openqa.selenium.json,\
