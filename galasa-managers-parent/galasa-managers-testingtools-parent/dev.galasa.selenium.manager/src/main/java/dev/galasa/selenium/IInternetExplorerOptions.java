@@ -3,9 +3,16 @@
 */
 package dev.galasa.selenium;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.openqa.selenium.ie.InternetExplorerOptions;
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.Platform;
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
+import org.openqa.selenium.ie.ElementScrollBehavior;
 
 /**
  * A Options pass through interface for the Selenium Options object
@@ -14,8 +21,6 @@ import org.openqa.selenium.ie.InternetExplorerOptions;
  *
  */
 public interface IInternetExplorerOptions {
-
-    public InternetExplorerOptions getOptions();
 
     public void destructivelyEnsureCleanSession();
 
@@ -44,5 +49,45 @@ public interface IInternetExplorerOptions {
     public void setCapability(String key, String value);
 
     public void setCapability(String key, Boolean value);
+    
+    public Map<String,Object> asMap();
+
+    public void elementScrollTo(ElementScrollBehavior behavior);
+    
+    public void enableNativeEvents();
+    
+    public String getBrowserName();
+    
+    public Object getCapability(String capabilityName);
+    
+    public Set<String> getCapabilityNames();
+    
+    public Platform getPlatform();
+    
+    public String getVersion();
+    
+    public boolean is(String capabilityName);
+    
+    public boolean isJavascriptEnabled();
+    
+    public void setCapability(String capabilityName, Platform value);
+    
+    public void setPageLoadStrategy(PageLoadStrategy strategy);
+    
+    public void setProxy(Proxy proxy);
+    
+    public void setUnhandledPromptBehaviour(UnexpectedAlertBehaviour  behaviour);
+    
+    public void takeFullPageScreenshot();
+    
+    public void usePerProcessProxy();
+    
+    public void useShellWindowsApiToAttachToIe();
+    
+    public void waitForUploadDialogUpTo(Duration duration);
+    
+    public void waitForUploadDialogUpTo(Long duration, TimeUnit unit);
+    
+    public void withAttachTimeout(Duration duration);
     
 }

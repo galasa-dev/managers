@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.selenium.internal;
 
@@ -28,21 +26,22 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
+import dev.galasa.framework.spi.IFramework;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
 
 public class WebPageImpl implements IWebPage {
 
+	private SeleniumManagerImpl selMan;
     private WebDriver driver;
-
     private List<IWebPage> webPages;
-
     private Path screenshotRasDirectory;
 
     public static final int DEFAULT_SECONDS_TIMEOUT = 30;
 
-    public WebPageImpl(WebDriver driver, List<IWebPage> webPages, Path screenshotRasDirectory) {
-        this.driver = driver;
+    public WebPageImpl(SeleniumManagerImpl selMan, WebDriver driver, List<IWebPage> webPages, Path screenshotRasDirectory) {
+        this.selMan = selMan;
+    	this.driver = driver;
         this.webPages = webPages;
         this.screenshotRasDirectory = screenshotRasDirectory;
     }
@@ -654,8 +653,10 @@ public class WebPageImpl implements IWebPage {
         File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
         String time = String.valueOf(Instant.now().toEpochMilli());
         try {
-            Files.createFile(screenshotRasDirectory.resolve("screenshot_" + time + ".png"));
-            try(OutputStream os = Files.newOutputStream(screenshotRasDirectory.resolve("screenshot_" + time + ".png"), new SetContentType(ResultArchiveStoreContentType.PNG))) {
+            Files.createFile(screenshotRasDirectory.
+            		resolve(selMan.getCurrentMethod()).
+            		resolve("screenshot_" + time + ".png"));
+            try(OutputStream os = Files.newOutputStream(screenshotRasDirectory.resolve(selMan.getCurrentMethod()).resolve("screenshot_" + time + ".png"), new SetContentType(ResultArchiveStoreContentType.PNG))) {
                 Files.copy(scrFile.toPath(), os); 
                 os.flush();
                 os.close();

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.selenium.internal;
 
@@ -23,9 +21,9 @@ import dev.galasa.selenium.SeleniumManagerException;
 public class DriverImpl {
 	private List<IWebPage> webPages = new ArrayList<>();
 	 	 
-	public IWebPage allocatePage(WebDriver driver, String url, Path screenshotRasDirectory)
+	public IWebPage allocatePage(SeleniumManagerImpl seleniumManager, WebDriver driver, String url, Path screenshotRasDirectory)
 			throws SeleniumManagerException {
-		WebPageImpl webPage = new WebPageImpl(driver, webPages, screenshotRasDirectory);
+		WebPageImpl webPage = new WebPageImpl(seleniumManager, driver, webPages, screenshotRasDirectory);
 
 		if (url != null && !url.trim().isEmpty())
 			webPage.get(url);
