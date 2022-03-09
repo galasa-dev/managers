@@ -1,24 +1,18 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.selenium.internal;
 
 import java.nio.file.Path;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.opera.OperaOptions;
 
 import dev.galasa.selenium.Browser;
 import dev.galasa.selenium.IChromeOptions;
 import dev.galasa.selenium.IEdgeOptions;
 import dev.galasa.selenium.IFirefoxOptions;
 import dev.galasa.selenium.IInternetExplorerOptions;
-import dev.galasa.selenium.ISeleniumManager;
+import dev.galasa.selenium.IOperaOptions;
 import dev.galasa.selenium.IWebDriver;
 import dev.galasa.selenium.IWebPage;
 import dev.galasa.selenium.SeleniumManagerException;
@@ -33,9 +27,11 @@ import dev.galasa.selenium.SeleniumManagerException;
 public class LocalDriverImpl extends DriverImpl implements IWebDriver{
     private Path screenshotRasDirectory;
     private Browser browser;
+    private SeleniumManagerImpl seleniumManager;
 
-    public LocalDriverImpl(Browser browser, Path screenshotRasDirectory) throws SeleniumManagerException {
-        this.screenshotRasDirectory = screenshotRasDirectory.resolve(browser.getDriverName());
+    public LocalDriverImpl(SeleniumManagerImpl seleniumManager, Browser browser, Path screenshotRasDirectory) throws SeleniumManagerException {
+        this.seleniumManager = seleniumManager;
+    	this.screenshotRasDirectory = screenshotRasDirectory;
         this.browser = browser;
     }
 
@@ -58,7 +54,7 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -74,15 +70,15 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, ChromeOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IChromeOptions options) throws SeleniumManagerException {
         WebDriver driver = null;
 
         try {
-            driver = LocalBrowser.getChromeDriver(options);
+            driver = LocalBrowser.getChromeDriver(((ChromeOptionsImpl)options).get());
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -90,15 +86,15 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, EdgeOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IEdgeOptions options) throws SeleniumManagerException {
         WebDriver driver = null;
 
         try {
-            driver = LocalBrowser.getEdgeDriver(options);
+            driver = LocalBrowser.getEdgeDriver(((EdgeOptionsImpl)options).get());
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type: " + browser.getDriverName());
@@ -106,15 +102,15 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, InternetExplorerOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IInternetExplorerOptions options) throws SeleniumManagerException {
         WebDriver driver = null;
 
         try {
-            driver = LocalBrowser.getIEDriver(options);
+            driver = LocalBrowser.getIEDriver(((InternetExplorerOptionsImpl)options).get());
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type:" + browser.getDriverName());
@@ -122,15 +118,15 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
-    public IWebPage allocateWebPage(String url, OperaOptions options) throws SeleniumManagerException {
+    public IWebPage allocateWebPage(String url, IOperaOptions options) throws SeleniumManagerException {
         WebDriver driver = null;
 
         try {
-            driver = LocalBrowser.getOperaDriver(options);
+            driver = LocalBrowser.getOperaDriver(((OperaOptionsImpl)options).get());
 
             if (driver == null)
                 throw new SeleniumManagerException("Unsupported driver type:" + browser.getDriverName());
@@ -138,7 +134,7 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
             throw new SeleniumManagerException("Issue provisioning web driver", e);
         }
 
-        return allocatePage(driver, url, screenshotRasDirectory);
+        return allocatePage(seleniumManager, driver, url, screenshotRasDirectory);
     }
 
     @Override
@@ -154,6 +150,11 @@ public class LocalDriverImpl extends DriverImpl implements IWebDriver{
     @Override
     public IEdgeOptions getEdgeOptions() {
         return new EdgeOptionsImpl();
+    }
+    
+    @Override
+    public IOperaOptions getOperaOptions() {
+        return new OperaOptionsImpl();
     }
 
     @Override

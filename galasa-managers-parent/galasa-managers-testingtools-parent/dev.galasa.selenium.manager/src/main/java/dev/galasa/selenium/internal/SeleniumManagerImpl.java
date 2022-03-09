@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.selenium.internal;
 
@@ -62,6 +60,8 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     private IHttpManagerSpi httpManager;
     private IKubernetesManagerSpi k8Manager;
     private IArtifactManager artifactManager;
+    
+    private String currentMethod;
     
     private SeleniumEnvironment seleniumEnvironment;
 
@@ -154,6 +154,11 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     }
     
     @Override
+    public void startOfTestMethod(@NotNull GalasaMethod galasaMethod) throws ManagerException {
+    	this.currentMethod = galasaMethod.getJavaExecutionMethod().getName();
+    }
+    
+    @Override
     public void provisionStop() {
     	try {
     		seleniumEnvironment.closePages();
@@ -208,6 +213,9 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     
     public IFramework getFramework() {
     	return this.framework;
+    }
+    public String getCurrentMethod() {
+    	return this.currentMethod;
     }
     public IConfigurationPropertyStoreService getCps() {
     	return this.cps;

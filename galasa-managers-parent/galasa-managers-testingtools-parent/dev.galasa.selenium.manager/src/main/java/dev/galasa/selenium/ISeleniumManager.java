@@ -5,11 +5,6 @@ package dev.galasa.selenium;
 
 import java.util.List;
 
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.opera.OperaOptions;
-
 /**
  * This interface is being deprecated and replaced with a more appropriately named IWebDriver interface.
  * 
@@ -40,25 +35,25 @@ public interface ISeleniumManager {
      * Allocate a new WebPage for a provided URL with Chrome Options
      * @throws SeleniumManagerException
      */
-    public IWebPage allocateWebPage(String url, ChromeOptions options) throws SeleniumManagerException;
+    public IWebPage allocateWebPage(String url, IChromeOptions options) throws SeleniumManagerException;
 
     /**
      * Allocate a new WebPage for a provided URL with Edge Options
      * @throws SeleniumManagerException
      */
-    public IWebPage allocateWebPage(String url, EdgeOptions options) throws SeleniumManagerException;
+    public IWebPage allocateWebPage(String url, IEdgeOptions options) throws SeleniumManagerException;
 
     /**
      * Allocate a new WebPage for a provided URL with Internet Explorer Options
      * @throws SeleniumManagerException
      */
-    public IWebPage allocateWebPage(String url, InternetExplorerOptions options) throws SeleniumManagerException;
+    public IWebPage allocateWebPage(String url, IInternetExplorerOptions options) throws SeleniumManagerException;
 
     /**
      * Allocate a new WebPage for a provided URL with Opera Options
      * @throws SeleniumManagerException
      */
-    public IWebPage allocateWebPage(String url, OperaOptions options) throws SeleniumManagerException;
+    public IWebPage allocateWebPage(String url, IOperaOptions options) throws SeleniumManagerException;
 
     /**
      * Creates a new interface to the Firefox properties that can be set.
