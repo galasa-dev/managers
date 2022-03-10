@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.21.0'
+version = '0.22.0'
 
 dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')

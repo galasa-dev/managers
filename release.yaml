@@ -100,7 +100,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.cloud.manager
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     javadoc: true
     bom: true
@@ -237,7 +237,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.kubernetes.manager
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     javadoc: true
     bom: true
