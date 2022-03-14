@@ -169,14 +169,14 @@ public class RseapiZosBatchImpl implements IZosBatch {
                 throw new ZosBatchException(e);
             }
             for (JsonElement jsonElement : jsonArray) {
-                JsonObject responseBody = jsonElement.getAsJsonObject();
-                String jobnameString = responseBody.get("jobName").getAsString();
+                JsonObject item = jsonElement.getAsJsonObject();
+                String jobnameString = item.get("jobName").getAsString();
                 IZosBatchJobname jobname = this.zosBatchManager.newZosBatchJobname(jobnameString);
                 RseapiZosBatchJobImpl zosBatchJob = new RseapiZosBatchJobImpl(this.zosBatchManager, this.image, jobname, null, null);
-                zosBatchJob.setJobid(responseBody.get("jobId").getAsString());
-                zosBatchJob.setOwner(responseBody.get("owner").getAsString());
-                zosBatchJob.setType(responseBody.get("type").getAsString());
-                zosBatchJob.setStatusString(responseBody.get("status").getAsString());
+                zosBatchJob.setJobid(item.get("jobId").getAsString());
+                zosBatchJob.setOwner(item.get("owner").getAsString());
+                zosBatchJob.setType(item.get("type").getAsString());
+                zosBatchJob.setStatusString(item.get("status").getAsString());
                 zosBatchJob.setJobPathValues();
                 zosBatchJobList.add(zosBatchJob);
             }

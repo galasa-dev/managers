@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -1319,4 +1320,66 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
             saveToResultsArchive(rasPath.toString());
         }
     }
+
+	protected List<String> listDatasets() throws ZosDatasetException {
+		List<String> datasetList = new ArrayList<>();
+		
+		if (!this.dsname.endsWith("*")) {
+			this.dsname = this.dsname + "*";
+		}
+        
+        String urlPath = RESTFILES_DATASET_PATH + "?dslevel=" + this.dsname;
+        IZosmfResponse response;
+        try {
+
+            response = this.zosmfApiProcessor.sendRequest(ZosmfRequestType.GET, urlPath, null, null,
+                    new ArrayList<>(Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_BAD_REQUEST, HttpStatus.SC_INTERNAL_SERVER_ERROR)), this.convert);
+        } catch (ZosmfException e) {
+            throw new ZosDatasetException(e);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {
+        	// Error case
+            JsonObject responseBody;
+            try {
+                responseBody = response.getJsonContent();
+            } catch (ZosmfException e) {
+                throw new ZosDatasetException("Unable to list data sets " + quoted(this.dsname) + logOnImage(), e);
+            }
+            
+            logger.trace(responseBody);
+            
+            String displayMessage = buildErrorString("listing", responseBody); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {        
+	        JsonObject responseBody;
+	        try {
+	            responseBody = response.getJsonContent();
+	        } catch (ZosmfException e) {
+	            throw new ZosDatasetException("Unable to retrieve list of data sets " + quoted(this.dsname) + logOnImage(), e);
+	        }
+	        
+	        logger.trace(responseBody);
+	        
+	        JsonArray jsonArray;
+            try {
+            	JsonObject jsonObject = response.getJsonContent();
+            	jsonArray = jsonObject.get("items").getAsJsonArray();
+            } catch (ZosmfException e) {
+                throw new ZosDatasetException(e);
+            }
+            for (JsonElement jsonElement : jsonArray) {
+                JsonObject item = jsonElement.getAsJsonObject();
+                String name = item.get("dsname").getAsString();
+                datasetList.add(name);
+            }
+        }
+        
+        logger.trace("List of members of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
+
+        return datasetList;
+	}
 }

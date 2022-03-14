@@ -95,7 +95,13 @@ public class RseapiZosFileHandlerImpl implements IZosFileHandler {
         return zosVsamDataset;
     }
     
-    public void cleanup() throws ZosFileManagerException {
+    @Override
+	public List<String> listDatasets(String prefix, IZosImage image) throws ZosDatasetException {
+    	RseapiZosDatasetImpl zosDatasetPrefix = new RseapiZosDatasetImpl(this, image, prefix);
+    	return ((RseapiZosDatasetImpl) zosDatasetPrefix).listDatasets();
+	}
+    
+	public void cleanup() throws ZosFileManagerException {
         cleanupDatasets();
         cleanupVsamDatasets();
         cleanupUnixFiles();

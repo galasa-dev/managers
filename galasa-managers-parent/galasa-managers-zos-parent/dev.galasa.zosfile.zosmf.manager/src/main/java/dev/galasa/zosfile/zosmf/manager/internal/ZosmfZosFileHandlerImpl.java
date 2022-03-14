@@ -80,7 +80,13 @@ public class ZosmfZosFileHandlerImpl implements IZosFileHandler {
         return zosVsamDataset;
     }
     
-    public void cleanup() throws ZosFileManagerException {
+    @Override
+	public List<String> listDatasets(String prefix, IZosImage image) throws ZosDatasetException {
+    	ZosmfZosDatasetImpl zosDatasetPrefix = new ZosmfZosDatasetImpl(this, image, prefix);
+    	return ((ZosmfZosDatasetImpl) zosDatasetPrefix).listDatasets();
+	}
+    
+	public void cleanup() throws ZosFileManagerException {
         cleanupDatasets();
         cleanupVsamDatasets();
         cleanupUnixFiles();
