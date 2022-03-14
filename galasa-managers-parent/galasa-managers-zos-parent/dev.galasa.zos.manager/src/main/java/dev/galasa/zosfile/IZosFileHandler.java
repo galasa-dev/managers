@@ -1,9 +1,9 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile;
+
+import java.util.List;
 
 import dev.galasa.zos.IZosImage;
 
@@ -64,4 +64,14 @@ public interface IZosFileHandler {
      * @throws ZosVSAMDatasetException 
      */
     public IZosVSAMDataset newVSAMDataset(String dsname, IZosImage image) throws ZosVSAMDatasetException;
+
+    /**
+     * Return a {@link List} of data set name starting with the supplied prefix
+     * 
+     * @param prefix
+     * @param image
+     * @return
+     * @throws ZosDatasetException 
+     */
+    public List<String> listDatasets(String prefix, IZosImage image) throws ZosDatasetException;
 }

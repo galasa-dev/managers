@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.rseapi.manager.internal;
 
@@ -13,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -52,6 +51,7 @@ public class RseapiZosDatasetImpl implements IZosDataset {
     private static final String RESTFILES_DATASET_PATH_CONTENT = SLASH + "content";
     private static final String RESTFILES_DATASET_PATH_RAW_CONTENT = SLASH + "rawContent";
     private static final String RESTFILES_DATASET_PATH_MEMBERS = SLASH + "members";
+    private static final String RESTFILES_DATASET_LIST = SLASH + "list";
     
     // data set and member names
     private String dsname;
@@ -1163,4 +1163,55 @@ public class RseapiZosDatasetImpl implements IZosDataset {
             saveToResultsArchive(rasPath.toString());
         }
     }
+
+	protected List<String> listDatasets() throws ZosDatasetException {
+		List<String> datasetList = new ArrayList<>();
+		
+		if (!this.dsname.endsWith("*")) {
+			this.dsname = this.dsname + "*";
+		}
+        
+        String urlPath = RESTFILES_DATASET_PATH + SLASH + this.dsname + RESTFILES_DATASET_LIST;
+        IRseapiResponse response;
+        try {
+            response = this.rseapiApiProcessor.sendRequest(RseapiRequestType.GET, urlPath, null, null, RseapiZosFileHandlerImpl.VALID_STATUS_CODES, true);
+        } catch (RseapiException e) {
+            throw new ZosDatasetException(e);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {
+        	// Error case
+            String displayMessage = this.zosFileHandler.buildErrorString("List data sets", response); 
+            logger.error(displayMessage);
+            throw new ZosDatasetException(displayMessage);
+        }
+        
+        if (response.getStatusCode() != HttpStatus.SC_NOT_FOUND) {        
+	        JsonObject responseBody;
+	        try {
+	            responseBody = response.getJsonContent();
+	        } catch (RseapiException e) {
+	            throw new ZosDatasetException("Unable to retrieve list of data sets " + quoted(this.dsname) + logOnImage(), e);
+	        }
+	        
+	        logger.trace(responseBody);
+	        
+	        JsonArray jsonArray;
+            try {
+            	JsonObject jsonObject = response.getJsonContent();
+            	jsonArray = jsonObject.get("items").getAsJsonArray();
+            } catch (RseapiException e) {
+                throw new ZosDatasetException(e);
+            }
+            for (JsonElement jsonElement : jsonArray) {
+                JsonObject item = jsonElement.getAsJsonObject();
+                String name = item.get("name").getAsString();
+                datasetList.add(name);
+            }
+        }
+        
+        logger.trace("List of members of data set " + quoted(this.dsname) + "  retrieved from  image " + this.image.getImageID());
+
+        return datasetList;
+	}
 }
