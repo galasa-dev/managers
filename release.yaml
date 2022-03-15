@@ -38,7 +38,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.cicsts.manager.ivt
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     mvp: true
     bom: true
@@ -54,7 +54,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.cicsts.ceci.manager.ivt
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     mvp: true
     bom: true
@@ -70,7 +70,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.cicsts.ceda.manager.ivt
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     mvp: true
     isolated: true
@@ -85,7 +85,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.cicsts.cemt.manager.ivt
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     mvp: true
     isolated: true
