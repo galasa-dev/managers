@@ -18,7 +18,6 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
-import dev.galasa.sem.SemTopology;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -30,7 +29,6 @@ import dev.galasa.zosbatch.ZosBatchException;
 import org.apache.commons.logging.Log;
 
 @Test
-@SemTopology
 public class CICSTSManagerIVT {
 	
    @Logger

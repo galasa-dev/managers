@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.sem.SemTopology;
 import dev.galasa.cicsts.CedaException;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
@@ -25,7 +24,6 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 
 @Test
-@SemTopology
 public class CedaManagerIVT {
 	
    @Logger
@@ -39,7 +37,7 @@ public class CedaManagerIVT {
 
    @CicsTerminal(cicsTag = "A")
    public ICicsTerminal cemtTerminal;
-
+   
    @CicsTerminal(cicsTag = "A")
    public ICicsTerminal terminal;
    
@@ -64,6 +62,9 @@ public class CedaManagerIVT {
       
       cemtTerminal.clear();
       cemtTerminal.waitForKeyboard();
+      
+      terminal.clear();
+      terminal.waitForKeyboard();
    }
 
    @BeforeClass
