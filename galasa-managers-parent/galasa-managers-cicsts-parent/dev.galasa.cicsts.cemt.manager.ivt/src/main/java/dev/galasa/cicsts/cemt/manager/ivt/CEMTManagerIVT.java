@@ -24,7 +24,6 @@ import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.CedaException;
 import dev.galasa.cicsts.CemtException;
-import dev.galasa.sem.SemTopology;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -33,7 +32,6 @@ import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zosbatch.ZosBatchException;
 
 @Test
-@SemTopology
 public class CEMTManagerIVT {
 	
    @Logger

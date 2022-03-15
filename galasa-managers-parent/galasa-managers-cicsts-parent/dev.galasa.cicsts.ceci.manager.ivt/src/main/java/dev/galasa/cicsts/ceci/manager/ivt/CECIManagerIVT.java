@@ -19,7 +19,6 @@ import dev.galasa.Before;
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
 import dev.galasa.core.manager.Logger;
-import dev.galasa.sem.SemTopology;
 import dev.galasa.cicsts.CeciException;
 import dev.galasa.cicsts.CeciManagerException;
 import dev.galasa.cicsts.CemtException;
@@ -40,14 +39,10 @@ import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatch;
-import dev.galasa.zosprogram.IZosProgram;
-import dev.galasa.zosprogram.ZosProgram;
-import dev.galasa.zosprogram.ZosProgram.Language;
 
 import org.apache.commons.logging.Log;
 
 @Test
-@SemTopology
 public class CECIManagerIVT {
 
    @Logger
@@ -65,48 +60,13 @@ public class CECIManagerIVT {
    @ZosBatch(imageTag = "PRIMARY")
    public IZosBatch batch;
    
-   @ZosProgram(name = "APITEST", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
-   public IZosProgram APITEST;
-   
-   @ZosProgram(name = "CONTTEST", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
-   public IZosProgram CONTTEST;
-   
-   @ZosProgram(name = "PRGABEND", language = Language.COBOL, imageTag = "PRIMARY", cics = true)
-   public IZosProgram PRGABEND;
-   
    public String tsqName = "IVTQUEUE";
    
-   public String libName = "LIB1";
-   
-   public String groupName = "PROGGRP";
-   
    public String variableName = "VARNAME";
-   
-   @BeforeClass
-   public void setup() throws CeciException, CicstsManagerException {
-	   logger.info("CICS Region provisioned for this test: " + cics.getApplid());
-	   
-	   // Define compiled COBOL programs to CICS Region
-	   cics.ceda().createResource(otherTerminal, "PROGRAM", APITEST.getName(), groupName, null);
-	   cics.ceda().createResource(otherTerminal, "PROGRAM", CONTTEST.getName(), groupName, null);
-	   cics.ceda().createResource(otherTerminal, "PROGRAM", PRGABEND.getName(), groupName, null);
-	   // Define Library where all Programs are compiled
-	   cics.ceda().createResource(otherTerminal, "LIBRARY", libName, groupName, "DSNAME01(" + APITEST.getLoadlib().getName() + ")");
-	   // Install everything 
-	   cics.ceda().installGroup(otherTerminal, groupName);
-   }
-   
+ 
    @BeforeClass
    public void checkCeciLoaded() throws CicstsManagerException {
        assertThat(cics.ceci()).isNotNull();
-   }
-   
-   @BeforeClass
-   public void checkProgramsLoaded() throws CemtException, CicstsManagerException {
-	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", APITEST.getName()).get("program")).isEqualTo(APITEST.getName());
-	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", CONTTEST.getName()).get("program")).isEqualTo(CONTTEST.getName());
-	   assertThat(cics.cemt().inquireResource(otherTerminal, "PROGRAM", PRGABEND.getName()).get("program")).isEqualTo(PRGABEND.getName());
-	   assertThat(cics.cemt().inquireResource(otherTerminal, "LIBRARY", libName).get("library")).isEqualTo(libName);  
    }
    
    /**
@@ -420,7 +380,7 @@ public class CECIManagerIVT {
     */
    @Test
    public void testPutAndGetDataFromContainer() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
-	  String programName = CONTTEST.getName();
+	  String programName = "CONTTEST";
 	  String channelName = "MY-CHANNEL";
 	  String containerName = "HOBBIT";
 	  String content = "my-content";
@@ -457,7 +417,7 @@ public class CECIManagerIVT {
     */
    @Test
    public void testLinkToProgramToCommarea() throws CeciException, CicstsManagerException  {
-	  String programName = APITEST.getName();
+	  String programName = "APITEST";
 	  String variableValue = "galasa";
 		  
 	  logger.info("Linking program " + programName + " to variable " + variableName);
@@ -554,7 +514,7 @@ public class CECIManagerIVT {
     */
     @Test
    public void testAbendResponse() throws CeciException, CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-       String programName = PRGABEND.getName();
+       String programName = "PRGABEND";
        String variableValue = "galasa";
 		  
        logger.info("Testing that an abend response is picked up by CECI");

@@ -4,11 +4,10 @@ plugins {
 
 description = 'Galasa CEDA Manager IVTs'
 
-version = '0.21.0'
+version = '0.22.0'
 
 dependencies {
     implementation project (':galasa-managers-core-parent:dev.galasa.core.manager')
     implementation project (':galasa-managers-cicsts-parent:dev.galasa.cicsts.ceda.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
-    implementation project (':galasa-managers-internal-parent:dev.galasa.sem.manager')
 }
