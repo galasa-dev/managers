@@ -583,6 +583,16 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
             return;
         }
 
+        String provisionType = this.cicsManager.getProvisionType().toLowerCase();
+        switch(provisionType) {
+            case "sem":
+            case "provisioned":
+            case "mixed":
+                break;
+            default:
+                return;
+        }
+        
         // TODO do we need to replicate provisioning type of Resolved?
 
         // TODO feature toggle support?
