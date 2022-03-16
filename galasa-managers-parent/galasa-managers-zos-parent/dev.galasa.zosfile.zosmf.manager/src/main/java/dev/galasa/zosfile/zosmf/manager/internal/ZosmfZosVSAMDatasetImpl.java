@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile.zosmf.manager.internal;
 
@@ -214,6 +212,35 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
         
         JsonArray amsInput = new JsonArray();
         String[] items = getDefineCommand().split("\n");
+        for (String item : items ) {
+            amsInput.add(item);
+        }
+        JsonObject requestBody = new JsonObject();
+        requestBody.add(PROP_INPUT, amsInput);
+        
+        idcamsRequest(requestBody);
+        
+        if (exists()) {
+            logger.info(LOG_VSAM_DATA_SET + quoted(this.name) + " created" + logOnImage());
+            this.datasetCreated = true;
+        } else {
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " not created" + logOnImage());
+        }
+        
+        return this;
+    }
+
+    @Override
+    public IZosVSAMDataset clone(IZosVSAMDataset model) throws ZosVSAMDatasetException {
+        if (exists()) {
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(this.name) + " already exists" + logOnImage());
+        }
+        if (!model.exists()) {
+            throw new ZosVSAMDatasetException(LOG_VSAM_DATA_SET + quoted(model.getName()) + " does not exist" + logOnImage());
+        }        
+        
+        JsonArray amsInput = new JsonArray();
+        String[] items = getDefineModelCommand(model).split("\n");
         for (String item : items ) {
             amsInput.add(item);
         }
@@ -1021,6 +1048,18 @@ public class ZosmfZosVSAMDatasetImpl implements IZosVSAMDataset {
 
         sb.append("  " + ((uniqueINDEX) ? "UNIQUE" : "") + ")");
     }
+
+    protected String getDefineModelCommand(IZosVSAMDataset model) {
+    	StringBuilder sb = new StringBuilder();
+        sb.append("DEFINE CLUSTER ( -\n");
+        sb.append("  NAME(");
+        sb.append(this.name);
+        sb.append(") -\n");
+        sb.append("  MODEL(");
+        sb.append(model.getName());
+        sb.append("))");
+		return sb.toString();
+	}
 
     /**
      * Add a declaration to the define command, such as NOERASE

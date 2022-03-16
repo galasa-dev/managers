@@ -52,7 +52,9 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     
     // data set and member names
     private String dsname;
-    private boolean datasetCreated = false;
+    private String memberName;
+
+	private boolean datasetCreated = false;
     private boolean convert = true;
     
     private Collection<String> datasetMembers;
@@ -590,6 +592,11 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     }
 
     @Override
+	public String getMemberName() {
+	    return this.memberName;
+	}
+
+	@Override
     public void setDataType(DatasetDataType dataType) {
         String dType = dataType.toString();
         if ("binary".equals(dType)){
@@ -1277,6 +1284,7 @@ public class ZosmfZosDatasetImpl implements IZosDataset {
     protected void splitDSN(String fullName) {
         if (fullName.matches(".*\\(.*\\)")) {
             this.dsname = fullName.substring(0, fullName.indexOf('(')).trim();
+            this.memberName = fullName.substring(fullName.indexOf("(")+1, fullName.indexOf(")"));
         } else {
             this.dsname = fullName;
         }

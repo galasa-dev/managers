@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile;
 
@@ -270,6 +268,13 @@ public interface IZosDataset {
      * @throws ZosDatasetException
      */
     public boolean isPDS() throws ZosDatasetException;
+    
+    /**
+     * Returns the member name if supplied and is a partitioned data set
+     * @return
+     * @throws ZosDatasetException
+     */
+    public String getMemberName();
 
     /**
      * Create an empty member in the partitioned data set
