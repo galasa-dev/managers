@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosfile;
 
@@ -139,6 +137,13 @@ public interface IZosVSAMDataset {
      * @throws ZosVSAMDatasetException 
      */
     public IZosVSAMDataset create() throws ZosVSAMDatasetException;
+    
+    /**
+     * Allocate the physical VSAM data set on the zOS image using the supplied VSAM data set as a model. Will be deleted at test method end
+     * @return
+     * @throws ZosVSAMDatasetException 
+     */
+    public IZosVSAMDataset clone(IZosVSAMDataset model) throws ZosVSAMDatasetException;
     
     /**
      * Delete the VSAM data set on the zOS image.
