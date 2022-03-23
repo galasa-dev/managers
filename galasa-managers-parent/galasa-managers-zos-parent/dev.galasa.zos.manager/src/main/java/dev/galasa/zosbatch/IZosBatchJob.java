@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch;
 
@@ -108,6 +106,17 @@ public interface IZosBatchJob {
      * @throws ZosBatchException
      */
     public int waitForJob() throws ZosBatchException;
+    
+    /**
+     * Wait for a job to complete. Return the highest return code for the job. The method will wait for the default 
+     * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
+     * Use {@link #getRetcode()} to get the {@link String} value
+     * 
+     * @param milliSecondTimeout
+     * @return highest CC
+     * @throws ZosBatchException
+     */
+    public int waitForJob(long milliSecondTimeout) throws ZosBatchException;
 
     /**
      * Provides a list of the batch job spool files as an {@link IZosBatchJobOutput} object without retrieving spool file content
