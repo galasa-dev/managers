@@ -247,12 +247,17 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 
     @Override
     public int waitForJob() throws ZosBatchException {
+    	return waitForJob(jobWaitTimeout);
+    }
+
+    @Override
+    public int waitForJob(long milliSecondTimeout) throws ZosBatchException {
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
         }
-        logger.info("Waiting up to " + jobWaitTimeout + " second(s) for "+ this.jobid + " " + this.jobname.getName() + " to complete");
+        logger.info("Waiting up to " + milliSecondTimeout + " second(s) for "+ this.jobid + " " + this.jobname.getName() + " to complete");
         
-        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(jobWaitTimeout);
+        LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(milliSecondTimeout);
         while (LocalDateTime.now().isBefore(timeoutTime)) {
             updateJobStatus();
             if (this.jobNotFound) {
