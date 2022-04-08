@@ -112,11 +112,11 @@ public interface IZosBatchJob {
      * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
      * Use {@link #getRetcode()} to get the {@link String} value
      * 
-     * @param milliSecondTimeout
+     * @param timeout in seconds
      * @return highest CC
      * @throws ZosBatchException
      */
-    public int waitForJob(long milliSecondTimeout) throws ZosBatchException;
+    public int waitForJob(long timeout) throws ZosBatchException;
 
     /**
      * Provides a list of the batch job spool files as an {@link IZosBatchJobOutput} object without retrieving spool file content
