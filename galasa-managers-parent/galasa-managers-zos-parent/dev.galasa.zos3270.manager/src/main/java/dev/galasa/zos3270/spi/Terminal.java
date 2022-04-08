@@ -548,17 +548,67 @@ public class Terminal implements ITerminal {
 
 	@Override
 	public void setCursorPosition(int row, int col) throws KeyboardLockedException, Zos3270Exception {
-		throw new Zos3270Exception("This method has not been developed yet");
+		checkCursorPosition(row, col, 0 /* not worried about length */);
+		
+		row--;
+		col--;
+		screen.setCursorPosition(col, row);
 	}
 
 	@Override
 	public String retrieveText(int row, int col, int length) throws Zos3270Exception {
-		throw new Zos3270Exception("This method has not been developed yet");
+		checkCursorPosition(row, col, length);
+		
+		row--;
+		col--;
+		
+		String textScreen = screen.retrieveFlatScreen();
+
+		int startPos = (row * screen.getNoOfColumns()) + col;
+		int endPos = startPos + (length - 1);
+		
+		return textScreen.substring(startPos, endPos);
 	}
 
 	@Override
 	public String retrieveTextAtCursor(int length) throws Zos3270Exception {
-		throw new Zos3270Exception("This method has not been developed yet");
+		
+		int pos = screen.getCursor();
+		if ((pos + length) > this.screen.getScreenSize()) {
+			throw new Zos3270Exception("Invalid length, it would exceed the screen buffer");
+		}
+		
+		String textScreen = screen.retrieveFlatScreen();
+		
+		int endPos = pos + (length - 1);
+		
+		return textScreen.substring(pos, endPos);
+	}
+	
+	private void checkCursorPosition(int row, int col, int length) throws Zos3270Exception {
+		if (row < 1 || col < 1) {
+			throw new Zos3270Exception("Invalid cursor position, row and col are index based 1");
+		}
+		
+		int rows = screen.getNoOfRows();
+		if (row > rows) {
+			throw new Zos3270Exception("Invalid cursor position, row exceeds number of rows (" + rows + ")");
+		}
+		
+		int cols = screen.getNoOfColumns();
+		if (col > cols) {
+			throw new Zos3270Exception("Invalid cursor position, col exceeds number of columns (" + cols + ")");
+		}
+		
+		row--;
+		col--;
+		
+		int pos = (row * screen.getNoOfColumns()) + col;
+		
+		if ((pos + length) > this.screen.getScreenSize()) {
+			throw new Zos3270Exception("Invalid length, it would exceed the screen buffer");
+		}
+		
 	}
 
 
