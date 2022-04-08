@@ -161,8 +161,8 @@ public interface ITerminal {
     String retrieveFieldAtCursor();
 
     /**
-     * Retrieve the contents of the field under AFTER a field containing the string provided.   If the field contains nulls, the string returned will 
-     * be compressed as it would be when sent back to the server.
+     * Retrieve the contents of the field which is immediately after a field containing the string provided.  Used to obtain the contents of a labelled field.  
+     * If the field contains nulls, the string returned will be compressed as it would be when sent back to the server.
      * 
      * @return The contents of the screen in the field
      */
