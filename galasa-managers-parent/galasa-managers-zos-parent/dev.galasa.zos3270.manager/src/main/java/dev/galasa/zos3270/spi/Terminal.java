@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.spi;
 
@@ -547,6 +545,21 @@ public class Terminal implements ITerminal {
     public boolean isClearScreen() {
         return this.screen.isClearScreen();
     }
+
+	@Override
+	public void setCursorPosition(int row, int col) throws KeyboardLockedException, Zos3270Exception {
+		throw new Zos3270Exception("This method has not been developed yet");
+	}
+
+	@Override
+	public String retrieveText(int row, int col, int length) throws Zos3270Exception {
+		throw new Zos3270Exception("This method has not been developed yet");
+	}
+
+	@Override
+	public String retrieveTextAtCursor(int length) throws Zos3270Exception {
+		throw new Zos3270Exception("This method has not been developed yet");
+	}
 
 
 }

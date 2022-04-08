@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270;
 
@@ -154,13 +152,60 @@ public interface ITerminal {
 
     String retrieveScreen();
 
+    /**
+     * Retrieve the contents of the field under the current cursor position.   If the field contains nulls, the string returned will 
+     * be compressed as it would be when sent back to the server.
+     * 
+     * @return The contents of the screen in the field
+     */
     String retrieveFieldAtCursor();
 
+    /**
+     * Retrieve the contents of the field under AFTER a field containing the string provided.   If the field contains nulls, the string returned will 
+     * be compressed as it would be when sent back to the server.
+     * 
+     * @return The contents of the screen in the field
+     */
     String retrieveFieldTextAfterFieldWithString(String string) throws TextNotFoundException;
     
     String getId();
     
     void registerDatastreamListener(IDatastreamListener listener);
     void unregisterDatastreamListener(IDatastreamListener listener);
-
+    
+    /**
+     * Set the position of the Cursor
+     * 
+     * @param row - The row on the screen to set the cursor
+     * @param col - the column on the screen to set the cursor
+     * @throws KeyboardLockedException - If an attempt is made to move the cursor whilst the screen is locked
+     * @throws Zos3270Exception - If the position exceeds the boundaries of the screen
+     */
+    void setCursorPosition(int row, int col) throws KeyboardLockedException, Zos3270Exception;    
+   
+    /**
+     * Retrieve text from the screen.   Null characters and field attribute positions are replaced with spaces.
+     * If there are not enough characters on the row to satisfy the length requirement,  the retrieve will wrap to the next 
+     * row, unless it is the last row, in which case an exception will be thrown. 
+     * 
+     * @param row - The row on the screen to start the extract
+     * @param col - The column on the screen to start the extract
+     * @param length - The number of characters to extract
+     * @return The contents extracted
+     * @throws Zos3270Exception - If the position exceeds the boundaries of the screen or the length causes the extract to overflow the end of the screen buffer
+     */
+    String retrieveText(int row, int col, int length) throws Zos3270Exception;
+    
+    /**
+     * Retrieve text from the screen.   Null characters and field attribute positions are replaced with spaces.
+     * If there are not enough characters on the row to satisfy the length requirement,  the retrieve will wrap to the next 
+     * row, unless it is the last row, in which case an exception will be thrown. 
+     *
+     * @param length
+     * @param length - The number of characters to extract
+     * @return The contents extracted
+     * @throws Zos3270Exception - If the length causes the extract to overflow the end of the screen buffer
+     */
+    String retrieveTextAtCursor(int length) throws Zos3270Exception;
+    
 }
