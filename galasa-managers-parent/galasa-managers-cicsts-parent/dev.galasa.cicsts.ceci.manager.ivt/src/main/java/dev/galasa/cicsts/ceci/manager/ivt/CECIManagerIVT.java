@@ -470,9 +470,16 @@ public class CECIManagerIVT {
 	   // Cannot validate the time is correct but can validate it is a correct time
 	   assertThat(eib.getEIBTIME()).isNotNull();
 	   String eibTimeString = Integer.toString(eib.getEIBTIME());
-	   int hour = (eibTimeString.length() == 5) ? Integer.parseInt(eibTimeString.substring(0,1)) :  Integer.parseInt(eibTimeString.substring(0,2));
-	   int minute = (eibTimeString.length() == 5) ? Integer.parseInt(eibTimeString.substring(1,3)) : Integer.parseInt(eibTimeString.substring(2,4));
-	   int second = (eibTimeString.length() == 5) ? Integer.parseInt(eibTimeString.substring(3)) : Integer.parseInt(eibTimeString.substring(4));
+	   int hour, minute, second;
+	   if (eibTimeString.length() == 5) { // Before 12
+		   hour = Integer.parseInt(eibTimeString.substring(0,1));
+		   minute = Integer.parseInt(eibTimeString.substring(1,3));
+		   second = Integer.parseInt(eibTimeString.substring(3));
+	   } else { // After 12
+		   hour = Integer.parseInt(eibTimeString.substring(0,2));
+		   minute = Integer.parseInt(eibTimeString.substring(2,4));
+		   second = Integer.parseInt(eibTimeString.substring(4));
+	   }
 	   assertThat(hour >= 0 && hour <= 23).isTrue();
 	   assertThat(minute >= 0 && minute <= 59).isTrue();
 	   assertThat(second >= 0 && second <= 59).isTrue();
