@@ -55,7 +55,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
  */
 @Component(service = { IManager.class })
 public class DockerManagerImpl extends AbstractManager implements IDockerManagerSpi {
-    protected final String               NAMESPACE = "Docker";
+    protected final String               NAMESPACE = "docker";
     private final static Log                    logger = LogFactory.getLog(DockerManagerImpl.class);
     private IFramework                          framework;
     private IHttpManagerSpi                   httpManager;
