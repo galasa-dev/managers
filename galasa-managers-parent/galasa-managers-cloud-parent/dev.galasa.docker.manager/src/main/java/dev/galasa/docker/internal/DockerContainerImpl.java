@@ -205,10 +205,10 @@ public class DockerContainerImpl implements IDockerContainer {
                 this.image.pullImage();
                 try {
                     this.metadata = generateMetadata(this.userConfig);
-                    logger.debug("Creating Docker Container '" + tag + "'");
+                    logger.debug("Creating Docker container '" + tag + "'");
                     JsonObject newContainer = dockerEngine.createContainer(containerName, this.metadata);
                     alreadyDefined = true;
-                    logger.debug("Created Docker Container '" + tag + "'");
+                    logger.debug("Created Docker container '" + tag + "'");
                     containerID = newContainer.get("Id").getAsString();
                     if (containerID == null || containerID.trim().isEmpty()) {
                         throw new DockerManagerException("Container ID is missing");
@@ -216,13 +216,13 @@ public class DockerContainerImpl implements IDockerContainer {
                 } catch (DockerManagerException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new DockerManagerException("Unable to create the Docker Container '" + this.tag + "'", e);
+                    throw new DockerManagerException("Unable to create the Docker container '" + this.tag + "'", e);
                 }
             }
 
             logger.info("Container '" + tag + "' created under name '" + containerName + "'");
         } catch (DockerManagerException e) {
-            throw new DockerProvisionException("Unable to prepare the Docker Container '" + this.tag + "'", e);
+            throw new DockerProvisionException("Unable to prepare the Docker container '" + this.tag + "'", e);
         }
     }
 
@@ -268,13 +268,13 @@ public class DockerContainerImpl implements IDockerContainer {
         try {
             logger.info("Checking container before attempting start.");
             checkContainer();
-            logger.debug("Starting docker container: " + tag);
+            logger.debug("Starting Docker container: " + tag);
             dockerEngine.startContainer(containerID);
             logger.info("Started Docker container: " + tag);
             Thread.sleep(2000);
             alreadyUp = true;
         } catch (Exception e) {
-            throw new DockerManagerException("Failed to start docker container: " + tag, e);
+            throw new DockerManagerException("Failed to start Docker container: " + tag, e);
         }
 
         extractContainerExposedPortsFromDockerEngine();
@@ -303,12 +303,12 @@ public class DockerContainerImpl implements IDockerContainer {
             return;
         }
         try {
-            logger.info("Stopping docker container: " + this.tag);
+            logger.info("Stopping Docker container: " + this.tag);
             killContainer();
             logger.info("Container " + this.tag + " has stopped");
             alreadyUp = false;
         } catch (DockerManagerException e) {
-            throw new DockerManagerException("Unable to stop docker container: " + this.tag, e);
+            throw new DockerManagerException("Unable to stop Docker container: " + this.tag, e);
         }
     }
 
@@ -347,7 +347,7 @@ public class DockerContainerImpl implements IDockerContainer {
                 }
             }
         } catch (Exception e) {
-            throw new DockerManagerException("Unable to determine exposed ports in the Docker Container: " + this.tag,
+            throw new DockerManagerException("Unable to determine exposed ports in the Docker container: " + this.tag,
                     e);
         }
     }
@@ -575,18 +575,18 @@ public class DockerContainerImpl implements IDockerContainer {
         JsonObject response = dockerEngine.getContainer(containerName);
 
         if (response != null) {
-            logger.debug("Docker Container '" + this.tag + "' is already defined");
+            logger.debug("Docker container '" + this.tag + "' is already defined");
             alreadyDefined = true;
             containerID = response.get("Id").getAsString();
 
             JsonObject state = (JsonObject) response.get("State");
             alreadyUp = state.get("Running").getAsBoolean();
             if (alreadyUp) {
-                logger.debug("Docker Container '" + this.tag + "' is already running");
+                logger.debug("Docker container '" + this.tag + "' is already running");
             }
 
             if (!leaveRunning && (alreadyUp || alreadyDefined)) {
-                logger.debug("Tidying up the Docker Container as leave.running is not true");
+                logger.debug("Tidying up the Docker container as leave.running is not true");
                 if (alreadyUp) {
                     killContainer();
                 }
@@ -615,9 +615,9 @@ public class DockerContainerImpl implements IDockerContainer {
      * @throws DockerManagerException
      */
     private void deleteContainer() throws DockerManagerException {
-        logger.debug("Deleting Docker Container '" + tag + "'");
+        logger.debug("Deleting Docker container '" + tag + "'");
         dockerEngine.deleteContainer(containerID);
-        logger.info("Deleted Docker Container '" + tag + "'");
+        logger.info("Deleted Docker container '" + tag + "'");
     }
 
     /**
@@ -626,9 +626,9 @@ public class DockerContainerImpl implements IDockerContainer {
      * @throws DockerManagerException
      */
     private void killContainer() throws DockerManagerException {
-        logger.debug("Killing Docker Container '" + tag + "'");
+        logger.debug("Killing Docker container '" + tag + "'");
         dockerEngine.killContainer(containerID);
-        logger.info("Killed Docker Container '" + tag + "'");
+        logger.info("Killed Docker container '" + tag + "'");
     }
 
     /**
@@ -669,7 +669,7 @@ public class DockerContainerImpl implements IDockerContainer {
             dockerSlot.free();
         } catch (Exception e) {
             logger.warn("Unable to free slot");
-            throw new DockerManagerException("Unable to free docker slot: " + tag, e);
+            throw new DockerManagerException("Unable to free Docker slot: " + tag, e);
         }
     }
 

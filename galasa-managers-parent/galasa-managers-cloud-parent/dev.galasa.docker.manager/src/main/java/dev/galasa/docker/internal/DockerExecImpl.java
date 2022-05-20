@@ -92,7 +92,7 @@ public class DockerExecImpl implements IDockerExec {
                 sb.append(c);
             }
 
-            logger.info("Issuing command to docker container '" + sb.toString() + "'");
+            logger.info("Issuing command to Docker container '" + sb.toString() + "'");
 
             execThread = new ExecThread();
             execThread.start();

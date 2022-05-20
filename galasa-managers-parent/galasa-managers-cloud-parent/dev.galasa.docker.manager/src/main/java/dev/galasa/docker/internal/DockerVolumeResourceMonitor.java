@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.docker.internal;
 
 import java.net.URI;
@@ -155,7 +158,7 @@ public class DockerVolumeResourceMonitor implements Runnable {
         	String[] tags;
             String enginesTags = cps.getProperty("default", "engines");
             if (enginesTags == null) {
-            	logger.info("No default docker engines defined, moving on");
+            	logger.info("No default Docker engines defined, moving on");
             	return;
             }
             tags = enginesTags.split(",");
@@ -170,7 +173,7 @@ public class DockerVolumeResourceMonitor implements Runnable {
                 }
             }
         } catch (ConfigurationPropertyStoreException | URISyntaxException e) {
-            logger.error("Failed to get docker engines.", e);
+            logger.error("Failed to get Docker engines.", e);
         }
     }
     

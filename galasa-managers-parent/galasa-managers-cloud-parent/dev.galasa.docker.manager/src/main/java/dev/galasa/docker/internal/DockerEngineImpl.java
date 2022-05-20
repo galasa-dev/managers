@@ -166,7 +166,7 @@ public class DockerEngineImpl implements IDockerEngine {
 
 			logger.info("Docker engine is running, version: " + dockerVersion + ", apiVersion: " + apiVersion);
 		} catch (DockerManagerException e) {
-			throw new DockerProvisionException("Unable to validate docker engine connectivity.", e);
+			throw new DockerProvisionException("Unable to validate Docker engine connectivity.", e);
 		}
 	}
 
@@ -191,11 +191,11 @@ public class DockerEngineImpl implements IDockerEngine {
 			}
 
 			logger.error(
-					"Get Log failed to docker engine - " + response.getStatusLine().toString() + "\n" + repsString);
+					"Get Log failed to Docker engine - " + response.getStatusLine().toString() + "\n" + repsString);
 			throw new DockerManagerException(
-					"Log Get failed to docker engine - " + response.getStatusLine().toString());
+					"Log Get failed to Docker engine - " + response.getStatusLine().toString());
 		} catch (Exception e) {
-			throw new DockerManagerException("Get Log failed to docker engine", e);
+			throw new DockerManagerException("Get Log failed to Docker engine", e);
 		}
 	}
 
@@ -235,11 +235,11 @@ public class DockerEngineImpl implements IDockerEngine {
 				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
-			logger.error("Post failed to docker engine - " + resp.getStatusLine());
+			logger.error("Post failed to Docker engine - " + resp.getStatusLine());
 			logger.error(resp.getStatusMessage());
-			throw new DockerManagerException("Post failed to docker engine - " + resp.getStatusLine());
+			throw new DockerManagerException("Post failed to Docker engine - " + resp.getStatusLine());
 		} catch (Exception e) {
-			throw new DockerManagerException("Post failed to docker engine", e);
+			throw new DockerManagerException("Post failed to Docker engine", e);
 		}
 	}
 
@@ -413,11 +413,11 @@ public class DockerEngineImpl implements IDockerEngine {
 				return null;
 			}
 
-			logger.error("Delete failed to docker engine - " + resp);
-			throw new DockerManagerException("Delete failed to docker engine - " + resp);
+			logger.error("Delete failed to Docker engine - " + resp);
+			throw new DockerManagerException("Delete failed to Docker engine - " + resp);
 		} catch (Exception e) {
 			dockerEngineClient.close();
-			throw new DockerManagerException("Delete failed to docker engine", e);
+			throw new DockerManagerException("Delete failed to Docker engine", e);
 		}
 	}
 
@@ -440,9 +440,9 @@ public class DockerEngineImpl implements IDockerEngine {
 			case HttpStatus.SC_NOT_FOUND:
 				return null;
 			}
-			logger.error("Get failed to docker engine - " + response.getStatusLine().toString() + "\n"
+			logger.error("Get failed to Docker engine - " + response.getStatusLine().toString() + "\n"
 					+ jsonResponse.getAsString());
-			throw new DockerManagerException("Get failed to docker engine - " + response.getStatusLine().toString());
+			throw new DockerManagerException("Get failed to Docker engine - " + response.getStatusLine().toString());
 		} catch (Exception e) {
 			throw new DockerManagerException("Failed to get from Docker engine: ", e);
 		}
@@ -472,10 +472,10 @@ public class DockerEngineImpl implements IDockerEngine {
 				throw new DockerNotFoundException("Docker API post returned 'not found': " + response.toString());
 			}
 
-			logger.error("Post failed to docker engine - " + response.getAsString());
-			throw new DockerManagerException("Post failed to docker engine - " + response.getAsString());
+			logger.error("Post failed to Docker engine - " + response.getAsString());
+			throw new DockerManagerException("Post failed to Docker engine - " + response.getAsString());
 		} catch (Exception e) {
-			throw new DockerManagerException("Post failed to docker engine", e);
+			throw new DockerManagerException("Post failed to Docker engine", e);
 		}
 	}
 
@@ -505,10 +505,10 @@ public class DockerEngineImpl implements IDockerEngine {
 			}
 
 			logger.error("Post failed to docker engine - " + resp);
-			throw new DockerManagerException("Post failed to docker engine - " + resp);
+			throw new DockerManagerException("Post failed to Docker engine - " + resp);
 		} catch (Exception e) {
 			dockerEngineClient.close();
-			throw new DockerManagerException("Post failed to docker engine", e);
+			throw new DockerManagerException("Post failed to Docker engine", e);
 		}
 	}
 

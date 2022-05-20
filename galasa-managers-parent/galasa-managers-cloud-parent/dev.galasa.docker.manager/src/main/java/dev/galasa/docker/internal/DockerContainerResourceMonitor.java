@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.docker.internal;
 
 import java.net.URI;
@@ -63,7 +66,7 @@ public class DockerContainerResourceMonitor implements Runnable {
                 killContainers(containers, this.dockerEngines.get(engine));
             }
         }
-        logger.info("Docker container resouce check Finished");
+        logger.info("Docker container resource check finished");
     }
 
     /**
@@ -72,7 +75,7 @@ public class DockerContainerResourceMonitor implements Runnable {
      * @param client
      */
     private void killContainers(List<String> containers, IHttpClient client) {
-        logger.info("Shutting down oprhaned containers");
+        logger.info("Shutting down orphaned containers");
         try {
             for (String id : containers) {
                 HttpClientResponse<String> resp = client.deleteText("/containers/"+id+"?force=true");
@@ -140,7 +143,7 @@ public class DockerContainerResourceMonitor implements Runnable {
                 }
             }
         } catch (ConfigurationPropertyStoreException | URISyntaxException e) {
-            logger.error("Failed to get docker engines.", e);
+            logger.error("Failed to get Docker engines.", e);
         }
     }
     

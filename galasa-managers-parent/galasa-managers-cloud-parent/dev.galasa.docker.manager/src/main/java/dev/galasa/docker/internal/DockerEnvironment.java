@@ -57,7 +57,7 @@ public class DockerEnvironment implements IDockerEnvironment {
         try {
             this.dss = framework.getDynamicStatusStoreService(dockerManager.NAMESPACE);
         } catch (DynamicStatusStoreException e) {
-            throw new DockerManagerException("Failed to create docker environment", e);
+            throw new DockerManagerException("Failed to create Docker environment", e);
         }
 
     }
@@ -160,7 +160,7 @@ public class DockerEnvironment implements IDockerEnvironment {
         if (enginesByTag.containsKey(dockerEngineTag)) {
             return enginesByTag.get(dockerEngineTag);
         }
-        throw new DockerManagerException("Unable to find docker engine with the tag: " + dockerEngineTag);
+        throw new DockerManagerException("Unable to find Docker engine with the tag: " + dockerEngineTag);
     }
 
     /**
@@ -175,7 +175,7 @@ public class DockerEnvironment implements IDockerEnvironment {
         if (containersByTag.containsKey(dockerContainerTag)) {
             return containersByTag.get(dockerContainerTag);
         }
-        throw new DockerManagerException("Unable to find docker container with the tag: " + dockerContainerTag);
+        throw new DockerManagerException("Unable to find Docker container with the tag: " + dockerContainerTag);
     }
 
     /**
@@ -196,7 +196,7 @@ public class DockerEnvironment implements IDockerEnvironment {
      */
     private DockerEngineImpl buildDockerEngine(String dockerEngineTag) throws DockerProvisionException {
         if (enginesByTag.containsKey(dockerEngineTag)) {
-            logger.info("dockerEngine already built, returning that.");
+            logger.info("DockerEngine already built, returning that.");
             return enginesByTag.get(dockerEngineTag);
         }
         DockerEngineImpl dockerEngine = new DockerEngineImpl(framework, dockerManager, dockerEngineTag, dss);
@@ -292,11 +292,11 @@ public class DockerEnvironment implements IDockerEnvironment {
                 return allocateAndCreateDssSlot(dockerEngineId, runName, engine);
             }
         } catch (DockerManagerException e) {
-            logger.error("Could not find number of docker slots in CPS");
+            logger.error("Could not find number of Docker slots in CPS");
         } catch (DynamicStatusStoreException e) {
             logger.warn("Could not perform putswap on dss");
         }
-        throw new DockerProvisionException("Failed to provision docker slot");
+        throw new DockerProvisionException("Failed to provision Docker slot");
     }
 
     /**
@@ -340,7 +340,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             delProps.add(prefix + ".allocated");
             delProps.add(slotKey);
             dss.delete(delProps);
-            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the docker engine: " + dockerEngineId);
+            logger.info("Discarding slot: " + dockerSlot.getSlotName() + ". on the Docker engine: " + dockerEngineId);
         } catch (Exception e) {
             logger.warn("Failed to free slot on engine " + dockerEngineId + ", slot " + dockerSlot.getSlotName()
                     + ", leaving for manager clean up routines", e);
@@ -397,7 +397,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             }
 
         } catch (Exception e) {
-            logger.error("Failed to discard slot " + slotName + " on docker engine " + dockerEngineId, e);
+            logger.error("Failed to discard slot " + slotName + " on Docker engine " + dockerEngineId, e);
         }
     }
 
@@ -444,7 +444,7 @@ public class DockerEnvironment implements IDockerEnvironment {
             
             return volume;
         } catch (DockerManagerException e) {
-            throw new DockerProvisionException("Failed to allocate docker volume.", e);
+            throw new DockerProvisionException("Failed to allocate Docker volume.", e);
         }
     }
 

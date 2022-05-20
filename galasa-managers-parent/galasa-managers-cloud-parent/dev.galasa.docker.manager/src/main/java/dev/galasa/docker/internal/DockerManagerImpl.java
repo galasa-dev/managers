@@ -90,7 +90,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         try {
             DockerPropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
         } catch (ConfigurationPropertyStoreException e) {
-            throw new DockerManagerException("Failed to set the CPS with the docker namespace", e);
+            throw new DockerManagerException("Failed to set the CPS with the Docker namespace", e);
         }
 
         this.framework = framework;
@@ -164,7 +164,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         try {
             return dockerEnvironment.provisionDockerContainer(dockerContainerTag, image, start, dockerEngineTag);
         } catch (DockerProvisionException e) {
-            throw new DockerManagerException("Failed to provision docker container tag: "+ dockerContainerTag, e);
+            throw new DockerManagerException("Failed to provision Docker container tag: "+ dockerContainerTag, e);
         }
     }
 
@@ -202,7 +202,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
                                                             annotation.dockerEngineTag(),
                                                             annotation.readOnly());
         } catch (DockerProvisionException e) {
-            throw new DockerManagerException("Failed to allocate docker volume", e);
+            throw new DockerManagerException("Failed to allocate Docker volume", e);
         }
     }
 
@@ -227,9 +227,9 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      */
     @Override
     public void provisionGenerate() throws ResourceUnavailableException, ManagerException {
-        logger.info("Registering docker registries");
+        logger.info("Registering Docker registries");
         registerDockerRegistires();
-        logger.info("Finding all docker related annotations");
+        logger.info("Finding all Docker related annotations");
         generateDockerFields();
     }
 
@@ -283,7 +283,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
                 registries.add(new DockerRegistryImpl(framework, this, id));
             }
         } catch (Exception e) {
-            throw new DockerProvisionException("Unable to resolve docker registries: ", e);
+            throw new DockerProvisionException("Unable to resolve Docker registries: ", e);
         }
     }
 
@@ -295,7 +295,7 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
         try {
             dockerEnvironment.discard();
         } catch (DockerManagerException e) {
-            logger.error("Unable to discard docker environment", e);
+            logger.error("Unable to discard Docker environment", e);
         }
 
     }

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -77,7 +75,7 @@ public class DockerSlotResourceMonitor implements Runnable {
 						String dockerEngine = matcher.group(1);
 						String slot    = matcher.group(3);
 
-						logger.info("Discarding slot " + slot + " on docker engine " + dockerEngine + " as run " + runName + " has gone");
+						logger.info("Discarding slot " + slot + " on Docker engine " + dockerEngine + " as run " + runName + " has gone");
 
 						try {
 							DockerEnvironment.deleteStaleDssSlot(runName, dockerEngine, slot, dss);
@@ -88,7 +86,7 @@ public class DockerSlotResourceMonitor implements Runnable {
 				}
 			}
         } catch (Exception e) {
-            logger.error("Problem when trying run the docker resource monitor.", e);
+            logger.error("Problem when trying run the Docker resource monitor.", e);
         }
         logger.info("Stale slot search finished");
     }

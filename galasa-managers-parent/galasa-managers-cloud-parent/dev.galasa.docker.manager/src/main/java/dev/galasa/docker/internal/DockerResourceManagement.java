@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.docker.internal;
 
@@ -52,9 +50,9 @@ public class DockerResourceManagement implements IResourceManagementProvider {
             this.cps = framework.getConfigurationPropertyService("docker");
             this.dss = framework.getDynamicStatusStoreService("docker");
         } catch(DynamicStatusStoreException e) {
-            throw new ResourceManagerException("Could not initialise docker resource monitor, due to the CPS:  ", e);
+            throw new ResourceManagerException("Could not initialise Docker resource monitor, due to the CPS:  ", e);
         } catch(ConfigurationPropertyStoreException e) {
-            throw new ResourceManagerException("Could not initialise docker resource monitor, due to the DSS:  ", e);
+            throw new ResourceManagerException("Could not initialise Docker resource monitor, due to the DSS:  ", e);
         }
         slotResourceMonitor = new DockerSlotResourceMonitor(framework, resourceManagement, dss, this, cps);
         containerResourceMonitor = new DockerContainerResourceMonitor(framework, resourceManagement, cps, dss);
