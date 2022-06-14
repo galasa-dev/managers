@@ -85,19 +85,6 @@ public class Db2SchemaImpl implements IDb2Schema{
 		this.conn 					= db2.getConnection();
 		
 		try {
-			boolean exists = false;
-			PreparedStatement stmt = this.conn.prepareStatement("select schemaname from syscat.schemata");
-			ResultSet rs = stmt.executeQuery();
-			while (rs.next()) {
-				if (rs.getString(1).equals(this.schemaName)) {
-					exists = true;
-					break;
-				}
-			}
-			if (!exists) {
-				throw new Db2ManagerException("Schema " + this.schemaName + " is not found");
-			}
-			
 			this.conn.setSchema(this.schemaName);
 		} catch (SQLException e) {
 			throw new Db2ManagerException("Failed to set Schema ", e);

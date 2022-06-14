@@ -126,6 +126,7 @@ managers:
   - artifact: dev.galasa.db2.manager
     version: 0.23.0
     obr: true
+    bom: true
     javadoc: true
     mvp: true
     isolated: true
