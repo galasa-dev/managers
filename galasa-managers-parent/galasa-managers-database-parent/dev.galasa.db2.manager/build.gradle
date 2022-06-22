@@ -9,5 +9,4 @@ version = '0.24.0'
 dependencies {
 	// implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation 'com.ibm.db2.jcc:db2jcc:db2jcc4'
-    implementation 'dev.galasa:jta:1.1'
 }
