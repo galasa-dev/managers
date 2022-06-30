@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -452,5 +454,10 @@ public class SemCicsImpl extends BaseCicsImpl {
 		
 		return this.job;
 	}
+
+    @Override
+    public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException {
+        throw new CicstsManagerException("This method is yet to be developed");
+    }
 
 }
