@@ -3,6 +3,8 @@
  */
 package dev.galasa.cicsts;
 
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
 import dev.galasa.zos.IZosImage;
@@ -80,4 +82,15 @@ public interface ICicsRegion {
 	 * @throws CicstsManagerException
 	 */
 	public IZosUNIXFile getRunTemporaryUNIXDirectory() throws CicstsManagerException;
+	
+	
+	/**
+	 * This method allows a SIT parameter to be altered,  but only if the provisioning tool allows it.
+	 * The CICS TS Region must be down before this method is called.
+	 * 
+	 * @param sitParam - The SIT parameter to alter
+	 * @param sitValue - The value to set,  null = delete parameter
+	 * @throws CicstsManagerException - If the provisioning tool does not allow SIT modification or the CICS Regions is still up
+	 */
+	public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException;
 }

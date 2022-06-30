@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.validation.constraints.NotNull;
+
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.MasType;
@@ -138,5 +140,10 @@ public class DseCicsImpl extends BaseCicsImpl {
 			throw new CicstsManagerException("Unable to get DSE CICS job matching APPLID " + getApplid());
 		}
 		return this.regionJob;
+	}
+	
+	@Override
+	public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException {
+	    throw new CicstsManagerException("Alter SIT is not supported under DSE provisioning");
 	}
 }
