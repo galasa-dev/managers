@@ -25,10 +25,14 @@ import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.ZosBatchException;
+import dev.galasa.githubissue.GitHubIssue;
+import dev.galasa.sem.SemTopology;
 
 import org.apache.commons.logging.Log;
 
 @Test
+@SemTopology // TEMP
+@GitHubIssue(issue = "1030") // TEMP
 public class CICSTSManagerIVT {
 	
    @Logger

@@ -14,6 +14,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
+@GitHubIssueManagerField
 public @interface GitHubIssue {
     
     /**
