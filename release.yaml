@@ -184,7 +184,7 @@ managers:
     isolated: false
     
   - artifact: dev.galasa.http.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     javadoc: true
     bom: true
