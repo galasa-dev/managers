@@ -6,6 +6,7 @@ package dev.galasa.githubissue.internal;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -16,6 +17,9 @@ import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsername;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.Test;
 import dev.galasa.framework.spi.AbstractManager;
@@ -23,23 +27,28 @@ import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.Result;
+import dev.galasa.framework.spi.creds.CredentialsException;
+import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.githubissue.GitHubIssue;
 import dev.galasa.githubissue.GitHubIssueManagerException;
 import dev.galasa.githubissue.Issue;
+import dev.galasa.githubissue.internal.properties.GitHubCredentials;
+import dev.galasa.githubissue.internal.properties.GitHubIssueInstanceRepository;
 import dev.galasa.githubissue.internal.properties.GitHubIssueInstanceUrl;
 import dev.galasa.githubissue.internal.properties.GitHubIssuePropertiesSingleton;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
-import dev.galasa.http.IHttpManager;
 import dev.galasa.http.spi.IHttpManagerSpi;
 
 @Component(service = { IManager.class })
 public class GitHubIssueManagerImpl extends AbstractManager {
 	
 	private static final Log logger = LogFactory.getLog(GitHubIssueManagerImpl.class);
+	
+	private IFramework framework;
 	
 	protected static final String NAMESPACE = "githubissue";
 	
@@ -52,6 +61,8 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	private IHttpManagerSpi  httpManager;
 	private IHttpClient      httpClient;
 	
+	private ICredentialsService credService;
+	
 	@Override
 	public void initialise(@NotNull IFramework framework, @NotNull List<IManager> allManagers,
 			@NotNull List<IManager> activeManagers, @NotNull GalasaTest galasaTest) throws ManagerException {
@@ -60,35 +71,39 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		// Check to see if GitHubIssue annotation is present in the test class or on any of the test methods
 		// If it is, activate this manager
 		
-		if (!required) {
+		if (galasaTest.isJava()) {
+			Class<?> testClass = galasaTest.getJavaTestClass();
 			
-			if (galasaTest.isJava()) {
-				Class<?> testClass = galasaTest.getJavaTestClass();
+			this.gitHubIssue = testClass.getAnnotation(GitHubIssue.class); // Set globally as might need later
+			if (this.gitHubIssue == null) { 
 				
-				this.gitHubIssue = testClass.getAnnotation(GitHubIssue.class); // Set globally as might need later
-				if (this.gitHubIssue == null) { 
-					
-					GitHubIssue gitHubIssue = null;
-					for (Method testMethod : testClass.getMethods()) {
-						gitHubIssue = testMethod.getAnnotation(GitHubIssue.class);
-						if (gitHubIssue != null) {
-							required = true;
-							break;
-						}
-					}
-					// Annotation not present on the class or any methods
-					if (!required) {
-						return;
+				GitHubIssue gitHubIssue = null;
+				for (Method testMethod : testClass.getMethods()) {
+					gitHubIssue = testMethod.getAnnotation(GitHubIssue.class);
+					if (gitHubIssue != null) {
+						required = true;
+						break;
 					}
 				}
-			} else {
-				return; // Only support Java
+				// Annotation not present on the class or any methods
+				if (!required) {
+					return;
+				}
 			}
+		} else {
+			return; // Only support Java
 		}
 		
-		logger.info("GitHubIssueManager needed");
-		
 		this.galasaTest = galasaTest;
+		
+		this.framework = framework;
+		
+		try {
+			this.credService = framework.getCredentialsService();
+		} catch (CredentialsException e) {
+			logger.error("Could not access credential store from framework.", e);
+			throw new GitHubIssueManagerException("Could not access credential store from framework.", e);
+		}
 		
 		try {
             GitHubIssuePropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
@@ -118,14 +133,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	}
 	
 	@Override
-    public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
-        if (otherManager instanceof IHttpManager) {
-            return true;
-        }
-        return false;
-    }
-	
-	@Override
 	public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws GitHubIssueManagerException {
 		logger.info("endOfTestClass");
 		logger.info("Current result for class: " + currentResult);
@@ -135,14 +142,19 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		if (this.gitHubIssue != null) {
 			logger.info("Issue: " + this.gitHubIssue.issue());
 			// TO DO - Change currentResult to Result type 
-			newResult = overrideClassResult(this.galasaTest, Result.failed("Failed"));
+			try {
+				newResult = overrideClassResult(this.galasaTest, Result.failed("Failed"));
+			} catch (CredentialsException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		return newResult;
 		
 	}
 	
-	private String overrideClassResult(@NotNull GalasaTest klass, @NotNull Result currentResult) throws GitHubIssueManagerException {
+	private String overrideClassResult(@NotNull GalasaTest klass, @NotNull Result currentResult) throws GitHubIssueManagerException, CredentialsException {
 		logger.info("overrideClassResult");
 		
 		if (!currentResult.isFailed()) {
@@ -150,7 +162,10 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		}
 
 		logger.info("About to get issue");
-		Issue issue = getGitHubIssue(this.gitHubIssue.issue());
+		String repo = getRepo(gitHubIssue);
+		Issue issue = getGitHubIssue(repo, this.gitHubIssue.issue());
+		
+		logger.info("Issue '" + gitHubIssue.issue() + "' is " + issue.getState() + ". URL:");
 		
 		boolean failedNonDefectMethod = false;
 		boolean failedDefectMethod    = false;
@@ -178,14 +193,19 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			if (gitHubIssue != null) {
 				logger.info("Issue: " + gitHubIssue.issue());
 				// TO DO - Change currentResult to Result type 
-				newResult = overrideMethodResult(galasaMethod, Result.failed("Failed"));
+				try {
+					newResult = overrideMethodResult(galasaMethod, Result.failed("Failed"));
+				} catch (CredentialsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		
 		return newResult;
 	}
 	
-	private String overrideMethodResult(GalasaMethod method, Result currentResult) throws GitHubIssueManagerException {
+	private String overrideMethodResult(GalasaMethod method, Result currentResult) throws GitHubIssueManagerException, CredentialsException {
 		logger.info("overrideMethodResult");
 
 		if (!currentResult.isFailed()) {
@@ -208,10 +228,13 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		// TO DO - Check regex exception for more detailed search
 		
 		logger.info("About to get issue");
-		Issue issue = getGitHubIssue(gitHubIssue.issue());
+		String repo = getRepo(gitHubIssue);
+		Issue issue = getGitHubIssue(repo, gitHubIssue.issue());
 		if (issue == null) {
 			return null;
 		}
+		
+		logger.info("Issue '" + gitHubIssue.issue() + "' is " + issue.getState() + ". URL:");
 		
 		if (issue.isClosed()) {
 			return null;
@@ -225,29 +248,34 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		
 	}
 	
-	private Issue getGitHubIssue(String issueNumber) throws GitHubIssueManagerException {
+	private Issue getGitHubIssue(String repo, String issueNumber) throws GitHubIssueManagerException, CredentialsException {
 		
 		if (this.httpClient == null) {
-        	this.httpClient = this.httpManager.newHttpClient();
+			
+			this.httpClient = this.httpManager.newHttpClient();
+			
         	try {
 				this.httpClient.setURI(GitHubIssueInstanceUrl.get().toURI());
 			} catch (URISyntaxException e) {
 				throw new GitHubIssueManagerException("Badly formed URI for the githubissue.instance.url", e);
 			}
+        	
+//        	ICredentials creds = getCreds();
+//			setHttpClientAuth(creds);
         }
 		
-		// TO DO - Make URL from CPS properties
-		String url = "https://api.github.com/repos/galasa-dev/projectmanagement/issues/1030";
-				
+		String url = getUrl(repo, issueNumber);
+		// TO DO - Remove
 		logger.info(url);
 		
 		try {
-			HttpClientResponse<JsonObject> response = this.httpClient.getJson(url);
+			HttpClientResponse<String> response = this.httpClient.getText(url);
 			
 			if (response.getStatusCode() == 200) {
             	logger.trace("Located GitHub issue '" + issueNumber + "' on website");
-            	JsonObject json = response.getContent();
+//            	JsonObject json = response.getContent();
             	// TO DO - Use Gson for Json conversion and get the fields
+            	logger.info(response.getContent());
                 return new Issue("1030", "open", "https://github.com/galasa-dev/projectmanagement/issues/1030", "Convert RTCDefect annotation");
         	} else {
         		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + url + " - " + response.getStatusLine());
@@ -256,6 +284,50 @@ public class GitHubIssueManagerImpl extends AbstractManager {
         	throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + url, e);
 		}
         
+	}
+	
+	public ICredentials getCreds() throws GitHubIssueManagerException, CredentialsException {
+		String credKey = GitHubCredentials.get(this);
+		return credService.getCredentials(credKey);
+	}
+	
+	private void setHttpClientAuth(ICredentials creds) {
+		
+		if (creds instanceof ICredentialsUsernamePassword) {
+
+			String username = ((ICredentialsUsername) creds).getUsername();
+			String password = ((ICredentialsUsernamePassword) creds).getPassword();
+
+			this.httpClient = this.httpClient.setAuthorisation(username, password);
+//			this.httpClient.build();
+		}
+		
+	}
+	
+	private String getUrl(String repo, String issueNumber) throws GitHubIssueManagerException {
+		
+		String gitHubInstance = GitHubIssueInstanceUrl.get().toString();
+		gitHubInstance = gitHubInstance.substring(8);
+		
+		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
+		
+		return url;
+		
+	}
+	
+	private String getRepo(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
+		String repo = null;
+		if (!gitHubIssue.repository().equals("")) {
+			repo = gitHubIssue.repository();
+		} else {
+			repo = GitHubIssueInstanceRepository.get();
+		}
+		
+		if (repo != null) { 
+			return repo;
+		} else {
+			throw new GitHubIssueManagerException("GitHub repository not provided in annotation or CPS");
+		}
 	}
 	
 	/**

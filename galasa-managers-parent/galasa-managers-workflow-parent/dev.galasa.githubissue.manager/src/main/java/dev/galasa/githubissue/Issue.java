@@ -34,7 +34,7 @@ public class Issue {
 	}
 	
 	public boolean isClosed() {
-		return this.state == "closed";
+		return this.state.equals("closed");
 	}
 
 }

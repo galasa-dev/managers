@@ -31,8 +31,7 @@ import dev.galasa.sem.SemTopology;
 import org.apache.commons.logging.Log;
 
 @Test
-@SemTopology // TEMP
-@GitHubIssue(issue = "1030") // TEMP
+@GitHubIssue(issue = "1030", repository = "galasa-dev/projectmanagement") // TEMP
 public class CICSTSManagerIVT {
 	
    @Logger
@@ -73,148 +72,149 @@ public class CICSTSManagerIVT {
     * @throws TimeoutException 
     */
    @Test 
+//   @GitHubIssue(issue = "1031")
    public void testGetApplid() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException  {
 	   logger.info("Testing that the CICS TS Manager gets the correct APPLID for the CICS Region");
 	   String testApplid = cics.getApplid();
 	   assertThat(checkTerminalScreenContains(testApplid)).isTrue();
    }
-   
-   /**
-    * Tests that the CICS TS Manager retrieves a CICS Resource
-    * @throws CicstsManagerException 
-    */
-   @Test
-   public void testCicsResource() throws CicstsManagerException  {
-	   logger.info("Testing that the CICS TS Manager retrieves a CICS Resource");
-	   ICicsResource cicsResource = cics.cicsResource();
-	   assertThat(cicsResource).isNotNull();
-   }
-   
-   /**
-    * Tests that the CICS TS Manager retrieves the correct job
-    * @throws ZosBatchException 
-    * @throws FieldNotFoundException 
-    * @throws NetworkException 
-    * @throws TerminalInterruptedException 
-    * @throws KeyboardLockedException 
-    * @throws TimeoutException 
-    */
-   @Test
-   public void testGetRegionJob() throws CicstsManagerException, ZosBatchException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that the CICS TS Manager finds the CICS job for the CICS Region - there should be an active job as the CICS Region is running");
-	   IZosBatchJob regionJob = cics.getRegionJob();
-	   assertThat(regionJob).isNotNull();
-	   
-	   logger.info("Testing that the CICS Region job information is correct");
-	   assertThat(regionJob.getJobname().toString()).isEqualToIgnoringCase(cics.getApplid());
-	   assertThat(regionJob.getType()).isEqualToIgnoringCase("JOB");
-	   assertThat(regionJob.getStatusString()).isEqualToIgnoringCase("ACTIVE");
-   }
-   
-   /**
-    * Tests that the CICS Terminal in the CICS TS Manager retrieves the correct CICS Region
-    * @throws FieldNotFoundException 
-    * @throws NetworkException 
-    * @throws TerminalInterruptedException 
-    * @throws KeyboardLockedException 
-    * @throws TimeoutException 
-    */
-   @Test
-   public void testGetCicsRegion() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that the CICS Terminal gets the correct CICS Region");
-	   String testCicsRegion = terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "");
-	   assertThat(checkTerminalScreenContains(testCicsRegion)).isTrue();
-   }
-   
-   /**
-    * Tests that the CICS Terminal in the CICS TS Manager correctly connects to the CICS Region
-    * @throws CicstsManagerException
-    * @throws TerminalInterruptedException 
-    * @throws NetworkException 
-    * @throws KeyboardLockedException 
-    * @throws TimeoutException 
-    */
-   @Test
-   public void testConnectToCicsRegion() throws CicstsManagerException, TerminalInterruptedException, KeyboardLockedException, NetworkException, TimeoutException {
-	   logger.info("Testing that the CICS Terminal connects to the same CICS Region after being disconnected");
-	   
-	   terminal.disconnect();
-	   assertThat(terminal.isConnected()).isFalse();
-	   
-	   terminal.connectToCicsRegion();
-	   assertThat(terminal.isConnected()).isTrue();
-	   assertThat(terminal.isClearScreen()).isTrue();
-	   assertThat(terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "")).isEqualTo(cics.getApplid());
-   }
-   
-   /**
-    * Tests that the CICS Terminal in the CICS TS Manager resets and clears correctly
-    * @throws FieldNotFoundException 
-    * @throws NetworkException 
-    * @throws TerminalInterruptedException 
-    * @throws KeyboardLockedException 
-    * @throws TimeoutException 
-    * @throws CicstsManagerException 
-    */
-   @Test
-   public void testResetAndClear() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
-	   logger.info("Testing that the CICS Terminal resets and clears screen correctly");
-	   terminal.resetAndClear();
-	   assertThat(terminal.isClearScreen()).isTrue();
-   }
-   
-   /**
-    * Tests that the CICS Terminal in the CICS TS Manager sets uppercase translation correctly
-    * @throws CicstsManagerException 
-    * @throws FieldNotFoundException 
-    * @throws NetworkException 
-    * @throws TerminalInterruptedException 
-    * @throws KeyboardLockedException 
-    * @throws TimeoutException 
-    */
-   @Test
-   public void testUppercaseTranslation() throws CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
-	   logger.info("Testing that the CICS Terminal sets uppercase translation correctly");
-	   terminal.setUppercaseTranslation(true);
-	   assertThat(terminal.isUppercaseTranslation()).isTrue();
-	   
-	   logger.info("Testing that uppercase translation is on by defining and retrieving variable " + variableName);
-	   String variableValue = "lowercasegalasa";
-	   startCeciSession();
-	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
-	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isUpperCase();
-	   
-	   terminal.setUppercaseTranslation(false);
-	   assertThat(terminal.isUppercaseTranslation()).isFalse();
-	   
-	   logger.info("Testing that uppercase translation is off by re-defining and retrieving variable " + variableName);
-	   startCeciSession();
-	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
-	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
-   }
-   
-   /**
-    * Tests that the CICS TS Hash Map implementation
-    * @throws CicstsManagerException 
-    * @throws CemtException
-    */
-   @Test
-   public void testCicstsHashMap() throws CemtException, CicstsManagerException {
-	   cics.ceda().createResource(terminal, "PROGRAM", programName, groupName, null);
-	   assertThat(cics.ceda().resourceExists(terminal, "PROGRAM", programName, groupName)).isTrue();
-	   
-	   cics.ceda().installResource(terminal, "PROGRAM", programName, groupName);
-	   CicstsHashMap resource = cics.cemt().inquireResource(terminal, "PROGRAM", programName);
-	   assertThat(resource).isNotNull();
-	   
-	   resource.checkParameterEquals("program", programName);
-	   assertThatThrownBy(() -> {
-	      resource.checkParameterEquals("program", "WRONG");
-	   }).isInstanceOf(CicstsManagerException.class).hasMessageContaining("Parameter program does not equal WRONG"); 
-	   
-	   assertThat(resource.isParameterEquals("program", programName)).isTrue();
-	   assertThat(resource.isParameterEquals("program", "WRONG")).isFalse();
-   }
+//   
+//   /**
+//    * Tests that the CICS TS Manager retrieves a CICS Resource
+//    * @throws CicstsManagerException 
+//    */
+//   @Test
+//   public void testCicsResource() throws CicstsManagerException  {
+//	   logger.info("Testing that the CICS TS Manager retrieves a CICS Resource");
+//	   ICicsResource cicsResource = cics.cicsResource();
+//	   assertThat(cicsResource).isNotNull();
+//   }
+//   
+//   /**
+//    * Tests that the CICS TS Manager retrieves the correct job
+//    * @throws ZosBatchException 
+//    * @throws FieldNotFoundException 
+//    * @throws NetworkException 
+//    * @throws TerminalInterruptedException 
+//    * @throws KeyboardLockedException 
+//    * @throws TimeoutException 
+//    */
+//   @Test
+//   public void testGetRegionJob() throws CicstsManagerException, ZosBatchException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+//	   logger.info("Testing that the CICS TS Manager finds the CICS job for the CICS Region - there should be an active job as the CICS Region is running");
+//	   IZosBatchJob regionJob = cics.getRegionJob();
+//	   assertThat(regionJob).isNotNull();
+//	   
+//	   logger.info("Testing that the CICS Region job information is correct");
+//	   assertThat(regionJob.getJobname().toString()).isEqualToIgnoringCase(cics.getApplid());
+//	   assertThat(regionJob.getType()).isEqualToIgnoringCase("JOB");
+//	   assertThat(regionJob.getStatusString()).isEqualToIgnoringCase("ACTIVE");
+//   }
+//   
+//   /**
+//    * Tests that the CICS Terminal in the CICS TS Manager retrieves the correct CICS Region
+//    * @throws FieldNotFoundException 
+//    * @throws NetworkException 
+//    * @throws TerminalInterruptedException 
+//    * @throws KeyboardLockedException 
+//    * @throws TimeoutException 
+//    */
+//   @Test
+//   public void testGetCicsRegion() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+//	   logger.info("Testing that the CICS Terminal gets the correct CICS Region");
+//	   String testCicsRegion = terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "");
+//	   assertThat(checkTerminalScreenContains(testCicsRegion)).isTrue();
+//   }
+//   
+//   /**
+//    * Tests that the CICS Terminal in the CICS TS Manager correctly connects to the CICS Region
+//    * @throws CicstsManagerException
+//    * @throws TerminalInterruptedException 
+//    * @throws NetworkException 
+//    * @throws KeyboardLockedException 
+//    * @throws TimeoutException 
+//    */
+//   @Test
+//   public void testConnectToCicsRegion() throws CicstsManagerException, TerminalInterruptedException, KeyboardLockedException, NetworkException, TimeoutException {
+//	   logger.info("Testing that the CICS Terminal connects to the same CICS Region after being disconnected");
+//	   
+//	   terminal.disconnect();
+//	   assertThat(terminal.isConnected()).isFalse();
+//	   
+//	   terminal.connectToCicsRegion();
+//	   assertThat(terminal.isConnected()).isTrue();
+//	   assertThat(terminal.isClearScreen()).isTrue();
+//	   assertThat(terminal.getCicsRegion().toString().replace("CICS Region[", "").replace("]", "")).isEqualTo(cics.getApplid());
+//   }
+//   
+//   /**
+//    * Tests that the CICS Terminal in the CICS TS Manager resets and clears correctly
+//    * @throws FieldNotFoundException 
+//    * @throws NetworkException 
+//    * @throws TerminalInterruptedException 
+//    * @throws KeyboardLockedException 
+//    * @throws TimeoutException 
+//    * @throws CicstsManagerException 
+//    */
+//   @Test
+//   public void testResetAndClear() throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException, CicstsManagerException {
+//	   logger.info("Testing that the CICS Terminal resets and clears screen correctly");
+//	   terminal.resetAndClear();
+//	   assertThat(terminal.isClearScreen()).isTrue();
+//   }
+//   
+//   /**
+//    * Tests that the CICS Terminal in the CICS TS Manager sets uppercase translation correctly
+//    * @throws CicstsManagerException 
+//    * @throws FieldNotFoundException 
+//    * @throws NetworkException 
+//    * @throws TerminalInterruptedException 
+//    * @throws KeyboardLockedException 
+//    * @throws TimeoutException 
+//    */
+//   @Test
+//   public void testUppercaseTranslation() throws CicstsManagerException, TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
+//	   logger.info("Testing that the CICS Terminal sets uppercase translation correctly");
+//	   terminal.setUppercaseTranslation(true);
+//	   assertThat(terminal.isUppercaseTranslation()).isTrue();
+//	   
+//	   logger.info("Testing that uppercase translation is on by defining and retrieving variable " + variableName);
+//	   String variableValue = "lowercasegalasa";
+//	   startCeciSession();
+//	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
+//	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isUpperCase();
+//	   
+//	   terminal.setUppercaseTranslation(false);
+//	   assertThat(terminal.isUppercaseTranslation()).isFalse();
+//	   
+//	   logger.info("Testing that uppercase translation is off by re-defining and retrieving variable " + variableName);
+//	   startCeciSession();
+//	   cics.ceci().defineVariableText(terminal, variableName, variableValue);
+//	   assertThat(cics.ceci().retrieveVariableText(terminal, "&" + variableName)).isEqualTo(variableValue);
+//   }
+//   
+//   /**
+//    * Tests that the CICS TS Hash Map implementation
+//    * @throws CicstsManagerException 
+//    * @throws CemtException
+//    */
+//   @Test
+//   public void testCicstsHashMap() throws CemtException, CicstsManagerException {
+//	   cics.ceda().createResource(terminal, "PROGRAM", programName, groupName, null);
+//	   assertThat(cics.ceda().resourceExists(terminal, "PROGRAM", programName, groupName)).isTrue();
+//	   
+//	   cics.ceda().installResource(terminal, "PROGRAM", programName, groupName);
+//	   CicstsHashMap resource = cics.cemt().inquireResource(terminal, "PROGRAM", programName);
+//	   assertThat(resource).isNotNull();
+//	   
+//	   resource.checkParameterEquals("program", programName);
+//	   assertThatThrownBy(() -> {
+//	      resource.checkParameterEquals("program", "WRONG");
+//	   }).isInstanceOf(CicstsManagerException.class).hasMessageContaining("Parameter program does not equal WRONG"); 
+//	   
+//	   assertThat(resource.isParameterEquals("program", programName)).isTrue();
+//	   assertThat(resource.isParameterEquals("program", "WRONG")).isFalse();
+//   }
    
    private boolean checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();

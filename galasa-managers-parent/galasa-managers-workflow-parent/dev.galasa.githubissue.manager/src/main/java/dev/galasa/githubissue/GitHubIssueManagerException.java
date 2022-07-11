@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.githubissue;
 
 import dev.galasa.ManagerException;
