@@ -5,6 +5,8 @@ package dev.galasa.githubissue;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
 
 /**
  * This annotation will cause the Manager to influence the "failed" result of the test based on 
@@ -15,6 +17,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @GitHubIssueManagerField
+@Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface GitHubIssue {
     
     /**
