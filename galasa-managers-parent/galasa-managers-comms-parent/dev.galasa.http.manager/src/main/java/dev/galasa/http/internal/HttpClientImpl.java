@@ -61,7 +61,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -506,15 +505,16 @@ public class HttpClientImpl implements IHttpClient {
      * @return the built client
      */
     public IHttpClient build() {
-
-        HttpClientBuilder builder = HttpClients.custom().setDefaultCookieStore(cookieStore);
-        builder.setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
+    	RequestConfig.Builder requestBuilder = RequestConfig.custom();
+    	HttpClientBuilder builder = HttpClientBuilder.create();
+    	builder.setDefaultCookieStore(cookieStore);
+    	requestBuilder.setCookieSpec(CookieSpecs.STANDARD);
         builder.setDefaultCredentialsProvider(credentialsProvider);
         builder.setDefaultHeaders(commonHeaders);
 
         if (timeout > 0) {
-            RequestConfig.Builder requestBuilder = RequestConfig.custom().setConnectTimeout(timeout)
-                    .setConnectionRequestTimeout(timeout).setSocketTimeout(timeout);
+            requestBuilder.setConnectTimeout(timeout)
+                          .setConnectionRequestTimeout(timeout).setSocketTimeout(timeout);
             builder.setDefaultRequestConfig(requestBuilder.build());
         }
 
@@ -522,7 +522,7 @@ public class HttpClientImpl implements IHttpClient {
             SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
             builder.setSSLSocketFactory(csf);
         }
-
+        builder.setDefaultRequestConfig(requestBuilder.build());
         httpClient = builder.build();
 
         return this;

@@ -31,7 +31,8 @@ import dev.galasa.sem.SemTopology;
 import org.apache.commons.logging.Log;
 
 @Test
-@GitHubIssue(issue = "1030", repository = "galasa-dev/projectmanagement") // TEMP
+//@GitHubIssue(issue = "1030", repository = "galasa-dev/projectmanagement") // TEMP
+@GitHubIssue(issue = "90", repository = "galasa/security-scanning") // TEMP
 public class CICSTSManagerIVT {
 	
    @Logger

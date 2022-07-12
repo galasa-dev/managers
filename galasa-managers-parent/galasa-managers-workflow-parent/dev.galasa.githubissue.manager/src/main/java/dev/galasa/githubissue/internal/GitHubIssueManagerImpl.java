@@ -5,6 +5,7 @@ package dev.galasa.githubissue.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.osgi.service.component.annotations.Component;
 import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsToken;
 import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
@@ -254,39 +256,46 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			
 			this.httpClient = this.httpManager.newHttpClient();
 			
-        	try {
-				this.httpClient.setURI(GitHubIssueInstanceUrl.get().toURI());
+			String instanceUrl = GitHubIssueInstanceUrl.get().toString();
+			instanceUrl = instanceUrl.substring(8);
+			URI uri = null;
+			try {
+				uri = new URI("https://api." + instanceUrl);
 			} catch (URISyntaxException e) {
-				throw new GitHubIssueManagerException("Badly formed URI for the githubissue.instance.url", e);
+				throw new GitHubIssueManagerException("Badly formed URI", e);
 			}
+			logger.info(uri.toString());
+	    	this.httpClient.setURI(uri);
         	
-//        	ICredentials creds = getCreds();
-//			setHttpClientAuth(creds);
+        	// Authenticate 
+        	ICredentials creds = getCreds();
+			setHttpClientAuth(creds);
         }
 		
 		String url = getUrl(repo, issueNumber);
 		// TO DO - Remove
 		logger.info(url);
 		
+		String fullUrl = "https://api." + GitHubIssueInstanceUrl.get() + url;
+		
 		try {
-			HttpClientResponse<String> response = this.httpClient.getText(url);
+			HttpClientResponse<JsonObject> response = this.httpClient.getJson(url);
+			logger.info(response.getheaders());
 			
 			if (response.getStatusCode() == 200) {
-            	logger.trace("Located GitHub issue '" + issueNumber + "' on website");
-//            	JsonObject json = response.getContent();
-            	// TO DO - Use Gson for Json conversion and get the fields
-            	logger.info(response.getContent());
-                return new Issue("1030", "open", "https://github.com/galasa-dev/projectmanagement/issues/1030", "Convert RTCDefect annotation");
+            	JsonObject json = response.getContent();
+            	Issue issue = getIssue(json, issueNumber);
+            	return issue;
         	} else {
-        		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + url + " - " + response.getStatusLine());
+        		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + fullUrl + " - " + response.getStatusLine());
         	}
 		} catch (HttpClientException e) {
-        	throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + url, e);
+        	throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + fullUrl, e);
 		}
         
 	}
 	
-	public ICredentials getCreds() throws GitHubIssueManagerException, CredentialsException {
+	private ICredentials getCreds() throws GitHubIssueManagerException, CredentialsException {
 		String credKey = GitHubCredentials.get(this);
 		return credService.getCredentials(credKey);
 	}
@@ -299,8 +308,14 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			String password = ((ICredentialsUsernamePassword) creds).getPassword();
 
 			this.httpClient = this.httpClient.setAuthorisation(username, password);
-//			this.httpClient.build();
 		}
+		
+//		if (creds instanceof ICredentialsToken) {
+//			
+//			String token = ((ICredentialsToken) creds).getToken();
+//			
+//			this.httpClient = this.httpClient.setau
+//		}
 		
 	}
 	
@@ -309,7 +324,8 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		String gitHubInstance = GitHubIssueInstanceUrl.get().toString();
 		gitHubInstance = gitHubInstance.substring(8);
 		
-		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
+//		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
+		String url = "/repos/" + repo + "/issues/" + issueNumber;
 		
 		return url;
 		
@@ -328,6 +344,15 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		} else {
 			throw new GitHubIssueManagerException("GitHub repository not provided in annotation or CPS");
 		}
+	}
+	
+	private Issue getIssue(JsonObject json, String issueNumber) {
+		
+		String state = json.get("state").getAsString();
+		String htmlUrl = json.get("html_url").getAsString();
+		String title = json.get("title").getAsString();
+		
+		return new Issue(issueNumber, state, htmlUrl, title);
 	}
 	
 	/**
