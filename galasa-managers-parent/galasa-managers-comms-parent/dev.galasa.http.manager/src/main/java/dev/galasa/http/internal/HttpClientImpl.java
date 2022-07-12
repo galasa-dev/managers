@@ -517,7 +517,6 @@ public class HttpClientImpl implements IHttpClient {
         if (timeout > 0) {
             requestBuilder.setConnectTimeout(timeout)
                           .setConnectionRequestTimeout(timeout).setSocketTimeout(timeout);
-            builder.setDefaultRequestConfig(requestBuilder.build());
         }
 
         if (sslContext != null) {
