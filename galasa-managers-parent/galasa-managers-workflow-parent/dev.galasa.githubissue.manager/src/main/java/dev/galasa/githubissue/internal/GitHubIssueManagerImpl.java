@@ -167,8 +167,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		String repo = getRepo(gitHubIssue);
 		Issue issue = getGitHubIssue(repo, this.gitHubIssue.issue());
 		
-		logger.info("Issue '" + gitHubIssue.issue() + "' is " + issue.getState() + ". URL:");
-		
 		boolean failedNonDefectMethod = false;
 		boolean failedDefectMethod    = false;
 		boolean passedMethod          = false;
@@ -236,8 +234,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			return null;
 		}
 		
-		logger.info("Issue '" + gitHubIssue.issue() + "' is " + issue.getState() + ". URL:");
-		
 		if (issue.isClosed()) {
 			return null;
 		}
@@ -252,39 +248,47 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	
 	private Issue getGitHubIssue(String repo, String issueNumber) throws GitHubIssueManagerException, CredentialsException {
 		
+		String fullUrl = getUrl(repo, issueNumber);
+		logger.info(fullUrl);
+		
 		if (this.httpClient == null) {
 			
 			this.httpClient = this.httpManager.newHttpClient();
 			
-			String instanceUrl = GitHubIssueInstanceUrl.get().toString();
-			instanceUrl = instanceUrl.substring(8);
+			String uriString = fullUrl.substring(0, fullUrl.indexOf("/repos"));
 			URI uri = null;
 			try {
-				uri = new URI("https://api." + instanceUrl);
+				uri = new URI(uriString);
 			} catch (URISyntaxException e) {
 				throw new GitHubIssueManagerException("Badly formed URI", e);
 			}
 			logger.info(uri.toString());
-	    	this.httpClient.setURI(uri);
+			this.httpClient.setURI(uri);
+//			String instanceUrl = GitHubIssueInstanceUrl.get().toString();
+//			instanceUrl = instanceUrl.substring(8);
+//			URI uri = null;
+//			try {
+//				uri = new URI("https://api." + instanceUrl);
+//			} catch (URISyntaxException e) {
+//				throw new GitHubIssueManagerException("Badly formed URI", e);
+//			}
         	
         	// Authenticate 
         	ICredentials creds = getCreds();
 			setHttpClientAuth(creds);
         }
 		
-		String url = getUrl(repo, issueNumber);
-		// TO DO - Remove
+		String url = fullUrl.substring(fullUrl.indexOf("/repos"));
 		logger.info(url);
 		
-		String fullUrl = "https://api." + GitHubIssueInstanceUrl.get() + url;
-		
 		try {
+			
 			HttpClientResponse<JsonObject> response = this.httpClient.getJson(url);
-			logger.info(response.getheaders());
 			
 			if (response.getStatusCode() == 200) {
             	JsonObject json = response.getContent();
-            	Issue issue = getIssue(json, issueNumber);
+            	Issue issue = getIssuePojo(json, issueNumber);
+            	logger.info("Issue '" + issue.getIssue() + "' is " + issue.getState() + " - " + issue.getUrl());
             	return issue;
         	} else {
         		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + fullUrl + " - " + response.getStatusLine());
@@ -324,8 +328,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		String gitHubInstance = GitHubIssueInstanceUrl.get().toString();
 		gitHubInstance = gitHubInstance.substring(8);
 		
-//		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
-		String url = "/repos/" + repo + "/issues/" + issueNumber;
+		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
 		
 		return url;
 		
@@ -346,7 +349,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		}
 	}
 	
-	private Issue getIssue(JsonObject json, String issueNumber) {
+	private Issue getIssuePojo(JsonObject json, String issueNumber) {
 		
 		String state = json.get("state").getAsString();
 		String htmlUrl = json.get("html_url").getAsString();
