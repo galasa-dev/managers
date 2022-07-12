@@ -353,7 +353,11 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			} catch (CredentialsException e) {
 				throw new GitHubIssueManagerException("Unable to get credentials for the GitHub instance", e);
 			}
-			setHttpClientAuth(creds);
+			if (creds instanceof ICredentialsUsernamePassword) {
+				String username = ((ICredentialsUsername) creds).getUsername();
+				String password = ((ICredentialsUsernamePassword) creds).getPassword();
+				this.httpClient = this.httpClient.setAuthorisation(username, password);
+			}
         }
 		
 		String url = fullUrl.substring(fullUrl.indexOf("/repos"));
@@ -379,26 +383,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	private ICredentials getCreds() throws GitHubIssueManagerException, CredentialsException {
 		String credKey = GitHubCredentials.get(this);
 		return credService.getCredentials(credKey);
-	}
-	
-	private void setHttpClientAuth(ICredentials creds) {
-		
-		// TO DO - Set correct authorisation for GitHub Enterprise 
-		
-//		if (creds instanceof ICredentialsUsernamePassword) {
-//
-//			String username = ((ICredentialsUsername) creds).getUsername();
-//			String password = ((ICredentialsUsernamePassword) creds).getPassword();
-//
-//			this.httpClient = this.httpClient.setAuthorisation(username, password);
-//		}
-//		
-//		if (creds instanceof ICredentialsToken) {
-//			
-//			byte[] token = ((ICredentialsToken) creds).getToken();
-//		
-//		}
-		
 	}
 	
 	private String getUrl(String repo, String issueNumber) throws GitHubIssueManagerException {
