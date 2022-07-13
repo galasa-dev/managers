@@ -174,7 +174,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      * java.lang.Throwable)
      */
     @Override
-    public Result endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "postTest";
         

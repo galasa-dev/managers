@@ -235,7 +235,7 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	@Override
-	public Result endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+	public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws ManagerException {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			String applid = region.getApplid();
 			String content = recordingRegions.get(region).getExportedRecordings();

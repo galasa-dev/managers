@@ -168,7 +168,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
      */
     @Override
-    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult, Throwable currentException) throws ManagerException {
         cleanup(false);
         
         return null;
@@ -181,7 +181,7 @@ public class ZosmfZosBatchManagerImpl extends AbstractManager implements IZosBat
      * java.lang.Throwable)
      */
     @Override
-    public Result endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
         this.currentTestMethodArchiveFolderName = "postTest";
         cleanup(false);
