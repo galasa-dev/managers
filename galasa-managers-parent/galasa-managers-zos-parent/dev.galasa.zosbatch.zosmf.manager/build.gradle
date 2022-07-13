@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa zOS Batch Manager - zOS/MF Implementation'
 
-version = '0.21.0'
+version = '0.25.0'
 
 dependencies {
     api     project(':galasa-managers-zos-parent:dev.galasa.zosmf.manager')
