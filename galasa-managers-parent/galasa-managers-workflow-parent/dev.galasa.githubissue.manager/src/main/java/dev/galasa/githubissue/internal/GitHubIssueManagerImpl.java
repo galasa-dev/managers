@@ -143,10 +143,10 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	}
 	
 	@Override
-	public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
+	public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult,
 			Throwable currentException) throws GitHubIssueManagerException {
 		
-		String newResult = null;
+		Result newResult = null;
 		
 		if (isTestMethod(galasaMethod)) {
 			// If this test method is annotated with GitHubIssue, override it's result if needed
@@ -170,9 +170,9 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		return newResult;
 	}
 	
-	private String overrideMethodResult(@NotNull GalasaMethod method, @NotNull String currentResult, Throwable currentException) throws GitHubIssueManagerException {
+	private Result overrideMethodResult(@NotNull GalasaMethod method, @NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
 
-		if (!currentResult.equals("Failed")) {
+		if (!currentResult.isFailed()) {
 			return null;
 		}
 		
@@ -203,16 +203,16 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			return null;
 		}
 		
-		logger.info("Overriding 'Failed' to 'FailedWithDefects' due to open GitHub issue " + gitHubIssue.issue() + ": " + issue.getTitle());
+		logger.info("Overriding 'Failed' to 'Failed With Defects' due to open GitHub issue " + gitHubIssue.issue() + ": " + issue.getTitle());
 		
-		return "FailedWithDefects";
+		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, currentException.toString());
 		
 	}
 	
 	@Override
-	public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws GitHubIssueManagerException {
+	public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
 
-		String newResult = null;
+		Result newResult = null;
 
 		// If this test class is annotated with GitHubIssue, override it's result if needed
 		if (this.gitHubIssue != null) {
@@ -223,9 +223,9 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		
 	}
 	
-	private String overrideClassResult(@NotNull GalasaTest klass, @NotNull String currentResult) throws GitHubIssueManagerException {
+	private Result overrideClassResult(@NotNull GalasaTest klass, @NotNull Result currentResult) throws GitHubIssueManagerException {
 		
-		if (!currentResult.equals("Failed")) {
+		if (!currentResult.isFailed()) {
 			return null;
 		}
 
@@ -239,10 +239,10 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		for (Map.Entry<GalasaMethod, HashMap<String,Object>> method : results.entrySet()) {
 			
 			HashMap<String, Object> entry = method.getValue();
-			String result = entry.get("result").toString();
+			Result result = (Result) entry.get("result");
 			Throwable throwable = (Throwable) entry.get("throwable");
 			
-			switch(result) {
+			switch(result.getName()) {
 			case "Failed":
 				
 				if (this.gitHubIssue != null && this.gitHubIssue.regex() != null && this.gitHubIssue.regex().length > 0) {
@@ -254,7 +254,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 				}	
 				break;
 			
-			case "FailedWithDefects": 
+			case "Failed With Defects": 
 				failedDefectMethod = true;
 				break;
 				
@@ -271,7 +271,8 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		
 		if (issue != null && !issue.isClosed()) {
 			if (failedDefectMethod || failedNonDefectMethod) {
-				logger.info("Overriding 'Failed' to 'FailedWithDefects' due to open GitHub issue " + this.gitHubIssue.issue() + ": " + issue.getTitle());
+				logger.info("Overriding 'Failed' to 'Failed With Defects' due to open GitHub issue " + this.gitHubIssue.issue() + ": " + issue.getTitle());
+				return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "");
 			}
 		}
 		
@@ -280,13 +281,13 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		}
 		
 		if (passedMethod) {
-			logger.info("Overriding 'Passed' to 'PassedWithDefects' due to at least one method passing and at least one 'FailedWithDefects' method");
-			return "PassedWithDefects";
+			logger.info("Overriding 'Passed' to 'Passed With Defects' due to at least one method passing and at least one 'Failed With Defects' method");
+			return Result.custom("Passed With Defects", true, false, true, false, false, false, false, "");
 		}
  		
 	
-		logger.info("Overriding 'Failed' to 'FailedWithDefects' due to no passing methods");
-		return "FailedWithDefects";		
+		logger.info("Overriding 'Failed' to 'Failed With Defects' due to no passing methods");
+		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "");
 	}
 	
 	private boolean checkRegexException(String[] regexs, Throwable exception) {
