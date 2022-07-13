@@ -25,6 +25,7 @@ import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.Result;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.zos.IZosImage;
@@ -167,7 +168,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      * @see dev.galasa.framework.spi.IManager#endOfTestMethod(java.lang.String,java.lang.Throwable)
      */
     @Override
-    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult, Throwable currentException) throws ManagerException {
         cleanup(false);
         
         return null;
@@ -180,7 +181,7 @@ public class RseapiZosBatchManagerImpl extends AbstractManager implements IZosBa
      * java.lang.Throwable)
      */
     @Override
-    public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(ZOSBATCH_JOBS);
         this.currentTestMethodArchiveFolderName = "postTest";
         cleanup(false);

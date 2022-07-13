@@ -34,6 +34,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.Result;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.vtp.internal.properties.DataSetHLQ;
@@ -175,7 +176,7 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 
 	@Override
-	public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
+	public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
 			Throwable currentException) throws ManagerException {
 		if(skipRecordings) {
 			//we are not going to do anything and don't need to change the status
@@ -234,7 +235,7 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 	
 	@Override
-	public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+	public Result endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			String applid = region.getApplid();
 			String content = recordingRegions.get(region).getExportedRecordings();
