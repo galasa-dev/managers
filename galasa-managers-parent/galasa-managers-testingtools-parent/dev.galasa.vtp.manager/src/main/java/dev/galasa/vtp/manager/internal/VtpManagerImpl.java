@@ -176,7 +176,7 @@ public class VtpManagerImpl extends AbstractManager {
 	}
 
 	@Override
-	public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
+	public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult,
 			Throwable currentException) throws ManagerException {
 		if(skipRecordings) {
 			//we are not going to do anything and don't need to change the status
@@ -186,7 +186,7 @@ public class VtpManagerImpl extends AbstractManager {
 			recorder.endRecording();
 		}
 		
-		if(PASSED_RESULT.equalsIgnoreCase(currentResult)) {
+		if(currentResult.isPassed()) {
 			recorder.setCurrentMethod(galasaMethod.getJavaExecutionMethod().getName());
 			recorder.writeRecording();
 			recorder.exportRecording();
