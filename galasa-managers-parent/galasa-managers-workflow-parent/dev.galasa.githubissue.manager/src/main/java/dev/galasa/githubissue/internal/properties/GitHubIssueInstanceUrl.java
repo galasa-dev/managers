@@ -7,12 +7,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import dev.galasa.framework.spi.cps.CpsProperties;
+import dev.galasa.githubissue.GitHubIssue;
 import dev.galasa.githubissue.GitHubIssueManagerException;
 
 public class GitHubIssueInstanceUrl extends CpsProperties {
 	
-	public static URL get() throws GitHubIssueManagerException {
-		String url = getStringWithDefault(GitHubIssuePropertiesSingleton.cps(), "https://github.com", "instance", "url");
+	public static URL get(GitHubIssue gitHubInstance) throws GitHubIssueManagerException {
+		String url = getStringWithDefault(GitHubIssuePropertiesSingleton.cps(), "https://github.com", "instance", "url", gitHubInstance.githubId());
 		try {
 			return new URL(url);
 		} catch(MalformedURLException e) {

@@ -5,14 +5,14 @@ package dev.galasa.githubissue.internal.properties;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
+import dev.galasa.githubissue.GitHubIssue;
 import dev.galasa.githubissue.GitHubIssueManagerException;
-import dev.galasa.githubissue.internal.GitHubIssueManagerImpl;
 
 public class GitHubCredentials extends CpsProperties {
 
-	public static String get(GitHubIssueManagerImpl gitHubInstance) throws GitHubIssueManagerException {
+	public static String get(GitHubIssue gitHubInstance) throws GitHubIssueManagerException {
         try {
-            String credentialsKey = getStringNulled(GitHubIssuePropertiesSingleton.cps(), "instance", "credentials");
+            String credentialsKey = getStringNulled(GitHubIssuePropertiesSingleton.cps(), "instance", "credentials", gitHubInstance.githubId());
            
             // Default value
             if (credentialsKey == null) {
