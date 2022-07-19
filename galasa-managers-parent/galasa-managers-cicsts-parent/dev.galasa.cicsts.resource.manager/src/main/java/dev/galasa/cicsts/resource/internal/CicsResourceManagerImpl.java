@@ -25,6 +25,7 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.Result;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.textscan.ILogScanner;
@@ -173,7 +174,7 @@ public class CicsResourceManagerImpl extends AbstractManager implements ICicsRes
      * java.lang.Throwable)
      */
     @Override
-    public String endOfTestClass(@NotNull String currentResult, Throwable currentException) throws ManagerException {
+    public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws ManagerException {
         this.archivePath = artifactsRoot.resolve(PROVISIONING).resolve(JVMSERVERS);
         this.currentTestMethodArchiveFolderName = "postTest";
         

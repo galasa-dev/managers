@@ -26,6 +26,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
+import dev.galasa.framework.spi.Result;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
@@ -191,7 +192,7 @@ public class SeleniumManagerImpl extends AbstractManager implements ISeleniumMan
     }
 
     @Override
-    public String endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull String currentResult,
+    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult,
             Throwable currentException) throws ManagerException {
         try {
             if (!currentResult.equals("Passed")) {

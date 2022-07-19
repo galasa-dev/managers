@@ -91,7 +91,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.resource.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     javadoc: true
     bom: true
@@ -302,7 +302,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.selenium.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     javadoc: true
     bom: true
@@ -340,7 +340,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosbatch.rseapi.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     bom: true
     mvp: true
@@ -348,7 +348,7 @@ managers:
     codecoverage: true
         
   - artifact: dev.galasa.zosbatch.zosmf.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     bom: true
     mvp: true
@@ -372,7 +372,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosfile.rseapi.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     bom: true
     mvp: true
@@ -380,7 +380,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosfile.zosmf.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     bom: true
     mvp: true
@@ -495,7 +495,7 @@ managers:
     isolated: true
 
   - artifact: dev.galasa.vtp.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     javadoc: true
     bom: true
