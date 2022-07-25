@@ -14,12 +14,14 @@ import org.apache.commons.logging.LogFactory;
 
 import com.ibm.hursley.cicsts.test.sem.complex.CICSRegion;
 import com.ibm.hursley.cicsts.test.sem.complex.Complex;
+import com.ibm.hursley.cicsts.test.sem.complex.Sit;
 import com.ibm.hursley.cicsts.test.sem.complex.jcl.Job;
 
 import conrep.CICS;
 import dev.galasa.ManagerException;
 import dev.galasa.ProductVersion;
 import dev.galasa.cicsts.CicstsManagerException;
+import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.MasType;
 import dev.galasa.cicsts.spi.BaseCicsImpl;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
@@ -37,16 +39,17 @@ import dev.galasa.zosconsole.ZosConsoleException;
 import dev.galasa.zosconsole.ZosConsoleManagerException;
 
 public class SemCicsImpl extends BaseCicsImpl {
-
+	
     private static final Log logger = LogFactory.getLog(SemCicsImpl.class);
 
     private final SemManagerImpl semManager;
+    private final SemZosHandler semZosHandler;
 
     private final Complex    complex;
     private final CICS       conrepCics;
     private CICSRegion       complexCics;
 
-    private final String     jcl;
+    private String     		 jcl;
     private final String     jobname;
     private final String     vtamnode;
     private final boolean    provisionStart;
@@ -58,6 +61,7 @@ public class SemCicsImpl extends BaseCicsImpl {
     public SemCicsImpl(SemManagerImpl semManager, ICicstsManagerSpi cicstsManager, SemZosHandler semZosHandler, Complex complex, CICS conrepCics, IZosImage zosImage, String cicsTag, MasType masType, boolean provisionStart) throws CicstsManagerException {
         super(cicstsManager, cicsTag, zosImage, conrepCics.getApplid().getApplid(), masType);
         this.semManager  = semManager;
+        this.semZosHandler = semZosHandler;
         this.conrepCics  = conrepCics;
         this.complex     = complex;
         this.provisionStart = provisionStart;
@@ -78,41 +82,74 @@ public class SemCicsImpl extends BaseCicsImpl {
         if (this.complexCics == null) {
             throw new SemManagerException("Unable to locate CICS Region in SEM complex with applid '" + getApplid() + "'");
         }
-
+        
         try {
+        	
+        	// Get a runtime job for this CICS
             ArrayList<Job> jobs = new ArrayList<>();
             this.complexCics.Build_Runtime_Jobs(this.complex, jobs);
 
+            // Only one job should found
             if (jobs.size() != 1) {
                 throw new SemManagerException("More than one runtime JCL returned from complex");
             }
 
+            // Get the single job in the array
             Job job = jobs.get(0);
+            
+            // Set the constant information of this CICS job
             this.jobname = job.getJobname();
             this.vtamnode = this.complexCics.getVtamnode();
-
-            String runtimeJcl = semZosHandler.generateJCL(jobs.get(0));
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("/*JOBPARM SYSAFF=");
-            sb.append(getZosImage().getSysname());
-            sb.append("\n");
-
-
-            if (this.vtamnode != null && vtamnode.length() > 0) {
-                sb.append("//NET      COMMAND 'VARY NET,ID=");
-                sb.append(this.vtamnode);
-                sb.append(",ACT'\n");
-            }
-
-            sb.append(runtimeJcl);
-
-            this.jcl = sb.toString();
-
-        } catch(Exception e) {
-            throw new SemManagerException("Unable to generate CICS region JCL",e);
-        }
+            
+            // Build JCL to startup CICS
+            buildCicsJcl(job);
+            
+        } catch (Exception e) {
+        	
+            throw new SemManagerException("Could not generate the CICS runtime JCL", e);
+        }    
     }
+
+    /**
+     * From a batch job, generate some JCL to startup CICS
+     * and activate the APPID of the CICS job. Store the JCL
+     * ready for CICS startup.
+     * 
+     * @param job
+     * @throws SemManagerException
+     */
+	private void buildCicsJcl(Job job) throws SemManagerException {
+
+		try {
+			
+			// Build some skeleton JCL
+			String runtimeJcl = semZosHandler.generateJCL(job);
+
+			StringBuilder sb = new StringBuilder();
+			
+			// Append the start of the JCL with system information
+			sb.append("/*JOBPARM SYSAFF=");
+			sb.append(getZosImage().getSysname());
+			sb.append("\n");
+
+			// Append the JCL with commands to initialise the APPLID
+			if (this.vtamnode != null && vtamnode.length() > 0) {
+				sb.append("//NET      COMMAND 'VARY NET,ID=");
+				sb.append(this.vtamnode);
+				sb.append(",ACT'\n");
+			}
+
+			// Append the runtime CICS JCL to existing JCL
+			sb.append(runtimeJcl);
+
+			// Store the JCL ready for runtime
+			this.jcl = sb.toString();
+			
+		} catch (Exception e) {
+			
+            throw new SemManagerException("Unable to generate CICS region JCL", e);
+		}
+	}
 
     @Override
     public ProductVersion getVersion() throws CicstsManagerException {
@@ -457,7 +494,44 @@ public class SemCicsImpl extends BaseCicsImpl {
 
     @Override
     public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException {
-        throw new CicstsManagerException("This method is yet to be developed");
-    }
 
+    	// Get the CICS
+    	ICicsRegion theCics = cicstsManager.locateCicsRegion(this.getTag());
+    	
+    	// Restricted SIT parameter
+    	if (sitParam.toUpperCase().equals("APPLID")) {
+    		throw new CicstsManagerException("APPLID is a restricted SIT parameter. It cannot be changed");
+    	}
+    	
+    	// CICS is currently running
+        if (job.getStatus() == JobStatus.ACTIVE) {
+        	throw new CicstsManagerException("The CICS region " + theCics.getApplid() + " with tag " + theCics.getTag() + " is still running. Cannot alter a running CICS region");
+        }
+        
+        for (CICSRegion cicsRegions : complex.getCICS()) {
+        	
+        	// Find the correct region
+        	if (cicsRegions.getApplid().equals(theCics.getApplid())) {
+        		
+        		Sit sitOverride = new Sit(sitParam, sitValue, "Overriden during runtime");
+        		
+        		// Apply the SIT override
+        		cicsRegions.runtimeOverrideSIT(sitOverride);
+        		
+        		ArrayList<Job> jobs = new ArrayList<Job>();
+        		
+        		try {
+        			
+        			// Rebuild the JCL with the new SIT parameter
+            		cicsRegions.Build_Runtime_Jobs(complex, jobs);
+            		
+        		} catch (Exception e) {
+        			throw new CicstsManagerException("Unable to rebuild runtime JCL after SIT override " + sitParam, e);
+        		}
+        		
+        		// Perform a rebuild of the JCL 
+        		buildCicsJcl(jobs.get(0));
+        	}
+        }
+    }
 }
