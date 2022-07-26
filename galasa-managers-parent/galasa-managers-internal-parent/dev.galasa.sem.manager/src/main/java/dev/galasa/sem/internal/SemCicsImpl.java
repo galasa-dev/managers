@@ -520,11 +520,8 @@ public class SemCicsImpl extends BaseCicsImpl {
 					// Apply the SIT override
 					cicsRegions.runtimeOverrideSIT(sitOverride);
         		
-				// Remove the Sit parameter
         		} else {
-        			
-        			// Remove the SIT if it exists
-        			cicsRegions.removeSIT(sitParam);
+        			throw new CicstsManagerException("Sit value in alterSit cannot be null");
         		}
         		
         		ArrayList<Job> jobs = new ArrayList<Job>();
