@@ -82,37 +82,36 @@ public class SemCicsImpl extends BaseCicsImpl {
         if (this.complexCics == null) {
             throw new SemManagerException("Unable to locate CICS Region in SEM complex with applid '" + getApplid() + "'");
         }
-        
-        try {
-        	
-        	// Get a runtime job for this CICS
-            ArrayList<Job> jobs = new ArrayList<>();
-            this.complexCics.Build_Runtime_Jobs(this.complex, jobs);
 
-            // Only one job should found
-            if (jobs.size() != 1) {
-                throw new SemManagerException("More than one runtime JCL returned from complex");
-            }
+		// Get a runtime job for this CICS
+		ArrayList<Job> jobs = new ArrayList<>();
+		
+		try {
+			this.complexCics.Build_Runtime_Jobs(this.complex, jobs);
 
-            // Get the single job in the array
-            Job job = jobs.get(0);
-            
-            // Set the constant information of this CICS job
-            this.jobname = job.getJobname();
-            this.vtamnode = this.complexCics.getVtamnode();
-            
-            // Build JCL to startup CICS
-            buildCicsJcl(job);
-            
-        } catch (Exception e) {
-        	
+		} catch (Exception e) {
             throw new SemManagerException("Could not generate the CICS runtime JCL", e);
-        }    
+		}
+
+		// Only one job should found
+		if (jobs.size() != 1) {
+			throw new SemManagerException("More than one runtime JCL returned from complex");
+		}
+
+		// Get the single job in the array
+		Job job = jobs.get(0);
+
+		// Set the constant information of this CICS job
+		this.jobname = job.getJobname();
+		this.vtamnode = this.complexCics.getVtamnode();
+
+		// Build JCL to startup CICS
+		buildCicsJcl(job);  
     }
 
     /**
      * From a batch job, generate some JCL to startup CICS
-     * and activate the APPID of the CICS job. Store the JCL
+     * and activate the APPLID of the CICS job. Store the JCL
      * ready for CICS startup.
      * 
      * @param job
@@ -122,7 +121,7 @@ public class SemCicsImpl extends BaseCicsImpl {
 
 		try {
 			
-			// Build some skeleton JCL
+			// Generate the JCL from the job
 			String runtimeJcl = semZosHandler.generateJCL(job);
 
 			StringBuilder sb = new StringBuilder();
@@ -513,10 +512,20 @@ public class SemCicsImpl extends BaseCicsImpl {
         	// Find the correct region
         	if (cicsRegions.getApplid().equals(theCics.getApplid())) {
         		
-        		Sit sitOverride = new Sit(sitParam, sitValue, "Overriden during runtime");
+        		// Add the Sit parameter
+        		if (sitValue != null) {
+        			
+					Sit sitOverride = new Sit(sitParam, sitValue, "Overridden during runtime");
+
+					// Apply the SIT override
+					cicsRegions.runtimeOverrideSIT(sitOverride);
         		
-        		// Apply the SIT override
-        		cicsRegions.runtimeOverrideSIT(sitOverride);
+				// Remove the Sit parameter
+        		} else {
+        			
+        			// Remove the SIT if it exists
+        			cicsRegions.removeSIT(sitParam);
+        		}
         		
         		ArrayList<Job> jobs = new ArrayList<Job>();
         		
