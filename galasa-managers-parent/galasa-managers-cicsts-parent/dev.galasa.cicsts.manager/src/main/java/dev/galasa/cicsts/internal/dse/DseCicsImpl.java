@@ -146,4 +146,9 @@ public class DseCicsImpl extends BaseCicsImpl {
 	public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException {
 	    throw new CicstsManagerException("Alter SIT is not supported under DSE provisioning");
 	}
+	
+	@Override
+	public void removeSit(@NotNull String sitParam) throws CicstsManagerException {
+		throw new CicstsManagerException("Remove SIT is not supported under DSE provisioning");
+	}
 }

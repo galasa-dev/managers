@@ -498,8 +498,8 @@ public class SemCicsImpl extends BaseCicsImpl {
     	ICicsRegion theCics = cicstsManager.locateCicsRegion(this.getTag());
     	
     	// Restricted SIT parameter
-    	if (sitParam.toUpperCase().equals("APPLID")) {
-    		throw new CicstsManagerException("APPLID is a restricted SIT parameter. It cannot be changed");
+    	if (sitParam.toUpperCase().equals("APPLID") | sitParam.toUpperCase().equals("GRPLIST") || sitParam.toUpperCase().equals("SYSID")) {
+    		throw new CicstsManagerException(sitParam.toUpperCase() + " is a restricted SIT parameter. It cannot be changed");
     	}
     	
     	// CICS is currently running
@@ -507,10 +507,10 @@ public class SemCicsImpl extends BaseCicsImpl {
         	throw new CicstsManagerException("The CICS region " + theCics.getApplid() + " with tag " + theCics.getTag() + " is still running. Cannot alter a running CICS region");
         }
         
-        for (CICSRegion cicsRegions : complex.getCICS()) {
+        for (CICSRegion cicsRegion : complex.getCICS()) {
         	
         	// Find the correct region
-        	if (cicsRegions.getApplid().equals(theCics.getApplid())) {
+        	if (cicsRegion.getApplid().equals(theCics.getApplid())) {
         		
         		// Add the Sit parameter
         		if (sitValue != null) {
@@ -518,26 +518,65 @@ public class SemCicsImpl extends BaseCicsImpl {
 					Sit sitOverride = new Sit(sitParam, sitValue, "Overridden during runtime");
 
 					// Apply the SIT override
-					cicsRegions.runtimeOverrideSIT(sitOverride);
+					cicsRegion.runtimeOverrideSIT(sitOverride);
+	        		rebuildRuntimeJob(cicsRegion);
         		
         		} else {
-        			throw new CicstsManagerException("Sit value in alterSit cannot be null");
-        		}
-        		
-        		ArrayList<Job> jobs = new ArrayList<Job>();
-        		
-        		try {
         			
-        			// Rebuild the JCL with the new SIT parameter
-            		cicsRegions.Build_Runtime_Jobs(complex, jobs);
-            		
-        		} catch (Exception e) {
-        			throw new CicstsManagerException("Unable to rebuild runtime JCL after SIT override " + sitParam, e);
+        			throw new CicstsManagerException("Sit value in alterSit() cannot be null use removeSit()");
         		}
-        		
-        		// Perform a rebuild of the JCL 
-        		buildCicsJcl(jobs.get(0));
-        	}
+           	}
         }
     }
+    
+    @Override
+    public void removeSit(@NotNull String sitParam) throws CicstsManagerException {
+    	
+    	// Get the CICS
+    	ICicsRegion theCics = cicstsManager.locateCicsRegion(this.getTag());
+    	
+    	// Check the restricted parameters
+    	if (sitParam.toUpperCase().equals("APPLID") | sitParam.toUpperCase().equals("GRPLIST") || sitParam.toUpperCase().equals("SYSID")) {
+    		throw new CicstsManagerException(sitParam.toUpperCase() + " is a restricted SIT parameter. It cannot be removed");
+       	}
+    	
+    	// Check if CICS is currently running
+    	if (job.getStatus() == JobStatus.ACTIVE) {
+    		throw new CicstsManagerException("The CICS region " + theCics.getApplid() + " with tag " + theCics.getTag() + " is still running. Cannot remove a SIT from a running region");
+    	}
+    	
+		for (CICSRegion cicsRegion : complex.getCICS()) {
+
+        	// Find the correct region
+			if (cicsRegion.getApplid().equals(theCics.getApplid())) {
+
+				// Remove the SIT
+				cicsRegion.removeSit(sitParam);
+				rebuildRuntimeJob(cicsRegion);
+			}
+		}
+	}
+
+    /**
+     * Performs a rebuild of the given CICS job
+     * 
+     * @param region
+     * @throws CicstsManagerException
+     */
+	private void rebuildRuntimeJob(CICSRegion region) throws CicstsManagerException {
+
+		ArrayList<Job> jobs = new ArrayList<Job>();
+
+		try {
+
+			// Rebuild the JCL with the changed SIT parameter
+			region.Build_Runtime_Jobs(complex, jobs);
+
+		} catch (Exception e) {
+			throw new CicstsManagerException("Unable to rebuild runtime JCL" , e);
+		}
+
+		// Perform a rebuild of the JCL
+		buildCicsJcl(jobs.get(0));
+	}
 }
