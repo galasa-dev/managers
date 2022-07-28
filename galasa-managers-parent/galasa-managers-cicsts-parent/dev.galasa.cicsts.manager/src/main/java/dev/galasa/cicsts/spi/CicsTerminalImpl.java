@@ -12,6 +12,7 @@ import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -29,9 +30,9 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 
     public final boolean connectAtStartup;
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
             throws TerminalInterruptedException, Zos3270ManagerException {
-        super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage(), 80, 24, 0, 0);
+        super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage(), 80, 24, 0, 0, textScanner);
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;
@@ -40,14 +41,14 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
         setAutoReconnect(connectAtStartup);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
             throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException {
-        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup);
+        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup) throws TerminalInterruptedException, IpNetworkManagerException,
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner) throws TerminalInterruptedException, IpNetworkManagerException,
     Zos3270ManagerException {
-        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup);
+        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner);
     }
 
     @Override
