@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +23,7 @@ import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.JsonObject;
 
-import dev.galasa.ContinueOnTestFailure;
 import dev.galasa.ICredentials;
-import dev.galasa.ICredentialsToken;
 import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
@@ -69,8 +66,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	
 	private boolean methodAnnotated;
 	
-	private boolean continueOnTestFailure = false;
-	
 	private IHttpManagerSpi  httpManager;
 	private IHttpClient      httpClient;
 	
@@ -104,9 +99,6 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 					return;
 				}
 			} 
-			if (testClass.getAnnotation(ContinueOnTestFailure.class) != null) {
-				this.continueOnTestFailure = true;
-			}
 		} else {
 			return; // Only support Java
 		}
@@ -187,14 +179,14 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			return null;
 		}
 		
-		logger.info("This method is annotated with a GitHubIssue so checking if failure was due to a known defect");
+		logger.trace("This method is annotated with a GitHubIssue so checking if failure was due to a known defect");
 		
 		if (Integer.parseInt(gitHubIssue.issue()) <= 0) {
 			return null;
 		}
 		
 		if (!checkRegexException(gitHubIssue.regex(), currentException)) {
-			logger.info("The failing exception does not match the GitHub issue, so the failure is not due to a known defect");
+			logger.trace("The failing exception does not match the GitHub issue, so the failure is not due to a known defect");
 			return null;
 		}
 		
@@ -204,7 +196,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		}
 		
 		if (issue.isClosed()) {
-			logger.info("Issue '" + issue.getIssue() + "'  is closed so does not override the result of this method");
+			logger.trace("Issue '" + issue.getIssue() + "'  is closed so does not override the result of this method");
 			return null;
 		}
 		
@@ -241,8 +233,12 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		boolean failedNonDefectMethod = false;
 		boolean failedDefectMethod    = false;
 		boolean passedMethod          = false;
+		
+		int failedNonDefectMethodCount = 0;
+		int failedDefectMethodCount = 0;
+		int passedMethodCount = 0;
 	
-		logger.info("Iterating through the results of all of the test methods to determine the overall class result");
+		logger.trace("Iterating through the results of all of the test methods to determine the overall class result");
 		for (Map.Entry<GalasaMethod, HashMap<String,Object>> method : results.entrySet()) {
 			
 			HashMap<String, Object> entry = method.getValue();
@@ -255,18 +251,22 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 				if (this.classGitHubIssue != null && this.classGitHubIssue.regex() != null && this.classGitHubIssue.regex().length > 0) {
 					if (checkRegexException(this.classGitHubIssue.regex(), throwable)) {
 						failedNonDefectMethod = true;
+						failedNonDefectMethodCount++;
 					}
 				} else {
 					failedNonDefectMethod = true;
+					failedNonDefectMethodCount++;
 				}	
 				break;
 			
 			case "Failed With Defects": 
 				failedDefectMethod = true;
+				failedDefectMethodCount++;
 				break;
 				
 			case "Passed":
 				passedMethod = true;
+				passedMethodCount++;
 				break;
 				
 			default:
@@ -276,27 +276,22 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			
 		}
 		
-		logger.info("@GitHubIssue is present at the class level: " + (classLevelIssue != null));
-		logger.info("This class contains:");
-		logger.info("'Passed' methods: " + passedMethod);
-		logger.info("'Failed' methods: " + failedNonDefectMethod);
-		logger.info("'Failed With Defect' methods: " + failedDefectMethod);
+		logger.trace("@GitHubIssue is present at the class level: " + (classLevelIssue != null));
+		logger.trace("This class contains: " + passedMethodCount + " Passed methods, " + failedNonDefectMethodCount + " Failed methods & " + failedDefectMethodCount + " Failed With Defects methods");
 		
 		if (failedDefectMethod && passedMethod && !failedNonDefectMethod) {
 			
-			if (!this.continueOnTestFailure) {
-				// If test stopped at the first failed method, but this was the last method anyway, treat as Passed With Defects
-				int methodsExecuted = results.size();
-				int testMethods = 0;
-				for (Method method : klass.getJavaTestClass().getMethods()) {
-					if (hasTestAnnotation(method)) {
-						testMethods++;
-					}
+			// If test stopped at the first failed method, but this was the last method anyway, treat as Passed With Defects
+			int methodsExecuted = results.size();
+			int testMethods = 0;
+			for (Method method : klass.getJavaTestClass().getMethods()) {
+				if (hasTestAnnotation(method)) {
+					testMethods++;
 				}
-				if (methodsExecuted < testMethods) {
-					logger.info("Overriding class result from 'Failed' to 'Failed With Defects' due to test stopping at 'Failed With Defect' method, so cannot determine what the remaining methods would have been");
-					return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
-				}
+			}
+			if (methodsExecuted < testMethods) {
+				logger.info("Overriding class result from 'Failed' to 'Failed With Defects' due to test stopping at 'Failed With Defect' method, so cannot determine what the remaining methods would have been");
+				return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
 			}
 			
 			logger.info("Overriding class result from 'Failed' to 'Passed With Defects' due to all methods passing other than 'Failed With Defects' methods");
@@ -390,7 +385,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			}
         }
 		
-		logger.info("Looking for GitHub Issue at: " + fullUrl);
+		logger.trace("Looking for GitHub Issue at: " + fullUrl);
 		
 		String url = fullUrl.substring(fullUrl.indexOf("/repos"));
 		
