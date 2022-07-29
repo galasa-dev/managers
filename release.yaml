@@ -175,6 +175,13 @@ managers:
     version: 0.21.0
     obr: true
     isolated: true
+
+  - artifact: dev.galasa.githubissue.manager
+    version: 0.25.0
+    obr: true
+    mvp: false
+    bom: true
+    isolated: false
     
   - artifact: dev.galasa.http.manager
     version: 0.25.0
