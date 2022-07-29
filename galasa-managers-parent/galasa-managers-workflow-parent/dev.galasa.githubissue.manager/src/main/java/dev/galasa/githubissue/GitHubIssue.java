@@ -16,7 +16,6 @@ import java.lang.annotation.ElementType;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@GitHubIssueManagerField
 @Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface GitHubIssue {
     

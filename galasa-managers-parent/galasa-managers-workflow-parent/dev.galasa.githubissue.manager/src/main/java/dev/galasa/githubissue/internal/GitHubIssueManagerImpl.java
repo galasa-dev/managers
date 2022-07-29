@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.osgi.service.component.annotations.Component;
 import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
-import dev.galasa.ICredentialsToken;
 import dev.galasa.ICredentialsUsername;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
@@ -64,7 +62,9 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	
 	private GalasaTest galasaTest;
 	
-	private GitHubIssue gitHubIssue;
+	private GitHubIssue classGitHubIssue;
+	
+	private boolean methodAnnotated;
 	
 	private IHttpManagerSpi  httpManager;
 	private IHttpClient      httpClient;
@@ -84,22 +84,21 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		if (galasaTest.isJava()) {
 			Class<?> testClass = galasaTest.getJavaTestClass();
 			
-			this.gitHubIssue = testClass.getAnnotation(GitHubIssue.class); // Set globally as might need later
-			if (this.gitHubIssue == null) { 
-				
-				GitHubIssue gitHubIssue = null;
+			this.classGitHubIssue = testClass.getAnnotation(GitHubIssue.class); // Set globally as might need later
+			if (this.classGitHubIssue == null) { 
+				GitHubIssue methodGitHubIssue = null;
 				for (Method testMethod : testClass.getMethods()) {
-					gitHubIssue = testMethod.getAnnotation(GitHubIssue.class);
-					if (gitHubIssue != null) {
-						required = true;
+					methodGitHubIssue = testMethod.getAnnotation(GitHubIssue.class);
+					if (methodGitHubIssue != null) {
+						methodAnnotated = true;
 						break;
 					}
 				}
 				// Annotation not present on the class or any methods
-				if (!required) {
+				if (!methodAnnotated) {
 					return;
 				}
-			}
+			} 
 		} else {
 			return; // Only support Java
 		}
@@ -152,7 +151,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			// If this test method is annotated with GitHubIssue, override it's result if needed
 			GitHubIssue gitHubIssue = galasaMethod.getJavaExecutionMethod().getAnnotation(GitHubIssue.class);
 			if (gitHubIssue != null) {
-				newResult = overrideMethodResult(galasaMethod, currentResult, currentException);
+				newResult = overrideMethodResult(gitHubIssue, galasaMethod, currentResult, currentException);
 			}
 			
 		}
@@ -170,7 +169,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		return newResult;
 	}
 	
-	private Result overrideMethodResult(@NotNull GalasaMethod method, @NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
+	private Result overrideMethodResult(@NotNull GitHubIssue gitHubIssue, @NotNull GalasaMethod method, @NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
 
 		if (!currentResult.isFailed()) {
 			return null;
@@ -180,32 +179,29 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			return null;
 		}
 		
-		GitHubIssue gitHubIssue = method.getJavaExecutionMethod().getAnnotation(GitHubIssue.class);
-		if (gitHubIssue == null) {
-			return null;
-		}
+		logger.trace("This method is annotated with a GitHubIssue so checking if failure was due to a known defect");
 		
 		if (Integer.parseInt(gitHubIssue.issue()) <= 0) {
 			return null;
 		}
 		
 		if (!checkRegexException(gitHubIssue.regex(), currentException)) {
+			logger.trace("The failing exception does not match the GitHub issue, so the failure is not due to a known defect");
 			return null;
 		}
 		
-		String repo = getRepo(gitHubIssue);
-		Issue issue = getGitHubIssue(repo, gitHubIssue.issue());
+		Issue issue = getGitHubIssue(gitHubIssue);
 		if (issue == null) {
 			return null;
 		}
 		
 		if (issue.isClosed()) {
+			logger.trace("Issue '" + issue.getIssue() + "'  is closed so does not override the result of this method");
 			return null;
 		}
 		
-		logger.info("Overriding 'Failed' to 'Failed With Defects' due to open GitHub issue " + gitHubIssue.issue() + ": " + issue.getTitle());
-		
-		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, currentException.toString());
+		logger.info("Overriding method result from 'Failed' to 'Failed With Defects' due to open GitHub issue " + gitHubIssue.issue() + ": " + issue.getTitle());
+		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
 		
 	}
 	
@@ -213,29 +209,36 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 	public Result endOfTestClass(@NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
 
 		Result newResult = null;
-
-		// If this test class is annotated with GitHubIssue, override it's result if needed
-		if (this.gitHubIssue != null) {
-			newResult = overrideClassResult(this.galasaTest, currentResult);
+		
+		// If this test class or any of it's methods are annotated with GitHubIssue, override it's result if needed
+		if (this.classGitHubIssue != null || methodAnnotated) {
+			newResult = overrideClassResult(this.galasaTest, currentResult, currentException);
 		}
 		
 		return newResult;
 		
 	}
 	
-	private Result overrideClassResult(@NotNull GalasaTest klass, @NotNull Result currentResult) throws GitHubIssueManagerException {
+	private Result overrideClassResult(@NotNull GalasaTest klass, @NotNull Result currentResult, Throwable currentException) throws GitHubIssueManagerException {
 		
 		if (!currentResult.isFailed()) {
 			return null;
 		}
 
-		String repo = getRepo(gitHubIssue);
-		Issue issue = getGitHubIssue(repo, this.gitHubIssue.issue());
+		Issue classLevelIssue = null;
+		if (this.classGitHubIssue != null) {
+			classLevelIssue = getGitHubIssue(this.classGitHubIssue);
+		} 
 		
 		boolean failedNonDefectMethod = false;
 		boolean failedDefectMethod    = false;
 		boolean passedMethod          = false;
+		
+		int failedNonDefectMethodCount = 0;
+		int failedDefectMethodCount = 0;
+		int passedMethodCount = 0;
 	
+		logger.trace("Iterating through the results of all of the test methods to determine the overall class result");
 		for (Map.Entry<GalasaMethod, HashMap<String,Object>> method : results.entrySet()) {
 			
 			HashMap<String, Object> entry = method.getValue();
@@ -245,21 +248,25 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			switch(result.getName()) {
 			case "Failed":
 				
-				if (this.gitHubIssue != null && this.gitHubIssue.regex() != null && this.gitHubIssue.regex().length > 0) {
-					if (checkRegexException(this.gitHubIssue.regex(), throwable)) {
+				if (this.classGitHubIssue != null && this.classGitHubIssue.regex() != null && this.classGitHubIssue.regex().length > 0) {
+					if (checkRegexException(this.classGitHubIssue.regex(), throwable)) {
 						failedNonDefectMethod = true;
+						failedNonDefectMethodCount++;
 					}
 				} else {
 					failedNonDefectMethod = true;
+					failedNonDefectMethodCount++;
 				}	
 				break;
 			
 			case "Failed With Defects": 
 				failedDefectMethod = true;
+				failedDefectMethodCount++;
 				break;
 				
 			case "Passed":
 				passedMethod = true;
+				passedMethodCount++;
 				break;
 				
 			default:
@@ -269,25 +276,42 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			
 		}
 		
-		if (issue != null && !issue.isClosed()) {
+		logger.trace("@GitHubIssue is present at the class level: " + (classLevelIssue != null));
+		logger.trace("This class contains: " + passedMethodCount + " Passed methods, " + failedNonDefectMethodCount + " Failed methods & " + failedDefectMethodCount + " Failed With Defects methods");
+		
+		if (failedDefectMethod && passedMethod && !failedNonDefectMethod) {
+			
+			// If test stopped at the first failed method, but this was the last method anyway, treat as Passed With Defects
+			int methodsExecuted = results.size();
+			int testMethods = 0;
+			for (Method method : klass.getJavaTestClass().getMethods()) {
+				if (hasTestAnnotation(method)) {
+					testMethods++;
+				}
+			}
+			if (methodsExecuted < testMethods) {
+				logger.info("Overriding class result from 'Failed' to 'Failed With Defects' due to test stopping at 'Failed With Defect' method, so cannot determine what the remaining methods would have been");
+				return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
+			}
+			
+			logger.info("Overriding class result from 'Failed' to 'Passed With Defects' due to all methods passing other than 'Failed With Defects' methods");
+			return Result.custom("Passed With Defects", true, false, true, false, false, false, false, "passed with defects");
+		}
+		
+		if (classLevelIssue != null && !classLevelIssue.isClosed()) {
 			if (failedDefectMethod || failedNonDefectMethod) {
-				logger.info("Overriding 'Failed' to 'Failed With Defects' due to open GitHub issue " + this.gitHubIssue.issue() + ": " + issue.getTitle());
-				return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "");
+				logger.info("Overriding class result from 'Failed' to 'Failed With Defects' due to failing methods and class level open GitHub issue " + this.classGitHubIssue.issue() + ": " + classLevelIssue.getTitle());
+				return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
 			}
 		}
 		
 		if (failedNonDefectMethod || !failedDefectMethod) {
+			logger.info("Not overriding the class result due to 'Failed' methods and no class level GitHub issue");
 			return null;
 		}
-		
-		if (passedMethod) {
-			logger.info("Overriding 'Passed' to 'Passed With Defects' due to at least one method passing and at least one 'Failed With Defects' method");
-			return Result.custom("Passed With Defects", true, false, true, false, false, false, false, "");
-		}
- 		
 	
-		logger.info("Overriding 'Failed' to 'Failed With Defects' due to no passing methods");
-		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "");
+		logger.info("Overriding class result from 'Failed' to 'Failed With Defects' due to all methods being 'Failed With Defects'");
+		return Result.custom("Failed With Defects", false, true, true, false, false, false, false, "failed with defects");
 	}
 	
 	private boolean checkRegexException(String[] regexs, Throwable exception) {
@@ -330,9 +354,9 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		
 	}
 	
-	private Issue getGitHubIssue(String repo, String issueNumber) throws GitHubIssueManagerException {
+	private Issue getGitHubIssue(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
 		
-		String fullUrl = getUrl(repo, issueNumber);
+		String fullUrl = getUrl(gitHubIssue);
 		
 		if (this.httpClient == null) {
 			
@@ -350,7 +374,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
         	// Authenticate as might be GitHub Enterprise 
         	ICredentials creds = null;
 			try {
-				creds = getCreds();
+				creds = getCreds(gitHubIssue);
 			} catch (CredentialsException e) {
 				throw new GitHubIssueManagerException("Unable to get credentials for the GitHub instance", e);
 			}
@@ -361,6 +385,8 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			}
         }
 		
+		logger.trace("Looking for GitHub Issue at: " + fullUrl);
+		
 		String url = fullUrl.substring(fullUrl.indexOf("/repos"));
 		
 		try {
@@ -369,31 +395,29 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 			
 			if (response.getStatusCode() == 200) {
             	JsonObject json = response.getContent();
-            	Issue issue = getIssuePojo(json, issueNumber);
+            	Issue issue = getIssuePojo(json, gitHubIssue.issue());
             	logger.info("Issue '" + issue.getIssue() + "' is " + issue.getState() + " - " + issue.getUrl());
             	return issue;
         	} else {
-        		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + fullUrl + " - " + response.getStatusLine());
+        		throw new GitHubIssueManagerException("Unable to read GitHub issue '" + gitHubIssue.issue() + "' from url " + fullUrl + " - " + response.getStatusLine());
         	}
 		} catch (HttpClientException e) {
-        	throw new GitHubIssueManagerException("Unable to read GitHub issue '" + issueNumber + "' from url " + fullUrl, e);
+        	throw new GitHubIssueManagerException("Unable to read GitHub issue '" + gitHubIssue.issue() + "' from url " + fullUrl, e);
 		}
         
 	}
 	
-	private ICredentials getCreds() throws GitHubIssueManagerException, CredentialsException {
-		String credKey = GitHubCredentials.get(this);
+	private ICredentials getCreds(GitHubIssue gitHubIssue) throws GitHubIssueManagerException, CredentialsException {
+		String credKey = GitHubCredentials.get(gitHubIssue);
 		return credService.getCredentials(credKey);
 	}
 	
-	private String getUrl(String repo, String issueNumber) throws GitHubIssueManagerException {
+	private String getGitHubInstance(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
 		
-		String gitHubInstance = GitHubIssueInstanceUrl.get().toString();
-		gitHubInstance = gitHubInstance.substring(8);
+		String gitHubInstanceUrl = GitHubIssueInstanceUrl.get(gitHubIssue).toString();
+		gitHubInstanceUrl = gitHubInstanceUrl.substring(8);
 		
-		String url = "https://api." + gitHubInstance + "/repos/" + repo + "/issues/" + issueNumber;
-		
-		return url;
+		return gitHubInstanceUrl;
 		
 	}
 	
@@ -402,7 +426,7 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		if (!gitHubIssue.repository().equals("")) {
 			repo = gitHubIssue.repository();
 		} else {
-			repo = GitHubIssueInstanceRepository.get();
+			repo = GitHubIssueInstanceRepository.get(gitHubIssue);
 		}
 		
 		if (repo != null) { 
@@ -410,6 +434,16 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		} else {
 			throw new GitHubIssueManagerException("GitHub repository not provided in annotation or CPS");
 		}
+	}
+	
+	private String getUrl(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
+		
+		String instanceUrl = getGitHubInstance(gitHubIssue);
+		String repo = getRepo(gitHubIssue);
+		String issueNumber = gitHubIssue.issue();
+		
+		String fullUrl = "https://api." + instanceUrl + "/repos/" + repo + "/issues/" + issueNumber;
+		return fullUrl;
 	}
 	
 	private Issue getIssuePojo(JsonObject json, String issueNumber) {
@@ -425,17 +459,21 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 		if (!method.isJava()) {
 			return false;
 		}
-		for (Annotation a : method.getJavaExecutionMethod().getAnnotations()) {
+		return hasTestAnnotation(method.getJavaExecutionMethod());
+	}
+	
+	private boolean hasTestAnnotation(Method method) {
+		for (Annotation a : method.getAnnotations()) {
 			if (a instanceof Test) {
 				return true;
 			}
 		}
-		return false;
+		return false;		
 	}
 	
 	private boolean isDefectCheckEnabled() {
 		try {
-			// TO DO - Check if this is meant to be a property in the CPS
+			// TO DO - Check CPS property for enabled or disabled
 			return true;
 		} catch(Exception e) {
 			logger.error("Unable to determine if defect check enabled", e);
