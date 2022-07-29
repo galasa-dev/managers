@@ -210,8 +210,4 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     public IZosManagerSpi getZosManager() {
         return this.zosManager;
     }
-    
-    public ITextScannerManagerSpi getTextScannerManager() {
-    	return this.textScannerManager;
-    }
 }
