@@ -370,19 +370,8 @@ public class GitHubIssueManagerImpl extends AbstractManager {
 				throw new GitHubIssueManagerException("Badly formed URI", e);
 			}
 			this.httpClient.setURI(uri);
-        	
-        	// Authenticate as might be GitHub Enterprise 
-        	ICredentials creds = null;
-			try {
-				creds = getCreds(gitHubIssue);
-			} catch (CredentialsException e) {
-				throw new GitHubIssueManagerException("Unable to get credentials for the GitHub instance", e);
-			}
-			if (creds instanceof ICredentialsUsernamePassword) {
-				String username = ((ICredentialsUsername) creds).getUsername();
-				String password = ((ICredentialsUsernamePassword) creds).getPassword();
-				this.httpClient = this.httpClient.setAuthorisation(username, password);
-			}
+			
+			setCreds(gitHubIssue);
         }
 		
 		logger.trace("Looking for GitHub Issue at: " + fullUrl);
@@ -407,9 +396,21 @@ public class GitHubIssueManagerImpl extends AbstractManager {
         
 	}
 	
-	private ICredentials getCreds(GitHubIssue gitHubIssue) throws GitHubIssueManagerException, CredentialsException {
-		String credKey = GitHubCredentials.get(gitHubIssue);
-		return credService.getCredentials(credKey);
+	private void setCreds(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
+		ICredentials creds = null;
+		try {
+			String credKey = GitHubCredentials.get(gitHubIssue);
+			creds = credService.getCredentials(credKey);
+		} catch (CredentialsException e) {
+			throw new GitHubIssueManagerException("Unable to access the credentials service", e);
+		}
+		if (creds != null) {
+			if (creds instanceof ICredentialsUsernamePassword) {
+				String username = ((ICredentialsUsername) creds).getUsername();
+				String password = ((ICredentialsUsernamePassword) creds).getPassword();
+				this.httpClient = this.httpClient.setAuthorisation(username, password);
+			}
+		}
 	}
 	
 	private String getGitHubInstance(GitHubIssue gitHubIssue) throws GitHubIssueManagerException {
