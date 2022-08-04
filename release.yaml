@@ -23,7 +23,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.artifact.manager.ivt
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     mvp: true
     isolated: true
