@@ -224,22 +224,23 @@ public class Terminal implements ITerminal {
     
     @Override
     public boolean searchText(String text, int occurrences, long milliTimeout) {
-    	
-    	// Retrieve the terminal screen
-    	String terminalScreen = retrieveScreen();
-    	
+    	    	
     	long startTime = System.currentTimeMillis();
     	
     	logger.info("Searching for " + occurrences + " counts of '" + text + "' on terminal screen over " + milliTimeout + "ms");
     	
     	do {
     		try {
-    			// Scan the terminal screen for the string literal
-    			textScan.getTextScanner().scan(terminalScreen, text, null, occurrences);
+    			// Scan the terminal screen
+    			textScan.getTextScanner().scan(retrieveScreen(), text, null, occurrences);
     			
     		} catch (TextScanManagerException e) {
+    			    			
+    			try {
+        			Thread.sleep(2000);
+    			} catch (InterruptedException interEx) {}
     			
-       			// Exception has occurred so text was not found    			
+       			// Exception has occurred so text was not found    
     			continue;
     		}
     		
