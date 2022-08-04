@@ -484,9 +484,6 @@ public class BundleResourcesImpl implements IBundleResources {
         if (!rawPath.startsWith(FILE_SEPARATOR))
             rawPath = FILE_SEPARATOR + rawPath;
 
-        if (!rawPath.startsWith(FILE_SEPARATOR + "resources"))
-            rawPath = FILE_SEPARATOR + "resources" + rawPath;
-
         rawPath = rawPath.replaceAll("\\/+", "/");
         rawPath = rawPath.replaceFirst(FILE_SEPARATOR, "");
 
