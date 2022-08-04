@@ -45,14 +45,14 @@ public class ArtifactManagerIVT {
 
     @Test
     public void testRetrieveFileAsStringMethod() throws Exception {
-        String textContent = resources.retrieveFileAsString("/resources/textFiles/test1.txt");
+        String textContent = resources.retrieveFileAsString("/textFiles/test1.txt");
         logger.debug("Read the following from the file test1.txt: " + textContent);
         assertThat(textContent.trim()).isEqualTo("Hello from Galasa");
     }
 
     @Test
     public void testRetrieveSkeletonFileAsStringMethod() throws Exception {
-        String textContent = resources.retrieveSkeletonFileAsString("/resources/skeletons/test1.skel", buildHashMap());
+        String textContent = resources.retrieveSkeletonFileAsString("/skeletons/test1.skel", buildHashMap());
         logger.info("Received the following from the skeleton file: " + textContent);
         assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
     }
@@ -60,7 +60,7 @@ public class ArtifactManagerIVT {
 
     @Test
     public void readTextFileArtifactManager() throws Exception, TestBundleResourceException, IOException {
-        InputStream file = resources.retrieveFile("/resources/textFiles/test1.txt");
+        InputStream file = resources.retrieveFile("/textFiles/test1.txt");
         String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(file);
         logger.debug("Read the following from the file test1.txt: " + textContent);
         assertThat(textContent.trim()).isEqualTo("Hello from Galasa");
@@ -68,7 +68,7 @@ public class ArtifactManagerIVT {
 
     @Test
     public void readTextFileBundleResources() throws Exception, TestBundleResourceException, IOException {
-        String textContent = resources.streamAsString(resources.retrieveFile("/resources/textFiles/test1.txt"));
+        String textContent = resources.streamAsString(resources.retrieveFile("/textFiles/test1.txt"));
         logger.debug("Read the following from the file test1.txt: " + textContent);
         assertThat(textContent.trim()).isEqualTo("Hello from Galasa");
     }
@@ -83,21 +83,21 @@ public class ArtifactManagerIVT {
 
     @Test
     public void readSkeletonBundleResources() throws TestBundleResourceException, Exception, IOException {
-        String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/resources/skeletons/test1.skel", buildHashMap()));
+        String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/skeletons/test1.skel", buildHashMap()));
         logger.info("Received the following from the skeleton file: " + textContent);
         assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
     }
     
     @Test
     public void readSkeletonBundleResourcesVelocity() throws TestBundleResourceException, Exception, IOException {
-        String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/resources/velocity/velocityTest.skel", buildHashMap(), SkeletonType.VELOCITY));
+        String textContent = resources.streamAsString(resources.retrieveSkeletonFile("/velocity/velocityTest.skel", buildHashMap(), SkeletonType.VELOCITY));
         logger.info("Received the following from the skeleton file: " + textContent);
         assertThat(textContent.trim()).isEqualTo("The third parameter is ITEM NUMBER THREE");
     }
 
     @Test
     public void readSkeletonFileArtifactManager() throws TestBundleResourceException, Exception, IOException {
-        InputStream is = resources.retrieveSkeletonFile("/resources/skeletons/test1.skel", buildHashMap());
+        InputStream is = resources.retrieveSkeletonFile("/skeletons/test1.skel", buildHashMap());
         String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
         logger.info("Received the following from the skeleton file: " + textContent);
         
@@ -111,7 +111,7 @@ public class ArtifactManagerIVT {
         props.put("ITEM2", "SECOND ITEM");
         props.put("ITEM3", "ITEM NUMBER THREE");
 
-        InputStream is = resources.retrieveSkeletonFile("/resources/skeletons/test2.skel", props);
+        InputStream is = resources.retrieveSkeletonFile("/skeletons/test2.skel", props);
         String textContent = artifacts.getBundleResources(this.getClass()).streamAsString(is);
         logger.info("Received the following from the skeleton file: " + textContent);
 
@@ -121,7 +121,7 @@ public class ArtifactManagerIVT {
     
     @Test 
     public void readFileAsList() throws TestBundleResourceException, IOException {
-    	InputStream is = resources.retrieveFile("/resources/textFiles/list.txt");
+    	InputStream is = resources.retrieveFile("/textFiles/list.txt");
     	List<String> listContent = artifacts.getBundleResources(this.getClass()).streamAsList(is);
     	logger.info("Received the following from the text file: " + listContent);
     	
@@ -133,17 +133,17 @@ public class ArtifactManagerIVT {
   
     @Test
     public void retrieveDirectoryContentsTest() throws Exception {
-    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/resources/textFiles");
+    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/textFiles");
 
     	logger.info("Received the following from the directory: " + contents);
     	
-    	assertThat(contents).containsKey("resources/textFiles/list.txt"); 
-    	assertThat(contents).containsKey("resources/textFiles/test1.txt");    	
+    	assertThat(contents).containsKey("/textFiles/list.txt"); 
+    	assertThat(contents).containsKey("/textFiles/test1.txt");    	
     }
     
     @Test
     public void retrieveEmptyDirectoryContentsTest() throws Exception {
-    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/resources/emptyDirectory");
+    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/emptyDirectory");
 
     	logger.info("Received the following from the directory: " + contents);
     	
@@ -152,22 +152,22 @@ public class ArtifactManagerIVT {
     
     @Test
     public void retrieveNestedirectoryContentsTest() throws Exception {
-    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/resources/directory");
+    	Map<String, InputStream> contents = resources.retrieveDirectoryContents("/directory");
 
     	logger.info("Received the following from the directory: " + contents);
     	
-    	assertThat(contents).containsKey("resources/directory/nestedDirectory/nestedFile.txt");
+    	assertThat(contents).containsKey("/directory/nestedDirectory/nestedFile.txt");
     }
     
     @Test
     public void retrieveSkeletonDirectoryContentsTest() throws Exception {    	
-    	Map<String, InputStream> contents = resources.retrieveSkeletonDirectoryContents("/resources/skeletons", buildHashMap(), 0);
+    	Map<String, InputStream> contents = resources.retrieveSkeletonDirectoryContents("/skeletons", buildHashMap(), 0);
 
     	logger.info("Received the following from the directory: " + contents);
     	
     	//Asserts that directory contains correct files
-    	assertThat(contents).containsKey("resources/skeletons/test1.skel");
-    	assertThat(contents).containsKey("resources/skeletons/test2.skel");
+    	assertThat(contents).containsKey("/skeletons/test1.skel");
+    	assertThat(contents).containsKey("/skeletons/test2.skel");
         
     	int i = 1;
     	//Iterates through the directory contents
@@ -202,7 +202,7 @@ public class ArtifactManagerIVT {
     @Test
     public void retrieveJarTest() throws Exception {
 
-    	InputStream is = resources.retrieveJar("HelloGalasa", "0.0.1", "/resources/jars/");
+    	InputStream is = resources.retrieveJar("HelloGalasa", "0.0.1", "/jars/");
     	
     	String jarContent = resources.streamAsString(is);
     	//If the class file is found then the jar has been retrieved successfully
@@ -212,7 +212,7 @@ public class ArtifactManagerIVT {
     @Test
     public void retrieveJarTestWithVersionCompare() throws Exception {
 
-    	InputStream is = resources.retrieveJar("dev.galasa", "0.15.0.202105120649", "/resources/jars/");
+    	InputStream is = resources.retrieveJar("dev.galasa", "0.15.0.202105120649", "/jars/");
     	    	
     	String jarContent = resources.streamAsString(is);
     	
@@ -223,7 +223,7 @@ public class ArtifactManagerIVT {
     @Test
     public void retrieveJarTestWithinRange() throws Exception {
 
-    	InputStream is = resources.retrieveJar("dev.galasa", "(0.14.0.202105120649,0.16.0.202105120649)", "/resources/jars/");
+    	InputStream is = resources.retrieveJar("dev.galasa", "(0.14.0.202105120649,0.16.0.202105120649)", "/jars/");
     	    	
     	String jarContent = resources.streamAsString(is);
     	
@@ -235,7 +235,7 @@ public class ArtifactManagerIVT {
     @Test
     public void retrieveJarTestNoVersion() throws Exception {
 
-    	InputStream is = resources.retrieveJar("HelloGalasa", "", "/resources/jars/");
+    	InputStream is = resources.retrieveJar("HelloGalasa", "", "/jars/");
     	
     	String jarContent = resources.streamAsString(is);
     	
@@ -245,7 +245,7 @@ public class ArtifactManagerIVT {
     @Test
     public void retrieveJarTestDifferSeperator() throws Exception {
 
-    	InputStream is = resources.retrieveJar("HelloGalasa", "0.0.1", "/resources/jarsHyphenVersion/");
+    	InputStream is = resources.retrieveJar("HelloGalasa", "0.0.1", "/jarsHyphenVersion/");
     	
     	String jarContent = resources.streamAsString(is);
     	
@@ -256,7 +256,7 @@ public class ArtifactManagerIVT {
     
     @Test
     public void zipDirectoryTestGZIP() throws TestBundleResourceException, IOException {
-    	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), "US-ASCII", true);  	    	    	
+    	InputStream is = resources.zipDirectoryContents("/zipFiles/", buildHashMap(), "US-ASCII", true);  	    	    	
     	GZIPInputStream gzip = new GZIPInputStream(is);
     	    	
     	//Decode zip using "US-ASCII"
@@ -273,7 +273,7 @@ public class ArtifactManagerIVT {
     
     @Test
     public void zipDirectoryTest() throws TestBundleResourceException, IOException {
-    	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), "US-ASCII", false);  	    	    	
+    	InputStream is = resources.zipDirectoryContents("/zipFiles/", buildHashMap(), "US-ASCII", false);  	    	    	
     	
     	//Decode zip using "US-ASCII"
     	String text = "Decoded Zip: ";
@@ -289,7 +289,7 @@ public class ArtifactManagerIVT {
     
     @Test
     public void zipDirectoryTestNoEncoding() throws TestBundleResourceException, IOException {
-    	InputStream is = resources.zipDirectoryContents("/resources/zipFiles/", buildHashMap(), null, false);  	    	    	
+    	InputStream is = resources.zipDirectoryContents("/zipFiles/", buildHashMap(), null, false);  	    	    	
     	
     	//Read zip using no encoding"
     	String text = "Zip: ";
