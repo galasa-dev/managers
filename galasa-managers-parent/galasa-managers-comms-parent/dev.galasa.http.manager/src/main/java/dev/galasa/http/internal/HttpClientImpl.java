@@ -61,7 +61,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -506,7 +505,6 @@ public class HttpClientImpl implements IHttpClient {
      * @return the built client
      */
     public IHttpClient build() {
-
     	RequestConfig.Builder requestBuilder = RequestConfig.custom();
     	HttpClientBuilder builder = HttpClientBuilder.create();
     	builder.setDefaultCookieStore(cookieStore);
