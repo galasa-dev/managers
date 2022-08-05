@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.internal;
 
@@ -28,6 +26,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.spi.IZosManagerSpi;
@@ -51,6 +50,7 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     private IDynamicStatusStoreService                  dss;
 
     private IZosManagerSpi                              zosManager;
+    private ITextScannerManagerSpi						textScannerManager;
 
     private ArrayList<Zos3270TerminalImpl>              terminals     = new ArrayList<>();
 
@@ -105,15 +105,16 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         if (zosManager == null) {
             throw new Zos3270ManagerException("The zOS Manager is not available");
         }
+        
+        textScannerManager = addDependentManager(allManagers, activeManagers, galasaTest, ITextScannerManagerSpi.class);
+        if (textScannerManager == null) {
+        	throw new Zos3270ManagerException("The Text Scanner Manager is not available");
+        }
     }
 
     @Override
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
-        if (otherManager instanceof IZosManager) {
-            return true;
-        }
-
-        return super.areYouProvisionalDependentOn(otherManager);
+        return (otherManager instanceof IZosManager) || (otherManager instanceof ITextScannerManagerSpi);
     }
 
     @Override
@@ -149,8 +150,8 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework(), autoConnect, image,primaryColumns, primaryRows, alternateColumns, alternateRows);
-
+                    host.isTelnetPortTls(), getFramework(), autoConnect, image,primaryColumns, primaryRows, alternateColumns, alternateRows, textScannerManager);
+            
             this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + imageTag);
 

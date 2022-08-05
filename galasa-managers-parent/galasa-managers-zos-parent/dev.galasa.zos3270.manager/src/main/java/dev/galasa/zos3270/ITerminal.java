@@ -27,7 +27,57 @@ public interface ITerminal {
             throws TextNotFoundException, KeyboardLockedException;
     
     boolean isClearScreen();
+    
+    /** 
+     * Perform a search on a String to check whether or not it is on the terminal screen.
+     * If after a timeout the String is not found on the terminal with at least the amount of occurrences input
+     * the method will return false to the caller.
+     * 
+     * @param text
+     * @param occurrences
+     * @param milliTimeout
+     * @return if the text was found
+     */
+    boolean searchText(String text, int occurrences, long milliTimeout);
+    
+    /**
+     * Perform a search on a String to check whether or not it is on the terminal screen.
+     * If after a timeout the String is not found on the terminal, the method will return false to the caller.
+     * 
+     * @param text
+     * @param milliTimeout
+     * @return if the text was found
+     */
+    boolean searchText(String text, long milliTimeout);
 
+    /**
+     * Perform a search on a String to check whether or not it is on the terminal screen.
+     * If after a timeout the String is not found on the terminal, the method will return false to the caller.
+     * The returned boolean will depend on if the amount of occurrences is found.
+     * 
+     * @param text
+     * @param occurances
+     * @return if the text was found
+     */
+    boolean searchText(String text, int occurrences);
+    
+    /**
+     * Perform a search on a String to check whether or not it is on the terminal screen.
+     * If after a timeout the String is not found on the terminal, the method will return false to the caller.
+     * 
+     * @param text
+     * @return if the text was found
+     */
+    boolean searchText(String text);
+
+    /**
+     * @param string
+     * @return
+     * @throws TerminalInterruptedException
+     * @throws TextNotFoundException
+     * @throws ErrorTextFoundException
+     * @throws Zos3270Exception
+     */
     ITerminal waitForTextInField(String string) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception;
 
     /**

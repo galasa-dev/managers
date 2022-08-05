@@ -12,6 +12,8 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.textscan.TextScanManagerException;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
@@ -27,6 +29,7 @@ import dev.galasa.zos3270.internal.comms.NetworkThread;
 
 public class Terminal implements ITerminal {
 
+	public ITextScannerManagerSpi textScan;
     private final Screen  screen;
     private final Network network;
     private final String  id;
@@ -41,18 +44,19 @@ public class Terminal implements ITerminal {
     
     private List<String>  deviceTypes;
 
-    public Terminal(String id, String host, int port) throws TerminalInterruptedException {
-        this(id, host, port, false, 80, 24, 0, 0);
+    public Terminal(String id, String host, int port, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
+        this(id, host, port, false, 80, 24, 0, 0, textScan);
     }
 
-    public Terminal(String id, String host, int port, boolean ssl) throws TerminalInterruptedException {
-        this(id, host, port, ssl, 80, 24, 0, 0);
+    public Terminal(String id, String host, int port, boolean ssl, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
+        this(id, host, port, ssl, 80, 24, 0, 0, textScan);
     }
 
-    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws TerminalInterruptedException {
+    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
         network = new Network(host, port, ssl, id);
         screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
         this.id = id;
+        this.textScan = textScan;
     }
     
     public void setAutoReconnect(boolean newAutoReconnect) {
@@ -203,7 +207,54 @@ public class Terminal implements ITerminal {
         return false;
     }
 
-
+    @Override
+    public boolean searchText(String text) {
+    	return this.searchText(text, 1, this.defaultWaitTime);
+    }
+    
+    @Override
+    public boolean searchText(String text, int occurrences) {
+    	return this.searchText(text, occurrences, this.defaultWaitTime);
+    }
+    
+    @Override
+    public boolean searchText(String text, long milliTimeout) {
+    	return this.searchText(text, 1, milliTimeout);
+    }
+    
+    @Override
+    public boolean searchText(String text, int occurrences, long milliTimeout) {
+    	    	
+    	long startTime = System.currentTimeMillis();
+    	
+    	logger.info("Searching for " + occurrences + " counts of '" + text + "' on terminal screen over " + milliTimeout + "ms");
+    	
+    	do {
+    		try {
+    			// Scan the terminal screen
+    			textScan.getTextScanner().scan(retrieveScreen(), text, null, occurrences);
+    			
+    		} catch (TextScanManagerException e) {
+    			    			
+    			try {
+        			Thread.sleep(2000);
+    			} catch (InterruptedException interEx) {}
+    			
+       			// Exception has occurred so text was not found    
+    			continue;
+    		}
+    		
+    		// At this point, the text must have been found as an exception wasn't thrown
+    		logger.info("Found " + occurrences + " counts of '" + text + "' on terminal screen");
+    		return true;
+    		
+		} while ((System.currentTimeMillis() - startTime) <= milliTimeout);
+    	
+    	logger.info("Did not find " + occurrences + " counts of '" + text + "' on terminal screen");
+    	
+    	return false;
+    }
+    
     @Override
     public ITerminal waitForTextInField(String text) throws TerminalInterruptedException, TextNotFoundException, Zos3270Exception {
         screen.waitForTextInField(text, defaultWaitTime);

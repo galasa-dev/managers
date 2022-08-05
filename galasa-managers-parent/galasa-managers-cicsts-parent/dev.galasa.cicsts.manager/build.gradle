@@ -10,4 +10,6 @@ dependencies {
     api            project (':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zosliberty.manager')
     implementation project (':galasa-managers-zos-parent:dev.galasa.zos3270.manager')
+    implementation project(':galasa-managers-core-parent:dev.galasa.textscan.manager')    
+    
 }
