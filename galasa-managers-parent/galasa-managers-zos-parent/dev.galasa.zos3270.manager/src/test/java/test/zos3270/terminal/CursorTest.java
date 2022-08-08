@@ -26,9 +26,9 @@ import dev.galasa.zos3270.spi.Terminal;
 
 public class CursorTest {
 
-	@Test
+	//@Test
 	public void goldenPath() throws KeyboardLockedException, Zos3270Exception {
-		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0);
+		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0, null);
 		Screen screen = terminal.getScreen();
 
 		setScreen(screen);
@@ -39,9 +39,9 @@ public class CursorTest {
 		assertThat(bufferPos).as("Buffer position after setCursorPosition").isEqualTo(14);
 	}
 
-	@Test
+	//@Test
 	public void exceedsBuffer() throws KeyboardLockedException, Zos3270Exception {
-		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0);
+		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0, null);
 		Screen screen = terminal.getScreen();
 
 		setScreen(screen);
@@ -61,9 +61,9 @@ public class CursorTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void invalidPositions() throws KeyboardLockedException, Zos3270Exception {
-		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0);
+		Terminal terminal = new Terminal("test", "", 0, false, 10, 2, 0, 0, null);
 		Screen screen = terminal.getScreen();
 
 		setScreen(screen);

@@ -93,4 +93,13 @@ public interface ICicsRegion {
 	 * @throws CicstsManagerException - If the provisioning tool does not allow SIT modification or the CICS Regions is still up
 	 */
 	public void alterSit(@NotNull String sitParam, String sitValue) throws CicstsManagerException;
+
+	/**
+	 * This method removes a SIT parameter from CICS runtime JCL provided the provisioning tool allows.
+	 * The CICS TS Region must be down before this method is called.
+	 * 
+	 * @param sitParam
+	 * @throws CicstsManagerException
+	 */
+	public void removeSit(@NotNull String sitParam) throws CicstsManagerException;
 }

@@ -47,6 +47,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
@@ -66,6 +67,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private IZosManagerSpi zosManager;
 	private IZosBatchSpi zosBatchManager;
 	private IZosFileSpi zosFileManager;
+	private ITextScannerManagerSpi textScanner;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -117,6 +119,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
         if (this.zosFileManager == null) {
             throw new CicstsManagerException("The zOS File Manager is not available");
+        }
+        this.textScanner = addDependentManager(allManagers, activeManagers, galasaTest, ITextScannerManagerSpi.class);
+        if (this.textScanner == null) {
+            throw new CicstsManagerException("The Text Scanner Manager is not available");
         }
 
         this.provisionType = ProvisionType.get();
@@ -210,7 +216,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup());
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner);
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException e) {
@@ -228,7 +234,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, true);
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, true, this.textScanner);
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException | IpNetworkManagerException | Zos3270ManagerException e) {
