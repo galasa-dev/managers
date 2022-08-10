@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.Component;
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractGherkinManager;
 import dev.galasa.framework.spi.AnnotatedField;
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.GenerateAnnotatedField;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
@@ -35,6 +36,7 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.Zos3270Terminal;
 import dev.galasa.zos3270.internal.gherkin.Gherkin3270Coordinator;
+import dev.galasa.zos3270.internal.properties.ExtraBundles;
 import dev.galasa.zos3270.internal.properties.Zos3270PropertiesSingleton;
 import dev.galasa.zos3270.spi.IZos3270ManagerSpi;
 import dev.galasa.zos3270.spi.NetworkException;
@@ -91,6 +93,18 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             throw new Zos3270ManagerException("Unable to request framework services", e);
         }
 
+    }
+    
+
+    @Override
+    public List<String> extraBundles(@NotNull IFramework framework) throws ManagerException {
+        try {
+        	Zos3270PropertiesSingleton.setCps(framework.getConfigurationPropertyService(NAMESPACE));
+        } catch (ConfigurationPropertyStoreException e) {
+            throw new Zos3270ManagerException("Unable to request framework services", e);
+        }
+
+        return ExtraBundles.get();
     }
 
     @Override
