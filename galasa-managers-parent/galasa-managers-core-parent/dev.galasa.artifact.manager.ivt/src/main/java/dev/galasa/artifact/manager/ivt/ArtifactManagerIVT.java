@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.artifact.manager.ivt;
 
@@ -137,8 +135,8 @@ public class ArtifactManagerIVT {
 
     	logger.info("Received the following from the directory: " + contents);
     	
-    	assertThat(contents).containsKey("/textFiles/list.txt"); 
-    	assertThat(contents).containsKey("/textFiles/test1.txt");    	
+    	assertThat(contents).containsKey("textFiles/list.txt"); 
+    	assertThat(contents).containsKey("textFiles/test1.txt");    	
     }
     
     @Test
@@ -156,7 +154,7 @@ public class ArtifactManagerIVT {
 
     	logger.info("Received the following from the directory: " + contents);
     	
-    	assertThat(contents).containsKey("/directory/nestedDirectory/nestedFile.txt");
+    	assertThat(contents).containsKey("directory/nestedDirectory/nestedFile.txt");
     }
     
     @Test
@@ -166,37 +164,23 @@ public class ArtifactManagerIVT {
     	logger.info("Received the following from the directory: " + contents);
     	
     	//Asserts that directory contains correct files
-    	assertThat(contents).containsKey("/skeletons/test1.skel");
-    	assertThat(contents).containsKey("/skeletons/test2.skel");
+    	assertThat(contents).containsKey("skeletons/test1.skel");
+    	assertThat(contents).containsKey("skeletons/test2.skel");
+    	
+    	//assert that there are only two entries
+    	assertThat(contents.keySet().size()).isEqualTo(2);
+    	
+    	String textContent = new String();
+    	
+    	textContent = resources.streamAsString(contents.get("skeletons/test1.skel"));
+    	logger.info("Received the following from the file: " + textContent);	
+		assertThat(textContent).contains("ITEM NUMBER THREE"); 
         
-    	int i = 1;
-    	//Iterates through the directory contents
-    	for (Map.Entry<String, InputStream> entry : contents.entrySet()) {
-    		//Switch checks i and uses case associated, initially set to 1
-    		switch(i)
-    		{
-    		//For the first inputStream stored in Map, stream as a string and assert that variables are correctly substituted
-    			case 1:
-    		    	String textContent = resources.streamAsString(entry.getValue());
-    	    		logger.info("Received the following from the file: " + textContent);	
+		textContent = resources.streamAsString(contents.get("skeletons/test2.skel"));
+    	logger.info("Received the following from the file: " + textContent);	
+    	assertThat(textContent).contains("The third parameter is ITEM NUMBER THREE\n" + 
+				"The first item was \"THIS IS ITEM1\" and this is the second line ");
 
-    				assertThat(textContent).contains("ITEM NUMBER THREE");    		    	
-    				break;
-    	    //For the second inputStream stored in Map, stream as a string and assert that variables are correctly substituted
-    			case 2:
-    		    	String textContent2 = resources.streamAsString(entry.getValue()); 
-    	    		logger.info("Received the following from the file: " + textContent2);	
-    	    		
-    				assertThat(textContent2).contains("The third parameter is ITEM NUMBER THREE\n" + 
-    						"The first item was \"THIS IS ITEM1\" and this is the second line ");
-    				break;
-    		//If there are more entries than the two expected, throw error 
-    			default:
-    				throw new Exception("Invalid content in directory files");		
-    		}	
-    		// increments i so that case 2 is used on the next loop
-    		i++;
-    	}
     }
     
     @Test
