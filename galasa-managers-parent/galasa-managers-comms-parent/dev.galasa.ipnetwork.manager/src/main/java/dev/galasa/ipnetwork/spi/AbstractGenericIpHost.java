@@ -151,5 +151,4 @@ public abstract class AbstractGenericIpHost implements IIpHostSpi {
             throw new IpNetworkManagerException("Unable to retrieve ssh port property for host " + this.hostid, e);
         }
     }
-
 }

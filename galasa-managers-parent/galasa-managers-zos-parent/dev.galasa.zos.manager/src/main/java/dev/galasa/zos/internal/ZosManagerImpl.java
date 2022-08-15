@@ -109,6 +109,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private IConfigurationPropertyStoreService cps;
     private IDynamicStatusStoreService dss;
     private IIpNetworkManagerSpi ipManager;
+    private ZosPoolPorts zosPoolPorts;
 
     private final ArrayList<ImageUsage> definedImages = new ArrayList<>();
 
@@ -221,6 +222,16 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             dependencyTags.remove("PRIMARY");
         }
 
+        System.out.println("LEWO");
+        System.out.println(cps.getAllProperties());
+        try {
+			System.out.println(cps.getProperty("image", "ports", "MV2D"));
+		} catch (ConfigurationPropertyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        System.out.println("LEWB");
+        
         //*** Second pass, generate all the remaining zosimages now the primary is allocated
         for(AnnotatedField annotatedField : annotatedFields) {
             final Field field = annotatedField.getField();
@@ -236,10 +247,15 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             }
         }
 
+
         // Check for any remaining dependencies
         for(String tag : dependencyTags) {
             generateZosImage(tag);
         }
+        
+        
+		zosPoolPorts = new ZosPoolPorts(this, this.getDSS(), getFramework().getResourcePoolingService());
+
 
         //*** Auto generate the remaining fields
         generateAnnotatedFields(ZosManagerField.class);
@@ -679,5 +695,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             this.zosConnectInstallDir = ZosConnectInstallDir.get(image);
         }
         return this.zosConnectInstallDir;
+    }
+    
+    public ZosPoolPorts getZosPortController() {
+    	return this.zosPoolPorts;
     }
 }
