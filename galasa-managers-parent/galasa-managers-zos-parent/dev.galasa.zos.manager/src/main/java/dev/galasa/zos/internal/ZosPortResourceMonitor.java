@@ -33,34 +33,26 @@ public class ZosPortResourceMonitor implements Runnable {
 		
 		try {
 			
-			logger.info("Lewis Debugging ");
-			
 			// Get the list of ports allocated in the DSS
 			Map<String, String> zosPortsInDss = dss.getPrefix("zosport");
 			
-			logger.info("Zos Ports in Dss:");
-			logger.info(zosPortsInDss);
-			
 			Set<String> allActiveRuns = this.framework.getFrameworkRuns().getActiveRunNames();
-			
-			logger.info("All active runs");
-			logger.info(allActiveRuns);
 			
 			// Iterate through all z/OS ports stored in the DSS
 			for (String prefix : zosPortsInDss.keySet()) {
 	
-				logger.info("Iteration - " + prefix);
 				// Delete DSS port allocation to run not active
 				if (!allActiveRuns.contains(zosPortsInDss.get(prefix))) {
-					logger.info("Found inactive run will try to delete DSS");
-					logger.info("Port Number = " + prefix.split(".")[1]);
-					logger.info("Run = " + zosPortsInDss.get(prefix));
-					deleteDss(prefix.split(".")[1], zosPortsInDss.get(prefix));
+					String removeRun = zosPortsInDss.get(prefix);
+					String removePort = prefix.split("\\.")[1];
+					
+					logger.info("Found inactive run " + removeRun + ". Freeing port " + removePort);
+					
+					deleteDss(removePort, removeRun);
 				}
 			}
 		} catch (Exception e) {
 			logger.error("Failure during scanning DSS for z/OS ports");
-			e.printStackTrace();
 		}		
 		
         this.resourceManagement.resourceManagementRunSuccessful();
