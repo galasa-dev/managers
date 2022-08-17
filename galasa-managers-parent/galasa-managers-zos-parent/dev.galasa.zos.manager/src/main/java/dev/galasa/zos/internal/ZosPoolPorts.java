@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
-import dev.galasa.framework.spi.DssDeletePrefix;
+import dev.galasa.framework.spi.DssDelete;
 import dev.galasa.framework.spi.DssUpdate;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
 import dev.galasa.framework.spi.DynamicStatusStoreMatchException;
@@ -42,7 +42,7 @@ public class ZosPoolPorts {
 		
 		// Retrieve a free resource from the pool
 		try {
-			zosPorts = this.rps.obtainResources(resourceStrings,  null, 1, 1, dss, "zosport");
+			zosPorts = this.rps.obtainResources(resourceStrings,  null, 1, 1, dss, "zosport." + image);
 		} catch (InsufficientResourcesAvailableException exception) {
 			throw new ZosManagerException("Could not obtain a port from the z/OS port pool for image " + image);
 		}
@@ -55,20 +55,20 @@ public class ZosPoolPorts {
 			
 			// Allocate the port in the DSS
 			this.dss.performActions(
-					new DssUpdate("zosport." + thePort, this.manager.getFramework().getTestRunName()),
-					new DssUpdate("run." + this.manager.getFramework().getTestRunName() + ".zosport." + thePort, "active"));
+					new DssUpdate("zosport." + image + "." + thePort, this.manager.getFramework().getTestRunName()),
+					new DssUpdate("run." + this.manager.getFramework().getTestRunName() + ".zosport." + image + "." + thePort, "active"));
 
-			logger.trace("Allocated z/OS port " + thePort + " from z/OS port pool allocation");
+			logger.trace("Allocated z/OS port " + thePort + " on image " + image + " from z/OS port pool allocation");
 				
 		} catch (DynamicStatusStoreException exception) {
-			throw new ZosManagerException("Could not update the DSS for port allocation of z/OS port " + thePort);
+			throw new ZosManagerException("Could not update the DSS for port allocation of z/OS port " + thePort + " on image " + image);
 		}
 		return thePort;
 	}
 	
-	public static void deleteDss(String port, String run, IDynamicStatusStoreService dss) throws DynamicStatusStoreMatchException, DynamicStatusStoreException {
+	public static void deleteDss(String port, String image, String run, IDynamicStatusStoreService dss) throws DynamicStatusStoreMatchException, DynamicStatusStoreException {
 		dss.performActions(
-				new DssDeletePrefix("zosport." + port),
-				new DssDeletePrefix("run." + run + ".zosport." + port));
+				new DssDelete("zosport." + image + "." + port, run),
+				new DssDelete("run." + run + ".zosport." + image + "." + port, "active"));
 	}
 }

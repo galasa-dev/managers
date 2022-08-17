@@ -42,16 +42,17 @@ public class ZosPortResourceMonitor implements Runnable {
 			Set<String> allActiveRuns = this.framework.getFrameworkRuns().getActiveRunNames();
 			
 			// Iterate through all z/OS ports stored in the DSS
-			for (String prefix : zosPortsInDss.keySet()) {
+			for (String key : zosPortsInDss.keySet()) {
 	
 				// Delete DSS port allocation to run not active
-				if (!allActiveRuns.contains(zosPortsInDss.get(prefix))) {
-					String removeRun = zosPortsInDss.get(prefix);
-					String removePort = prefix.split("\\.")[1];
+				if (!allActiveRuns.contains(zosPortsInDss.get(key))) {
+					String removeRun = zosPortsInDss.get(key);
+					String removeImage = key.split("\\.")[1];
+					String removePort = key.split("\\.")[2];
 					
-					logger.info("Found inactive run " + removeRun + ". Freeing port " + removePort);
+					logger.info("Freeing allocated port " + removePort + " assigned to inactive run " + removeRun);
 					
-					deleteDss(removePort, removeRun);
+					deleteDss(removePort, removeImage, removeRun);
 				}
 			}
 		} catch (Exception e) {
@@ -69,11 +70,11 @@ public class ZosPortResourceMonitor implements Runnable {
 			// Get list of ports allocated in the DSS
 			Map<String, String> zosPortsInDss = dss.getPrefix("zosport");	
 			
-			for (String prefix : zosPortsInDss.keySet()) {
+			for (String key : zosPortsInDss.keySet()) {
 				
 				// This port allocation belongs to the run
-				if (zosPortsInDss.get(prefix).equals(runName)) {
-					deleteDss(prefix.split(".")[1], zosPortsInDss.get(prefix));	
+				if (zosPortsInDss.get(key).equals(runName)) {
+					deleteDss(key.split("\\.")[2], key.split("\\.")[1], zosPortsInDss.get(key));	
 				}
 			}
 		} catch (Exception e) {
@@ -81,13 +82,13 @@ public class ZosPortResourceMonitor implements Runnable {
 		}
 	}
 	
-	private void deleteDss(String port, String run) {
-		logger.info("Freeing port " + port + " allocated to run " + run + " which has finished");
+	private void deleteDss(String port, String image, String run) {
+		logger.info("Freeing port " + port + " on image " + image + " allocated to run " + run + " which has finished");
 		
 		try {
-			ZosPoolPorts.deleteDss(port, run, dss);
+			ZosPoolPorts.deleteDss(port, image, run, dss);
 		} catch (Exception e) {
-			logger.error("Failure in discarding z/OS port " + port + " allocated to run " + run);
+			logger.error("Failure in discarding z/OS port " + port + " on image " + image + " allocated to run " + run);
 		}
 	}
 }
