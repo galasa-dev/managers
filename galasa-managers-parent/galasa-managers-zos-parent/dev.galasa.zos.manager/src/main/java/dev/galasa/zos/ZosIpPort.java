@@ -39,4 +39,8 @@ public @interface ZosIpPort {
      */
     String type() default "standard";
     
+    /**
+     * The tag which represents this instance of ZosIpPort
+     */
+    String tag();
 }

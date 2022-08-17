@@ -6,11 +6,13 @@
 package dev.galasa.zos.spi;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ResultArchiveStoreContentType;
+import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
@@ -214,4 +216,10 @@ public interface IZosManagerSpi extends IZosManager {
 	 * @throws ZosManagerException
 	 */
 	ICredentials getCredentials(String credentialsId, String imageId) throws ZosManagerException;
+	
+	/**
+	 * Returns the provisioned z/OS ports which are tagged with a string value
+	 * @return IIpPort
+	 */
+	HashMap<String, IIpPort> getTaggedPorts();
 }
