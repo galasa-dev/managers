@@ -112,6 +112,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final ArrayList<ImageUsage> definedImages = new ArrayList<>();
 
     private final HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
+    private final HashMap<String, String> taggedPorts = new HashMap<>();
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
     
     private String runid;
@@ -347,17 +348,21 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ZosIpPort annotationPort = field.getAnnotation(ZosIpPort.class);
 
         //*** Default the tag to primary
-        String tag = defaultString(annotationPort.imageTag(), PRIMARY_TAG).toUpperCase();
+        String imageTag = defaultString(annotationPort.imageTag(), PRIMARY_TAG).toUpperCase();
         String type = defaultString(annotationPort.type(), "standard");
-
+        String tag = annotationPort.tag();
+;
         //*** Ensure we have this tagged host
-        ZosBaseImageImpl image = taggedImages.get(tag);
+        ZosBaseImageImpl image = taggedImages.get(imageTag);
         if (image == null) { 
-            throw new ZosManagerException("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + tag + "' was present");
+            throw new ZosManagerException("Unable to provision an IP Host for field " + field.getName() + " as no @ZosImage for the tag '" + imageTag + "' was present");
         }
-
         try {
-            return image.getIpHost().provisionPort(type);
+        	IIpPort provisionedPort = image.getIpHost().provisionPort(type);        	
+        	if (!tag.isEmpty()) {
+        		taggedPorts.put(tag, "" + provisionedPort.getPortNumber());
+        	}
+            return provisionedPort;
         } catch(Exception e) {
             throw new ZosManagerException("Unable to provision a port for zOS Image " + image.getImageID() + ", type=" + type, e);
         }
@@ -688,4 +693,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     public ZosPoolPorts getZosPortController() {
     	return this.zosPoolPorts;
     }
+
+	@Override
+	public HashMap<String, String> getTaggedPorts() {
+		return this.taggedPorts;
+	}
 }

@@ -1,11 +1,10 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.spi;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 
 import javax.validation.constraints.NotNull;
 
@@ -214,4 +213,10 @@ public interface IZosManagerSpi extends IZosManager {
 	 * @throws ZosManagerException
 	 */
 	ICredentials getCredentials(String credentialsId, String imageId) throws ZosManagerException;
+	
+	/**
+	 * Returns the provisioned z/OS ports which are tagged with a string value
+	 * @return Map of tags to ports
+	 */
+	HashMap<String, String> getTaggedPorts();
 }
