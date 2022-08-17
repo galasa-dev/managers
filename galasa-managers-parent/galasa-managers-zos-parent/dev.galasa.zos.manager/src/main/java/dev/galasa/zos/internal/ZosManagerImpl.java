@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.internal;
 
 import java.io.IOException;
@@ -60,12 +58,12 @@ import dev.galasa.zos.internal.properties.DseImageIdForTag;
 import dev.galasa.zos.internal.properties.FileExtraBundle;
 import dev.galasa.zos.internal.properties.ImageIdForTag;
 import dev.galasa.zos.internal.properties.JavaHome;
+import dev.galasa.zos.internal.properties.LibertyInstallDir;
 import dev.galasa.zos.internal.properties.RunDatasetHLQ;
 import dev.galasa.zos.internal.properties.RunUNIXPathPrefix;
 import dev.galasa.zos.internal.properties.TSOCommandExtraBundle;
 import dev.galasa.zos.internal.properties.UNIXCommandExtraBundle;
 import dev.galasa.zos.internal.properties.ZosConnectInstallDir;
-import dev.galasa.zos.internal.properties.LibertyInstallDir;
 import dev.galasa.zos.internal.properties.ZosPropertiesSingleton;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos.spi.ZosImageDependencyField;
@@ -77,8 +75,8 @@ import dev.galasa.zosbatch.ZosBatchManagerException;
 import dev.galasa.zosbatch.internal.ZosBatchJobOutputImpl;
 import dev.galasa.zosbatch.internal.ZosBatchJobOutputSpoolFileImpl;
 import dev.galasa.zosbatch.internal.ZosBatchJobnameImpl;
-import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.BatchRestrictToImage;
+import dev.galasa.zosbatch.internal.properties.JobWaitTimeout;
 import dev.galasa.zosbatch.internal.properties.TruncateJCLRecords;
 import dev.galasa.zosbatch.internal.properties.UseSysaff;
 import dev.galasa.zosbatch.internal.properties.ZosBatchPropertiesSingleton;
@@ -109,6 +107,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private IConfigurationPropertyStoreService cps;
     private IDynamicStatusStoreService dss;
     private IIpNetworkManagerSpi ipManager;
+    private ZosPoolPorts zosPoolPorts;
 
     private final ArrayList<ImageUsage> definedImages = new ArrayList<>();
 
@@ -182,7 +181,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         ipManager = addDependentManager(allManagers, activeManagers, galasaTest, IIpNetworkManagerSpi.class);
         if (ipManager == null) {
             throw new ZosManagerException("The IP Network Manager is not available");
-        }
+        }        
     }
 
     /* (non-Javadoc)
@@ -220,7 +219,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             generateZosImage("PRIMARY");
             dependencyTags.remove("PRIMARY");
         }
-
+        
         //*** Second pass, generate all the remaining zosimages now the primary is allocated
         for(AnnotatedField annotatedField : annotatedFields) {
             final Field field = annotatedField.getField();
@@ -236,10 +235,15 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             }
         }
 
+
         // Check for any remaining dependencies
         for(String tag : dependencyTags) {
             generateZosImage(tag);
         }
+        
+        
+		zosPoolPorts = new ZosPoolPorts(this, this.getDSS(), getFramework().getResourcePoolingService());
+
 
         //*** Auto generate the remaining fields
         generateAnnotatedFields(ZosManagerField.class);
@@ -679,5 +683,9 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
             this.zosConnectInstallDir = ZosConnectInstallDir.get(image);
         }
         return this.zosConnectInstallDir;
+    }
+    
+    public ZosPoolPorts getZosPortController() {
+    	return this.zosPoolPorts;
     }
 }

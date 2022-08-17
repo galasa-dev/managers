@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.ipnetwork.spi;
 
 import javax.validation.constraints.NotNull;
@@ -12,7 +10,6 @@ import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.creds.ICredentialsService;
-import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 
 public abstract class AbstractGenericIpHost implements IIpHostSpi {
@@ -151,5 +148,4 @@ public abstract class AbstractGenericIpHost implements IIpHostSpi {
             throw new IpNetworkManagerException("Unable to retrieve ssh port property for host " + this.hostid, e);
         }
     }
-
 }
