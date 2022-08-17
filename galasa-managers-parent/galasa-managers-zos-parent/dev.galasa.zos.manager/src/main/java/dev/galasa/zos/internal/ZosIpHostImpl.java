@@ -1,15 +1,12 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.internal;
 
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.ipnetwork.spi.AbstractGenericIpHost;
-import dev.galasa.zos.ZosManagerException;
 
 public class ZosIpHostImpl extends AbstractGenericIpHost {
 	
@@ -27,7 +24,7 @@ public class ZosIpHostImpl extends AbstractGenericIpHost {
 		try {
 			String allocatedPort = zosManager.getZosPortController().allocatePort(image);
 			return new ZosIpPortImpl(this, Integer.parseInt(allocatedPort), type);
-		} catch (ZosManagerException exception) {
+		} catch (Exception exception) {
 			throw new IpNetworkManagerException("Exception whilst allocating a z/OS port from the pool");
 		}
 	}

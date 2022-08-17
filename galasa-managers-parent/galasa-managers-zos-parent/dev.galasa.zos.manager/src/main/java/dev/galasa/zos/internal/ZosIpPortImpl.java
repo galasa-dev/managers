@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.internal;
 
 import javax.validation.constraints.NotNull;

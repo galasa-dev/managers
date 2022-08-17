@@ -1,3 +1,6 @@
+/*
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.internal;
 
 import java.util.List;
@@ -5,6 +8,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.DssDeletePrefix;
 import dev.galasa.framework.spi.DssUpdate;
 import dev.galasa.framework.spi.DynamicStatusStoreException;
@@ -29,33 +33,35 @@ public class ZosPoolPorts {
 		this.rps = rps;
 	}
 	
-	public String allocatePort(String image) throws ZosManagerException {
-
-		// The the pool of ports for the specific image
-		List<String> resourceStrings = PoolPorts.get(image);
+	public String allocatePort(String image) throws ZosManagerException, ConfigurationPropertyStoreException {
 		
+		// Get the pool of ports for this image
+		List<String> resourceStrings = PoolPorts.get(image);
+		List<String> zosPorts = null;
 		String thePort = null;
+		
+		// Retrieve a free resource from the pool
 		try {
-			List<String> zosPorts = this.rps.obtainResources(resourceStrings, null, 1, 1, dss, "zosport");
+			zosPorts = this.rps.obtainResources(resourceStrings,  null, 1, 1, dss, "zosport");
+		} catch (InsufficientResourcesAvailableException exception) {
+			throw new ZosManagerException("Could not obtain a port from the z/OS port pool for image " + image);
+		}
+		
+		// Allocate the port retrieved from the pool
+		try {	
 			
-			// Iterate through all the pool ports
-			for (String port : zosPorts) {
-				try {
-					
-					// Allocate the ports to the run in the DSS					
-					this.dss.performActions(
-							new DssUpdate("zosport." + port, this.manager.getFramework().getTestRunName()),
-							new DssUpdate("run." + this.manager.getFramework().getTestRunName() + ".zosport." + port, "active"));
-					thePort = port;
-					
-					logger.trace("Allocated z/OS port " + thePort + " from z/OS port pool allocation");
-					
-				} catch (DynamicStatusStoreException exception) {
-					throw new ZosManagerException("Could not update the DSS for port allocation of z/OS port " + port);
-				}
-			}
-		} catch(InsufficientResourcesAvailableException exception)  {
-			throw new ZosManagerException("Could not allocate a z/OS port required by the test");
+			// There should only be a single port in the list allocated
+			thePort = zosPorts.get(0);
+			
+			// Allocate the port in the DSS
+			this.dss.performActions(
+					new DssUpdate("zosport." + thePort, this.manager.getFramework().getTestRunName()),
+					new DssUpdate("run." + this.manager.getFramework().getTestRunName() + ".zosport." + thePort, "active"));
+
+			logger.trace("Allocated z/OS port " + thePort + " from z/OS port pool allocation");
+				
+		} catch (DynamicStatusStoreException exception) {
+			throw new ZosManagerException("Could not update the DSS for port allocation of z/OS port " + thePort);
 		}
 		return thePort;
 	}

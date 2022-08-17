@@ -14,7 +14,7 @@ import dev.galasa.zos.ZosManagerException;
 
 public class PoolPorts extends CpsProperties {
 
-	public static @NotNull List<String> get(String image) throws ZosManagerException {
-		return getStringListWithDefault(ZosPropertiesSingleton.cps(), "default", "image", "ports", image);
+	public static @NotNull @NotNull List<String> get(String image) throws ZosManagerException, ConfigurationPropertyStoreException {
+		return getStringList(ZosPropertiesSingleton.cps(), "image", "ports", image);
 	}
 }
