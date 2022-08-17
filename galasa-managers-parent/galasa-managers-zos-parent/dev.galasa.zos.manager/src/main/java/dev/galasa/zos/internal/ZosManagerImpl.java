@@ -112,7 +112,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     private final ArrayList<ImageUsage> definedImages = new ArrayList<>();
 
     private final HashMap<String, ZosBaseImageImpl> taggedImages = new HashMap<>();
-    private final HashMap<String, IIpPort> taggedPorts = new HashMap<>();
+    private final HashMap<String, String> taggedPorts = new HashMap<>();
     private final HashMap<String, ZosBaseImageImpl> images = new HashMap<>();
     
     private String runid;
@@ -360,7 +360,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         try {
         	IIpPort provisionedPort = image.getIpHost().provisionPort(type);        	
         	if (!tag.isEmpty()) {
-        		taggedPorts.put(tag, provisionedPort);
+        		taggedPorts.put(tag, "" + provisionedPort.getPortNumber());
         	}
             return provisionedPort;
         } catch(Exception e) {
@@ -695,7 +695,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
     }
 
 	@Override
-	public HashMap<String, IIpPort> getTaggedPorts() {
+	public HashMap<String, String> getTaggedPorts() {
 		return this.taggedPorts;
 	}
 }

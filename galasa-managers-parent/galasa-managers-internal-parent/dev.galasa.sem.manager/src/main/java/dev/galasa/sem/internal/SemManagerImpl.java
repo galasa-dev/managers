@@ -361,7 +361,7 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         	Symbolic portSymbolic = SemFactory.eINSTANCE.createSymbolic();
         	portSymbolic.setGROUP(defaultSymbolics);
         	portSymbolic.setName(portTag);
-        	portSymbolic.setValue("" + this.zosManager.getTaggedPorts().get(portTag).getPortNumber());
+        	portSymbolic.setValue("" + this.zosManager.getTaggedPorts().get(portTag));
         }
 
         // Add the BUILD sem model

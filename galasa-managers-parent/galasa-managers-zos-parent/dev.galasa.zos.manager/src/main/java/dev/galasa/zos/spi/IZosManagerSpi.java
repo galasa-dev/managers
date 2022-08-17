@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ResultArchiveStoreContentType;
-import dev.galasa.ipnetwork.IIpPort;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.IZosManager;
 import dev.galasa.zos.ZosManagerException;
@@ -217,7 +216,7 @@ public interface IZosManagerSpi extends IZosManager {
 	
 	/**
 	 * Returns the provisioned z/OS ports which are tagged with a string value
-	 * @return IIpPort
+	 * @return Map of tags to ports
 	 */
-	HashMap<String, IIpPort> getTaggedPorts();
+	HashMap<String, String> getTaggedPorts();
 }
