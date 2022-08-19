@@ -105,7 +105,7 @@ public interface ICicsRegion {
 	
 	/**
 	 * This method adds a method to the DFHRPL concatenation in the CICS
-	 * startup JCL
+	 * startup JCL. Not allowed for DSE CICS regions.
 	 * 
 	 * @param library
 	 * @throws CicstsManagerException 
