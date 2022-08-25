@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.spi;
 
@@ -44,7 +42,6 @@ import dev.galasa.zos3270.internal.datastream.CommandReadBuffer;
 import dev.galasa.zos3270.internal.datastream.CommandReadModified;
 import dev.galasa.zos3270.internal.datastream.CommandReadModifiedAll;
 import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
-import dev.galasa.zos3270.internal.datastream.IAttribute;
 import dev.galasa.zos3270.internal.datastream.OrderCarrageReturn;
 import dev.galasa.zos3270.internal.datastream.OrderEndOfMedium;
 import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
@@ -358,15 +355,15 @@ public class Screen {
     private synchronized void processReadPartition(StructuredFieldReadPartition readPartition)
             throws DatastreamException {
         switch (readPartition.getType()) {
-            case QUERY:
-                processReadPartitionQuery();
-                return;
-            case QUERY_LIST:
-                processReadPartitionQueryList(readPartition);
-                return;
-            default:
-                throw new DatastreamException(
-                        "Unsupported Read Partition Type - " + readPartition.getType().toString());
+        case QUERY:
+            processReadPartitionQuery();
+            return;
+        case QUERY_LIST:
+            processReadPartitionQueryList(readPartition);
+            return;
+        default:
+            throw new DatastreamException(
+                    "Unsupported Read Partition Type - " + readPartition.getType().toString());
         }
 
     }
@@ -380,19 +377,19 @@ public class Screen {
 
     private synchronized void processReadPartitionQueryList(StructuredFieldReadPartition readPartition) throws DatastreamException {
         switch (readPartition.getRequestType()) {
-            case StructuredFieldReadPartition.REQTYP_LIST:
-                List<AbstractQueryReply> supportedReplies = getAllSupportedReplies();
-                ArrayList<AbstractQueryReply> replies = prepareQueryListResponse(supportedReplies, readPartition.getQcodes());
+        case StructuredFieldReadPartition.REQTYP_LIST:
+            List<AbstractQueryReply> supportedReplies = getAllSupportedReplies();
+            ArrayList<AbstractQueryReply> replies = prepareQueryListResponse(supportedReplies, readPartition.getQcodes());
 
-                sendQueryReplies(new QueryReplySummary(supportedReplies), replies);
-                return;
-            case StructuredFieldReadPartition.REQTYP_ALL:
-            case StructuredFieldReadPartition.REQTYP_EQUIVALENT:
-                processReadPartitionQuery();
-                return;
-            default:
-                throw new DatastreamException(
-                        "Unsupported Read Partition Request Type code = " + readPartition.getRequestType());
+            sendQueryReplies(new QueryReplySummary(supportedReplies), replies);
+            return;
+        case StructuredFieldReadPartition.REQTYP_ALL:
+        case StructuredFieldReadPartition.REQTYP_EQUIVALENT:
+            processReadPartitionQuery();
+            return;
+        default:
+            throw new DatastreamException(
+                    "Unsupported Read Partition Request Type code = " + readPartition.getRequestType());
         }
     }
 
@@ -596,15 +593,12 @@ public class Screen {
     }
 
     private void processSFE(OrderStartFieldExtended order) {
-        List<IAttribute> attributes = order.getAttributes();
-
+        OrderStartField sf = order.getOrderStartField();
         BufferStartOfField bsf = null;
-        for (IAttribute attr : attributes) {
-            if (attr instanceof OrderStartField) {
-                OrderStartField sf = (OrderStartField) attr;
-                bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
-                        sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed());
-            }
+
+        if (sf != null) {
+            bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
+                    sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed());
             // TODO add processing for character attributes
         }
 
@@ -783,8 +777,191 @@ public class Screen {
         return screenSB.toString();
     }
 
-    private String reportOperator() {
+    public String printExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight, boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) {
         int cursorRow = screenCursor / columns;
+        int cursorCol = screenCursor % columns;
+
+        StringBuilder screenBuffer   = new StringBuilder();
+        StringBuilder intensityLine  = new StringBuilder();
+        StringBuilder protectedLine  = new StringBuilder();
+        StringBuilder numericLine    = new StringBuilder();
+        StringBuilder modifiedLine   = new StringBuilder();
+        StringBuilder colourLine     = new StringBuilder(); // TODO separate foreground and background
+        StringBuilder highlightLine  = new StringBuilder();
+
+        int row = 0;
+        int col = 0;
+
+        // TODO find true start field
+        BufferStartOfField currentBufferStartOfField = new BufferStartOfField(0, false, false, true, false, false, false);
+
+        for (int i = 0; i < this.buffer.length; i++) {
+            // print row header
+            if (col == 0) {
+                screenBuffer.append("=");
+                screenBuffer.append(String.format("%03d", row+1));
+                screenBuffer.append("|");
+            }
+
+            // Print actual text
+            IBufferHolder bufferHolder = this.buffer[i];
+            if (bufferHolder == null) {
+                screenBuffer.append(" ");
+            } else {
+                screenBuffer.append(bufferHolder.getStringWithoutNulls());
+
+                if (bufferHolder instanceof BufferStartOfField) {
+                    currentBufferStartOfField = (BufferStartOfField)bufferHolder;
+                }
+            }
+
+
+            // Calculate Colour
+            if (bufferHolder == currentBufferStartOfField) {
+                colourLine.append(" ");
+            } else {
+//                if (currentBufferStartOfField.isProtected()) {
+                    colourLine.append("d");
+//                } else {
+//                    protectedLine.append("u");
+//                }
+            }
+
+            // Calculate Highlight
+            if (bufferHolder == currentBufferStartOfField) {
+                highlightLine.append(" ");
+            } else {
+//                if (currentBufferStartOfField.isProtected()) {
+                    highlightLine.append(" ");
+//                } else {
+//                    protectedLine.append("u");
+//                }
+            }
+
+            // Calculate Intensity
+            if (bufferHolder == currentBufferStartOfField) {
+                intensityLine.append(" ");
+            } else {
+                if (currentBufferStartOfField.isIntenseDisplay()) {
+                    intensityLine.append("i");
+                } else {
+                    intensityLine.append(" ");
+                }
+            }
+
+            // Calculate Protected
+            if (bufferHolder == currentBufferStartOfField) {
+                protectedLine.append(" ");
+            } else {
+                if (currentBufferStartOfField.isProtected()) {
+                    protectedLine.append("p");
+                } else {
+                    protectedLine.append("u");
+                }
+            }
+
+            // Calculate Numeric
+            if (bufferHolder == currentBufferStartOfField) {
+                numericLine.append(" ");
+            } else {
+                if (currentBufferStartOfField.isNumeric()) {
+                    numericLine.append("n");
+                } else {
+                    numericLine.append(" ");
+                }
+            }
+            
+            // Calculate Modified
+            if (bufferHolder == currentBufferStartOfField) {
+                modifiedLine.append(" ");
+            } else {
+                if (currentBufferStartOfField.isFieldModifed()) {
+                    modifiedLine.append("m");
+                } else {
+                    modifiedLine.append(" ");
+                }
+            }
+            
+            // NOT doing selectable as very unlikely to be used
+
+
+            col++;
+            if (col >= columns) {
+                screenBuffer.append("|\n");
+
+                // Check this is the cursor row
+                if (printCursor) {
+                    if (row == cursorRow) {
+                        screenBuffer.append("^   |");
+                        for (int j = 0; j < cursorCol; j++) {
+                            screenBuffer.append(" ");
+                        }
+                        screenBuffer.append("^");
+                        screenBuffer.append('\n');
+                    }
+                }
+                // if requested, print colour
+                if (printColour) {
+                    screenBuffer.append("f   |");
+                    screenBuffer.append(colourLine.toString());
+                    screenBuffer.append('\n');
+                }
+                // if requested, print intensity
+                if (printIntensity) {
+                    screenBuffer.append("i   |");
+                    screenBuffer.append(intensityLine.toString());
+                    screenBuffer.append('\n');
+                }
+                // if requested, print highlight
+                if (printHighlight) {
+                    screenBuffer.append("h   |");
+                    screenBuffer.append(highlightLine.toString());
+                    screenBuffer.append('\n');
+                }
+                // if requested, print protected
+                if (printProtected) {
+                    screenBuffer.append("p   |");
+                    screenBuffer.append(protectedLine.toString());
+                    screenBuffer.append('\n');
+                }
+                // if requested, print numeric
+                if (printNumeric) {
+                    screenBuffer.append("n   |");
+                    screenBuffer.append(numericLine.toString());
+                    screenBuffer.append('\n');
+                }
+                // if requested, print modifles
+                if (printModified) {
+                    screenBuffer.append("m   |");
+                    screenBuffer.append(modifiedLine.toString());
+                    screenBuffer.append('\n');
+                }
+
+
+                // Reset for next row
+                col = 0;
+                row++;
+
+                // Reset the report lines
+                intensityLine = new StringBuilder();
+                protectedLine = new StringBuilder();
+                numericLine   = new StringBuilder();
+                modifiedLine  = new StringBuilder();
+                colourLine    = new StringBuilder();
+                highlightLine = new StringBuilder();
+            }
+        }
+
+        screenBuffer.append("!   | ");
+        screenBuffer.append(reportOperator());
+        screenBuffer.append("\n");
+
+        return screenBuffer.toString();
+    }
+
+
+    private String reportOperator() {
+        int cursorRow = (screenCursor / columns) + 1;
         int cursorCol = screenCursor % columns;
 
         StringBuilder operator = new StringBuilder();
@@ -944,8 +1121,8 @@ public class Screen {
 
     public int waitForTextInField(String[] ok, String[] error, long timeoutInMilliseconds) throws TerminalInterruptedException, TextNotFoundException, ErrorTextFoundException, Zos3270Exception {
         int foundIndex = -1;
-    	try {
-        	foundIndex = ScreenUpdateTextListener.waitForText(this, ok, error, timeoutInMilliseconds);
+        try {
+            foundIndex = ScreenUpdateTextListener.waitForText(this, ok, error, timeoutInMilliseconds);
             if (foundIndex < 0) {
                 if (ok != null && ok.length == 1 && error == null) {
                     throw new TextNotFoundException(CANT_FIND_TEXT + ok[0] + "'");
@@ -1658,8 +1835,9 @@ public class Screen {
                 return false;
             }
         }
-        
+
         return true;
     }
+
 
 }

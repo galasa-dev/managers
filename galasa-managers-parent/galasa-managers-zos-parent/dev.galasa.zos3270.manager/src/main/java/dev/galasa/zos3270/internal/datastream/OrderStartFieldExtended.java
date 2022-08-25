@@ -1,12 +1,11 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import dev.galasa.zos3270.spi.DatastreamException;
@@ -15,7 +14,14 @@ public class OrderStartFieldExtended extends AbstractOrder {
 
     public static final byte            ID         = 0x29;
 
-    private final ArrayList<IAttribute> attributes = new ArrayList<>();
+    private OrderStartField               orderStartField               = null;
+    private AttributeFieldValidation      attributeFieldValidation      = null;
+    private AttributeFieldOutlining       attributeFieldOutlining       = null;
+    private AttributeExtendedHighlighting attributeExtendedHighlighting = null;
+    private AttributeCharacterSet         attributeCharacterSet         = null;
+    private AttributeForegroundColour     attributeForegroundColour     = null;
+    private AttributeBackgroundColour     attributeBackgroundColour     = null;
+    private AttributeTransparency         attributeTransparency         = null;
 
     public OrderStartFieldExtended(ByteBuffer buffer) throws DatastreamException {
         byte[] rep = new byte[4];
@@ -31,28 +37,28 @@ public class OrderStartFieldExtended extends AbstractOrder {
             byte attributeId = buffer.get();
             switch (attributeId) {
                 case OrderStartField.ATTRIBUTE_ID:
-                    attributes.add(new OrderStartField(buffer));
+                    orderStartField = new OrderStartField(buffer);
                     break;
                 case AttributeFieldValidation.ATTRIBUTE_ID:
-                    attributes.add(new AttributeFieldValidation(buffer));
+                    attributeFieldValidation = new AttributeFieldValidation(buffer);
                     break;
                 case AttributeFieldOutlining.ATTRIBUTE_ID:
-                    attributes.add(new AttributeFieldOutlining(buffer));
+                    attributeFieldOutlining = new AttributeFieldOutlining(buffer);
                     break;
                 case AttributeExtendedHighlighting.ATTRIBUTE_ID:
-                    attributes.add(new AttributeExtendedHighlighting(buffer));
+                    attributeExtendedHighlighting = new AttributeExtendedHighlighting(buffer);
                     break;
                 case AttributeForegroundColour.ATTRIBUTE_ID:
-                    attributes.add(new AttributeForegroundColour(buffer));
+                    attributeForegroundColour = new AttributeForegroundColour(buffer);
                     break;
                 case AttributeCharacterSet.ATTRIBUTE_ID:
-                    attributes.add(new AttributeCharacterSet(buffer));
+                	attributeCharacterSet = new AttributeCharacterSet(buffer);
                     break;
                 case AttributeBackgroundColour.ATTRIBUTE_ID:
-                    attributes.add(new AttributeBackgroundColour(buffer));
+                    attributeBackgroundColour = new AttributeBackgroundColour(buffer);
                     break;
                 case AttributeTransparency.ATTRIBUTE_ID:
-                    attributes.add(new AttributeTransparency(buffer));
+                    attributeTransparency = new AttributeTransparency(buffer);
                     break;
                 default:
                     throw new DatastreamException("Unrecognised attribute in SFE, '" + attributeId + "'");
@@ -65,8 +71,8 @@ public class OrderStartFieldExtended extends AbstractOrder {
         throw new UnsupportedOperationException("Not available yet");
     }
 
-    public List<IAttribute> getAttributes() {
-        return attributes;
+    public OrderStartField getOrderStartField() {
+        return orderStartField;
     }
 
 }
