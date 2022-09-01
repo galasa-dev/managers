@@ -217,8 +217,15 @@ public class SeleniumEnvironment {
 			for (String slot: slots) {
 				actions.add(new DssDeletePrefix("driver.slot."+slot));
 			}
+			//String currentSlots = dss.get("driver.current.slots");
+			//int newSlots = Integer.valueOf(currentSlots)-actions.size();
+			int newSlots;
 			String currentSlots = dss.get("driver.current.slots");
-			int newSlots = Integer.valueOf(currentSlots)-actions.size();
+			if (currentSlots == null){
+				newSlots = 0;
+			} else {
+				newSlots = Integer.valueOf(currentSlots)-actions.size();
+			}
 			
 			actions.add(new DssSwap("driver.current.slots", currentSlots, String.valueOf(newSlots)));
 			
