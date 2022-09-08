@@ -4,7 +4,7 @@ plugins {
 
 description = 'MQ Manager'
 
-version = '0.21.0'
+version = '0.25.0'
 
 dependencies {
     // https://mvnrepository.com/artifact/javax.jms/javax.jms-api
