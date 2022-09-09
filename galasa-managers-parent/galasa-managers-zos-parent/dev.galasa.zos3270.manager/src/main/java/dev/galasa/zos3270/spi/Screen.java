@@ -35,6 +35,9 @@ import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
+import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeExtendedHighlighting;
+import dev.galasa.zos3270.internal.datastream.AttributeForegroundColour;
 import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWriteAlternate;
@@ -105,6 +108,8 @@ public class Screen {
     private final LinkedList<IScreenUpdateListener> updateListeners = new LinkedList<>();
 
     private AttentionIdentification                 lastAid = AttentionIdentification.NONE;
+    
+    private boolean                                 detectedSetAttribute = false;
 
     public Screen() throws TerminalInterruptedException {
         this(80, 24, null);
@@ -598,8 +603,8 @@ public class Screen {
 
         if (sf != null) {
             bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
-                    sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed());
-            // TODO add processing for character attributes
+                    sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed(),
+                    order.getHighlight(), order.getForegroundColour(), order.getBackgroundColor());
         }
 
         if (bsf == null) {
@@ -679,7 +684,11 @@ public class Screen {
 
 
     private void processSA(OrderSetAttribute order) {
-        // TODO add processing for character attributes
+        if (!detectedSetAttribute) {
+            detectedSetAttribute = true;
+            
+            logger.warn("SetAttribute order has been received, please send a trace to the Galasa team");
+        }
     }
 
     private void processNewLine() {
@@ -777,7 +786,7 @@ public class Screen {
         return screenSB.toString();
     }
 
-    public String printExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight, boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) {
+    public String printExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight, boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) throws Zos3270Exception {
         int cursorRow = screenCursor / columns;
         int cursorCol = screenCursor % columns;
 
@@ -786,7 +795,8 @@ public class Screen {
         StringBuilder protectedLine  = new StringBuilder();
         StringBuilder numericLine    = new StringBuilder();
         StringBuilder modifiedLine   = new StringBuilder();
-        StringBuilder colourLine     = new StringBuilder(); // TODO separate foreground and background
+        StringBuilder foregroundLine = new StringBuilder(); 
+        StringBuilder backgroundLine = new StringBuilder();
         StringBuilder highlightLine  = new StringBuilder();
 
         int row = 0;
@@ -816,72 +826,89 @@ public class Screen {
             }
 
 
-            // Calculate Colour
-            if (bufferHolder == currentBufferStartOfField) {
-                colourLine.append(" ");
-            } else {
-//                if (currentBufferStartOfField.isProtected()) {
-                    colourLine.append("d");
-//                } else {
-//                    protectedLine.append("u");
-//                }
-            }
-
-            // Calculate Highlight
-            if (bufferHolder == currentBufferStartOfField) {
+            if (bufferHolder == null || bufferHolder == currentBufferStartOfField) {
+                foregroundLine.append(" ");
+                backgroundLine.append(" ");
                 highlightLine.append(" ");
-            } else {
-//                if (currentBufferStartOfField.isProtected()) {
-                    highlightLine.append(" ");
-//                } else {
-//                    protectedLine.append("u");
-//                }
-            }
-
-            // Calculate Intensity
-            if (bufferHolder == currentBufferStartOfField) {
                 intensityLine.append(" ");
+                protectedLine.append(" ");
+                numericLine.append(" ");
+                modifiedLine.append(" ");
             } else {
+                AttributeForegroundColour foregroundColour = currentBufferStartOfField.getAttributeForegroundColour();
+                if (foregroundColour == null) {
+                    foregroundLine.append(" ");
+                } else {
+                    foregroundLine.append(foregroundColour.getColour().getLetter());
+                }
+                
+                AttributeBackgroundColour backgroundColour = currentBufferStartOfField.getAttributeBackgroundColour();
+                if (backgroundColour == null) {
+                    backgroundLine.append(" ");
+                } else {
+                    backgroundLine.append(backgroundColour.getColour().getLetter());
+                }
+                
+
+
+
+
+                // Calculate Highlight
+                AttributeExtendedHighlighting extendedHighlighting = currentBufferStartOfField.getAttributeExtendedHighlighting();
+                if (extendedHighlighting == null) {
+                    highlightLine.append(" ");
+                } else {
+                    switch(extendedHighlighting.getHighlight()) {
+                    case BLINK:
+                        highlightLine.append("b");
+                        break;
+                    case NORMAL:
+                        highlightLine.append("n");
+                        break;
+                    case REVERSE:
+                        highlightLine.append("r");
+                        break;
+                    case UNDERSCORE:
+                        highlightLine.append("u");
+                        break;
+                    case DEFAULT:
+                        highlightLine.append("d");
+                        break;
+                    default:
+                        highlightLine.append("?");
+                        break;
+                    }
+                }
+
+                // Calculate intensity
                 if (currentBufferStartOfField.isIntenseDisplay()) {
                     intensityLine.append("i");
                 } else {
                     intensityLine.append(" ");
                 }
-            }
 
-            // Calculate Protected
-            if (bufferHolder == currentBufferStartOfField) {
-                protectedLine.append(" ");
-            } else {
+                // Calculate Protected
                 if (currentBufferStartOfField.isProtected()) {
                     protectedLine.append("p");
                 } else {
                     protectedLine.append("u");
                 }
-            }
 
-            // Calculate Numeric
-            if (bufferHolder == currentBufferStartOfField) {
-                numericLine.append(" ");
-            } else {
+                // Calculate Numeric
                 if (currentBufferStartOfField.isNumeric()) {
                     numericLine.append("n");
                 } else {
                     numericLine.append(" ");
                 }
-            }
-            
-            // Calculate Modified
-            if (bufferHolder == currentBufferStartOfField) {
-                modifiedLine.append(" ");
-            } else {
+
+                // Calculate Modified
                 if (currentBufferStartOfField.isFieldModifed()) {
                     modifiedLine.append("m");
                 } else {
                     modifiedLine.append(" ");
                 }
             }
-            
+
             // NOT doing selectable as very unlikely to be used
 
 
@@ -903,7 +930,10 @@ public class Screen {
                 // if requested, print colour
                 if (printColour) {
                     screenBuffer.append("f   |");
-                    screenBuffer.append(colourLine.toString());
+                    screenBuffer.append(foregroundLine.toString());
+                    screenBuffer.append('\n');
+                    screenBuffer.append("b   |");
+                    screenBuffer.append(backgroundLine.toString());
                     screenBuffer.append('\n');
                 }
                 // if requested, print intensity
@@ -943,12 +973,13 @@ public class Screen {
                 row++;
 
                 // Reset the report lines
-                intensityLine = new StringBuilder();
-                protectedLine = new StringBuilder();
-                numericLine   = new StringBuilder();
-                modifiedLine  = new StringBuilder();
-                colourLine    = new StringBuilder();
-                highlightLine = new StringBuilder();
+                intensityLine  = new StringBuilder();
+                protectedLine  = new StringBuilder();
+                numericLine    = new StringBuilder();
+                modifiedLine   = new StringBuilder();
+                foregroundLine = new StringBuilder();
+                backgroundLine = new StringBuilder();
+                highlightLine  = new StringBuilder();
             }
         }
 

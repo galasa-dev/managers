@@ -254,14 +254,32 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         for (Field screenField : screenFields) {
             int row = screenField.getStart() / screen.getNoOfColumns();
             int column = screenField.getStart() % screen.getNoOfColumns();
+            
+            Character cForegroundColour = null;
+            Character cBackgroundColour = null;
+            Character cHighlight        = null;
+            
+            Colour foregroundColour = screenField.getForegroundColour();
+            Colour backgroundColour = screenField.getBackgroundColour();
+            Highlight highlight     = screenField.getHighlight();
+            
+            if (foregroundColour != null) {
+                cForegroundColour = foregroundColour.getLetter();
+            }
+            if (backgroundColour != null) {
+                cBackgroundColour = backgroundColour.getLetter();
+            }
+            if (highlight != null) {
+                cHighlight = highlight.getLetter();
+            }
 
             TerminalField terminalField = new TerminalField(row, column, screenField.isUnformatted(),
                     screenField.isProtected(), screenField.isNumeric(), screenField.isDisplay(),
-                    screenField.isIntenseDisplay(), screenField.isSelectorPen(), screenField.isFieldModifed());
+                    screenField.isIntenseDisplay(), screenField.isSelectorPen(), screenField.isFieldModifed(),
+                    cForegroundColour, cBackgroundColour, cHighlight);
 
             Character[] chars = screenField.getFieldCharsWithNulls();
-            terminalField.getContents().add(new FieldContents(chars)); // TODO needs to be expanded when we record
-            // extended attributes
+            terminalField.getContents().add(new FieldContents(chars)); // TODO, needs modifying when we know how to support SetAttribute order
             terminalFields.add(terminalField);
         }
 

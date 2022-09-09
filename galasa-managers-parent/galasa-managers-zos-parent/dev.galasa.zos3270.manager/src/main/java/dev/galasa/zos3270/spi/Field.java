@@ -22,6 +22,10 @@ public class Field {
     private final boolean        fieldIntenseDisplay;
     private final boolean        fieldSelectorPen;
     private final boolean        fieldModifed;
+    
+    private final Colour         foregroundColour;
+    private final Colour         backgroundColour;
+    private final Highlight      highlight;
 
     protected Field(int start, BufferStartOfField sf) {
         this.start = start;
@@ -32,6 +36,10 @@ public class Field {
         this.fieldSelectorPen = sf.isSelectorPen();
         this.fieldModifed = sf.isFieldModifed();
         this.text = new char[0];
+        
+        this.foregroundColour = sf.getForegroundColour();
+        this.backgroundColour = sf.getBackgroundColour();
+        this.highlight        = sf.getHighlight();
     }
 
     public Field() {
@@ -43,6 +51,9 @@ public class Field {
         this.fieldSelectorPen = false;
         this.fieldModifed = false;
         this.text = new char[0];
+        this.foregroundColour = null;
+        this.backgroundColour = null;
+        this.highlight = null;
     }
 
     protected void appendChar(char newChar) {
@@ -122,6 +133,18 @@ public class Field {
         return (this.start == -1);
     }
     
+    public Colour getForegroundColour() {
+        return foregroundColour;
+    }
+
+    public Colour getBackgroundColour() {
+        return backgroundColour;
+    }
+
+    public Highlight getHighlight() {
+        return highlight;
+    }
+
     public String getFieldWithoutNulls() {
         StringBuilder sb = new StringBuilder();
         for (char c : text) {

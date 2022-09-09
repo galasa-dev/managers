@@ -4,9 +4,6 @@
 package dev.galasa.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import dev.galasa.zos3270.spi.DatastreamException;
 
@@ -15,12 +12,16 @@ public class OrderStartFieldExtended extends AbstractOrder {
     public static final byte            ID         = 0x29;
 
     private OrderStartField               orderStartField               = null;
+    @SuppressWarnings("unused")
     private AttributeFieldValidation      attributeFieldValidation      = null;
+    @SuppressWarnings("unused")
     private AttributeFieldOutlining       attributeFieldOutlining       = null;
     private AttributeExtendedHighlighting attributeExtendedHighlighting = null;
+    @SuppressWarnings("unused")
     private AttributeCharacterSet         attributeCharacterSet         = null;
     private AttributeForegroundColour     attributeForegroundColour     = null;
     private AttributeBackgroundColour     attributeBackgroundColour     = null;
+    @SuppressWarnings("unused")
     private AttributeTransparency         attributeTransparency         = null;
 
     public OrderStartFieldExtended(ByteBuffer buffer) throws DatastreamException {
@@ -73,6 +74,18 @@ public class OrderStartFieldExtended extends AbstractOrder {
 
     public OrderStartField getOrderStartField() {
         return orderStartField;
+    }
+
+    public AttributeExtendedHighlighting getHighlight() {
+        return attributeExtendedHighlighting;
+    }
+
+    public AttributeForegroundColour getForegroundColour() {
+        return this.attributeForegroundColour;
+    }
+
+    public AttributeBackgroundColour getBackgroundColor() {
+        return this.attributeBackgroundColour;
     }
 
 }

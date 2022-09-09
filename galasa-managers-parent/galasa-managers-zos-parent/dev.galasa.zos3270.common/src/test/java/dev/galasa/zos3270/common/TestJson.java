@@ -59,7 +59,7 @@ public class TestJson {
         terminal.addImage(
                 new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize, cursorCol, cursorRow));
 
-        TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true);
+        TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true, null, null, null);
         image.getFields().add(field);
 
         Character[] data = new Character[] { 'a', 'c', 'b' };
