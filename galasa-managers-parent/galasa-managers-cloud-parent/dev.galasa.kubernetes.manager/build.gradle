@@ -32,7 +32,7 @@ dependencies {
     }
     implementation ('com.google.code.gson:gson'){
         version {
-            strictly '2.7'
+            strictly '2.8.9'
         }
     }
     implementation ('org.apache.commons:commons-lang3'){
@@ -55,6 +55,6 @@ dependencies {
             strictly '1.21'
         }
     }
-    implementation 'io.kubernetes:client-java:16.0.0'
+    implementation 'io.kubernetes:client-java:14.0.0'
     implementation 'commons-io:commons-io:2.9.0'
 }
