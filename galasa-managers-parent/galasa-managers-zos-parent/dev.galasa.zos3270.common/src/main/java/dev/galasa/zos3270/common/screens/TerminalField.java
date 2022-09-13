@@ -142,15 +142,15 @@ public class TerminalField {
         return fieldModifed;
     }
     
-    public char getForegroundColour() {
+    public Character getForegroundColour() {
         return this.foregroundColour;
     }
 
-    public char getBackgroundColour() {
+    public Character getBackgroundColour() {
         return this.backgroundColour;
     }
 
-    public char getHighlight() {
+    public Character getHighlight() {
         return this.highlight;
     }
 
