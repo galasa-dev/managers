@@ -116,7 +116,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
             throw new ZosProgramManagerException("Unable to request framework services", e);
         }
 
-        if(Boolean.TRUE.equals(galasaTest.isJava())) {
+        if(galasaTest.isJava()) {
             //*** Check to see if any of our annotations are present in the test class
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosProgramManagerField.class);
