@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.spi;
 
@@ -32,6 +30,7 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
@@ -68,22 +67,22 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean                        logConsoleTerminals;
     private boolean                        autoConnect;
 
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
-        this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0);
+        this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0, textScanner);
     }
         
         
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image,
-            int primaryColumns, int primaryRows, int alternateColumns, int alternateRows)
+            int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
-        super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows);
+        super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows, textScanner);
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;
-
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
+        this.textScan = textScanner;
 
         getScreen().registerScreenUpdateListener(this);
 

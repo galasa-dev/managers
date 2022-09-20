@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos.internal;
 
 import java.util.concurrent.TimeUnit;
@@ -25,6 +23,7 @@ public class ZosResourceManagement implements IResourceManagementProvider {
     private IConfigurationPropertyStoreService cps;
     
     private SlotResourceMonitor                slotResourceMonitor;
+    private ZosPortResourceMonitor 			   zosPortResourceMonitor;
     
     @Override
     public boolean initialise(IFramework framework, IResourceManagement resourceManagement) throws ResourceManagerException {
@@ -38,19 +37,20 @@ public class ZosResourceManagement implements IResourceManagementProvider {
         }
         
         // TODO Must add a check every 5 minutes to tidy up all the properties that may have been left hanging
-        
         slotResourceMonitor = new SlotResourceMonitor(framework, resourceManagement, dss, this, cps);
+        zosPortResourceMonitor = new ZosPortResourceMonitor(framework, resourceManagement, dss, this, cps);
         
         return true;
     }
 
-    @Override
-    public void start() {
-        this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(slotResourceMonitor, 
-                this.framework.getRandom().nextInt(20),
-                20, 
-                TimeUnit.SECONDS);
-    }
+	@Override
+	public void start() {
+		this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(slotResourceMonitor,
+				this.framework.getRandom().nextInt(20), 20, TimeUnit.SECONDS);
+		
+		this.resourceManagement.getScheduledExecutorService().scheduleWithFixedDelay(zosPortResourceMonitor,
+				this.framework.getRandom().nextInt(20), 20, TimeUnit.SECONDS);
+	}
 
     @Override
     public void shutdown() {
@@ -59,6 +59,6 @@ public class ZosResourceManagement implements IResourceManagementProvider {
     @Override
     public void runFinishedOrDeleted(String runName) {
         this.slotResourceMonitor.runFinishedOrDeleted(runName);
+        this.zosPortResourceMonitor.runFinishedOrDeleted(runName);
     }
-
 }

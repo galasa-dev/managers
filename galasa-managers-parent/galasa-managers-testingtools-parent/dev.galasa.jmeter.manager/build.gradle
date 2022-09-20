@@ -4,9 +4,9 @@ plugins {
 
 description = 'Galasa JMeter Manager'
 
-version = '0.21.0'
+version = '0.25.0'
 
 dependencies {
     implementation project(':galasa-managers-cloud-parent:dev.galasa.docker.manager')
-    implementation 'org.apache.velocity:velocity:1.7'
+    implementation 'org.apache.velocity:velocity-engine-core:2.3'
 }

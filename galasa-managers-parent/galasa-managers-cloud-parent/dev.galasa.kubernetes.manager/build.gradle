@@ -32,7 +32,7 @@ dependencies {
     }
     implementation ('com.google.code.gson:gson'){
         version {
-            strictly '2.7'
+            strictly '2.8.9'
         }
     }
     implementation ('org.apache.commons:commons-lang3'){

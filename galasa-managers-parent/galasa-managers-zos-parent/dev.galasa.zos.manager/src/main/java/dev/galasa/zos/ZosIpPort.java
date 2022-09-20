@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.zos;
 
 import java.lang.annotation.ElementType;
@@ -39,4 +37,8 @@ public @interface ZosIpPort {
      */
     String type() default "standard";
     
+    /**
+     * The tag which represents this instance of ZosIpPort
+     */
+    String tag();
 }

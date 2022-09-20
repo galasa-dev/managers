@@ -356,6 +356,13 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         ussSymbolic.setName("TEMPORARY_DIRECTORY");
         ussSymbolic.setValue(ussDirectory);
 
+        // Setup any z/OS provisioned port symbolics
+        for (String portTag : this.zosManager.getTaggedPorts().keySet()) {
+        	Symbolic portSymbolic = SemFactory.eINSTANCE.createSymbolic();
+        	portSymbolic.setGROUP(defaultSymbolics);
+        	portSymbolic.setName(portTag);
+        	portSymbolic.setValue("" + this.zosManager.getTaggedPorts().get(portTag));
+        }
 
         // Add the BUILD sem model
         String cicsBuild = CicsBuild.get();

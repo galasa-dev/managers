@@ -212,6 +212,112 @@ public class CICSTSManagerIVT {
 	   assertThat(resource.isParameterEquals("program", "WRONG")).isFalse();
    }
    
+   //@Test
+   public void testAlterSit() throws Exception {
+	   
+	   // Sit value for GMTEXT
+	   String testData = "Lewis is a cool guy";
+	   
+	   logger.info("Shutting down CICS");
+	   cics.shutdown();
+	   
+	   logger.info("Setting GMTEXT sit parameter");
+	   cics.alterSit("GMTEXT", testData);
+	   
+	   logger.info("Starting CICS");
+	   cics.startup();
+	   
+	   // Show Good morning screen to test SIT change
+	   terminal.waitForKeyboard().type("CSGM").enter().waitForTextInField("******\\\\(R)");
+	   
+	   assertThat(terminal.retrieveScreen()).contains(testData);
+   }
+   
+   //@Test
+   public void testAlterSitRestricted() throws Exception {
+	   
+	   logger.info("Shutting down CICS to alter SIT");
+	   cics.shutdown();
+	   
+	   // Test that altering a restricted SIT parameter fails
+	   assertThatThrownBy(() -> {
+		   cics.alterSit("APPLID", "LEWIS");
+		   }).isInstanceOf(CicstsManagerException.class).hasMessageContaining("APPLID is a restricted SIT parameter. It cannot be changed");
+	   
+	   cics.startup();
+   }
+   
+   //@Test
+   public void testAlterSitCicsActive() throws CicstsManagerException {
+	   
+	   logger.info("Altering SIT whilst CICS is active");
+	   
+	   // Test that altering a SIT parameter whilst CICS is active fails
+	   assertThatThrownBy(() -> {
+		   cics.alterSit("GMTEXT", "Hello World!");
+		}).isInstanceOf(CicstsManagerException.class).hasMessageContaining("The CICS region " + cics.getApplid()
+				+ " with tag " + cics.getTag() + " is still running. Cannot alter a running CICS region");
+   }
+   
+   //@Test
+   public void testRemoveSit() throws Exception {
+	   
+	   String testData = "Lewis is not a cool guy";
+	   
+	   // Shutdown CICS to alter parameter
+	   cics.shutdown();
+	   
+	   logger.info("Adding GMTEXT SIT parameter");
+	   cics.alterSit("GMTEXT", testData);
+	   
+	   // Startup CICS with new parameter change
+	   cics.startup();
+	   
+	   terminal.waitForKeyboard().type("CSGM").enter().waitForTextInField("******\\\\(R)");
+	   
+	   assertThat(terminal.retrieveScreen()).contains(testData);
+	   
+	   // Shutdown CICS to allow a removal of SIT parameter
+	   cics.shutdown();
+	   
+	   logger.info("Removing GMTEXT SIT parameter");
+	   cics.removeSit("GMTEXT");
+	   
+	   // Restart CICS with the removed parameter changes
+	   cics.startup();
+	   
+	   terminal.waitForKeyboard().type("CSGM").enter().waitForTextInField("******\\\\(R)");
+	   
+	   // Ensure the GMTEXT parameter is not effecting text on CSGM
+	   assertThat(terminal.retrieveScreen()).doesNotContain(testData);
+   }
+   
+   //@Test
+   public void testRemoveSitRestricted() throws Exception {
+	   
+	   logger.info("Shutting down CICS to remove SIT");
+	   cics.shutdown();
+	   
+	   // Test that altering a restricted SIT parameter fails
+	   assertThatThrownBy(() -> {
+		   cics.alterSit("APPLID", "LEWIS");
+		   }).isInstanceOf(CicstsManagerException.class).hasMessageContaining("APPLID is a restricted SIT parameter. It cannot be removed");
+	   
+	   cics.startup();
+   }
+   
+	//@Test
+	public void testRemoveSitCicsActive() throws Exception {
+
+		logger.info("Removing SIT whilst CICS is active");
+
+		// Test that removing a SIT parameter whilst CICS is active fails
+		assertThatThrownBy(() -> {
+			cics.removeSit("GMTEXT");
+		}).isInstanceOf(CicstsManagerException.class).hasMessageContaining("The CICS region " + cics.getApplid()
+				+ " with tag " + cics.getTag() + " is still running. Cannot remove a SIT from a running region");
+	}
+   
    private boolean checkTerminalScreenContains(String expectedString) throws TimeoutException, KeyboardLockedException, TerminalInterruptedException, NetworkException, FieldNotFoundException {
 	   terminal.type("CEMT INQUIRE").enter().waitForKeyboard();
 	   if (terminal.retrieveScreen().contains(expectedString)) {
