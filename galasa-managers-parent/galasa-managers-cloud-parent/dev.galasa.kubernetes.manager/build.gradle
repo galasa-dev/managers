@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.22.0'
+version = '0.25.0'
 
 dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')
@@ -32,7 +32,7 @@ dependencies {
     }
     implementation ('com.google.code.gson:gson'){
         version {
-            strictly '2.7'
+            strictly '2.8.9'
         }
     }
     implementation ('org.apache.commons:commons-lang3'){
