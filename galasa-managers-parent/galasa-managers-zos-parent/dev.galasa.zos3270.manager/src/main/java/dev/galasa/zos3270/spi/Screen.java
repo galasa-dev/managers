@@ -802,8 +802,17 @@ public class Screen {
         int row = 0;
         int col = 0;
 
-        // TODO find true start field
+        // *** Check to see if the screen is wrapped or unformatted
         BufferStartOfField currentBufferStartOfField = new BufferStartOfField(0, false, false, true, false, false, false);
+        if (!(this.buffer[0] instanceof BufferStartOfField)) {
+            for (int i = this.buffer.length - 1; i >= 0; i--) {
+                IBufferHolder bh = this.buffer[i];
+                if (bh instanceof BufferStartOfField) {
+                    currentBufferStartOfField = (BufferStartOfField) bh;
+                    break;
+                }
+            }
+        }  // no need for else as it will be picked up in the loop
 
         for (int i = 0; i < this.buffer.length; i++) {
             // print row header
