@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.common;
 
@@ -59,7 +57,7 @@ public class TestJson {
         terminal.addImage(
                 new TerminalImage(imageSequence + 1, imageID, true, imageType, aid, altSize, cursorCol, cursorRow));
 
-        TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true);
+        TerminalField field = new TerminalField(posRow, posColumn, false, true, false, true, true, true, true, null, null, null);
         image.getFields().add(field);
 
         Character[] data = new Character[] { 'a', 'c', 'b' };

@@ -1,9 +1,15 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.spi;
+
+import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeCharacterSet;
+import dev.galasa.zos3270.internal.datastream.AttributeExtendedHighlighting;
+import dev.galasa.zos3270.internal.datastream.AttributeFieldOutlining;
+import dev.galasa.zos3270.internal.datastream.AttributeFieldValidation;
+import dev.galasa.zos3270.internal.datastream.AttributeForegroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeTransparency;
 
 /**
  * Create a Start of Field position, represents to SF order
@@ -20,6 +26,18 @@ public class BufferStartOfField implements IBufferHolder {
     private final boolean fieldSelectorPen;
     private boolean       fieldModifed;
 
+    @SuppressWarnings("unused")
+    private AttributeFieldValidation      attributeFieldValidation      = null;
+    @SuppressWarnings("unused")
+    private AttributeFieldOutlining       attributeFieldOutlining       = null;
+    private AttributeExtendedHighlighting attributeExtendedHighlighting = null;
+    @SuppressWarnings("unused")
+    private AttributeCharacterSet         attributeCharacterSet         = null;
+    private AttributeForegroundColour     attributeForegroundColour     = null;
+    private AttributeBackgroundColour     attributeBackgroundColour     = null;
+    @SuppressWarnings("unused")
+    private AttributeTransparency         attributeTransparency         = null;
+
     /**
      * Create the start of a field
      * 
@@ -33,6 +51,16 @@ public class BufferStartOfField implements IBufferHolder {
         this.fieldIntenseDisplay = fieldIntenseDisplay;
         this.fieldSelectorPen = fieldSelectorPen;
         this.fieldModifed = fieldModifed;
+    }
+    
+    public BufferStartOfField(int position, boolean fieldProtected, boolean fieldNumeric, boolean fieldDisplay,
+            boolean fieldIntenseDisplay, boolean fieldSelectorPen, boolean fieldModifed,
+            AttributeExtendedHighlighting extendedHighlighting, AttributeForegroundColour foregroundColour, AttributeBackgroundColour backgroundColour) {
+        this(position, fieldProtected, fieldNumeric, fieldDisplay, fieldIntenseDisplay, fieldSelectorPen, fieldModifed);
+        
+        this.attributeExtendedHighlighting = extendedHighlighting;
+        this.attributeForegroundColour     = foregroundColour;
+        this.attributeBackgroundColour     = backgroundColour;
     }
 
     /*
@@ -75,6 +103,39 @@ public class BufferStartOfField implements IBufferHolder {
     
     public void clearFieldModified() {
         this.fieldModifed = false;
+    }
+    
+    public Highlight getHighlight() {
+        if (this.attributeExtendedHighlighting == null) {
+            return null;
+        }
+        return this.attributeExtendedHighlighting.getHighlight();
+    }
+    
+    public Colour getForegroundColour() {
+        if (this.attributeForegroundColour == null) {
+            return null;
+        }
+        return this.attributeForegroundColour.getColour();
+    }
+
+    public Colour getBackgroundColour() {
+        if (this.attributeBackgroundColour == null) {
+            return null;
+        }
+        return this.attributeBackgroundColour.getColour();
+    }
+
+    public AttributeExtendedHighlighting getAttributeExtendedHighlighting() {
+        return this.attributeExtendedHighlighting;
+    }
+    
+    public AttributeForegroundColour getAttributeForegroundColour() {
+        return this.attributeForegroundColour;
+    }
+
+    public AttributeBackgroundColour getAttributeBackgroundColour() {
+        return this.attributeBackgroundColour;
     }
 
     @Override

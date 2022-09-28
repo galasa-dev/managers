@@ -532,6 +532,12 @@ public class Terminal implements ITerminal {
     }
     
     @Override
+    public ITerminal reportExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight, boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) throws Zos3270Exception {
+        logger.info("\n" + screen.printExtendedScreen(printCursor, printColour, printHighlight, printIntensity, printProtected, printNumeric, printModified));
+        return this;
+    }
+
+    @Override
     public String getId() {
         return this.id;
     }
@@ -661,6 +667,41 @@ public class Terminal implements ITerminal {
 		}
 		
 	}
+
+    @Override
+    public Colour retrieveColourAtCursor() {
+        int pos = screen.getCursor();
+        return screen.getColourAtPosition(pos);
+    }
+
+    @Override
+    public Colour retrieveColourAtPosition(int row, int col) throws Zos3270Exception {
+        checkCursorPosition(row, col, 0 /* not worried about length */);
+        
+        row--;
+        col--;
+        int pos = (row * screen.getNoOfColumns()) + col;
+        
+        return screen.getColourAtPosition(pos);
+    }
+
+    @Override
+    public Highlight retrieveHighlightAtCursor() {
+        int pos = screen.getCursor();
+        return screen.getHighlightAtPosition(pos);
+    }
+
+    @Override
+    public Highlight retrieveHighlightAtPosition(int row, int col) throws Zos3270Exception {
+        checkCursorPosition(row, col, 0 /* not worried about length */);
+        
+        row--;
+        col--;
+        
+        int pos = (row * screen.getNoOfColumns()) + col;
+        
+        return screen.getHighlightAtPosition(pos);
+    }
 
 
 }
