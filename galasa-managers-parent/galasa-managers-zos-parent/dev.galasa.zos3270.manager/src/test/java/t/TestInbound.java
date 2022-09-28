@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package t;
 
 import java.nio.ByteBuffer;
@@ -7,6 +10,7 @@ import org.apache.commons.codec.binary.Hex;
 
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
+import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.spi.Field;
 import dev.galasa.zos3270.spi.NetworkException;
@@ -26,8 +30,8 @@ public class TestInbound {
         byte[] inbound2Bytes = Hex.decodeHex(inbound2);
         byte[] inbound3Bytes = Hex.decodeHex(inbound3);
         
-        
-        Screen screen = new Screen(80, 24, null);
+        Network network = new Network("here", 1, "a");
+        Screen screen = new Screen(80, 24, network);
         NetworkThread networkThread = new NetworkThread(null, screen, null, null);
         
         ByteBuffer buffer = ByteBuffer.wrap(inbound1Bytes);

@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package test.zos3270.datastream.extended;
 
 import static org.assertj.core.api.Assertions.assertThat;

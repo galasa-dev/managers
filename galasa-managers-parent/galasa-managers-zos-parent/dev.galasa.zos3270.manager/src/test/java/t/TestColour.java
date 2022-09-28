@@ -8,12 +8,10 @@ import java.nio.ByteBuffer;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
-import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Screen;
 
 public class TestColour {
