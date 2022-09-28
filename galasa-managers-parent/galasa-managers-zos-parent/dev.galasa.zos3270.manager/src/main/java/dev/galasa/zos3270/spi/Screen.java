@@ -1879,5 +1879,32 @@ public class Screen {
         return true;
     }
 
+    public Colour getColourAtPosition(int pos) {
+        
+        Field[] fields = calculateFields();
+        Field currentField = fields[0];
+        for (int i = 1; i < fields.length; i++) {
+            if (fields[i].getStart() > pos) {
+                break;
+            }
+            currentField = fields[i];
+        }
+        
+        return currentField.getForegroundColour();
+    }
+
+    public Highlight getHighlightAtPosition(int pos) {
+        Field[] fields = calculateFields();
+        Field currentField = fields[0];
+        for (int i = 1; i < fields.length; i++) {
+            if (fields[i].getStart() > pos) {
+                break;
+            }
+            currentField = fields[i];
+        }
+        
+        return currentField.getHighlight();
+    }
+
 
 }

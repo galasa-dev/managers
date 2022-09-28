@@ -5,6 +5,8 @@ package dev.galasa.zos3270;
 
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.zos3270.spi.Colour;
+import dev.galasa.zos3270.spi.Highlight;
 import dev.galasa.zos3270.spi.NetworkException;
 
 public interface ITerminal {
@@ -200,6 +202,22 @@ public interface ITerminal {
 
     ITerminal reportScreenWithCursor();
 
+    /**
+     * Report to the log the current state of the terminal with optional extended datastream settings
+     * 
+     * @param printCursor - report cursor position
+     * @param printColour - report the colour
+     * @param printHighlight - report highlighting
+     * @param printIntensity - report intensity
+     * @param printProtected - report field protection
+     * @param printNumeric - report numeric restrictions
+     * @param printModified - report field modification
+     * @return the ITerminal for fluent API
+     * @throws Zos3270Exception 
+     */
+    ITerminal reportExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight,
+            boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) throws Zos3270Exception;
+    
     String retrieveScreen();
 
     /**
@@ -258,4 +276,40 @@ public interface ITerminal {
      */
     String retrieveTextAtCursor(int length) throws Zos3270Exception;
     
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @return - if position is not in an extended field,  null us returned
+     */
+    Colour retrieveColourAtCursor();
+    
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @param row of the screen, index 1 based
+     * @param col of the screen, index 1 based
+     * @return - if position is not in an extended field,  null us returned
+     * @throws Zos3270Exception 
+     */
+    Colour retrieveColourAtPosition(int row, int col) throws Zos3270Exception;
+    
+    /**
+     * Return the highlighting of the character at the cursor position
+     * 
+     * @return - if position is not in an extended field,  null us returned
+     */
+    Highlight retrieveHighlightAtCursor();
+    
+    /**
+     * Return the highlighting of the character at the cursor position
+     * 
+     * @param row of the screen, index 1 based
+     * @param col of the screen, index 1 based
+     * @return - if position is not in an extended field,  null us returned
+     * @throws Zos3270Exception 
+     */
+    Highlight retrieveHighlightAtPosition(int row, int col) throws Zos3270Exception;
+    
+    
+
 }
