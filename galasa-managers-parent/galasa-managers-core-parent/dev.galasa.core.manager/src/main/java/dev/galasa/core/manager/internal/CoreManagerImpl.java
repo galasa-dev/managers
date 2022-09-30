@@ -174,7 +174,7 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 					+ ",suffix=" 
 					+ testPropertyAnnotation.suffix()
 					+ ",infixes=" 
-					+ testPropertyAnnotation.infixes());
+					+ String.join(",",testPropertyAnnotation.infixes());
 		}
 
 		return value;
