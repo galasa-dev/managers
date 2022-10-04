@@ -1,11 +1,11 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
+
+import dev.galasa.zos3270.spi.Colour;
 
 public class QueryReplyColor extends AbstractQueryReply {
 
@@ -21,14 +21,14 @@ public class QueryReplyColor extends AbstractQueryReply {
         
         buffer.put((byte)8); // Number of color combinations
         
-        putColor(buffer, (byte)0, (byte)0xf4);
-        putColor(buffer, (byte)0xf1, (byte)0xf1);
-        putColor(buffer, (byte)0xf2, (byte)0xf2);
-        putColor(buffer, (byte)0xf3, (byte)0xf3);
-        putColor(buffer, (byte)0xf4, (byte)0xf4);
-        putColor(buffer, (byte)0xf5, (byte)0xf5);
-        putColor(buffer, (byte)0xf6, (byte)0xf6);
-        putColor(buffer, (byte)0xf7, (byte)0xf7);
+        putColor(buffer, Colour.DEFAULT.getCode(),   Colour.GREEN.getCode());
+        putColor(buffer, Colour.BLUE.getCode(),      Colour.BLUE.getCode());
+        putColor(buffer, Colour.RED.getCode(),       Colour.RED.getCode());
+        putColor(buffer, Colour.PINK.getCode(),      Colour.PINK.getCode());
+        putColor(buffer, Colour.GREEN.getCode(),     Colour.GREEN.getCode());
+        putColor(buffer, Colour.TURQUOISE.getCode(), Colour.TURQUOISE.getCode());
+        putColor(buffer, Colour.YELLOW.getCode(),    Colour.YELLOW.getCode());
+        putColor(buffer, Colour.NEUTRAL.getCode(),   Colour.NEUTRAL.getCode());
 
         return buffer.array();
     }
