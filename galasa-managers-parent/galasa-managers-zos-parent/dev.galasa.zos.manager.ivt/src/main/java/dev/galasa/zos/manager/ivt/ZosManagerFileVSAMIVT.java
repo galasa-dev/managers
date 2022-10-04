@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos.manager.ivt;
 
@@ -115,7 +113,7 @@ public class ZosManagerFileVSAMIVT {
     private boolean checkThatPDSExists(String dataset) throws TestBundleResourceException, IOException, ZosBatchException {
     	HashMap<String,Object> parms = new HashMap<>();
     	parms.put("DATASET", dataset);
-    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSCheck.jcl", parms);
+    	String jcl = resources.retrieveSkeletonFileAsString("/jcl/PDSCheck.jcl", parms);
     	return(batch.submitJob(jcl, null).waitForJob() == 0);
     }
 }

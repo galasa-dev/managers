@@ -1,8 +1,10 @@
+# Copyright contributors to the Galasa project
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: testdeployment
+  name: teststatefulset
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: testdeployment

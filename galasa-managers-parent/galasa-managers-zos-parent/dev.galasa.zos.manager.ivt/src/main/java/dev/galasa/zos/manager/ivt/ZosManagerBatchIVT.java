@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos.manager.ivt;
 
@@ -95,7 +93,7 @@ public class ZosManagerBatchIVT {
      */
     @Test 
     public void submitJCLNoSteps() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/noSteps.jcl");
+    	String jclInput = resources.retrieveFileAsString("/jcl/noSteps.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	int returnCode = job.waitForJob();
     	IZosBatchJobOutputSpoolFile spool = job.getSpoolFile("COBOL");
@@ -108,7 +106,7 @@ public class ZosManagerBatchIVT {
      */
     @Test
     public void submitJCLDoNothing() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	String jclInput = resources.retrieveFileAsString("/jcl/doNothing.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	int returnCode = job.waitForJob();
     	assertThat(returnCode).isEqualTo(0);
@@ -121,7 +119,7 @@ public class ZosManagerBatchIVT {
      */
     @Test
     public void submitJCLDoNothingJobName() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	String jclInput = resources.retrieveFileAsString("/jcl/doNothing.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, jobName);
     	int returnCode = job.waitForJob();
     	assertThat(job.getJobname().getName()).isEqualTo(jobName.getName());
@@ -134,7 +132,7 @@ public class ZosManagerBatchIVT {
      */
     @Test
     public void submitJCLDoNothingJobNameAndBlankCard() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");  	
+    	String jclInput = resources.retrieveFileAsString("/jcl/doNothing.jcl");  	
     	ZosBatchJobcard jobCard = new ZosBatchJobcard();
     	IZosBatchJob job = batch.submitJob(jclInput, jobName2, jobCard);
     	int returnCode = job.waitForJob();
@@ -147,7 +145,7 @@ public class ZosManagerBatchIVT {
      */
     @Test
     public void checkOutputIsStoredInRAS() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	String jclInput = resources.retrieveFileAsString("/jcl/doNothing.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	job.setShouldArchive(true);
     	job.waitForJob();
@@ -162,7 +160,7 @@ public class ZosManagerBatchIVT {
      */
     @Test
     public void retrieveJobs() throws TestBundleResourceException, IOException, ZosBatchException {
-    	String jclInput = resources.retrieveFileAsString("/resources/jcl/doNothing.jcl");
+    	String jclInput = resources.retrieveFileAsString("/jcl/doNothing.jcl");
     	IZosBatchJob job = batch.submitJob(jclInput, null);
     	job.waitForJob();
     	List<IZosBatchJob> jobs = batch.getJobs(job.getJobname().getName(), job.getOwner());
@@ -174,7 +172,7 @@ public class ZosManagerBatchIVT {
     	String message = "HELLO WORLD FROM GALASA";
     	Map<String,Object> parameters = new HashMap<>();
     	parameters.put("MESSAGE", message);
-    	String jclInput = resources.retrieveSkeletonFileAsString("resources/jcl/helloWorld.jcl", parameters);
+    	String jclInput = resources.retrieveSkeletonFileAsString("/jcl/helloWorld.jcl", parameters);
     	assertThat(jclInput).contains(message);
     	
     	//submit the job, check that it completes and we got some output
@@ -196,7 +194,7 @@ public class ZosManagerBatchIVT {
     	String message = "HELLO WORLD FROM GALASA";
     	Map<String,Object> parameters = new HashMap<>();
     	parameters.put("MESSAGE", message);
-    	String jclInput = resources.retrieveSkeletonFileAsString("resources/jcl/helloWorld.jcl", parameters);
+    	String jclInput = resources.retrieveSkeletonFileAsString("/jcl/helloWorld.jcl", parameters);
     	assertThat(jclInput).contains(message);
     	
     	//submit the job, check that it completes and we got some output

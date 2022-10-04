@@ -247,7 +247,7 @@ public class ZosManagerFileDatasetIVT {
     private boolean checkThatPDSExists(String dataset) throws TestBundleResourceException, IOException, ZosBatchException {
     	HashMap<String,Object> parms = new HashMap<>();
     	parms.put("DATASET", dataset);
-    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSCheck.jcl", parms);
+    	String jcl = resources.retrieveSkeletonFileAsString("/jcl/PDSCheck.jcl", parms);
     	return(batch.submitJob(jcl, null).waitForJob() == 0);
     }
     
@@ -278,7 +278,7 @@ public class ZosManagerFileDatasetIVT {
     private void deleteDataSet(String dataset) throws ZosBatchException, TestBundleResourceException, IOException {
     	HashMap<String,Object> parms = new HashMap<>();
     	parms.put("DATASET", dataset);
-    	String jcl = resources.retrieveSkeletonFileAsString("/resources/jcl/PDSDelete.jcl", parms);
+    	String jcl = resources.retrieveSkeletonFileAsString("/jcl/PDSDelete.jcl", parms);
     	IZosBatchJob job = batch.submitJob(jcl, null);
     	job.waitForJob();
     	// Do not archive this batch job to RAS as it isn't what is being tested
@@ -302,7 +302,7 @@ public class ZosManagerFileDatasetIVT {
     	String fullName = pds+"("+member+")";
     	HashMap<String, Object> parms = new HashMap<>();
     	parms.put("MEMBER_NAME",fullName);
-    	IZosBatchJob job = batch.submitJob(resources.retrieveSkeletonFileAsString("/resources/jcl/list.jcl", parms),null);
+    	IZosBatchJob job = batch.submitJob(resources.retrieveSkeletonFileAsString("/jcl/list.jcl", parms),null);
     	job.setShouldArchive(false);
     	if(job.waitForJob() > 0)
     		return false;

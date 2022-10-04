@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.artifact.internal;
 
@@ -483,9 +481,6 @@ public class BundleResourcesImpl implements IBundleResources {
 
         if (!rawPath.startsWith(FILE_SEPARATOR))
             rawPath = FILE_SEPARATOR + rawPath;
-
-        if (!rawPath.startsWith(FILE_SEPARATOR + "resources"))
-            rawPath = FILE_SEPARATOR + "resources" + rawPath;
 
         rawPath = rawPath.replaceAll("\\/+", "/");
         rawPath = rawPath.replaceFirst(FILE_SEPARATOR, "");
