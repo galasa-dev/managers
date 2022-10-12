@@ -8,6 +8,7 @@ package dev.galasa.core.manager;
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 
 /**
  * <p>
@@ -46,6 +47,8 @@ public interface ICoreManager {
      * @throws CoreManagerException If there is a problem accessing the credentials store
      */
     ICredentials getCredentials(@NotNull String credentialsId) throws CoreManagerException;
+    
+    ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException;
     
     void registerConfidentialText(String confidentialString, String comment);
 }
