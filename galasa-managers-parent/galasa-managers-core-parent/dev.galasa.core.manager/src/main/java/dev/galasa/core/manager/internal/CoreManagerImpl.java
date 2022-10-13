@@ -227,14 +227,6 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 	@Override
 	public ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException {
 		ICredentials cred =getCredentials(credentialsId);
-		/*
-		 try {
-			cred = getFramework().getCredentialsService().getCredentials(credentialsId);
-			
-		}catch (CredentialsException e) {
-			throw new CoreManagerException("Unable to retrieve credentials for id " + credentialsId, e);
-		}
-		*/
 		if(!(cred instanceof ICredentialsUsernamePassword)) {
 			throw new CoreManagerException("Unable to retrieve username/password credentials for id"+ credentialsId);
 		}
