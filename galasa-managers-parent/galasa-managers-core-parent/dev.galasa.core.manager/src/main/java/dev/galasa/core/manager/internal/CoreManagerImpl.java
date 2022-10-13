@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.Tags;
 import dev.galasa.TestAreas;
@@ -220,6 +221,20 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 			return getFramework().getCredentialsService().getCredentials(credentialsId);
 		} catch (CredentialsException e) {
 			throw new CoreManagerException("Unable to retrieve credentials for id " + credentialsId, e);
+		}
+	}
+	
+	@Override
+	public ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException {
+		ICredentials cred;
+		try {
+			cred = getFramework().getCredentialsService().getCredentials(credentialsId);
+			
+		}catch (CredentialsException e) {
+			throw new CoreManagerException("Unable to retrieve credentials for id " + credentialsId, e);
+		}
+		if(!(cred instanceof ICredentialsUsernamePassword)) {
+			throw new CoreManagerException("Unable to retrieve username/password credentials for id"+ credentialsId);
 		}
 	}
 

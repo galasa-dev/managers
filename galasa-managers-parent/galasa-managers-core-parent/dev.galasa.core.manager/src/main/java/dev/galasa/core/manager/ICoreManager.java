@@ -48,6 +48,14 @@ public interface ICoreManager {
      */
     ICredentials getCredentials(@NotNull String credentialsId) throws CoreManagerException;
     
+    /**
+     * Retrieve Username and Password Credentials only
+     * 
+     * @param  credentialsId
+     * @return A credentials object or null if id not found
+     * @throws CoreManagerException If there is a problem accessing the credentials store 
+     *         or if the credential is not of type ICredentialsUsernamePassword
+     */
     ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException;
     
     void registerConfidentialText(String confidentialString, String comment);
