@@ -230,6 +230,7 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 		if(!(cred instanceof ICredentialsUsernamePassword)) {
 			throw new CoreManagerException("Unable to retrieve username/password credentials for id"+ credentialsId);
 		}
+		return (ICredentialsUsernamePassword) cred;
 	}
 
 	@Override
