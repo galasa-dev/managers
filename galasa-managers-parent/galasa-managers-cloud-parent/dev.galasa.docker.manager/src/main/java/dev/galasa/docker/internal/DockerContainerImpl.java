@@ -641,7 +641,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Retrieves the docker running ID
+     * @return the docker running ID
      */
     public String getContainerId() {
         return containerID;

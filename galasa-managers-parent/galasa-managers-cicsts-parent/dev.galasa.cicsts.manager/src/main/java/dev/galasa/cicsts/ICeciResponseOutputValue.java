@@ -12,7 +12,7 @@ package dev.galasa.cicsts;
  * e.g. the request output screen might 
  * show:<br>
  * <code>INTO('A.....')</code><br>
- * and in Hex:<<br>
+ * and in Hex:<br>
  * <code>INTO(X'C13456789ABC')</code><br>
  * Both representations are available using the {@link #getTextValue()} and {@link #getHexValue()} methods respectively
  */

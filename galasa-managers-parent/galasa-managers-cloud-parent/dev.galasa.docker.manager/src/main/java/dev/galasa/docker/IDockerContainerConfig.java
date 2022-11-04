@@ -34,9 +34,9 @@ public interface IDockerContainerConfig {
     public List<IDockerVolume> getVolumes();
 
     /**
-     * Return a volume from the configuration of a specfic tag. 
-     * 
-     * @return
+     * Get the volume by the tag it is known as.
+     * @param volumeTag
+     * @return a volume from the configuration of a specfic tag. 
      */
     public IDockerVolume getVolumeByTag(String volumeTag);
     

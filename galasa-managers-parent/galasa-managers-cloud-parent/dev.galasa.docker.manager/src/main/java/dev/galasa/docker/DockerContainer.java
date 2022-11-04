@@ -46,6 +46,7 @@ public @interface DockerContainer {
      * The <code>dockerContainerTag</code> is used to identify the Docker Container to other Managers or Shared Environments.  If a test is using multiple 
      * Docker Containers, each separate Docker Container must have a unique tag. If two Docker Containers use the same tag, they will refer to the 
      * same Docker Container.
+     * @return The tag for this container.
      */
     public String dockerContainerTag() default "PRIMARY";
 
@@ -54,6 +55,7 @@ public @interface DockerContainer {
      * include the Docker Registry as this is provided in the CPS.   If using a public official image from DockerHub,  then the 
      * image name must be prefixed with <code>library/</code>, for example <code>library/httpd:latest</code>, the Docker Manager will
      * not default to the library namespace like the Docker commands do.
+     * @return the name of the image.
      */
     public String image();
 
@@ -61,12 +63,14 @@ public @interface DockerContainer {
      * The <code>start</code> attribute indicates whether the Docker Container should be started automatically. If the 
      * test needs to perform some work before the container is started, then <code>start=false</code> should be used, after which 
      * <code>IDockerContainer.start()</code> can be called to start the container.
+     * @return true if the docker container should be started automatically. false otherwise.
      */
     public boolean start() default true;
 
     /**
      * The <code>dockerEngineTag</code> will be used in the future so that a container can be run on a specific Docker Engine type.
      * You would not normally need to provide a Docker Engine tag.
+     * @return The docker engine tag associate with this container.
      */
     public String dockerEngineTag() default "PRIMARY";
 
