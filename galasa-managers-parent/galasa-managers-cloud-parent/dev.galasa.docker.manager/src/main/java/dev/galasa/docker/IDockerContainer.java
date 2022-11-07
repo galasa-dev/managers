@@ -82,6 +82,7 @@ public interface IDockerContainer {
 	 * Start the Docker Container with a provided galasa DockerContainerConfig. This will stop and remove
 	 * any previous containers.
 	 * 
+	 * @param config
 	 * @throws DockerManagerException
 	 */
 	public void startWithConfig(IDockerContainerConfig config) throws DockerManagerException;
