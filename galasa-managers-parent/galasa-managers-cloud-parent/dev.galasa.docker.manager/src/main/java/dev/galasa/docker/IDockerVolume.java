@@ -52,6 +52,7 @@ public interface IDockerVolume {
      * 
      * @param fileName
      * @param data
+     * @throws DockerManagerException
      */
     public void LoadFile(String fileName, InputStream data) throws DockerManagerException;
 
@@ -60,6 +61,7 @@ public interface IDockerVolume {
      * 
      * @param fileName
      * @param data
+     * @throws DockerManagerException
      */
     public void LoadFileAsString(String fileName, String data) throws DockerManagerException;
     
