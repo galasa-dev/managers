@@ -51,6 +51,7 @@ import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
 import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderModifyField;
 import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -464,6 +465,8 @@ public class Screen {
                 processSFE((OrderStartFieldExtended) order);
             } else if (order instanceof OrderSetAttribute) {
                 processSA((OrderSetAttribute) order);
+            } else if (order instanceof OrderModifyField) {
+                processMF((OrderModifyField) order);
             } else if (order instanceof OrderInsertCursor) {
                 this.screenCursor = this.workingCursor;
             } else if (order instanceof OrderEraseUnprotectedToAddress) {
@@ -598,6 +601,24 @@ public class Screen {
     }
 
     private void processSFE(OrderStartFieldExtended order) {
+        OrderStartField sf = order.getOrderStartField();
+        BufferStartOfField bsf = null;
+
+        if (sf != null) {
+            bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
+                    sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed(),
+                    order.getHighlight(), order.getForegroundColour(), order.getBackgroundColor());
+        }
+
+        if (bsf == null) {
+            bsf = new BufferStartOfField(this.workingCursor, false, false, true, false, false, false);
+        }
+
+        this.buffer[this.workingCursor] = bsf;
+        incrementWorkingCursor();
+    }
+
+    private void processMF(OrderModifyField order) {
         OrderStartField sf = order.getOrderStartField();
         BufferStartOfField bsf = null;
 
