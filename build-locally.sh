@@ -155,18 +155,15 @@ log_file=${LOGS_DIR}/${project}.txt
 info "Log will be placed at ${log_file}"
 
 if [[ "${build_type}" == "clean" ]]; then
-    goals="clean build publishToMavenLocal"
+    goals="clean build check publishToMavenLocal -no-build-cache --no-daemon"
 else
-    goals="clean build publishToMavenLocal"
+    goals="build check publishToMavenLocal"
 fi
-
-# DAEMON_FLAG="--no-daemon"
-DAEMON_FLAG=""
 
 cat << EOF 
 Using command:
 
-gradle ${DAEMON_FLAG} \
+gradle \
 ${CONSOLE_FLAG} \
 -Dorg.gradle.java.home=${JAVA_HOME} \
 -PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
@@ -176,7 +173,7 @@ ${goals} \
 EOF
 
 
-gradle ${DAEMON_FLAG} \
+gradle \
 ${CONSOLE_FLAG} \
 -Dorg.gradle.java.home=${JAVA_HOME} \
 -PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
