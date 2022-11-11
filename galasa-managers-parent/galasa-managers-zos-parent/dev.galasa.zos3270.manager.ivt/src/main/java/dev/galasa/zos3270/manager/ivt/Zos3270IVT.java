@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.manager.ivt;
 
@@ -9,10 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.logging.Log;
 
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.Test;
 import dev.galasa.core.manager.CoreManager;
+import dev.galasa.core.manager.CoreManagerException;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.TestProperty;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
@@ -25,6 +26,8 @@ import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
 import dev.galasa.zos3270.Zos3270Terminal;
+import dev.galasa.zos3270.spi.Colour;
+import dev.galasa.zos3270.spi.Highlight;
 import dev.galasa.zos3270.spi.NetworkException;
 
 @Test
@@ -42,23 +45,18 @@ public class Zos3270IVT {
     @CoreManager
     public ICoreManager coreManager;
     
-    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
-    public String providedRunName;
-    private String runName  = new String();
+	@RunName
+    public String runName;
     
+	private String credentialsId = "PRIMARY";
     private String applid = "IYK2ZNB5";
+
+	@TestProperty(prefix = "IVT.REGION", suffix = "APPLID", required = false)
+	public String cbsaApplid;
 
     @Test
     public void checkInjection() {
-        assertThat(logger).as("Logger Field").isNotNull();
-        assertThat(image).as("zOS Image Field").isNotNull();
-        assertThat(terminal).as("zOS 3270 Terminal Field").isNotNull();
         assertThat(terminal.isConnected()).isTrue();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        } else {
-        	runName = coreManager.getRunName();
-        }
         logger.info("Using Run ID of: " + runName);
     }
 
@@ -167,8 +165,45 @@ public class Zos3270IVT {
     		logger.info("No text found exception correctly thrown");
     		assertThat(tnfe.getMessage()).contains("Unable to find a field containing any of the request text");
     	}
-    	
-    	
     }
-    
+
+	// TODO: Re-enable colour support IVTs once CBSA is installed on a region provisioned for the tests
+	// @Test
+	// public void cursorColourTest() throws Zos3270Exception, CoreManagerException {
+	// 	ICredentialsUsernamePassword credentials = (ICredentialsUsernamePassword) coreManager.getCredentials(credentialsId);
+	// 	coreManager.registerConfidentialText(credentials.getPassword(), "password");
+	// 	terminal.disconnect();
+	// 	terminal.connect();
+
+	// 	terminal.wfk().type("logon applid(" + cbsaApplid + ")").enter().wfk().waitForTextInField("Signon to CICS");
+	// 	terminal.wfk().type(credentials.getUsername()).tab().tab().type(credentials.getPassword()).enter().wfk();
+
+	// 	// access CBSA and look up customer with ID 1
+	// 	terminal.type("OMEN").enter().wfk().waitForTextInField("CICS Bank Sample Application");
+	// 	terminal.type("1").enter().wfk().type("1").enter().wfk();
+		
+	// 	terminal.reportExtendedScreen(true, true, true, false, false, false, false);
+	// 	assertThat(terminal.retrieveColourAtCursor()).isNull();
+
+	// 	terminal.positionCursorToFieldContaining("CUSTOMER NUMBER").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.TURQUOISE);
+
+	// 	terminal.positionCursorToFieldContaining("CICS Bank Sample Application").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.RED);
+
+	// 	terminal.positionCursorToFieldContaining("Sort Code").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.NEUTRAL);
+	// }
+	
+	// @Test
+	// public void cursorHighlightingTest() throws Zos3270Exception {
+	// 	// press f10 to switch to the view used to update customer information in CBSA
+	// 	terminal.pf10().wfk();
+	// 	terminal.reportExtendedScreen(true, true, true, false, false, false, false);
+	// 	assertThat(terminal.retrieveHighlightAtCursor()).isEqualTo(Highlight.UNDERSCORE);
+
+	// 	// the "Customer Number" field cannot be modified, so it is not highlighted
+	// 	terminal.positionCursorToFieldContaining("Customer Number");
+	// 	assertThat(terminal.retrieveHighlightAtCursor()).isNull();
+	// }
 }

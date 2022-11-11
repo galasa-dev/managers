@@ -28,6 +28,7 @@ import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
 import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderModifyField;
 import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -882,6 +883,9 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderSetAttribute.ID:
                         order = new OrderSetAttribute(buffer);
+                        break;
+                    case OrderModifyField.ID:
+                        order = new OrderModifyField(buffer);
                         break;
                     case OrderInsertCursor.ID:
                         order = new OrderInsertCursor();
