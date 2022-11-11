@@ -13,6 +13,7 @@ import dev.galasa.core.manager.CoreManager;
 import dev.galasa.core.manager.CoreManagerException;
 import dev.galasa.core.manager.ICoreManager;
 import dev.galasa.core.manager.Logger;
+import dev.galasa.core.manager.RunName;
 import dev.galasa.core.manager.TestProperty;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosImage;
@@ -44,27 +45,18 @@ public class Zos3270IVT {
     @CoreManager
     public ICoreManager coreManager;
     
-    @TestProperty(prefix = "IVT.RUN",suffix = "NAME", required = false)
-    public String providedRunName;
-    private String runName  = new String();
+	@RunName
+    public String runName;
     
 	private String credentialsId = "PRIMARY";
     private String applid = "IYK2ZNB5";
 
-	@TestProperty(prefix = "IVT.REGION", suffix = "APPLID")
+	@TestProperty(prefix = "IVT.REGION", suffix = "APPLID", required = false)
 	public String cbsaApplid;
 
     @Test
     public void checkInjection() {
-        assertThat(logger).as("Logger Field").isNotNull();
-        assertThat(image).as("zOS Image Field").isNotNull();
-        assertThat(terminal).as("zOS 3270 Terminal Field").isNotNull();
         assertThat(terminal.isConnected()).isTrue();
-        if (providedRunName != null) {
-        	runName = providedRunName;
-        } else {
-        	runName = coreManager.getRunName();
-        }
         logger.info("Using Run ID of: " + runName);
     }
 
