@@ -175,42 +175,43 @@ public class Zos3270IVT {
     	}
     }
 
-	@Test
-	public void cursorColourTest() throws Zos3270Exception, CoreManagerException {
-		ICredentialsUsernamePassword credentials = (ICredentialsUsernamePassword) coreManager.getCredentials(credentialsId);
-		coreManager.registerConfidentialText(credentials.getPassword(), "password");
-		terminal.disconnect();
-		terminal.connect();
+	// TODO: Re-enable colour support IVTs once CBSA is installed on a region provisioned for the tests
+	// @Test
+	// public void cursorColourTest() throws Zos3270Exception, CoreManagerException {
+	// 	ICredentialsUsernamePassword credentials = (ICredentialsUsernamePassword) coreManager.getCredentials(credentialsId);
+	// 	coreManager.registerConfidentialText(credentials.getPassword(), "password");
+	// 	terminal.disconnect();
+	// 	terminal.connect();
 
-		terminal.wfk().type("logon applid(" + cbsaApplid + ")").enter().wfk().waitForTextInField("Signon to CICS");
-		terminal.wfk().type(credentials.getUsername()).tab().tab().type(credentials.getPassword()).enter().wfk();
+	// 	terminal.wfk().type("logon applid(" + cbsaApplid + ")").enter().wfk().waitForTextInField("Signon to CICS");
+	// 	terminal.wfk().type(credentials.getUsername()).tab().tab().type(credentials.getPassword()).enter().wfk();
 
-		// access CBSA and look up customer with ID 1
-		terminal.type("OMEN").enter().wfk().waitForTextInField("CICS Bank Sample Application");
-		terminal.type("1").enter().wfk().type("1").enter().wfk();
+	// 	// access CBSA and look up customer with ID 1
+	// 	terminal.type("OMEN").enter().wfk().waitForTextInField("CICS Bank Sample Application");
+	// 	terminal.type("1").enter().wfk().type("1").enter().wfk();
 		
-		terminal.reportExtendedScreen(true, true, true, false, false, false, false);
-		assertThat(terminal.retrieveColourAtCursor()).isNull();
+	// 	terminal.reportExtendedScreen(true, true, true, false, false, false, false);
+	// 	assertThat(terminal.retrieveColourAtCursor()).isNull();
 
-		terminal.positionCursorToFieldContaining("CUSTOMER NUMBER").cursorRight();
-		assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.TURQUOISE);
+	// 	terminal.positionCursorToFieldContaining("CUSTOMER NUMBER").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.TURQUOISE);
 
-		terminal.positionCursorToFieldContaining("CICS Bank Sample Application").cursorRight();
-		assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.RED);
+	// 	terminal.positionCursorToFieldContaining("CICS Bank Sample Application").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.RED);
 
-		terminal.positionCursorToFieldContaining("Sort Code").cursorRight();
-		assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.NEUTRAL);
-	}
+	// 	terminal.positionCursorToFieldContaining("Sort Code").cursorRight();
+	// 	assertThat(terminal.retrieveColourAtCursor()).isEqualTo(Colour.NEUTRAL);
+	// }
 	
-	@Test
-	public void cursorHighlightingTest() throws Zos3270Exception {
-		// press f10 to switch to the view used to update customer information in CBSA
-		terminal.pf10().wfk();
-		terminal.reportExtendedScreen(true, true, true, false, false, false, false);
-		assertThat(terminal.retrieveHighlightAtCursor()).isEqualTo(Highlight.UNDERSCORE);
+	// @Test
+	// public void cursorHighlightingTest() throws Zos3270Exception {
+	// 	// press f10 to switch to the view used to update customer information in CBSA
+	// 	terminal.pf10().wfk();
+	// 	terminal.reportExtendedScreen(true, true, true, false, false, false, false);
+	// 	assertThat(terminal.retrieveHighlightAtCursor()).isEqualTo(Highlight.UNDERSCORE);
 
-		// the "Customer Number" field cannot be modified, so it is not highlighted
-		terminal.positionCursorToFieldContaining("Customer Number");
-		assertThat(terminal.retrieveHighlightAtCursor()).isNull();
-	}
+	// 	// the "Customer Number" field cannot be modified, so it is not highlighted
+	// 	terminal.positionCursorToFieldContaining("Customer Number");
+	// 	assertThat(terminal.retrieveHighlightAtCursor()).isNull();
+	// }
 }
