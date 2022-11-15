@@ -55,6 +55,6 @@ dependencies {
             strictly '1.21'
         }
     }
-    implementation 'io.kubernetes:client-java:14.0.0'
+    implementation 'io.kubernetes:client-java:16.0.2'
     implementation 'commons-io:commons-io:2.9.0'
 }
