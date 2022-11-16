@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,7 +79,8 @@ import jakarta.xml.bind.annotation.XmlType;
 
 public class HttpClientImpl implements IHttpClient {
 
-    private static final String JAVA_VENDOR_PROPERTY = "java.vendor";
+    public static final String JAVA_VENDOR_PROPERTY = "java.vendor";
+    public static final String JAVA_VERSION_PROPERTY = "java.version";
 
     private CloseableHttpClient httpClient;
     protected URI               host                 = null;
@@ -356,26 +358,33 @@ public class HttpClientImpl implements IHttpClient {
      * @throws HttpClientException
      */
     public IHttpClient setTrustingSSLContext() throws HttpClientException {
-
         try {
-            boolean ibmJdk = System.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
-            SSLContext sslContext;
-            if (ibmJdk)
-                sslContext = SSLContext.getInstance("SSL_TLSv2"); // NOSONAR
-            else
-                sslContext = SSLContext.getInstance("TLSv1.2");
+            String contextName = getSelectedSSLContextName( System.getProperties() );
+            SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new VeryTrustingTrustManager() }, new SecureRandom());
             setSSLContext(sslContext);
         } catch (GeneralSecurityException e) {
             throw new HttpClientException("Error attempting to create SSL context", e);
         }
-
         return this;
     }
-
+    public String getSelectedSSLContextName( Properties props ) {
+        boolean ibmJdk = props.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
+        String name ;
+        if (ibmJdk) {
+            if (props.getProperty(JAVA_VERSION_PROPERTY).startsWith("8.")) {
+            	name="SSL_TLSv2"; // NOSONAR
+            }else {
+            	name ="TLSv1.2";
+            }
+        } else {
+            name = "TLSv1.2";
+        }
+        return name ;
+    }
     /**
      * Set up Client Authentication SSL Context and install
-     * 
+     *
      * @param clientKeyStore
      * @param serverKeyStore
      * @param alias
@@ -385,29 +394,20 @@ public class HttpClientImpl implements IHttpClient {
      */
     public IHttpClient setupClientAuth(KeyStore clientKeyStore, KeyStore serverKeyStore, String alias, String password)
             throws HttpClientException {
-
         try {
             // Create the Key Manager Factory
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(clientKeyStore, password.toCharArray());
-
             // Create the Trust Managers
             TrustManager[] trustManagers = { new ClientAuthTrustManager(serverKeyStore, alias) };
-
             // Create the SSL Context
-            boolean ibmJdk = System.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
-            SSLContext sslContext;
-            if (ibmJdk)
-                sslContext = SSLContext.getInstance("SSL_TLSv2"); // NOSONAR
-            else
-                sslContext = SSLContext.getInstance("TLSv1.2");
+            String contextName = getSelectedSSLContextName( System.getProperties() );
+            SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(kmf.getKeyManagers(), trustManagers, null);
-
             setSSLContext(sslContext);
         } catch (GeneralSecurityException e) {
             throw new HttpClientException("Error attempting to create SSL context", e);
         }
-
         return this;
     }
 
