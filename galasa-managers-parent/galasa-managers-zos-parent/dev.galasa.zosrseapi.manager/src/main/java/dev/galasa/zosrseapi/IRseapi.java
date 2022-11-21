@@ -23,12 +23,14 @@ public interface IRseapi {
     
     /**
      * Enumeration of RSE API request types:
+     * <ul>
      * <li>{@link #GET}</li>
      * <li>{@link #PUT_TEXT}</li>
      * <li>{@link #PUT_JSON}</li>
      * <li>{@link #POST}</li>
      * <li>{@link #POST_JSON}</li>
      * <li>{@link #DELETE}</li>
+     * </ul>
      */
     public enum RseapiRequestType {
         /**

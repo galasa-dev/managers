@@ -13,3 +13,4 @@ Snap*.trc
 **/build
 **/.gradle
 **/gradle/wrapper
+local-builds/

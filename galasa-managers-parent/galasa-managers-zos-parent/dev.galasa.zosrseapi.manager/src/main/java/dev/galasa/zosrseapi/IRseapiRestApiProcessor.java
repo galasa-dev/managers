@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosrseapi;
 
@@ -24,7 +22,9 @@ public interface IRseapiRestApiProcessor {
      * @param validStatusCodes list HTTP status codes expected from this request. default of HTTP 200 when null 
      * @param convert is a data conversion required. If true, data will be converted between EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the response {@link IRseapiResponse}
-     * @throws ZosBatchException
+     * @throws RseapiException
      */
-    public @NotNull IRseapiResponse sendRequest(RseapiRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes, boolean convert) throws RseapiException;
+    public @NotNull IRseapiResponse sendRequest(RseapiRequestType requestType, String path, 
+        Map<String, String> headers, Object body, List<Integer> validStatusCodes, 
+        boolean convert) throws RseapiException;
 }
