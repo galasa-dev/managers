@@ -131,14 +131,14 @@ fi
 # Create a temporary dir.
 # Note: This bash 'spell' works in OSX and Linux.
 if [[ -z ${LOGS_DIR} ]]; then
-    export LOGS_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t "galasa-logs")
+    export LOGS_DIR="${BASEDIR}/local-builds/logs"
     info "Logs are stored in the ${LOGS_DIR} folder."
     info "Over-ride this setting using the LOGS_DIR environment variable."
 else
-    mkdir -p ${LOGS_DIR} 2>&1 > /dev/null # Don't show output. We don't care if it already existed.
     info "Logs are stored in the ${LOGS_DIR} folder."
     info "Over-ridden by caller using the LOGS_DIR variable."
 fi
+mkdir -p ${LOGS_DIR} 2>&1 > /dev/null # Don't show output. We don't care if it already existed.
 
 info "Using source code at ${source_dir}"
 cd ${BASEDIR}/${source_dir}
@@ -151,13 +151,13 @@ fi
 # auto plain rich or verbose
 CONSOLE_FLAG=--console=plain
 
-log_file=${LOGS_DIR}/${project}.txt
+log_file=${LOGS_DIR}/logs.txt
 info "Log will be placed at ${log_file}"
 
 if [[ "${build_type}" == "clean" ]]; then
-    goals="clean build check publishToMavenLocal -no-build-cache --no-daemon"
+    goals="clean build check publishToMavenLocal -no-build-cache --no-daemon --parallel"
 else
-    goals="build check publishToMavenLocal"
+    goals="build check publishToMavenLocal --parallel"
 fi
 
 cat << EOF 
@@ -182,5 +182,5 @@ ${goals} \
 
 
 
-rc=$? ; if [[ "${rc}" != "0" ]]; then cat ${log_file} ; error "Failed to build ${project}" ; exit 1 ; fi
+rc=$? ; if [[ "${rc}" != "0" ]]; then cat ${log_file} ; error "Failed to build ${project} see logs at ${log_file}" ; exit 1 ; fi
 success "Project ${project} built - OK - log is at ${log_file}"
