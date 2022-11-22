@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosrseapi;
 
@@ -41,6 +39,7 @@ public @interface Rseapi {
     
     /**
      * The tag of the zOS Image this variable is to be populated with
+     * @return The tag name of the image
      */
     String imageTag() default "PRIMARY";
 

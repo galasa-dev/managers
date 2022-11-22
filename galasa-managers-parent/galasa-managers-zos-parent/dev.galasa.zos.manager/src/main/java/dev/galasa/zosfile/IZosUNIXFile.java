@@ -305,7 +305,7 @@ public interface IZosUNIXFile {
 	}
 
     /**
-	 * Convert  {@link Set}<{@link PosixFilePermission}> to Numeric Notation (e.g. 777)
+	 * Convert  {@link Set}&lt;{@link PosixFilePermission}&gt; to Numeric Notation (e.g. 777)
 	 * @param accessPermissions
 	 * @return a {@link String} containing the file permissions in Numeric Notation
 	 */	

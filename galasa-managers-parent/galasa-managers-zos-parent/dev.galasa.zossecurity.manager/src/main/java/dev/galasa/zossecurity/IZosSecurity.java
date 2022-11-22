@@ -83,7 +83,7 @@ public interface IZosSecurity {
 
 	/**
 	 * Create a new profile on the specified image/sysplex.
-	 * 
+	 * @param className
 	 * @param image    - The image/sysplex
 	 * @param name    - The name of the profiles
 	 * @param uacc    - The uacc to assign, or null
@@ -98,6 +98,7 @@ public interface IZosSecurity {
 	 * Create a new profile on the specified image/sysplex.
 	 * 
 	 * @param image - The image/sysplex
+	 * @param className
 	 * @param name - The name of the profiles
 	 * @param uacc - The uacc to assign, or null
 	 * @return The profile
@@ -122,6 +123,7 @@ public interface IZosSecurity {
 	 * Create a new profile on the specified image/sysplex.
 	 * 
 	 * @param image    - The image/sysplex
+	 * @param className 
 	 * @param name    - The name of the profiles
 	 * @param uacc    - The uacc to assign, or null
 	 * @param refresh - issue SETROPTS REFRESH
@@ -387,7 +389,7 @@ public interface IZosSecurity {
 	 * Free this certificate. This will be performed automatically at the end of the
 	 * run
 	 * 
-	 * @param keyring
+	 * @param certificate The certificate to free
 	 * @throws ZosSecurityManagerException
 	 */
 	public void freeCertificate(IZosCertificate certificate) throws ZosSecurityManagerException;
@@ -397,7 +399,7 @@ public interface IZosSecurity {
 	 * best let the Resource Manager to clean this resource, so you run will perform
 	 * faster.
 	 * 
-	 * @param certificate
+	 * @param certificate The certificate to delete
 	 * @throws ZosSecurityManagerException
 	 */
 	public void deleteCertificate(IZosCertificate certificate) throws ZosSecurityManagerException;
