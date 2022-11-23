@@ -52,8 +52,9 @@ public interface IJvmserverLog {
 	public OutputStream retrieve() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Delete the {@link IZosUNIXFile} if it exists. Will throw {@link CicsJvmserverResourceException} if the log is a {@link IZosBatchJobOutputSpoolFile}
-	 * @throws CicsJvmserverResourceException 
+	 * Delete the {@link IZosUNIXFile} if it exists. 
+	 * 
+	 * @throws CicsJvmserverResourceException the log is a {@link IZosBatchJobOutputSpoolFile}
 	 */
 	public void delete() throws CicsJvmserverResourceException;
 
@@ -143,19 +144,23 @@ public interface IJvmserverLog {
 	/**
 	 * Searches contents of log for specified search or fail Pattern since the last checkpoint
 	 * @param searchPattern the Pattern to search
+	 * @param failPattern the failure pattern to search
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public String searchForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern) throws CicsJvmserverResourceException;
 
 	/**
-	 * Wait for a search search String to appear in specified log. Will check every 3 seconds until one of:
+	 * Wait for a search search String to appear in specified log. 
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchText is found</li>
+	 * <li>the failText is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
-	 * @param searchString the text to search
+	 * 
+	 * @param searchText the text to search
 	 * @param timeout timeout in seconds
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException
@@ -163,14 +168,17 @@ public interface IJvmserverLog {
 	public String waitForText(String searchText, long timeout) throws CicsJvmserverResourceException;
 
 	/**
-	 * Wait for a search String or fail text to appear in specified log. Will check every 3 seconds until one of:
+	 * Wait for a search String or fail text to appear in specified log.
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchText is found</li>
+	 * <li>the failText is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
-	 * @param searchString the text to search
-	 * @param failString the failure text to search
+	 * 
+	 * @param searchText the text to search
+	 * @param failText the failure text to search
 	 * @param timeout timeout in seconds
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException
@@ -178,11 +186,13 @@ public interface IJvmserverLog {
 	public String waitForText(String searchText, String failText, long timeout) throws CicsJvmserverResourceException;
 	
 	/**
-	 * Wait for a search String to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
+	 * Wait for a search String to appear in specified log since the last checkpoint. 
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchText is found</li>
+	 * <li>the failText is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
 	 * @param searchText the text to search
 	 * @param timeout timeout in seconds
@@ -192,12 +202,15 @@ public interface IJvmserverLog {
 	public String waitForTextSinceCheckpoint(String searchText, long timeout) throws CicsJvmserverResourceException;
 	
 	/**
-	 * Wait for a search or fail String  to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
+	 * Wait for a search or fail String  to appear in specified log since the last checkpoint. 
+	 *
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchText is found;</li>
-	 * <li>the failText is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchText is found</li>
+	 * <li>the failText is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
+	 * 
 	 * @param searchText the text to search
 	 * @param failText the failure text to search
 	 * @param timeout timeout in seconds
@@ -221,12 +234,15 @@ public interface IJvmserverLog {
 	public String waitForPattern(Pattern searchPattern, long timeout) throws CicsJvmserverResourceException;
 
 	/**
-	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log. Will check every 3 seconds until one of:
+	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log. 
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchPattern is found</li>
+	 * <li>the failPattern is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
+	 * 
 	 * @param searchPattern the Pattern to search
 	 * @param failPattern the failure pattern to search
 	 * @param timeout timeout in seconds
@@ -236,12 +252,15 @@ public interface IJvmserverLog {
 	public String waitForPattern(Pattern searchPattern, Pattern failPattern, long timeout) throws CicsJvmserverResourceException;
 	
 	/**
-	 * Wait for a search Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
+	 * Wait for a search Pattern to appear in specified log since the last checkpoint.
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchPattern is found</li>
+	 * <li>the failPattern is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
+	 * 
 	 * @param searchPattern the Pattern to search
 	 * @param timeout timeout in seconds
 	 * @return the string found or null
@@ -250,12 +269,15 @@ public interface IJvmserverLog {
 	public String waitForPatternSinceCheckpoint(Pattern searchPattern, long timeout) throws CicsJvmserverResourceException;
 	
 	/**
-	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log since the last checkpoint. Will check every 3 seconds until one of:
+	 * Wait for a search or fail Pattern or fail Pattern to appear in specified log since the last checkpoint. 
+	 * 
+	 * Will check every 3 seconds until one of:
 	 * <ul>
-	 * <li>the searchPattern is found;</li>
-	 * <li>the failPattern is found;</li>
-	 * <li>the specified timeout is reached.</li>
+	 * <li>the searchPattern is found</li>
+	 * <li>the failPattern is found</li>
+	 * <li>the specified timeout is reached</li>
 	 * </ul>
+	 * 
 	 * @param searchPattern the Pattern to search
 	 * @param failPattern the failure pattern to search
 	 * @param timeout timeout in seconds

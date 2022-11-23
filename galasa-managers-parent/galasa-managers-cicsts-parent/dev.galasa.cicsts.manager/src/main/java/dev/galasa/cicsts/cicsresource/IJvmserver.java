@@ -260,7 +260,7 @@ public interface IJvmserver {
 
 	/**
 	 * Set the JVMSERVER Threadlimit value in CEMT
-	 * @param the Threadlimit value
+	 * @param threadlimit max number of threads used by the JVM server
 	 * @throws CicsJvmserverResourceException 
 	 */
 	public void setThreadLimit(int threadlimit) throws CicsJvmserverResourceException;
@@ -371,7 +371,7 @@ public interface IJvmserver {
 	public void checkpointLogs() throws CicsJvmserverResourceException;
 	
 	/**
-	 * Get a <@link List} of Java log files, i.e Snap.*.trc, javacore.*.txt etc.
+	 * Get a {@link List} of Java log files, i.e Snap.*.trc, javacore.*.txt etc.
 	 * @return
 	 * @throws CicsJvmserverResourceException
 	 */

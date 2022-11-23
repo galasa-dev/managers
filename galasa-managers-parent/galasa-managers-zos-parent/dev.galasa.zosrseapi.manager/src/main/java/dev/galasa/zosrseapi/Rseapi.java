@@ -21,15 +21,18 @@ import dev.galasa.zosrseapi.internal.RseapiManagerField;
  * The test can request multiple RSE API instances, with the default being associated with the <b>primary</b> zOS image.
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}Rseapi(imageTag="A")<br>
- * public IRseapi rseapiA;<br></code>
+ * public IRseapi rseapiA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IRseapi</code> interface has a number of methods to issue requests to the RSE API REST API.
- * See {@link Rseapi} and {@link IRseapi} to find out more.
  * 
+ * @see Rseapi
+ * @see IRseapi
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })

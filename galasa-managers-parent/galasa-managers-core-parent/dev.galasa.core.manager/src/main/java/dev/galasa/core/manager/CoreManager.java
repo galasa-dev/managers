@@ -12,17 +12,11 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * <p>
  * Fill this field with the Core Manager instance.
- * </p>
  *
- * <p>
  * Will only populate public {@link ICoreManager} fields.
- * </p>
  *
- * @author Michael Baylis
- * @see {@link ICoreManager}
- *
+ * @see ICoreManager
  */
 @Retention(RUNTIME)
 @Target(FIELD)

@@ -10,15 +10,13 @@ import java.net.InetSocketAddress;
 
 /**
  * Docker Container Resource Object
- * <p>
+ * 
  * Provides a resource object representing a Docker Container on a Docker
  * Engine. The normal method of obtaining a Docker Container resource object is
  * by using a field:-<br>
  * <code>@DockerContainer(dockerContainerTag="a", image="galasadocker/ivp:1.0.0")<br>
  * private IDockerContainer containerA;</code><br>
- * You can also retrieve a Docker Container using the
- * {@link IDockerManager#getDockerContainer(String)} method.
- * <p>
+ * 
  * The following are DSE Environment properties:-<br>
  * <code>docker.container.TAG.name=BOB</code> to define the name the container
  * is to use.<br>
@@ -29,9 +27,6 @@ import java.net.InetSocketAddress;
  * container is to run on.<br>
  * <code>docker.registries=http://localhost:5000</code> a list of Docker
  * registries to search for an image<br>
- * 
- * @author Michael Baylis
- *
  */
 public interface IDockerContainer {
     /**

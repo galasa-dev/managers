@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosmf;
 
@@ -22,14 +20,7 @@ import dev.galasa.zos.IZosImage;
 public interface IZosmf {
     
     /**
-     * Enumeration of zOSMF request types:
-     * <li>{@link #POST}</li>
-     * <li>{@link #POST_JSON}</li>
-     * <li>{@link #GET}</li>
-     * <li>{@link #PUT}</li>
-     * <li>{@link #PUT_TEXT}</li>
-     * <li>{@link #PUT_JSON}</li>
-     * <li>{@link #DELETE}</li>
+     * Enumeration of zOSMF request types
      */
     public enum ZosmfRequestType {
         /**
@@ -67,15 +58,7 @@ public interface IZosmf {
     }
     
     /**
-     * Enumeration of zOSMF Custom HTTP headers:
-     * <li>{@link #X_IBM_ATTRIBUTES}</li>
-     * <li>{@link #X_IBM_DATA_TYPE}</li>
-     * <li>{@link #X_IBM_JOB_MODIFY_VERSION}</li>
-     * <li>{@link #X_IBM_LSTAT}</li>
-     * <li>{@link #X_IBM_MAX_ITEMS}</li>
-     * <li>{@link #X_IBM_OPTION}</li>
-     * <li>{@link #X_IBM_REQUESTED_METHOD}</li>
-     *
+     * Enumeration of zOSMF Custom HTTP headers
      */
     public enum ZosmfCustomHeaders {
         /**
