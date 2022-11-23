@@ -16,8 +16,11 @@ import dev.galasa.zosliberty.IZosLibertyServer;
 public interface ICicsResource {
 	
 	/**
-	 * Create a CICS BUNDLE resource object supplying the CICS bundle content. The source bundle should have the same file structure as it exists
+	 * Create a CICS BUNDLE resource object supplying the CICS bundle content. 
+	 * 
+	 * The source bundle should have the same file structure as it exists
 	 * on the zOS UNIX file system and will be transferred to the host in binary mode.
+	 * 
 	 * @param cicsTerminal a ICicsTerminal object for CEDA and CEMT transactions
 	 * @param testClass a class in the same bundle containing the application archive file, use <code>this.getClass()</code>
 	 * @param name the CICS BUNDLE RDO name

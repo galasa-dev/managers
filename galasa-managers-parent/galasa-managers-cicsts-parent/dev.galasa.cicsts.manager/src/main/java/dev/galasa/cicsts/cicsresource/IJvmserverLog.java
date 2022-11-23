@@ -87,6 +87,7 @@ public interface IJvmserverLog {
 
 	/**
 	 * Searches contents of log for specified search text
+	 * 
 	 * @param searchText the text to search
 	 * @return true if text found
 	 * @throws CicsJvmserverResourceException 
@@ -95,6 +96,7 @@ public interface IJvmserverLog {
 
 	/**
 	 * Searches contents of log for specified search or fail String
+	 * 
 	 * @param searchText the text to search
 	 * @return true if text found
 	 * @throws CicsJvmserverResourceException 
@@ -111,6 +113,7 @@ public interface IJvmserverLog {
 
 	/**
 	 * Searches contents of log for specified search or fail String since the last checkpoint
+	 * 
 	 * @param searchText the text to search
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException 
@@ -119,6 +122,7 @@ public interface IJvmserverLog {
 
 	/**
 	 * Searches contents of log for specified search Pattern
+	 * 
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException 
@@ -127,6 +131,7 @@ public interface IJvmserverLog {
 
 	/**
 	 * Searches contents of log for specified search or fail Pattern
+	 * 
 	 * @param searchPattern the Pattern to search
 	 * @return the string found or null
 	 * @throws CicsJvmserverResourceException 
@@ -151,7 +156,7 @@ public interface IJvmserverLog {
 	public String searchForPatternSinceCheckpoint(Pattern searchPattern, Pattern failPattern) throws CicsJvmserverResourceException;
 
 	/**
-	 * Wait for a search search String to appear in specified log. 
+	 * Wait for a search String to appear in specified log. 
 	 * 
 	 * Will check every 3 seconds until one of:
 	 * <ul>
