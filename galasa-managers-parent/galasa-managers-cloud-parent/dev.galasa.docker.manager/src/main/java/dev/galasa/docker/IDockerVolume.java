@@ -8,41 +8,31 @@ import java.io.InputStream;
 /** 
  * A Galasa object to track, bind and provision Docker volumes with.
  * 
- * @author James Davies
-*/
+ */
 public interface IDockerVolume {
 
     /**
-     * Returns the volume names, specified or provisioned.
-     * 
-     * @return String volumeName
+     * @return the volume names, specified or provisioned.
      */
     public String getVolumeName();
 
-      /**
-     * Return the volume tag
-     * 
-     * @return String volumeName
+    /**
+     * @return the volume tag
      */
     public String getVolumeTag();
 
     /**
-     * Returns the specified mount path.
-     * @return String mountPath
+     * @return the specified mount path.
      */
     public String getMountPath();
 
     /**
-     * Returns the read state of the volume.
-     * 
-     * @return boolean readOnly
+     * @return the read state of the volume.
      */
     public boolean readOnly();
 
     /**
-     * Get the Tag of the engine used to host the volume.
-     * 
-     * @return
+     * @return the Tag of the engine used to host the volume.
      */
     public String getEngineTag();
 

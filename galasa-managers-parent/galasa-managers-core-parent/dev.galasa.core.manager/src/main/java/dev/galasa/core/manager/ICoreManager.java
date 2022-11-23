@@ -9,22 +9,17 @@ import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 
 /**
- * <p>
  * The Core Manager provides Tests with access to some of the most common
  * features within the Galasa Framework
- * </p>
  *
- * <p>
  * To gain access to the Core Manager, include the following in the test class:-
- * </p>
  * 
  * <pre>
- * &#64;CoreManager
- * public ICoreManager coreManager;
- * </pre>
+   &#64;CoreManager
+   public ICoreManager coreManager;
+   </pre>
  *
- * @author Michael Baylis
- * @See {@link CoreManager}
+ * @see CoreManager
  *
  */
 public interface ICoreManager {

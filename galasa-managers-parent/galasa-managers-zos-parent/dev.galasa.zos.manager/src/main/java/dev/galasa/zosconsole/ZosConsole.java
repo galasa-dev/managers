@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosconsole;
 
@@ -18,21 +16,26 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * @galasa.annotation
  * 
  * @galasa.description The <code>{@literal @}ZosConsole</code> annotation requests the z/OS Manager to provide a
- * z/OS Console instance associated with a z/OS image. 
- * The test can request multiple z/OS Console instances, with the default being associated with the <b>primary</b> z/OS image.<br>
+ * z/OS Console instance associated with a z/OS image.
+ * 
+ * The test can request multiple z/OS Console instances, with the default being associated with the <b>primary</b> z/OS image.
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosConsole(imageTag="A")<br>
- * public IZosConsole zosConsoleA;<br></code>
+ * public IZosConsole zosConsoleA;<br>
+ * </code>
  * 
  * @galasa.extra
- * The <code>IZosConsole</code> interface has two methods, {@link IZosConsole#issueCommand(String)} and
- * {@link IZosConsole#issueCommand(String, String)} to issue a command to the z/OS console and returns a <code>IZosConsoleCommand</code>
- * instance.<br><br>
- * See {@link ZosConsole}, {@link IZosConsole} and {@link IZosConsoleCommand} to find out more.
+ * The {@link IZosConsole} interface has two methods, {@link IZosConsole#issueCommand(String)} and
+ * {@link IZosConsole#issueCommand(String, String)} to issue a command to the z/OS console and 
+ * returns a {@link IZosConsoleCommand} instance.
  * 
+ * @see ZosConsole
+ * @see IZosConsole 
+ * @see IZosConsoleCommand
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})

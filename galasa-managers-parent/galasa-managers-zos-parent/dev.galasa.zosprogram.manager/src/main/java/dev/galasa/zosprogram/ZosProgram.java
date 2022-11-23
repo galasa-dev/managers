@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosprogram;
 
@@ -23,14 +21,18 @@ import dev.galasa.zosprogram.internal.ZosProgramManagerField;
  * The test can request multiple z/OS Program instances
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosProgram(imageTag="A")<br>
- * public IZosProgram zosProgramA;<br></code>
+ * public IZosProgram zosProgramA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IZosProgram</code> interface has a number of methods to manage the zOS Program.
- * See {@link ZosProgram} and {@link IZosProgram} to find out more.
+ * 
+ * @see ZosProgram
+ * @see IZosProgram
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
