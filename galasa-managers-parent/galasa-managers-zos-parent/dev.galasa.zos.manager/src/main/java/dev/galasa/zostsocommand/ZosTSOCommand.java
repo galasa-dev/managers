@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zostsocommand;
 
@@ -19,19 +17,21 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * @galasa.description The <code>{@literal @}ZosTSOCommand</code> annotation requests the z/OS Manager to provide a
  * z/OS TSO Command instance associated with a z/OS image. 
- * The test can request multiple z/OS TSO Command instances, with the default being associated with the <b>primary</b> z/OS image.<br>
+ * The test can request multiple z/OS TSO Command instances, with the default being associated with the <b>primary</b> z/OS image.
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosTSOCommand(imageTag="A")<br>
- * public IZosTSOCpmmand zosTSOA;<br></code>
+ * public IZosTSOCpmmand zosTSOA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IZosTSOCommand</code> interface provides the methods {@link IZosTSOCommand#issueCommand(String)} and {@link IZosTSOCommand#issueCommand(String, long)}
- * to issue a command to z/OS TSO Command and returns a <code>String</code>.<br><br>
- * See {@link IZosTSOCommand} to find out more.
- * 
+ * to issue a command to z/OS TSO Command and returns a <code>String</code>.
+ *
+ * @see IZosTSOCommand
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})

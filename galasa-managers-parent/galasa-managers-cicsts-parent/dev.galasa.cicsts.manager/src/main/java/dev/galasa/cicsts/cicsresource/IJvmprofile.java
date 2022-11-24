@@ -160,7 +160,9 @@ public interface IJvmprofile {
     public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException;
 
 	/**
-	 * Set the value of the <code>WLP_INSTALL_DIR</code> environment variable in the JVM profile<br>Galasa sets the default value of<code>&USSHOME;/wlp</code>
+	 * Set the value of the <code>WLP_INSTALL_DIR</code> environment variable in the JVM profile
+	 * 
+	 * Galasa sets the default value of<code>USSHOME/wlp</code>
 	 * @param wlpInstallDir the value of <code>WLP_INSTALL_DIR</code>
 	 * @throws CicsJvmserverResourceException
 	 */
@@ -183,7 +185,6 @@ public interface IJvmprofile {
 	/**
 	 * Set the value of the <code>ZCEE_INSTALL_DIR</code> environment variable in the JVM profile using the value supplied
 	 * in the Galasa Configuration Property Service
-	 * @param zOSConnectInstallDir the value of <code>ZCEE_INSTALL_DIR</code>
 	 * @throws CicsJvmserverResourceException
 	 */
 	void setZosConnectInstallDir() throws CicsJvmserverResourceException;

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts;
 
@@ -38,12 +36,15 @@ public interface ICeci {
      * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * 
      * @param command a {@link String} containing the CECI command
      * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
-     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
-     * The following examples shows how to retrieve a specific returned value:<br><code>
-     * issueCommand(ICicsTerminal, "ASSIGN USERID(&VAR)", false)<br>
-     * retrieveVariableText(ICicsTerminal, "&VAR")
+     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.
+     * 
+     * The following examples shows how to retrieve a specific returned value:<br>
+     * <code>
+     * issueCommand(ICicsTerminal, "ASSIGN USERID(&amp;VAR)", false)<br>
+     * retrieveVariableText(ICicsTerminal, "&amp;VAR")
      * </code>
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosrseapi;
 
@@ -23,15 +21,18 @@ import dev.galasa.zosrseapi.internal.RseapiManagerField;
  * The test can request multiple RSE API instances, with the default being associated with the <b>primary</b> zOS image.
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}Rseapi(imageTag="A")<br>
- * public IRseapi rseapiA;<br></code>
+ * public IRseapi rseapiA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IRseapi</code> interface has a number of methods to issue requests to the RSE API REST API.
- * See {@link Rseapi} and {@link IRseapi} to find out more.
  * 
+ * @see Rseapi
+ * @see IRseapi
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
@@ -41,6 +42,7 @@ public @interface Rseapi {
     
     /**
      * The tag of the zOS Image this variable is to be populated with
+     * @return The tag name of the image
      */
     String imageTag() default "PRIMARY";
 

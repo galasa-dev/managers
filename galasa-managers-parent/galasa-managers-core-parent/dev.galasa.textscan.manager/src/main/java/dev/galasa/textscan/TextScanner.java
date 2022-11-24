@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.textscan;
 
@@ -14,17 +12,11 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * <p>
  * Fill this field with a Text Scanner object.
- * </p>
  *
- * <p>
  * Will only populate public {@link ITextScanner} fields.
- * </p>
  *
- * @author Michael Baylis
- * @see {@link ITextScanner}
- *
+ * @see ITextScanner
  */
 @Retention(RUNTIME)
 @Target(FIELD)

@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.ipnetwork;
 
@@ -58,10 +56,12 @@ public interface ICommandShell {
     public void setChangePromptCommand(String command);
 
     /**
-     * Issue a command using SSH shell. Equivalent to
+     * Issue a command using SSH shell. 
+     * 
+     * Equivalent to
      * {@link #issueCommandToShell(String, false, defaultTimeout)} - not valid for
      * Rexec implementation - equivalent to
-     * {@link #issueCommand(String, boolean, long)} for Telnet implementation
+     * {@link #issueCommand(String, long)} for Telnet implementation
      * 
      * @param command - command to issue
      * @return the output of the command (stdout and stderr)
@@ -72,7 +72,7 @@ public interface ICommandShell {
     /**
      * Issue a command using SSH shell. Equivalent to
      * {@link #issueCommandToShell(String, false, long)} - not valid for Rexec
-     * implementation - equivalent to {@link #issueCommand(String, boolean, long)}
+     * implementation - equivalent to {@link #issueCommand(String, long)}
      * for Telnet implementation
      * 
      * @param command - command to issue - if true will start a new
@@ -85,7 +85,7 @@ public interface ICommandShell {
      * Issue a command using SSH shell. Equivalent to
      * {@link #issueCommandToShell(String, boolean, defaultTimeout)} - not valid for
      * Rexec implementation - equivalent to
-     * {@link #issueCommand(String, boolean, long)} for Telnet implementation
+     * {@link #issueCommand(String, long)} for Telnet implementation
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
@@ -96,7 +96,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell - not valid for Rexec implementation -
-     * equivalent to {@link #issueCommand(String, boolean, long)} for Telnet
+     * equivalent to {@link #issueCommand(String, long)} for Telnet
      * implementation
      * 
      * @param command  - command to issue

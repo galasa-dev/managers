@@ -22,10 +22,12 @@ public interface IBundleResources {
     InputStream retrieveFile(String path) throws TestBundleResourceException;
     
     /**
-     * Retrieve a file as a String
-     * @param path
-     * @return
+     * Retrieve the contents of a file as a String
+     * 
+     * @param path The path to the file to which will be read
+     * @return The contents of the file
      * @throws TestBundleResourceException
+     * @throws IOException
      */
     String retrieveFileAsString(String path) throws TestBundleResourceException, IOException;
 
@@ -44,25 +46,32 @@ public interface IBundleResources {
 
 
     /**
-     * Retrieve a single file as an InputStream, if the file is a skeleton then any
-     * required substitutions will be performed before the stream is returned. Uses
-     * the default skeleton processor {@link SkeletonType#PLUSPLUS}
+     * Retrieve a single file as an InputStream
      * 
-     * @param path
+     * If the file is a skeleton then any
+     * required substitutions will be performed before the stream is returned. 
+     * 
+     * Uses the default {@link ISkeletonProcessor}
+     * 
+     * @param path The path to the file
      * @param parameters
-     * @return
+     * @return A stream so the caller can read the contents of the file
      * @throws TestBundleResourceException
      */
     InputStream retrieveSkeletonFile(String path, Map<String, Object> parameters) throws TestBundleResourceException;
 
 
     /**
-     * Retrieve a single file as a String, if the file is a skeleton then any
-     * required substitutions will be performed before the string is returned. Uses
-     * the default skeleton processor {@link SkeletonType#PLUSPLUS}
-     * @param path
-     * @param parameters
-     * @return
+     * Retrieve a single file as a String
+     * 
+     * If the file is a skeleton then any required substitutions will 
+     * be performed before the string is returned. 
+     * 
+     * Uses the default {@link ISkeletonProcessor}
+     * 
+     * @param path The path to the file to be read
+     * @param parameters 
+     * @return The contents of the file
      * @throws TestBundleResourceException
      */
     String retrieveSkeletonFileAsString(String path, Map<String, Object> parameters) throws TestBundleResourceException, IOException;

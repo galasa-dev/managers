@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosrseapi;
 
@@ -22,13 +20,7 @@ import dev.galasa.zos.IZosImage;
 public interface IRseapi {
     
     /**
-     * Enumeration of RSE API request types:
-     * <li>{@link #GET}</li>
-     * <li>{@link #PUT_TEXT}</li>
-     * <li>{@link #PUT_JSON}</li>
-     * <li>{@link #POST}</li>
-     * <li>{@link #POST_JSON}</li>
-     * <li>{@link #DELETE}</li>
+     * Enumeration of RSE API request types
      */
     public enum RseapiRequestType {
         /**

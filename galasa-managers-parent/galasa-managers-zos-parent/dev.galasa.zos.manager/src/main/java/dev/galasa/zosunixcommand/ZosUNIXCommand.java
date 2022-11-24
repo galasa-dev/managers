@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosunixcommand;
 
@@ -22,10 +20,12 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * The test can request multiple z/OS UNIX Command instances, with the default being associated with the <b>primary</b> z/OS image.<br>
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosUNIXCommand(imageTag="A")<br>
- * public IZosUNIXCommand zosUNIXCommandA;<br></code>
+ * public IZosUNIXCommand zosUNIXCommandA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IZosUNIXCommand</code> interface provides the methods {@link IZosUNIXCommand#issueCommand(String)} and {@link IZosUNIXCommand#issueCommand(String, long)}
