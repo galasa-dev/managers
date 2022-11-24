@@ -3,7 +3,7 @@
  * 
  * (c) Copyright IBM Corp. 2020.
  */
-package dev.galasa.cicsts.ceci.spi.spi;
+package dev.galasa.cicsts.ceci.spi;
 
 /**
  * Provides the SPI access to the CICS/TS CECI Manager

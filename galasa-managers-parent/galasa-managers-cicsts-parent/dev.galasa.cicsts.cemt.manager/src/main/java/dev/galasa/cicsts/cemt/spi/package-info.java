@@ -4,9 +4,5 @@
  * (c) Copyright IBM Corp. 2020.
  */
 
-package dev.galasa.cicsts.cemt.spi.spi;
 
-
-public interface ICemtManagerSpi  {
-
-}
+package dev.galasa.cicsts.cemt.spi;

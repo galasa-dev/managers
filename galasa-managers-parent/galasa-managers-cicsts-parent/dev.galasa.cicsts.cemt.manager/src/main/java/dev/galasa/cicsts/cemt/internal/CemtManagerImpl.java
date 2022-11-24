@@ -25,7 +25,7 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICemt;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.cemt.internal.properties.CemtPropertiesSingleton;
-import dev.galasa.cicsts.cemt.spi.spi.ICemtManagerSpi;
+import dev.galasa.cicsts.cemt.spi.ICemtManagerSpi;
 import dev.galasa.cicsts.spi.ICemtProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 
