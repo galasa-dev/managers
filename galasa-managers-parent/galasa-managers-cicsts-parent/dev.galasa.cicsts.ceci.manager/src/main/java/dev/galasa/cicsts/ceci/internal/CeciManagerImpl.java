@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019, 2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.cicsts.ceci.internal;
 
@@ -18,7 +16,7 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ceci.internal.properties.CeciPropertiesSingleton;
-import dev.galasa.cicsts.ceci.spi.spi.ICeciManagerSpi;
+import dev.galasa.cicsts.ceci.spi.ICeciManagerSpi;
 import dev.galasa.cicsts.spi.ICeciProvider;
 import dev.galasa.cicsts.spi.ICicstsManagerSpi;
 import dev.galasa.framework.spi.AbstractManager;
