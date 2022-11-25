@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +68,7 @@ import org.w3c.dom.Document;
 
 import com.google.gson.JsonObject;
 
+import dev.galasa.common.SSLTLSContextName;
 import dev.galasa.http.ContentType;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
@@ -79,8 +79,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 public class HttpClientImpl implements IHttpClient {
 
-    public static final String JAVA_VENDOR_PROPERTY = "java.vendor";
-    public static final String JAVA_VERSION_PROPERTY = "java.version";
+    
 
     private CloseableHttpClient httpClient;
     protected URI               host                 = null;
@@ -359,7 +358,7 @@ public class HttpClientImpl implements IHttpClient {
      */
     public IHttpClient setTrustingSSLContext() throws HttpClientException {
         try {
-            String contextName = getSelectedSSLContextName( System.getProperties() );
+            String contextName = SSLTLSContextName.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new VeryTrustingTrustManager() }, new SecureRandom());
             setSSLContext(sslContext);
@@ -368,20 +367,8 @@ public class HttpClientImpl implements IHttpClient {
         }
         return this;
     }
-    public String getSelectedSSLContextName( Properties props ) {
-        boolean ibmJdk = props.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
-        String name ;
-        if (ibmJdk) {
-            if (props.getProperty(JAVA_VERSION_PROPERTY).startsWith("8.")) {
-            	name="SSL_TLSv2"; // NOSONAR
-            }else {
-            	name ="TLSv1.2";
-            }
-        } else {
-            name = "TLSv1.2";
-        }
-        return name ;
-    }
+
+
     /**
      * Set up Client Authentication SSL Context and install
      *
@@ -401,7 +388,7 @@ public class HttpClientImpl implements IHttpClient {
             // Create the Trust Managers
             TrustManager[] trustManagers = { new ClientAuthTrustManager(serverKeyStore, alias) };
             // Create the SSL Context
-            String contextName = getSelectedSSLContextName( System.getProperties() );
+            String contextName = SSLTLSContextName.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(kmf.getKeyManagers(), trustManagers, null);
             setSSLContext(sslContext);

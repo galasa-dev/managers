@@ -2,7 +2,7 @@ plugins {
     id 'galasa.manager'
 }
 
-description = 'HTTP Manager'
+description = 'Manager Common'
 
 version = '0.25.0'
 
@@ -18,5 +18,4 @@ dependencies {
         strictly "[1.15]"
       }
    }
-   implementation project (':galasa-managers-common-parent:dev.galasa.common')
 }
