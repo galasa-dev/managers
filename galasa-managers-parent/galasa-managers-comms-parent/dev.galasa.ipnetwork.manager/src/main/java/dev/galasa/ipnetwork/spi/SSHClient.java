@@ -99,8 +99,7 @@ public class SSHClient implements ICommandShell {
     }
 
     /**
-     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, false,
-     * defaultTimeout)}
+     * Issue a command using SSH. Equivalent to  {@link #issueCommand(String, boolean, long)}
      * 
      * @param command - command to issue
      * @return the output of the command (stdout and stderr)
@@ -113,7 +112,7 @@ public class SSHClient implements ICommandShell {
     }
 
     /**
-     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, false,
+     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, boolean,
      * long)}
      * 
      * @param command - command to issue
@@ -129,7 +128,7 @@ public class SSHClient implements ICommandShell {
 
     /**
      * Issue a command using SSH. Equivalent to
-     * {@link #issueCommand(String, boolean, defaultTimeout)}
+     * {@link #issueCommand(String, boolean, long)}
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
@@ -201,12 +200,11 @@ public class SSHClient implements ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, false, defaultTimeout)}
+     * {@link #issueCommandToShell(String, boolean, long)}
      * 
      * @param command - command to issue
      * @return the output of the command
      * @throws SSHException
-     * @throws JSchException
      */
     @Override
     public String issueCommandToShell(String command) throws SSHException {
@@ -216,14 +214,13 @@ public class SSHClient implements ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, false, long)}
+     * {@link #issueCommandToShell(String, boolean, long)}
      * 
      * @param command - command to issue
      * @param timeout - time (in milliseconds) to wait with no new output appearing
      *                before timing out
      * @return the output of the command
      * @throws SSHException
-     * @throws JSchException
      */
     @Override
     public String issueCommandToShell(String command, long timeout) throws SSHException {
@@ -232,13 +229,12 @@ public class SSHClient implements ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, boolean, defaultTimeout)}
+     * {@link #issueCommandToShell(String, boolean, long)}
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
      * @return the output of the command
      * @throws SSHException
-     * @throws JSchException
      */
     @Override
     public String issueCommandToShell(String command, boolean newShell) throws SSHException {
@@ -254,7 +250,6 @@ public class SSHClient implements ICommandShell {
      *                 before timing out
      * @return the output of the command
      * @throws SSHException
-     * @throws JSchException
      */
     @Override
     public synchronized String issueCommandToShell(String command, boolean newShell, long timeout) throws SSHException {
@@ -406,8 +401,7 @@ public class SSHClient implements ICommandShell {
      * Retrieve all output from the shell, returning only that which is found
      * between the command issued and the next occurrence of the special prompt we
      * defined in {@link #issueCommand(String)}
-     * 
-     * @param session
+     *
      * @param command
      * @param timeout
      * @return
@@ -598,8 +592,6 @@ public class SSHClient implements ICommandShell {
             // }
             //
             // }
-
-            return;
         }
 
         @Override
@@ -613,7 +605,7 @@ public class SSHClient implements ICommandShell {
 
                     long timeout = System.currentTimeMillis() - idleTimeout;
                     if (timeout >= lastCommandTimestamp) {
-                        logger.debug("No command issued after " + idleTimeout + " milliseconds, closing SSH session");
+                        logger.debug("SSH Client unused after " + idleTimeout + " milliseconds, freeing session");
                         this.monitorSession.disconnect();
                     }
                 }
@@ -624,8 +616,6 @@ public class SSHClient implements ICommandShell {
                     return;
                 }
             }
-
-            return;
         }
 
     }
