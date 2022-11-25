@@ -13,6 +13,8 @@ pluginManagement {
 
 rootProject.name = 'galasa-managers-parent'
 
+// galasa-managers-common-parent
+include 'galasa-managers-common-parent:dev.galasa.common'
 // galasa-managers-core-parent
 include 'galasa-managers-core-parent:dev.galasa.core.manager'
 include 'galasa-managers-core-parent:dev.galasa.artifact.manager'
