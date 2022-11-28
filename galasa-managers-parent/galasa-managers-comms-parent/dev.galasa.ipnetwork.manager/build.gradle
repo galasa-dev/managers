@@ -4,7 +4,7 @@ plugins {
 
 description = 'IP Network Manager'
 
-version = '0.21.0'
+version = '0.25.0'
 
 dependencies {
     implementation 'dev.galasa:com.jcraft.jsch:0.1.55'

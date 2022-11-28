@@ -199,7 +199,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.ipnetwork.manager
-    version: 0.21.0
+    version: 0.25.0
     obr: true
     javadoc: true
     bom: true
