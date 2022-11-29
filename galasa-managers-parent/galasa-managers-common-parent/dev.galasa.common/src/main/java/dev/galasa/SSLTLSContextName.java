@@ -22,7 +22,7 @@ public class SSLTLSContextName {
         String name ;
         if (ibmJdk) {
             if (p.getProperty(JAVA_VERSION_PROPERTY).startsWith("8.")) {
-            	name="SSL_TLSv2"; // NOSONAR
+            	name="SSL_TLSv2"; 
             }else {
             	name ="TLSv1.2";
             }
