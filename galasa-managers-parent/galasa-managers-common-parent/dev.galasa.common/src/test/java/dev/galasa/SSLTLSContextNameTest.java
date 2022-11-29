@@ -7,12 +7,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.* ;
 import java.util.Properties;
-import org.apache.commons.logging.impl.SimpleLog;
 
 public class SSLTLSContextNameTest {
     @Test
     public void testNonIBMJVMGivesTLS12Context() throws Exception {
-        new SimpleLog("Test log");
         Properties testProps = new Properties();
         testProps.setProperty(SSLTLSContextName.JAVA_VENDOR_PROPERTY,"FakeJavaRuntimeVendorName" );
         // When...
@@ -59,7 +57,7 @@ public class SSLTLSContextNameTest {
         String expected ;
         if (ibmJdk) {
             if (System.getProperty(SSLTLSContextName.JAVA_VERSION_PROPERTY).startsWith("8.")) {
-            	expected="SSL_TLSv2"; // NOSONAR
+            	expected="SSL_TLSv2"; 
             }else {
             	expected ="TLSv1.2";
             }
