@@ -48,6 +48,8 @@ public class Network {
 
     private boolean             basicTelnet = false;
 
+    private SSLContextNameSelector nameSelector = new SSLContextNameSelector();
+
     public Network(String host, int port, String terminalId) {
         this(host, port, false, terminalId);
     }
@@ -113,13 +115,8 @@ public class Network {
         if (!ssl) {
             newSocket = new Socket(this.host, this.port);
         } else {
-            boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
-            SSLContext sslContext;
-            if (ibmJdk) {
-                sslContext = SSLContext.getInstance("SSL_TLSv2");
-            } else {
-                sslContext = SSLContext.getInstance("TLSv1.2");
-            }
+            String contextName = nameSelector.getSelectedSSLContextName();
+            SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
             newSocket = sslContext.getSocketFactory().createSocket(this.host, this.port);
             ((SSLSocket) newSocket).startHandshake();
@@ -153,7 +150,7 @@ public class Network {
 
     public Socket startTls() throws NetworkException {
         try {
-            String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName();
+            String contextName = nameSelector.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
             Socket tlsSocket = sslContext.getSocketFactory().createSocket(socket, this.host, this.port, false);

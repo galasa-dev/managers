@@ -97,6 +97,8 @@ public class HttpClientImpl implements IHttpClient {
 
     private Log                 logger;
 
+    private SSLContextNameSelector nameSelector = new SSLContextNameSelector();
+
     public HttpClientImpl(int timeout, Log log) {
         this.timeout = timeout;
         this.logger = log;
@@ -358,7 +360,7 @@ public class HttpClientImpl implements IHttpClient {
      */
     public IHttpClient setTrustingSSLContext() throws HttpClientException {
         try {
-            String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName();
+            String contextName = nameSelector.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new VeryTrustingTrustManager() }, new SecureRandom());
             setSSLContext(sslContext);
@@ -388,7 +390,7 @@ public class HttpClientImpl implements IHttpClient {
             // Create the Trust Managers
             TrustManager[] trustManagers = { new ClientAuthTrustManager(serverKeyStore, alias) };
             // Create the SSL Context
-            String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName();
+            String contextName = nameSelector.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(kmf.getKeyManagers(), trustManagers, null);
             setSSLContext(sslContext);
