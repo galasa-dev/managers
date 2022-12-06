@@ -9,19 +9,15 @@ public class SSLTLSContextNameSelector {
 
 	public static final String JAVA_VENDOR_PROPERTY = "java.vendor";
     public static final String JAVA_VERSION_PROPERTY = "java.version";
-    
-    
-    public static String getSelectedSSLContextName( Properties... props ) {
-        Properties p;
-        if( props.length == 0){
-            p = System.getProperties();
-        } else {
-            p = props[0];
-            }
-        boolean ibmJdk = p.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
+
+    public String getSelectedSSLContextName() {
+        return getSelectedSSLContextName(System.getProperties());
+    }
+    public String getSelectedSSLContextName( Properties props ) {
+        boolean ibmJdk = props.getProperty(JAVA_VENDOR_PROPERTY).contains("IBM");
         String name ;
         if (ibmJdk) {
-            if (p.getProperty(JAVA_VERSION_PROPERTY).startsWith("8.")) {
+            if (props.getProperty(JAVA_VERSION_PROPERTY).startsWith("8.")) {
             	name="SSL_TLSv2"; 
             }else {
             	name ="TLSv1.2";

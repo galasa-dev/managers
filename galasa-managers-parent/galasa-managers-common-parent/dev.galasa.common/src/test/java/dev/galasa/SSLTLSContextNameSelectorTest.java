@@ -12,7 +12,8 @@ public class SSLTLSContextNameSelectorTest {
     @Test
     public void testNonIBMJVMGivesTLS12Context() throws Exception {
         Properties testProps = new Properties();
-        testProps.setProperty(SSLTLSContextNameSelector.JAVA_VENDOR_PROPERTY,"FakeJavaRuntimeVendorName" );
+        testProps.setProperty(SSLTLSContextNameSelector
+                .JAVA_VENDOR_PROPERTY,"FakeJavaRuntimeVendorName" );
         // When...
         String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName(testProps);
         // Then...
@@ -42,27 +43,6 @@ public class SSLTLSContextNameSelectorTest {
         String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName(testProps);
         // Then...
         String expected = "TLSv1.2";
-        assertEquals(expected,contextName);
-    }
-
-    @Test
-    public void testSystemPropertiesContextIsSelected() throws Exception {
-        // Given...
-        // User's default Java
-        // When...
-        String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName();
-        // Then...
-        boolean ibmJdk = System.getProperty(SSLTLSContextNameSelector.JAVA_VENDOR_PROPERTY).contains("IBM");
-        String expected ;
-        if (ibmJdk) {
-            if (System.getProperty(SSLTLSContextNameSelector.JAVA_VERSION_PROPERTY).startsWith("8.")) {
-            	expected="SSL_TLSv2"; 
-            }else {
-            	expected ="TLSv1.2";
-            }
-        } else {
-            expected = "TLSv1.2";
-        }
         assertEquals(expected,contextName);
     }
 }
