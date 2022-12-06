@@ -19,7 +19,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import dev.galasa.common.SSLTLSContextName;
+import dev.galasa.common.SSLTLSContextNameSelector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -153,7 +153,7 @@ public class Network {
 
     public Socket startTls() throws NetworkException {
         try {
-            String contextName = SSLTLSContextName.getSelectedSSLContextName();
+            String contextName = SSLTLSContextNameSelector.getSelectedSSLContextName();
             SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
             Socket tlsSocket = sslContext.getSocketFactory().createSocket(socket, this.host, this.port, false);
