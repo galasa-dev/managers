@@ -5,7 +5,7 @@ package dev.galasa.common;
 
 import java.util.Properties;
 
-public class SSLTLSContextName {
+public class SSLTLSContextNameSelector {
 
 	public static final String JAVA_VENDOR_PROPERTY = "java.vendor";
     public static final String JAVA_VERSION_PROPERTY = "java.version";
