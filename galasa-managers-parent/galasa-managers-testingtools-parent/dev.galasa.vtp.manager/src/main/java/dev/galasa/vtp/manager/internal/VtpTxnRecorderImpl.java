@@ -24,7 +24,7 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	void startRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
-			logger.info("Starting VTP Recording");
+			logger.info("Starting VTP Recording for region: " + region.getApplid());
 			try {
 				startRecordingUsingTxn(region, terminal);
 			}catch(VtpManagerException e) {
@@ -86,7 +86,7 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	void writeRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
-			logger.info("Writing VTP Recording");
+			logger.info("Writing VTP Recording for region: " + region.getApplid());
 			try {
 				writeRecordingUsingTxn(region, terminal);
 			} catch (VtpManagerException e) {
