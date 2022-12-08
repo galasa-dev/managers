@@ -24,7 +24,7 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	void startRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
-			logger.info("Starting VTP Recording");
+			logger.info("Starting VTP Recording for region: " + region.getApplid());
 			try {
 				startRecordingUsingTxn(region, terminal);
 			}catch(VtpManagerException e) {
@@ -38,8 +38,13 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 			String command = "BZUT " + transaction;
 			String expectedResponse = "RECORDING STARTED FOR TRANSACTION " + transaction;
 			try {
+				logger.trace("Waiting for keyboard to be ready");
+				terminal.waitForKeyboard();
+				logger.trace("Entering command to start recording: " + command);
 				terminal.type(command).enter();
+				logger.trace("Waiting for response: " + expectedResponse);
 				terminal.waitForTextInField(expectedResponse);
+				logger.trace("Resetting terminal");
 				terminal.clear().wfk();
 			} catch (Zos3270Exception e) {
 				throw new VtpManagerException("Error when starting recording for region: " + region.getApplid(), e);
@@ -61,9 +66,16 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	}
 	
 	private void stopRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException{
+		String command = "BZUE";
+		String expectedResponse = "RECORDING STOPPED";
 		try {
-			terminal.type("BZUE").enter();
-			terminal.waitForTextInField("RECORDING STOPPED");
+			logger.trace("Waiting for keyboard to be ready");
+			terminal.waitForKeyboard();
+			logger.trace("Entering command to start recording: " + command);
+			terminal.type(command).enter();
+			logger.trace("Waiting for response: " + expectedResponse);
+			terminal.waitForTextInField(expectedResponse);
+			logger.trace("Resetting terminal");
 			terminal.clear().wfk();
 		} catch (Zos3270Exception e) {
 			throw new VtpManagerException(e);
@@ -74,7 +86,7 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	void writeRecording() {
 		for(ICicsRegion region : recordingRegions.keySet()) {
 			ICicsTerminal terminal = recordingRegions.get(region).getRecordingTerminal();
-			logger.info("Writing VTP Recording");
+			logger.info("Writing VTP Recording for region: " + region.getApplid());
 			try {
 				writeRecordingUsingTxn(region, terminal);
 			} catch (VtpManagerException e) {
@@ -84,9 +96,16 @@ public class VtpTxnRecorderImpl extends VtpRecorderImpl {
 	}
 	
 	private void writeRecordingUsingTxn(ICicsRegion region, ICicsTerminal terminal) throws VtpManagerException{
+		String command = "BZUW";
+		String expectedResponse = "RECORDS WRITTEN";
 		try {
-			terminal.type("BZUW").enter();
-			terminal.waitForTextInField("RECORDS WRITTEN");
+			logger.trace("Waiting for keyboard to be ready");
+			terminal.waitForKeyboard();
+			logger.trace("Entering command to start recording: " + command);
+			terminal.type(command).enter();
+			logger.trace("Waiting for response: " + expectedResponse);
+			terminal.waitForTextInField(expectedResponse);
+			logger.trace("Resetting terminal");
 			terminal.clear().wfk();
 			
 		} catch (Zos3270Exception e) {
