@@ -18,4 +18,5 @@ dependencies {
         strictly "[1.15]"
       }
    }
+   implementation project (':galasa-managers-common-parent:dev.galasa.common')
 }
