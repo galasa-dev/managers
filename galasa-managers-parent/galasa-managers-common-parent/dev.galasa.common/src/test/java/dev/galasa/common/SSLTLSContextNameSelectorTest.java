@@ -12,8 +12,7 @@ public class SSLTLSContextNameSelectorTest {
     @Test
     public void testNonIBMJVMGivesTLS12Context() throws Exception {
         Properties testProps = new Properties();
-        testProps.setProperty(SSLTLSContextNameSelector
-                .JAVA_VENDOR_PROPERTY,"FakeJavaRuntimeVendorName" );
+        testProps.setProperty(SSLTLSContextNameSelector.JAVA_VENDOR_PROPERTY,"FakeJavaRuntimeVendorName" );
         // When...
         String contextName = new SSLTLSContextNameSelector().getSelectedSSLContextName(testProps);
         // Then...

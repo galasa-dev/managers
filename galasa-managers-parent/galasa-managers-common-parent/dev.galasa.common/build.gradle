@@ -6,11 +6,4 @@ description = 'Manager Common'
 
 version = '0.25.0'
 
-dependencies {
-    implementation  'commons-io:commons-io:2.9.0'
-    implementation (group: 'commons-codec', name: 'commons-codec'){
-      version{
-        strictly "[1.15]"
-      }
-   }
-}
+
