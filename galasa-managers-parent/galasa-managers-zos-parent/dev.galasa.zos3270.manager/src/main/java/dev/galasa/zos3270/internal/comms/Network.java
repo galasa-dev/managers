@@ -48,7 +48,7 @@ public class Network {
 
     private boolean             basicTelnet = false;
 
-    private SSLContextNameSelector nameSelector = new SSLContextNameSelector();
+    private SSLTLSContextNameSelector nameSelector = new SSLTLSContextNameSelector();
 
     public Network(String host, int port, String terminalId) {
         this(host, port, false, terminalId);

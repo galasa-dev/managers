@@ -97,7 +97,7 @@ public class HttpClientImpl implements IHttpClient {
 
     private Log                 logger;
 
-    private SSLContextNameSelector nameSelector = new SSLContextNameSelector();
+    private SSLTLSContextNameSelector nameSelector = new SSLTLSContextNameSelector();
 
     public HttpClientImpl(int timeout, Log log) {
         this.timeout = timeout;
