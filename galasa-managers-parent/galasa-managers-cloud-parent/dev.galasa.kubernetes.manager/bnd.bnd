@@ -47,6 +47,6 @@ Embed-Dependency: *;scope=compile
     okio-jvm-2.8.0.jar; lib:=true,\
     protobuf-java-3.21.2.jar; lib:=true,\
     slf4j-api-1.7.36.jar; lib:=true,\
-    snakeyaml-1.29.jar; lib:=true,\
+    snakeyaml-1.31.jar; lib:=true,\
     swagger-annotations-1.6.6.jar; lib:=true
 -fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=warning
