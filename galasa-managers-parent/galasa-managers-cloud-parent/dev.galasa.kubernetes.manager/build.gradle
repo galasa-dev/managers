@@ -10,19 +10,9 @@ dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')
 
 
-    implementation ('org.bouncycastle:bcpkix-jdk15on') {
+    implementation ('org.bouncycastle:bcpkix-jdk18on') {
         version {
-            strictly '1.69'
-        }
-    }
-    implementation ('org.bouncycastle:bcprov-ext-jdk15on') {
-        version {
-            strictly '1.69'
-        }
-    }
-    implementation ('com.google.guava:guava') {
-        version {
-            strictly '30.1.1-jre'
+            strictly '1.72'
         }
     }
     implementation ('com.google.code.findbugs:jsr305') {
@@ -32,12 +22,12 @@ dependencies {
     }
     implementation ('com.google.code.gson:gson'){
         version {
-            strictly '2.8.9'
+            strictly '2.10'
         }
     }
     implementation ('org.apache.commons:commons-lang3'){
         version {
-            strictly '3.1'
+            strictly '3.12.0'
         }
     }
     implementation ('commons-codec:commons-codec'){
@@ -47,14 +37,19 @@ dependencies {
     }
     implementation ('org.yaml:snakeyaml'){
         version {
-            strictly '1.29'
+            strictly '1.33'
         }
     }
     implementation ('org.apache.commons:commons-compress') {
         version {
-            strictly '1.21'
+            strictly '1.22'
         }
     }
-    implementation 'io.kubernetes:client-java:16.0.2'
-    implementation 'commons-io:commons-io:2.9.0'
+    implementation 'io.prometheus:simpleclient:0.15.0'
+    implementation 'io.prometheus:simpleclient_httpserver:0.15.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okio:okio-jvm:3.0.0'
+    implementation 'org.jetbrains.kotlin:kotlin-osgi-bundle:1.7.22'
+    implementation 'io.kubernetes:client-java:17.0.0'
+    implementation 'commons-io:commons-io:2.11.0'
 }
