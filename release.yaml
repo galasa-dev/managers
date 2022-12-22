@@ -29,7 +29,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.manager
-    version: 0.24.0
+    version: 0.25.0
     obr: true
     mvp: true
     javadoc: true
