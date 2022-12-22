@@ -1,10 +1,7 @@
 -snapshot: ${tstamp}
 Bundle-Name: Galasa Kubernetes Manager
 Export-Package: dev.galasa.kubernetes,dev.galasa.kubernetes.spi
-Import-Package: com.google.gson,\
-    com.google.gson.reflect,\
-    com.google.gson.stream,\
-    dev.galasa,\
+Import-Package: dev.galasa,\
     dev.galasa.framework,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.cps,\
