@@ -107,6 +107,13 @@ managers:
     mvp: true
     isolated: true
     codecoverage: true
+
+  - artifact: dev.galasa.common
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
     
   - artifact: dev.galasa.core.manager
     version: 0.25.0
