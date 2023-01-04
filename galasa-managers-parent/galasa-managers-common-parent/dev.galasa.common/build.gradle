@@ -1,0 +1,9 @@
+plugins {
+    id 'galasa.manager'
+}
+
+description = 'Manager Common'
+
+version = '0.25.0'
+
+
