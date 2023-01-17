@@ -195,10 +195,20 @@ public class NetworkThread extends Thread {
             if (tn3270eHeader == DT_BIND_IMAGE) {
                 logger.trace("BIND_IMAGE received");
                 return;
-            } else if (tn3270eHeader == DT_UNBIND) {
+            }
+            if (tn3270eHeader == DT_UNBIND) {
                 logger.trace("UNBIND_IMAGE received");
                 return;
-            } else if (tn3270eHeader != 0) {
+            }
+
+            if (tn3270eHeader == DT_SSCP_LU_DATA) {
+                logger.trace("SSCP_LU_DATA received");
+                logger.trace("Received message header: " + reportCommandSoFar());
+                logger.trace("Received message buffer: " + Hex.encodeHexString(buffer));
+                return;
+            }
+
+            if (tn3270eHeader != DT_3270_DATA) {
                 throw new NetworkException("Was expecting a TN3270E datastream header of zeros - " + reportCommandSoFar());
             }
 
@@ -206,7 +216,6 @@ public class NetworkThread extends Thread {
 
             Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
-            return;
         }
     }
 
