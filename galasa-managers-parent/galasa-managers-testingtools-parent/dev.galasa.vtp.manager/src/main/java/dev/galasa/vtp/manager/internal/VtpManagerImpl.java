@@ -275,7 +275,7 @@ public class VtpManagerImpl extends AbstractManager {
 	
 	public void copyDumpedPlaybackFile(IZosImage image, HashMap<String, Object> attrs) throws VtpManagerException {
 		try {
-			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs).trim();
+			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("/jcl/dumpJCL", attrs).trim();
 			IZosBatchJob job = batchManager.getZosBatch(image).submitJob(jcl, null);
 			int rc = job.waitForJob();
 			if(rc > 4) {
