@@ -341,7 +341,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         if (jobOutput().isEmpty()) {
             retrieveOutput();
         }
-        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath).resolve(jobOutput().getJobname());
 		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
