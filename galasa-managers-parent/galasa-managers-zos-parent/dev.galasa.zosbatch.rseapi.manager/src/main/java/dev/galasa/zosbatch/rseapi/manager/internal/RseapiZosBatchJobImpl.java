@@ -342,7 +342,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
         if (jobOutput().isEmpty()) {
             retrieveOutput();
         }
-        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath).resolve(jobOutput().getJobname());
 		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
 		Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
@@ -383,8 +383,6 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 
 	protected void saveSpoolFile(IZosBatchJobOutputSpoolFile spoolFile, Path artifactPath) throws ZosBatchException {
         StringBuilder name = new StringBuilder();
-        name.append(spoolFile.getJobname());
-        name.append("_");
         name.append(spoolFile.getJobid());
         if (!spoolFile.getStepname().isEmpty()){
             name.append("_");

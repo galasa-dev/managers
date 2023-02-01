@@ -382,8 +382,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
 	protected void saveSpoolFile(IZosBatchJobOutputSpoolFile spoolFile, Path artifactPath) throws ZosBatchException {
         StringBuilder name = new StringBuilder();
-        name.append(spoolFile.getJobname());
-        name.append("_");
         name.append(spoolFile.getJobid());
         if (!spoolFile.getStepname().isEmpty()){
             name.append("_");
