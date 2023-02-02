@@ -386,7 +386,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosfile.rseapi.manager
-    version: 0.26.0
+    version: 0.25.0
     obr: true
     bom: true
     mvp: true
