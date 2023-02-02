@@ -41,6 +41,14 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
 
     @Override
     public void addSpoolFile(String stepname, String procstep, String ddname, String id, String records) {
+        //the outline of the spool may already exist.  BUT the content might not - if it exists then update it
+        for(IZosBatchJobOutputSpoolFile spool : spoolFiles){
+            if(ddname.equals(spool.getDdname())){
+                spool.setRecords(records);
+                return;
+            }
+        }
+        //if we get here then the spool doesn't already exist so add it
         spoolFiles.add(new ZosBatchJobOutputSpoolFileImpl(batchJob, this.jobname, this.jobid, Objects.toString(stepname, ""), Objects.toString(procstep, ""), ddname, id, records));
     }
 

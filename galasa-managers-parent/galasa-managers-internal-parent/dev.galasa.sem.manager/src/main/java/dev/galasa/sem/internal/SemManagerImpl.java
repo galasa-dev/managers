@@ -639,10 +639,10 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
 
 
 
-    private void retrieveOutput(String string, List<IZosBatchJob> jobs) {
+    private void retrieveOutput(String path, List<IZosBatchJob> jobs) {
         for(IZosBatchJob job : jobs) {
             try {
-                job.saveOutputToResultsArchive("sem/provision");
+                job.saveOutputToResultsArchive(path);
             } catch (ZosBatchException e) {
                 logger.error("Failed to archive output from " + job);
             }
