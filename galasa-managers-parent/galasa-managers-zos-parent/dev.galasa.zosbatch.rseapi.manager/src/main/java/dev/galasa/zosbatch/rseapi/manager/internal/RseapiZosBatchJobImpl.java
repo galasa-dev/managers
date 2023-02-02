@@ -339,7 +339,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
 
     @Override
     public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException {
-        if (jobOutput().isEmpty()) {
+        if (!this.outputComplete) {
             retrieveOutput();
         }
         Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath).resolve(jobOutput().getJobname());
@@ -455,7 +455,7 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             throw new ZosBatchException(displayMessage);
         }
         
-        if (this.jobComplete) {
+        if (this.jobComplete && retrieveRecords) {
             this.outputComplete = true;
         }
     }
