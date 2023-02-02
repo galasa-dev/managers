@@ -322,7 +322,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     
     @Override
     public IZosBatchJobOutputSpoolFile getSpoolFile(String ddname) throws ZosBatchException {
-        logger.info("Enter: getSpoolFile");
         Iterator<IZosBatchJobOutputSpoolFile> spoolFilesIterator = listSpoolFiles().iterator();
         while (spoolFilesIterator.hasNext()) {
             IZosBatchJobOutputSpoolFile spoolFile = spoolFilesIterator.next();
@@ -404,7 +403,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	protected void getOutput(boolean retrieveRecords) throws ZosBatchException {
-        logger.info("Enter: getOutput - retrieveRecords is: " + retrieveRecords);
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
         }
@@ -471,7 +469,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         }
         
         if (this.jobComplete  && retrieveRecords) {
-            logger.info("setting output complete");
             this.outputComplete = true;
         }
     }
