@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch;
 
@@ -66,6 +64,13 @@ public interface IZosBatchJobOutputSpoolFile {
      * @return the zOS batch job spool file content
      */
     public String getRecords();
+
+    /**
+     * Set the records for this spool file, size is automatically updated
+     * with the size of the records
+     * @param records The records that make up this spool record
+     */
+    public void setRecords(String records);
     
     /**
      * Save this zOS batch job spool file to the Results Archive Store. Will only store records retrieved since the {@link IZosBatchJobOutputSpoolFile}

@@ -338,10 +338,11 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
     @Override
     public void saveOutputToResultsArchive(String rasPath) throws ZosBatchException {
-        if (jobOutput().isEmpty()) {
+        if(!this.outputComplete){
             retrieveOutput();
         }
-        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath);
+
+        Path artifactPath = this.zosBatchManager.getArtifactsRoot().resolve(rasPath).resolve(jobOutput().getJobname());
 		logger.info("Archiving batch job " + this.toString() + " to " + artifactPath.toString());
         
         Iterator<IZosBatchJobOutputSpoolFile> iterator = jobOutput().iterator();
@@ -382,8 +383,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 
 	protected void saveSpoolFile(IZosBatchJobOutputSpoolFile spoolFile, Path artifactPath) throws ZosBatchException {
         StringBuilder name = new StringBuilder();
-        name.append(spoolFile.getJobname());
-        name.append("_");
         name.append(spoolFile.getJobid());
         if (!spoolFile.getStepname().isEmpty()){
             name.append("_");
@@ -404,7 +403,6 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
 	}
 
 	protected void getOutput(boolean retrieveRecords) throws ZosBatchException {
-    
         if (!submitted()) {
             throw new ZosBatchException(LOG_JOB_NOT_SUBMITTED);
         }
@@ -453,6 +451,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
                 if(this.jobOutput == null) {
                 	this.jobOutput = this.zosBatchManager.getZosManager().newZosBatchJobOutput(this, this.jobname.getName(), this.jobid);
                 }
+
                 ((IZosBatchJobOutputSpi) this.jobOutput).addSpoolFile(stepname, procstep, ddname, id, records);
             }
         } else if (response.getStatusCode() == HttpStatus.SC_NOT_FOUND && getStatus().equals(JobStatus.ACTIVE)) {
@@ -469,7 +468,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
         	getSpoolFileContent("JCL", null, null, null);
         }
         
-        if (this.jobComplete) {
+        if (this.jobComplete  && retrieveRecords) {
             this.outputComplete = true;
         }
     }
@@ -632,7 +631,7 @@ public class ZosmfZosBatchJobImpl implements IZosBatchJob {
     }
 
     protected String getSpoolFileContent(String id, String stepname, String procstep, String ddname) throws ZosBatchException {
-    
+
     	String path = this.jobFilesPath + "/" + id + "/records";
         HashMap<String, String> headers = new HashMap<>();
         headers.put(ZosmfCustomHeaders.X_CSRF_ZOSMF_HEADER.toString(), "");

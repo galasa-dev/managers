@@ -354,7 +354,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosbatch.rseapi.manager
-    version: 0.25.0
+    version: 0.26.0
     obr: true
     bom: true
     mvp: true
@@ -362,7 +362,7 @@ managers:
     codecoverage: true
         
   - artifact: dev.galasa.zosbatch.zosmf.manager
-    version: 0.25.0
+    version: 0.26.0
     obr: true
     bom: true
     mvp: true
@@ -419,7 +419,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos.manager
-    version: 0.25.0
+    version: 0.26.0
     obr: true
     javadoc: true
     bom: true

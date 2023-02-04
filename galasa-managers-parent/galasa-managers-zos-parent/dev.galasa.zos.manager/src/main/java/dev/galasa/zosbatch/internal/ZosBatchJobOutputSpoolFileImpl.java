@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zosbatch.internal;
 
@@ -41,12 +39,7 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
         this.procstep = procstep;
         this.ddname = ddname;
         this.id = id;
-        this.records = records;
-        if (this.records != null) {
-        	this.size = this.records.length();
-        } else {
-        	this.size = 0;
-        }
+        this.setRecords(records);
     }
 
     @Override
@@ -95,6 +88,16 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
     @Override
     public String toString() {
         return "JOB=" + jobname + " JOBID=" + jobid + " STEP=" + stepname +  " PROCSTEP=" + procstep + " DDNAME=" + ddname;
+    }
+
+    @Override
+    public void setRecords(String records) {
+        this.records = records;
+        if (this.records != null) {
+            this.size = this.records.length();
+        } else {
+            this.size = 0;
+        }
     }
 
 	@Override
