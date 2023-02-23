@@ -542,7 +542,7 @@ public class OpenstackHttpClient {
 
             // *** Retrieve a list of the images
 
-            HttpGet get = new HttpGet(this.openstackImageUri + "/v2.5/images");
+            HttpGet get = new HttpGet(this.openstackImageUri + "/v2/images");
             get.addHeader(this.openstackToken.getHeader());
 
             try (CloseableHttpResponse response = httpClient.execute(get)) {
