@@ -146,7 +146,11 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         int cursorRow = cursorPosition / screenRows;
         int cursorCol = cursorPosition % screenCols;
 
-        TerminalSize terminalSize = new TerminalSize(screenCols, screenRows);
+        TerminalSize terminalSize = new TerminalSize(screenCols, screenRows); // TODO
+        // sort
+        // out
+        // alt
+        // sizes
         TerminalImage terminalImage = new TerminalImage(updateId, update, direction == Direction.RECEIVED, null,
                 aidText, terminalSize, cursorCol, cursorRow);
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
@@ -204,7 +208,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public void writeRasOutput() {
+    public synchronized void writeRasOutput() {
         rasTerminalSequence++;
 
         try {
@@ -217,7 +221,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public void writeTerminalImage() throws IOException {
+    public synchronized void writeTerminalImage() throws IOException {
         String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".png";
         Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
 
@@ -227,7 +231,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         IOUtils.write("", os, StandardCharsets.UTF_8);
     }
 
-    public void writeTerminalGzJson() throws IOException {
+    public synchronized void writeTerminalGzJson() throws IOException {
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
@@ -244,10 +248,11 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".gz";
         Path terminalPath = terminalRasDirectory.resolve(terminalFilename);
 
-        GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath,
+        try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath,
                 new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")),
-                StandardOpenOption.CREATE));
-        IOUtils.write(tempJson, gos, "utf-8");
+                StandardOpenOption.CREATE))) {
+            IOUtils.write(tempJson, gos, "utf-8");
+        }
     }
 
     public synchronized void flushTerminalCache() {
