@@ -1,8 +1,6 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
- */
+* Copyright contributors to the Galasa project 
+*/
 package dev.galasa.openstack.manager.internal;
 
 import java.time.ZonedDateTime;
@@ -542,7 +540,7 @@ public class OpenstackHttpClient {
 
             // *** Retrieve a list of the images
 
-            HttpGet get = new HttpGet(this.openstackImageUri + "/v2.5/images");
+            HttpGet get = new HttpGet(this.openstackImageUri + "/v2/images");
             get.addHeader(this.openstackToken.getHeader());
 
             try (CloseableHttpResponse response = httpClient.execute(get)) {
