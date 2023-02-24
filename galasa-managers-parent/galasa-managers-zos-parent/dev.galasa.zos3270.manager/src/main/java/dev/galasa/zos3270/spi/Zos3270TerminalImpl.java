@@ -3,6 +3,7 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -61,6 +62,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
     private final Path                     terminalRasDirectory;
+    private final Path                     terminalImagesDirectory;
     private int                            rasTerminalSequence;
     private URL                            liveTerminalUrl;
     private int                            liveTerminalSequence;
@@ -88,7 +90,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
         terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
-
+        terminalImagesDirectory = storedArtifactsRoot.resolve("images").resolve("terminals").resolve(this.terminalId);
         URL propLiveTerminalUrl = LiveTerminalUrl.get();
         if (propLiveTerminalUrl == null) {
             liveTerminalUrl = null;
@@ -144,16 +146,13 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         int cursorRow = cursorPosition / screenRows;
         int cursorCol = cursorPosition % screenCols;
 
-        TerminalSize terminalSize = new TerminalSize(screenCols, screenRows); // TODO
-        // sort
-        // out
-        // alt
-        // sizes
+        TerminalSize terminalSize = new TerminalSize(screenCols, screenRows);
         TerminalImage terminalImage = new TerminalImage(updateId, update, direction == Direction.RECEIVED, null,
                 aidText, terminalSize, cursorCol, cursorRow);
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
         if (cachedImages.size() >= 10) {
+            writeRasOutput();
             flushTerminalCache();
         }
 
@@ -205,45 +204,53 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public synchronized void flushTerminalCache() {
-        if (cachedImages.isEmpty()) {
-            return;
-        }
-
+    public void writeRasOutput() {
         rasTerminalSequence++;
 
         try {
-            TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows()); // TODO
-            // sort
-            // out
-            // alt
-            // sizes
-            dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
-                    this.terminalId, this.runId, rasTerminalSequence, terminalSize);
-            rasTerminal.getImages().addAll(this.cachedImages);
-
-            JsonObject intermediateJson = (JsonObject) gson.toJsonTree(rasTerminal);
-            stripFalseBooleans(intermediateJson);
-            String tempJson = gson.toJson(intermediateJson);
-
-            if (applyCtf) {
-                tempJson = cts.removeConfidentialText(tempJson);
-            }
-
-            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".gz";
-            Path terminalPath = terminalRasDirectory.resolve(terminalFilename);
-
-            try (GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath,
-                    new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")),
-                    StandardOpenOption.CREATE))) {
-                IOUtils.write(tempJson, gos, "utf-8");
-            }
+            writeTerminalGzJson();
+            writeTerminalImage();
         } catch (Exception e) {
             logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
             return;
         }
+    }
 
+    public void writeTerminalImage() throws IOException {
+        String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".png";
+        Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
+
+        OutputStream os = Files.newOutputStream(terminalPath,
+            new SetContentType(ResultArchiveStoreContentType.TEXT),
+            StandardOpenOption.CREATE);
+        IOUtils.write("", os, StandardCharsets.UTF_8);
+    }
+
+    public void writeTerminalGzJson() throws IOException {
+        TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
+        dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
+                this.terminalId, this.runId, rasTerminalSequence, terminalSize);
+        rasTerminal.getImages().addAll(this.cachedImages);
+
+        JsonObject intermediateJson = (JsonObject) gson.toJsonTree(rasTerminal);
+        stripFalseBooleans(intermediateJson);
+        String tempJson = gson.toJson(intermediateJson);
+
+        if (applyCtf) {
+            tempJson = cts.removeConfidentialText(tempJson);
+        }
+
+        String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".gz";
+        Path terminalPath = terminalRasDirectory.resolve(terminalFilename);
+
+        GZIPOutputStream gos = new GZIPOutputStream(Files.newOutputStream(terminalPath,
+                new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")),
+                StandardOpenOption.CREATE));
+        IOUtils.write(tempJson, gos, "utf-8");
+    }
+
+    public synchronized void flushTerminalCache() {
         this.cachedImages.clear();
     }
 
