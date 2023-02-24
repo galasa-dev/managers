@@ -302,7 +302,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.openstack.manager
-    version: 0.25.0
+    version: 0.26.0
     obr: true
     javadoc: true
     bom: true
