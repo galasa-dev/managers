@@ -14,3 +14,4 @@ Snap*.trc
 **/.gradle
 **/gradle/wrapper
 local-builds/
+**/.idea

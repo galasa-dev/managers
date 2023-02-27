@@ -160,27 +160,14 @@ else
     goals="build check publishToMavenLocal --parallel"
 fi
 
-cat << EOF 
-Using command:
-
-gradle \
+cmd="gradle  \
 ${CONSOLE_FLAG} \
 -Dorg.gradle.java.home=${JAVA_HOME} \
 -PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
-${goals} \
-2>&1 > ${log_file}
+${goals} 
+"
 
-EOF
+$cmd 2>&1 > ${log_file}
 
-
-gradle \
-${CONSOLE_FLAG} \
--Dorg.gradle.java.home=${JAVA_HOME} \
--PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
-${goals} \
-2>&1 > ${log_file}
-
-
-
-rc=$? ; if [[ "${rc}" != "0" ]]; then cat ${log_file} ; error "Failed to build ${project} see logs at ${log_file}" ; exit 1 ; fi
+rc=$? ; if [[ "${rc}" != "0" ]]; then error "Failed to build ${project} see logs at ${log_file}" ; exit 1 ; fi
 success "Project ${project} built - OK - log is at ${log_file}"
