@@ -241,6 +241,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     }
 
     public synchronized void writeTerminalGzJson() throws IOException {
+        if (this.cachedImages.isEmpty()) {
+            return;
+        }
+        
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
