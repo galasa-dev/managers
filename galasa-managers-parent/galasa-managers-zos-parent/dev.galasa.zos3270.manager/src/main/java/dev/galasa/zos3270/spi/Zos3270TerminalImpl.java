@@ -3,6 +3,10 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -15,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -221,14 +227,17 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public synchronized void writeTerminalImage() throws IOException {
+    private synchronized void writeTerminalImage() throws IOException {
         String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".png";
         Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
 
-        OutputStream os = Files.newOutputStream(terminalPath,
-            new SetContentType(ResultArchiveStoreContentType.TEXT),
-            StandardOpenOption.CREATE);
-        IOUtils.write("", os, StandardCharsets.UTF_8);
+        byte[] byteArray = {0xa,0x2,0xf};
+        ByteArrayInputStream is = new ByteArrayInputStream(byteArray);
+    
+        BufferedImage newImage = ImageIO.read(is);
+        logger.info(terminalPath.toString());
+        ImageIO.write(newImage, "png", new File(terminalPath.toString()));
+        
     }
 
     public synchronized void writeTerminalGzJson() throws IOException {
