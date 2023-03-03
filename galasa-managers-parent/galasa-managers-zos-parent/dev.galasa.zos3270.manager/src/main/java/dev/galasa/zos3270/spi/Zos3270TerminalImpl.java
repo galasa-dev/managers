@@ -3,9 +3,13 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.awt.*;
+import java.sql.Array;
+import java.util.Scanner;
+
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,35 +58,37 @@ import dev.galasa.zos3270.internal.properties.TerminalDeviceTypes;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
-    private Log                            logger       = LogFactory.getLog(getClass());
+    private Log logger = LogFactory.getLog(getClass());
 
-    private final Gson                     gson         = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    private final String                   terminalId;
-    private int                            updateId;
-    private final String                   runId;
+    private final String terminalId;
+    private int updateId;
+    private final String runId;
 
     private final IConfidentialTextService cts;
-    private final boolean                  applyCtf;
+    private final boolean applyCtf;
 
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
-    private final Path                     terminalRasDirectory;
-    private final Path                     terminalImagesDirectory;
-    private int                            rasTerminalSequence;
-    private URL                            liveTerminalUrl;
-    private int                            liveTerminalSequence;
-    private boolean                        logConsoleTerminals;
-    private boolean                        autoConnect;
+    private final Path terminalRasDirectory;
+    private final Path terminalImagesDirectory;
+    private int rasTerminalSequence;
+    private URL liveTerminalUrl;
+    private int liveTerminalSequence;
+    private boolean logConsoleTerminals;
+    private boolean autoConnect;
 
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, ITextScannerManagerSpi textScanner)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
+            IZosImage image, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0, textScanner);
     }
-        
-        
-    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image,
-            int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScanner)
+
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
+            IZosImage image,
+            int primaryColumns, int primaryRows, int alternateColumns, int alternateRows,
+            ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows, textScanner);
         this.terminalId = id;
@@ -96,7 +102,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
         terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
-        terminalImagesDirectory = storedArtifactsRoot.resolve("images").resolve("terminals").resolve(this.terminalId);
+        terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
         URL propLiveTerminalUrl = LiveTerminalUrl.get();
         if (propLiveTerminalUrl == null) {
             liveTerminalUrl = null;
@@ -121,7 +127,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
-        
+
         setDeviceTypes(TerminalDeviceTypes.get(image));
 
         logConsoleTerminals = LogConsoleTerminals.get();
@@ -231,20 +237,64 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".png";
         Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
 
-        byte[] byteArray = {0xa,0x2,0xf};
-        ByteArrayInputStream is = new ByteArrayInputStream(byteArray);
-    
-        BufferedImage newImage = ImageIO.read(is);
-        logger.info(terminalPath.toString());
-        ImageIO.write(newImage, "png", new File(terminalPath.toString()));
-        
+        TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
+
+        dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
+                this.terminalId, this.runId, rasTerminalSequence, terminalSize);
+        rasTerminal.getImages().addAll(this.cachedImages);
+
+        // TODO - Figure out a way to multiply the width/height by the font width and height
+        int width = terminalSize.getColumns() * 20;
+        int height = terminalSize.getRows() * 20;
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = image.createGraphics();
+
+        graphics.setPaint(Color.black);
+        graphics.fillRect(0, 0, width, height);
+        graphics.setPaint(Color.green);
+
+        Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
+        graphics.setFont(font);
+        FontMetrics fontMetrics = graphics.getFontMetrics();
+        int fontHeight = fontMetrics.getHeight();
+        int fontWidth = fontMetrics.getMaxAdvance();
+
+        // TODO - Make a png for each image
+        TerminalImage firstImage = rasTerminal.getImages().get(0);
+        List<TerminalField> firstImageFields = firstImage.getFields();
+        for (TerminalField field : firstImageFields) {
+            for (FieldContents contents : field.getContents()) {
+                int col = (field.getColumn() + 1);
+                int row = (field.getRow() + 1);
+                for (Character c : contents.getChars()) {
+                    if (c != null) {
+                        col++;
+                        if (col > terminalSize.getColumns()) {
+                            col = 1;
+                            row++;
+                            if (row > terminalSize.getRows()) {
+                                row = 1;
+                            }
+                        }
+                        graphics.drawString(Character.toString(c), col * fontWidth, row * fontHeight);
+                    }
+                }
+            }
+        }
+
+        OutputStream os = Files.newOutputStream(terminalPath,
+                new SetContentType(ResultArchiveStoreContentType.PNG),
+                StandardOpenOption.CREATE);
+
+        ImageIO.write(image, "png", os);
     }
 
     public synchronized void writeTerminalGzJson() throws IOException {
         if (this.cachedImages.isEmpty()) {
             return;
         }
-        
+
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
@@ -279,15 +329,15 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         for (Field screenField : screenFields) {
             int row = screenField.getStart() / screen.getNoOfColumns();
             int column = screenField.getStart() % screen.getNoOfColumns();
-            
+
             Character cForegroundColour = null;
             Character cBackgroundColour = null;
-            Character cHighlight        = null;
-            
+            Character cHighlight = null;
+
             Colour foregroundColour = screenField.getForegroundColour();
             Colour backgroundColour = screenField.getBackgroundColour();
-            Highlight highlight     = screenField.getHighlight();
-            
+            Highlight highlight = screenField.getHighlight();
+
             if (foregroundColour != null) {
                 cForegroundColour = foregroundColour.getLetter();
             }
@@ -304,7 +354,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     cForegroundColour, cBackgroundColour, cHighlight);
 
             Character[] chars = screenField.getFieldCharsWithNulls();
-            terminalField.getContents().add(new FieldContents(chars)); // TODO, needs modifying when we know how to support SetAttribute order
+            terminalField.getContents().add(new FieldContents(chars)); // TODO, needs modifying when we know how to
+                                                                       // support SetAttribute order
             terminalFields.add(terminalField);
         }
 
