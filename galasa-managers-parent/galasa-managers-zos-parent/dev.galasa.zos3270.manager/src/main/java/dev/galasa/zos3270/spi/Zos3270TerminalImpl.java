@@ -239,7 +239,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         rasTerminal.getImages().addAll(this.cachedImages);
 
         int width = terminalSize.getColumns() * 7;
-        int height = terminalSize.getRows() * 13;
+        int height = (terminalSize.getRows() + 1)* 13;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
@@ -276,7 +276,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                         if (col > terminalSize.getColumns()) {
                             col = 1;
                             row++;
-                            if (row > terminalSize.getRows()) {
+                            if (row > terminalSize.getRows() + 1) {
                                 row = 1;
                             }
                         }
@@ -284,6 +284,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     }
                 }
             }
+
+            // writeBottomRow(terminalImages.get(i), )
 
             String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + (i + 1) + ".png";
             Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
@@ -295,6 +297,35 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             ImageIO.write(image, "png", os);
             graphics.clearRect(0, 0, width, height);
         }
+    }
+
+    private String writeBottomRow(TerminalImage terminalImage, int pos, int size, int cols, int rows) {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("Screen ");
+        sb.append(Integer.toString(pos));
+        sb.append("/");
+        sb.append(Integer.toString(size));
+        sb.append(" - ");
+
+        if (terminalImage.getId() != null) {
+            sb.append(terminalImage.getId());
+            sb.append(" - ");
+        }
+
+        sb.append(Integer.toString(cols));
+        sb.append("x");
+        sb.append(Integer.toString(rows));
+        sb.append(" - ");
+
+        if (terminalImage.isInbound()) {
+            sb.append("Inbound ");
+        } else {
+            sb.append("Outbound - ");
+            sb.append(terminalImage.getAid());
+        }
+
+        return sb.toString();
     }
 
     private synchronized void writeTerminalGzJson() throws IOException {
