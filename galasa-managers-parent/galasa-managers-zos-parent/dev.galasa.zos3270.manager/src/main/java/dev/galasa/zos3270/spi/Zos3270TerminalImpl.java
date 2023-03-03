@@ -260,7 +260,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     int col = (field.getColumn() + 1);
                     int row = (field.getRow() + 1);
                     
-                    // Remove confidential information from the field's contents
                     for (Character c : contents.getChars()) {
                         if (c == null) {
                             sb.append(" ");
@@ -268,7 +267,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                             sb.append(c);
                         }
                     }
-                    String fieldText = cts.removeConfidentialText(sb.toString());
+                    String fieldText = applyCtf ? cts.removeConfidentialText(sb.toString()) : sb.toString();
 
                     for (Character c : fieldText.toCharArray()) {
                         col++;
