@@ -165,7 +165,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
         if (cachedImages.size() >= 10) {
-            writeRasOutput();
+            writeRasOutput(true);
             flushTerminalCache();
         }
 
@@ -217,12 +217,14 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public synchronized void writeRasOutput() {
+    public synchronized void writeRasOutput(boolean writeImages) {
         rasTerminalSequence++;
 
         try {
             writeTerminalGzJson();
-            writeTerminalImage();
+            if (writeImages) {
+                writeTerminalImage();
+            }
         } catch (Exception e) {
             logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
@@ -295,7 +297,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public synchronized void writeTerminalGzJson() throws IOException {
+    private synchronized void writeTerminalGzJson() throws IOException {
         if (this.cachedImages.isEmpty()) {
             return;
         }
