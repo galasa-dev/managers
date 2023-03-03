@@ -3,14 +3,11 @@
  */
 package dev.galasa.zos3270.spi;
 
-import java.awt.*;
-import java.sql.Array;
-import java.util.Scanner;
-
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -234,25 +231,16 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     }
 
     private synchronized void writeTerminalImage() throws IOException {
-        String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + ".png";
-        Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
-
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
-
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
         rasTerminal.getImages().addAll(this.cachedImages);
 
-        // TODO - Figure out a way to multiply the width/height by the font width and height
-        int width = terminalSize.getColumns() * 20;
-        int height = terminalSize.getRows() * 20;
+        int width = terminalSize.getColumns() * 7;
+        int height = terminalSize.getRows() * 13;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
-
-        graphics.setPaint(Color.black);
-        graphics.fillRect(0, 0, width, height);
-        graphics.setPaint(Color.green);
 
         Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
         graphics.setFont(font);
@@ -260,15 +248,29 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         int fontHeight = fontMetrics.getHeight();
         int fontWidth = fontMetrics.getMaxAdvance();
 
-        // TODO - Make a png for each image
-        TerminalImage firstImage = rasTerminal.getImages().get(0);
-        List<TerminalField> firstImageFields = firstImage.getFields();
-        for (TerminalField field : firstImageFields) {
-            for (FieldContents contents : field.getContents()) {
-                int col = (field.getColumn() + 1);
-                int row = (field.getRow() + 1);
-                for (Character c : contents.getChars()) {
-                    if (c != null) {
+        graphics.setPaint(Color.black);
+        graphics.fillRect(0, 0, width, height);
+        graphics.setPaint(Color.green);
+
+        List<TerminalImage> terminalImages = rasTerminal.getImages();
+        for (int i = 0; i < terminalImages.size(); i++) {
+            for (TerminalField field : terminalImages.get(i).getFields()) {
+                StringBuilder sb = new StringBuilder();
+                for (FieldContents contents : field.getContents()) {
+                    int col = (field.getColumn() + 1);
+                    int row = (field.getRow() + 1);
+                    
+                    // Remove confidential information from the field's contents
+                    for (Character c : contents.getChars()) {
+                        if (c == null) {
+                            sb.append(" ");
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+                    String fieldText = cts.removeConfidentialText(sb.toString());
+
+                    for (Character c : fieldText.toCharArray()) {
                         col++;
                         if (col > terminalSize.getColumns()) {
                             col = 1;
@@ -281,13 +283,17 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     }
                 }
             }
+
+            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + (i + 1) + ".png";
+            Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
+            
+            OutputStream os = Files.newOutputStream(terminalPath,
+            new SetContentType(ResultArchiveStoreContentType.PNG),
+            StandardOpenOption.CREATE);
+
+            ImageIO.write(image, "png", os);
+            graphics.clearRect(0, 0, width, height);
         }
-
-        OutputStream os = Files.newOutputStream(terminalPath,
-                new SetContentType(ResultArchiveStoreContentType.PNG),
-                StandardOpenOption.CREATE);
-
-        ImageIO.write(image, "png", os);
     }
 
     public synchronized void writeTerminalGzJson() throws IOException {
