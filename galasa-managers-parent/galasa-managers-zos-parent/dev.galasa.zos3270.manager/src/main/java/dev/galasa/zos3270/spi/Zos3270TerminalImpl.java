@@ -232,14 +232,22 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
+    /**
+     * This method creates png images to represent the Terminal screens and writes them to the RAS
+     * @throws IOException
+     */
     private synchronized void writeTerminalImage() throws IOException {
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
         rasTerminal.getImages().addAll(this.cachedImages);
 
-        int width = terminalSize.getColumns() * 7;
-        int height = (terminalSize.getRows() + 1)* 13;
+        // 2 extra rows added for Inbound/Outbound info and extra space
+        int numRows = terminalSize.getRows() + 2;
+        int numCols = terminalSize.getColumns();
+
+        int width = numCols * 7;
+        int height = numRows * 13; 
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
@@ -262,6 +270,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     int col = (field.getColumn() + 1);
                     int row = (field.getRow() + 1);
                     
+                    // Converting FieldContents to Strings and removing confidential text if required
                     for (Character c : contents.getChars()) {
                         if (c == null) {
                             sb.append(" ");
@@ -273,10 +282,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
                     for (Character c : fieldText.toCharArray()) {
                         col++;
-                        if (col > terminalSize.getColumns()) {
+                        if (col > numCols) {
                             col = 1;
                             row++;
-                            if (row > terminalSize.getRows() + 1) {
+                            if (row > numRows) {
                                 row = 1;
                             }
                         }
@@ -285,7 +294,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 }
             }
 
-            // writeBottomRow(terminalImages.get(i), )
+            String terminalStatusRow = writeTerminalStatusRow(terminalImages.get(i), terminalSize.getColumns(), terminalSize.getRows());
+            graphics.drawString(terminalStatusRow, 1 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
 
             String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + (i + 1) + ".png";
             Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
@@ -299,14 +309,9 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    private String writeBottomRow(TerminalImage terminalImage, int pos, int size, int cols, int rows) {
+    private String writeTerminalStatusRow(TerminalImage terminalImage, int cols, int rows) {
         
         StringBuilder sb = new StringBuilder();
-        sb.append("Screen ");
-        sb.append(Integer.toString(pos));
-        sb.append("/");
-        sb.append(Integer.toString(size));
-        sb.append(" - ");
 
         if (terminalImage.getId() != null) {
             sb.append(terminalImage.getId());
@@ -328,6 +333,10 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         return sb.toString();
     }
 
+    /**
+     * This method creates JSON representations of the Terminal screens and writes them to the RAS
+     * @throws IOException
+     */
     private synchronized void writeTerminalGzJson() throws IOException {
         if (this.cachedImages.isEmpty()) {
             return;
