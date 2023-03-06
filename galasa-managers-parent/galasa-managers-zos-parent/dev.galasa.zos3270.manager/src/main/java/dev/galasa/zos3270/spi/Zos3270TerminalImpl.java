@@ -359,7 +359,49 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
                 this.terminalId, this.runId, rasTerminalSequence, terminalSize);
-        rasTerminal.getImages().addAll(this.cachedImages);
+
+        for (TerminalImage terminalImage : this.cachedImages){
+
+            // Create a new TerminalImage based on the one we are iterating on
+            TerminalImage newTerminalImage = new TerminalImage(terminalImage.getSequence(), terminalImage.getId(), 
+            terminalImage.isInbound(), terminalImage.getType(), terminalImage.getAid(),terminalImage.getImageSize(), 
+            terminalImage.getCursorColumn(), terminalImage.getCursorRow());
+            
+            for (TerminalField terminalField : terminalImage.getFields()){
+
+                // Create a new TerminalField based on the one we are iterating on
+                TerminalField newTerminalField = new TerminalField(terminalField.getRow(), terminalField.getColumn(), 
+                terminalField.isUnformatted(), terminalField.isFieldProtected(), terminalField.isFieldNumeric(), 
+                terminalField.isFieldDisplay(), terminalField.isFieldIntenseDisplay(), terminalField.isFieldSelectorPen(), 
+                terminalField.isFieldModifed(), terminalField.getForegroundColour(), terminalField.getBackgroundColour(), terminalField.getHighlight());
+
+                StringBuilder sb = new StringBuilder();
+                for (FieldContents contents : terminalField.getContents()) {
+
+                    // Converting FieldContents to Strings and removing confidential text if required
+                    for (Character c : contents.getChars()) {
+                        if (c == null) {
+                            sb.append(" ");
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+                    String fieldText = applyCtf ? cts.removeConfidentialText(sb.toString()) : sb.toString();
+
+                    char[] fieldTextCharArray = fieldText.toCharArray();
+                    Character[] newArray = new Character[fieldTextCharArray.length]; 
+                    for (int i = 0; i < fieldTextCharArray.length; i++){
+                        newArray[i] = Character.valueOf(fieldTextCharArray[i]);
+                    }
+
+                    // Create new FieldContents with the new Character[] with confidential text removed
+                    FieldContents newFieldContents = new FieldContents(newArray);
+                    newTerminalField.getContents().add(newFieldContents);
+                }
+                newTerminalImage.getFields().add(newTerminalField);
+            }
+            rasTerminal.getImages().add(newTerminalImage);
+        }
 
         JsonObject intermediateJson = (JsonObject) gson.toJsonTree(rasTerminal);
         stripFalseBooleans(intermediateJson);
