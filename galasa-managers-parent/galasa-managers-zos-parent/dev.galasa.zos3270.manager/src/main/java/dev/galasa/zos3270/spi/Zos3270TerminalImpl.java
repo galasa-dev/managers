@@ -68,8 +68,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
+    private Path storedArtifactsRoot;
     private final Path terminalRasDirectory;
-    private final Path terminalImagesDirectory;
     private int rasTerminalSequence;
     private URL liveTerminalUrl;
     private int liveTerminalSequence;
@@ -97,9 +97,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         getScreen().registerScreenUpdateListener(this);
 
-        Path storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
         terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
-        terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
         URL propLiveTerminalUrl = LiveTerminalUrl.get();
         if (propLiveTerminalUrl == null) {
             liveTerminalUrl = null;
@@ -235,25 +234,35 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     /**
      * This method creates png images to represent the Terminal screens and writes them to the RAS
      * @throws IOException
+     * @throws Zos3270ManagerException
      */
-    private synchronized void writeTerminalImage() throws IOException {
+    private synchronized void writeTerminalImage() throws IOException, Zos3270ManagerException {
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
-        dev.galasa.zos3270.common.screens.Terminal rasTerminal = new dev.galasa.zos3270.common.screens.Terminal(
-                this.terminalId, this.runId, rasTerminalSequence, terminalSize);
-        rasTerminal.getImages().addAll(this.cachedImages);
+        Path terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
+
 
         // 2 extra rows added for Inbound/Outbound info and extra space
         int numRows = terminalSize.getRows() + 2;
         int numCols = terminalSize.getColumns();
 
+        // 7 and 13 represent the dimensions of the default monospaced font on MacOS
+        // Ideally, these values would be retrieved from the font metrics but that requires a
+        // Graphics object to be created, which in turn requires the image to be created -
+        // We plan to improve this in the future
         int width = numCols * 7;
         int height = numRows * 13; 
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
 
+        // Ensures the font family is monospaced so that the images appear as expected
+        // If the font family is not monospaced, the font defaults to "Dialog", which skews images
         Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
+        if (font.getFamily() != Font.MONOSPACED) {
+            throw new Zos3270ManagerException("Unable to set Monospaced font");
+        }
         graphics.setFont(font);
+
         FontMetrics fontMetrics = graphics.getFontMetrics();
         int fontHeight = fontMetrics.getHeight();
         int fontWidth = fontMetrics.getMaxAdvance();
@@ -262,7 +271,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         graphics.fillRect(0, 0, width, height);
         graphics.setPaint(Color.green);
 
-        List<TerminalImage> terminalImages = rasTerminal.getImages();
+        List<TerminalImage> terminalImages = this.cachedImages;
         for (int i = 0; i < terminalImages.size(); i++) {
             for (TerminalField field : terminalImages.get(i).getFields()) {
                 StringBuilder sb = new StringBuilder();
@@ -297,7 +306,12 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             String terminalStatusRow = writeTerminalStatusRow(terminalImages.get(i), terminalSize.getColumns(), terminalSize.getRows());
             graphics.drawString(terminalStatusRow, 1 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
 
-            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + (i + 1) + ".png";
+            // Prefixing images 1-9 with a 0 to ensure ordering is correct
+            String imageNum = Integer.toString(i + 1);
+            if ((i + 1) < 10) {
+                imageNum = "0" + (i + 1);
+            }
+            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageNum + ".png";
             Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
             
             OutputStream os = Files.newOutputStream(terminalPath,

@@ -303,7 +303,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
                 terminal.writeRasOutput(false);
             	terminal.flushTerminalCache();
                 terminal.disconnect();
-            } catch (Exception e) { // NOSONAR - wish to hide disconnect errors
+            } catch (TerminalInterruptedException e) { // NOSONAR - wish to hide disconnect errors
             }
         }
         
