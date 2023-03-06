@@ -164,7 +164,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         terminalImage.getFields().addAll(buildTerminalFields(getScreen()));
         cachedImages.add(terminalImage);
         if (cachedImages.size() >= 10) {
-            writeRasOutput(true);
+            writeRasOutput();
             flushTerminalCache();
         }
 
@@ -216,14 +216,12 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
-    public synchronized void writeRasOutput(boolean writeImages) {
+    public synchronized void writeRasOutput() {
         rasTerminalSequence++;
 
         try {
             writeTerminalGzJson();
-            if (writeImages) {
-                writeTerminalImage();
-            }
+            writeTerminalImages();
         } catch (Exception e) {
             logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
@@ -236,7 +234,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
      * @throws IOException
      * @throws Zos3270ManagerException
      */
-    private synchronized void writeTerminalImage() throws IOException, Zos3270ManagerException {
+    private synchronized void writeTerminalImages() throws IOException, Zos3270ManagerException {
         TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
         Path terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
 
@@ -307,11 +305,9 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             graphics.drawString(terminalStatusRow, 1 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
 
             // Prefixing images 1-9 with a 0 to ensure ordering is correct
-            String imageNum = Integer.toString(i + 1);
-            if ((i + 1) < 10) {
-                imageNum = "0" + (i + 1);
-            }
-            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageNum + ".png";
+            String imageSequence = String.format("%02d", i + 1);
+            
+            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageSequence + ".png";
             Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
             
             OutputStream os = Files.newOutputStream(terminalPath,
