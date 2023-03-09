@@ -554,8 +554,8 @@ public class OpenstackHttpClient {
                 }
 
                 Images images = gson.fromJson(entity, Images.class);
-                logger.info(images);
                 if (images != null && images.images != null) {
+                    logger.info(images.toString());
                     for (Image i : images.images) {
                         if (i.name != null) {
                             if (image.equals(i.name)) {

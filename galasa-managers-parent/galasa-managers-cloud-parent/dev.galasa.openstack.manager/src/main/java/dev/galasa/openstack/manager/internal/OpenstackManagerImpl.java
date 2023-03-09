@@ -191,6 +191,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
                                     logger.info("This image has an available capability " + actualAvailableCapability + " that matches a chosen capability " + choosenCapability);
                                     requestedCapability = true;
                                     break;
+                                } else {
+                                    logger.info("This image's available capability " + availableCapability + " is not required");
                                 }
                             }
                             if (!requestedCapability) {
@@ -218,6 +220,8 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
                                 logger.info("This image has an available capability " + availableCapability + " that matches a required capability " + choosenCapability);
                                 found = true;
                                 break;
+                            } else {
+                                logger.info("This image's available capability " + availableCapability + " is not required");
                             }
                         }
 
