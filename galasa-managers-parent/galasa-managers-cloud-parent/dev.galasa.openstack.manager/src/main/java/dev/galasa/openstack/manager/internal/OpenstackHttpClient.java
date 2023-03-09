@@ -555,14 +555,17 @@ public class OpenstackHttpClient {
 
                 Images images = gson.fromJson(entity, Images.class);
                 if (images != null && images.images != null) {
-                    logger.info(images.toString());
                     for (Image i : images.images) {
                         if (i.name != null) {
+                            logger.info("Image name: " + i.name);
+                            logger.info("Image ID: " + i.id);
                             if (image.equals(i.name)) {
                                 return i.id;
                             }
                         }
                     }
+                } else {
+                    logger.info("No images returned from Openstack");
                 }
             }
             logger.info("No matching imageId found that matched " + image);
