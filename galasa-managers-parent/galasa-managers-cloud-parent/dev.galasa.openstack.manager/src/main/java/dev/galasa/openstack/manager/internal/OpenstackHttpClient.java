@@ -537,10 +537,12 @@ public class OpenstackHttpClient {
     protected String getImageId(@NotNull String image) throws OpenstackManagerException {
         try {
             checkToken();
+            logger.info("Openstack token is okay");
 
             // *** Retrieve a list of the images
-
-            HttpGet get = new HttpGet(this.openstackImageUri + "/v2/images");
+            String uri = this.openstackImageUri + "/v2/images";
+            logger.info("Attempting to get a list of the images from " + uri);
+            HttpGet get = new HttpGet(uri);
             get.addHeader(this.openstackToken.getHeader());
 
             try (CloseableHttpResponse response = httpClient.execute(get)) {
@@ -555,13 +557,18 @@ public class OpenstackHttpClient {
                 if (images != null && images.images != null) {
                     for (Image i : images.images) {
                         if (i.name != null) {
+                            logger.info("Image name: " + i.name);
+                            logger.info("Image ID: " + i.id);
                             if (image.equals(i.name)) {
                                 return i.id;
                             }
                         }
                     }
+                } else {
+                    logger.info("No images returned from Openstack");
                 }
             }
+            logger.info("No matching imageId found that matched " + image);
             return null;
         } catch (OpenstackManagerException e) {
             throw e;
