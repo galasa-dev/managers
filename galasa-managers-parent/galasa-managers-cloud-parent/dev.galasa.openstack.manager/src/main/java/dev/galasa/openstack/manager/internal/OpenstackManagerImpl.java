@@ -157,18 +157,18 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
         // check we are enabled
         if (!OpenStackEnabled.get()) {
-            logger.info("OpenStack not enabled");
+            logger.trace("OpenStack not enabled");
             return null;
         }
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
         if (!openstackHttpClient.connectToOpenstack()) {
-            logger.info("Unable to connect to OpenStack");
+            logger.trace("Unable to connect to OpenStack");
             return null;
         }
 
-        logger.info("Locating possible images that are available for selection");
+        logger.trace("Locating possible images that are available for selection");
         try {
             List<String> possibleImages = LinuxImages.get(operatingSystem, null);
 
@@ -176,27 +176,27 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             nextImage:
             while(possibleImagesIterator.hasNext()) {
                 String image = possibleImagesIterator.next();
-                logger.info("Checking if image " + image + " is correct for this test");
+                logger.trace("Checking if image " + image + " is correct for this test");
 
                 // First check to see the the tests MUST request a capability this server provides
                 List<String> availableCapabilities = LinuxImageCapabilities.get(image);
                 if (!availableCapabilities.isEmpty()) {
                     for(String availableCapability : availableCapabilities) {
-                        logger.info(availableCapability + " is an available capability of this image");
+                        logger.trace(availableCapability + " is an available capability of this image");
                         if (availableCapability.startsWith("+")) {
                             String actualAvailableCapability = availableCapability.substring(1);
                             boolean requestedCapability = false;
                             for(String choosenCapability : capabilities) {
                                 if (choosenCapability.equalsIgnoreCase(actualAvailableCapability)) {
-                                    logger.info("This image has an available capability " + actualAvailableCapability + " that matches a chosen capability " + choosenCapability);
+                                    logger.trace("This image has an available capability " + actualAvailableCapability + " that matches a chosen capability " + choosenCapability);
                                     requestedCapability = true;
                                     break;
                                 } else {
-                                    logger.info("This image's available capability " + availableCapability + " is not required");
+                                    logger.trace("This image's available capability " + availableCapability + " is not required");
                                 }
                             }
                             if (!requestedCapability) {
-                                logger.info("This image had no availabilie capabilities that were chosen for this test");
+                                logger.trace("This image had no availabilie capabilities that were chosen for this test");
                                 possibleImagesIterator.remove();
                                 continue nextImage;
                             }
@@ -217,16 +217,16 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
                                 availableCapability = availableCapability.substring(1);
                             }
                             if (availableCapability.equalsIgnoreCase(choosenCapability)) {
-                                logger.info("This image has an available capability " + availableCapability + " that matches a required capability " + choosenCapability);
+                                logger.trace("This image has an available capability " + availableCapability + " that matches a required capability " + choosenCapability);
                                 found = true;
                                 break;
                             } else {
-                                logger.info("This image's available capability " + availableCapability + " is not required");
+                                logger.trace("This image's available capability " + availableCapability + " is not required");
                             }
                         }
 
                         if (!found) {
-                            logger.info("This image had no available capabilities that we need so it is not possible to use");
+                            logger.trace("This image had no available capabilities that we need so it is not possible to use");
                             possibleImagesIterator.remove();
                             continue nextImage;
                         }
@@ -243,7 +243,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
             // *** Select the first image as they will be listed in preference order
             String selectedImage = possibleImages.get(0);
-            logger.info("The selected image for this test is " + selectedImage);
+            logger.trace("The selected image for this test is " + selectedImage);
 
             // *** See if we have capacity for a new Instance on Openstack
             String instanceName = reserveInstance();
