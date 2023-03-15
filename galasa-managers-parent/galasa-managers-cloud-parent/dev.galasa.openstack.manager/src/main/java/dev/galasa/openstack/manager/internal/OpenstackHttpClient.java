@@ -537,11 +537,11 @@ public class OpenstackHttpClient {
     protected String getImageId(@NotNull String image) throws OpenstackManagerException {
         try {
             checkToken();
-            logger.info("Openstack token is okay");
+            logger.trace("Openstack token is okay");
 
-            // *** Retrieve a list of the images
-            String uri = this.openstackImageUri + "/v2/images";
-            logger.info("Attempting to get a list of the images from " + uri);
+            // *** Attempt to retrieve the image we want from Openstack
+            String uri = this.openstackImageUri + "/v2/images?name=" + image;
+            logger.trace("Attempting to get the image " + image + " from " + uri);
             HttpGet get = new HttpGet(uri);
             get.addHeader(this.openstackToken.getHeader());
 
@@ -553,22 +553,18 @@ public class OpenstackHttpClient {
                     throw new OpenstackManagerException("OpenStack list image failed - " + status);
                 }
 
-                Images images = gson.fromJson(entity, Images.class);
-                if (images != null && images.images != null) {
-                    for (Image i : images.images) {
-                        if (i.name != null) {
-                            logger.info("Image name: " + i.name);
-                            logger.info("Image ID: " + i.id);
-                            if (image.equals(i.name)) {
-                                return i.id;
-                            }
+                Image openStackImage = gson.fromJson(entity, Image.class);
+                if (openStackImage != null) {
+                    if (openStackImage.name != null) {
+                        logger.trace("Image name: " + openStackImage.name);
+                        logger.trace("Image ID: " + openStackImage.id);
+                        if (image.equals(openStackImage.name)) {
+                            return openStackImage.id;
                         }
                     }
-                } else {
-                    logger.info("No images returned from Openstack");
                 }
             }
-            logger.info("No matching imageId found that matched " + image);
+            logger.trace("Image " + image + " wasn't found in Openstack");
             return null;
         } catch (OpenstackManagerException e) {
             throw e;

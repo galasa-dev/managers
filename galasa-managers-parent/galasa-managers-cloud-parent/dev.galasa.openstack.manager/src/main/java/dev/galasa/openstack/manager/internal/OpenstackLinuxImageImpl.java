@@ -81,10 +81,10 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
                 + this.tag);
 
         String flavor = LinuxFlavor.get(this.image);
-        logger.info("The Linux flavor is " + flavor);
+        logger.trace("The Linux flavor is " + flavor);
 
         String imageName = LinuxName.get(this.image);
-        logger.info("The image name is " + imageName);
+        logger.trace("The image name is " + imageName);
 
         Server server = new Server();
         server.name = this.instanceName;
