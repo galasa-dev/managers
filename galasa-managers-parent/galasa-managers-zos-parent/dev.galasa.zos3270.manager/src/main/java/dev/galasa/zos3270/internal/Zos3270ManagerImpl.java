@@ -202,7 +202,7 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         logger.trace("Disconnecting terminals");
         for (Zos3270TerminalImpl terminal : terminals) {
             try {
-                terminal.writeRasOutput(true);
+                terminal.writeRasOutput();
                 terminal.flushTerminalCache();
                 terminal.disconnect();
             } catch (TerminalInterruptedException e) {

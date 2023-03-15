@@ -300,7 +300,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     public void provisionStop() {
         for (CicsTerminalImpl terminal : this.terminals) {
             try {
-                terminal.writeRasOutput(false);
+                terminal.writeRasOutput();
             	terminal.flushTerminalCache();
                 terminal.disconnect();
             } catch (TerminalInterruptedException e) { // NOSONAR - wish to hide disconnect errors

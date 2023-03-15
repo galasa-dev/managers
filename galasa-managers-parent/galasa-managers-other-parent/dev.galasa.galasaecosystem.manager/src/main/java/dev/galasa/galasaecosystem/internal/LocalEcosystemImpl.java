@@ -500,7 +500,26 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
         // bootstrap
         try {
-            Files.copy(this.bootstrapFile, saEcosystem.resolve(bootstrapFile.getFileName().toString()));
+            if (bootstrapFile == null) {
+                throw new Exception("Programming logic error: Bootstrap file is null.");
+            }
+            Path bootstrapFilePath = bootstrapFile.getFileName();
+            if (bootstrapFilePath==null) {
+                throw new Exception("Programming logic error: Bootstrap file path is null.");
+            }
+            String pathString = bootstrapFilePath.toString();
+            logger.debug("Bootstrap file path : "+pathString);
+
+            if (saEcosystem == null) {
+                throw new Exception("Programming logic error: saEcosystem is null.");
+            }
+            Path ecosystemPath = saEcosystem.resolve(pathString);
+            if (ecosystemPath == null) {
+                throw new Exception("Programming logic error: ecosystemPath is null.");
+            }
+            logger.debug("ecosystemPath : "+pathString.toString());
+
+            Files.copy(this.bootstrapFile, ecosystemPath);
         } catch(Exception e) {
             logger.warn("Failed to save the local ecosystem bootstrap",e);
         }
