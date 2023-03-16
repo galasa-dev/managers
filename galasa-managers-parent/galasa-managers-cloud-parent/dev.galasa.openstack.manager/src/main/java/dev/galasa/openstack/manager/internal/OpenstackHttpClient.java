@@ -537,9 +537,8 @@ public class OpenstackHttpClient {
     protected String getImageId(@NotNull String image) throws OpenstackManagerException {
         try {
             checkToken();
-            logger.trace("Openstack token is okay");
 
-            // *** Attempt to retrieve the image we want from Openstack
+            /* Attempt to retrieve the image ID we want from Openstack using the image name */
             String uri = this.openstackImageUri + "/v2/images?name=" + image;
             logger.trace("Attempting to get the image " + image + " from " + uri);
             HttpGet get = new HttpGet(uri);
@@ -553,21 +552,18 @@ public class OpenstackHttpClient {
                     throw new OpenstackManagerException("OpenStack list image failed - " + status);
                 }
 
-                logger.trace("Response code is " + status.getStatusCode());
-
-                logger.trace("Logging the entity in case the JSON deserialisation below is what fails");
-                logger.trace(entity);
-
-                Image openStackImage = gson.fromJson(entity, Image.class);
-                if (openStackImage != null) {
-                    if (openStackImage.name != null) {
-                        logger.trace("Image name: " + openStackImage.name);
-                        logger.trace("Image ID: " + openStackImage.id);
-                        if (image.equals(openStackImage.name)) {
-                            return openStackImage.id;
+                /* Even though we are searching by image name, the JSON returned is still an array of images */
+                Images images = gson.fromJson(entity, Images.class);
+                if (images != null & images.images != null) {
+                    for (Image i :images.images){
+                        if (i.name != null && i.name != ""){
+                            if (image.equals(i.name)) {
+                                logger.trace("Image " + image + " found");
+                                return i.id;
+                            }
                         }
                     }
-                }
+                } 
             }
             logger.trace("Image " + image + " wasn't found in Openstack");
             return null;
