@@ -553,6 +553,11 @@ public class OpenstackHttpClient {
                     throw new OpenstackManagerException("OpenStack list image failed - " + status);
                 }
 
+                logger.trace("Response code is " + status.getStatusCode());
+
+                logger.trace("Logging the entity in case the JSON deserialisation below is what fails");
+                logger.trace(entity);
+
                 Image openStackImage = gson.fromJson(entity, Image.class);
                 if (openStackImage != null) {
                     if (openStackImage.name != null) {
