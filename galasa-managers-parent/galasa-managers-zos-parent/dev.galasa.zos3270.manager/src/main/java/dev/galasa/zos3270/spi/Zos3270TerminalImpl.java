@@ -253,7 +253,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         // Ensures the font family is monospaced so that the images appear as expected
         // If the font family is not monospaced, the font defaults to "Dialog", which skews images
         Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
-        if (font.getFamily() != Font.MONOSPACED) {
+        if (!font.getFamily().equals(Font.MONOSPACED)) {
             throw new Zos3270ManagerException("Unable to set Monospaced font");
         }
         graphics.setFont(font);
