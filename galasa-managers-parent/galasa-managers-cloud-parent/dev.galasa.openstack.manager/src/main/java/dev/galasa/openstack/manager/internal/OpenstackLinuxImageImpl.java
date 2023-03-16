@@ -89,15 +89,6 @@ public class OpenstackLinuxImageImpl extends OpenstackServerImpl implements ILin
         Server server = new Server();
         server.name = this.instanceName;
         server.imageRef = getOpenstackHttpClient().getImageId(imageName);
-
-        /* REMOVE AFTER SEEING OUTPUT */
-        logger.trace("For debugging purposes, attempting to list a non-Snapshot image in Openstack to check our visibility");
-        String nonSnapshotImageImageRef = getOpenstackHttpClient().getImageId("lxc-ubuntu-16.04");
-        if (nonSnapshotImageImageRef != null && nonSnapshotImageImageRef != ""){
-            logger.trace("lxc-ubuntu-16.04 Image ID is: " + nonSnapshotImageImageRef);
-        }
-
-
         server.flavorRef = getOpenstackHttpClient().getFlavourId(flavor);
         server.availability_zone = LinuxAvailablityZone.get(this.image);
         server.metadata = new GalasaMetadata();
