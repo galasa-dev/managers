@@ -325,6 +325,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             StandardOpenOption.CREATE);
 
             ImageIO.write(image, "png", os);
+            os.flush();
+            os.close();
             graphics.clearRect(0, 0, width, height);
         }
     }
@@ -387,6 +389,8 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 new SetContentType(new ResultArchiveStoreContentType("application/zos3270terminal")),
                 StandardOpenOption.CREATE))) {
             IOUtils.write(tempJson, gos, "utf-8");
+            gos.flush();
+            gos.close();
         }
     }
 
