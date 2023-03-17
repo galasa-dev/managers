@@ -66,7 +66,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final IConfidentialTextService cts;
     private final boolean applyCtf;
-    private List<String> terminalOutput;
+    private final List<String> terminalOutput;
 
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
