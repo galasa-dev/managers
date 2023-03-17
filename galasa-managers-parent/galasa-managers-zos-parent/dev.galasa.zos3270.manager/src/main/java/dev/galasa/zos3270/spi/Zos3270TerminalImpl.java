@@ -52,6 +52,7 @@ import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
 import dev.galasa.zos3270.internal.properties.LiveTerminalUrl;
 import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
 import dev.galasa.zos3270.internal.properties.TerminalDeviceTypes;
+import dev.galasa.zos3270.internal.properties.TerminalOutput;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
@@ -65,6 +66,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final IConfidentialTextService cts;
     private final boolean applyCtf;
+    private List<String> terminalOutput;
 
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
@@ -93,6 +95,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         this.autoConnect = autoConnect;
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
+        this.terminalOutput = TerminalOutput.get();
         this.textScan = textScanner;
 
         getScreen().registerScreenUpdateListener(this);
@@ -217,8 +220,18 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         rasTerminalSequence++;
 
         try {
-            writeTerminalGzJson();
-            writeTerminalImages();
+            for (String outputFormat : terminalOutput) {
+                switch (outputFormat.toLowerCase()) {
+                    case "json":
+                        writeTerminalGzJson();
+                        break;
+                    case "png":
+                        writeTerminalImages();
+                        break;
+                    default:
+                        throw new Zos3270ManagerException("Unknown output format: " + outputFormat);
+                }
+            }
         } catch (Exception e) {
             logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
