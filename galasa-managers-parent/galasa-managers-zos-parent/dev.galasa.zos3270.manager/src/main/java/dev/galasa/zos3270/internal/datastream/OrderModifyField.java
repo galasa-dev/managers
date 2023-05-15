@@ -19,8 +19,8 @@ public class OrderModifyField extends AbstractOrder {
     private AttributeExtendedHighlighting attributeExtendedHighlighting = null;
     @SuppressWarnings("unused")
     private AttributeCharacterSet         attributeCharacterSet         = null;
-    private AttributeForegroundColour     attributeForegroundColour     = null;
-    private AttributeBackgroundColour     attributeBackgroundColour     = null;
+    private AttributeForegroundColor     attributeForegroundColor     = null;
+    private AttributeBackgroundColor     attributeBackgroundColor     = null;
     @SuppressWarnings("unused")
     private AttributeTransparency         attributeTransparency         = null;
 
@@ -49,14 +49,14 @@ public class OrderModifyField extends AbstractOrder {
                 case AttributeExtendedHighlighting.ATTRIBUTE_ID:
                     attributeExtendedHighlighting = new AttributeExtendedHighlighting(buffer);
                     break;
-                case AttributeForegroundColour.ATTRIBUTE_ID:
-                    attributeForegroundColour = new AttributeForegroundColour(buffer);
+                case AttributeForegroundColor.ATTRIBUTE_ID:
+                    attributeForegroundColor = new AttributeForegroundColor(buffer);
                     break;
                 case AttributeCharacterSet.ATTRIBUTE_ID:
                 	attributeCharacterSet = new AttributeCharacterSet(buffer);
                     break;
-                case AttributeBackgroundColour.ATTRIBUTE_ID:
-                    attributeBackgroundColour = new AttributeBackgroundColour(buffer);
+                case AttributeBackgroundColor.ATTRIBUTE_ID:
+                    attributeBackgroundColor = new AttributeBackgroundColor(buffer);
                     break;
                 case AttributeTransparency.ATTRIBUTE_ID:
                     attributeTransparency = new AttributeTransparency(buffer);
@@ -80,12 +80,12 @@ public class OrderModifyField extends AbstractOrder {
         return attributeExtendedHighlighting;
     }
 
-    public AttributeForegroundColour getForegroundColour() {
-        return this.attributeForegroundColour;
+    public AttributeForegroundColor getForegroundColor() {
+        return this.attributeForegroundColor;
     }
 
-    public AttributeBackgroundColour getBackgroundColor() {
-        return this.attributeBackgroundColour;
+    public AttributeBackgroundColor getBackgroundColor() {
+        return this.attributeBackgroundColor;
     }
 
 }

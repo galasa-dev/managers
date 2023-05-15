@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.zos3270.AttentionIdentification;
+import dev.galasa.zos3270.Color;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.IDatastreamListener;
@@ -35,9 +36,9 @@ import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
-import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColor;
 import dev.galasa.zos3270.internal.datastream.AttributeExtendedHighlighting;
-import dev.galasa.zos3270.internal.datastream.AttributeForegroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeForegroundColor;
 import dev.galasa.zos3270.internal.datastream.BufferAddress;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
 import dev.galasa.zos3270.internal.datastream.CommandEraseWriteAlternate;
@@ -607,7 +608,7 @@ public class Screen {
         if (sf != null) {
             bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
                     sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed(),
-                    order.getHighlight(), order.getForegroundColour(), order.getBackgroundColor());
+                    order.getHighlight(), order.getForegroundColor(), order.getBackgroundColor());
         }
 
         if (bsf == null) {
@@ -625,7 +626,7 @@ public class Screen {
         if (sf != null) {
             bsf = new BufferStartOfField(this.workingCursor, sf.isFieldProtected(), sf.isFieldNumeric(),
                     sf.isFieldDisplay(), sf.isFieldIntenseDisplay(), sf.isFieldSelectorPen(), sf.isFieldModifed(),
-                    order.getHighlight(), order.getForegroundColour(), order.getBackgroundColor());
+                    order.getHighlight(), order.getForegroundColor(), order.getBackgroundColor());
         }
 
         if (bsf == null) {
@@ -865,18 +866,18 @@ public class Screen {
                 numericLine.append(" ");
                 modifiedLine.append(" ");
             } else {
-                AttributeForegroundColour foregroundColour = currentBufferStartOfField.getAttributeForegroundColour();
-                if (foregroundColour == null) {
+                AttributeForegroundColor foregroundColor = currentBufferStartOfField.getAttributeForegroundColor();
+                if (foregroundColor == null) {
                     foregroundLine.append(" ");
                 } else {
-                    foregroundLine.append(foregroundColour.getColour().getLetter());
+                    foregroundLine.append(foregroundColor.getColor().getLetter());
                 }
                 
-                AttributeBackgroundColour backgroundColour = currentBufferStartOfField.getAttributeBackgroundColour();
-                if (backgroundColour == null) {
+                AttributeBackgroundColor backgroundColor = currentBufferStartOfField.getAttributeBackgroundColor();
+                if (backgroundColor == null) {
                     backgroundLine.append(" ");
                 } else {
-                    backgroundLine.append(backgroundColour.getColour().getLetter());
+                    backgroundLine.append(backgroundColor.getColor().getLetter());
                 }
                 
 
@@ -1900,7 +1901,19 @@ public class Screen {
         return true;
     }
 
-    public Colour getColourAtPosition(int pos) {
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #getColorAtPosition}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Colour getColourAtPosition(int pos) {        
+        return Colour.getColour(getColorAtPosition(pos));
+    }
+
+    /**
+     * @since 0.28.0
+     */
+    public Color getColorAtPosition(int pos) {
         
         Field[] fields = calculateFields();
         Field currentField = fields[0];
@@ -1911,7 +1924,7 @@ public class Screen {
             currentField = fields[i];
         }
         
-        return currentField.getForegroundColour();
+        return currentField.getForegroundColor();
     }
 
     public Highlight getHighlightAtPosition(int pos) {

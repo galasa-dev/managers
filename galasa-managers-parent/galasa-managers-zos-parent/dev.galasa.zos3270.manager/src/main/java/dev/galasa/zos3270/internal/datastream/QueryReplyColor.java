@@ -5,7 +5,7 @@ package dev.galasa.zos3270.internal.datastream;
 
 import java.nio.ByteBuffer;
 
-import dev.galasa.zos3270.spi.Colour;
+import dev.galasa.zos3270.Color;
 
 public class QueryReplyColor extends AbstractQueryReply {
 
@@ -21,14 +21,14 @@ public class QueryReplyColor extends AbstractQueryReply {
         
         buffer.put((byte)8); // Number of color combinations
         
-        putColor(buffer, Colour.DEFAULT.getCode(),   Colour.GREEN.getCode());
-        putColor(buffer, Colour.BLUE.getCode(),      Colour.BLUE.getCode());
-        putColor(buffer, Colour.RED.getCode(),       Colour.RED.getCode());
-        putColor(buffer, Colour.PINK.getCode(),      Colour.PINK.getCode());
-        putColor(buffer, Colour.GREEN.getCode(),     Colour.GREEN.getCode());
-        putColor(buffer, Colour.TURQUOISE.getCode(), Colour.TURQUOISE.getCode());
-        putColor(buffer, Colour.YELLOW.getCode(),    Colour.YELLOW.getCode());
-        putColor(buffer, Colour.NEUTRAL.getCode(),   Colour.NEUTRAL.getCode());
+        putColor(buffer, Color.DEFAULT.getCode(),   Color.GREEN.getCode());
+        putColor(buffer, Color.BLUE.getCode(),      Color.BLUE.getCode());
+        putColor(buffer, Color.RED.getCode(),       Color.RED.getCode());
+        putColor(buffer, Color.PINK.getCode(),      Color.PINK.getCode());
+        putColor(buffer, Color.GREEN.getCode(),     Color.GREEN.getCode());
+        putColor(buffer, Color.TURQUOISE.getCode(), Color.TURQUOISE.getCode());
+        putColor(buffer, Color.YELLOW.getCode(),    Color.YELLOW.getCode());
+        putColor(buffer, Color.NEUTRAL.getCode(),   Color.NEUTRAL.getCode());
 
         return buffer.array();
     }

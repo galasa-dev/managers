@@ -3,12 +3,13 @@
  */
 package dev.galasa.zos3270.spi;
 
-import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColour;
+import dev.galasa.zos3270.Color;
+import dev.galasa.zos3270.internal.datastream.AttributeBackgroundColor;
 import dev.galasa.zos3270.internal.datastream.AttributeCharacterSet;
 import dev.galasa.zos3270.internal.datastream.AttributeExtendedHighlighting;
 import dev.galasa.zos3270.internal.datastream.AttributeFieldOutlining;
 import dev.galasa.zos3270.internal.datastream.AttributeFieldValidation;
-import dev.galasa.zos3270.internal.datastream.AttributeForegroundColour;
+import dev.galasa.zos3270.internal.datastream.AttributeForegroundColor;
 import dev.galasa.zos3270.internal.datastream.AttributeTransparency;
 
 /**
@@ -33,8 +34,8 @@ public class BufferStartOfField implements IBufferHolder {
     private AttributeExtendedHighlighting attributeExtendedHighlighting = null;
     @SuppressWarnings("unused")
     private AttributeCharacterSet         attributeCharacterSet         = null;
-    private AttributeForegroundColour     attributeForegroundColour     = null;
-    private AttributeBackgroundColour     attributeBackgroundColour     = null;
+    private AttributeForegroundColor      attributeForegroundColor     = null;
+    private AttributeBackgroundColor      attributeBackgroundColor     = null;
     @SuppressWarnings("unused")
     private AttributeTransparency         attributeTransparency         = null;
 
@@ -55,12 +56,12 @@ public class BufferStartOfField implements IBufferHolder {
     
     public BufferStartOfField(int position, boolean fieldProtected, boolean fieldNumeric, boolean fieldDisplay,
             boolean fieldIntenseDisplay, boolean fieldSelectorPen, boolean fieldModifed,
-            AttributeExtendedHighlighting extendedHighlighting, AttributeForegroundColour foregroundColour, AttributeBackgroundColour backgroundColour) {
+            AttributeExtendedHighlighting extendedHighlighting, AttributeForegroundColor foregroundColor, AttributeBackgroundColor backgroundColor) {
         this(position, fieldProtected, fieldNumeric, fieldDisplay, fieldIntenseDisplay, fieldSelectorPen, fieldModifed);
         
         this.attributeExtendedHighlighting = extendedHighlighting;
-        this.attributeForegroundColour     = foregroundColour;
-        this.attributeBackgroundColour     = backgroundColour;
+        this.attributeForegroundColor     = foregroundColor;
+        this.attributeBackgroundColor     = backgroundColor;
     }
 
     /*
@@ -112,30 +113,67 @@ public class BufferStartOfField implements IBufferHolder {
         return this.attributeExtendedHighlighting.getHighlight();
     }
     
+
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #getForegroundColor}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Colour getForegroundColour() {
-        if (this.attributeForegroundColour == null) {
+        if (this.attributeForegroundColor == null) {
             return null;
         }
-        return this.attributeForegroundColour.getColour();
+        return Colour.getColour(this.attributeForegroundColor.getColor());
     }
 
-    public Colour getBackgroundColour() {
-        if (this.attributeBackgroundColour == null) {
+    /** 
+     * @since 0.28.0
+     */
+    public Color getForegroundColor() {
+        if (this.attributeForegroundColor == null) {
             return null;
         }
-        return this.attributeBackgroundColour.getColour();
+        return this.attributeForegroundColor.getColor();
+    }
+
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #getBackgroundColor}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Colour getBackgroundColour() {
+        if (this.attributeBackgroundColor == null) {
+            return null;
+        }
+        return Colour.getColour(this.attributeBackgroundColor.getColor());
+    }
+
+    /** 
+     * @since 0.28.0
+     */
+    public Color getBackgroundColor() {
+        if (this.attributeBackgroundColor == null) {
+            return null;
+        }
+        return this.attributeBackgroundColor.getColor();
     }
 
     public AttributeExtendedHighlighting getAttributeExtendedHighlighting() {
         return this.attributeExtendedHighlighting;
     }
-    
-    public AttributeForegroundColour getAttributeForegroundColour() {
-        return this.attributeForegroundColour;
+
+    /**
+     * @since 0.28.0
+     */
+    protected AttributeForegroundColor getAttributeForegroundColor() {
+        return this.attributeForegroundColor;
     }
 
-    public AttributeBackgroundColour getAttributeBackgroundColour() {
-        return this.attributeBackgroundColour;
+    /**
+     * @since 0.28.0
+     */
+    protected AttributeBackgroundColor getAttributeBackgroundColor() {
+        return this.attributeBackgroundColor;
     }
 
     @Override

@@ -25,8 +25,8 @@ public class TerminalField {
     private final boolean             fieldSelectorPen;
     private final boolean             fieldModifed;
     
-    private final Character           foregroundColour;
-    private final Character           backgroundColour;
+    private final Character           foregroundColor;
+    private final Character           backgroundColor;
     private final Character           highlight;
 
     private final List<FieldContents> contents = new ArrayList<>();
@@ -46,7 +46,7 @@ public class TerminalField {
      */
     public TerminalField(int row, int column, boolean unformatted, boolean fieldProtected, boolean fieldNumeric,
             boolean fieldDisplay, boolean fieldIntenseDisplay, boolean fieldSelectorPen, boolean fieldModifed,
-            Character foregroundColour, Character backgroundColour, Character highlight) {
+            Character foregroundColor, Character backgroundColor, Character highlight) {
         this.row = row;
         this.column = column;
         this.unformatted = unformatted;
@@ -56,8 +56,8 @@ public class TerminalField {
         this.fieldIntenseDisplay = fieldIntenseDisplay;
         this.fieldSelectorPen = fieldSelectorPen;
         this.fieldModifed = fieldModifed;
-        this.foregroundColour = foregroundColour;
-        this.backgroundColour = backgroundColour;
+        this.foregroundColor = foregroundColor;
+        this.backgroundColor = backgroundColor;
         this.highlight = highlight;
     }
 
@@ -143,11 +143,11 @@ public class TerminalField {
     }
     
     public Character getForegroundColour() {
-        return this.foregroundColour;
+        return this.foregroundColor;
     }
 
     public Character getBackgroundColour() {
-        return this.backgroundColour;
+        return this.backgroundColor;
     }
 
     public Character getHighlight() {

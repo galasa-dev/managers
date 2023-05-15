@@ -280,8 +280,23 @@ public interface ITerminal {
      * Return the colour of the character at the cursor position
      * 
      * @return - if position is not in an extended field,  null us returned
+     * 
+     * @deprecated
+     * This method is replaced by the {@link #retrieveColorAtCursor()} as of version 0.28.0.
+     * so that the Color class can be exposed in the API package instead of the spi package.
+     * We plan to remove this method in a future release.
      */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     Colour retrieveColourAtCursor();
+
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @return - if position is not in an extended field,  null us returned
+     * 
+     * @since 0.28.0
+     */
+    Color retrieveColorAtCursor();
     
     /**
      * Return the colour of the character at the cursor position
@@ -291,7 +306,20 @@ public interface ITerminal {
      * @return - if position is not in an extended field,  null us returned
      * @throws Zos3270Exception 
      */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     Colour retrieveColourAtPosition(int row, int col) throws Zos3270Exception;
+
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @param row of the screen, index 1 based
+     * @param col of the screen, index 1 based
+     * @return - if position is not in an extended field,  null us returned
+     * @throws Zos3270Exception 
+     * 
+     * @since 0.28.0
+     */
+    Color retrieveColorAtPosition(int row, int col) throws Zos3270Exception;
     
     /**
      * Return the highlighting of the character at the cursor position
