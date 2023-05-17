@@ -448,4 +448,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 		}		
 		return clonedTaggedCicsRegions;
 	}
+
+	@Override
+	public List<ICicsTerminal> getCicsTerminals() {	
+		return new ArrayList<>(this.terminals);
+	}
 }

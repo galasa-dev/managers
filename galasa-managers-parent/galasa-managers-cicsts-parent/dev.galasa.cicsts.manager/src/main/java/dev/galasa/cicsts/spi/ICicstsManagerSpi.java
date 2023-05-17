@@ -97,4 +97,6 @@ public interface ICicstsManagerSpi {
 	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions();
 
 	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;
+
+	public List<ICicsTerminal> getCicsTerminals();
 }
