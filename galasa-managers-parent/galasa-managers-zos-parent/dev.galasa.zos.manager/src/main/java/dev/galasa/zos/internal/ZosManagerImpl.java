@@ -283,6 +283,7 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
         }
 
         //*** Check to see if we have a DSE for this tag
+        logger.info("Searching for a zos DSE Image configured for tag " + tag);
         String imageID = DseImageIdForTag.get(tag);
         if (imageID != null) {
             logger.info("zOS DSE Image " + imageID + LOG_SELECTED_FOR_ZOS_TAG + tag + "'");
@@ -293,15 +294,16 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
                 taggedImages.put(tag, selectedImage);
                 return selectedImage;
             }
-            
+
+            logger.info("Searching for a zos DSE Cluster configured for tag " + tag);
             String clusterId = DseClusterIdForTag.get(tag);
             ZosDseImageImpl image = new ZosDseImageImpl(this, imageID, clusterId);
             images.put(image.getImageID(), image);
             taggedImages.put(tag, image);
             return image;
         }
-        
-        
+
+        logger.info("No DSE Image found, searching for specific zos image for tag " + tag);
         //*** See if the we need to run on a specific image,  not DSE
         imageID = ImageIdForTag.get(tag);
         if (imageID != null) {
@@ -322,8 +324,8 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
                 DssUtils.incrementMetric(dss, "metrics.slots.insufficent");
                 throw new ZosManagerException("Unable to provision zOS Image tagged " + tag + " on " + imageID + " as there is insufficient capacity");
             }
-        } 
-
+        }
+        logger.info("No specific image found for tag" + tag + " selecting image");
         return selectNewImage(tag);
     }
 
@@ -370,13 +372,16 @@ public class ZosManagerImpl extends AbstractManager implements IZosManagerSpi {
 
     protected ZosProvisionedImageImpl selectNewImage(String tag) throws ZosManagerException {
         //***  Need the cluster we can allocate an image from
+        logger.info("Searching for cluster ID for tag " + tag);
         String clusterId = ClusterIdForTag.get(tag);
         if (clusterId == null) {
+            logger.info("No cluster ID found for tag " + tag + " assuming DEFAULT");
             clusterId = "DEFAULT";
         }
         clusterId = clusterId.toUpperCase();
 
         //*** Find a list of images
+        logger.info("Searching for list of images for cluster " + clusterId);
         for(String definedImage : ClusterImages.get(clusterId)) {
             ZosProvisionedImageImpl image = new ZosProvisionedImageImpl(this, definedImage, clusterId);
             definedImages.add(new ImageUsage(image));
