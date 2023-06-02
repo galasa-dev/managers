@@ -1,3 +1,6 @@
+/*
+ * Copyright contributors to the Galasa project
+ */
 package dev.galasa.zos3270.commandcodes;
 
 import static org.assertj.core.api.Assertions.assertThat;
