@@ -106,10 +106,8 @@ public class TerminalImageTransformTest {
     }
 
     private void assertFileContentsSame(byte[] contentsRendered, String testFileToCompareAgainst) throws IOException {
-        // System.out.println("Test file name to compare against is: "+testFileToCompareAgainst);
-        // System.out.println("Comparing rendered image with contents of file "+getClass().getResource(testFileToCompareAgainst));
-        // System.out.println("Class loader root is here: "+this.getClass().getResource("."));
-        try ( InputStream testImageToCompare = this.getClass().getResourceAsStream("image-data/"+testFileToCompareAgainst)
+
+        try ( InputStream testImageToCompare = this.getClass().getClassLoader().getResourceAsStream(testFileToCompareAgainst)
         ) {
 
             if (testImageToCompare == null) {

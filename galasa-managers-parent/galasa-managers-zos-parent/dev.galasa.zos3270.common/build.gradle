@@ -1,5 +1,6 @@
 plugins {
     id 'galasa.manager'
+    id 'java'
 }
 
 description = 'Galasa zOS 3270 Terminal Manager - Common Packages'
@@ -7,5 +8,6 @@ description = 'Galasa zOS 3270 Terminal Manager - Common Packages'
 version = '0.25.0'
 
 dependencies {
-    testImplementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.9'
 }
+
