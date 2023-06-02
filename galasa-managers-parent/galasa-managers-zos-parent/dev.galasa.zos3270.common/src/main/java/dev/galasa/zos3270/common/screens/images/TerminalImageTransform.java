@@ -88,8 +88,11 @@ public class TerminalImageTransform {
         for (TerminalField field : sourceTerminalImage.getFields()) {
             StringBuilder sb = new StringBuilder();
             for (FieldContents contents : field.getContents()) {
-                int col = (field.getColumn() + 1);
-                int row = (field.getRow() + 1);
+                // Origin of each character glyph is bottom right of the character.
+                int col = (field.getColumn()  );
+                // Add one to the rows, so that the row so that row 0 of the input
+                // displays at row1...
+                int row = (field.getRow() + 1); 
                 
                 // Converting FieldContents to Strings
                 for (Character c : contents.getChars()) {
@@ -108,7 +111,6 @@ public class TerminalImageTransform {
                 }
 
                 for (Character c : fieldText.toCharArray()) {
-                    col++;
                     if (col > targetColumnCount) {
                         col = 1;
                         row++;
@@ -117,12 +119,13 @@ public class TerminalImageTransform {
                         }
                     }
                     graphics.drawString(Character.toString(c), col * fontWidth, row * fontHeight);
+                    col++;
                 }
             }
         }
 
         String terminalStatusRow = writeTerminalStatusRow(sourceTerminalImage, terminalSize.getColumns(), terminalSize.getRows());
-        graphics.drawString(terminalStatusRow, 1 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
+        graphics.drawString(terminalStatusRow, 0 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
 
     }
 

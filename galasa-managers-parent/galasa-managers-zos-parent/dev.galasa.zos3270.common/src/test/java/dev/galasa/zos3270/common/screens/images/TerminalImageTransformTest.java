@@ -142,8 +142,13 @@ public class TerminalImageTransformTest {
         }
     }
 
+    static java.nio.file.Path tempDir = null;
+
     private String writeTempFile(String name, byte[] bytes) throws IOException {
-        java.nio.file.Path tempDir = Files.createTempDirectory("TerminalImageRendererTest");
+        // We want all image files we write out to appear in the same folder for ease of looking at them all.
+        if (tempDir == null) {
+            tempDir = Files.createTempDirectory("TerminalImageRendererTest");
+        }
         java.nio.file.Path filePath = tempDir.resolve(name);
 
         try ( OutputStream outStream = Files.newOutputStream(filePath, StandardOpenOption.CREATE); 
@@ -308,4 +313,242 @@ public class TerminalImageTransformTest {
         checkTerminalImageAgainstExpected(renderer, image);
     }
 
+
+    @Test
+    public void testTextAtOriginFieldRendersOk() throws Exception {
+        MockConfidentialTextService confidentialTextService = new MockConfidentialTextService();
+
+        int columns = 80 ;
+        int rows = 26 ;
+        TerminalSize size = new TerminalSize(columns,rows);
+        
+        TerminalImageTransform renderer = new TerminalImageTransform( size, confidentialTextService );
+
+        int sequence = 1 ;
+        boolean isInbound = false ;
+        TerminalSize imageSize = new TerminalSize( columns,rows);
+        TerminalImage image = new TerminalImage(sequence, testName.getMethodName(), isInbound, 
+            null, null, imageSize, 0, 0);
+        
+        String text = "^ this is the origin. Should be in top left.";
+
+        int row = 0;
+        int column = 0 ; 
+        boolean unformatted = false ;
+        boolean fieldProtected = false ;
+        boolean fieldNumeric = false;
+        boolean fieldDisplay = true;
+        boolean fieldIntenseDisplay = false;
+        boolean fieldSelectorPen = false;
+        boolean fieldModifed = false;
+        Character foregroundColour = GREEN ;
+        Character backgroundColour = BLACK; 
+        Character highlight = WHITE;
+
+        TerminalField field1 = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+            fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+        field1.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+        image.getFields().add(field1);
+
+        checkTerminalImageAgainstExpected(renderer, image);
+    }
+
+    @Test
+    public void testTextAtBottomRightFieldRendersOk() throws Exception {
+        MockConfidentialTextService confidentialTextService = new MockConfidentialTextService();
+
+        int columns = 80 ;
+        int rows = 26 ;
+        TerminalSize size = new TerminalSize(columns,rows);
+        
+        TerminalImageTransform renderer = new TerminalImageTransform( size, confidentialTextService );
+
+        int sequence = 1 ;
+        boolean isInbound = false ;
+        TerminalSize imageSize = new TerminalSize( columns,rows);
+        TerminalImage image = new TerminalImage(sequence, testName.getMethodName(), isInbound, 
+            null, null, imageSize, 0, 0);
+        
+        {
+            String text = "The 'v' should be in bottom right";
+
+            int row = 16;
+            int column = 0; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        {
+            String text = "v";
+
+            int row = 25;
+            int column = 79; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        checkTerminalImageAgainstExpected(renderer, image);
+    }
+
+
+    @Test
+    public void testTextFullRowFieldRendersOk() throws Exception {
+        MockConfidentialTextService confidentialTextService = new MockConfidentialTextService();
+
+        int columns = 80 ;
+        int rows = 26 ;
+        TerminalSize size = new TerminalSize(columns,rows);
+        
+        TerminalImageTransform renderer = new TerminalImageTransform( size, confidentialTextService );
+
+        int sequence = 1 ;
+        boolean isInbound = false ;
+        TerminalSize imageSize = new TerminalSize( columns,rows);
+        TerminalImage image = new TerminalImage(sequence, testName.getMethodName(), isInbound, 
+            null, null, imageSize, 0, 0);
+        
+        {
+            String text = "The line should have 80 characters visible";
+
+            int row = 16;
+            int column = 0; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        {
+            String text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
+
+            int row = 20;
+            int column = 0; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        checkTerminalImageAgainstExpected(renderer, image);
+    }
+
+
+
+    @Test
+    public void testTextAOnAllRowsRendersOk() throws Exception {
+        MockConfidentialTextService confidentialTextService = new MockConfidentialTextService();
+
+        int columns = 80 ;
+        int rows = 26 ;
+        TerminalSize size = new TerminalSize(columns,rows);
+        
+        TerminalImageTransform renderer = new TerminalImageTransform( size, confidentialTextService );
+
+        int sequence = 1 ;
+        boolean isInbound = false ;
+        TerminalSize imageSize = new TerminalSize( columns,rows);
+        TerminalImage image = new TerminalImage(sequence, testName.getMethodName(), isInbound, 
+            null, null, imageSize, 0, 0);
+
+        {
+            String text = "Each of the 26 rows should have a number in";
+
+            int row = 16;
+            int column = 10; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        for ( int i=0;i<26;i++) {
+            String text = Integer.toString(i);
+
+            int row = i;
+            int column = 0; 
+            boolean unformatted = false ;
+            boolean fieldProtected = false ;
+            boolean fieldNumeric = false;
+            boolean fieldDisplay = true;
+            boolean fieldIntenseDisplay = false;
+            boolean fieldSelectorPen = false;
+            boolean fieldModifed = false;
+            Character foregroundColour = GREEN ;
+            Character backgroundColour = BLACK; 
+            Character highlight = WHITE;
+
+            TerminalField field = new TerminalField(row,column,unformatted,fieldProtected,fieldNumeric,
+                fieldDisplay,fieldIntenseDisplay,fieldSelectorPen,fieldModifed,foregroundColour,backgroundColour,highlight);
+            field.getContents().add( new FieldContents( stringToCharacterArray(text)) );
+
+            image.getFields().add(field);
+        }
+
+        checkTerminalImageAgainstExpected(renderer, image);
+    }
 }
