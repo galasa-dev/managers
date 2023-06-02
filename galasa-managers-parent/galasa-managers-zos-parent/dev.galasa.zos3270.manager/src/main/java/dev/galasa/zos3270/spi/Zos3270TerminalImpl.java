@@ -5,7 +5,7 @@ package dev.galasa.zos3270.spi;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Color;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -42,6 +42,7 @@ import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
+import dev.galasa.zos3270.Color;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.common.screens.FieldContents;
@@ -275,9 +276,9 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         int fontHeight = fontMetrics.getHeight();
         int fontWidth = fontMetrics.getMaxAdvance();
 
-        graphics.setPaint(Color.black);
+        graphics.setPaint(java.awt.Color.black);
         graphics.fillRect(0, 0, width, height);
-        graphics.setPaint(Color.green);
+        graphics.setPaint(java.awt.Color.green);
 
         List<TerminalImage> terminalImages = this.cachedImages;
         for (int i = 0; i < terminalImages.size(); i++) {
@@ -454,19 +455,19 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             int row = screenField.getStart() / screen.getNoOfColumns();
             int column = screenField.getStart() % screen.getNoOfColumns();
 
-            Character cForegroundColour = null;
-            Character cBackgroundColour = null;
+            Character cForegroundColor = null;
+            Character cBackgroundColor = null;
             Character cHighlight = null;
 
-            Colour foregroundColour = screenField.getForegroundColour();
-            Colour backgroundColour = screenField.getBackgroundColour();
+            Color foregroundColor = screenField.getForegroundColor();
+            Color backgroundColor = screenField.getBackgroundColor();
             Highlight highlight = screenField.getHighlight();
 
-            if (foregroundColour != null) {
-                cForegroundColour = foregroundColour.getLetter();
+            if (foregroundColor != null) {
+                cForegroundColor = foregroundColor.getLetter();
             }
-            if (backgroundColour != null) {
-                cBackgroundColour = backgroundColour.getLetter();
+            if (backgroundColor != null) {
+                cBackgroundColor = backgroundColor.getLetter();
             }
             if (highlight != null) {
                 cHighlight = highlight.getLetter();
@@ -475,7 +476,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             TerminalField terminalField = new TerminalField(row, column, screenField.isUnformatted(),
                     screenField.isProtected(), screenField.isNumeric(), screenField.isDisplay(),
                     screenField.isIntenseDisplay(), screenField.isSelectorPen(), screenField.isFieldModifed(),
-                    cForegroundColour, cBackgroundColour, cHighlight);
+                    cForegroundColor, cBackgroundColor, cHighlight);
 
             Character[] chars = screenField.getFieldCharsWithNulls();
             terminalField.getContents().add(new FieldContents(chars)); // TODO, needs modifying when we know how to

@@ -26,7 +26,6 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.spi.NetworkException;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.verification.VerificationMode;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestCeciImpl {

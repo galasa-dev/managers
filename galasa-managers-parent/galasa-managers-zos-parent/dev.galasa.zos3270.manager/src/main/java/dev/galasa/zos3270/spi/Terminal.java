@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.textscan.TextScanManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos3270.AttentionIdentification;
+import dev.galasa.zos3270.Color;
 import dev.galasa.zos3270.ErrorTextFoundException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.IDatastreamListener;
@@ -668,21 +669,48 @@ public class Terminal implements ITerminal {
 		
 	}
 
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #retrieveColorAtCursor}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     @Override
     public Colour retrieveColourAtCursor() {
         int pos = screen.getCursor();
         return screen.getColourAtPosition(pos);
     }
 
+    /**
+     * @since 0.28.0
+     */
+    @Override
+    public Color retrieveColorAtCursor() {
+        int pos = screen.getCursor();
+        return screen.getColorAtPosition(pos);
+    }
+
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #retrieveColorAtPosition}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     @Override
     public Colour retrieveColourAtPosition(int row, int col) throws Zos3270Exception {
+        return Colour.getColour(retrieveColorAtPosition(row,col));
+    }
+
+    /**
+     * @since 0.28.0
+     */
+    @Override
+    public Color retrieveColorAtPosition(int row, int col) throws Zos3270Exception {
         checkCursorPosition(row, col, 0 /* not worried about length */);
         
         row--;
         col--;
         int pos = (row * screen.getNoOfColumns()) + col;
         
-        return screen.getColourAtPosition(pos);
+        return screen.getColorAtPosition(pos);
     }
 
     @Override
@@ -702,6 +730,8 @@ public class Terminal implements ITerminal {
         
         return screen.getHighlightAtPosition(pos);
     }
+
+
 
 
 }

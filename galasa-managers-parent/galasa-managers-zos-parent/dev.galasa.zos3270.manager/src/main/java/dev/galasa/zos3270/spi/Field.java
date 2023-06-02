@@ -6,6 +6,8 @@ package dev.galasa.zos3270.spi;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import dev.galasa.zos3270.Color;
+
 public class Field {
 
     private static final Charset ebcdic = Charset.forName("Cp037");
@@ -21,8 +23,8 @@ public class Field {
     private final boolean        fieldSelectorPen;
     private final boolean        fieldModifed;
     
-    private final Colour         foregroundColour;
-    private final Colour         backgroundColour;
+    private final Color          foregroundColor;
+    private final Color          backgroundColor;
     private final Highlight      highlight;
 
     protected Field(int start, BufferStartOfField sf) {
@@ -35,8 +37,8 @@ public class Field {
         this.fieldModifed = sf.isFieldModifed();
         this.text = new char[0];
         
-        this.foregroundColour = sf.getForegroundColour();
-        this.backgroundColour = sf.getBackgroundColour();
+        this.foregroundColor = sf.getForegroundColor();
+        this.backgroundColor = sf.getBackgroundColor();
         this.highlight        = sf.getHighlight();
     }
 
@@ -49,8 +51,8 @@ public class Field {
         this.fieldSelectorPen = false;
         this.fieldModifed = false;
         this.text = new char[0];
-        this.foregroundColour = null;
-        this.backgroundColour = null;
+        this.foregroundColor = null;
+        this.backgroundColor = null;
         this.highlight = null;
     }
 
@@ -131,12 +133,36 @@ public class Field {
         return (this.start == -1);
     }
     
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #getForegroundColor}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Colour getForegroundColour() {
-        return foregroundColour;
+        return Colour.getColour(foregroundColor);
     }
 
+    /**
+     * @deprecated
+     * This call was deprecated in version 0.28.0 in favour of {@link #getForegroundColor}
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Colour getBackgroundColour() {
-        return backgroundColour;
+        return Colour.getColour(backgroundColor);
+    }
+
+    /** 
+     * @since 0.28.0
+     */
+    public Color getForegroundColor() {
+        return foregroundColor;
+    }
+
+    /** 
+     * @since 0.28.0
+     */
+    public Color getBackgroundColor() {
+        return backgroundColor;
     }
 
     public Highlight getHighlight() {

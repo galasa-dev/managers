@@ -1,7 +1,5 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.internal.datastream;
 
@@ -25,14 +23,14 @@ public class OrderSetAttribute extends AbstractOrder {
             case AttributeExtendedHighlighting.ATTRIBUTE_ID:
                 attribute = new AttributeExtendedHighlighting(buffer);
                 break;
-            case AttributeForegroundColour.ATTRIBUTE_ID:
-                attribute = new AttributeForegroundColour(buffer);
+            case AttributeForegroundColor.ATTRIBUTE_ID:
+                attribute = new AttributeForegroundColor(buffer);
                 break;
             case AttributeCharacterSet.ATTRIBUTE_ID:
                 attribute = new AttributeCharacterSet(buffer);
                 break;
-            case AttributeBackgroundColour.ATTRIBUTE_ID:
-                attribute = new AttributeBackgroundColour(buffer);
+            case AttributeBackgroundColor.ATTRIBUTE_ID:
+                attribute = new AttributeBackgroundColor(buffer);
                 break;
             case AttributeTransparency.ATTRIBUTE_ID:
                 attribute = new AttributeTransparency(buffer);

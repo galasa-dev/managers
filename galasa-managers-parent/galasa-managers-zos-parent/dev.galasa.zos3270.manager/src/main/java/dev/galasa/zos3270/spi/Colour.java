@@ -3,6 +3,15 @@
  */
 package dev.galasa.zos3270.spi;
 
+import dev.galasa.zos3270.Color;
+
+/**
+ * @deprecated
+ * This enum is replaced by the {@link dev.galasa.zos3270.Color} enumeration in version 0.28.0
+ * So color is exposed on the API and not just the SPI packages.
+ * This enum will be removed in a future release.
+ */
+@Deprecated(since = "0.28.0", forRemoval = true)
 public enum Colour {
     
     DEFAULT  ((byte)0x0, 'd'),
@@ -30,6 +39,16 @@ public enum Colour {
         return this.letter;
     }
     
+    /**
+     * 
+     * @param code
+     * @return
+     * @throws DatastreamException
+     * 
+     * @deprecated
+     * This call is deprecated in version 0.28.0 in favour of {@link dev.galasa.zos3270.Color#getColor(byte)}
+     */
+    @Deprecated()
     public static Colour getColour(byte code) throws DatastreamException {
         for(Colour colour : Colour.values()) {
             if (colour.code == code) {
@@ -40,4 +59,21 @@ public enum Colour {
         throw new DatastreamException("Unrecognised colour code - " + code);
     }
 
+    public static Colour getColour(Color color)  {
+        Colour result = null;
+        if (color!=null) {
+
+            byte code = color.getCode();
+            for(Colour colour : Colour.values()) {
+                if (colour.code == code) {
+                    result = colour;
+                    break;
+                }
+            }
+        }
+
+        // We can't throw an exception in this case. All the Color values should be mapped
+        // to something in this Colour class. Not expecting to ever reach this point.
+        return result ;
+    }
 }
