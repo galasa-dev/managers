@@ -1,6 +1,6 @@
 plugins {
     id 'galasa.manager'
-    id 'java'
+    // id 'java'
 }
 
 description = 'Galasa zOS 3270 Terminal Manager - Common Packages'
@@ -11,3 +11,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 }
 
+// task copyTestResources(type: Copy) {
+//     from "${projectDir}/src/test/resources"
+//     into "${buildDir}/classes/test"
+// }
+// processTestResources.dependsOn copyTestResources
