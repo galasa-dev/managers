@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa zOS 3270 Terminal Manager - Common Packages'
 
-version = '0.25.0'
+version = '0.28.0'
 
 dependencies {
     testImplementation 'com.google.code.gson:gson:2.8.5'

@@ -486,7 +486,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.common
-    version: 0.25.0
+    version: 0.28.0
     obr: true
     bom: true
     mvp: true
