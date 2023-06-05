@@ -95,10 +95,12 @@ public class TerminalImageTransformTest {
         ) {
             if (testImageToCompare == null) {
                 String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
-                System.out.println("Testcase logic failure. Tried to open file "+testFileToCompareAgainst+
+                System.out.println("Testcase logic info: Tried to open file "+testFileToCompareAgainst+
                     " using this.getClass().getClassLoader().getResourceAsStream(...) but it was missing. "+
                     "... was hoping to compare it to image\n"+tempFilePath);
             } else {
+                System.out.println("Testcase logic info: Opened file "+testFileToCompareAgainst+
+                    " using this.getClass().getClassLoader().getResourceAsStream(...)");
                 isCheckedAgainstTestFile = true ;
                 assertInputStreamContentsSame(testImageToCompare, contentsRendered, testFileToCompareAgainst);
             }
@@ -108,10 +110,12 @@ public class TerminalImageTransformTest {
         ) {
             if (testImageToCompare == null) {
                 String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
-                System.out.println("Testcase logic failure. Tried to open file "+testFileToCompareAgainst+
+                System.out.println("Testcase logic info: Tried to open file "+testFileToCompareAgainst+
                     " using this.getClass().getResourceAsStream(...) but it was missing. "+
                     "... was hoping to compare it to image\n"+tempFilePath);
             } else {
+                System.out.println("Testcase logic info: Opened file "+testFileToCompareAgainst+
+                    " using this.getClass().getResourceAsStream(...) ");
                 isCheckedAgainstTestFile = true ;
                 assertInputStreamContentsSame(testImageToCompare, contentsRendered, testFileToCompareAgainst);
             }
@@ -121,10 +125,12 @@ public class TerminalImageTransformTest {
         ) {
             if (testImageToCompare == null) {
                 String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
-                System.out.println("Testcase logic failure. Tried to open file "+testFileToCompareAgainst+
+                System.out.println("Testcase logic info: Tried to open file "+testFileToCompareAgainst+
                     " using this.getClass().getResourceAsStream('/'+...) but it was missing. "+
                     "... was hoping to compare it to image\n"+tempFilePath);
             } else {
+                System.out.println("Testcase logic info: Opened file "+testFileToCompareAgainst+
+                " using this.getClass().getResourceAsStream('/'+...)");
                 isCheckedAgainstTestFile = true ;
                 assertInputStreamContentsSame(testImageToCompare, contentsRendered, testFileToCompareAgainst);
             }
@@ -260,7 +266,7 @@ public class TerminalImageTransformTest {
 
 
     @Test
-    public void testConfientialTextIsRedacted() throws Exception {
+    public void testConfidentialTextIsRedacted() throws Exception {
         MockConfidentialTextService confidentialTextService = new MockConfidentialTextService();
         confidentialTextService.registerText("007", "***");
 
