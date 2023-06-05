@@ -106,21 +106,6 @@ public class TerminalImageTransformTest {
             }
         }
 
-        try ( InputStream testImageToCompare = this.getClass().getResourceAsStream(testFileToCompareAgainst)
-        ) {
-            if (testImageToCompare == null) {
-                String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
-                System.out.println("Testcase logic info: Tried to open file "+testFileToCompareAgainst+
-                    " using this.getClass().getResourceAsStream(...) but it was missing. "+
-                    "... was hoping to compare it to image\n"+tempFilePath);
-            } else {
-                System.out.println("Testcase logic info: Opened file "+testFileToCompareAgainst+
-                    " using this.getClass().getResourceAsStream(...) ");
-                isCheckedAgainstTestFile = true ;
-                assertInputStreamContentsSame(testImageToCompare, contentsRendered, testFileToCompareAgainst);
-            }
-        }
-
         try ( InputStream testImageToCompare = this.getClass().getResourceAsStream("/"+testFileToCompareAgainst)
         ) {
             if (testImageToCompare == null) {
@@ -150,7 +135,10 @@ public class TerminalImageTransformTest {
         if (contentsRendered.length != goodFileContents.length ) {
             String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
             fail("rendered image is different size to expected."+
-            " ... image from the renderer is here:\n"+tempFilePath);
+                " ... image from the renderer is here:\n"+tempFilePath+
+                " rendered image is "+Integer.toString(contentsRendered.length)+" bytes long"+
+                " whereas expected image is "+Integer.toString(goodFileContents.length)+" bytes long"
+            );
         }
         
         for( int i=0; isSame && i<contentsRendered.length; i++) {
