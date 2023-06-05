@@ -5,6 +5,8 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.Charset;
+
 import org.apache.commons.codec.binary.Hex;
 
 public class BufferGraphicsEscape extends BufferChar {
@@ -35,7 +37,7 @@ public class BufferGraphicsEscape extends BufferChar {
     }
 
     @Override
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         return this.data;
     }
 

@@ -5,6 +5,8 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.Charset;
+
 public class BufferFormFeed extends BufferChar {
 
     public BufferFormFeed() {
@@ -27,7 +29,7 @@ public class BufferFormFeed extends BufferChar {
     }
 
     @Override
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         return 0x0c;
     }
 

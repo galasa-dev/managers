@@ -10,8 +10,9 @@ import org.junit.Test;
 
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class RepeatToAddressTest {
+public class RepeatToAddressTest extends Zos3270TestBase {
 
     @Test
     public void testRA() throws DatastreamException {
@@ -21,7 +22,7 @@ public class RepeatToAddressTest {
         buffer.put((byte) 0xd4);
         buffer.flip();
 
-        String result = new OrderRepeatToAddress(buffer).toString();
+        String result = new OrderRepeatToAddress(buffer, ebcdic).toString();
 
         String shouldbe = "RA(M,1919)";
         Assert.assertEquals("RA not translating correct to " + shouldbe, shouldbe, result);

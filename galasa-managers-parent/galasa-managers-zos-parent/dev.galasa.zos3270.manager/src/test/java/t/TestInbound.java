@@ -15,8 +15,9 @@ import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.spi.Field;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class TestInbound {
+public class TestInbound extends Zos3270TestBase {
 
     
     public static void main(String[] args) throws TerminalInterruptedException, NetworkException, DecoderException {
@@ -31,7 +32,7 @@ public class TestInbound {
         byte[] inbound3Bytes = Hex.decodeHex(inbound3);
         
         Network network = new Network("here", 1, "a");
-        Screen screen = new Screen(80, 24, network);
+        Screen screen = CreateTestScreen(80, 24, network);
         NetworkThread networkThread = new NetworkThread(null, screen, null, null);
         
         ByteBuffer buffer = ByteBuffer.wrap(inbound1Bytes);

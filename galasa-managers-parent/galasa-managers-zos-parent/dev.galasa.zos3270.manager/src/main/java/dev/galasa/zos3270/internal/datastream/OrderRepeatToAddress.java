@@ -12,7 +12,7 @@ import dev.galasa.zos3270.spi.DatastreamException;
 
 public class OrderRepeatToAddress extends AbstractOrder {
 
-    private static final Charset ebcdic = Charset.forName("Cp037");
+    private final Charset ebcdic;
 
     public static final byte     ID     = 0x3c;
 
@@ -20,7 +20,8 @@ public class OrderRepeatToAddress extends AbstractOrder {
 
     private final char           repeatChar;
 
-    public OrderRepeatToAddress(ByteBuffer buffer) throws DatastreamException {
+    public OrderRepeatToAddress(ByteBuffer buffer, Charset codePage) throws DatastreamException {
+        this.ebcdic = codePage;
         this.bufferAddress = new BufferAddress(buffer);
 
         byte[] charByte = new byte[] { buffer.get() };
@@ -32,6 +33,7 @@ public class OrderRepeatToAddress extends AbstractOrder {
     }
 
     public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress) {
+        this.ebcdic = Charset.forName("Cp037");
         this.bufferAddress = bufferAddress;
         this.repeatChar = repeatChar;
     }

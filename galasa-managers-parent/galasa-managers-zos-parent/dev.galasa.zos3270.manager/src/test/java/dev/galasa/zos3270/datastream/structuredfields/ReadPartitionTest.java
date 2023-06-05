@@ -17,8 +17,10 @@ import dev.galasa.zos3270.internal.datastream.CommandWriteStructured;
 import dev.galasa.zos3270.internal.datastream.StructuredField;
 import dev.galasa.zos3270.internal.datastream.StructuredFieldReadPartition;
 import dev.galasa.zos3270.spi.NetworkException;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class ReadPartitionTest {
+public class ReadPartitionTest extends Zos3270TestBase {
+
 
     @Test
     public void testGoldenPath() throws NetworkException {
@@ -29,7 +31,7 @@ public class ReadPartitionTest {
         buffer.put(StructuredFieldReadPartition.QUERY);
         buffer.flip();
 
-        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer);
+        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer, ebcdic);
 
         List<StructuredField> fields = inbound.getStructuredFields();
         Assert.assertEquals("Count of fields", 1, fields.size());
@@ -55,7 +57,7 @@ public class ReadPartitionTest {
         buffer.put(qcodeList);
         buffer.flip();
 
-        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer);
+        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer, ebcdic);
 
         List<StructuredField> fields = inbound.getStructuredFields();
         Assert.assertEquals("Count of fields", 1, fields.size());
@@ -82,7 +84,7 @@ public class ReadPartitionTest {
         buffer.put(StructuredFieldReadPartition.REQTYP_EQUIVALENT);
         buffer.flip();
 
-        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer);
+        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer, ebcdic);
 
         List<StructuredField> fields = inbound.getStructuredFields();
         Assert.assertEquals("Count of fields", 1, fields.size());

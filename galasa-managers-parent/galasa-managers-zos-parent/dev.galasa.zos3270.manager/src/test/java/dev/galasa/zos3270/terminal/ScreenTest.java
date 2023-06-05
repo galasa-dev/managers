@@ -33,18 +33,19 @@ import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.DatastreamException;
 import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class ScreenTest {
+public class ScreenTest extends Zos3270TestBase {
 
     @Test
     public void testScreenSize() throws TerminalInterruptedException {
-        Assert.assertEquals("default screen size incorrect", 1920, new Screen().getScreenSize());
-        Assert.assertEquals("small screen size incorrect", 20, new Screen(10, 2, null).getScreenSize());
+        Assert.assertEquals("default screen size incorrect", 1920, CreateTestScreen().getScreenSize());
+        Assert.assertEquals("small screen size incorrect", 20, CreateTestScreen(10, 2, null).getScreenSize());
     }
 
     @Test
     public void testErase() throws TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         Assert.assertEquals("Erase fields are incorrect",
@@ -55,7 +56,7 @@ public class ScreenTest {
 
     @Test
     public void testEraseUsingRA() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0)));
@@ -70,13 +71,13 @@ public class ScreenTest {
 
     @Test
     public void testOrders() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("Hello"));
+        orders.add(new OrderText("Hello", ebcdic));
         orders.add(new OrderStartField(false, false, false, false, false, false));
         orders.add(new OrderInsertCursor());
         orders.add(new OrderRepeatToAddress('X', new BufferAddress(10)));
@@ -99,7 +100,7 @@ public class ScreenTest {
 
     @Test
     public void testOrdersInsertAndTail() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -121,7 +122,7 @@ public class ScreenTest {
 
     @Test
     public void testOrdersJumbled() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
@@ -129,9 +130,9 @@ public class ScreenTest {
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, false, false, false, false));
         orders.add(new OrderSetBufferAddress(new BufferAddress(11)));
-        orders.add(new OrderText("123456789"));
+        orders.add(new OrderText("123456789", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(1)));
-        orders.add(new OrderText("abcdefghi"));
+        orders.add(new OrderText("abcdefghi", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -145,7 +146,7 @@ public class ScreenTest {
 
     @Test
     public void testOrdersReplacedAll() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -165,7 +166,7 @@ public class ScreenTest {
 
     @Test
     public void testOrderReplaceMiddle() throws DatastreamException, TerminalInterruptedException {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
@@ -186,10 +187,10 @@ public class ScreenTest {
   //  @Test
     public void testProcessReadPartitionQueryListEquivalent() throws TerminalInterruptedException, NetworkException {
         Network network = mock(Network.class);
-        Screen screen = new Screen(80, 24, network);
+        Screen screen = CreateTestScreen(80, 24, network);
 
         ByteBuffer buffer = createQueryListBuffer(StructuredFieldReadPartition.REQTYP_EQUIVALENT, (byte) 0x80, (byte) 0x81, (byte) 0xa6, (byte) 0x85);
-        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer);
+        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer, ebcdic);
 
         screen.processInboundMessage(inbound);
 
@@ -199,11 +200,11 @@ public class ScreenTest {
  //   @Test
     public void testProcessReadPartitionQueryListNoSupportedFunctions() throws TerminalInterruptedException, NetworkException {
         Network network = mock(Network.class);
-        Screen screen = new Screen(80, 24, network);
+        Screen screen = CreateTestScreen(80, 24, network);
 
         // query "Graphic Color" & "Graphic Symbol Sets" which are unsupported
         ByteBuffer buffer = createQueryListBuffer(StructuredFieldReadPartition.REQTYP_LIST, (byte) 0xb4, (byte) 0xb6);
-        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer);
+        Inbound3270Message inbound = NetworkThread.processStructuredFields(new CommandWriteStructured(), buffer, ebcdic);
 
         screen.processInboundMessage(inbound);
 

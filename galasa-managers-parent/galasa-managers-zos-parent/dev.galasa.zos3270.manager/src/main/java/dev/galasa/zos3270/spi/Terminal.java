@@ -3,6 +3,7 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -44,17 +45,9 @@ public class Terminal implements ITerminal {
     
     private List<String>  deviceTypes;
 
-    public Terminal(String id, String host, int port, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
-        this(id, host, port, false, 80, 24, 0, 0, textScan);
-    }
-
-    public Terminal(String id, String host, int port, boolean ssl, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
-        this(id, host, port, ssl, 80, 24, 0, 0, textScan);
-    }
-
-    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
+    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScan, Charset codePage) throws TerminalInterruptedException {
         network = new Network(host, port, ssl, id);
-        screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
+        screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network, codePage);
         this.id = id;
         this.textScan = textScan;
     }

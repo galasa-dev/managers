@@ -5,6 +5,8 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.Charset;
+
 public class BufferEndOfMedium extends BufferChar {
 
     public BufferEndOfMedium() {
@@ -27,7 +29,7 @@ public class BufferEndOfMedium extends BufferChar {
     }
 
     @Override
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         return 0x19;
     }
 

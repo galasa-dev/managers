@@ -19,18 +19,19 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class FindTextTest {
+public class FindTextTest extends Zos3270TestBase {
 
     @Test
     public void testSimple() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("Find this message here"));
+        orders.add(new OrderText("Find this message here", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -53,13 +54,13 @@ public class FindTextTest {
 
     @Test
     public void testOk() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("Find this message here"));
+        orders.add(new OrderText("Find this message here", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -82,13 +83,13 @@ public class FindTextTest {
 
     @Test
     public void testError() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("Find this message here"));
+        orders.add(new OrderText("Find this message here", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -119,13 +120,13 @@ public class FindTextTest {
 
     @Test
     public void testMultiSearch() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("Find this message here"));
+        orders.add(new OrderText("Find this message here", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));

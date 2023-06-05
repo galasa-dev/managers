@@ -9,8 +9,6 @@ import java.nio.charset.Charset;
 
 public class BufferChar implements IBufferHolder {
 
-    private static final Charset ebcdic = Charset.forName("Cp037");
-
     private final char           character;
 
     public BufferChar(char character) {
@@ -39,14 +37,14 @@ public class BufferChar implements IBufferHolder {
         return this.character;
     }
 
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         if (this.character == 0) {
             return 0;
         }
 
         String value = new String(new char[] { this.character });
 
-        return value.getBytes(ebcdic)[0];
+        return value.getBytes(codePage)[0];
     }
 
 }

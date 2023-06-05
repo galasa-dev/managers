@@ -13,6 +13,7 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos3270.FieldNotFoundException;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -31,7 +32,7 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     public final boolean connectAtStartup;
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
-            throws TerminalInterruptedException, Zos3270ManagerException {
+            throws TerminalInterruptedException, Zos3270ManagerException, ZosManagerException {
         super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage(), 80, 24, 0, 0, textScanner);
 
         this.cicsRegion = cicsRegion;
@@ -42,12 +43,12 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     }
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
-            throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException {
+            throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException, ZosManagerException {
         this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner);
     }
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner) throws TerminalInterruptedException, IpNetworkManagerException,
-    Zos3270ManagerException {
+    Zos3270ManagerException, ZosManagerException {
         this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner);
     }
 

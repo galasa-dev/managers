@@ -20,6 +20,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Test the backSpace function
@@ -27,7 +28,7 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class BackSpaceTest {
+public class BackSpaceTest extends Zos3270TestBase {
 
     /**
      * Test what happens in a empty screen with no fields, should position at 0
@@ -36,7 +37,7 @@ public class BackSpaceTest {
      */
     @Test 
     public void emptyScreen() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -62,16 +63,16 @@ public class BackSpaceTest {
     @Test 
     public void testGoldenPath() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("123456789"));
+        orders.add(new OrderText("123456789", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("ABCDEFGHI"));
+        orders.add(new OrderText("ABCDEFGHI", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -96,16 +97,16 @@ public class BackSpaceTest {
     @Test 
     public void testProtectedScreen() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("123456789"));
+        orders.add(new OrderText("123456789", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("ABCDEFGHI"));
+        orders.add(new OrderText("ABCDEFGHI", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -141,13 +142,13 @@ public class BackSpaceTest {
     @Test 
     public void testSingleField() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("123456789ABCDEFGHIJ"));
+        orders.add(new OrderText("123456789ABCDEFGHIJ", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));

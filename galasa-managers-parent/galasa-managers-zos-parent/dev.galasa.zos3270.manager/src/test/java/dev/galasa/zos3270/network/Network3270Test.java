@@ -21,9 +21,9 @@ import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.internal.datastream.AbstractCommandCode;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
 import dev.galasa.zos3270.spi.NetworkException;
-import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class Network3270Test {
+public class Network3270Test extends Zos3270TestBase {
 
     @Mock
     private Network network;
@@ -48,7 +48,7 @@ public class Network3270Test {
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-        NetworkThread networkThread = new NetworkThread(null, new Screen(), null, bais);
+        NetworkThread networkThread = new NetworkThread(null, CreateTestScreen(), null, bais);
         networkThread.processMessage(bais);
 
         Assert.assertTrue("Will test the screen at this point, later", true);

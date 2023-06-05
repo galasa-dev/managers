@@ -10,14 +10,16 @@ import java.nio.charset.Charset;
 
 public class OrderText extends AbstractOrder {
 
-    public static final Charset ebcdic = Charset.forName("Cp037");
+    private final Charset ebcdic;
 
     private StringBuilder        text   = new StringBuilder();
 
-    public OrderText() {
+    public OrderText(Charset codePage) {
+        this.ebcdic = codePage;
     }
 
-    public OrderText(String newText) {
+    public OrderText(String newText, Charset codePage) {
+        this.ebcdic = codePage;
         this.text.append(newText);
     }
 

@@ -22,6 +22,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Test the Graphics Escape order 
@@ -29,7 +30,7 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class GraphicsEscapeTest {
+public class GraphicsEscapeTest extends Zos3270TestBase {
     
     /**
      * Test with two fields
@@ -39,7 +40,7 @@ public class GraphicsEscapeTest {
     @Test 
     public void testGeGoldenPath() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
         
         ByteBuffer geBuffer = ByteBuffer.wrap(new byte[] {0x50});
@@ -47,9 +48,9 @@ public class GraphicsEscapeTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderGraphicsEscape(geBuffer));
-        orders.add(new OrderText("6789ABCDEFGHIJ"));
+        orders.add(new OrderText("6789ABCDEFGHIJ", ebcdic));
         
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -65,7 +66,7 @@ public class GraphicsEscapeTest {
      */
     @Test
     public void testGeConvertToDatastream() throws Exception {
-        Screen screen = new Screen(6, 1, null);
+        Screen screen = CreateTestScreen(6, 1, null);
         screen.erase();
         
         ByteBuffer geBuffer = ByteBuffer.wrap(new byte[] {0x50});
@@ -73,9 +74,9 @@ public class GraphicsEscapeTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, true)); // needs modified to ensure field written outbound
-        orders.add(new OrderText("12"));
+        orders.add(new OrderText("12", ebcdic));
         orders.add(new OrderGraphicsEscape(geBuffer));
-        orders.add(new OrderText("34"));
+        orders.add(new OrderText("34", ebcdic));
         
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));

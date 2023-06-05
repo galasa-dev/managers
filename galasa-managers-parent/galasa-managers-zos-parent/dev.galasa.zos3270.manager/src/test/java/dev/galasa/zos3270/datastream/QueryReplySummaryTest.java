@@ -14,12 +14,13 @@ import dev.galasa.zos3270.internal.datastream.AbstractQueryReply;
 import dev.galasa.zos3270.internal.datastream.QueryReplySummary;
 import dev.galasa.zos3270.internal.datastream.QueryReplyUsableArea;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class QueryReplySummaryTest {
+public class QueryReplySummaryTest extends Zos3270TestBase {
 
     @Test
     public void testGoldenPath() throws TerminalInterruptedException {
-        Screen screen = new Screen(80, 24, null);
+        Screen screen = CreateTestScreen(80, 24, null);
 
         QueryReplyUsableArea qrua = new QueryReplyUsableArea(screen);
 

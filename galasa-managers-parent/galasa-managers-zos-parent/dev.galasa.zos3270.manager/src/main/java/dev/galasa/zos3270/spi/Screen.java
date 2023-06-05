@@ -5,6 +5,7 @@ package dev.galasa.zos3270.spi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,6 +82,8 @@ import dev.galasa.zos3270.internal.terminal.ScreenUpdateTextListener;
 public class Screen {
 
     private static final String                     CANT_FIND_TEXT  = "Unable to find a field containing '";
+    
+    private final Charset                           codePage;
 
     private final Log                               logger          = LogFactory.getLog(getClass());
 
@@ -112,15 +115,9 @@ public class Screen {
     
     private boolean                                 detectedSetAttribute = false;
 
-    public Screen() throws TerminalInterruptedException {
-        this(80, 24, null);
-    }
 
-    public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
-        this(columns, rows, 0, 0, network);
-    }
-
-    public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network) throws TerminalInterruptedException {
+    public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network, Charset codePage) throws TerminalInterruptedException {
+        this.codePage = codePage;
         this.network = network;
         this.primaryColumns = columns;
         this.primaryRows = rows;
@@ -220,10 +217,10 @@ public class Screen {
                 } else if (bh instanceof BufferGraphicsEscape) {
                     BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
                     outboundBuffer.write(OrderGraphicsEscape.ID);
-                    outboundBuffer.write(bc.getFieldEbcdic());
+                    outboundBuffer.write(bc.getFieldEbcdic(this.codePage));
                 } else if (bh instanceof BufferChar) {
                     BufferChar bc = (BufferChar) bh;
-                    outboundBuffer.write(bc.getFieldEbcdic());
+                    outboundBuffer.write(bc.getFieldEbcdic(this.codePage));
                 } else if (bh instanceof BufferStartOfField) {
                     BufferStartOfField sf = (BufferStartOfField) bh;
                     OrderStartField osf = new OrderStartField(sf.isProtected(), sf.isNumeric(), sf.isDisplay(), sf.isIntenseDisplay(), sf.isSelectorPen(), sf.isFieldModifed());
@@ -321,13 +318,13 @@ public class Screen {
                 BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
                 if (fieldModified) {
                     outboundBuffer.write(OrderGraphicsEscape.ID);
-                    byte value = bc.getFieldEbcdic();
+                    byte value = bc.getFieldEbcdic(this.codePage);
                     outboundBuffer.write(value);
                 }
             } else if (bh instanceof BufferChar) {
                 BufferChar bc = (BufferChar) bh;
                 if (fieldModified) {
-                    byte value = bc.getFieldEbcdic();
+                    byte value = bc.getFieldEbcdic(this.codePage);
                     if (value != 0) {
                         outboundBuffer.write(value);
                     }
@@ -1927,5 +1924,8 @@ public class Screen {
         return currentField.getHighlight();
     }
 
+    public Charset getCodePage() {
+        return codePage;
+    }
 
 }
