@@ -133,20 +133,6 @@ public class TerminalImageTransformTest {
             }
         }
 
-        // try ( InputStream testImageToCompare = this.getClass().getResourceAsStream("/"+imageFolderName+"/"+testFileToCompareAgainst)
-        // ) {
-        //     if (testImageToCompare == null) {
-        //         String tempFilePath = writeTempFile(testFileToCompareAgainst,contentsRendered);
-        //         System.out.println("Testcase logic info: Tried to open file "+testFileToCompareAgainst+
-        //             " using this.getClass().getResourceAsStream('/'+...) but it was missing. "+
-        //             "... was hoping to compare it to image\n"+tempFilePath);
-        //     } else {
-        //         System.out.println("Testcase logic info: Opened file "+testFileToCompareAgainst+
-        //         " using this.getClass().getResourceAsStream('/'+...)");
-        //         isCheckedAgainstTestFile = true ;
-        //         assertInputStreamContentsSame(testImageToCompare, contentsRendered, testFileToCompareAgainst);
-        //     }
-        // }
 
         if (!isCheckedAgainstTestFile) {
             fail("Testcase logic failure. Could not open test data file "+testFileToCompareAgainst+" so we could use it to compare with what was generated");
