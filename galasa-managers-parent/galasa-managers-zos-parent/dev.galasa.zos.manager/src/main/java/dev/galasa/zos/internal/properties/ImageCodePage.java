@@ -19,6 +19,8 @@ import dev.galasa.zos.ZosManagerException;
  * 
  * @galasa.required No
  * 
+ * @galasa.valid_values A valid java.nio.charset EBCDIC character encoding (e.g. 037, 1047)
+ * 
  * @galasa.default 037
  * 
  * @galasa.examples 
