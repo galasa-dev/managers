@@ -6,7 +6,14 @@ package dev.galasa.zos3270.util;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
+import dev.galasa.textscan.ILogScanner;
+import dev.galasa.textscan.ITextScanner;
+import dev.galasa.textscan.TextScanManagerException;
+import dev.galasa.textscan.internal.LogScannerImpl;
+import dev.galasa.textscan.internal.TextScannerImpl;
+import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.datastream.AbstractOrder;
@@ -25,7 +32,25 @@ public class Zos3270TestBase {
 	protected static final Charset ebcdic = Charset.forName("Cp037");
 
 	protected Terminal CreateTestTerminal() throws TerminalInterruptedException {
-		return new Terminal("test", "", 0, false, 10, 2, 0, 0, null, ebcdic);
+		TerminalSize terminalSize = new TerminalSize(10, 2);
+		TerminalSize alternateTerminalSize = new TerminalSize(0, 0);
+		ITextScanner textScanner = new TextScannerImpl();
+		ILogScanner logScanner = new LogScannerImpl();
+
+		ITextScannerManagerSpi mockTextScannerManager = new ITextScannerManagerSpi() {
+
+			@Override
+			public ITextScanner getTextScanner() throws TextScanManagerException {
+				return textScanner;
+			}
+
+			@Override
+			public ILogScanner getLogScanner() throws TextScanManagerException {
+				return logScanner;
+			}
+			
+		};
+		return new Terminal("test", "", 0, false, terminalSize, alternateTerminalSize, mockTextScannerManager, ebcdic);
 	}
 
     protected Screen CreateTestScreen() throws TerminalInterruptedException {
@@ -33,7 +58,10 @@ public class Zos3270TestBase {
     }
 
     protected static Screen CreateTestScreen(int columns, int rows, Network network) throws TerminalInterruptedException {
-        return new Screen(columns, rows, 0, 0, network, ebcdic);
+		TerminalSize terminalSize = new TerminalSize(columns, rows);
+		TerminalSize alternateTerminalSize = new TerminalSize(0, 0);
+
+        return new Screen(terminalSize, alternateTerminalSize, network, ebcdic);
     }
 
     protected void setScreenOrders(Screen screen) throws DatastreamException {

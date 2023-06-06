@@ -11,6 +11,7 @@ import dev.galasa.framework.spi.IStatementOwner;
 import dev.galasa.framework.spi.language.gherkin.ExecutionMethod;
 import dev.galasa.framework.spi.language.gherkin.GherkinKeyword;
 import dev.galasa.zos3270.Zos3270ManagerException;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.Zos3270ManagerImpl;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
@@ -47,7 +48,10 @@ public class Gherkin3270GivenTerminal  implements IStatementOwner {
         
         Zos3270TerminalImpl newTerminal = this.gerkinCoordinator.getTerminal(terminalId);
         if (newTerminal == null) {
-            newTerminal = this.manager.generateTerminal(imageTag, true, 80, 24, 0, 0);
+            TerminalSize terminalSize = new TerminalSize(80, 24);
+            TerminalSize alternateSize = new TerminalSize(0, 0);
+
+            newTerminal = this.manager.generateTerminal(imageTag, true, terminalSize, alternateSize);
             this.gerkinCoordinator.registerTerminal(terminalId, newTerminal, imageTag);
             logger.info("zOS 3270 Terminal id '" + terminalId + "' as been provisioned for image tag '" + imageTag + "'");
         }       

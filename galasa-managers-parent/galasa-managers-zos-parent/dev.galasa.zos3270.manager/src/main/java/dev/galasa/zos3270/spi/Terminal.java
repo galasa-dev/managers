@@ -25,6 +25,7 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 
@@ -45,9 +46,9 @@ public class Terminal implements ITerminal {
     
     private List<String>  deviceTypes;
 
-    public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScan, Charset codePage) throws TerminalInterruptedException {
+    public Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage) throws TerminalInterruptedException {
         network = new Network(host, port, ssl, id);
-        screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network, codePage);
+        screen = new Screen(primarySize, alternateSize, this.network, codePage);
         this.id = id;
         this.textScan = textScan;
     }

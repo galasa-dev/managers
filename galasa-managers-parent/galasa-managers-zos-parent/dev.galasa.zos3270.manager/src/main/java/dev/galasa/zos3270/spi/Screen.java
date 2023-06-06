@@ -26,6 +26,7 @@ import dev.galasa.zos3270.IDatastreamListener;
 import dev.galasa.zos3270.IDatastreamListener.DatastreamDirection;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.IScreenUpdateListener.Direction;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
@@ -116,12 +117,15 @@ public class Screen {
     private boolean                                 detectedSetAttribute = false;
 
 
-    public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network, Charset codePage) throws TerminalInterruptedException {
+    public Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage) throws TerminalInterruptedException {
         this.codePage = codePage;
         this.network = network;
-        this.primaryColumns = columns;
-        this.primaryRows = rows;
+        this.primaryColumns = primarySize.getColumns();
+        this.primaryRows = primarySize.getRows();
         this.usingAlternate = false;
+
+        int alternateRows = alternateSize.getRows();
+        int alternateColumns = alternateSize.getColumns();
         if (alternateRows < 1 || alternateColumns < 1) {
             this.hasAlternate = false;
             this.alternateColumns = 0;

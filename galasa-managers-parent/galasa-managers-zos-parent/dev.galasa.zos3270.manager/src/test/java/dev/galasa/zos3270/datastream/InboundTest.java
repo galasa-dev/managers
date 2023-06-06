@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
@@ -34,7 +35,8 @@ public class InboundTest {
 
         // Set the screen's code page to EBCDIC 1047
         Charset codePage = Charset.forName("1047");
-        Screen screen = new Screen(80, 24, 0, 0, network, codePage);
+        TerminalSize terminalSize = new TerminalSize(80, 24);
+        Screen screen = new Screen(terminalSize, new TerminalSize(0, 0), network, codePage);
 
         NetworkThread networkThread = new NetworkThread(null, screen, null, null);
         ByteBuffer buffer = ByteBuffer.wrap(inboundAsBytes);

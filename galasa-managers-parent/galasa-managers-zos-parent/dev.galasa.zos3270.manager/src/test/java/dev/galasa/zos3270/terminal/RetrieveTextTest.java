@@ -32,7 +32,7 @@ public class RetrieveTextTest extends Zos3270TestBase {
 		assertThat(text).as("Check all text in screen without nulls").isEqualTo(" abcd      1234    ");
 	}
 
-	//@Test
+	@Test
 	public void goldenPathByCursor() throws KeyboardLockedException, Zos3270Exception {
 		Terminal terminal = CreateTestTerminal();
 		Screen screen = terminal.getScreen();
