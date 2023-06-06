@@ -52,7 +52,7 @@ public class Terminal implements ITerminal {
      */
     @Deprecated(since = "0.28.0", forRemoval = true)
     public Terminal(String id, String host, int port, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
-        this(id, host, port, false, new TerminalSize(80, 24), new TerminalSize(0, 0), textScan, Charset.forName("Cp037"));
+        this(id, host, port, false, 80, 24, 0, 0, textScan);
     }
 
     /**

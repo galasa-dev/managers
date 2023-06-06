@@ -81,7 +81,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image, ITextScannerManagerSpi textScanner)
-            throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
+            throws Zos3270ManagerException, TerminalInterruptedException {
         this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0, textScanner);
     }
 
