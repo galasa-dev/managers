@@ -32,8 +32,8 @@ public class OrderRepeatToAddress extends AbstractOrder {
         repeatChar = ebcdic.decode(ByteBuffer.wrap(charByte)).array()[0];
     }
 
-    public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress) {
-        this.ebcdic = Charset.forName("Cp037");
+    public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress, Charset codePage) {
+        this.ebcdic = codePage;
         this.bufferAddress = bufferAddress;
         this.repeatChar = repeatChar;
     }

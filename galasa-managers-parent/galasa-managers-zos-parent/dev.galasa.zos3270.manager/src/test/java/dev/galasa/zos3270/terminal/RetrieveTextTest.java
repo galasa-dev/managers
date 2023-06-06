@@ -5,11 +5,22 @@ package dev.galasa.zos3270.terminal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.Zos3270Exception;
+import dev.galasa.zos3270.internal.comms.Inbound3270Message;
+import dev.galasa.zos3270.internal.datastream.AbstractOrder;
+import dev.galasa.zos3270.internal.datastream.BufferAddress;
+import dev.galasa.zos3270.internal.datastream.CommandEraseWrite;
+import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
+import dev.galasa.zos3270.internal.datastream.OrderStartField;
+import dev.galasa.zos3270.internal.datastream.OrderText;
+import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
+import dev.galasa.zos3270.spi.DatastreamException;
 import dev.galasa.zos3270.spi.Screen;
 import dev.galasa.zos3270.spi.Terminal;
 import dev.galasa.zos3270.util.Zos3270TestBase;
@@ -21,7 +32,7 @@ public class RetrieveTextTest extends Zos3270TestBase {
 		Terminal terminal = CreateTestTerminal();
 		Screen screen = terminal.getScreen();
 
-		setScreenOrders(screen);
+		setScreen(screen);
 
 		String text = terminal.retrieveText(2, 1, 10);
 		
@@ -37,7 +48,7 @@ public class RetrieveTextTest extends Zos3270TestBase {
 		Terminal terminal = CreateTestTerminal();
 		Screen screen = terminal.getScreen();
 
-		setScreenOrders(screen);
+		setScreen(screen);
 		
 		terminal.setCursorPosition(2, 1);
 
@@ -59,7 +70,7 @@ public class RetrieveTextTest extends Zos3270TestBase {
 		Terminal terminal = CreateTestTerminal();
 		Screen screen = terminal.getScreen();
 		
-		setScreenOrders(screen);
+		setScreen(screen);
 
 		try {
 			terminal.retrieveText(2, 1, 11);
@@ -81,7 +92,7 @@ public class RetrieveTextTest extends Zos3270TestBase {
 		Terminal terminal = CreateTestTerminal();
 		Screen screen = terminal.getScreen();
 		
-		setScreenOrders(screen);
+		setScreen(screen);
 
 		terminal.setCursorPosition(2, 1);
 		try {
@@ -99,4 +110,19 @@ public class RetrieveTextTest extends Zos3270TestBase {
 			assertThat(e).as("Exception message after invalid length").hasMessageContaining("Invalid length, it would exceed the screen buffer");
 		}
 	}
+
+	private void setScreen(Screen screen) throws DatastreamException {
+		ArrayList<AbstractOrder> orders = new ArrayList<>();
+		orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
+		orders.add(new OrderStartField(false, false, false, false, false, false));
+		orders.add(new OrderText("abcd", ebcdic));
+		orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
+		orders.add(new OrderStartField(false, false, false, false, false, false));
+		orders.add(new OrderText("1234", ebcdic));
+
+		screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
+				new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
+
+	}
+
 }

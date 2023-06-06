@@ -59,7 +59,7 @@ public class ScreenTest extends Zos3270TestBase {
         Screen screen = CreateTestScreen(10, 2, null);
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0)));
+        orders.add(new OrderRepeatToAddress((char) 0x00, new BufferAddress(0), ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -80,10 +80,10 @@ public class ScreenTest extends Zos3270TestBase {
         orders.add(new OrderText("Hello", ebcdic));
         orders.add(new OrderStartField(false, false, false, false, false, false));
         orders.add(new OrderInsertCursor());
-        orders.add(new OrderRepeatToAddress('X', new BufferAddress(10)));
+        orders.add(new OrderRepeatToAddress('X', new BufferAddress(10), ebcdic));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderRepeatToAddress('y', new BufferAddress(14)));
-        orders.add(new OrderRepeatToAddress('z', new BufferAddress(17)));
+        orders.add(new OrderRepeatToAddress('y', new BufferAddress(14), ebcdic));
+        orders.add(new OrderRepeatToAddress('z', new BufferAddress(17), ebcdic));
         orders.add(new OrderStartField(true, false, true, false, false, false));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
@@ -104,7 +104,7 @@ public class ScreenTest extends Zos3270TestBase {
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderRepeatToAddress('x', new BufferAddress(19)));
+        orders.add(new OrderRepeatToAddress('x', new BufferAddress(19), ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         orders.add(new OrderSetBufferAddress(new BufferAddress(19)));
@@ -152,9 +152,9 @@ public class ScreenTest extends Zos3270TestBase {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, false, false, false, false));
-        orders.add(new OrderRepeatToAddress('X', new BufferAddress(20)));
+        orders.add(new OrderRepeatToAddress('X', new BufferAddress(20), ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderRepeatToAddress('X', new BufferAddress(20)));
+        orders.add(new OrderRepeatToAddress('X', new BufferAddress(20), ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -170,11 +170,11 @@ public class ScreenTest extends Zos3270TestBase {
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderRepeatToAddress('X', new BufferAddress(10)));
+        orders.add(new OrderRepeatToAddress('X', new BufferAddress(10), ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
-        orders.add(new OrderRepeatToAddress('Y', new BufferAddress(20)));
+        orders.add(new OrderRepeatToAddress('Y', new BufferAddress(20), ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
-        orders.add(new OrderRepeatToAddress('Z', new BufferAddress(10)));
+        orders.add(new OrderRepeatToAddress('Z', new BufferAddress(10), ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
