@@ -131,8 +131,34 @@ public class Screen {
      */
     @Deprecated(since = "0.28.0", forRemoval = true)
     public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
-        this(new TerminalSize(columns, rows), new TerminalSize(0, 0), network, Charset.forName("Cp037"));
+        this(columns, rows, 0, 0, network);
     }
+
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network) throws TerminalInterruptedException {
+        this.codePage = Charset.forName("Cp037");
+        this.network = network;
+        this.primaryColumns = columns;
+        this.primaryRows = rows;
+        this.usingAlternate = false;
+        if (alternateRows < 1 || alternateColumns < 1) {
+            this.hasAlternate = false;
+            this.alternateColumns = 0;
+            this.alternateRows    = 0;
+        } else {
+            this.hasAlternate = true;
+            this.alternateColumns = alternateColumns;
+            this.alternateRows    = alternateRows;
+        }
+
+        erase();
+        lockKeyboard();
+    }
+
 
     public Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage) throws TerminalInterruptedException {
         this.codePage = codePage;
