@@ -29,7 +29,7 @@ import dev.galasa.zos3270.spi.Terminal;
 
 public class Zos3270TestBase {
 
-	protected static final Charset ebcdic = Charset.forName("Cp037");
+	protected static Charset ebcdic = Charset.forName("Cp037");
 
 	protected Terminal CreateTestTerminal() throws TerminalInterruptedException {
 		TerminalSize terminalSize = new TerminalSize(10, 2);
@@ -48,7 +48,6 @@ public class Zos3270TestBase {
 			public ILogScanner getLogScanner() throws TextScanManagerException {
 				return logScanner;
 			}
-			
 		};
 		return new Terminal("test", "", 0, false, terminalSize, alternateTerminalSize, mockTextScannerManager, ebcdic);
 	}

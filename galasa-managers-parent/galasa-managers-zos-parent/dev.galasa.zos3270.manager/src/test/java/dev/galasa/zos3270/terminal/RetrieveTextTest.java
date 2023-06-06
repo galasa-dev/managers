@@ -99,5 +99,4 @@ public class RetrieveTextTest extends Zos3270TestBase {
 			assertThat(e).as("Exception message after invalid length").hasMessageContaining("Invalid length, it would exceed the screen buffer");
 		}
 	}
-
 }

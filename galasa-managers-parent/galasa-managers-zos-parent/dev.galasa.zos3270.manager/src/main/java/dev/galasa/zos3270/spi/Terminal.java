@@ -46,6 +46,24 @@ public class Terminal implements ITerminal {
     
     private List<String>  deviceTypes;
 
+    /**
+     * @deprecated use the {@link #Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Terminal(String id, String host, int port, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
+        this(id, host, port, false, new TerminalSize(80, 24), new TerminalSize(0, 0), textScan, Charset.forName("Cp037"));
+    }
+
+    /**
+     * @deprecated use the {@link #Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Terminal(String id, String host, int port, boolean ssl, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
+        this(id, host, port, ssl, new TerminalSize(80, 24), new TerminalSize(0, 0), textScan, Charset.forName("Cp037"));
+    }
+
     public Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage) throws TerminalInterruptedException {
         network = new Network(host, port, ssl, id);
         screen = new Screen(primarySize, alternateSize, this.network, codePage);

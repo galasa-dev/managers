@@ -116,6 +116,23 @@ public class Screen {
     
     private boolean                                 detectedSetAttribute = false;
 
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Screen() throws TerminalInterruptedException {
+        this(80, 24, null);
+    }
+
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
+        this(new TerminalSize(columns, rows), new TerminalSize(0, 0), network, Charset.forName("Cp037"));
+    }
 
     public Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage) throws TerminalInterruptedException {
         this.codePage = codePage;

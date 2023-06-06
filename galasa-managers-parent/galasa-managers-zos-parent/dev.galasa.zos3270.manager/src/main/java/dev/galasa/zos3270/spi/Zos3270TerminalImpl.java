@@ -74,6 +74,17 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean logConsoleTerminals;
     private boolean autoConnect;
 
+    /**
+     * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
+            IZosImage image, ITextScannerManagerSpi textScanner)
+            throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
+        this(id, host, port, tls, framework, autoConnect, image, new TerminalSize(80, 24), new TerminalSize(0, 0), textScanner);
+    }
+
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
