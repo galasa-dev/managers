@@ -19,9 +19,9 @@ import dev.galasa.zos3270.internal.datastream.AbstractOrder;
 import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.zos3270.spi.NetworkException;
-import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class GraphicsEscapeTest {
+public class GraphicsEscapeTest extends Zos3270TestBase {
 
     @Test
     public void testEraseAllUnprotected() throws IOException, DecoderException, NetworkException, TerminalInterruptedException {
@@ -29,7 +29,7 @@ public class GraphicsEscapeTest {
         byte[] stream = Hex.decodeHex(vampHex);
         ByteBuffer buffer = ByteBuffer.wrap(stream);
 
-        NetworkThread networkThread = new NetworkThread(null, new Screen(), null, null);
+        NetworkThread networkThread = new NetworkThread(null, CreateTestScreen(), null, null);
         
         List<AbstractOrder> orders = networkThread.process3270Data(buffer).getOrders();
         assertThat(orders.size()).as("Should have returned 2 orders, SBA, GE").isEqualTo(2);

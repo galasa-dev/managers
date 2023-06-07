@@ -18,6 +18,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Ensure if type over the end of a field,  the cursor will skip to the next unprotected field
@@ -25,7 +26,7 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class FieldOverflowTest {
+public class FieldOverflowTest extends Zos3270TestBase {
     
     /**
      * Test with two fields
@@ -35,18 +36,18 @@ public class FieldOverflowTest {
     @Test 
     public void testSameFieldCursorOffset() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("     "));
+        orders.add(new OrderText("     ", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("     "));
+        orders.add(new OrderText("     ", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         

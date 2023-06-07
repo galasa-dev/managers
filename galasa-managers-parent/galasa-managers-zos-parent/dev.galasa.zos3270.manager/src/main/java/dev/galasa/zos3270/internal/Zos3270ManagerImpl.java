@@ -35,6 +35,7 @@ import dev.galasa.zos3270.ITerminal;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.Zos3270Terminal;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.gherkin.Gherkin3270Coordinator;
 import dev.galasa.zos3270.internal.properties.ExtraBundles;
 import dev.galasa.zos3270.internal.properties.Zos3270PropertiesSingleton;
@@ -150,11 +151,14 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         String tag = defaultString(terminalAnnotation.imageTag(), "PRIMARY").toUpperCase();
         // *** Default the tag to primary
         boolean autoConnect = terminalAnnotation.autoConnect();
+
+        TerminalSize primaryTerminalSize   = new TerminalSize(terminalAnnotation.primaryColumns(), terminalAnnotation.primaryRows());
+        TerminalSize alternateTerminalSize = new TerminalSize(terminalAnnotation.alternateColumns(), terminalAnnotation.alternateRows());
         
-        return generateTerminal(tag, autoConnect, terminalAnnotation.primaryColumns(), terminalAnnotation.primaryRows(), terminalAnnotation.alternateColumns(), terminalAnnotation.alternateRows());
+        return generateTerminal(tag, autoConnect, primaryTerminalSize, alternateTerminalSize);
     }
     
-    public Zos3270TerminalImpl generateTerminal(String imageTag, boolean autoConnect, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows) throws Zos3270ManagerException {
+    public Zos3270TerminalImpl generateTerminal(String imageTag, boolean autoConnect, TerminalSize primarySize, TerminalSize alternateSize) throws Zos3270ManagerException {
         // *** Ask the zosManager for the image for the Tag
         try {
             IZosImage image = this.zosManager.provisionImageForTag(imageTag);
@@ -164,7 +168,7 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
             String terminaId = "term" + (terminalCount);
 
             Zos3270TerminalImpl terminal = new Zos3270TerminalImpl(terminaId, host.getHostname(), host.getTelnetPort(),
-                    host.isTelnetPortTls(), getFramework(), autoConnect, image,primaryColumns, primaryRows, alternateColumns, alternateRows, textScannerManager);
+                    host.isTelnetPortTls(), getFramework(), autoConnect, image, primarySize, alternateSize, textScannerManager);
             
             this.terminals.add(terminal);
             logger.info("Generated a terminal for zOS Image tagged " + imageTag);

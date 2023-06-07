@@ -3,6 +3,7 @@
  */
 package dev.galasa.zos3270.spi;
 
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -24,6 +25,7 @@ import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
 import dev.galasa.zos3270.TimeoutException;
 import dev.galasa.zos3270.Zos3270Exception;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 
@@ -44,17 +46,40 @@ public class Terminal implements ITerminal {
     
     private List<String>  deviceTypes;
 
+    /**
+     * @deprecated use the {@link #Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Terminal(String id, String host, int port, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
         this(id, host, port, false, 80, 24, 0, 0, textScan);
     }
 
+    /**
+     * @deprecated use the {@link #Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Terminal(String id, String host, int port, boolean ssl, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
         this(id, host, port, ssl, 80, 24, 0, 0, textScan);
     }
 
+    /**
+     * @deprecated use the {@link #Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Terminal(String id, String host, int port, boolean ssl, int primaryColumns, int primaryRows, int alternateColumns, int alternateRows, ITextScannerManagerSpi textScan) throws TerminalInterruptedException {
         network = new Network(host, port, ssl, id);
         screen = new Screen(primaryColumns, primaryRows, alternateColumns, alternateRows, this.network);
+        this.id = id;
+        this.textScan = textScan;
+    }
+
+
+    public Terminal(String id, String host, int port, boolean ssl, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScan, Charset codePage) throws TerminalInterruptedException {
+        network = new Network(host, port, ssl, id);
+        screen = new Screen(primarySize, alternateSize, this.network, codePage);
         this.id = id;
         this.textScan = textScan;
     }

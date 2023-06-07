@@ -28,8 +28,9 @@ import dev.galasa.zos3270.spi.Colour;
 import dev.galasa.zos3270.spi.DatastreamException;
 import dev.galasa.zos3270.spi.Highlight;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class ExtendedDatastreamTest {
+public class ExtendedDatastreamTest extends Zos3270TestBase {
     
     private final String RED   = "42f2";
     private final String GREEN = "42f4";
@@ -52,7 +53,7 @@ public class ExtendedDatastreamTest {
     @Before
     public void setUp() throws TerminalInterruptedException {
         Network network = new Network("here", 1, "a");
-        screen = new Screen(10, 2, network);
+        screen = CreateTestScreen(10, 2, network);
         screen.erase();
     }
 
@@ -68,16 +69,16 @@ public class ExtendedDatastreamTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartFieldExtended(redReverseBuffer));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartFieldExtended(greenBlinkBuffer));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartFieldExtended(blueNormalBuffer));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("EFGH"));
+        orders.add(new OrderText("EFGH", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -107,13 +108,13 @@ public class ExtendedDatastreamTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartFieldExtended(redBuffer));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartFieldExtended(greenBuffer));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartFieldExtended(blueBuffer));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -140,13 +141,13 @@ public class ExtendedDatastreamTest {
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartFieldExtended(blinkBuffer));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartFieldExtended(underscoreBuffer));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartFieldExtended(normalBuffer));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));

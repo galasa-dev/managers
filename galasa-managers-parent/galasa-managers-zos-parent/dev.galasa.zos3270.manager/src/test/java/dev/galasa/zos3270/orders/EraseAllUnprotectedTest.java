@@ -20,6 +20,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Test the Erase All Unprotected order 
@@ -27,8 +28,8 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class EraseAllUnprotectedTest {
-    
+public class EraseAllUnprotectedTest extends Zos3270TestBase {
+
     /**
      * Test with two fields
      * 
@@ -37,19 +38,19 @@ public class EraseAllUnprotectedTest {
     @Test 
     public void testEuaGoldPath() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABC"));
+        orders.add(new OrderText("ABC", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("67890"));
+        orders.add(new OrderText("67890", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         
@@ -82,19 +83,19 @@ public class EraseAllUnprotectedTest {
     @Test 
     public void testEuaFullScreen() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABC"));
+        orders.add(new OrderText("ABC", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("67890"));
+        orders.add(new OrderText("67890", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         
@@ -127,19 +128,19 @@ public class EraseAllUnprotectedTest {
     @Test 
     public void testEuaMidField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABC"));
+        orders.add(new OrderText("ABC", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("67890"));
+        orders.add(new OrderText("67890", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         
@@ -172,19 +173,19 @@ public class EraseAllUnprotectedTest {
     @Test 
     public void testEuaWrap() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABC"));
+        orders.add(new OrderText("ABC", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("67890"));
+        orders.add(new OrderText("67890", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         
@@ -217,19 +218,19 @@ public class EraseAllUnprotectedTest {
     @Test 
     public void testEuaProtected() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(6)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABC"));
+        orders.add(new OrderText("ABC", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("67890"));
+        orders.add(new OrderText("67890", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(16)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
         

@@ -33,6 +33,7 @@ import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -73,18 +74,75 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean logConsoleTerminals;
     private boolean autoConnect;
 
+    /**
+     * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0, textScanner);
     }
 
+    /**
+     * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image,
             int primaryColumns, int primaryRows, int alternateColumns, int alternateRows,
             ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows, textScanner);
+        this.terminalId = id;
+        this.runId = framework.getTestRunName();
+        this.autoConnect = autoConnect;
+        this.cts = framework.getConfidentialTextService();
+        this.applyCtf = ApplyConfidentialTextFiltering.get();
+        this.terminalOutput = TerminalOutput.get();
+        this.textScan = textScanner;
+
+        getScreen().registerScreenUpdateListener(this);
+
+        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+        URL propLiveTerminalUrl = LiveTerminalUrl.get();
+        if (propLiveTerminalUrl == null) {
+            liveTerminalUrl = null;
+        } else {
+            try {
+                // *** Register the terminal to the UI which will own the terminal view
+                HttpURLConnection connection = (HttpURLConnection) propLiveTerminalUrl.openConnection();
+                connection.setRequestMethod("HEAD");
+                connection.addRequestProperty("zos3270-runid", this.runId);
+                connection.addRequestProperty("zos3270-terminalid", this.terminalId);
+                connection.setDoInput(true);
+                connection.setDoOutput(false);
+                connection.connect();
+                if (connection.getResponseCode() != 200) {
+                    logger.warn("Unable to activate live terminal due to " + connection.getResponseCode() + " - "
+                            + connection.getResponseMessage());
+                } else {
+                    this.liveTerminalUrl = new URL(
+                            propLiveTerminalUrl.toString() + "/" + this.runId + "/" + this.terminalId);
+                }
+            } catch (Exception e) {
+                throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
+            }
+        }
+
+        setDeviceTypes(TerminalDeviceTypes.get(image));
+
+        logConsoleTerminals = LogConsoleTerminals.get();
+    }
+
+
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
+            IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)
+            throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
+        super(id, host, port, tls, primarySize, alternateSize, textScanner, image.getCodePage());
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;

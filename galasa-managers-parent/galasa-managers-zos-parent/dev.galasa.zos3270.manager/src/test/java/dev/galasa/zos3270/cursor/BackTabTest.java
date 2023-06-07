@@ -17,6 +17,7 @@ import dev.galasa.zos3270.internal.datastream.OrderSetBufferAddress;
 import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Test the backTab function
@@ -24,7 +25,7 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class BackTabTest {
+public class BackTabTest extends Zos3270TestBase {
     
     /**
      * Test what happens in a empty screen with no fields, should position at 0
@@ -33,7 +34,7 @@ public class BackTabTest {
      */
     @Test 
     public void emptyScreen() throws Exception {
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -58,7 +59,7 @@ public class BackTabTest {
     @Test 
     public void testSameFieldCursorOffset() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -84,7 +85,7 @@ public class BackTabTest {
     @Test 
     public void testSameFieldCursorAtBeginning() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -110,7 +111,7 @@ public class BackTabTest {
     @Test 
     public void testDifferentField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -138,7 +139,7 @@ public class BackTabTest {
     @Test 
     public void testDifferentWrappedField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -166,7 +167,7 @@ public class BackTabTest {
     @Test 
     public void testProtectedScreen() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -194,7 +195,7 @@ public class BackTabTest {
     @Test 
     public void testUnprotectedZeroLength() throws Exception {
         
-        Screen screen = new Screen(5, 1, null);
+        Screen screen = CreateTestScreen(5, 1, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();

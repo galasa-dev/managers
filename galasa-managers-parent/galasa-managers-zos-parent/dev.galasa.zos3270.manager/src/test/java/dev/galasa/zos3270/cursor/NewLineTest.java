@@ -18,6 +18,7 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 /**
  * Test the newline function
@@ -25,7 +26,7 @@ import dev.galasa.zos3270.spi.Screen;
  * @author Michael Baylis
  *
  */
-public class NewLineTest {
+public class NewLineTest extends Zos3270TestBase {
     
     /**
      * Test what happens in a empty screen with no fields, should position to the next line
@@ -34,7 +35,7 @@ public class NewLineTest {
      */
     @Test 
     public void emptyScreen() throws Exception {
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -58,7 +59,7 @@ public class NewLineTest {
     @Test 
     public void testSameFieldStartingAtBegginningOfField() throws Exception {
         
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -85,7 +86,7 @@ public class NewLineTest {
     @Test 
     public void testSameFieldStartingALineDown() throws Exception {
         
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -111,7 +112,7 @@ public class NewLineTest {
     @Test 
     public void testSameFieldStartingBottom() throws Exception {
         
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -137,22 +138,22 @@ public class NewLineTest {
     @Test 
     public void testDifferentField() throws Exception {
         
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("UField1"));
+        orders.add(new OrderText("UField1", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("PField1"));
+        orders.add(new OrderText("PField1", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(20)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("UField2"));
+        orders.add(new OrderText("UField2", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(30)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("UField3"));
+        orders.add(new OrderText("UField3", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -173,7 +174,7 @@ public class NewLineTest {
     @Test 
     public void testWrappedField() throws Exception {
         
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -199,7 +200,7 @@ public class NewLineTest {
     @Test 
     public void testProtectedScreen() throws Exception {
         
-        Screen screen = new Screen(10, 4, null);
+        Screen screen = CreateTestScreen(10, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -227,7 +228,7 @@ public class NewLineTest {
     @Test 
     public void testUnprotectedZeroLength() throws Exception {
         
-        Screen screen = new Screen(2, 4, null);
+        Screen screen = CreateTestScreen(2, 4, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();

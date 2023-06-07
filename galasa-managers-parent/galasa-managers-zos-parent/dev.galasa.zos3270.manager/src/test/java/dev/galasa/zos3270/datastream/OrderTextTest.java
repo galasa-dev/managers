@@ -10,8 +10,9 @@ import org.junit.Test;
 
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.spi.DatastreamException;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class OrderTextTest {
+public class OrderTextTest extends Zos3270TestBase {
 
     @Test
     public void testText() throws DatastreamException {
@@ -22,7 +23,7 @@ public class OrderTextTest {
         buffer.put((byte) 0x85);
         buffer.flip();
 
-        OrderText orderText = new OrderText();
+        OrderText orderText = new OrderText(ebcdic);
         orderText.append(buffer.get());
         orderText.append(buffer.get());
         orderText.append(buffer.get());

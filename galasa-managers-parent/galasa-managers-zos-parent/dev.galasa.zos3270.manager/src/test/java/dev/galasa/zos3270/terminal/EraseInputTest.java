@@ -18,9 +18,10 @@ import dev.galasa.zos3270.internal.datastream.OrderStartField;
 import dev.galasa.zos3270.internal.datastream.OrderText;
 import dev.galasa.zos3270.internal.datastream.WriteControlCharacter;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
 
-public class EraseInputTest {
+public class EraseInputTest extends Zos3270TestBase {
 
     /**
      * Test golden path with 4 fields
@@ -30,22 +31,22 @@ public class EraseInputTest {
     @Test 
     public void testGoldenPath() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("EFGH"));
+        orders.add(new OrderText("EFGH", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -71,22 +72,22 @@ public class EraseInputTest {
     @Test 
     public void testProtected() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("1234"));
+        orders.add(new OrderText("1234", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("EFGH"));
+        orders.add(new OrderText("EFGH", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -113,12 +114,12 @@ public class EraseInputTest {
     @Test 
     public void testUnformatted() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderText("1234567890ABCDEFGHIJ"));
+        orders.add(new OrderText("1234567890ABCDEFGHIJ", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
@@ -139,21 +140,21 @@ public class EraseInputTest {
     @Test 
     public void testWrapped() throws Exception {
 
-        Screen screen = new Screen(10, 2, null);
+        Screen screen = CreateTestScreen(10, 2, null);
         screen.erase();
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
         orders.add(new OrderSetBufferAddress(new BufferAddress(0)));
-        orders.add(new OrderText("12345"));
+        orders.add(new OrderText("12345", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(5)));
         orders.add(new OrderStartField(true, false, true, false, false, false));
-        orders.add(new OrderText("5678"));
+        orders.add(new OrderText("5678", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(10)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("ABCD"));
+        orders.add(new OrderText("ABCD", ebcdic));
         orders.add(new OrderSetBufferAddress(new BufferAddress(15)));
         orders.add(new OrderStartField(false, false, true, false, false, false));
-        orders.add(new OrderText("EFGH"));
+        orders.add(new OrderText("EFGH", ebcdic));
 
         screen.processInboundMessage(new Inbound3270Message(new CommandEraseWrite(),
                 new WriteControlCharacter(false, false, false, false, false, false, true, true), orders));
