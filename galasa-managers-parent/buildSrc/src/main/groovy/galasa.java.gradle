@@ -64,7 +64,7 @@ signing {
 
 
 tasks.withType(Sign) {
-    onlyIf { isRelease.toBoolean() }
+    onlyIf { isMainOrRelease.toBoolean() }
 }
 
 publishing {
