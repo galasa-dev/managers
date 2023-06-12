@@ -419,7 +419,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos.manager
-    version: 0.26.0
+    version: 0.28.0
     obr: true
     javadoc: true
     bom: true
@@ -486,7 +486,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.common
-    version: 0.25.0
+    version: 0.28.0
     obr: true
     bom: true
     mvp: true
@@ -494,7 +494,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.manager
-    version: 0.26.0
+    version: 0.28.0
     obr: true
     javadoc: true
     bom: true

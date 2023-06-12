@@ -5,6 +5,7 @@ package dev.galasa.zos3270.spi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +26,7 @@ import dev.galasa.zos3270.IDatastreamListener;
 import dev.galasa.zos3270.IDatastreamListener.DatastreamDirection;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.IScreenUpdateListener.Direction;
+import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.KeyboardLockedException;
 import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.TextNotFoundException;
@@ -81,6 +83,8 @@ import dev.galasa.zos3270.internal.terminal.ScreenUpdateTextListener;
 public class Screen {
 
     private static final String                     CANT_FIND_TEXT  = "Unable to find a field containing '";
+    
+    private final Charset                           codePage;
 
     private final Log                               logger          = LogFactory.getLog(getClass());
 
@@ -112,19 +116,59 @@ public class Screen {
     
     private boolean                                 detectedSetAttribute = false;
 
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Screen() throws TerminalInterruptedException {
         this(80, 24, null);
     }
 
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Screen(int columns, int rows, Network network) throws TerminalInterruptedException {
         this(columns, rows, 0, 0, network);
     }
 
+    /**
+     * @deprecated use the {@link #Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Screen(int columns, int rows, int alternateColumns, int alternateRows, Network network) throws TerminalInterruptedException {
+        this.codePage = Charset.forName("Cp037");
         this.network = network;
         this.primaryColumns = columns;
         this.primaryRows = rows;
         this.usingAlternate = false;
+        if (alternateRows < 1 || alternateColumns < 1) {
+            this.hasAlternate = false;
+            this.alternateColumns = 0;
+            this.alternateRows    = 0;
+        } else {
+            this.hasAlternate = true;
+            this.alternateColumns = alternateColumns;
+            this.alternateRows    = alternateRows;
+        }
+
+        erase();
+        lockKeyboard();
+    }
+
+
+    public Screen(TerminalSize primarySize, TerminalSize alternateSize, Network network, Charset codePage) throws TerminalInterruptedException {
+        this.codePage = codePage;
+        this.network = network;
+        this.primaryColumns = primarySize.getColumns();
+        this.primaryRows = primarySize.getRows();
+        this.usingAlternate = false;
+
+        int alternateRows = alternateSize.getRows();
+        int alternateColumns = alternateSize.getColumns();
         if (alternateRows < 1 || alternateColumns < 1) {
             this.hasAlternate = false;
             this.alternateColumns = 0;
@@ -220,10 +264,10 @@ public class Screen {
                 } else if (bh instanceof BufferGraphicsEscape) {
                     BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
                     outboundBuffer.write(OrderGraphicsEscape.ID);
-                    outboundBuffer.write(bc.getFieldEbcdic());
+                    outboundBuffer.write(bc.getFieldEbcdic(this.codePage));
                 } else if (bh instanceof BufferChar) {
                     BufferChar bc = (BufferChar) bh;
-                    outboundBuffer.write(bc.getFieldEbcdic());
+                    outboundBuffer.write(bc.getFieldEbcdic(this.codePage));
                 } else if (bh instanceof BufferStartOfField) {
                     BufferStartOfField sf = (BufferStartOfField) bh;
                     OrderStartField osf = new OrderStartField(sf.isProtected(), sf.isNumeric(), sf.isDisplay(), sf.isIntenseDisplay(), sf.isSelectorPen(), sf.isFieldModifed());
@@ -321,13 +365,13 @@ public class Screen {
                 BufferGraphicsEscape bc = (BufferGraphicsEscape) bh;
                 if (fieldModified) {
                     outboundBuffer.write(OrderGraphicsEscape.ID);
-                    byte value = bc.getFieldEbcdic();
+                    byte value = bc.getFieldEbcdic(this.codePage);
                     outboundBuffer.write(value);
                 }
             } else if (bh instanceof BufferChar) {
                 BufferChar bc = (BufferChar) bh;
                 if (fieldModified) {
-                    byte value = bc.getFieldEbcdic();
+                    byte value = bc.getFieldEbcdic(this.codePage);
                     if (value != 0) {
                         outboundBuffer.write(value);
                     }
@@ -1927,5 +1971,8 @@ public class Screen {
         return currentField.getHighlight();
     }
 
+    public Charset getCodePage() {
+        return codePage;
+    }
 
 }

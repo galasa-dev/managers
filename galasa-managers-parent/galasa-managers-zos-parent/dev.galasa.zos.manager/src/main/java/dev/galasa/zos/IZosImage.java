@@ -3,6 +3,8 @@
  */
 package dev.galasa.zos;
 
+import java.nio.charset.Charset;
+
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
@@ -48,6 +50,14 @@ public interface IZosImage {
      *  @return a String representing the cluster the image was allocated from, if it was provisioned from a cluster
      */
     String getClusterID();
+
+    /**
+     * Get the code page of this zOS Image. Defaults to 037
+     * 
+     * @return The EBCDIC code page, never null
+     */
+    @NotNull
+    Charset getCodePage();
 
     /**
      * Get the default host name for this Image

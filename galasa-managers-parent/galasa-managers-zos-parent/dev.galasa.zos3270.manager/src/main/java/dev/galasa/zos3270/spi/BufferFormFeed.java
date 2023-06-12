@@ -1,9 +1,9 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
  */
 package dev.galasa.zos3270.spi;
+
+import java.nio.charset.Charset;
 
 public class BufferFormFeed extends BufferChar {
 
@@ -27,7 +27,7 @@ public class BufferFormFeed extends BufferChar {
     }
 
     @Override
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         return 0x0c;
     }
 

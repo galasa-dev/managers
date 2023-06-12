@@ -3,11 +3,6 @@
  */
 package dev.galasa.zos3270.spi;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -20,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
-
-import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -40,6 +33,7 @@ import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
+import dev.galasa.zos.ZosManagerException;
 import dev.galasa.zos3270.AttentionIdentification;
 import dev.galasa.zos3270.IScreenUpdateListener;
 import dev.galasa.zos3270.TerminalInterruptedException;
@@ -48,6 +42,8 @@ import dev.galasa.zos3270.common.screens.FieldContents;
 import dev.galasa.zos3270.common.screens.TerminalField;
 import dev.galasa.zos3270.common.screens.TerminalImage;
 import dev.galasa.zos3270.common.screens.TerminalSize;
+import dev.galasa.zos3270.common.screens.images.TerminalImageException;
+import dev.galasa.zos3270.common.screens.images.TerminalImageTransform;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
 import dev.galasa.zos3270.internal.properties.LiveTerminalUrl;
 import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
@@ -78,18 +74,75 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     private boolean logConsoleTerminals;
     private boolean autoConnect;
 
+    /**
+     * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         this(id, host, port, tls, framework, autoConnect, image, 80, 24, 0, 0, textScanner);
     }
 
+    /**
+     * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
+     * constructor instead.  
+     */
+    @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image,
             int primaryColumns, int primaryRows, int alternateColumns, int alternateRows,
             ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
         super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows, textScanner);
+        this.terminalId = id;
+        this.runId = framework.getTestRunName();
+        this.autoConnect = autoConnect;
+        this.cts = framework.getConfidentialTextService();
+        this.applyCtf = ApplyConfidentialTextFiltering.get();
+        this.terminalOutput = TerminalOutput.get();
+        this.textScan = textScanner;
+
+        getScreen().registerScreenUpdateListener(this);
+
+        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+        URL propLiveTerminalUrl = LiveTerminalUrl.get();
+        if (propLiveTerminalUrl == null) {
+            liveTerminalUrl = null;
+        } else {
+            try {
+                // *** Register the terminal to the UI which will own the terminal view
+                HttpURLConnection connection = (HttpURLConnection) propLiveTerminalUrl.openConnection();
+                connection.setRequestMethod("HEAD");
+                connection.addRequestProperty("zos3270-runid", this.runId);
+                connection.addRequestProperty("zos3270-terminalid", this.terminalId);
+                connection.setDoInput(true);
+                connection.setDoOutput(false);
+                connection.connect();
+                if (connection.getResponseCode() != 200) {
+                    logger.warn("Unable to activate live terminal due to " + connection.getResponseCode() + " - "
+                            + connection.getResponseMessage());
+                } else {
+                    this.liveTerminalUrl = new URL(
+                            propLiveTerminalUrl.toString() + "/" + this.runId + "/" + this.terminalId);
+                }
+            } catch (Exception e) {
+                throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
+            }
+        }
+
+        setDeviceTypes(TerminalDeviceTypes.get(image));
+
+        logConsoleTerminals = LogConsoleTerminals.get();
+    }
+
+
+    public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
+            IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)
+            throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
+        super(id, host, port, tls, primarySize, alternateSize, textScanner, image.getCodePage());
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;
@@ -239,121 +292,55 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         }
     }
 
+
     /**
      * This method creates png images to represent the Terminal screens and writes them to the RAS
      * @throws IOException
      * @throws Zos3270ManagerException
      */
     private synchronized void writeTerminalImages() throws IOException, Zos3270ManagerException {
-        TerminalSize terminalSize = new TerminalSize(getScreen().getNoOfColumns(), getScreen().getNoOfRows());
-        Path terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
+        
+        Screen screen =  getScreen();
 
-
-        // 2 extra rows added for Inbound/Outbound info and extra space
-        int numRows = terminalSize.getRows() + 2;
-        int numCols = terminalSize.getColumns();
-
-        // 7 and 13 represent the dimensions of the default monospaced font on MacOS
-        // Ideally, these values would be retrieved from the font metrics but that requires a
-        // Graphics object to be created, which in turn requires the image to be created -
-        // We plan to improve this in the future
-        int width = numCols * 7;
-        int height = numRows * 13; 
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = image.createGraphics();
-
-        // Ensures the font family is monospaced so that the images appear as expected
-        // If the font family is not monospaced, the font defaults to "Dialog", which skews images
-        Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
-        if (!font.getFamily().equals(Font.MONOSPACED)) {
-            throw new Zos3270ManagerException("Unable to set Monospaced font");
+        TerminalImageTransform imageRenderer ;
+        try {
+            IConfidentialTextService confidentialTextService = null;
+            if (applyCtf) {
+                confidentialTextService = cts;
+            }
+            TerminalSize termSize = new TerminalSize(screen.getNoOfColumns(), screen.getNoOfRows());
+            imageRenderer = new TerminalImageTransform(termSize, confidentialTextService);
+        } catch ( TerminalImageException ex) {
+            throw new Zos3270ManagerException(ex);
         }
-        graphics.setFont(font);
-
-        FontMetrics fontMetrics = graphics.getFontMetrics();
-        int fontHeight = fontMetrics.getHeight();
-        int fontWidth = fontMetrics.getMaxAdvance();
-
-        graphics.setPaint(Color.black);
-        graphics.fillRect(0, 0, width, height);
-        graphics.setPaint(Color.green);
 
         List<TerminalImage> terminalImages = this.cachedImages;
         for (int i = 0; i < terminalImages.size(); i++) {
-            for (TerminalField field : terminalImages.get(i).getFields()) {
-                StringBuilder sb = new StringBuilder();
-                for (FieldContents contents : field.getContents()) {
-                    int col = (field.getColumn() + 1);
-                    int row = (field.getRow() + 1);
-                    
-                    // Converting FieldContents to Strings and removing confidential text if required
-                    for (Character c : contents.getChars()) {
-                        if (c == null) {
-                            sb.append(" ");
-                        } else {
-                            sb.append(c);
-                        }
-                    }
-                    String fieldText = applyCtf ? cts.removeConfidentialText(sb.toString()) : sb.toString();
 
-                    for (Character c : fieldText.toCharArray()) {
-                        col++;
-                        if (col > numCols) {
-                            col = 1;
-                            row++;
-                            if (row > numRows) {
-                                row = 1;
-                            }
-                        }
-                        graphics.drawString(Character.toString(c), col * fontWidth, row * fontHeight);
-                    }
-                }
-            }
+            TerminalImage sourceTerminalImage = terminalImages.get(i);
 
-            String terminalStatusRow = writeTerminalStatusRow(terminalImages.get(i), terminalSize.getColumns(), terminalSize.getRows());
-            graphics.drawString(terminalStatusRow, 1 * fontWidth, (terminalSize.getRows() + 1) * fontHeight);
-
-            // Prefixing images 1-9 with a 0 to ensure ordering is correct
-            String imageSequence = String.format("%02d", i + 1);
-            
-            String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageSequence + ".png";
-            Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
-            
-            OutputStream os = Files.newOutputStream(terminalPath,
-            new SetContentType(ResultArchiveStoreContentType.PNG),
-            StandardOpenOption.CREATE);
-
-            ImageIO.write(image, "png", os);
-            os.flush();
-            os.close();
-            graphics.clearRect(0, 0, width, height);
+            writeImageToDisk(i,storedArtifactsRoot,imageRenderer, sourceTerminalImage);
         }
     }
 
-    private String writeTerminalStatusRow(TerminalImage terminalImage, int cols, int rows) {
+    private void writeImageToDisk(int imageIndexNumber , Path storedArtifactsRoot, TerminalImageTransform imageRenderer, TerminalImage sourceTerminalImage) throws IOException {
+        // Prefixing images 1-9 with a 0 to ensure ordering is correct
+        String imageSequence = String.format("%02d", imageIndexNumber + 1);
+            
+        Path terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
+        String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageSequence + ".png";
+        Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
         
-        StringBuilder sb = new StringBuilder();
-
-        if (terminalImage.getId() != null) {
-            sb.append(terminalImage.getId());
-            sb.append(" - ");
+        try ( OutputStream outStream = Files.newOutputStream(terminalPath,
+                                                      new SetContentType(ResultArchiveStoreContentType.PNG),
+                                                      StandardOpenOption.CREATE); 
+        ) {
+            
+            imageRenderer.writeImage(sourceTerminalImage, "png",outStream);
         }
-
-        sb.append(Integer.toString(cols));
-        sb.append("x");
-        sb.append(Integer.toString(rows));
-        sb.append(" - ");
-
-        if (terminalImage.isInbound()) {
-            sb.append("Inbound ");
-        } else {
-            sb.append("Outbound - ");
-            sb.append(terminalImage.getAid());
-        }
-
-        return sb.toString();
     }
+
+    
 
     /**
      * This method creates JSON representations of the Terminal screens and writes them to the RAS

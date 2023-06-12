@@ -46,11 +46,9 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
-import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
-import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -237,7 +235,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, true, this.textScanner);
             this.terminals.add(newTerminal);
             return newTerminal;
-        } catch (TerminalInterruptedException | IpNetworkManagerException | Zos3270ManagerException e) {
+        } catch (TerminalInterruptedException | ManagerException e) {
             throw new CicstsManagerException(
                     "Unable to setup CICS Terminal for tagged region " + tag, e);
         }

@@ -13,8 +13,9 @@ import dev.galasa.zos3270.internal.comms.Inbound3270Message;
 import dev.galasa.zos3270.internal.comms.Network;
 import dev.galasa.zos3270.internal.comms.NetworkThread;
 import dev.galasa.zos3270.spi.Screen;
+import dev.galasa.zos3270.util.Zos3270TestBase;
 
-public class TestColour {
+public class TestColour extends Zos3270TestBase {
 
     
     public static void main(String[] args) throws DecoderException, Zos3270Exception {
@@ -23,7 +24,7 @@ public class TestColour {
         byte[] inboundBytes = Hex.decodeHex(inbound);
         
         Network network = new Network("here", 1, "a");
-        Screen screen = new Screen(80, 24, network);
+        Screen screen = CreateTestScreen(80, 24, network);
         NetworkThread networkThread = new NetworkThread(null, screen, network, null);
         
         ByteBuffer buffer = ByteBuffer.wrap(inboundBytes);

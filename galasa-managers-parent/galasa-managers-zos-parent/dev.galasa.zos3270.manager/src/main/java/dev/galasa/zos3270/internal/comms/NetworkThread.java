@@ -846,13 +846,13 @@ public class NetworkThread extends Thread {
 
         AbstractCommandCode commandCode = AbstractCommandCode.getCommandCode(buffer.get());
         if (commandCode instanceof CommandWriteStructured) {
-            return processStructuredFields((CommandWriteStructured) commandCode, buffer);
+            return processStructuredFields((CommandWriteStructured) commandCode, buffer, screen.getCodePage());
         } else {
-            return process3270Datastream(commandCode, buffer);
+            return process3270Datastream(commandCode, buffer, screen.getCodePage());
         }
     }
 
-    public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
+    public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer, Charset codePage)
             throws DatastreamException {
 
         if (!buffer.hasRemaining()) {
@@ -861,12 +861,12 @@ public class NetworkThread extends Thread {
 
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
-        List<AbstractOrder> orders = processOrders(buffer);
+        List<AbstractOrder> orders = processOrders(buffer, codePage);
 
         return new Inbound3270Message(commandCode, writeControlCharacter, orders);
     }
 
-    public static List<AbstractOrder> processOrders(ByteBuffer buffer) throws DatastreamException {
+    public static List<AbstractOrder> processOrders(ByteBuffer buffer, Charset codePage) throws DatastreamException {
         OrderText orderText = null;
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -882,7 +882,7 @@ public class NetworkThread extends Thread {
                         order = new OrderSetBufferAddress(buffer);
                         break;
                     case OrderRepeatToAddress.ID:
-                        order = new OrderRepeatToAddress(buffer);
+                        order = new OrderRepeatToAddress(buffer, codePage);
                         break;
                     case OrderStartField.ID:
                         order = new OrderStartField(buffer);
@@ -920,12 +920,12 @@ public class NetworkThread extends Thread {
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });
                         logger.trace("Invalid byte detected in datastream, unrecognised byte order or text byte - 0x" + byteHex);
-                        order = new OrderText(" ");
+                        order = new OrderText(" ", codePage);
                 }
                 orders.add(order);
             } else {
                 if (orderText == null) {
-                    orderText = new OrderText();
+                    orderText = new OrderText(codePage);
                     orders.add(orderText);
                 }
                 orderText.append(orderByte);
@@ -934,7 +934,7 @@ public class NetworkThread extends Thread {
         return orders;
     }
 
-    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer)
+    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer, Charset codePage)
             throws NetworkException {
         ArrayList<StructuredField> structuredFields = new ArrayList<>();
 
@@ -950,7 +950,7 @@ public class NetworkThread extends Thread {
             byte[] sfData = new byte[length - 2];
             buffer.get(sfData);
 
-            structuredFields.add(StructuredField.getStructuredField(sfData));
+            structuredFields.add(StructuredField.getStructuredField(sfData, codePage));
         }
 
         return new Inbound3270Message(commandCode, structuredFields);
