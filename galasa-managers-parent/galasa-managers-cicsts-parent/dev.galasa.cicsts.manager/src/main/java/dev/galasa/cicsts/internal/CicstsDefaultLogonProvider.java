@@ -63,15 +63,22 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
 
             waitForGmText(cicsTerminal);
 
-            cicsTerminal.clear().wfk();
-
             logger.debug("Logged onto " + cicsTerminal.getCicsRegion());
 
+            // If loginCredentials is provided, attempt to sign-in
+            // via CESL
             if (!cicsTerminal.getLoginCredentials().isEmpty()) {
                 ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword)this.cs.getCredentials(cicsTerminal.getLoginCredentials());
 
-                cicsTerminal.type("CESL");
-                cicsTerminal.enter();
+                // Are we already on CESL/N? If not go to it
+                long timeout = 0;
+                if (!cicsTerminal.searchText("Signon to CICS", timeout)) {
+                    cicsTerminal.clear().wfk();
+
+                    cicsTerminal.type("CESL");
+                    cicsTerminal.enter();
+                }
+
                 cicsTerminal.waitForTextInField("Userid");
                 cicsTerminal.waitForKeyboard();
                 cicsTerminal.type(creds.getUsername());
@@ -81,11 +88,11 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
                 cicsTerminal.enter();
 
                 waitForLoggedOnText(cicsTerminal);
-
-                cicsTerminal.clear().wfk();
-
                 logger.debug("Logged into CICS TS as user: " + creds.getUsername());
             }
+
+            cicsTerminal.clear().wfk();
+
         } catch (Zos3270Exception | CredentialsException e) {
             throw new CicstsManagerException("Problem logging onto the CICS region");
         }
