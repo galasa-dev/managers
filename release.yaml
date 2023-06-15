@@ -428,7 +428,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos.manager.ivt
-    version: 0.25.0
+    version: 0.28.0
     obr: true
     mvp: true
     isolated: true
