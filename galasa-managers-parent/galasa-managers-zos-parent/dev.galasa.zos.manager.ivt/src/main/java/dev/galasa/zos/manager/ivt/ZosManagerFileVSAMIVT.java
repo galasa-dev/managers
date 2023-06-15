@@ -90,6 +90,14 @@ public class ZosManagerFileVSAMIVT {
     	IZosVSAMDataset vsamDataSet = fileHandler.newVSAMDataset(DSName, imagePrimary);
     	vsamDataSet.setSpace(VSAMSpaceUnit.CYLINDERS, 1, 1);
     	vsamDataSet.setRecordSize(50, 101);
+
+        if (checkThatPDSExists(DSName)) {
+            logger.info("Dataset " + DSName + " already exists. Deleting...");
+            vsamDataSet.delete();
+            logger.info("Dataset " + DSName + " deleted OK.");
+        }
+        assertThat(checkThatPDSExists(DSName)).isFalse();
+        
     	vsamDataSet.create();
     	
     	assertThat(checkThatPDSExists(DSName)).isTrue();
