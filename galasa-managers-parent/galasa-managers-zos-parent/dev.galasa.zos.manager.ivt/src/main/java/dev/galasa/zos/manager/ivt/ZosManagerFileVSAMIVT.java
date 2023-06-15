@@ -94,7 +94,7 @@ public class ZosManagerFileVSAMIVT {
         if (checkThatPDSExists(DSName)) {
             logger.info("Dataset " + DSName + " already exists. Deleting...");
             vsamDataSet.delete();
-            logger.info("Dataset " + DSName + " Deleted OK.");
+            logger.info("Dataset " + DSName + " deleted OK.");
         }
         assertThat(checkThatPDSExists(DSName)).isFalse();
         
