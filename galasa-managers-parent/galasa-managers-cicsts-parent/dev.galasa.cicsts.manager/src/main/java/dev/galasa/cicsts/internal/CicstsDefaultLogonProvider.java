@@ -14,6 +14,7 @@ import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.internal.properties.DefaultLogonGmText;
 import dev.galasa.cicsts.internal.properties.DefaultLogonInitialText;
 import dev.galasa.cicsts.spi.ICicsRegionLogonProvider;
+import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
@@ -23,6 +24,7 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
 
     private static final Log logger = LogFactory.getLog(CicstsDefaultLogonProvider.class);
     private final ICredentialsService cs;
+    private final IConfidentialTextService cts;
 
     private final String initialText;
     private final String gmText;
@@ -34,6 +36,8 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
         } catch (CredentialsException e) {
             throw new CicstsManagerException("Could not obtain the Credentials service.", e);
         }
+
+        this.cts = framework.getConfidentialTextService();
 
         try {
             initialText = DefaultLogonInitialText.get();
@@ -69,6 +73,7 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
             // via CESL
             if (!cicsTerminal.getLoginCredentials().isEmpty()) {
                 ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword)this.cs.getCredentials(cicsTerminal.getLoginCredentials());
+                cts.registerText(creds.getPassword(), "Password for credentials");
 
                 // Are we already on CESL/N? If not go to it
                 long timeout = 0;
