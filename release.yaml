@@ -61,7 +61,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.ceda.manager
-    version: 0.21.0
+    version: 0.22.0
     obr: true
     mvp: true
     javadoc: true
