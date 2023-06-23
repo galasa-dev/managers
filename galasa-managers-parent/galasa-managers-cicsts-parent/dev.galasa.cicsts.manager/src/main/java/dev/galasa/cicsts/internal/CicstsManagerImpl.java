@@ -65,9 +65,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private boolean required;
 
     private IZosManagerSpi zosManager;
-	private IZosBatchSpi zosBatchManager;
-	private IZosFileSpi zosFileManager;
-	private ITextScannerManagerSpi textScanner;
+    private IZosBatchSpi zosBatchManager;
+    private IZosFileSpi zosFileManager;
+    private ITextScannerManagerSpi textScanner;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -208,7 +208,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         CicsTerminal annotation = field.getAnnotation(CicsTerminal.class);
 
         String tag = defaultString(annotation.cicsTag(), "PRIMARY").toUpperCase();
-        String loginCredentials = defaultString(annotation.loginCredentials(), "").toUpperCase();
+        String loginCredentialsTag = defaultString(annotation.loginCredentialsTag(), "").toUpperCase();
         
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
@@ -217,7 +217,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner, loginCredentials);
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner, loginCredentialsTag);
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException e) {

@@ -69,11 +69,11 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
 
             logger.debug("Logged onto " + cicsTerminal.getCicsRegion());
 
-            // If loginCredentials is provided, attempt to sign-in
+            // If loginCredentialsTag is provided, attempt to sign-in
             // via CESL
-            if (!cicsTerminal.getLoginCredentials().isEmpty()) {
-                ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword)this.cs.getCredentials(cicsTerminal.getLoginCredentials());
-                cts.registerText(creds.getPassword(), "Password for credentials");
+            if (!cicsTerminal.getLoginCredentialsTag().isEmpty()) {
+                ICredentialsUsernamePassword creds = (ICredentialsUsernamePassword)this.cs.getCredentials(cicsTerminal.getLoginCredentialsTag());
+                cts.registerText(creds.getPassword(), "Password for credential tag: " + cicsTerminal.getLoginCredentialsTag());
 
                 // Are we already on CESL/N? If not go to it
                 long timeout = 0;

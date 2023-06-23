@@ -33,28 +33,28 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     public final ICicstsManagerSpi cicstsManager;
 
     public final boolean connectAtStartup;
-    public final String loginCredentials;
+    public final String loginCredentialsTag;
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentials)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag)
             throws TerminalInterruptedException, Zos3270ManagerException, ZosManagerException {
         super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage(), new TerminalSize(80, 24), new TerminalSize(0, 0), textScanner);
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;
         this.connectAtStartup = connectAtStartup;
-        this.loginCredentials = loginCredentials;
+        this.loginCredentialsTag = loginCredentialsTag;
 
         setAutoReconnect(connectAtStartup);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentials)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag)
             throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException, ZosManagerException {
-        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner, loginCredentials);
+        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner, loginCredentialsTag);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentials) throws TerminalInterruptedException, IpNetworkManagerException,
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag) throws TerminalInterruptedException, IpNetworkManagerException,
     Zos3270ManagerException, ZosManagerException {
-        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner, loginCredentials);
+        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner, loginCredentialsTag);
     }
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner) throws TerminalInterruptedException, IpNetworkManagerException,
@@ -158,8 +158,8 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 	}
 
   @Override
-  public String getLoginCredentials() {
-      return this.loginCredentials;
+  public String getLoginCredentialsTag() {
+      return this.loginCredentialsTag;
   }
 
 }
