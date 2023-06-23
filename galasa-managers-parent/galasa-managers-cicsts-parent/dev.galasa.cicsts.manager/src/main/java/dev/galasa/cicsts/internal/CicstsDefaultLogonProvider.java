@@ -63,7 +63,7 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
                 checkForInitialText(cicsTerminal);
             }
 
-            cicsTerminal.type("LOGON APPLID(" + cicsTerminal.getCicsRegion().getApplid() + ")").enter();
+            cicsTerminal.type("LOGON APPLID(" + cicsTerminal.getCicsRegion().getApplid() + ")").enter().wfk();
 
             waitForGmText(cicsTerminal);
 
@@ -80,17 +80,15 @@ public class CicstsDefaultLogonProvider implements ICicsRegionLogonProvider {
                 if (!cicsTerminal.searchText("Signon to CICS", timeout)) {
                     cicsTerminal.clear().wfk();
 
-                    cicsTerminal.type("CESL");
-                    cicsTerminal.enter();
+                    cicsTerminal.type("CESL").enter().wfk();
                 }
 
-                cicsTerminal.waitForTextInField("Userid");
-                cicsTerminal.waitForKeyboard();
+                cicsTerminal.waitForTextInField(new String[]{"Userid"}, new String[]{"Security is not active"});
                 cicsTerminal.type(creds.getUsername());
                 cicsTerminal.positionCursorToFieldContaining("Password");
                 cicsTerminal.tab();
                 cicsTerminal.type(creds.getPassword());
-                cicsTerminal.enter();
+                cicsTerminal.enter().wfk();
 
                 waitForLoggedOnText(cicsTerminal);
                 logger.debug("Logged into CICS TS as user: " + creds.getUsername());
