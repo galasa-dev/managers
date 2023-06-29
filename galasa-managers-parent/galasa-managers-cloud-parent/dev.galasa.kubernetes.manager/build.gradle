@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.26.0'
+version = '0.29.0'
 
 dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')
@@ -12,7 +12,7 @@ dependencies {
 
     implementation ('org.bouncycastle:bcpkix-jdk18on') {
         version {
-            strictly '1.72'
+            strictly '1.75'
         }
     }
     implementation ('com.google.code.findbugs:jsr305') {
