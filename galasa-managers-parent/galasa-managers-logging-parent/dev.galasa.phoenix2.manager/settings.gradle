@@ -1,1 +1,5 @@
 rootProject.name = 'dev.galasa.phoenix2.manager'
+
+include_in_obr = true
+include_in_bom = true
+include_in_isolated = true

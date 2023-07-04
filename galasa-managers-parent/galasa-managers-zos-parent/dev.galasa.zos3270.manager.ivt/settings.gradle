@@ -1,1 +1,5 @@
 rootProject.name = 'dev.galasa.zos3270.manager.ivt'
+
+include_in_obr = true
+include_in_mvp = true
+include_in_isolated = true

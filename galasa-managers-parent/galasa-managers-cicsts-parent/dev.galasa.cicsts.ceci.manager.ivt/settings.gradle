@@ -1,1 +1,6 @@
 rootProject.name = 'dev.galasa.cicsts.ceci.manager.ivt'
+
+include_in_obr = true
+include_in_mvp = true
+include_in_bom = true
+include_in_isolated = true

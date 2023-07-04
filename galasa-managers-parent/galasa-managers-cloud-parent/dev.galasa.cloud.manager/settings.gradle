@@ -1,1 +1,8 @@
 rootProject.name = 'dev.galasa.cloud.manager'
+
+include_in_obr = true
+include_in_javadoc = true
+include_in_bom = true
+include_in_mvp = true
+include_in_isolated = true
+include_in_codecoverage = true

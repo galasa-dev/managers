@@ -1,1 +1,5 @@
 rootProject.name = 'dev.galasa.db2.manager.ivt'
+
+include_in_obr = true
+include_in_mvp = true
+include_in_isolated = true

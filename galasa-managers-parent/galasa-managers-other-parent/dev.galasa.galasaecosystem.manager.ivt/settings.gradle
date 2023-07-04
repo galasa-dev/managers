@@ -1,1 +1,6 @@
-rootProject.name = 'dev.galasa.galasaecosystem.manager'
+rootProject.name = 'dev.galasa.galasaecosystem.manager.ivt'
+
+include_in_obr = true
+include_in_isolated = true
+
+    

@@ -1,1 +1,6 @@
 rootProject.name = 'dev.galasa.galasaecosystem.manager'
+
+include_in_obr = true
+include_in_bom = true
+include_in_isolated = true
+include_in_codecoverage = true
