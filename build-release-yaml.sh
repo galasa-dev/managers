@@ -2,7 +2,7 @@
 
 #-----------------------------------------------------------------------------------------                   
 #
-# Objectives: Sets the version number, and/or re-build the release.yaml
+# Objectives: Re-build the release.yaml
 #
 # Environment variable over-rides:
 # None
@@ -65,24 +65,18 @@ note() { printf "\n${underline}${bold}${blue}Note:${reset} ${blue}%s${reset}\n" 
 function usage {
     h1 "Syntax"
     cat << EOF
-set-version.sh [OPTIONS]
+build-release-yaml.sh [OPTIONS]
 Options are:
--v | --version xxx : Mandatory. Set the version number to something explicitly. 
-    Re-builds the release.yaml based on the contents of sub-projects.
-    For example '--version 0.29.0'
+(none yet implemented)
 EOF
 }
 
 #-----------------------------------------------------------------------------------------                   
 # Process parameters
 #-----------------------------------------------------------------------------------------                   
-overall_version=""
 
 while [ "$1" != "" ]; do
     case $1 in
-        -v | --version )        export overall_version=$1
-                                shift
-                                ;;
         -h | --help )           usage
                                 exit
                                 ;;
@@ -93,15 +87,9 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [[ -z $overall_version ]]; then 
-    error "Missing mandatory '--version' argument."
-    usage
-    exit 1
-fi
 
 function build_release_yaml {
     target_file=$1
-
 
     cd $BASEDIR
 
