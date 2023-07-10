@@ -30,9 +30,7 @@ This code is under the [Eclipse Public License 2.0](https://github.com/galasa-de
 Use the `./build-locally.sh` script to build locally.
 
 ## Updating the versions of things
-Use the `./set-version.sh --version x.y.z`, where `x.y.z` is the version you want things to be.
-That script also scans the contents of the managers and populates the `release.yaml` file with version information 
-taken from each manager source folder.
+Use the `./build-release-yaml.sh` script to scan the contents of the managers source code and populate the `release.yaml` file with version information taken from each manager source folder.
 
 
 
