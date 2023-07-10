@@ -1,6 +1,16 @@
 #
 # Copyright contributors to the Galasa project 
 #
+
+# -----------------------------------------------------------
+#
+#                         WARNING
+#
+# This file is periodically re-generated from the contents of 
+# the repository, so don't make changes here manually please.
+# -----------------------------------------------------------
+
+
 apiVersion: galasa.dev/v1alpha
 kind: Release
 metadata:
@@ -13,83 +23,67 @@ managers:
 # Manager 
 #  
 
-  - artifact: dev.galasa.artifact.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.artifact.manager.ivt
-    version: 0.25.0
-    obr: true
-    mvp: true
-    isolated: true
-    
-  - artifact: dev.galasa.cicsts.manager
-    version: 0.28.0
-    obr: true
-    mvp: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
+  - artifact: galasa-managers-parent
+    version: 0.15.0
 
-  - artifact: dev.galasa.cicsts.manager.ivt
-    version: 0.22.0
-    obr: true
-    mvp: true
-    bom: true
-    isolated: true
-    
   - artifact: dev.galasa.cicsts.ceci.manager
     version: 0.25.0
     obr: true
-    mvp: true
     javadoc: true
     bom: true
+    mvp: true
     isolated: true
-    codecoverage: true
 
   - artifact: dev.galasa.cicsts.ceci.manager.ivt
     version: 0.25.0
     obr: true
-    mvp: true
     bom: true
+    mvp: true
     isolated: true
-    
+
   - artifact: dev.galasa.cicsts.ceda.manager
     version: 0.29.0
     obr: true
-    mvp: true
     javadoc: true
     bom: true
+    mvp: true
     isolated: true
-    codecoverage: true
-    
+
   - artifact: dev.galasa.cicsts.ceda.manager.ivt
     version: 0.22.0
     obr: true
     mvp: true
     isolated: true
-    
+
   - artifact: dev.galasa.cicsts.cemt.manager
     version: 0.25.0
     obr: true
-    mvp: true
     javadoc: true
     bom: true
+    mvp: true
     isolated: true
-    codecoverage: true
-    
+
   - artifact: dev.galasa.cicsts.cemt.manager.ivt
     version: 0.22.0
     obr: true
     mvp: true
     isolated: true
-    
+
+  - artifact: dev.galasa.cicsts.manager
+    version: 0.28.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.cicsts.manager.ivt
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
   - artifact: dev.galasa.cicsts.resource.manager
     version: 0.25.0
     obr: true
@@ -97,8 +91,7 @@ managers:
     bom: true
     mvp: true
     isolated: true
-    codecoverage: true
-    
+
   - artifact: dev.galasa.cloud.manager
     version: 0.22.0
     obr: true
@@ -106,44 +99,7 @@ managers:
     bom: true
     mvp: true
     isolated: true
-    codecoverage: true
 
-  - artifact: dev.galasa.common
-    version: 0.25.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    
-  - artifact: dev.galasa.core.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.core.manager.ivt
-    version: 0.21.0
-    obr: true
-    mvp: true
-    isolated: true
-
-  - artifact: dev.galasa.db2.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    javadoc: true
-    mvp: true
-    isolated: true
-
-  - artifact: dev.galasa.db2.manager.ivt
-    version: 0.21.0
-    obr: true
-    mvp: true
-    isolated: true
-    
   - artifact: dev.galasa.docker.manager
     version: 0.25.0
     obr: true
@@ -151,106 +107,13 @@ managers:
     bom: true
     mvp: true
     isolated: true
-    codecoverage: true
-    
+
   - artifact: dev.galasa.docker.manager.ivt
     version: 0.25.0
     obr: true
     mvp: true
     isolated: true
-    
-  - artifact: dev.galasa.elasticlog.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.elasticlog.manager.ivt
-    version: 0.21.0
-    obr: true
-    isolated: true
-    
-  - artifact: dev.galasa.galasaecosystem.manager
-    version: 0.27.0
-    obr: true
-    bom: true
-    isolated: true
-    codecoverage: true
 
-  - artifact: dev.galasa.galasaecosystem.manager.ivt
-    version: 0.21.0
-    obr: true
-    isolated: true
-
-  - artifact: dev.galasa.githubissue.manager
-    version: 0.25.0
-    obr: true
-    mvp: false
-    bom: true
-    isolated: false
-    
-  - artifact: dev.galasa.http.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.http.manager.ivt
-    version: 0.25.0
-    obr: true
-    mvp: true
-    isolated: true
-    
-  - artifact: dev.galasa.ipnetwork.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.java.manager
-    version: 0.21.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.java.ubuntu.manager
-    version: 0.21.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.java.windows.manager
-    version: 0.21.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.jmeter.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.jmeter.manager.ivt
-    version: 0.25.0
-    obr: true
-    isolated: true
-    
   - artifact: dev.galasa.kubernetes.manager
     version: 0.29.0
     obr: true
@@ -258,33 +121,54 @@ managers:
     bom: true
     mvp: true
     isolated: true
-    codecoverage: true
-    
+
   - artifact: dev.galasa.kubernetes.manager.ivt
     version: 0.21.0
     obr: true
     isolated: true
-    
+
   - artifact: dev.galasa.liberty.manager
     version: 0.21.0
     obr: true
+    javadoc: true
+    bom: true
     mvp: true
-    javadoc: true
-    bom: true
     isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.linux.manager
-    version: 0.21.0
+
+  - artifact: dev.galasa.openstack.manager
+    version: 0.26.0
     obr: true
     javadoc: true
     bom: true
     isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.linux.manager.ivt
-    version: 0.21.0
+
+  - artifact: dev.galasa.common
+    version: 0.25.0
     obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.http.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.http.manager.ivt
+    version: 0.25.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.ipnetwork.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
     isolated: true
 
   - artifact: dev.galasa.mq.manager
@@ -293,28 +177,136 @@ managers:
     javadoc: true
     bom: true
     isolated: true
-    codecoverage: true
-  
+
   - artifact: dev.galasa.mq.manager.ivt
     version: 0.21.0
     obr: true
     bom: true
     isolated: true
-    
-  - artifact: dev.galasa.openstack.manager
-    version: 0.26.0
+
+  - artifact: dev.galasa.artifact.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+    codecoverage: true
+
+  - artifact: dev.galasa.artifact.manager.ivt
+    version: 0.25.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.core.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.core.manager.ivt
+    version: 0.21.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.textscan.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.db2.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.db2.manager.ivt
+    version: 0.25.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.eclipseruntime
+    version: 0.18.0
+
+  - artifact: dev.galasa.eclipseruntime.ubuntu.manager
+    version: 0.18.0
+
+  - artifact: dev.galasa.sem.manager
+    version: 0.25.0
+
+  - artifact: dev.galasa.java.manager
+    version: 0.21.0
     obr: true
     javadoc: true
     bom: true
     isolated: true
-    codecoverage: true
-    
+
+  - artifact: dev.galasa.java.ubuntu.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.java.windows.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.elasticlog.manager
+    version: 0.25.0
+    obr: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.elasticlog.manager.ivt
+    version: 0.21.0
+    obr: true
+    isolated: true
+
   - artifact: dev.galasa.phoenix2.manager
     version: 0.25.0
     obr: true
     bom: true
     isolated: true
-    
+
+  - artifact: dev.galasa.galasaecosystem.manager
+    version: 0.27.0
+    obr: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.galasaecosystem.manager.ivt
+    version: 0.21.0
+    obr: true
+    isolated: true
+
+  - artifact: dev.galasa.jmeter.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.jmeter.manager.ivt
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
   - artifact: dev.galasa.selenium.manager
     version: 0.25.0
     obr: true
@@ -322,187 +314,8 @@ managers:
     bom: true
     mvp: true
     isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.selenium.manager.ivt
-    version: 0.21.0
-    obr: true
-    mvp: true
-    isolated: true
-    
-  - artifact: dev.galasa.sem.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    isolated: true
-    
-  - artifact: dev.galasa.textscan.manager
-    version: 0.21.0
-    obr: true
-    mvp: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.windows.manager
-    version: 0.21.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosbatch.rseapi.manager
-    version: 0.26.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-        
-  - artifact: dev.galasa.zosbatch.zosmf.manager
-    version: 0.26.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
 
-  - artifact: dev.galasa.zosconsole.oeconsol.manager
-    version: 0.21.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosconsole.zosmf.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosfile.rseapi.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosfile.zosmf.manager
-    version: 0.25.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosliberty.manager
-    version: 0.21.0
-    obr: true
-    mvp: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosliberty.angel.manager
-    version: 0.21.0
-    obr: true
-    javadoc: true
-    bom: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zos.manager
-    version: 0.28.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zos.manager.ivt
-    version: 0.28.0
-    obr: true
-    mvp: true
-    isolated: true
-      
-  - artifact: dev.galasa.zosprogram.manager 
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosmf.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosrseapi.manager
-    version: 0.25.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zossecurity.manager
-    version: 0.29.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zostsocommand.ssh.manager
-    version: 0.21.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zosunixcommand.ssh.manager
-    version: 0.21.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zos3270.common
-    version: 0.28.0
-    obr: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zos3270.manager
-    version: 0.28.0
-    obr: true
-    javadoc: true
-    bom: true
-    mvp: true
-    isolated: true
-    codecoverage: true
-    
-  - artifact: dev.galasa.zos3270.manager.ivt
+  - artifact: dev.galasa.selenium.manager.ivt
     version: 0.21.0
     obr: true
     mvp: true
@@ -512,6 +325,173 @@ managers:
     version: 0.25.0
     obr: true
     javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.vtp.manager.ivt
+    version: 0.21.0
+
+  - artifact: dev.galasa.linux.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.linux.manager.ivt
+    version: 0.21.0
+    obr: true
+    isolated: true
+
+  - artifact: dev.galasa.windows.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.githubissue.manager
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zos.manager
+    version: 0.28.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zos.manager.ivt
+    version: 0.28.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zos3270.common
+    version: 0.28.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zos3270.manager
+    version: 0.28.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zos3270.manager.ivt
+    version: 0.21.0
+    obr: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosbatch.rseapi.manager
+    version: 0.26.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosbatch.zosmf.manager
+    version: 0.26.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosconsole.oeconsol.manager
+    version: 0.21.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosconsole.zosmf.manager
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosfile.rseapi.manager
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosfile.zosmf.manager
+    version: 0.25.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosliberty.angel.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    isolated: true
+
+  - artifact: dev.galasa.zosliberty.manager
+    version: 0.21.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosmf.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosprogram.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosrseapi.manager
+    version: 0.25.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zossecurity.manager
+    version: 0.29.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zostsocommand.ssh.manager
+    version: 0.21.0
+    obr: true
+    bom: true
+    mvp: true
+    isolated: true
+
+  - artifact: dev.galasa.zosunixcommand.ssh.manager
+    version: 0.21.0
+    obr: true
     bom: true
     mvp: true
     isolated: true

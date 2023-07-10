@@ -26,4 +26,11 @@ Other Galasa repositories are available on [GitHub](https://github.com/galasa-de
 
 This code is under the [Eclipse Public License 2.0](https://github.com/galasa-dev/maven/blob/main/LICENSE).
 
+## Building locally
+Use the `./build-locally.sh` script to build locally.
+
+## Updating the versions of things
+Use the `./build-release-yaml.sh` script to scan the contents of the managers source code and populate the `release.yaml` file with version information taken from each manager source folder.
+
+
 
