@@ -1,4 +1,4 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env sh 
 
 #-----------------------------------------------------------------------------------------                   
 #
@@ -67,7 +67,8 @@ function usage {
     cat << EOF
 build-release-yaml.sh [OPTIONS]
 Options are:
-(none yet implemented)
+--help | -h : Get help on this command.
+--file | -f : the release.yaml file path we will generage/overwrite. Mandatory.
 EOF
 }
 
@@ -75,8 +76,13 @@ EOF
 # Process parameters
 #-----------------------------------------------------------------------------------------                   
 
+release_yaml_path=""
+
 while [ "$1" != "" ]; do
     case $1 in
+        -f | --file )           shift
+                                release_yaml_path=$1
+                                ;;
         -h | --help )           usage
                                 exit
                                 ;;
@@ -87,9 +93,15 @@ while [ "$1" != "" ]; do
     shift
 done
 
+if [[ -z release_yaml_path ]]; then 
+    error "--file parameter is missing. It refers to the file path of the target file we want to generate."
+    exit 1
+fi
 
 function build_release_yaml {
     target_file=$1
+
+    h1 "Building $target_file..."
 
     cd $BASEDIR
 
@@ -131,7 +143,7 @@ EOF
 
     while IFS= read -r manager_folder
     do 
-        info "Processing folder $manager_folder..."
+        # info "Processing folder $manager_folder..."
         manager_version=$(cat $manager_folder/build.gradle | grep "version =" | cut -f2 -d"'")
 
         manager_name=$(cat $manager_folder/settings.gradle | grep "rootProject.name =" | cut -f2 -d"'")
@@ -192,18 +204,6 @@ EOF
 
 }
 
-rm -fr $BASEDIR/temp
-mkdir -p $BASEDIR/temp
+build_release_yaml $release_yaml_path
 
-build_release_yaml $BASEDIR/temp/release.yaml
-
-diff ${BASEDIR}/release.yaml $BASEDIR/temp/release.yaml > /dev/null
-is_different=$?
-if [[ "${is_different}" == "0" ]]; then
-    info "The generated yaml and the release.yaml are the same, so not replacing it."
-else
-    info "Replacing the generated yaml with the release.yaml file..."
-    cp $BASEDIR/temp/release.yaml ${BASEDIR}/release.yaml
-fi
-
-success "OK"
+success "OK - created file $release_yaml_path"

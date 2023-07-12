@@ -158,9 +158,9 @@ function build_code {
     info "Log will be placed at ${log_file}"
 
     if [[ "${build_type}" == "clean" ]]; then
-        goals="clean build check publishToMavenLocal -no-build-cache --no-daemon --parallel"
+        goals="clean build buildReleaseYaml check publishToMavenLocal -no-build-cache --no-daemon --parallel"
     else
-        goals="build check publishToMavenLocal --parallel"
+        goals="build buildReleaseYaml check publishToMavenLocal --parallel"
     fi
 
     cmd="gradle  \
@@ -177,10 +177,4 @@ function build_code {
 
 }
 
-function build_release_yaml {
-    $BASEDIR/build-release-yaml.sh
-}
-
 build_code
-
-build_release_yaml

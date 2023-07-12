@@ -5,7 +5,11 @@ plugins {
     id 'maven-publish'
 }
 
-version = '0.15.0'
+// Note: The following version number is updated using the set-version.sh tool.
+// It is used as the version number of the managers bundle, which contains a yaml
+// file which is in a release.yaml, but published to maven, so that the OBR build 
+// can pick it up later.
+version = "0.30.0"
 
 task clean {
    // make sure the build directory is gone 
@@ -17,6 +21,7 @@ task clean {
 // A configuration to publish the merge exec into
 configurations {
     archives
+    release_metadata
 }
 
 //  Get all the sub projects with jacoco plugin to add itself to the merge 
@@ -51,15 +56,55 @@ repositories {
     }
 }
 
+
+
 if (jacocoEnabled.toBoolean()) {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                artifact execArtifact
+                
+                groupId = 'codecoverage'
+                artifactId = 'manager-unit-tests'
+            }
+        }
+        repositories {
+            maven {
+                url  = "$targetMaven"
+                
+                if ("$targetMaven".startsWith('http')) {
+                    credentials {
+                        username System.getenv('MAVENUSERNAME')
+                        password System.getenv('MAVENPASSWORD')
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Build the release.yaml file
+task buildReleaseYaml(type: Exec) {
+    println 'Building the release.yaml file...'
+
+    // commandLine 'sh', './build-release-yaml.sh', '--file', "$projectDir/release.yaml"
+    commandLine 'sh', './build-release-yaml.sh', '--file', "$buildDir/release.yaml"
+}
+
+def myReleaseYaml = artifacts.add('release_metadata', file("$buildDir/release.yaml")) {
+    builtBy 'buildReleaseYaml'
+}
+
+// Publish the release.yaml as a maven artifact.
+// Note: The maven co-ordinates are versioned using the version for this bundle.
 publishing {
     publications {
         maven(MavenPublication) {
-            artifact execArtifact
-            
-            groupId = 'codecoverage'
-            artifactId = 'manager-unit-tests'
-       }
+            artifact myReleaseYaml
+            artifactId "dev.galasa.managers"
+            groupId 'dev.galasa'
+            version version
+        }
     }
     repositories {
         maven {
@@ -74,4 +119,5 @@ publishing {
         }
     }
 }
-}
+
+

@@ -24,7 +24,7 @@ managers:
 #  
 
   - artifact: galasa-managers-parent
-    version: 0.15.0
+    version: 0.30.0
 
   - artifact: dev.galasa.cicsts.ceci.manager
     version: 0.25.0
