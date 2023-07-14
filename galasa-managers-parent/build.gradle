@@ -1,11 +1,14 @@
 plugins {
     id 'biz.aQute.bnd.builder' version '5.3.0' apply false
-    
     id 'jacoco'
     id 'maven-publish'
 }
 
-version = '0.15.0'
+// Note: The following version number is updated using the set-version.sh tool.
+// It is used as the version number of the managers bundle, which contains a yaml
+// file which is in a release.yaml, but published to maven, so that the OBR build 
+// can pick it up later.
+version = "0.30.0"
 
 task clean {
    // make sure the build directory is gone 
@@ -17,6 +20,7 @@ task clean {
 // A configuration to publish the merge exec into
 configurations {
     archives
+    release_metadata
 }
 
 //  Get all the sub projects with jacoco plugin to add itself to the merge 
@@ -51,20 +55,145 @@ repositories {
     }
 }
 
+
+
 if (jacocoEnabled.toBoolean()) {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                artifact execArtifact
+                
+                groupId = 'codecoverage'
+                artifactId = 'manager-unit-tests'
+            }
+        }
+        repositories {
+            maven {
+                url  = "$targetMaven"
+                
+                if ("$targetMaven".startsWith('http')) {
+                    credentials {
+                        username System.getenv('MAVENUSERNAME')
+                        password System.getenv('MAVENPASSWORD')
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+def manifestFilePath = "$buildDir/release.yaml"
+
+def header = """#
+# Copyright contributors to the Galasa project 
+#
+
+# -----------------------------------------------------------
+#
+#                         WARNING
+#
+# This file is periodically re-generated from the contents of 
+# the repository, so don't make changes here manually please.
+# -----------------------------------------------------------
+
+
+apiVersion: galasa.dev/v1alpha
+kind: Release
+metadata:
+  name: galasa-release
+    
+managers:
+  bundles:
+
+#
+# Manager 
+#
+"""
+
+// Build the release.yaml file
+task buildReleaseYaml() {
+    println 'Building the release.yaml file...'
+
+    // During execution phase, make sure the file exists.
+    doFirst{
+        if ( !buildDir.exists() ) {
+            buildDir.mkdirs()
+        }
+        def manifest_file = new File(manifestFilePath)
+        if (!manifest_file.exists()){
+            manifest_file.createNewFile()
+        } else {
+            manifest_file.delete()
+            manifest_file.createNewFile()
+        }
+        manifest_file.append(header)
+    }
+
+
+    subprojects {
+        ext {
+            // the property that should be overridden in suproject's build.gradle
+            // Each sub-project will set the values...
+            project_name = ''
+            include_in_obr = ''
+            include_in_mvp = ''
+            include_in_bom = ''
+            include_in_javadoc = ''
+            include_in_isolated = ''
+            include_in_codecoverage = ''
+        }
+
+        afterEvaluate {
+            doLast {
+                // Some projects don't have a version property... as they are parent projects mostly.
+                if (version != 'unspecified') {
+                    def f = new File(manifestFilePath)
+                    f.append("\n\n  - artifact: $project_name")
+                    f.append("\n    version: $version")
+                    if (include_in_obr != '') {
+                        f.append("\n    obr:          $include_in_obr")
+                    }
+                    if (include_in_mvp != '') {
+                        f.append("\n    mvp:          $include_in_mvp")
+                    }
+                    if (include_in_bom != '') {
+                        f.append("\n    bom:          $include_in_bom")
+                    }
+                    if (include_in_javadoc != '') {
+                        f.append("\n    javadoc:      $include_in_javadoc")
+                    }
+                    if (include_in_isolated != '') {
+                        f.append("\n    isolated:     $include_in_isolated")
+                    }
+                    if (include_in_codecoverage != '') {
+                        f.append("\n    codecoverage: $include_in_codecoverage")
+                    }
+                }
+            }
+        }
+    }
+}
+
+def myReleaseYaml = artifacts.add('release_metadata', file("$buildDir/release.yaml")) {
+    builtBy 'buildReleaseYaml'
+}
+
+// Publish the release.yaml as a maven artifact.
+// Note: The maven co-ordinates are versioned using the version for this bundle.
 publishing {
     publications {
         maven(MavenPublication) {
-            artifact execArtifact
-            
-            groupId = 'codecoverage'
-            artifactId = 'manager-unit-tests'
-       }
+            artifact myReleaseYaml
+            artifactId "dev.galasa.managers"
+            groupId 'dev.galasa'
+            version version
+        }
     }
     repositories {
         maven {
             url  = "$targetMaven"
-            
+        
             if ("$targetMaven".startsWith('http')) {
                 credentials {
                     username System.getenv('MAVENUSERNAME')
@@ -74,4 +203,5 @@ publishing {
         }
     }
 }
-}
+
+
