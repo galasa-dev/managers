@@ -185,7 +185,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             artifact myReleaseYaml
-            artifactId "dev.galasa.managers"
+            artifactId "dev.galasa.managers.manifest"
             groupId 'dev.galasa'
             version version
         }
