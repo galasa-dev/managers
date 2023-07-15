@@ -5,9 +5,9 @@ rootProject.name = 'dev.galasa.zos.manager'
 // or referenced from.
 // The settings here are gathered together by the build process to create a release.yaml file 
 // which gathers-up all the packaging metadata about all the OSGi bundles in this component.
-include_in_obr = true
-include_in_javadoc = true
-include_in_bom = true
-include_in_mvp = true
-include_in_isolated = true
-include_in_codecoverage = true
+includeInOBR = true
+includeInJavadoc = true
+includeInBOM = true
+includeInMVP = true
+includeInIsolated = true
+includeInCodeCoverage = true

@@ -135,13 +135,13 @@ task buildReleaseYaml() {
         ext {
             // the property that should be overridden in suproject's build.gradle
             // Each sub-project will set the values...
-            project_name = ''
-            include_in_obr = ''
-            include_in_mvp = ''
-            include_in_bom = ''
-            include_in_javadoc = ''
-            include_in_isolated = ''
-            include_in_codecoverage = ''
+            projectName = ''
+            includeInOBR = ''
+            includeInMVP = ''
+            includeInBOM = ''
+            includeInJavadoc = ''
+            includeInIsolated = ''
+            includeInCodeCoverage = ''
         }
 
         afterEvaluate {
@@ -149,25 +149,25 @@ task buildReleaseYaml() {
                 // Some projects don't have a version property... as they are parent projects mostly.
                 if (version != 'unspecified') {
                     def f = new File(manifestFilePath)
-                    f.append("\n\n  - artifact: $project_name")
+                    f.append("\n\n  - artifact: $projectName")
                     f.append("\n    version: $version")
-                    if (include_in_obr != '') {
-                        f.append("\n    obr:          $include_in_obr")
+                    if (includeInOBR != '') {
+                        f.append("\n    obr:          $includeInOBR")
                     }
-                    if (include_in_mvp != '') {
-                        f.append("\n    mvp:          $include_in_mvp")
+                    if (includeInMVP != '') {
+                        f.append("\n    mvp:          $includeInMVP")
                     }
-                    if (include_in_bom != '') {
-                        f.append("\n    bom:          $include_in_bom")
+                    if (includeInBOM != '') {
+                        f.append("\n    bom:          $includeInBOM")
                     }
-                    if (include_in_javadoc != '') {
-                        f.append("\n    javadoc:      $include_in_javadoc")
+                    if (includeInJavadoc != '') {
+                        f.append("\n    javadoc:      $includeInJavadoc")
                     }
-                    if (include_in_isolated != '') {
-                        f.append("\n    isolated:     $include_in_isolated")
+                    if (includeInIsolated != '') {
+                        f.append("\n    isolated:     $includeInIsolated")
                     }
-                    if (include_in_codecoverage != '') {
-                        f.append("\n    codecoverage: $include_in_codecoverage")
+                    if (includeInCodeCoverage != '') {
+                        f.append("\n    codecoverage: $includeInCodeCoverage")
                     }
                 }
             }
