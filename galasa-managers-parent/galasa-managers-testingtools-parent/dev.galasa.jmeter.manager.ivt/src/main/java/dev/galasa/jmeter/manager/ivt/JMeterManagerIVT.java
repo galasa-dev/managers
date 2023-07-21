@@ -1,3 +1,8 @@
+/*
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.jmeter.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,13 +21,7 @@ import dev.galasa.jmeter.IJMeterSession;
 import dev.galasa.jmeter.JMeterManagerException;
 import dev.galasa.jmeter.JMeterSession;
 
-/*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
- */
-
- @Test
+@Test
  public class JMeterManagerIVT {
 
     @Logger
