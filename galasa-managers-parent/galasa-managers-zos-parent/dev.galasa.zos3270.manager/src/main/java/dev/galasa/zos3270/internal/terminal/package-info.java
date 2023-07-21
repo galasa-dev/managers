@@ -1,7 +1,7 @@
 /*
- *Licensed Materials - Property of IBM
+ * Copyright contributors to the Galasa project
  *
- *(c) Copyright IBM Corp. 2019.
+ * SPDX-License-Identifier: EPL-2.0
  */
 /**
  * zOS 3270 Terminal Manager - Internal 3270 Terminal classes
