@@ -1,5 +1,11 @@
 #!/bin/sh +e
 
+#
+# Copyright contributors to the Galasa project
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+
 echo "Checking for changes"
 CHANGED=$(git status -s .)
 echo $CHANGED
