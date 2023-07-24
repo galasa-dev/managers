@@ -36,15 +36,18 @@ public class CicsResourceImpl implements ICicsResource {
             throw new CicsResourceManagerException("Unable to get zOS File Handler", e);
         }
     }
+    
+
+
 
     @Override
-	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException {
-		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, bundlePath, null, parameters);
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath,String bundleDirectory, Map<String,Object > parameters,int skeletonType) throws CicsBundleResourceException {
+		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, bundlePath, bundleDirectory, parameters,skeletonType);
 	}
 
     @Override
 	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundleDir) throws CicsBundleResourceException {
-		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, null, bundleDir, null);
+		return new CicsBundleImpl(this.cicsResourceManagerImpl, this.cicsRegion, cicsTerminal, testClass, name, group, null, bundleDir, null, 0);
 	}
 
 	@Override

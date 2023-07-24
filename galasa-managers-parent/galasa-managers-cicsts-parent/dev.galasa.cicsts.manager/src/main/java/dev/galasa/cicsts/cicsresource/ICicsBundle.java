@@ -3,6 +3,8 @@
  */
 package dev.galasa.cicsts.cicsresource;
 
+
+
 /**
  * Represents a CICS Bundle resource. It provides methods to set CICS Bundle specific attributes on the resource
  * (via CEDA) and to manage and set attributes in CEMT
@@ -47,14 +49,15 @@ public interface ICicsBundle {
 
 	/**
 	 * Return the CICS BUNDLE resource BUNDLEDIR attribute value
-	 * @return the resource JVMPROFILE attribute value
+	 * @return the resource BundleDirectory
 	 */	
 	public String getResourceDefinitionBundledirAttribute();
 
 	/**
-	 * Build the complete JVM server including the profile zOS UNIX file and the CICS resource definition. This method will install the CICS 
+	 * Build the complete CICS Bundle CICS resource definition. This method will install the CICS 
 	 * resource and wait for it to become enabled
 	 * @throws CicsBundleResourceException
+	 * @throws TestBundleResourceException 
 	 */
 	public void build() throws CicsBundleResourceException;
 
@@ -186,5 +189,8 @@ public interface ICicsBundle {
 	 * Returns the CICS BUNDLE name as defined in the CICS Resource Definition
 	 * @return the CICS BUNDLE name
 	 */
-	public String getName();
+	public String getDefinitionName();
+
+	
+
 }

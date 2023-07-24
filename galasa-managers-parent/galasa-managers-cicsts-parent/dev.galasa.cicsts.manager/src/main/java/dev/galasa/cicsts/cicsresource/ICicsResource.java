@@ -15,6 +15,7 @@ import dev.galasa.zosliberty.IZosLibertyServer;
  */
 public interface ICicsResource {
 	
+
 	/**
 	 * Create a CICS BUNDLE resource object supplying the CICS bundle content. 
 	 * 
@@ -26,11 +27,13 @@ public interface ICicsResource {
 	 * @param name the CICS BUNDLE RDO name
 	 * @param group the CICS BUNDLE RDO group name
 	 * @param bundlePath the path to the directory in the test class bundle containing the CICS bundle
-	 * @param parameters substitution parameters to replace variables in the <code>META-INF/cics.xml</code>. Can be <code>null</code>  
+	 * @param bundleDir the path to an existing bundle already on zfs
+	 * @param parameters substitution parameters to replace variables in the bundle parts  
+	 * @param skeletonType Velocity = 1, PlusPlus = 0
 	 * @return the CICS Bundle object
 	 * @throws CicsBundleResourceException
 	 */
-	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, Map<String, String> parameters) throws CicsBundleResourceException;
+	public ICicsBundle newCicsBundle(ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath,String bundleDir, Map<String, Object> parameters,int skeletonType) throws CicsBundleResourceException;
 	
 	/**
 	 * Create a CICS BUNDLE resource object without supplying the CICS bundle content, i.e. the bundle already exists on the zOS UNIX file system
@@ -102,4 +105,6 @@ public interface ICicsResource {
 	 * @return the JVM profile
 	 */
 	public IJvmprofile newJvmprofile(String jvmprofileName, String content);
+
+	
 }

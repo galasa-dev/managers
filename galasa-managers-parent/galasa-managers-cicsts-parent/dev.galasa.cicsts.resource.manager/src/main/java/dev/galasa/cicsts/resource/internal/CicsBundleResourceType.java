@@ -183,7 +183,13 @@ public enum CicsBundleResourceType {
     /**
      * DB2 PACKAGESET 
      */
-    PACKAGESET(true);
+    PACKAGESET(true),
+	
+	/**
+	 * DEFAULT if not found
+	 */
+	DEFAULT();
+	
     
     private boolean binaryBundleResource = true;
     private CicsBundleResourceType subComponentType = null;     
