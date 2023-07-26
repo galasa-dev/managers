@@ -65,9 +65,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private boolean required;
 
     private IZosManagerSpi zosManager;
-	private IZosBatchSpi zosBatchManager;
-	private IZosFileSpi zosFileManager;
-	private ITextScannerManagerSpi textScanner;
+    private IZosBatchSpi zosBatchManager;
+    private IZosFileSpi zosFileManager;
+    private ITextScannerManagerSpi textScanner;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -208,6 +208,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         CicsTerminal annotation = field.getAnnotation(CicsTerminal.class);
 
         String tag = defaultString(annotation.cicsTag(), "PRIMARY").toUpperCase();
+        String loginCredentialsTag = defaultString(annotation.loginCredentialsTag(), "").toUpperCase();
         
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
@@ -216,7 +217,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner);
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner, loginCredentialsTag);
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException e) {
@@ -264,7 +265,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
         // Add the default Logon Provider incase one isn't supplied
-        this.logonProviders.add(new CicstsDefaultLogonProvider());
+        this.logonProviders.add(new CicstsDefaultLogonProvider(getFramework()));
 
         // First, give the provisioners the opportunity to start CICS regions
         for (ICicsRegionProvisioner provisioner : provisioners) {

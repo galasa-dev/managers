@@ -30,4 +30,6 @@ public interface ICicsTerminal extends ITerminal {
      */
     public boolean isUppercaseTranslation() throws CicstsManagerException;
 
+    String getLoginCredentialsTag();
+
 }
