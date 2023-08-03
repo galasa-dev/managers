@@ -95,7 +95,12 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
             int primaryColumns, int primaryRows, int alternateColumns, int alternateRows,
             ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException {
+
+        // Normally you would hope that this particular constructor called another constructor, but we can't
+        // because of the possibility that a ZosManagerException may be thrown.
         super(id, host, port, tls, primaryColumns, primaryRows, alternateColumns, alternateRows, textScanner);
+
+        // We have to initialise the instance variables here, as they are marked as final.
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;
@@ -106,43 +111,21 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         getScreen().registerScreenUpdateListener(this);
 
-        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
-        terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
-        URL propLiveTerminalUrl = LiveTerminalUrl.get();
-        if (propLiveTerminalUrl == null) {
-            liveTerminalUrl = null;
-        } else {
-            try {
-                // *** Register the terminal to the UI which will own the terminal view
-                HttpURLConnection connection = (HttpURLConnection) propLiveTerminalUrl.openConnection();
-                connection.setRequestMethod("HEAD");
-                connection.addRequestProperty("zos3270-runid", this.runId);
-                connection.addRequestProperty("zos3270-terminalid", this.terminalId);
-                connection.setDoInput(true);
-                connection.setDoOutput(false);
-                connection.connect();
-                if (connection.getResponseCode() != 200) {
-                    logger.warn("Unable to activate live terminal due to " + connection.getResponseCode() + " - "
-                            + connection.getResponseMessage());
-                } else {
-                    this.liveTerminalUrl = new URL(
-                            propLiveTerminalUrl.toString() + "/" + this.runId + "/" + this.terminalId);
-                }
-            } catch (Exception e) {
-                throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
-            }
-        }
+        this.storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        this.terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+
+        this.liveTerminalUrl = getLiveTerminalUrl(id,host, framework, this.runId , this.terminalId );
 
         setDeviceTypes(TerminalDeviceTypes.get(image));
-
-        logConsoleTerminals = LogConsoleTerminals.get();
+        this.logConsoleTerminals = LogConsoleTerminals.get();
     }
-
 
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
             IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)
             throws Zos3270ManagerException, TerminalInterruptedException, ZosManagerException {
         super(id, host, port, tls, primarySize, alternateSize, textScanner, image.getCodePage());
+
+        // We have to initialise the instance variables here, as they are final.
         this.terminalId = id;
         this.runId = framework.getTestRunName();
         this.autoConnect = autoConnect;
@@ -153,18 +136,35 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
         getScreen().registerScreenUpdateListener(this);
 
-        storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
-        terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+        this.storedArtifactsRoot = framework.getResultArchiveStore().getStoredArtifactsRoot();
+        this.terminalRasDirectory = storedArtifactsRoot.resolve("zos3270").resolve("terminals").resolve(this.terminalId);
+
+        this.liveTerminalUrl = getLiveTerminalUrl(id,host, framework, this.runId , this.terminalId );
+
+        setDeviceTypes(TerminalDeviceTypes.get(image));
+        this.logConsoleTerminals = LogConsoleTerminals.get();
+    }
+
+
+    /** Connect to the zos3270 terminal  */
+    private URL getLiveTerminalUrl(
+        String id, 
+        String host, 
+        IFramework framework, 
+        String runId , 
+        String terminalId
+    ) throws Zos3270ManagerException {
+
+        URL liveTerminalUrl = null ;
+
         URL propLiveTerminalUrl = LiveTerminalUrl.get();
-        if (propLiveTerminalUrl == null) {
-            liveTerminalUrl = null;
-        } else {
+        if (propLiveTerminalUrl != null) {
             try {
                 // *** Register the terminal to the UI which will own the terminal view
                 HttpURLConnection connection = (HttpURLConnection) propLiveTerminalUrl.openConnection();
                 connection.setRequestMethod("HEAD");
-                connection.addRequestProperty("zos3270-runid", this.runId);
-                connection.addRequestProperty("zos3270-terminalid", this.terminalId);
+                connection.addRequestProperty("zos3270-runid", runId);
+                connection.addRequestProperty("zos3270-terminalid", terminalId);
                 connection.setDoInput(true);
                 connection.setDoOutput(false);
                 connection.connect();
@@ -172,17 +172,15 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                     logger.warn("Unable to activate live terminal due to " + connection.getResponseCode() + " - "
                             + connection.getResponseMessage());
                 } else {
-                    this.liveTerminalUrl = new URL(
-                            propLiveTerminalUrl.toString() + "/" + this.runId + "/" + this.terminalId);
+                    liveTerminalUrl = new URL(
+                            propLiveTerminalUrl.toString() + "/" + runId + "/" + terminalId);
                 }
+                
             } catch (Exception e) {
                 throw new Zos3270ManagerException("Unable to create the live terminal directory", e);
             }
         }
-
-        setDeviceTypes(TerminalDeviceTypes.get(image));
-
-        logConsoleTerminals = LogConsoleTerminals.get();
+        return liveTerminalUrl;
     }
 
     public boolean doAutoConnect() {
