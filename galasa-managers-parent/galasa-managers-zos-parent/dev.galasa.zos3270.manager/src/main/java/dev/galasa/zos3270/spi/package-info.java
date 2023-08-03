@@ -1,7 +1,7 @@
 /*
- *Licensed Materials - Property of IBM
+ * Copyright contributors to the Galasa project
  *
- *(c) Copyright IBM Corp. 2020.
+ * SPDX-License-Identifier: EPL-2.0
  */
 /**
  * Zos3270Terminal Manager

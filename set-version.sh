@@ -1,5 +1,10 @@
 #! /usr/bin/env bash 
 
+#
+# Copyright contributors to the Galasa project
+#
+# SPDX-License-Identifier: EPL-2.0
+#
 #-----------------------------------------------------------------------------------------                   
 #
 # Objectives: Sets the version number of this component.
@@ -143,5 +148,3 @@ function upgrade_build_gradle {
 
 upgrade_build_gradle
 upgrade_dependencies_on_framework
-
-

@@ -1,7 +1,11 @@
+#
 # Copyright contributors to the Galasa project
 #
-# The configuration properties for the Galasa Ecosystem
+# SPDX-License-Identifier: EPL-2.0
 #
+
+# The configuration properties for the Galasa Ecosystem
+
 apiVersion: v1
 kind: ConfigMap
 metadata:

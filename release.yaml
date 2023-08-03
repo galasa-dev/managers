@@ -1,6 +1,9 @@
 #
-# Copyright contributors to the Galasa project 
+# Copyright contributors to the Galasa project
 #
+# SPDX-License-Identifier: EPL-2.0
+#
+
 apiVersion: galasa.dev/v1alpha
 kind: Release
 metadata:
@@ -29,7 +32,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.cicsts.manager
-    version: 0.28.0
+    version: 0.30.0
     obr: true
     mvp: true
     javadoc: true

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts.spi;
 
@@ -31,26 +33,33 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
     public final ICicstsManagerSpi cicstsManager;
 
     public final boolean connectAtStartup;
+    public final String loginCredentialsTag;
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, String host, int port, boolean ssl, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag)
             throws TerminalInterruptedException, Zos3270ManagerException, ZosManagerException {
         super(cicsRegion.getNextTerminalId(), host, port, ssl, framework, false, cicsRegion.getZosImage(), new TerminalSize(80, 24), new TerminalSize(0, 0), textScanner);
 
         this.cicsRegion = cicsRegion;
         this.cicstsManager = cicstsManager;
         this.connectAtStartup = connectAtStartup;
+        this.loginCredentialsTag = loginCredentialsTag;
 
         setAutoReconnect(connectAtStartup);
     }
 
-    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner)
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, IIpHost ipHost, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag)
             throws TerminalInterruptedException, IpNetworkManagerException, Zos3270ManagerException, ZosManagerException {
-        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner);
+        this(cicstsManager, framework, cicsRegion, ipHost.getHostname(), ipHost.getTelnetPort(), ipHost.isTelnetPortTls(), connectAtStartup, textScanner, loginCredentialsTag);
+    }
+
+    public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner, String loginCredentialsTag) throws TerminalInterruptedException, IpNetworkManagerException,
+    Zos3270ManagerException, ZosManagerException {
+        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner, loginCredentialsTag);
     }
 
     public CicsTerminalImpl(ICicstsManagerSpi cicstsManager, IFramework framework, ICicsRegionProvisioned cicsRegion, boolean connectAtStartup, ITextScannerManagerSpi textScanner) throws TerminalInterruptedException, IpNetworkManagerException,
     Zos3270ManagerException, ZosManagerException {
-        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner);
+        this(cicstsManager, framework, cicsRegion, cicsRegion.getZosImage().getIpHost(), connectAtStartup, textScanner, "");
     }
 
     @Override
@@ -147,5 +156,10 @@ public class CicsTerminalImpl extends Zos3270TerminalImpl implements ICicsTermin
 			throw new CicstsManagerException("Unable to get Uppercase Translation status", e);
 		}
 	}
+
+  @Override
+  public String getLoginCredentialsTag() {
+      return this.loginCredentialsTag;
+  }
 
 }

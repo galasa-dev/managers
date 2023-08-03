@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts;
 
@@ -38,4 +38,9 @@ public @interface CicsTerminal {
      */
     boolean connectAtStartup() default true;
     
+    /**
+     * The CICS TS Manager will automatically log into the CICS TS region via CESL using the terminal with 
+     * the specified secure credentials when it connects
+     */
+    String loginCredentialsTag() default "";
 }
