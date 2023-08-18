@@ -577,7 +577,10 @@ public class SSHClient implements ICommandShell {
     private class KeepAliveThread extends Thread {
 
         private final Session monitorSession;
-        private long          idleTimeout = 60000;
+
+        // Some commands we run download the isolated build zip which takes ages...
+        // Timeout increased from 60secs to 120secs to allow the download to complete.
+        private long          idleTimeout = 120000;
 
         public KeepAliveThread(Session session) {
             this.monitorSession = session;
