@@ -187,7 +187,10 @@ publishing {
             artifact myReleaseYaml
             artifactId "dev.galasa.managers.manifest"
             groupId 'dev.galasa'
-            version version
+            
+            pom {
+                packaging = "pom"
+            }
         }
     }
     repositories {
