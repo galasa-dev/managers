@@ -32,7 +32,9 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.osgi.service.component.annotations.Component;
 
+import com.ibm.hursley.cicsts.test.sem.complex.CICSRegion;
 import com.ibm.hursley.cicsts.test.sem.complex.Complex;
+import com.ibm.hursley.cicsts.test.sem.complex.DfhRpl;
 import com.ibm.hursley.cicsts.test.sem.complex.RunOptions;
 import com.ibm.hursley.cicsts.test.sem.complex.jcl.JCLException;
 import com.ibm.hursley.cicsts.test.sem.complex.jcl.Job;
@@ -82,6 +84,8 @@ import dev.galasa.zosbatch.IZosBatchJob.JobStatus;
 import dev.galasa.zosbatch.ZosBatchException;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosconsole.spi.IZosConsoleSpi;
+import dev.galasa.zosfile.IZosDataset;
+import dev.galasa.zosfile.spi.IZosFileSpi;
 import sem.DEFCICS;
 import sem.Environment;
 import sem.SemFactory;
@@ -99,6 +103,7 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
     private IDynamicStatusStoreService dss;
 
     private IZosManagerSpi zosManager;
+    private IZosFileSpi zosFileManager;
     private IZosBatchSpi zosBatch;
     private IZosConsoleSpi zosConsole;
     private ICicstsManagerSpi cicsManager;
@@ -187,6 +192,11 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
         if (this.zosManager == null) {
             throw new SemManagerException("Unable to locate the zOS Manager, required for the SEM Manager");
         }
+        
+        this.zosFileManager = addDependentManager(allManagers, activeManagers, galasaTest, IZosFileSpi.class);
+        if (this.zosFileManager == null) {
+            throw new SemManagerException("Unable to locate the zOS File Manager, required for the SEM Manager");
+        }
 
         this.zosBatch = addDependentManager(allManagers, activeManagers, galasaTest, IZosBatchSpi.class);
         if (this.zosBatch == null) {
@@ -223,6 +233,10 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
     public boolean areYouProvisionalDependentOn(@NotNull IManager otherManager) {
 
         if (otherManager == this.zosManager) {
+            return true;
+        }
+        
+        if (otherManager == this.zosFileManager) {
             return true;
         }
 
@@ -427,6 +441,20 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
 
             if (rc > 4) {
                 throw new SemManagerException("SEM complex generation failed, rc=" +rc);
+            }
+            
+            String loadLibrary = zosManager.getRunDatasetHLQ(primaryZosImage) + "." + getFramework().getTestRunName() + ".LOAD";
+            IZosDataset loadLibaryDs = zosFileManager.getZosFileHandler().newDataset(loadLibrary, primaryZosImage);
+            
+            // Add the run load library to DFHRPL            
+            if (loadLibaryDs.exists()) {
+            	logger.debug("Found load library " + loadLibrary + " adding it to DFHRPL concatenation");
+	            for (CICSRegion cics : this.complex.getCICS()) {
+	            	this.appendDfhRpl(cics, zosManager.getRunDatasetHLQ(primaryZosImage) + "." + getFramework().getTestRunName() + ".LOAD");
+	            	logger.trace("Added " + loadLibrary + " to DFHRPL in CICS region " + cics.getApplid());
+	            }
+            } else {
+            	logger.debug("Load library " + loadLibrary + " is missing. Not adding it to DFHRPL");
             }
 
             this.conrep = this.complex.generateConRepModel();
@@ -796,13 +824,12 @@ public class SemManagerImpl extends AbstractManager implements ICicsRegionProvis
 
         logger.info("SEM discard is complete");
     }
-
-
-
-
-
-
-
+    
+    public void appendDfhRpl(CICSRegion cics, String library) {
+		DfhRpl rplConcat = new DfhRpl();
+		rplConcat.getDSNS().add(library);
+		cics.getRpl().add(0, rplConcat);
+    }
 
     public Environment convertModel(@NotNull String modelString) throws SemManagerException {
         ByteArrayInputStream bais = new ByteArrayInputStream(modelString.getBytes());
