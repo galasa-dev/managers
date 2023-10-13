@@ -497,7 +497,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.manager
-    version: 0.28.0
+    version: 0.30.0
     obr: true
     javadoc: true
     bom: true
