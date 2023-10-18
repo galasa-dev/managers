@@ -183,16 +183,46 @@ def myReleaseYaml = artifacts.add('release_metadata', file("$buildDir/release.ya
 // Note: The maven co-ordinates are versioned using the version for this bundle.
 publishing {
     publications {
-        maven(MavenPublication) {
+
+        // Publish the component manifest/release.yaml
+        publishReleaseManifestYaml(MavenPublication) {
             artifact myReleaseYaml
-            artifactId "dev.galasa.managers.manifest"
-            groupId 'dev.galasa'
-            
+
             pom {
-                packaging = "pom"
+                name = "Manifest for managers bundle versions"
+                artifactId = "dev.galasa.managers.manifest"
+                groupId = 'dev.galasa'
+                version = version
+                description = "Conveys bundle version information to OBR builds."
+                licenses {
+                    license {
+                        name = 'Eclipse Public License - v 2.0'
+                        url = 'https://www.eclipse.org/legal/epl-2.0/t'
+                    }
+                }
+                url = 'https://galasa.dev'
+                developers {
+                    developer {
+                        name = 'Galasa Developer'
+                        email = 'galasadelivery@ibm.com'
+                        organization = 'IBM'
+                        organizationUrl = 'https://www.ibm.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git:://github.com/galasa-dev/managers'
+                    developerConnection = 'scm:git:git:://github.com/galasa-dev/managers'
+                    url = 'https://github.com/galasa-dev/managers'
+                }
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/galasa-dev/projectmanagement/issues'
+                }
             }
+
         }
     }
+
     repositories {
         maven {
             url  = "$targetMaven"
