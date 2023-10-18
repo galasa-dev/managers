@@ -11,13 +11,6 @@ plugins {
 // can pick it up later.
 version = "0.30.0"
 
-task clean {
-   // make sure the build directory is gone 
-   doFirst {
-      delete "${buildDir}"
-   }
-}
-
 // A configuration to publish the merge exec into
 configurations {
     archives
