@@ -2,6 +2,7 @@ plugins {
     id 'biz.aQute.bnd.builder' version '5.3.0' apply false
     id 'jacoco'
     id 'maven-publish'
+    id 'signing'
 }
 
 // Note: The following version number is updated using the set-version.sh tool.
@@ -9,13 +10,6 @@ plugins {
 // file which is in a release.yaml, but published to maven, so that the OBR build 
 // can pick it up later.
 version = "0.30.0"
-
-task clean {
-   // make sure the build directory is gone 
-   doFirst {
-      delete "${buildDir}"
-   }
-}
 
 // A configuration to publish the merge exec into
 configurations {
@@ -55,7 +49,13 @@ repositories {
     }
 }
 
+signing {
+    sign publishing.publications
+}
 
+tasks.withType(Sign) {
+    onlyIf { isMainOrRelease.toBoolean() }
+}
 
 if (jacocoEnabled.toBoolean()) {
     publishing {
