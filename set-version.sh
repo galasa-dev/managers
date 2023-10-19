@@ -137,7 +137,7 @@ function upgrade_build_gradle {
     # of the this component lives.
     # For example: version = "0.29.0"
     
-    cat $source_path | sed "s/^[ ]*version[ ]*=.*/version = \"$component_version\"/1" > $temp_dir/managers-build.gradle
+    cat $source_path | sed "s/^[ ]*version[ ]*=.*/\t\t\t\tversion = \"$component_version\"/1" > $temp_dir/managers-build.gradle
     rc=$? ; if [[ "${rc}" != "0" ]]; then error "Failed to replace master version in file $source_path" ; exit 1 ; fi
 
     cp $temp_dir/managers-build.gradle $source_path
