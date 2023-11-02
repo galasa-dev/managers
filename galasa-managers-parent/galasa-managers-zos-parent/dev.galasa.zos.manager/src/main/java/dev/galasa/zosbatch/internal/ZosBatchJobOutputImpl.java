@@ -10,6 +10,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobOutput;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
@@ -20,13 +23,15 @@ import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
  * Implementation of {@link IZosBatchJobOutput}
  *
  */
-public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZosBatchJobOutputSpoolFile> {
+public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi {
 
 	private IZosBatchJob batchJob;
     private String jobname;
     private String jobid;
     
     private ArrayList<IZosBatchJobOutputSpoolFile> spoolFiles = new ArrayList<>();
+
+    private static final Log logger = LogFactory.getLog(ZosBatchJobOutputImpl.class);
 
     public ZosBatchJobOutputImpl(IZosBatchJob batchJob, String jobname, String jobid) {
     	this.batchJob = batchJob;
@@ -42,8 +47,9 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
     @Override
     public void addSpoolFile(String stepname, String procstep, String ddname, String id, String records) {
         //the outline of the spool may already exist.  BUT the content might not - if it exists then update it
-        for(IZosBatchJobOutputSpoolFile spool : spoolFiles){
-            if(ddname.equals(spool.getDdname())){
+        for (IZosBatchJobOutputSpoolFile spool : spoolFiles) {
+            if (ddname.equals(spool.getDdname()) && (stepname != null && stepname.equals(spool.getStepname()))) {
+                logger.trace("Updating spool file for batch job " + this.jobid + " - step: '" + stepname + "', DD: '" + ddname + "'");
                 spool.setRecords(records);
                 return;
             }
@@ -98,7 +104,7 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
             
             @Override
             public void remove() {
-                throw new UnsupportedOperationException("Object can not be updated");
+                throw new UnsupportedOperationException("Object cannot be updated");
             }
         };
     }
