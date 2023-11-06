@@ -10,9 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import dev.galasa.zosbatch.IZosBatchJob;
 import dev.galasa.zosbatch.IZosBatchJobOutput;
 import dev.galasa.zosbatch.IZosBatchJobOutputSpoolFile;
@@ -31,8 +28,6 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi {
     
     private ArrayList<IZosBatchJobOutputSpoolFile> spoolFiles = new ArrayList<>();
 
-    private static final Log logger = LogFactory.getLog(ZosBatchJobOutputImpl.class);
-
     public ZosBatchJobOutputImpl(IZosBatchJob batchJob, String jobname, String jobid) {
     	this.batchJob = batchJob;
         this.jobname = jobname;
@@ -49,7 +44,6 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi {
         //the outline of the spool may already exist.  BUT the content might not - if it exists then update it
         for (IZosBatchJobOutputSpoolFile spool : spoolFiles) {
             if (ddname.equals(spool.getDdname()) && (stepname != null && stepname.equals(spool.getStepname()))) {
-                logger.trace("Updating spool file for batch job " + this.jobid + " - step: '" + stepname + "', DD: '" + ddname + "'");
                 spool.setRecords(records);
                 return;
             }
