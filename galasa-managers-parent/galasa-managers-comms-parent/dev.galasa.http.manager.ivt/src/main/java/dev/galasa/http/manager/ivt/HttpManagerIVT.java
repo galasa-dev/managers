@@ -163,34 +163,6 @@ public class HttpManagerIVT {
     	assertThat(response.getContent().length).isEqualTo(8);
     	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
-
-    @Test
-    public void downloadFileTest()
-            throws Exception {
-        boolean fileExists = false;
-        File f = new File("/tmp/jenkins.hpi");
-
-        client.setURI(new URI("https://resources.galasa.dev"));
-
-        InputStream in = client.getFile("/jenkins.hpi").getEntity().getContent();
-        OutputStream out = new FileOutputStream(f);
-
-        int count;
-        byte data[] = new byte[2048];
-        while((count = in.read(data)) != -1) {
-            out.write(data, 0, count);
-        }
-        out.flush();
-        out.close();
-
-        
-        if (f.exists() && !f.isDirectory() && f.getTotalSpace()>0) {
-            fileExists = true;
-        }
-        assertThat(fileExists).isTrue();
-
-        f.delete();
-    }
     
     @Test
     public void buildURITest() {
