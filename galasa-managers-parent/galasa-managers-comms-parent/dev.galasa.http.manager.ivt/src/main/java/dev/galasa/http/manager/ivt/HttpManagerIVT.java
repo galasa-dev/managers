@@ -163,7 +163,7 @@ public class HttpManagerIVT {
     	assertThat(response.getContent().length).isEqualTo(8);
     	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
-
+    
     @Test
     public void downloadFileTest()
             throws Exception {
