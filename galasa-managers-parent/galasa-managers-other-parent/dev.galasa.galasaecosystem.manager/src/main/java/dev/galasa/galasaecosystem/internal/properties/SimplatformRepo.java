@@ -29,7 +29,7 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * @galasa.valid_values Value URL
  * 
  * @galasa.examples 
- * <code>galasaecosystem.simplatform.repository=https://nexus.galasa.dev/repository/maven-development</code>
+ * <code>galasaecosystem.simplatform.repository=http://development.galasa.dev/main/maven-repo/obr</code>
  * 
  */
 public class SimplatformRepo extends CpsProperties {
