@@ -27,7 +27,7 @@ public class Gherkin3270PressBasicKeys  implements IStatementOwner {
         this.gerkinCoordinator = gerkinCoordinator;
     }
 
-    @ExecutionMethod(keyword = GherkinKeyword.AND, regex = "press terminal( \\w+)? key (TAB|ENTER|CLEAR)")
+    @ExecutionMethod(keyword = GherkinKeyword.AND, regex = "press terminal( \\w+)? key (TAB|BACKTAB|ENTER|CLEAR)")
     public void pressBasicKey(IGherkinExecutable executable, Map<String,Object> testVariables) throws Zos3270ManagerException, Zos3270Exception, TextNotFoundException, TerminalInterruptedException {
         List<String> groups = executable.getRegexGroups();  
 
@@ -42,6 +42,9 @@ public class Gherkin3270PressBasicKeys  implements IStatementOwner {
         switch(key) {
             case "TAB":
                 terminal.tab();
+                break;
+            case "BACKTAB":
+                terminal.backTab();
                 break;
             case "ENTER":
                 terminal.enter();
