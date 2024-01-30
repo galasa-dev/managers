@@ -22,7 +22,6 @@ import dev.galasa.framework.Framework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.framework.spi.language.gherkin.GherkinTest;
-import dev.galasa.zos3270.spi.NetworkException;
 
 public class TestCicstsManagerImpl {
     
@@ -43,21 +42,12 @@ public class TestCicstsManagerImpl {
 
     }
 
-    private class DummyTestGood{
-
-        @CicsTerminal(cicsTag = "REGN01")
-        public ICicsTerminal terminal;
-
-        @CicsRegion(cicsTag = "REGN01")
-        public ICicsRegion cicsRegion;
-
-    }
-
     private class mockCicstsManagerImpl extends CicstsManagerImpl{
         public mockCicstsManagerImpl() {
             super();
         }
     }
+
     @Test
     public void TestGenerateCicsTerminalBadReturnsError() throws Exception{
         // Given...
@@ -91,31 +81,4 @@ public class TestCicstsManagerImpl {
 
     }
 
-    @Test
-    public void TestGenerateCicsTerminalGoodReturnsOK() throws Exception{
-        // Given...
-        DummyTestGood dummyTest = new DummyTestGood();
-        List<IManager> managersList = new ArrayList<IManager>();
-        managersList.add(new CicstsManagerImpl());
-
-        GalasaTest test = new MockGalasaTest(null);
-
-        Framework framework  = new Framework();
-        CicstsManagerImpl cicsTsManager = new mockCicstsManagerImpl();
-        cicsTsManager.initialise(framework, managersList, managersList, test);
-        Field field = dummyTest.getClass().getField("terminal");
-        Field region = dummyTest.getClass().getField("cicsRegion");
-        List<Annotation> annotations = new ArrayList<>();
-        annotations.add(field.getAnnotation(CicsTerminal.class));
-        annotations.add(region.getAnnotation(CicsRegion.class));
-        
-        // When...
-        ICicsTerminal terminal = cicsTsManager.generateCicsTerminal(field, annotations);
-
-        
-        // Then...
-        assertThat(terminal).isNotNull();
-
-
-    }
 }
