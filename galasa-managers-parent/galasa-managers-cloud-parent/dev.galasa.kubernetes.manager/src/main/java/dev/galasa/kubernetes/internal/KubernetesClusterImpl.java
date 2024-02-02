@@ -230,14 +230,16 @@ public class KubernetesClusterImpl {
         JSON json = apiClient.getJSON();
         Gson existingGson = json.getGson();
         
-        // This section has not been incorporated into the GalasaGsonWrapper as it involves kubernetes packages and 
-        GalasaGsonBuilder newGsonBuilder = new GalasaGsonBuilder();
-        newGsonBuilder.registerTypeAdapter(OffsetDateTime.class, existingGson.getAdapter(OffsetDateTime.class));
-        newGsonBuilder.registerTypeAdapter(Date.class, existingGson.getAdapter(Date.class));
-        newGsonBuilder.registerTypeAdapter(java.sql.Date.class, existingGson.getAdapter(java.sql.Date.class));
-        newGsonBuilder.registerTypeAdapter(byte[].class, existingGson.getAdapter(byte[].class));
-        newGsonBuilder.registerTypeAdapter(Quantity.class, new Quantity.QuantityAdapter());
-        newGsonBuilder.registerTypeAdapter(IntOrString.class, new IntOrString.IntOrStringAdapter());
+        /* This section has not been incorporated into the GalasaGsonWrapper as it involves kubernetes packages 
+         * and would result in a circullar refernce.
+         */
+        GalasaGsonBuilder newGsonBuilder = new GalasaGsonBuilder()
+            .registerTypeAdapter(OffsetDateTime.class, existingGson.getAdapter(OffsetDateTime.class))
+            .registerTypeAdapter(Date.class, existingGson.getAdapter(Date.class))
+            .registerTypeAdapter(java.sql.Date.class, existingGson.getAdapter(java.sql.Date.class))
+            .registerTypeAdapter(byte[].class, existingGson.getAdapter(byte[].class))
+            .registerTypeAdapter(Quantity.class, new Quantity.QuantityAdapter())
+            .registerTypeAdapter(IntOrString.class, new IntOrString.IntOrStringAdapter());
         
         json.setGson(newGsonBuilder.getGson());   
     }

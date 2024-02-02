@@ -22,8 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,6 +31,7 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
@@ -53,7 +52,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private Log logger = LogFactory.getLog(getClass());
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final GalasaGson gson = new GalasaGson();
 
     private final String terminalId;
     private int updateId;
