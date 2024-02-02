@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsToken;
@@ -29,6 +28,7 @@ import dev.galasa.framework.spi.IResourcePoolingService;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.kubernetes.KubernetesManagerException;
 import dev.galasa.kubernetes.internal.properties.KubernetesCredentials;
 import dev.galasa.kubernetes.internal.properties.KubernetesMaxSlots;
@@ -228,18 +228,18 @@ public class KubernetesClusterImpl {
     private static void applyNewGson(ApiClient apiClient) {
         
         JSON json = apiClient.getJSON();
-        Gson gson = json.getGson();
+        Gson existingGson = json.getGson();
         
-        GsonBuilder newGsonBuilder = JSON.createGson();
-        newGsonBuilder.registerTypeAdapter(OffsetDateTime.class, gson.getAdapter(OffsetDateTime.class));
-        newGsonBuilder.registerTypeAdapter(Date.class, gson.getAdapter(Date.class));
-        newGsonBuilder.registerTypeAdapter(java.sql.Date.class, gson.getAdapter(java.sql.Date.class));
-        newGsonBuilder.registerTypeAdapter(byte[].class, gson.getAdapter(byte[].class));
+        // This section has not been incorporated into the GalasaGsonWrapper as it involves kubernetes packages and 
+        GalasaGsonBuilder newGsonBuilder = new GalasaGsonBuilder();
+        newGsonBuilder.registerTypeAdapter(OffsetDateTime.class, existingGson.getAdapter(OffsetDateTime.class));
+        newGsonBuilder.registerTypeAdapter(Date.class, existingGson.getAdapter(Date.class));
+        newGsonBuilder.registerTypeAdapter(java.sql.Date.class, existingGson.getAdapter(java.sql.Date.class));
+        newGsonBuilder.registerTypeAdapter(byte[].class, existingGson.getAdapter(byte[].class));
         newGsonBuilder.registerTypeAdapter(Quantity.class, new Quantity.QuantityAdapter());
         newGsonBuilder.registerTypeAdapter(IntOrString.class, new IntOrString.IntOrStringAdapter());
-        Gson newGson = newGsonBuilder.create();
         
-        json.setGson(newGson);   
+        json.setGson(newGsonBuilder.getGson());   
     }
 
     /**
