@@ -148,7 +148,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.docker.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     javadoc: true
     bom: true
