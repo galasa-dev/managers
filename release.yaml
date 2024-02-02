@@ -163,7 +163,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.elasticlog.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     bom: true
     isolated: true
@@ -175,7 +175,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.galasaecosystem.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     bom: true
     isolated: true
@@ -194,7 +194,7 @@ managers:
     isolated: false
     
   - artifact: dev.galasa.http.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     javadoc: true
     bom: true
@@ -255,7 +255,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.kubernetes.manager
-    version: 0.29.0
+    version: 0.32.0
     obr: true
     javadoc: true
     bom: true
@@ -305,7 +305,7 @@ managers:
     isolated: true
     
   - artifact: dev.galasa.openstack.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     javadoc: true
     bom: true
@@ -489,7 +489,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.common
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     bom: true
     mvp: true
@@ -497,7 +497,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zos3270.manager
-    version: 0.31.0
+    version: 0.32.0
     obr: true
     javadoc: true
     bom: true
