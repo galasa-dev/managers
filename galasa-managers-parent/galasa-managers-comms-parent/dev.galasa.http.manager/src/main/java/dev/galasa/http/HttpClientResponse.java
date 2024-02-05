@@ -24,7 +24,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -32,6 +31,7 @@ import com.google.gson.JsonSyntaxException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 
+import dev.galasa.framework.spi.utils.GalasaGson;
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter
  * describes the content type of the response. Use the static methods to create
@@ -277,7 +277,7 @@ public class HttpClientResponse<T> {
 //                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
                     JsonElement jsonElement = null;
                     try{
-                        jsonElement = new Gson().fromJson(sResponse, JsonElement.class);
+                        jsonElement = new GalasaGson().fromJson(sResponse, JsonElement.class);
                     }catch(JsonSyntaxException jse){
                         System.err.println("Unable to parse JSON from the following: " + sResponse);
                         throw jse;

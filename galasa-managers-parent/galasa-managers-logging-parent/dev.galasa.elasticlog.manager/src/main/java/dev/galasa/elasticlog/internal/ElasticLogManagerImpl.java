@@ -20,7 +20,6 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
@@ -40,6 +39,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -204,7 +204,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			this.runProperties.put("tags", tags.toArray(new String[tags.size()]));	    	
 	
 		//Convert HashMap of run properties to a Json String
-		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+		Gson gson = new GalasaGsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").getGson();
 		JsonObject json = gson.toJsonTree(this.runProperties).getAsJsonObject();
 
 		logger.info("Sending Run Request to ElasticLog Endpoint");

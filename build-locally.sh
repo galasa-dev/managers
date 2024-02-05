@@ -174,7 +174,7 @@ function build_code {
     -PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
     ${goals} 
     "
-
+    info "Using command: ${cmd}"
     $cmd 2>&1 > ${log_file}
 
     rc=$? ; if [[ "${rc}" != "0" ]]; then error "Failed to build ${project} see logs at ${log_file}" ; exit 1 ; fi

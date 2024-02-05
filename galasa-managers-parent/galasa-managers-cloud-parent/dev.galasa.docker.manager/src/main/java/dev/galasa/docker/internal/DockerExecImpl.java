@@ -13,9 +13,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.gson.Gson;
+
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.docker.DockerManagerException;
 import dev.galasa.docker.IDockerExec;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.utils.GalasaGson;
 
 /**
  * DockerExecImpl. An object passed back used to monitor and control the exec process on a container.
@@ -44,7 +44,7 @@ public class DockerExecImpl implements IDockerExec {
     private boolean                                         finished;
     private final StringBuffer                              outputBuffer = new StringBuffer();
     private long                                            exitCode = -1;
-    private Gson                                            gson = new Gson();
+    private GalasaGson                                      gson = new GalasaGson();
 
     private static final Log                                logger = LogFactory.getLog(DockerExecImpl.class);
 
@@ -70,10 +70,9 @@ public class DockerExecImpl implements IDockerExec {
 
         try{
             ExecJson eJson = new ExecJson(false, true, true, true, this.commands);
-            JsonParser parser = new JsonParser();
             String json = gson.toJson(eJson);
 
-            JsonObject cmd = (JsonObject)parser.parse(json);
+            JsonObject cmd = gson.fromJson(json, JsonObject.class);
 
             JsonObject response = dockerEngine.sendExecCommands(dockerContainer.getContainerId(), cmd);
             if(response == null){

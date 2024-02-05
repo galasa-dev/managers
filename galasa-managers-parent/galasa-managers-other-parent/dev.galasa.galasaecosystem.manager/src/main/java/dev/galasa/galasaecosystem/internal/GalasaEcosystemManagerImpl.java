@@ -37,6 +37,7 @@ import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerField;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
@@ -77,7 +78,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     public final static String               NAMESPACE = "galasaecosystem";
     private final Log                           logger = LogFactory.getLog(getClass());
     private IDynamicStatusStoreService          dss;
-    private final Gson                          gson = new Gson();
+    private final GalasaGson                          gson = new GalasaGson();
 
     private IArtifactManager                    artifactManager;
     private IHttpManagerSpi                     httpManager;
@@ -551,7 +552,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     }
 
     public Gson getGson() {
-        return this.gson;
+        return this.gson.getGson();
     }
 
     public IDynamicStatusStoreService getDss() {
