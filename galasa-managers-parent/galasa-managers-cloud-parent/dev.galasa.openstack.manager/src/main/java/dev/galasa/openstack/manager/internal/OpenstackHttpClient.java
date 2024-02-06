@@ -26,13 +26,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.Api;
 import dev.galasa.openstack.manager.internal.json.Auth;
@@ -78,7 +76,7 @@ public class OpenstackHttpClient {
     private String                    openstackComputeUri;
     private String                    openstackNetworkUri;
 
-    private Gson                      gson   = new GsonBuilder().setPrettyPrinting().create();
+    private GalasaGson                      gson   = new GalasaGson();
 
     protected OpenstackHttpClient(IFramework framework) throws ConfigurationPropertyStoreException {
         this.framework = framework;
