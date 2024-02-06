@@ -2,4 +2,5 @@
 Bundle-Name: Galasa Openstack Manager
 Export-Package: dev.galasa.openstack.manager
 Import-Package: !javax.validation.constraints,\
+                dev.galasa.framework.spi.utils,\
                 *
