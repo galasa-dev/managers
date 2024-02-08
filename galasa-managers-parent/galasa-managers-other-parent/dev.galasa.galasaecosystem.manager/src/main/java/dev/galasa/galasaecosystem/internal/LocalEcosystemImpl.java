@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -47,7 +46,7 @@ import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
-import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
@@ -95,7 +94,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     private SimPlatformInstance         simPlatformInstance;
 
-    private final Gson gson = GalasaGsonBuilder.build();
+    private final GalasaGson gson = new GalasaGson();
 
     private final ArrayList<LocalRun> localRuns = new ArrayList<>();
 

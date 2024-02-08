@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -24,6 +22,7 @@ import dev.galasa.framework.spi.IConfigurationPropertyStoreService;
 import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IResourceManagement;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -42,7 +41,7 @@ public class DockerContainerResourceMonitor implements Runnable {
 
     private final Log logger = LogFactory.getLog(DockerContainerResourceMonitor.class);
 
-    private Gson gson = new Gson();
+    private GalasaGson gson = new GalasaGson();
 
     private Map<String,IHttpClient> dockerEngines = new HashMap<>();
 

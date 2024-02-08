@@ -7,9 +7,9 @@ package dev.galasa.zos3270.common.screens.json;
 
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.zos3270.common.screens.Terminal;
 
 /**
@@ -20,11 +20,7 @@ public class TerminalJsonTransform {
     private Gson gson ;
 
     public TerminalJsonTransform( boolean isPrettyPrinting ) {
-        if( isPrettyPrinting ) {
-            this.gson = new GsonBuilder().setPrettyPrinting().create();
-        } else {
-            this.gson = new GsonBuilder().create();
-        }
+        this.gson = new GalasaGsonBuilder(isPrettyPrinting).getGson();
     }
     
     public JsonObject toJsonObject(Terminal terminal) {

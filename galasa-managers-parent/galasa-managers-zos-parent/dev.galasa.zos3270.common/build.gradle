@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa zOS 3270 Terminal Manager - Common Packages'
 
-version = '0.31.0'
+version = '0.32.0'
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
@@ -22,3 +22,4 @@ ext.includeInBOM          = false
 ext.includeInIsolated     = true
 ext.includeInCodeCoverage = false
 ext.includeInJavadoc      = true
+

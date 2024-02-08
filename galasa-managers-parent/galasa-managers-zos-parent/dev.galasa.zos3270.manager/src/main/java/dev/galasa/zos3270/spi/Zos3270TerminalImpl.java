@@ -22,8 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,6 +31,7 @@ import dev.galasa.ResultArchiveStoreContentType;
 import dev.galasa.SetContentType;
 import dev.galasa.framework.spi.IConfidentialTextService;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
@@ -44,19 +43,16 @@ import dev.galasa.zos3270.common.screens.FieldContents;
 import dev.galasa.zos3270.common.screens.TerminalField;
 import dev.galasa.zos3270.common.screens.TerminalImage;
 import dev.galasa.zos3270.common.screens.TerminalSize;
-import dev.galasa.zos3270.common.screens.images.TerminalImageException;
-import dev.galasa.zos3270.common.screens.images.TerminalImageTransform;
 import dev.galasa.zos3270.internal.properties.ApplyConfidentialTextFiltering;
 import dev.galasa.zos3270.internal.properties.LiveTerminalUrl;
 import dev.galasa.zos3270.internal.properties.LogConsoleTerminals;
 import dev.galasa.zos3270.internal.properties.TerminalDeviceTypes;
-import dev.galasa.zos3270.internal.properties.TerminalOutput;
 
 public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListener {
 
     private Log logger = LogFactory.getLog(getClass());
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final GalasaGson gson = new GalasaGson();
 
     private final String terminalId;
     private int updateId;
@@ -64,7 +60,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     private final IConfidentialTextService cts;
     private final boolean applyCtf;
-    private final List<String> terminalOutput;
 
     private final ArrayList<TerminalImage> cachedImages = new ArrayList<>();
 
@@ -78,7 +73,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     /**
      * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
-     * constructor instead.  
+     * constructor instead.
      */
     @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
@@ -89,7 +84,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
 
     /**
      * @deprecated use the {@link #Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect, IZosImage image, TerminalSize primarySize, TerminalSize alternateSize, ITextScannerManagerSpi textScanner)}
-     * constructor instead.  
+     * constructor instead.
      */
     @Deprecated(since = "0.28.0", forRemoval = true)
     public Zos3270TerminalImpl(String id, String host, int port, boolean tls, IFramework framework, boolean autoConnect,
@@ -103,7 +98,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         this.autoConnect = autoConnect;
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
-        this.terminalOutput = TerminalOutput.get();
         this.textScan = textScanner;
 
         getScreen().registerScreenUpdateListener(this);
@@ -150,7 +144,6 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         this.autoConnect = autoConnect;
         this.cts = framework.getConfidentialTextService();
         this.applyCtf = ApplyConfidentialTextFiltering.get();
-        this.terminalOutput = TerminalOutput.get();
         this.textScan = textScanner;
 
         getScreen().registerScreenUpdateListener(this);
@@ -275,74 +268,13 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
         rasTerminalSequence++;
 
         try {
-            for (String outputFormat : terminalOutput) {
-                switch (outputFormat.toLowerCase()) {
-                    case "json":
-                        writeTerminalGzJson();
-                        break;
-                    case "png":
-                        writeTerminalImages();
-                        break;
-                    default:
-                        throw new Zos3270ManagerException("Unknown output format: " + outputFormat);
-                }
-            }
+            writeTerminalGzJson();
         } catch (Exception e) {
             logger.error("Unable to write terminal cache to the RAS", e);
             rasTerminalSequence--;
             return;
         }
     }
-
-
-    /**
-     * This method creates png images to represent the Terminal screens and writes them to the RAS
-     * @throws IOException
-     * @throws Zos3270ManagerException
-     */
-    private synchronized void writeTerminalImages() throws IOException, Zos3270ManagerException {
-        
-        Screen screen =  getScreen();
-
-        TerminalImageTransform imageRenderer ;
-        try {
-            IConfidentialTextService confidentialTextService = null;
-            if (applyCtf) {
-                confidentialTextService = cts;
-            }
-            TerminalSize termSize = new TerminalSize(screen.getNoOfColumns(), screen.getNoOfRows());
-            imageRenderer = new TerminalImageTransform(termSize, confidentialTextService);
-        } catch ( TerminalImageException ex) {
-            throw new Zos3270ManagerException(ex);
-        }
-
-        List<TerminalImage> terminalImages = this.cachedImages;
-        for (int i = 0; i < terminalImages.size(); i++) {
-
-            TerminalImage sourceTerminalImage = terminalImages.get(i);
-
-            writeImageToDisk(i,storedArtifactsRoot,imageRenderer, sourceTerminalImage);
-        }
-    }
-
-    private void writeImageToDisk(int imageIndexNumber , Path storedArtifactsRoot, TerminalImageTransform imageRenderer, TerminalImage sourceTerminalImage) throws IOException {
-        // Prefixing images 1-9 with a 0 to ensure ordering is correct
-        String imageSequence = String.format("%02d", imageIndexNumber + 1);
-            
-        Path terminalImagesDirectory = storedArtifactsRoot.resolve("zos3270").resolve("images").resolve(this.terminalId);
-        String terminalFilename = this.terminalId + "-" + String.format("%05d", rasTerminalSequence) + "-" + imageSequence + ".png";
-        Path terminalPath = terminalImagesDirectory.resolve(terminalFilename);
-        
-        try ( OutputStream outStream = Files.newOutputStream(terminalPath,
-                                                      new SetContentType(ResultArchiveStoreContentType.PNG),
-                                                      StandardOpenOption.CREATE); 
-        ) {
-            
-            imageRenderer.writeImage(sourceTerminalImage, "png",outStream);
-        }
-    }
-
-    
 
     /**
      * This method creates JSON representations of the Terminal screens and writes them to the RAS
@@ -384,23 +316,23 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
     }
 
     /**
-     * Creates a copy of the original TerminalImage, iterates through it's TerminalFields and FieldContents, 
-     * and creates a new TerminalImage with confidential text removed. 
+     * Creates a copy of the original TerminalImage, iterates through it's TerminalFields and FieldContents,
+     * and creates a new TerminalImage with confidential text removed.
      * @param terminalImage
      * @return
      */
     private TerminalImage removeConfidentialTextFromTerminalImage(TerminalImage terminalImage){
         // Create a new TerminalImage based on the one we are iterating on
-        TerminalImage newTerminalImage = new TerminalImage(terminalImage.getSequence(), terminalImage.getId(), 
-        terminalImage.isInbound(), terminalImage.getType(), terminalImage.getAid(),terminalImage.getImageSize(), 
+        TerminalImage newTerminalImage = new TerminalImage(terminalImage.getSequence(), terminalImage.getId(),
+        terminalImage.isInbound(), terminalImage.getType(), terminalImage.getAid(),terminalImage.getImageSize(),
         terminalImage.getCursorColumn(), terminalImage.getCursorRow());
-        
+
         for (TerminalField terminalField : terminalImage.getFields()){
 
             // Create a new TerminalField based on the one we are iterating on
-            TerminalField newTerminalField = new TerminalField(terminalField.getRow(), terminalField.getColumn(), 
-            terminalField.isUnformatted(), terminalField.isFieldProtected(), terminalField.isFieldNumeric(), 
-            terminalField.isFieldDisplay(), terminalField.isFieldIntenseDisplay(), terminalField.isFieldSelectorPen(), 
+            TerminalField newTerminalField = new TerminalField(terminalField.getRow(), terminalField.getColumn(),
+            terminalField.isUnformatted(), terminalField.isFieldProtected(), terminalField.isFieldNumeric(),
+            terminalField.isFieldDisplay(), terminalField.isFieldIntenseDisplay(), terminalField.isFieldSelectorPen(),
             terminalField.isFieldModifed(), terminalField.getForegroundColour(), terminalField.getBackgroundColour(), terminalField.getHighlight());
 
             StringBuilder sb = new StringBuilder();
@@ -417,7 +349,7 @@ public class Zos3270TerminalImpl extends Terminal implements IScreenUpdateListen
                 String fieldText = applyCtf ? cts.removeConfidentialText(sb.toString()) : sb.toString();
 
                 char[] fieldTextCharArray = fieldText.toCharArray();
-                Character[] newArray = new Character[fieldTextCharArray.length]; 
+                Character[] newArray = new Character[fieldTextCharArray.length];
                 for (int i = 0; i < fieldTextCharArray.length; i++){
                     newArray[i] = Character.valueOf(fieldTextCharArray[i]);
                 }

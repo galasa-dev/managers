@@ -212,8 +212,8 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
-            throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
-            + ", tagged region " + tag + " was not provisioned");
+            throw new CicstsManagerException("Unable to setup CICS Terminal for field '" + field.getName() + "', for region with tag '"
+            + tag + "' as a region with a matching 'cicsTag' tag was not found, or the region was not provisioned.");
         }
 
         try {

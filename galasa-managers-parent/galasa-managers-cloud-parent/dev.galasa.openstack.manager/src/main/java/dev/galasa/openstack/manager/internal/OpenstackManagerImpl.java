@@ -20,7 +20,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
@@ -37,6 +36,7 @@ import dev.galasa.framework.spi.IResourcePoolingService;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.OperatingSystem;
@@ -73,7 +73,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     private CloseableHttpClient                      httpClient;
     private OpenstackHttpClient                      openstackHttpClient;
 
-    private Gson                                     gson      = new GsonBuilder().setPrettyPrinting().create();
+    private GalasaGson                               gson      = new GalasaGson();
 
     /*
      * (non-Javadoc)
@@ -408,7 +408,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     }
 
     protected Gson getGson() {
-        return this.gson;
+        return this.gson.getGson();
     }
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {
