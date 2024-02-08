@@ -325,6 +325,24 @@ public class HttpClientRequest {
     }
 
     /**
+     * Create a new DELETE request
+     * 
+     * @param url
+     * @param acceptTypes
+     * @param contentType
+     * @return new DELETE request
+     */
+    public static HttpClientRequest newDeleteRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
+
+      HttpClientRequest request = new HttpClientRequest(RequestType.DELETE);
+      request.setUrl(url);
+      request.setAcceptTypes(acceptTypes);
+      request.setContentType(contentType);
+
+      return request;
+  }
+
+    /**
      * Create a new PUT request
      * 
      * @param url

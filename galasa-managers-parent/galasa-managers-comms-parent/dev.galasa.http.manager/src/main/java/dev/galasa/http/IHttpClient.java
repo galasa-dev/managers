@@ -164,6 +164,17 @@ public interface IHttpClient {
     HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException;
 
     /**
+     * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
+     * the response.
+     * 
+     * @param url
+     * @param json
+     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @throws HttpClientException
+     */
+    HttpClientResponse<JsonObject> deleteJson(String url, JsonObject json) throws HttpClientException;
+
+    /**
      * Issue an HTTP GET to the provided URL, receiving a {@link String} in the
      * response.
      * 
