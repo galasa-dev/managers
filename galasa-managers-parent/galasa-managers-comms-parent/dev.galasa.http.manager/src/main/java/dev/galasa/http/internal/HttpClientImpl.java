@@ -189,6 +189,16 @@ public class HttpClientImpl implements IHttpClient {
         return executeJsonRequest(request);
     }
 
+    @Override
+    public HttpClientResponse<JsonObject> deleteJson(String url, JsonObject json) throws HttpClientException {
+
+        HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),
+                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
+        request.setJSONBody(json);
+
+        return executeJsonRequest(request);
+    }
+
     private HttpClientResponse<JsonObject> executeJsonRequest(HttpClientRequest request) throws HttpClientException {
 
         return HttpClientResponse.jsonResponse(execute(request.buildRequest()));
