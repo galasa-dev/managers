@@ -96,7 +96,6 @@ Below is a table with the currently available Galasa Managers as seen documented
 | z/OS TSO Command SSH Manager | ZosManagerTSOCommandIVT ran in a Local, Isolated and MVP Ecosystem | Alpha | 
 | z/OS Unix Command SSH Manager | Other Managers | Alpha | 
 
-ZosManagerFileVSAMIVT
 
 **Managers documented as 'Future Managers' on galasa.dev but already released on Maven Central:**
 | Manager | Progress | 
