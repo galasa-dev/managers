@@ -21,12 +21,12 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * 
  * @galasa.required No
  * 
- * @galasa.default harbor.galasa.dev/docker_proxy_cache
+ * @galasa.default docker.io
  * 
  * @galasa.valid_values a valid hostname
  * 
  * @galasa.examples 
- * <code>galasaecosystem.docker.version=harbor.galasa.dev/docker_proxy_cache</code>
+ * <code>galasaecosystem.docker.registry=docker.io</code>
  * 
  */
 public class DockerRegistry extends CpsProperties {
@@ -35,7 +35,7 @@ public class DockerRegistry extends CpsProperties {
         try {
             String version = getStringNulled(GalasaEcosystemPropertiesSingleton.cps(), "docker", "registry") ;
             if (version == null) {
-                return "harbor.galasa.dev/docker_proxy_cache";
+                return "docker.io";
             }
             return version;
         } catch (ConfigurationPropertyStoreException e) {
