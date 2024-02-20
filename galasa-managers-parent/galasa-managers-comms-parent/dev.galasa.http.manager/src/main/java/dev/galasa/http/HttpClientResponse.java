@@ -274,17 +274,21 @@ public class HttpClientResponse<T> {
                 if (response.getStatusCode() == HttpStatus.SC_OK || contentOnBadResponse) {
                     String sResponse = EntityUtils.toString(httpResponse.getEntity());
                     
-//                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-                    JsonElement jsonElement = null;
-                    try{
-                        jsonElement = new GalasaGson().fromJson(sResponse, JsonElement.class);
-                    }catch(JsonSyntaxException jse){
-                        System.err.println("Unable to parse JSON from the following: " + sResponse);
-                        throw jse;
-                    }
-                    if (jsonElement != null) {
-                        JsonObject json = jsonElement.getAsJsonObject();
-                        response.setContent(json);
+                    if (sResponse.trim().startsWith("{")) {
+//                      JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+                        JsonElement jsonElement = null;
+                        try{
+                            jsonElement = new GalasaGson().fromJson(sResponse, JsonElement.class);
+                        }catch(JsonSyntaxException jse){
+                            System.err.println("Unable to parse JSON from the following: " + sResponse);
+                            throw jse;
+                        }
+                        if (jsonElement != null) {
+                            JsonObject json = jsonElement.getAsJsonObject();
+                            response.setContent(json);
+                        }
+                    } else {
+                      System.err.println("Did not attempt to parse JSON from the following: " + sResponse);
                     }
                 } else {
                     EntityUtils.consume(httpResponse.getEntity());
