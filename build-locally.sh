@@ -126,7 +126,7 @@ fi
 
 # Over-rode SOURCE_MAVEN if you want to build from a different maven repo...
 if [[ -z ${SOURCE_MAVEN} ]]; then
-    export SOURCE_MAVEN=https://development.galasa.dev/main/maven-repo/obr/
+    export SOURCE_MAVEN=https://development.galasa.dev/main/maven-repo/extensions/
     info "SOURCE_MAVEN repo defaulting to ${SOURCE_MAVEN}."
     info "Set this environment variable if you want to over-ride this value."
 else
@@ -168,12 +168,20 @@ function build_code {
         goals="build buildReleaseYaml check publishToMavenLocal --parallel"
     fi
 
+    # The build process does this:
+    # gradle --no-daemon \
+    #   --console plain \
+    #   -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions \
+    #   -PcentralMaven=https://repo.maven.apache.org/maven2/ \
+    #   -PtargetMaven=../repo check publish --info
+
     cmd="gradle  \
     ${CONSOLE_FLAG} \
     -Dorg.gradle.java.home=${JAVA_HOME} \
     -PsourceMaven=${SOURCE_MAVEN} ${OPTIONAL_DEBUG_FLAG} \
     ${goals} 
     "
+
     info "Using command: ${cmd}"
     $cmd 2>&1 > ${log_file}
 
