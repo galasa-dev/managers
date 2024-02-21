@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -32,6 +31,7 @@ import org.w3c.dom.Document;
 import com.google.gson.JsonObject;
 
 import dev.galasa.http.ContentType;
+import dev.galasa.http.HttpDelete;
 import dev.galasa.http.HttpClientException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -323,6 +323,24 @@ public class HttpClientRequest {
 
         return request;
     }
+
+    /**
+     * Create a new DELETE request
+     * 
+     * @param url
+     * @param acceptTypes
+     * @param contentType
+     * @return new DELETE request
+     */
+    public static HttpClientRequest newDeleteRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
+
+      HttpClientRequest request = new HttpClientRequest(RequestType.DELETE);
+      request.setUrl(url);
+      request.setAcceptTypes(acceptTypes);
+      request.setContentType(contentType);
+
+      return request;
+  }
 
     /**
      * Create a new PUT request
