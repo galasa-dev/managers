@@ -42,7 +42,7 @@ dependencies {
     }
     implementation ('org.apache.commons:commons-compress') {
         version {
-            strictly '1.22'
+            strictly '1.26.0'
         }
     }
     implementation 'io.prometheus:simpleclient:0.15.0'
@@ -51,7 +51,7 @@ dependencies {
     implementation 'com.squareup.okio:okio-jvm:3.0.0'
     implementation 'org.jetbrains.kotlin:kotlin-osgi-bundle:1.7.22'
     implementation 'io.kubernetes:client-java:17.0.0'
-    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'commons-io:commons-io:2.15.1'
 }
 
 
