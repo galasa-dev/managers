@@ -49,13 +49,13 @@ import dev.galasa.zosliberty.IZosLibertyServer;
 import dev.galasa.zosliberty.ZosLibertyServerException;
 
 public class JvmserverImpl implements IJvmserver {
-    
+
     private static final Log logger = LogFactory.getLog(JvmserverImpl.class);
 
     private CicsResourceManagerImpl cicsResourceManager;
     private IZosFileHandler zosFileHandler;
     private IZosLiberty zosLiberty;
-    
+
     private boolean shouldArchive = true;
     private boolean shouldCleanup = true;
 
@@ -72,7 +72,7 @@ public class JvmserverImpl implements IJvmserver {
     private String cicsRegionHomeDirectory;
     private String cicsRegionJobname;
     private String cicsRegionUserid;
-    
+
     private String resourceDefinitionName;
     private String resourceDefinitionGroup;
     private String resourceDefinitionDescription;
@@ -81,7 +81,7 @@ public class JvmserverImpl implements IJvmserver {
     private JvmserverType jvmserverType = JvmserverType.UNKNOWN;
     private String resourceDefinitionLerunopts;
     private int resourceDefinitionThreadlimit = 15;
-    
+
     private IJvmprofile jvmprofile;
 
     private String defaultWorkingDirectoryValue;
@@ -94,20 +94,20 @@ public class JvmserverImpl implements IJvmserver {
     private IZosUNIXFile workingDirectory;
     private IZosUNIXFile diagnosticsDirectory;
     private IZosUNIXFile javaHome;
-    private IZosUNIXFile logsDirectory;    
-    private IJvmserverLog jvmLogLog;    
-    private IJvmserverLog stdOutLog;    
-    private IJvmserverLog stdErrLog;    
+    private IZosUNIXFile logsDirectory;
+    private IJvmserverLog jvmLogLog;
+    private IJvmserverLog stdOutLog;
+    private IJvmserverLog stdErrLog;
     private IJvmserverLog jvmTraceLog;
-    
+
     private IZosLibertyServer zosLibertyServer;
     private String wlpInstallDir;
     private String wlpUserDir;
     private String wlpOutputDir;
-    
+
     private int defaultTimeout = -1;
 
-    private static final String SLASH_SYBMOL = "/";    
+    private static final String SLASH_SYBMOL = "/";
     private static final String SYMBOL_APPLID = "&APPLID;";
     private static final String SYMBOL_CONFIGROOT = "&CONFIGROOT;";
     private static final String SYMBOL_JVMSERVER = "&JVMSERVER;";
@@ -117,9 +117,9 @@ public class JvmserverImpl implements IJvmserver {
 
     private static final String OPTION_JAVA_HOME = "JAVA_HOME";
     private static final String OPTION_WORK_DIR = "WORK_DIR";
-    
+
     private static final String RESOURCE_TYPE_JVMSERVER = "JVMSERVER";
-    
+
     private static final String LOG_CEMT_PARAMETER = "Log";
     private static final String LOG_PROFILE_OPTION = "JVMLOG";
     private static final String LOG_FILE_SUFFIX = "dfhjvmlog";
@@ -133,29 +133,38 @@ public class JvmserverImpl implements IJvmserver {
     private static final String TRACE_PROFILE_OPTION = "JVMTRACE";
     private static final String TRACE_FILE_SUFFIX = "dfhjvmtrc";
 
-    public JvmserverImpl(CicsResourceManagerImpl cicsResourceManager, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException {
-        this.cicsResourceManager = cicsResourceManager;
+    public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group) throws CicsJvmserverResourceException {
+        this.cicsResourceManager = cicsResourceManagerImpl;
         this.cicsResourceManager.registerJvmserver(this);
+        this.cicsRegion = cicsRegion;
+        this.cicsZosImage = cicsRegion.getZosImage();
+
         try {
             this.zosFileHandler = this.cicsResourceManager.getZosFileHandler();
         } catch (CicsResourceManagerException e) {
             throw new CicsJvmserverResourceException("Unable to get zOS File Handler", e);
         }
-        this.cicsRegion = cicsRegion;
-        this.cicsZosImage = cicsRegion.getZosImage();
+
         setRunTemporaryUNIXPath();
         this.cicsTerminal = cicsTerminal;
         this.resourceDefinitionName = name;
         this.resourceDefinitionGroup = group;
+    }
+
+    public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, String jvmprofileName, JvmserverType jvmserverType) throws CicsJvmserverResourceException {
+        this(cicsResourceManagerImpl, cicsRegion, cicsTerminal, name, group);
         this.resourceDefinitionJvmprofile = jvmprofileName;
         this.jvmserverType = jvmserverType;
         this.jvmprofile = newJvmprofileFromCicsSuppliedProfile(jvmprofileName);
+
         try {
             this.javaHome = this.zosFileHandler.newUNIXFile(getDefaultJavaHomeValue(), cicsZosImage);
         } catch (ZosUNIXFileException e) {
             throw new CicsJvmserverResourceException("Unable to set JAVA_HOME", e);
         }
+
         this.jvmprofile.setProfileValue(OPTION_JAVA_HOME, this.javaHome.getUnixPath());
+
         try {
             this.workingDirectory = this.zosFileHandler.newUNIXFile(getDefaultWorkingDirectoryValue(), cicsZosImage);
         } catch (ZosUNIXFileException e) {
@@ -176,28 +185,18 @@ public class JvmserverImpl implements IJvmserver {
         }
     }
 
+
+
     public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile) throws CicsJvmserverResourceException {
-        this.cicsResourceManager = cicsResourceManagerImpl;
-        this.cicsResourceManager.registerJvmserver(this);
-        this.cicsRegion = cicsRegion;
-        this.cicsZosImage = cicsRegion.getZosImage();
-        setRunTemporaryUNIXPath();
-        this.cicsTerminal = cicsTerminal;
-        this.resourceDefinitionName = name;
-        this.resourceDefinitionGroup = group;
+        this(cicsResourceManagerImpl, cicsRegion, cicsTerminal, name, group);
+        this.jvmprofile = jvmprofile;
         this.resourceDefinitionJvmprofile = jvmprofile.getProfileName();
         this.jvmserverType = determineJvmserverType();
     }
 
     public JvmserverImpl(CicsResourceManagerImpl cicsResourceManagerImpl, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, String name, String group, IJvmprofile jvmprofile, IZosLibertyServer libertyServer) throws CicsJvmserverResourceException {
-        this.cicsResourceManager = cicsResourceManagerImpl;
-        this.cicsResourceManager.registerJvmserver(this);
-        this.cicsRegion = cicsRegion;
-        this.cicsZosImage = cicsRegion.getZosImage();
-        setRunTemporaryUNIXPath();
-        this.cicsTerminal = cicsTerminal;
-        this.resourceDefinitionName = name;
-        this.resourceDefinitionGroup = group;
+        this(cicsResourceManagerImpl, cicsRegion, cicsTerminal, name, group);
+        this.jvmprofile = jvmprofile;
         this.resourceDefinitionJvmprofile = jvmprofile.getProfileName();
         this.jvmserverType = JvmserverType.LIBERTY;
         this.zosLibertyServer = libertyServer;
@@ -252,7 +251,7 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     protected IZosLiberty getLiberty() throws CicsJvmserverResourceException {
-        if (this.zosLiberty == null) { 
+        if (this.zosLiberty == null) {
             try {
                 this.zosLiberty = cicsResourceManager.getZosLiberty();
             } catch (CicsResourceManagerException e) {
@@ -294,7 +293,7 @@ public class JvmserverImpl implements IJvmserver {
         SortedMap<String, IZosUNIXFile> directoryList = new TreeMap<>();
         try {
             if (directory.exists()) {
-                
+
             }
             directoryList = directory.directoryList();
         } catch (ZosUNIXFileException e) {
@@ -469,7 +468,7 @@ public class JvmserverImpl implements IJvmserver {
             //TODO: Messages???
             if (!resourceDefined()) {
                 throw new CicsJvmserverResourceException("Failed to define " + RESOURCE_TYPE_JVMSERVER + " resource definition");
-            } 
+            }
         } catch (CicstsManagerException e) {
             throw new CicsJvmserverResourceException("Unable to build " + RESOURCE_TYPE_JVMSERVER + " resource definition", e);
         }
@@ -532,10 +531,10 @@ public class JvmserverImpl implements IJvmserver {
         this.workingDirectory = null;
         this.diagnosticsDirectory = null;
         this.javaHome = null;
-        this.logsDirectory = null;    
-        this.jvmLogLog = null;    
-        this.stdOutLog = null;    
-        this.stdErrLog = null;    
+        this.logsDirectory = null;
+        this.jvmLogLog = null;
+        this.stdOutLog = null;
+        this.stdErrLog = null;
         this.jvmTraceLog = null;
         this.wlpInstallDir = null;
         this.wlpUserDir = null;
@@ -621,7 +620,7 @@ public class JvmserverImpl implements IJvmserver {
                 }
             }
         }
-        
+
         return purgeType;
     }
 
@@ -819,7 +818,7 @@ public class JvmserverImpl implements IJvmserver {
             String javaHomeValue = this.jvmprofile.getProfileValue(OPTION_JAVA_HOME);
             if (javaHomeValue == null) {
                 javaHomeValue = getDefaultJavaHomeValue();
-                this.jvmprofile.setProfileValue(OPTION_JAVA_HOME, javaHomeValue); 
+                this.jvmprofile.setProfileValue(OPTION_JAVA_HOME, javaHomeValue);
             }
             try {
                 this.javaHome = this.zosFileHandler.newUNIXFile(javaHomeValue, this.cicsZosImage);
@@ -836,7 +835,7 @@ public class JvmserverImpl implements IJvmserver {
             String workDirValue = this.jvmprofile.getProfileValue(OPTION_WORK_DIR);
             if (workDirValue == null) {
                 workDirValue = getDefaultWorkingDirectoryValue();
-                this.jvmprofile.setProfileValue(OPTION_WORK_DIR, workDirValue); 
+                this.jvmprofile.setProfileValue(OPTION_WORK_DIR, workDirValue);
             }
             if (!workDirValue.startsWith(SLASH_SYBMOL)) {
                 workDirValue = getHomeDirectory() + workDirValue;
@@ -883,7 +882,7 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public void checkpointLogs() throws CicsJvmserverResourceException {    
+    public void checkpointLogs() throws CicsJvmserverResourceException {
         getJvmLog().checkpoint();
         getStdOut().checkpoint();
         getStdErr().checkpoint();
@@ -897,7 +896,7 @@ public class JvmserverImpl implements IJvmserver {
             if (getWorkingDirectory().exists()) {
                 SortedMap<String, IZosUNIXFile> directoryList = getWorkingDirectory().directoryList();
                 for (Entry<String, IZosUNIXFile> entry : directoryList.entrySet()) {
-                    if (entry.getKey().matches(".*/Snap.*\\.trc$") || 
+                    if (entry.getKey().matches(".*/Snap.*\\.trc$") ||
                         entry.getKey().matches(".*/javacore.*\\.txt$")) {
                         javaLogs.add(entry.getValue());
                     } else if(entry.getKey().matches(".*/jitdump.*\\.dmp$")) {
@@ -918,10 +917,10 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {        
+    public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
         if (this.jvmprofile != null) {
             this.jvmprofile.saveToResultsArchive(rasPath);
-        }    
+        }
         if (this.jvmLogLog != null) {
             this.jvmLogLog.saveToResultsArchive(rasPath);
         }
@@ -946,7 +945,7 @@ public class JvmserverImpl implements IJvmserver {
     }
 
     @Override
-    public void clearJvmLogs() throws CicsJvmserverResourceException {    
+    public void clearJvmLogs() throws CicsJvmserverResourceException {
         if (this.jvmLogLog != null) {
             this.jvmLogLog.delete();
         }
@@ -969,7 +968,7 @@ public class JvmserverImpl implements IJvmserver {
             }
         }
     }
-    
+
     @Override
     public String toString() {
         return "[JVM server] " + getName();
@@ -1001,7 +1000,7 @@ public class JvmserverImpl implements IJvmserver {
         } catch (ZosBatchException | ZosUNIXFileException | CicstsManagerException e) {
             throw new CicsJvmserverResourceException("Problem creating IJvmserverLog object for " + cemtParameter, e);
         }
-        
+
     }
 
     protected String getDdname(String logName) {
@@ -1016,7 +1015,7 @@ public class JvmserverImpl implements IJvmserver {
                 return cemtMap.get(cemtParameter);
             }
         }
-    
+
         // Try jvmprofile
         if (this.jvmprofile.containsOption(jvmprofileOption)) {
             String value = this.jvmprofile.getProfileValue(jvmprofileOption);
@@ -1027,18 +1026,18 @@ public class JvmserverImpl implements IJvmserver {
                 }
             }
         }
-            
+
         // Look on the file system
         for(Map.Entry<String, IZosUNIXFile> entry : decendingDirectoryList(getDefaultLogsDiretory()).entrySet()) {
             if (entry.getKey().endsWith("." + fileSuffix)) {
                 return entry.getValue().getUnixPath();
             }
         }
-        
+
         throw new CicsJvmserverResourceException("Unable to establish JVM server " + cemtParameter + " log file");
-            
+
     }
-    
+
     protected boolean isDdname(String logName) {
         return logName.startsWith("//DD:");
     }
@@ -1101,7 +1100,7 @@ public class JvmserverImpl implements IJvmserver {
         }
         return cemtMap;
     }
-    
+
     protected String parseJvmprofileSymbols(String value) throws CicsJvmserverResourceException {
         if (value.contains(SYMBOL_DATE) || value.contains(SYMBOL_TIME)) {
             throw new CicsJvmserverResourceException("JVM profile options \"" + SYMBOL_DATE + "\" and \"" + SYMBOL_TIME + "\" not supported by JVM server Manager");
@@ -1111,10 +1110,10 @@ public class JvmserverImpl implements IJvmserver {
         parsedValue = StringUtils.replace(parsedValue, SYMBOL_CONFIGROOT, getUsshome());
         parsedValue = StringUtils.replace(parsedValue, SYMBOL_JVMSERVER, getName());
         parsedValue = StringUtils.replace(parsedValue, SYMBOL_USSHOME, getUsshome());
-        
+
         return parsedValue;
     }
-    
+
     protected String getUsshome() throws CicsJvmserverResourceException {
         if (this.cicsUsshome == null) {
             try {
@@ -1125,14 +1124,14 @@ public class JvmserverImpl implements IJvmserver {
         }
         return this.cicsUsshome;
     }
-    
+
     protected String getApplid() {
         if (this.cicsApplid == null) {
             this.cicsApplid = this.cicsRegion.getApplid();
         }
         return this.cicsApplid;
     }
-    
+
     protected String getJvmProfileDir() throws CicsJvmserverResourceException {
         if (this.cicsJvmprofileDir == null) {
             try {
@@ -1143,7 +1142,7 @@ public class JvmserverImpl implements IJvmserver {
         }
         return this.cicsJvmprofileDir;
     }
-    
+
     protected String getConfigRoot() throws CicsJvmserverResourceException {
         if (this.cicsConfigroot == null) {
             //TOODO: get CONFIGROOT
@@ -1151,7 +1150,7 @@ public class JvmserverImpl implements IJvmserver {
         }
         return this.cicsConfigroot;
     }
-    
+
     protected IZosUNIXFile getDiagnosticsDirectory() throws CicsJvmserverResourceException {
         if (this.diagnosticsDirectory == null) {
             try {
@@ -1204,7 +1203,7 @@ public class JvmserverImpl implements IJvmserver {
             }
         }
     }
-    
+
     protected void cleanup() {
         if (shouldArchive()) {
             try {
