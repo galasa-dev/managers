@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.32.0'
+version = '0.33.0'
 
 dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')
@@ -51,7 +51,7 @@ dependencies {
     implementation 'com.squareup.okio:okio-jvm:3.0.0'
     implementation 'org.jetbrains.kotlin:kotlin-osgi-bundle:1.7.22'
     implementation 'io.kubernetes:client-java:17.0.0'
-    implementation 'commons-io:commons-io:2.15.1'
+    implementation 'commons-io:commons-io:2.11.0'
 }
 
 
