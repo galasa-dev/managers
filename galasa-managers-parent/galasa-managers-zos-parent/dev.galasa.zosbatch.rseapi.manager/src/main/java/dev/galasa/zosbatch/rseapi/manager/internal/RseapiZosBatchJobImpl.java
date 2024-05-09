@@ -590,16 +590,18 @@ public class RseapiZosBatchJobImpl implements IZosBatchJob {
             this.owner = jsonNull(responseBody, PROP_OWNER);
             this.type = jsonNull(responseBody, PROP_TYPE);
             this.statusString = jsonNull(responseBody, PROP_STATUS);
-            if (this.statusString != null && "COMPLETION".equals(this.statusString) ||
-            	this.statusString != null && "ABEND".equals(this.statusString)) {
-                this.jobComplete = true;
-            } else if (this.statusString != null && "NOT_FOUND".equals(this.statusString)) {
-        		logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
+
+            // Update the completion status of this batch job
+            RseapiJobStatus status = RseapiJobStatus.getJobStatusFromString(this.statusString);
+            this.jobComplete = status.isComplete();
+
+            if (status == RseapiJobStatus.NOTFOUND) {
+                logger.trace("JOBID=" + this.jobid + " JOBNAME=" + this.jobname.getName() + " NOT FOUND");
                 this.jobNotFound = true;
                 this.status = JobStatus.NOTFOUND;
-                this.jobComplete = true;
             }
             setStatus(this.statusString);
+
             String retcodeProperty = jsonNull(responseBody, PROP_RETCODE);
             if (retcodeProperty != null) {
                 this.retcode = retcodeProperty;

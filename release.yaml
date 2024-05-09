@@ -357,7 +357,7 @@ managers:
     codecoverage: true
     
   - artifact: dev.galasa.zosbatch.rseapi.manager
-    version: 0.31.0
+    version: 0.33.0
     obr: true
     bom: true
     mvp: true
