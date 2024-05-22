@@ -317,6 +317,21 @@ managers:
     obr: true
     bom: true
     isolated: true
+  
+  - artifact: dev.galasa.sdv.manager
+    version: 0.34.0
+    obr: true
+    javadoc: true
+    bom: true
+    mvp: true
+    isolated: true
+    codecoverage: true
+  
+  - artifact: dev.galasa.sdv.manager.ivt
+    version: 0.34.0
+    obr: true
+    mvp: true
+    isolated: true
     
   - artifact: dev.galasa.selenium.manager
     version: 0.34.0
