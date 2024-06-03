@@ -90,7 +90,7 @@ data:
     ;password =
 
     # Use either URL or the previous fields to configure the database
-    # Example: mysql://user:secret@host:port/database
+    # Example: mysql://user:secret@host:port/database #pragma: allowlist secret
     ;url =
 
     # For "postgres" only, either "disable", "require" or "verify-full"
@@ -164,7 +164,7 @@ data:
     ;admin_user = admin
 
     # default admin password, can be changed before first start of grafana,  or in profile settings
-    ;admin_password = admin
+    ;admin_password = admin  #property is not used as it is commented out #pragma: allowlist secret
 
     # used for signing
     ;secret_key = SW2YcwTIb9zpOOhoPsMm
@@ -276,7 +276,7 @@ data:
     ;enabled = false
     ;allow_sign_up = true
     ;client_id = some_id
-    ;client_secret = some_secret
+    ;client_secret = some_secret #property is not used as it is commented out #pragma: allowlist secret
     ;scopes = user:email,read:org
     ;auth_url = https://github.com/login/oauth/authorize
     ;token_url = https://github.com/login/oauth/access_token
@@ -289,7 +289,7 @@ data:
     ;enabled = false
     ;allow_sign_up = true
     ;client_id = some_client_id
-    ;client_secret = some_client_secret
+    ;client_secret = some_client_secret #property is not used as it is commented out #pragma: allowlist secret
     ;scopes = https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
     ;auth_url = https://accounts.google.com/o/oauth2/auth
     ;token_url = https://accounts.google.com/o/oauth2/token
@@ -302,7 +302,7 @@ data:
     ;name = OAuth
     ;allow_sign_up = true
     ;client_id = some_id
-    ;client_secret = some_secret
+    ;client_secret = some_secret #property is not used as it is commented out #pragma: allowlist secret
     ;scopes = user:email,read:org
     ;auth_url = https://foo.bar/login/oauth/authorize
     ;token_url = https://foo.bar/login/oauth/access_token
@@ -323,7 +323,7 @@ data:
     ;enabled = false
     ;allow_sign_up = true
     ;client_id = some_id
-    ;client_secret = some_secret
+    ;client_secret = some_secret #property is not used as it is commented out #pragma: allowlist secret
     ;scopes = user:email
     ;allowed_organizations =
 

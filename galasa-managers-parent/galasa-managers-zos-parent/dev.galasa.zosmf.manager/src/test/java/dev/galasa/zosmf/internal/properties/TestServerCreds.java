@@ -28,7 +28,7 @@ public class TestServerCreds {
 //    
 //    private static final String SERVER_ID = "server";
 //    
-//    private static final String CREDS = "creds";
+//    private static final String CREDS = "creds"; commented out unit test //pragma: allowlist secret
 //    
 //    @Test
 //    public void testConstructor() {
