@@ -90,7 +90,7 @@ public class GraphicsEscapeTest extends Zos3270TestBase {
         
         System.out.println(hexDatastream);
         
-        assertThat(hexDatastream).as("Expected outbound datastream").isEqualTo("7D40401140C1F1F20850F3F4");
+        assertThat(hexDatastream).as("Expected outbound datastream").isEqualTo("7D40401140C1F1F20850F3F4"); // expected output as a hex code, not a secret //pragma: allowlist secret
 
     }
     

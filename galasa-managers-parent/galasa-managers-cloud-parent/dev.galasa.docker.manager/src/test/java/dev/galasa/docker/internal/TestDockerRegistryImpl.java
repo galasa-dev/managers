@@ -115,7 +115,7 @@ public class TestDockerRegistryImpl {
     	when(credentialsMock.getUsername()).thenReturn("testUsername");
     	when(credentialsMock.getPassword()).thenReturn("testPassword");
     	String user = "testUsername";
-    	String password = "testPassword";
+    	String password = "testPassword"; //unit test mock password //pragma: allowlist secret
     	when(clientMock.setAuthorisation(user, password)).thenReturn(clientMock);
     	when(clientMock.build()).thenReturn(clientMock);
     	// Base64 encoding credentials to replicate private encoding method (generateDockerRegistryAuthStructure)

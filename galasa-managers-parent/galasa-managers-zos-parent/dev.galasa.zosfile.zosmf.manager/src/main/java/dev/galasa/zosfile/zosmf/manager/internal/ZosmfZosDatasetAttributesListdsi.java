@@ -61,7 +61,7 @@ public class ZosmfZosDatasetAttributesListdsi {
     private static final String PROP_SYSCREATE    = "syscreate";    
     private static final String PROP_SYSREFDATE   = "sysrefdate";  
     private static final String PROP_SYSEXDATE    = "sysexdate";    
-    private static final String PROP_SYSPASSWORD  = "syspassword";
+    private static final String PROP_SYSPASSWORD  = "syspassword"; //Not a password but a pointer to a password //pragma: allowlist secret
     private static final String PROP_SYSRACFA     = "sysracfa";      
     private static final String PROP_SYSUPDATED   = "sysupdated";  
     private static final String PROP_SYSTRKSCYL   = "systrkscyl";  
