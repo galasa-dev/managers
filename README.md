@@ -76,6 +76,7 @@ Below is a table with the currently available Galasa Managers as seen documented
 | Galasa Ecosystem | Other Managers | Alpha | 
 | Test Tool Managers || 
 | JMeter | JMeterManagerIVT ran locally during development | Beta |
+| SDV | - | Alpha |
 | Selenium | SeleniumManagerIVT ran locally during development | Beta |
 | Unix Managers || 
 | Linux | LinuxManagerIVT ran locally during development / Other Managers | Alpha |
