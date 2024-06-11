@@ -104,4 +104,13 @@ public interface ICicsRegion {
 	 * @throws CicstsManagerException
 	 */
 	public void removeSit(@NotNull String sitParam) throws CicstsManagerException;
+	
+	/**
+	 * This method adds a method to the DFHRPL concatenation in the CICS
+	 * startup JCL. Not allowed for DSE CICS regions.
+	 * 
+	 * @param library
+	 * @throws CicstsManagerException 
+	 */
+	public void addToDfhRpl(@NotNull String library) throws CicstsManagerException;
 }

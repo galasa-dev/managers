@@ -153,4 +153,10 @@ public class DseCicsImpl extends BaseCicsImpl {
 	public void removeSit(@NotNull String sitParam) throws CicstsManagerException {
 		throw new CicstsManagerException("Remove SIT is not supported under DSE provisioning");
 	}
+
+	@Override
+	public void addToDfhRpl(@NotNull String library) throws CicstsManagerException {
+		throw new CicstsManagerException("Appending DFHRPL is not supported under DSE provisioning");
+		
+	}
 }

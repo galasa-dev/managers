@@ -558,6 +558,20 @@ public class SemCicsImpl extends BaseCicsImpl {
 			}
 		}
 	}
+    
+    @Override
+    public void addToDfhRpl(String library) throws CicstsManagerException {
+    	// Get the Galasa CICS object
+    	ICicsRegion theCics = cicstsManager.locateCicsRegion(this.getTag());
+
+    	// Find the SEM CICS object
+    	for (CICSRegion cicsInComplex : complex.getCICS()) {
+    		if (cicsInComplex.getApplid().equals(theCics.getApplid())) {
+    			semManager.appendDfhRpl(cicsInComplex, library);
+    			rebuildRuntimeJob(cicsInComplex);
+    		}
+    	}
+    }
 
     /**
      * Performs a rebuild of the given CICS job
