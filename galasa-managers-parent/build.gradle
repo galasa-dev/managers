@@ -9,7 +9,7 @@ plugins {
 // It is used as the version number of the managers bundle, which contains a yaml
 // file which is in a release.yaml, but published to maven, so that the OBR build 
 // can pick it up later.
-version = "0.34.0"
+version = "0.34.1"
 
 // A configuration to publish the merge exec into
 configurations {
@@ -192,7 +192,7 @@ publishing {
                 name = "Manifest for managers bundle versions"
                 artifactId = "dev.galasa.managers.manifest"
                 groupId = 'dev.galasa'
-				version = "0.34.0"
+				version = "0.34.1"
                 description = "Conveys bundle version information to OBR builds."
                 licenses {
                     license {
