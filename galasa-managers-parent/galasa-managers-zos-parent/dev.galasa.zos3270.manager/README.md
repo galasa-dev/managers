@@ -35,6 +35,8 @@ Where xxxxxx is the text in an protected or unprotected field on the screen.
 
 `AND press terminal key ENTER`
 
+`AND press terminal key BACKTAB`
+
 `AND press terminal key PFxx` where xx is the PF number
 
 ### Type something
