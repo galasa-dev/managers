@@ -26,13 +26,13 @@ import dev.galasa.sdv.SdvUser;
     @Logger
     public Log logger;
 
-    @CicsRegion
+    @CicsRegion(cicsTag = "A")
     public ICicsRegion cics;
 
-    @CicsTerminal
+    @CicsTerminal(cicsTag = "A")
     public ICicsTerminal terminal;
 
-    @SdvUser(roleTag = "role1")
+    @SdvUser(cicsTag = "A", roleTag = "R1")
     public ISdvUser user1;
 
     private static final String SDV_TCPIPSERVICE_NAME = "SDVXSDT";
