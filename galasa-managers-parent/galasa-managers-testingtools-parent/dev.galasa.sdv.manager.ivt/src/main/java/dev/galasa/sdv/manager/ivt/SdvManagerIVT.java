@@ -11,9 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
-import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
-import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.sdv.ISdvUser;
@@ -25,9 +23,6 @@ import dev.galasa.sdv.SdvUser;
    
     @Logger
     public Log logger;
-
-    @CicsRegion(cicsTag = "A")
-    public ICicsRegion cics;
 
     @CicsTerminal(cicsTag = "A")
     public ICicsTerminal terminal;
