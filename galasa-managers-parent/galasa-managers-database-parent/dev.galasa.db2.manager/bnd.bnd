@@ -2,7 +2,11 @@
 Bundle-Name: Galasa Db2 Manager
 Export-Package: dev.galasa.db2,\
                 dev.galasa.db2.spi
-Import-Package: !javax.validation.constraints, \
+Import-Package: jakarta.transaction, \
+                jakarta.transaction.xa, \
+                !javax.transaction, \
+                !javax.transaction.xa, \
+                !javax.validation.constraints, \
                 !com.ibm.bidiTools.bdlayout, \
                 !com.ibm.cics.server, \
                 com.ibm.dataaccess, \
