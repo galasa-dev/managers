@@ -41,6 +41,7 @@ task jacocoMerge(type: JacocoMerge) {
 }
 
 repositories {
+    mavenLocal()
     maven {
         url "$sourceMaven"
     }
