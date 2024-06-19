@@ -4,11 +4,11 @@ Export-Package: dev.galasa.db2,\
                 dev.galasa.db2.spi
 Import-Package: jakarta.transaction, \
                 jakarta.transaction.xa, \
+                javax.transaction, \
+                javax.transaction.xa, \
                 !jakarta.enterprise.util, \
                 !jakarta.interceptor, \
                 !jakarta.enterprise.context, \
-                !javax.transaction, \
-                javax.transaction.xa, \
                 !javax.validation.constraints, \
                 !com.ibm.bidiTools.bdlayout, \
                 !com.ibm.cics.server, \
