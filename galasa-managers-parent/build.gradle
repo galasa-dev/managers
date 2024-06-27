@@ -17,13 +17,6 @@ configurations {
     release_metadata
 }
 
-//  Get all the sub projects with jacoco plugin to add itself to the merge 
-subprojects {
-   plugins.withId('jacoco')  {
-        rootProject.tasks.named('jacocoMerge').get().executionData(tasks.named('test').get())
-   }
-}
-
 subprojects {
     apply plugin: 'jacoco'
     test {
