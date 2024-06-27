@@ -17,27 +17,14 @@ configurations {
     release_metadata
 }
 
-//  Get all the sub projects with jacoco plugin to add itself to the merge 
 subprojects {
-   plugins.withId('jacoco')  {
-        rootProject.tasks.named('jacocoMerge').get().executionData(tasks.named('test').get())
-   }
-}
-
-// Define the artifact
-def execFile = layout.buildDirectory.file('jacoco/jacocoMerge.exec')
-def execArtifact = artifacts.add('archives', execFile.get().asFile) {
-    builtBy 'jacocoMerge'
-}
-
-
-task jacocoMerge(type: JacocoMerge) {
-    doFirst {
-        // go through all the files and remove the ones that do not exist.   some managers do not have unit tests yet
-        executionData = executionData.filter({f -> f.exists()})
+    apply plugin: 'jacoco'
+    test {
+        finalizedBy jacocoTestReport
     }
-
-    enabled = jacocoEnabled.toBoolean()
+    jacocoTestReport {
+        dependsOn test
+    }
 }
 
 repositories {
@@ -58,25 +45,15 @@ tasks.withType(Sign) {
     onlyIf { isMainOrRelease.toBoolean() }
 }
 
-if (jacocoEnabled.toBoolean()) {
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                artifact execArtifact
-                
-                groupId = 'codecoverage'
-                artifactId = 'manager-unit-tests'
-            }
-        }
-        repositories {
-            maven {
-                url  = "$targetMaven"
-                
-                if ("$targetMaven".startsWith('http')) {
-                    credentials {
-                        username System.getenv('MAVENUSERNAME')
-                        password System.getenv('MAVENPASSWORD')
-                    }
+publishing {
+    repositories {
+        maven {
+            url  = "$targetMaven"
+            
+            if ("$targetMaven".startsWith('http')) {
+                credentials {
+                    username System.getenv('MAVENUSERNAME')
+                    password System.getenv('MAVENPASSWORD')
                 }
             }
         }
