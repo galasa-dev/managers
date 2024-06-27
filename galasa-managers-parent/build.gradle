@@ -24,20 +24,14 @@ subprojects {
    }
 }
 
-// Define the artifact
-def execFile = layout.buildDirectory.file('jacoco/jacocoMerge.exec')
-def execArtifact = artifacts.add('archives', execFile.get().asFile) {
-    builtBy 'jacocoMerge'
-}
-
-
-task jacocoMerge(type: JacocoMerge) {
-    doFirst {
-        // go through all the files and remove the ones that do not exist.   some managers do not have unit tests yet
-        executionData = executionData.filter({f -> f.exists()})
+subprojects {
+    apply plugin: 'jacoco'
+    test {
+        finalizedBy jacocoTestReport
     }
-
-    enabled = jacocoEnabled.toBoolean()
+    jacocoTestReport {
+        dependsOn test
+    }
 }
 
 repositories {
