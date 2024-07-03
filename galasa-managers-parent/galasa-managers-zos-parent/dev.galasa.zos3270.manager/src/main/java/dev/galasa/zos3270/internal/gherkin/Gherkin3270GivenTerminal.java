@@ -18,6 +18,7 @@ import dev.galasa.framework.spi.language.gherkin.GherkinKeyword;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.common.screens.TerminalSize;
 import dev.galasa.zos3270.internal.Zos3270ManagerImpl;
+import dev.galasa.zos3270.spi.NetworkException;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
 public class Gherkin3270GivenTerminal  implements IStatementOwner {
@@ -41,8 +42,13 @@ public class Gherkin3270GivenTerminal  implements IStatementOwner {
         if (terminal == null) {
             throw new Zos3270ManagerException("Terminal '" + terminalId + "' was not provisioned!");
         }
+        
         if (!terminal.isConnected()) {
-            throw new Zos3270ManagerException("Terminal '" + terminalId + "' is not connected to the host system");
+            try {
+                terminal.connect();
+            } catch (NetworkException ex ) {
+                throw new Zos3270ManagerException("Cannot connect terminal to host system.",ex);
+            }
         }
     }
 
@@ -59,6 +65,6 @@ public class Gherkin3270GivenTerminal  implements IStatementOwner {
             newTerminal = this.manager.generateTerminal(imageTag, true, terminalSize, alternateSize);
             this.gerkinCoordinator.registerTerminal(terminalId, newTerminal, imageTag);
             logger.info("zOS 3270 Terminal id '" + terminalId + "' as been provisioned for image tag '" + imageTag + "'");
-        }       
+        } 
     }
 }

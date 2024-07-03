@@ -1,38 +1,48 @@
 package dev.galasa.zos3270.internal.gherkin;
 
-import java.util.HashMap;
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IStatementOwner;
 import dev.galasa.framework.spi.language.gherkin.GherkinTest;
+import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.internal.Zos3270ManagerImpl;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
 
 public class Gherkin3270Coordinator {
     
+    // The manager that this Coordinator is a facade of.
     private final Zos3270ManagerImpl manager;
     
-    private final GherkinTest test;
+    // The gherkin test is essentially a feature.
+    private final GherkinTest feature;
     
+    private final static Log logger = LogFactory.getLog(Gherkin3270Coordinator.class);
+
+    // This coordinator keeps a reference of the terminals using the id that the gherkin scenario uses,
+    // which is different to the underlying terminal id.
+    // This is a mapping of the gherkin terminal id key to the terminal itself.
     private final HashMap<String, Zos3270TerminalImpl> terminals = new HashMap<>();
     private final HashMap<String, String> terminalImageTags = new HashMap<>();
     
     public Gherkin3270Coordinator(Zos3270ManagerImpl manager, GherkinTest gherkinTest) {
         this.manager = manager;
-        this.test    = gherkinTest;
+        this.feature    = gherkinTest;
     }
     
     public boolean registerStatements() throws ManagerException {
         //*** Do we have any statements we need to support
-        if (!manager.registerStatements(this.test, getStatementOwners())) {
+        if (!manager.registerStatements(this.feature, getStatementOwners())) {
             return false;
         }  
         return true;
     }
-    
     
     public IStatementOwner[] getStatementOwners() {
         return new IStatementOwner[] {
@@ -48,8 +58,9 @@ public class Gherkin3270Coordinator {
                 new Gherkin3270TypeInField(this, this.manager)};
     }
     
-    protected Zos3270TerminalImpl getTerminal(String id) {
-        return this.terminals.get(id);
+    protected Zos3270TerminalImpl getTerminal(String id) throws Zos3270ManagerException {
+        Zos3270TerminalImpl terminal = this.terminals.get(id);
+        return terminal ;
     }
 
     protected void registerTerminal(String id, Zos3270TerminalImpl terminal, String imageTag) {
@@ -59,7 +70,7 @@ public class Gherkin3270Coordinator {
 
     public void provisionGenerate() throws Zos3270ManagerException {
         // Provision any terminals that are Given
-        for(IGherkinExecutable executable : this.test.getAllExecutables()) {
+        for(IGherkinExecutable executable : this.feature.getAllExecutables()) {
             Object owner = executable.getOwner();
             if (owner instanceof Gherkin3270GivenTerminal) {
                 ((Gherkin3270GivenTerminal)owner).provision(executable);
@@ -70,7 +81,6 @@ public class Gherkin3270Coordinator {
     protected String getImageTagForTerminal(String id) {
         return this.terminalImageTags.get(id);
     }
-    
     
     public static String defaultTerminaId(String id) {
         return AbstractManager.defaultString(id, "A").toUpperCase();
