@@ -2,15 +2,11 @@ package dev.galasa.zos3270.internal.gherkin;
 
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IStatementOwner;
 import dev.galasa.framework.spi.language.gherkin.GherkinTest;
-import dev.galasa.zos3270.TerminalInterruptedException;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.internal.Zos3270ManagerImpl;
 import dev.galasa.zos3270.spi.Zos3270TerminalImpl;
@@ -22,8 +18,6 @@ public class Gherkin3270Coordinator {
     
     // The gherkin test is essentially a feature.
     private final GherkinTest feature;
-    
-    private final static Log logger = LogFactory.getLog(Gherkin3270Coordinator.class);
 
     // This coordinator keeps a reference of the terminals using the id that the gherkin scenario uses,
     // which is different to the underlying terminal id.
