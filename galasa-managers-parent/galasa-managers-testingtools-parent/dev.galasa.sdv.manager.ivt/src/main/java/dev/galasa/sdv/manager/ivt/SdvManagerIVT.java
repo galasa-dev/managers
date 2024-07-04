@@ -24,10 +24,10 @@ import dev.galasa.sdv.SdvUser;
     @Logger
     public Log logger;
 
-    @CicsTerminal(cicsTag = "A")
+    @CicsTerminal(cicsTag = "SDVIVT")
     public ICicsTerminal terminal;
 
-    @SdvUser(cicsTag = "A", roleTag = "R1")
+    @SdvUser(cicsTag = "SDVIVT", roleTag = "R1")
     public ISdvUser user1;
 
     private static final String SDV_TCPIPSERVICE_NAME = "SDVXSDT";
