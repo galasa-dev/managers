@@ -27,6 +27,8 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.Result;
+import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
@@ -97,7 +99,30 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         }
 
     }
-    
+
+    @Override
+    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult, Throwable currentException)
+            throws ManagerException {
+
+        super.endOfTestMethod(galasaMethod, currentResult, currentException);
+
+        if (galasaMethod.isGherkin()) {
+            // The end of a test method in gherkin equates to the end of the scenario.
+            // So we need to free up terminals so their state doesn't leech into the next scenario.
+            // A scenario equates to a java method.
+            disconnectAllTerminals();
+        }
+
+        return currentResult;
+    }
+
+    private void disconnectAllTerminals() throws Zos3270ManagerException {
+        for( Zos3270TerminalImpl terminal: terminals) {
+            if (terminal.isConnected()) {
+                disconnectTerminal(terminal);
+            }
+        }
+    }
 
     @Override
     public List<String> extraBundles(@NotNull IFramework framework) throws ManagerException {
@@ -207,14 +232,20 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     public void provisionStop() {
         logger.trace("Disconnecting terminals");
         for (Zos3270TerminalImpl terminal : terminals) {
-            try {
-                terminal.writeRasOutput();
-                terminal.flushTerminalCache();
-                terminal.disconnect();
-            } catch (TerminalInterruptedException e) {
-                logger.warn("Thread interrupted whilst disconnecting terminals", e);
-                Thread.currentThread().interrupt();
-            }
+            disconnectTerminal(terminal);
+        }
+    }
+
+    private void disconnectTerminal(Zos3270TerminalImpl terminal) {
+        String terminalId = terminal.getId();
+        logger.info("Disconnecting terminal "+terminalId);
+        try {
+            terminal.writeRasOutput();
+            terminal.flushTerminalCache();
+            terminal.disconnect();
+        } catch (TerminalInterruptedException e) {
+            logger.warn("Thread interrupted whilst disconnecting terminals", e);
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -32,12 +32,15 @@ public class Gherkin3270Type  implements IStatementOwner {
         List<String> groups = executable.getRegexGroups();  
 
         String terminalId = Gherkin3270Coordinator.defaultTerminaId(groups.get(1));
-       String text = groups.get(0);
+        String text = groups.get(0);
         if (text.isEmpty()) {
             return;
         }
 
         Zos3270TerminalImpl terminal = this.gerkinCoordinator.getTerminal(terminalId);
+        if (terminal == null ) {
+            throw new Zos3270ManagerException("Unable to get terminal "+terminalId);
+        }
         if (!terminal.isConnected()) {
             throw new Zos3270ManagerException("Terminal '" + terminalId + "' is not connected");
         }
