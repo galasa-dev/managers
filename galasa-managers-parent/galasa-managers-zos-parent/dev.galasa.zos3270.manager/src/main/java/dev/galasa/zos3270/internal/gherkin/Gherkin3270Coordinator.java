@@ -6,6 +6,7 @@ import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
 import dev.galasa.framework.spi.IGherkinExecutable;
 import dev.galasa.framework.spi.IStatementOwner;
+import dev.galasa.framework.spi.language.gherkin.GherkinMethod;
 import dev.galasa.framework.spi.language.gherkin.GherkinTest;
 import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zos3270.internal.Zos3270ManagerImpl;
@@ -64,10 +65,16 @@ public class Gherkin3270Coordinator {
 
     public void provisionGenerate() throws Zos3270ManagerException {
         // Provision any terminals that are Given
-        for(IGherkinExecutable executable : this.feature.getAllExecutables()) {
-            Object owner = executable.getOwner();
-            if (owner instanceof Gherkin3270GivenTerminal) {
-                ((Gherkin3270GivenTerminal)owner).provision(executable);
+        List<GherkinMethod> methods = this.feature.getMethods();
+        for( GherkinMethod method : methods ) {
+
+            List<IGherkinExecutable> executables = method.getExecutables();
+            for(IGherkinExecutable executable : executables) {
+                Object owner = executable.getOwner();
+
+                if (owner instanceof Gherkin3270GivenTerminal) {
+                    ((Gherkin3270GivenTerminal)owner).provision(executable);
+                }
             }
         }
     }
