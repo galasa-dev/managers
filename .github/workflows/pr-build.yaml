@@ -30,7 +30,7 @@ jobs:
 
             - name: Test and Build Managers
               run: |
-               gradle -xmx4096m -b galasa-managers-parent/build.gradle clean build \
+               gradle -b galasa-managers-parent/build.gradle clean build -Xmx4096m \
                -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
                -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/
