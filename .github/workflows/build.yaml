@@ -38,7 +38,7 @@ jobs:
                 ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SECRET }}
                 ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
               run: |
-               gradle -b galasa-managers-parent/build.gradle check publish -Xmx4096m --info \
+               gradle -b galasa-managers-parent/build.gradle check publish --info \
                -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
                -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/ -PjacocoEnabled=true -PisMainOrRelease=true
