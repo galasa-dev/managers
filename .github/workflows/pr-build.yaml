@@ -28,12 +28,10 @@ jobs:
               with:
                 gradle-version: 6.9.2
             
-            - name: Set Heap size
-              run: echo "JAVA_OPTS=-Xmx4g" >> $GITHUB_ENV
-
             - name: Test and Build Managers
               run: |
                gradle -b galasa-managers-parent/build.gradle clean build \
+               -Dorg.gradle.jvmargs=-Xmx4096M \
                -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
                -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/
