@@ -1,0 +1,37 @@
+name: PR build
+
+on:
+    workflow_dispatch:
+    pull_request:
+        branches: [main]
+
+env:
+    NAMESPACE: galasa-dev
+
+jobs:
+    build-managers:
+        name: Build and test Managers with Gradle
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Setup JDK 
+              uses: actions/setup-java@v4
+              with:
+                java-version: '11'
+                distribution: 'semeru'
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v3
+              with:
+                gradle-version: 6.9.2
+
+            - name: Build and Test Managers
+              run: |
+               gradle -b galasa-managers-parent/build.gradle clean build \
+               -Dorg.gradle.jvmargs=-Xmx4096M \
+               -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions \
+               -PcentralMaven=https://repo.maven.apache.org/maven2/ \
+               -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/
