@@ -27,10 +27,11 @@ jobs:
               uses: gradle/actions/setup-gradle@v3
               with:
                 gradle-version: 6.9.2
-
+            
             - name: Test and Build Managers
               run: |
                gradle -b galasa-managers-parent/build.gradle clean build \
+               -Dorg.gradle.jvmargs=-Xmx4096M \
                -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
                -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/
