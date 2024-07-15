@@ -27,6 +27,9 @@ jobs:
               uses: gradle/actions/setup-gradle@v3
               with:
                 gradle-version: 6.9.2
+              
+            - name: Set Heap size
+              run: echo "JAVA_OPTS=-Xmx4g" >> $GITHUB_ENV
 
             - name: Build ,Test and Publish Managers
               env:
