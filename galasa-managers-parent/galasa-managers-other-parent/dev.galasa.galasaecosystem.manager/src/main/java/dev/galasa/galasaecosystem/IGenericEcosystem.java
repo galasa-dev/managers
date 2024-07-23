@@ -34,7 +34,6 @@ public interface IGenericEcosystem {
      * Retrieve a CPS property from the host ecosystem
      * 
      * @param namespace The namespace of the CPS
-     * @param property The property to retrieve
      * @return the value of the property or null if not found
      * @throws GalasaEcosystemManagerException if there is a problem accessing the CPS
      */

@@ -51,7 +51,6 @@ public interface IExecInterfaceBlock {
 
     /**
      * Returns the value of the EIBCPOSN field in the EIB.
-     * @param hex return a char array containing the hex values of the field
      * @return
      */
     public int getEIBCPOSN();

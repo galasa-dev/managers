@@ -96,7 +96,7 @@ public @interface ZosProgram {
          */
         PL1(".pl1"),
         /**
-         * Assembler program with <code>.asm<\code> file extension 
+         * Assembler program with &lt;code&gt;.asm&lt;\code&gt; file extension 
          */
         ASSEMBLER(".asm"),
         /**

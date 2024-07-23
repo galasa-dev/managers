@@ -27,7 +27,6 @@ public class ZosBatchJobOutputSpoolFileImpl implements IZosBatchJobOutputSpoolFi
     
     /**
      * Constructor for creating spool file
-     * @param spoolFile
      * @param records
      * @param jobname 
      * @param jobid 

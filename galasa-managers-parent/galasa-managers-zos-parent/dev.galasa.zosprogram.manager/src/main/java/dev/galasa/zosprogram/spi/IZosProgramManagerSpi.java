@@ -22,7 +22,7 @@ public interface IZosProgramManagerSpi {
      * Returns a new zOS Program
      * @param image The zOS Image
      * @param name The program name
-     * @param programSource The program source in the bundle
+     * @param source The program source in the bundle
      * @param language The programming language. See {@link ZosProgram.Language}
      * @param cics Is a CICS program.
      * @param loadlib The load module data set name

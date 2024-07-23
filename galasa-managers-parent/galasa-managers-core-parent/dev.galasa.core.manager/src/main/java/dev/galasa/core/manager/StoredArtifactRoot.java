@@ -18,9 +18,9 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Fill this field Root path of the Stored Artifacts for this Test Run. This can
  * be used to record test logs, job output, trace files etc.
  *
- * Will only populate public {@link java.nio.files.Path} fields.
+ * Will only populate public {@link java.nio.file.Path} fields.
  * 
- * @see java.nio.files.Path
+ * @see java.nio.file.Path
  */
 @Retention(RUNTIME)
 @Target(FIELD)

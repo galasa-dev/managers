@@ -92,7 +92,7 @@ public interface IZosBatchJob {
     
     /**
      * The batch job completion return code, e.g.<br>
-     * <code>CC 0000</code>, <code>CC 0020</code>, <code>JCL ERROR</code>, <code>ABEND S0C4/code> etc.<br>
+     * &lt;code&gt;CC 0000&lt;/code&gt;, &lt;code&gt;CC 0020&lt;/code&gt;, &lt;code&gt;JCL ERROR&lt;/code&gt;, &lt;code&gt;ABEND S0C4&lt;/code&gt; etc.&lt;br&gt;
      * Returns "????" if the job has not been submitted
      * 
      * @return
@@ -101,7 +101,7 @@ public interface IZosBatchJob {
     
     /**
      * Wait for a job to complete. Return the highest return code for the job. The method will wait for the default 
-     * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
+     * resource wait time before timing out. Returns {@link Integer#MIN_VALUE} if return code is non numeric. 
      * Use {@link #getRetcode()} to get the {@link String} value
      * 
      * @return highest CC
@@ -111,7 +111,7 @@ public interface IZosBatchJob {
     
     /**
      * Wait for a job to complete. Return the highest return code for the job. The method will wait for the default 
-     * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
+     * resource wait time before timing out. Returns {@link Integer#MIN_VALUE} if return code is non numeric. 
      * Use {@link #getRetcode()} to get the {@link String} value
      * 
      * @param timeout in seconds
