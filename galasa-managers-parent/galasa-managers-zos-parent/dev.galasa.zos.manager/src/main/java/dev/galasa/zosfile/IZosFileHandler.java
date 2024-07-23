@@ -22,7 +22,7 @@ import dev.galasa.zos.IZosImage;
  * <li>IVSAMDataset</li>
  * </ul>
  * Typical usage would be to instantiate one of these using the newXXX(...)
- * methods (e.g.: {@link #newDataset(String)}), then to call methods on that
+ * methods (e.g.: {@link #newDataset(String, IZosImage)}), then to call methods on that
  * object to configure it, and then to call methods on this manager to
  * manipulate it.
  * </p>
@@ -57,9 +57,7 @@ public interface IZosFileHandler {
     /**
      * Instantiate a new {@link IZosVSAMDataset} object with the given name. The
      * object returned is a 'blank-slate' and will require configuring before it
-     * can be defined or stored. See {@link #newESDS(String)},
-     * {@link #newKSDS(String)} or {@link #newRRDS(String)} for pre-configured
-     * VSAM objects.
+     * can be defined or stored.
      * 
      * @param dsname
      * @return

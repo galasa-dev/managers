@@ -22,6 +22,26 @@ subprojects {
    plugins.withId('jacoco')  {
         rootProject.tasks.named('jacocoMerge').get().executionData(tasks.named('test').get())
    }
+
+    // Uncomment the block below to get details about deprecations.
+
+//    tasks.withType(JavaCompile) {
+//         options.compilerArgs << '-Xlint:unchecked'
+//         options.deprecation = true
+//     }
+     
+    // This task will suppress warnings (only in javadoc) about missing description for (@return, @throws etc..)
+    /*
+        Example warning:
+        
+        warning: no description for @throws
+         * @throws SeleniumManagerException
+    */
+    // However, it will not suppress warnings / errors in the code itself
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
 }
 
 // Define the artifact

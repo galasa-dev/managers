@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * The CPS property core.resource.string.[length].pattern determines the make up of the random string.
  * </p>
  * <p>
- * Will only populate public {@link java.lang.Stringdev.galasa.core.manager.IResourceString} fields.
+ * Will only populate public {@link dev.galasa.core.manager.IResourceString} fields.
  * </p>
  *
  * @author Michael Baylis
@@ -37,7 +37,7 @@ public @interface ResourceString {
      * 
      * The tag must be provided as there is no default for this resource.
      * 
-     * The {@link java.lang.Stringdev.galasa.core.manager.IResourceString} object is keyed on the tag, so if the tag is referred to in multiple 
+     * The {@link dev.galasa.core.manager.IResourceString} object is keyed on the tag, so if the tag is referred to in multiple 
      * super classes,  then the lengths must be identical otherwise an exception will be thrown.
      */
     String tag();

@@ -47,7 +47,7 @@ public interface IWindowsImage {
      * Retrieve the default credentials for the Image.
      * 
      * @return The default credentials - see
-     *         {@link dev.galasa.framework.spi.creds.ICredentials}
+     *         {@link dev.galasa.ICredentials}
      * @throws WindowsManagerException if the credentials are missing or there is a
      *                               problem with the credentials store
      */
