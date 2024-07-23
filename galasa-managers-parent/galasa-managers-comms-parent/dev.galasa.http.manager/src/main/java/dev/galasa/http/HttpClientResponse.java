@@ -240,11 +240,11 @@ public class HttpClientResponse<T> {
     }
 
     /**
-     * Create an {@link HttpClientResponse} with a &lt;com.google.gson.JsonObject&gt; content type
+     * Create an {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * from an {@link HttpResponse}.
      * 
      * @param httpResponse
-     * @return - {@link HttpClientResponse} with a &lt;com.google.gson.JsonObject&gt; content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse)
@@ -253,14 +253,14 @@ public class HttpClientResponse<T> {
     }
 
     /**
-     * Create an {@link HttpClientResponse} with a &lt;com.google.gson.JsonObject&gt; content type
+     * Create an {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * from an {@link HttpResponse}. If contentOnBadResponse is true, an attempt
      * will be made to retrieve the content even on a non 200 status code, otherwise
      * the content will be null in such an instance.
      * 
      * @param httpResponse
      * @param contentOnBadResponse
-     * @return - {@link HttpClientResponse} with a &lt;com.google.gson.JsonObject&gt; content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse,

@@ -84,19 +84,19 @@ public @interface ZosProgram {
      */
     public enum Language {
         /**
-         * COBOL program with <code>.cbl</code> file extension 
+         * COBOL program with ".cbl" file extension 
          */
         COBOL(".cbl"),
         /**
-         * C program with <code>.c</code> file extension 
+         * C program with ".c" file extension 
          */
         C(".c"),
         /**
-         * PL1 program with <code>.pl1</code> file extension 
+         * PL1 program with ".pl1" file extension 
          */
         PL1(".pl1"),
         /**
-         * Assembler program with &lt;code&gt;.asm&lt;\code&gt; file extension 
+         * Assembler program with ".asm" file extension 
          */
         ASSEMBLER(".asm"),
         /**

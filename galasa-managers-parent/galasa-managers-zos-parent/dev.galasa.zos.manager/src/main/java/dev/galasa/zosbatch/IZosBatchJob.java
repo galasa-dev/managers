@@ -66,7 +66,7 @@ public interface IZosBatchJob {
     public String getOwner();
     
     /**
-     * The type for this Job, i.e. <code>JOB</code>, <code>STC</code> or <code>TSU</code>. Returns "???" if no type has been associated
+     * The type for this Job, i.e. "JOB", "STC" or "TSU". Returns "???" if no type has been associated
      * 
      * @return batch job type
      */
@@ -81,7 +81,7 @@ public interface IZosBatchJob {
 
     /**
      * The batch job value as a {@link String}, e.g.<br>
-     * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
+     * "INPUT", "ACTIVE", "OUTPUT" etc.<br>
      * Returns "????????" if the job has not been submitted
      * <p>
      * N.B. Values are implementation dependent
@@ -92,7 +92,7 @@ public interface IZosBatchJob {
     
     /**
      * The batch job completion return code, e.g.<br>
-     * &lt;code&gt;CC 0000&lt;/code&gt;, &lt;code&gt;CC 0020&lt;/code&gt;, &lt;code&gt;JCL ERROR&lt;/code&gt;, &lt;code&gt;ABEND S0C4&lt;/code&gt; etc.&lt;br&gt;
+     * "CC 0000", "CC 0020", "JCL ERROR", "ABEND S0C4" etc.
      * Returns "????" if the job has not been submitted
      * 
      * @return
