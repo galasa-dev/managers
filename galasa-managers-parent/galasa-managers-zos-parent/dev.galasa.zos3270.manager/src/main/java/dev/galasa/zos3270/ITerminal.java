@@ -60,7 +60,7 @@ public interface ITerminal {
      * The returned boolean will depend on if the amount of occurrences is found.
      * 
      * @param text
-     * @param occurances
+     * @param occurrences
      * @return if the text was found
      */
     boolean searchText(String text, int occurrences);
@@ -271,7 +271,6 @@ public interface ITerminal {
      * If there are not enough characters on the row to satisfy the length requirement,  the retrieve will wrap to the next 
      * row, unless it is the last row, in which case an exception will be thrown. 
      *
-     * @param length
      * @param length - The number of characters to extract
      * @return The contents extracted
      * @throws Zos3270Exception - If the length causes the extract to overflow the end of the screen buffer

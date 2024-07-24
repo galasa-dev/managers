@@ -10,14 +10,12 @@ import javax.validation.constraints.NotNull;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.ZosFileManagerException;
 
-/**
- * SPI interface to {@link IZosFile}
- */
+
 public interface IZosFileSpi {
 
     /**
      * Returns a zOS File Handler instance
-     * @return an {@link IZosFileHandler} implementation instance
+     * @return an {@link dev.galasa.zosfile.IZosFileHandler} implementation instance
      */
     @NotNull
     public IZosFileHandler getZosFileHandler() throws ZosFileManagerException;

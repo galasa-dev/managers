@@ -122,54 +122,54 @@ public interface IHttpClient {
             throws HttpClientException;
     
     /**
-     * Issue an HTTP GET to the provided URL, receiving a {@link JSONObject} in the
+     * Issue an HTTP GET to the provided URL, receiving a com.google.gson.JsonObject in the
      * response.
      * 
      * @param url
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> getJson(String url) throws HttpClientException;
 
     /**
      * Issue an HTTP POST to the provided URL, sending the provided
-     * {@link JSONObject} and receiving a {@link JSONObject} in the response.
+     * com.google.gson.JsonObject and receiving a com.google.gson.JsonObject in the response.
      * 
      * @param url
      * @param json
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException;
 
      /**
      * Issue an HTTP PUT to the provided URL, sending the provided
-     * {@link JSONObject} and receiving a {@link JSONObject} in the response.
+     * <code>com.google.gson.JsonObject</code> and receiving a <code>com.google.gson.JsonObject</code> in the response.
      * 
      * @param url
      * @param json
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a <code>com.google.gson.JsonObject</code> content type
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> putJson(String url, JsonObject json) throws HttpClientException;
 
     /**
-     * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
+     * Issue an HTTP DELETE to the provided URL, receiving a com.google.gson.JsonObject in
      * the response.
      * 
      * @param url
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException;
 
     /**
-     * Issue an HTTP DELETE to the provided URL, receiving a {@link JSONObject} in
+     * Issue an HTTP DELETE to the provided URL, receiving a com.google.gson.JsonObject in
      * the response.
      * 
      * @param url
      * @param json
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<JsonObject> deleteJson(String url, JsonObject json) throws HttpClientException;
@@ -222,7 +222,7 @@ public interface IHttpClient {
      * 
      * @param url
      * @param binary
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<byte[]> putBinary(String url, byte[] binary) throws HttpClientException;
@@ -233,7 +233,7 @@ public interface IHttpClient {
      * 
      * @param url
      * @param binary
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<byte[]> getBinary(String url, byte[] binary) throws HttpClientException;
@@ -244,7 +244,7 @@ public interface IHttpClient {
      * 
      * @param url
      * @param binary
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<byte[]> postBinary(String url, byte[] binary) throws HttpClientException;
@@ -255,7 +255,7 @@ public interface IHttpClient {
      * 
      * @param url
      * @param binary
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     HttpClientResponse<byte[]> deleteBinary(String url, byte[] binary) throws HttpClientException;
@@ -263,25 +263,23 @@ public interface IHttpClient {
     /**
      * Download a file from a specified location to a specified destination on local host.
      * 
-     * @param Path destination - local location
-     * @param String path = URL path
+     * @param path = URL path
      */
     CloseableHttpResponse getFile(String path) throws HttpClientException;
     
     /**
      * Download a file from a specified location to a specified destination on local host.
      * 
-     * @param Path destination - local location
-     * @Param Content Types
-     * @param String path = URL path
+     * @param acceptTypes
+     * @param path - URL path
      */
     CloseableHttpResponse getFile(String path, ContentType... acceptTypes) throws HttpClientException;
 
     /**
      * Send a compressed (tar) file from a local location to a specified destination on a host.
      * 
-     * @param Sting path - URL path
-     * @param File file - tar archive file
+     * @param path - URL path
+     * @param file - tar archive file
      */
     void putFile(String path, InputStream file);
 

@@ -96,8 +96,8 @@ public interface ILogScanner {
 	/**
 	 * Convenience method for scan(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + failString + "\E"), count)
 	 * 
-	 * @param searchText The text to search for
-	 * @param failText Failure text to search for, can be null meaning no fail search
+	 * @param searchString The text to search for
+	 * @param failString Failure text to search for, can be null meaning no fail search
 	 * @param count at least how many occurrences of the searchText must exist
 	 * @return This log scanner for fluent calls
 	 * @throws FailTextFoundException If the failText was found
@@ -144,7 +144,7 @@ public interface ILogScanner {
 	 * 
 	 * @param searchPattern The regex to search for
 	 * @param failPattern Failure regex to search for, can be null meaning no fail search
-	 * @param occurrence The occurrence to be returned
+	 * @param occurrance The occurrence to be returned
 	 * @return The text of the searchPattern found
 	 * @throws MissingTextException The searchPattern was not found at all
 	 * @throws IncorrectOccurrencesException If the specified occurrence was not found
@@ -155,9 +155,9 @@ public interface ILogScanner {
 	/**
 	 * Convenience method for scanForMatch(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
 	 * 
-	 * @param searchText The text to search for
-	 * @param failText Failure text to search for, can be null meaning no fail search
-	 * @param occurrence The occurrence to be returned
+	 * @param searchString The text to search for
+	 * @param failString Failure text to search for, can be null meaning no fail search
+	 * @param occurrance The occurrence to be returned
 	 * @return The text of the searchPattern found
 	 * @throws MissingTextException The searchPattern was not found at all
 	 * @throws IncorrectOccurrencesException If the specified occurrence was not found
@@ -172,7 +172,7 @@ public interface ILogScanner {
      * 
      * @param searchPattern The regex to search for
 	 * @param failPattern Failure regex to search for, can be null meaning no fail search
-     * @param occurrence The occurrence to be returned
+     * @param occurrance The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException The searchPattern was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found
@@ -183,9 +183,9 @@ public interface ILogScanner {
     /**
      * Convenience method for scanForMatchSinceCheckpoint(Pattern.Compile("\Q" + searchString + "\E"), Pattern.Compile("\Q" + searchString + "\E"), occurrence)
      * 
-     * @param searchText The text to search for
-	 * @param failText Failure text to search for, can be null meaning no fail search
-     * @param occurrence The occurrence to be returned
+     * @param searchString The text to search for
+	 * @param failString Failure text to search for, can be null meaning no fail search
+     * @param occurrance The occurrence to be returned
      * @return The text of the searchPattern found
      * @throws MissingTextException The searchString was not found at all
      * @throws IncorrectOccurrencesException If the specified occurrence was not found

@@ -20,9 +20,6 @@ import org.ietf.jgss.MessageProp;
  * {@link #create()} to create the security context. {@link #initiate()} will
  * then be called, (and potentially {@link #initiate(KerberosToken)} if further
  * initiation is required).
- * 
- * @author James Bartlett
- * 
  */
 public class KerberosInitiator {
 
@@ -42,7 +39,6 @@ public class KerberosInitiator {
 	/**
 	 * Construct with service client and kdc
 	 * 
-	 * @param logRepo
 	 * @param service
 	 * @param client
 	 * @param kdc

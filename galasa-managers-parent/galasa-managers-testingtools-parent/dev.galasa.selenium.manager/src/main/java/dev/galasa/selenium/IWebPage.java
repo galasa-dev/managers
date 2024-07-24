@@ -29,7 +29,6 @@ public interface IWebPage {
     /**
      * Clears the Element specified by a Class Name
      * @param className The Object used to specify the Element
-     * @param secondsTimeout The wait timeout in seconds
      * @return The WebPage after the Element is cleared
      */
     public IWebPage clearElementByClassName(String className);
