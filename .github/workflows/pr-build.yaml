@@ -22,6 +22,10 @@ jobs:
               with:
                 java-version: '11'
                 distribution: 'semeru'
+              
+            - name: Print githash
+              run: |
+                echo $GITHUB_SHA > ./managers.githash
 
             - name: Setup Gradle
               uses: gradle/actions/setup-gradle@v3
@@ -30,9 +34,20 @@ jobs:
             
             - name: Test and Build Managers
               run: |
-               gradle -b galasa-managers-parent/build.gradle clean build \
+               gradle -b galasa-managers-parent/build.gradle check publish \
                -Dorg.gradle.jvmargs=-Xmx4096M \
                -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
-               -PtargetMaven=https://maven.pkg.github.com/${{env.NAMESPACE}}/managers/
+               -PtargetMaven=${{github.workspace}}/repo
+
+            - name: Build managers Image for testing
+              uses: docker/build-push-action@v5
+              with:
+                context: .
+                file: dockerfiles/dockerfile
+                load: true
+                tags: managers:test
+                build-args: |
+                   dockerRepository=harbor.galasa.dev
+                   tag=main
           
