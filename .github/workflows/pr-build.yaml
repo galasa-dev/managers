@@ -1,12 +1,8 @@
 name: PR build
 
 on:
-    workflow_dispatch:
-    pull_request:
-        branches: [main]
-
-env:
-    NAMESPACE: jaydee029
+  pull_request:
+    branches: [main]
 
 jobs:
     build-gradle:
