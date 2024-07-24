@@ -43,7 +43,7 @@ jobs:
               run: |
                gradle -b galasa-managers-parent/build.gradle check publish --info \
                -Dorg.gradle.jvmargs=-Xmx4096M \
-               -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions  \
+               -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions  \
                -PcentralMaven=https://repo.maven.apache.org/maven2/ \
                -PtargetMaven=${{github.workspace}}/repo -PjacocoEnabled=true -PisMainOrRelease=true
         
