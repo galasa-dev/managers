@@ -13,7 +13,7 @@ import java.sql.Connection;
  * 
  * This connection must be established to connected a IDb2Schema to this database.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IDb2Instance {

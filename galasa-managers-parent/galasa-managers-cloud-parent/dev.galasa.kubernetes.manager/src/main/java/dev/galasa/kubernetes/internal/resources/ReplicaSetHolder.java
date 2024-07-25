@@ -22,7 +22,7 @@ import io.kubernetes.client.openapi.models.V1PodList;
 /**
  * ReplicaSet type resource implementation, ie Deployment/StatefulSet
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public abstract class ReplicaSetHolder {

@@ -27,7 +27,7 @@ import dev.galasa.framework.spi.utils.GalasaGson;
 /**
  * DockerExecImpl. An object passed back used to monitor and control the exec process on a container.
  * 
- * @author James Davies
+ *   
  */
 public class DockerExecImpl implements IDockerExec {
 

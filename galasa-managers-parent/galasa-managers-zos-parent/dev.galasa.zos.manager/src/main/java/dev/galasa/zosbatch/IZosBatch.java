@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Provides the test code access to zOS Batch jobs via the zOS Manager 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosBatch {

@@ -27,7 +27,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * The default is the same as the imagename
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class WindowsName extends CpsProperties {

@@ -37,7 +37,7 @@ import dev.galasa.framework.spi.utils.GalasaGson;
  * describes the content type of the response. Use the static methods to create
  * instances from an {@link HttpResponse}.
  * 
- * @author James Bartlett
+ *  
  *
  * @param <T> Class describing the content type of the response
  */

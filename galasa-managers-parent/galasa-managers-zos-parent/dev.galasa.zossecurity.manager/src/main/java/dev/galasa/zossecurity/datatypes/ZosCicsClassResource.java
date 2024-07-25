@@ -8,7 +8,7 @@ package dev.galasa.zossecurity.datatypes;
 /**
  * This enum represents the different types of RACF classes that CICS uses for security
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public enum ZosCicsClassResource {

@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Clean up the ecosystem properties when the run is deleted
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunResourceMonitor implements Runnable {

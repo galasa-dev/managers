@@ -20,7 +20,7 @@ import dev.galasa.zos3270.Zos3270ManagerException;
  * default is TRUE
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LogConsoleTerminals extends CpsProperties {

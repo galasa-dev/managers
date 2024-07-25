@@ -33,7 +33,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * There are no defaults
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxImages extends CpsProperties {

@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
  * Pojo to represent a screen image as received or sent from the client. Inbound
  * means received by the client.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TerminalImage {

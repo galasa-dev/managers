@@ -10,7 +10,7 @@ package dev.galasa.zosbatch;
  * 
  * <p>Use a {@link ZosBatchJobname} annotation to populate this field with</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosBatchJobname {

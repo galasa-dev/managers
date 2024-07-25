@@ -27,7 +27,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * The default is m1.medium
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxFlavor extends CpsProperties {

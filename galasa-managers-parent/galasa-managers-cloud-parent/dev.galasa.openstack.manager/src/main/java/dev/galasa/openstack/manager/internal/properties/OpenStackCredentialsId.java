@@ -24,7 +24,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * default value is openstack
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class OpenStackCredentialsId extends CpsProperties {

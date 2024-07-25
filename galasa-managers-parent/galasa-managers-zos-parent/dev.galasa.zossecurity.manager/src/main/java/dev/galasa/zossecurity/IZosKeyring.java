@@ -11,7 +11,7 @@ import dev.galasa.zossecurity.datatypes.RACFCertificateType;
 /**
  * Represents a keyring that has been created.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosKeyring {

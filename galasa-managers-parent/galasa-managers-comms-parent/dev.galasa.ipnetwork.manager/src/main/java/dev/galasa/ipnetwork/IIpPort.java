@@ -14,7 +14,7 @@ package dev.galasa.ipnetwork;
  * Use the appropriate host manager annotation to obtain an object
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IIpPort {

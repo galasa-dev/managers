@@ -20,7 +20,7 @@ import dev.galasa.kubernetes.internal.properties.KubernetesPropertiesSingleton;
 /**
  * Initialise the Resource Management routines for the Kubernetes Manager 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service= {IResourceManagementProvider.class})

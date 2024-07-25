@@ -30,7 +30,7 @@ import java.util.Arrays;
  * There is no default
  * </p>
  * 
- * @author James Davies
+ *   
  *
  */
 public class LinuxSecurityGroups extends CpsProperties {

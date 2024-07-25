@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Pojo to represent a Field on the terminal screen.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TerminalField {

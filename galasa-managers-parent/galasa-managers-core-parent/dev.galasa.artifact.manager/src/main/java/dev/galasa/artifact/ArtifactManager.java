@@ -16,7 +16,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to annotate annotations that are to be used for Test Class fields. To be
  * populated by the Manager.
  *
- * @author William Yates
+ *   
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

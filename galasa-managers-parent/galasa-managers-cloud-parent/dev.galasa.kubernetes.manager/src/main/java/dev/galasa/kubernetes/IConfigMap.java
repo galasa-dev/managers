@@ -8,7 +8,7 @@ package dev.galasa.kubernetes;
 /**
  * Represents a ConfigMap resource
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IConfigMap extends IResource {

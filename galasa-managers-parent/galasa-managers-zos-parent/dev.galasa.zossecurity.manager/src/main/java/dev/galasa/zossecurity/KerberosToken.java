@@ -10,7 +10,7 @@ import jakarta.xml.bind.DatatypeConverter;
 /**
  * Object representing a Kerberos Token
  * 
- * @author James Bartlett
+ *  
  *
  */
 public class KerberosToken {

@@ -8,7 +8,7 @@ package dev.galasa.zossecurity;
 /**
  * Representation of a Kerberos Principal
  * 
- * @author James Bartlett
+ *  
  *
  */
 public interface IZosKerberosPrincipal {

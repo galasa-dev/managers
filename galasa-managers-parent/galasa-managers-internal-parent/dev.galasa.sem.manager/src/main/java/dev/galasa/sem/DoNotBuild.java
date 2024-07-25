@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * Requests that SEM does not build the Complex, used if the test wants to 
  * build the CICS Regions itself
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

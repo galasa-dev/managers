@@ -23,7 +23,7 @@ import dev.galasa.framework.spi.ResourceManagerException;
  * resources after a test has been terminated
  *  
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IResourceManagementProvider.class })

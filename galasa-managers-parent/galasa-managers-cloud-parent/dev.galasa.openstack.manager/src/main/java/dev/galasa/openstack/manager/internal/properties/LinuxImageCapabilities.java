@@ -33,7 +33,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * The default is no capabilities
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxImageCapabilities extends CpsProperties {

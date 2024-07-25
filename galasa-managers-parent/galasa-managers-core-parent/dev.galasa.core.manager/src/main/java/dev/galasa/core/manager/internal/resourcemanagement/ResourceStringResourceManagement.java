@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Core Resource String Resource Management
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringResourceManagement implements Runnable {

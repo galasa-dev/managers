@@ -55,7 +55,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * The Kubernetes Manager implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })

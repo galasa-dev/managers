@@ -40,7 +40,7 @@ import dev.galasa.framework.spi.creds.CredentialsException;
  * This instance also provides the connection itself back to the tester for any complex usecases not 
  * covered by the methods inside this manager.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class Db2InstanceImpl implements IDb2Instance{

@@ -25,7 +25,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Test the tab function
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TabTest extends Zos3270TestBase {

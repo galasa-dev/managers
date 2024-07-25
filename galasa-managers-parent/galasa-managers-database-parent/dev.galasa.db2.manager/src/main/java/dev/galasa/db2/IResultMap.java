@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 /**
  * A simple interface to provide easy access to multiple types of returns.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IResultMap {

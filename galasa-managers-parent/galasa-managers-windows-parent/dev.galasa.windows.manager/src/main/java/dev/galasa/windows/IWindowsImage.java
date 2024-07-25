@@ -22,7 +22,7 @@ import dev.galasa.ipnetwork.IIpHost;
  * Use a {@link WindowsImage} annotation to populate this field with
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IWindowsImage {
