@@ -5,45 +5,45 @@ on:
     branches: [main]
 
 jobs:
-    build-gradle:
-        name: build and Test Managers
-        runs-on: ubuntu-latest
+  build-managers:
+    name: Build Managers source code and Docker image
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v4
-            
-            - name: Setup JDK 
-              uses: actions/setup-java@v4
-              with:
-                java-version: '11'
-                distribution: 'semeru'
-              
-            - name: Print githash
-              run: |
-                echo $GITHUB_SHA > ./managers.githash
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup JDK 
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'semeru'
+        
+      - name: Print githash
+        run: |
+          echo $GITHUB_SHA > ./managers.githash
 
-            - name: Setup Gradle
-              uses: gradle/actions/setup-gradle@v3
-              with:
-                gradle-version: 6.9.2
-            
-            - name: Test and Build Managers
-              run: |
-               gradle -b galasa-managers-parent/build.gradle check publish \
-               -Dorg.gradle.jvmargs=-Xmx4096M \
-               -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions  \
-               -PcentralMaven=https://repo.maven.apache.org/maven2/ \
-               -PtargetMaven=${{github.workspace}}/repo
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 6.9.2
+      
+      - name: Build Managers source code
+        run: |
+          gradle -b galasa-managers-parent/build.gradle check publish \
+          -Dorg.gradle.jvmargs=-Xmx4096M \
+          -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions \
+          -PcentralMaven=https://repo.maven.apache.org/maven2/ \
+          -PtargetMaven=${{github.workspace}}/repo
 
-            - name: Build managers Image for testing
-              uses: docker/build-push-action@v5
-              with:
-                context: .
-                file: dockerfiles/dockerfile
-                load: true
-                tags: managers:test
-                build-args: |
-                   dockerRepository=harbor.galasa.dev
-                   tag=main
-          
+      - name: Build Managers image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfiles/dockerfile
+          load: true
+          tags: managers:test
+          build-args: |
+              dockerRepository=harbor.galasa.dev
+              tag=main
+    
