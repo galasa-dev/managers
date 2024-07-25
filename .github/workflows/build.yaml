@@ -1,0 +1,73 @@
+name: Main build
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  NAMESPACE: galasa-dev
+  IMAGE_TAG: main
+
+jobs:
+    build-gradle:
+        name: build and Test Managers
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+            
+            - name: Setup JDK 
+              uses: actions/setup-java@v4
+              with:
+                java-version: '11'
+                distribution: 'semeru'
+
+            - name: Print githash
+              run: |
+                echo $GITHUB_SHA > ./managers.githash
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v3
+              with:
+                gradle-version: 6.9.2
+
+            - name: Build ,Test and Publish Managers
+              env:
+                GITHUB_ACTOR: ${{github.actor}}
+                GITHUB_TOKEN: ${{ github.token }}
+                ORG_GRADLE_PROJECT_signingKeyId:  ${{ secrets.GPG_KEY }}
+                ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SECRET }}
+                ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+              run: |
+               gradle -b galasa-managers-parent/build.gradle check publish --info \
+               -Dorg.gradle.jvmargs=-Xmx4096M \
+               -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions  \
+               -PcentralMaven=https://repo.maven.apache.org/maven2/ \
+               -PtargetMaven=${{github.workspace}}/repo -PjacocoEnabled=true -PisMainOrRelease=true
+        
+            - name: Extract metadata for Managers image
+              id: metadata
+              uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+              with:
+                images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/managers-maven-artefacts
+ 
+            - name: Build Managers image for development Maven registry
+              id: build
+              uses: docker/build-push-action@v5
+              with:
+                context: .
+                file: dockerfiles/dockerfile
+                push: true
+                tags: ${{ steps.metadata.outputs.tags }}
+                labels: ${{ steps.metadata.outputs.labels }}
+                build-args: |
+                  dockerRepository=harbor.galasa.dev
+                  tag=${{ env.IMAGE_TAG }}
+
+            - name: Recycle application in ArgoCD
+              env: 
+                ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+              run: |
+                 docker run --env ARGOCD_AUTH_TOKEN=${{ env.ARGOCD_AUTH_TOKEN }} --rm -v ${{ github.workspace }}:/var/workspace ghcr.io/galasa-dev/argocdcli:main app actions run gh-maven-repos restart --kind Deployment --resource-name managers-gh --server argocd.galasa.dev
