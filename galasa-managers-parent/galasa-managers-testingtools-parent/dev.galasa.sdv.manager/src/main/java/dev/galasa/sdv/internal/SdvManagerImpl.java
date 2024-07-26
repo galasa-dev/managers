@@ -60,7 +60,7 @@ import org.osgi.service.component.annotations.Component;
   *
   * <p>It initialises the SDV manager, gathers all required
   * config, assess which regions to record and what users, and
-  * intercepts and implements behaviour for test creation &
+  * intercepts and implements behaviour for test creation and
   * teardown.
   *
   */

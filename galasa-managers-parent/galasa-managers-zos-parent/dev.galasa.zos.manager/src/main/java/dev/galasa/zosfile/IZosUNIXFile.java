@@ -125,7 +125,7 @@ public interface IZosUNIXFile {
 
     /**
      * Write content to the zOS UNIX file on the zOS image in Binary mode 
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * <p>See {@link #setDataType(UNIXFileDataType)}
      * @param content
      * @throws ZosUNIXFileException
      */
@@ -133,14 +133,14 @@ public interface IZosUNIXFile {
 
     /**
      * Retrieve the content of the zOS UNIX file from the zOS image in Text mode
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * <p>See {@link #setDataType(UNIXFileDataType)}
      * @throws ZosUNIXFileException
      */
     public String retrieveAsText() throws ZosUNIXFileException;
 
     /**
      * Retrieve content of the zOS UNIX file from the zOS image in Binary mode
-     * <p>See {@link #setDataType(DatasetDataType)}
+     * <p>See {@link #setDataType(UNIXFileDataType)}
      * @return data set content
      * @throws ZosUNIXFileException
      */
@@ -176,7 +176,7 @@ public interface IZosUNIXFile {
     
     /**
      * Set the data type ({@link UNIXFileDataType}) for store and retrieve of the zOS UNIX file content
-     * @param fileType
+     * @param dataType
      */
     public void setDataType(UNIXFileDataType dataType);
     
@@ -191,19 +191,16 @@ public interface IZosUNIXFile {
     
     /**
      * Return the zOS UNIX file type ({@link UNIXFileType})
-     * @param fileType
      */
     public UNIXFileType getFileType();
     
     /**
      * Return the data type ({@link UNIXFileDataType}) for store and retrieve of the zOS UNIX file content
-     * @param fileType
      */
     public UNIXFileDataType getDataType();
     
     /**
      * Return the path of the zOS UNIX file or directory
-     * @param fileType
      */
     public String getUnixPath();
     
@@ -263,7 +260,7 @@ public interface IZosUNIXFile {
     public boolean shouldCleanup();
     
 	/**
-	 * Convert  {@link Set}<{@link PosixFilePermission}> to Symbolic Notation (e.g. rwxwrxrwx)
+	 * Convert  {@link Set}&lt;{@link PosixFilePermission}&gt; to Symbolic Notation (e.g. rwxwrxrwx)
 	 * @param accessPermissions
 	 * @return a {@link String} containing the file permissions in Symbolic Notation
 	 */	

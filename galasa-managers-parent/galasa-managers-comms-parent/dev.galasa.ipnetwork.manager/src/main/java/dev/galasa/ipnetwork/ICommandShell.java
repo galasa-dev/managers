@@ -10,8 +10,8 @@ public interface ICommandShell {
     public String issueCommand(String command) throws IpNetworkManagerException;
 
     /**
-     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, false,
-     * long)}
+     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, boolean, long)}
+
      * 
      * @param command - command to issue
      * @param timeout - time (in milliseconds) to wait with no new output appearing
@@ -23,7 +23,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH. Equivalent to
-     * {@link #issueCommand(String, boolean, defaultTimeout)}
+     * {@link #issueCommand(String, boolean, long)}
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
@@ -61,7 +61,7 @@ public interface ICommandShell {
      * Issue a command using SSH shell. 
      * 
      * Equivalent to
-     * {@link #issueCommandToShell(String, false, defaultTimeout)} - not valid for
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for
      * Rexec implementation - equivalent to
      * {@link #issueCommand(String, long)} for Telnet implementation
      * 
@@ -73,7 +73,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, false, long)} - not valid for Rexec
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for Rexec
      * implementation - equivalent to {@link #issueCommand(String, long)}
      * for Telnet implementation
      * 
@@ -85,7 +85,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, boolean, defaultTimeout)} - not valid for
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for
      * Rexec implementation - equivalent to
      * {@link #issueCommand(String, long)} for Telnet implementation
      * 

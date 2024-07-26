@@ -43,7 +43,7 @@ public class DockerImageImpl implements IDockerImage {
      * @param framework
      * @param dockerManager
      * @param dockerEngine
-     * @param imageName
+     * @param fullImageName
      */
     public DockerImageImpl(IFramework framework, DockerManagerImpl dockerManager, 
             DockerEngineImpl dockerEngine, String fullImageName) {

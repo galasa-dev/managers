@@ -12,188 +12,186 @@ package dev.galasa.cicsts;
 public interface IExecInterfaceBlock {
     
     /**
-     * Returns a {@link String} representation of the EIBRESP field if available
-     * @return
+     * @return a {@link String} representation of the EIBRESP field if available
      */
     public String getResponse();
     
     /**
-     * Returns the value of the EIBTIME field in the EIB.
-     * @return
+     * @return the value of the EIBTIME field in the EIB.
+     *
      */
     public int getEIBTIME();
 
     /**
-     * Returns the value of the EIBDATE field in the EIB.
-     * @return
+     * @return the value of the EIBDATE field in the EIB.
+     * 
      */
     public int getEIBDATE();
 
     /**
-     * Returns the value of the EIBTRNID field in the EIB.
+     * @return the value of the EIBTRNID field in the EIB.
      * @param hex return a char array containing the hex values of the field
-     * @return
+     * 
      */
     public String getEIBTRNID(boolean hex);
 
     /**
-     * Returns the value of the EIBTASKN field in the EIB.
-     * @return
+     * @return the value of the EIBTASKN field in the EIB.
+     * 
      */
     public int getEIBTASKN();
 
     /**
-     * Returns the value of the EIBTRMID field in the EIB.
+     * @return the value of the EIBTRMID field in the EIB.
      * @param hex return a char array containing the hex values of the field
-     * @return
+     * 
      */
     public String getEIBTRMID(boolean hex);
 
     /**
-     * Returns the value of the EIBCPOSN field in the EIB.
-     * @param hex return a char array containing the hex values of the field
-     * @return
+     * @return the value of the EIBCPOSN field in the EIB.
+     * 
      */
     public int getEIBCPOSN();
     
     /**
-     * Returns the value of the EIBCALEN field in the EIB.
-     * @return
+     * @return the value of the EIBCALEN field in the EIB.
+     * 
      */
     public int getEIBCALEN();
     
     /**
-     * Returns the value of the EIBAID field in the EIB.
-     * @return
+     * @return the value of the EIBAID field in the EIB.
+     * 
      */
     public char getEIBAID();
 
     /**
-     * Returns the value of the EIBFN field in the EIB.
-     * @return
+     * @return the value of the EIBFN field in the EIB.
+     * 
      */
     public char[] getEIBFN();
 
     /**
-     * Returns the value of the EIBRCODE  field in the EIB.
-     * @return
+     * @return the value of the EIBRCODE  field in the EIB.
+     * 
      */
     public char[] getEIBRCODE();
 
     /**
-     * Returns the value of the EIBDS  field in the EIB.
+     * @return the value of the EIBDS  field in the EIB.
      * @param hex return a char array containing the hex values of the field
-     * @return
+     * 
      */
     public String getEIBDS(boolean hex);
 
     /**
-     * Returns the value of the EIBREQID field in the EIB.
+     * @return the value of the EIBREQID field in the EIB.
      * @param hex return a char array containing the hex values of the field
-     * @return
+     * 
      */
     public String getEIBREQID(boolean hex);
 
     /**
-     * Returns the value of the EIBRSRCE field in the EIB.
+     * @return the value of the EIBRSRCE field in the EIB.
      * @param hex return a char array containing the hex values of the field
-     * @return
+     * 
      */
     public String getEIBRSRCE(boolean hex);
 
     /**
-     * Returns the value of the EIBSYNC field in the EIB.
-     * @return
+     * @return the value of the EIBSYNC field in the EIB.
+     * 
      */
     public char getEIBSYNC();
 
     /**
-     * Returns the value of the EIBFREE field in the EIB.
-     * @return
+     * @return the value of the EIBFREE field in the EIB.
+     * 
      */
     public char getEIBFREE();
 
     /**
-     * Returns the value of the EIBRECV field in the EIB.
-     * @return
+     * @return the value of the EIBRECV field in the EIB.
+     * 
      */
     public char getEIBRECV();
     
     /**
-     * Returns the value of the EIBATT field in the EIB.
-     * @return
+     * @return the value of the EIBATT field in the EIB.
+     * 
      */
     public char getEIBATT();
 
     /**
-     * Returns the value of the EIBEOC field in the EIB.
-     * @return
+     * @return the value of the EIBEOC field in the EIB.
+     * 
      */
     public char getEIBEOC();
 
     /**
-     * Returns the value of the  field in the EIB.
-     * @return
+     * @return the value of the  field in the EIB.
+     * 
      */
     public char getEIBFMH();
 
     /**
-     * Returns the value of the EIBCOMPL field in the EIB.
-     * @return
+     * @return the value of the EIBCOMPL field in the EIB.
+     * 
      */
     public char getEIBCOMPL();
 
     /**
-     * Returns the value of the EIBSIG field in the EIB.
-     * @return
+     * @return the value of the EIBSIG field in the EIB.
+     * 
      */
     public char getEIBSIG();
 
     /**
-     * Returns the value of the EIBCONF field in the EIB.
-     * @return
+     * @return the value of the EIBCONF field in the EIB.
+     * 
      */
     public char getEIBCONF();
 
     /**
-     * Returns the value of the EIBERR field in the EIB.
-     * @return
+     * @return the value of the EIBERR field in the EIB.
+     * 
      */
     public char getEIBERR();
 
     /**
-     * Returns the value of the EIBERRCD field in the EIB.
-     * @return
+     * @return the value of the EIBERRCD field in the EIB.
+     * 
      */
     public char[] getEIBERRCD();
 
     /**
-     * Returns the value of the EIBSYNRB field in the EIB.
-     * @return
+     * @return the value of the EIBSYNRB field in the EIB.
+     * 
      */
     public char getEIBSYNRB();
 
     /**
-     * Returns the value of the EIBNODAT field in the EIB.
-     * @return
+     * @return the value of the EIBNODAT field in the EIB.
+     * 
      */
     public char getEIBNODAT();
 
     /**
-     * Returns the value of the EIBRESP field in the EIB.
-     * @return
+     * @return the value of the EIBRESP field in the EIB.
+     * 
      */
     public int getEIBRESP();
 
     /**
-     * Returns the value of the EIBRESP2 field in the EIB.
-     * @return
+     * @return the value of the EIBRESP2 field in the EIB.
+     * 
      */
     public int getEIBRESP2();
 
     /**
-     * Returns the value of the EIBRLDBK field in the EIB.
-     * @return
+     * @return the value of the EIBRLDBK field in the EIB.
+     * 
      */
     public char getEIBRLDBK();
 }
