@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -53,7 +54,6 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
 
     private static final Log                            logger        = LogFactory.getLog(Zos3270ManagerImpl.class);
 
-    private IConfigurationPropertyStoreService          cps;
     private IDynamicStatusStoreService                  dss;
 
     private IZosManagerSpi                              zosManager;
@@ -249,8 +249,8 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         }
     }
 
-    protected IConfigurationPropertyStoreService getCps() {
-        return this.cps;
+    protected IConfigurationPropertyStoreService getCps() throws Zos3270ManagerException {
+        return Zos3270PropertiesSingleton.cps();
     }
 
     protected IDynamicStatusStoreService getDss() {
@@ -260,4 +260,49 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     public IZosManagerSpi getZosManager() {
         return this.zosManager;
     }
+
+    /**
+     * Get a CPS property from the zos3270 namespace.
+     * 
+     * The Gherkin sister-classes need to be able to retrieve properties from the CPS.
+     *
+     * @param fullPropertyName the name of the property you want. Including the namespace, which must
+     * match {@link Zos3270ManagerImpl#NAMESPACE}
+     */
+    public String getCpsProperty(String fullPropertyName) throws Zos3270ManagerException {
+
+        String propertyValue;
+
+        if (!fullPropertyName.startsWith(Zos3270ManagerImpl.NAMESPACE+".")) {
+            // This manager can only get properties from the zos3270 namespace.
+            throw new Zos3270ManagerException(
+                "Program logic error. CPS property name must start with '"+Zos3270ManagerImpl.NAMESPACE+".' for the Zos3270 manager to access it."+
+                " Property"+fullPropertyName+" cannot be retrieved.");
+        }
+
+        try {
+
+            // We get something like "zos3270.gherkin.terminal.rows" as input.
+            // The cps we are using is already pinned to the zos3270 namespace, so we don't need to 
+            // pass that. It is implicitly given.
+
+
+            String[] propNameParts = fullPropertyName.split("\\.");
+            // Skip the namespace zos3270 part.
+            String prefix = propNameParts[1]; 
+            String suffix = propNameParts[propNameParts.length-1]; 
+            // allocate space for the infixes.
+            String [] infixes = new String[propNameParts.length-3];
+            System.arraycopy( propNameParts, 2, infixes, 0, propNameParts.length-3 );
+
+            propertyValue = getCps().getProperty(prefix, suffix, infixes);
+            logger.info("Property requested:"+fullPropertyName+" value:"+propertyValue);
+
+        } catch (ConfigurationPropertyStoreException ex) {
+            throw new Zos3270ManagerException("Failed to retrieve the CPS property "+fullPropertyName , ex );
+        }
+
+        return propertyValue;
+    }
+
 }
