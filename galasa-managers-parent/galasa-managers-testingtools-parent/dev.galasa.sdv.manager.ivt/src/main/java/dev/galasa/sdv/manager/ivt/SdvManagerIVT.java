@@ -11,9 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.galasa.BeforeClass;
 import dev.galasa.Test;
-import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
-import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.sdv.ISdvUser;
@@ -26,13 +24,10 @@ import dev.galasa.sdv.SdvUser;
     @Logger
     public Log logger;
 
-    @CicsRegion
-    public ICicsRegion cics;
-
-    @CicsTerminal
+    @CicsTerminal(cicsTag = "SDVIVT")
     public ICicsTerminal terminal;
 
-    @SdvUser(roleTag = "role1")
+    @SdvUser(cicsTag = "SDVIVT", roleTag = "R1")
     public ISdvUser user1;
 
     private static final String SDV_TCPIPSERVICE_NAME = "SDVXSDT";

@@ -71,10 +71,9 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	/**
 	 * Initialise the ElasticLogManager, adding a pointer to the other active managers
 	 *  
-	 * @param IFramework - the galasa framework
-	 * @param List<IManager> - list of all the managers
-	 * @param List<Imanager> - list of all the active managers
-	 * @param Class<?> - the test class
+	 * @param framework - the galasa framework
+	 * @param allManagers - list of all the managers
+	 * @param activeManagers - list of all the active managers
 	 * @throws ManagerException
 	 */
 	@Override
@@ -101,8 +100,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	/**
 	 * Makes sure that the elastic log manager is added to the list of active managers, and adds the dependency on http manager.
 	 * 
-	 * @param List<IManager> - list of all the managers
-	 * @param List<IManager> - list of the active managers
+	 * @param allManagers - list of all the managers
+	 * @param activeManagers - list of the active managers
 	 * @throws ManagerException
 	 */
 	@Override

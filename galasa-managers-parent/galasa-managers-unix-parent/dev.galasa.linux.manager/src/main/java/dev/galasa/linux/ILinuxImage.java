@@ -47,7 +47,7 @@ public interface ILinuxImage {
      * Retrieve the default credentials for the Image.
      * 
      * @return The default credentials - see
-     *         {@link dev.galasa.framework.spi.creds.ICredentials}
+     *         {@link dev.galasa.ICredentials}
      * @throws LinuxManagerException if the credentials are missing or there is a
      *                               problem with the credentials store
      */

@@ -4,12 +4,12 @@ plugins {
 
 description = 'Galasa Db2 Manager'
 
-version = '0.34.0'
+version = '0.35.0'
 
 dependencies {
 	// implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation 'com.ibm.db2.jcc:db2jcc:db2jcc4'
-    implementation 'dev.galasa:jta:1.2'
+    implementation 'dev.galasa:jta:2.0.1'
 }
 
 // Note: These values are consumed by the parent build process

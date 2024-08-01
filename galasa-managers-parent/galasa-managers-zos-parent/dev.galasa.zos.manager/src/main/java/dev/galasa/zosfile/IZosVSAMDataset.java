@@ -685,7 +685,7 @@ public interface IZosVSAMDataset {
 
     /**
      * Get the IDCAMS REPRO command 
-     * @param infile
+     * @param indatasetName
      * @return
      * @throws ZosVSAMDatasetException
      */

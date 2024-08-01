@@ -9,7 +9,7 @@ plugins {
 // It is used as the version number of the managers bundle, which contains a yaml
 // file which is in a release.yaml, but published to maven, so that the OBR build 
 // can pick it up later.
-version = "0.35.0"
+version = "0.36.0"
 
 // A configuration to publish the merge exec into
 configurations {
@@ -22,6 +22,26 @@ subprojects {
    plugins.withId('jacoco')  {
         rootProject.tasks.named('jacocoMerge').get().executionData(tasks.named('test').get())
    }
+
+    // Uncomment the block below to get details about deprecations.
+
+//    tasks.withType(JavaCompile) {
+//         options.compilerArgs << '-Xlint:unchecked'
+//         options.deprecation = true
+//     }
+     
+    // This task will suppress warnings (only in javadoc) about missing description for (@return, @throws etc..)
+    /*
+        Example warning:
+        
+        warning: no description for @throws
+         * @throws SeleniumManagerException
+    */
+    // However, it will not suppress warnings / errors in the code itself
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
 }
 
 // Define the artifact
@@ -41,6 +61,7 @@ task jacocoMerge(type: JacocoMerge) {
 }
 
 repositories {
+    mavenLocal()
     maven {
         url "$sourceMaven"
     }
@@ -50,6 +71,10 @@ repositories {
 }
 
 signing {
+    def signingKeyId = findProperty("signingKeyId")
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign publishing.publications
 }
 
@@ -73,8 +98,8 @@ if (jacocoEnabled.toBoolean()) {
                 
                 if ("$targetMaven".startsWith('http')) {
                     credentials {
-                        username System.getenv('MAVENUSERNAME')
-                        password System.getenv('MAVENPASSWORD')
+                        username System.getenv("GITHUB_ACTOR")
+                        password System.getenv("GITHUB_TOKEN")
                     }
                 }
             }
@@ -192,7 +217,7 @@ publishing {
                 name = "Manifest for managers bundle versions"
                 artifactId = "dev.galasa.managers.manifest"
                 groupId = 'dev.galasa'
-				version = "0.35.0"
+				version = "0.36.0"
                 description = "Conveys bundle version information to OBR builds."
                 licenses {
                     license {
@@ -229,8 +254,8 @@ publishing {
         
             if ("$targetMaven".startsWith('http')) {
                 credentials {
-                    username System.getenv('MAVENUSERNAME')
-                    password System.getenv('MAVENPASSWORD')
+                    username System.getenv("GITHUB_ACTOR")
+                    password System.getenv("GITHUB_TOKEN")
                 }
             }
         }

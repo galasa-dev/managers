@@ -38,6 +38,9 @@ public class Gherkin3270CheckAppearsOnce  implements IStatementOwner {
         }
 
         Zos3270TerminalImpl terminal = this.gerkinCoordinator.getTerminal(terminalId);
+        if (terminal == null ) {
+            throw new Zos3270ManagerException("Unable to get terminal "+terminalId);
+        }
         if (!terminal.isConnected()) {
             throw new Zos3270ManagerException("Terminal '" + terminalId + "' is not connected");
         }
