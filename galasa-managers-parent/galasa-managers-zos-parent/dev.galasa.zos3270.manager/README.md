@@ -39,6 +39,8 @@ As above, but for the terminal with an id of `A`
 
 `AND press terminal key ENTER`
 
+`AND press terminal key BACKTAB`
+
 `AND press terminal key PFxx` where `xx` is the PF number
 
 `AND press terminal A key ENTER` where `A` is the id of the terminal to use.
