@@ -28,4 +28,15 @@ test {
     jacoco {
         enabled = jacocoEnabled.toBoolean()
     }
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    enabled = jacocoEnabled.toBoolean()
+    dependsOn test
+
+    reports {
+        html.required = true
+        xml.required = true
+    }
 }
