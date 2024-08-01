@@ -153,4 +153,9 @@ public class DseCicsImpl extends BaseCicsImpl {
 	public void removeSit(@NotNull String sitParam) throws CicstsManagerException {
 		throw new CicstsManagerException("Remove SIT is not supported under DSE provisioning");
 	}
+
+	@Override
+	public String getRegionProperty( String propertyName ) throws CicstsManagerException {
+		return null;
+	}
 }
