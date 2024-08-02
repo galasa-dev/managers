@@ -123,5 +123,7 @@ public interface ICicsRegion {
      * 
      * @throws CicstsManagerException
      */
-    public String getRegionProperty( String propertyName ) throws CicstsManagerException;
+    public default String getRegionProperty( String propertyName ) throws CicstsManagerException {
+        return null;
+    }
 }

@@ -582,8 +582,4 @@ public class SemCicsImpl extends BaseCicsImpl {
 		buildCicsJcl(jobs.get(0));
 	}
 
-    @Override
-	public String getRegionProperty( String propertyName ) throws CicstsManagerException {
-		return null;
-	}
 }
