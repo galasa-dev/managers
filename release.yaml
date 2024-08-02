@@ -79,7 +79,7 @@ managers:
     codecoverage: false
 
   - artifact: dev.galasa.cicsts.manager
-    version: 0.32.0
+    version: 0.36.0
     obr:          true
     mvp:          true
     bom:          true
@@ -304,7 +304,7 @@ managers:
     codecoverage: false
 
   - artifact: dev.galasa.sem.manager
-    version: 0.25.0
+    version: 0.36.0
     obr:          true
     mvp:          false
     bom:          true
