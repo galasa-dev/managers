@@ -143,7 +143,7 @@ public interface IHttpClient {
     HttpClientResponse<JsonObject> postJson(String url, JsonObject json) throws HttpClientException;
 
     /**
-     * Issue an HTTP PATCH to the provided URL, sending the provided
+     * Issue an HTTP PATCH request to the provided URL, sending the provided
      * com.google.gson.JsonObject and receiving a com.google.gson.JsonObject in the response.
      *
      * @param url
