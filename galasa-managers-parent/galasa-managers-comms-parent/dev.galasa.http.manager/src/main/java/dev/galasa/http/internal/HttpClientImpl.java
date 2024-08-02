@@ -181,16 +181,6 @@ public class HttpClientImpl implements IHttpClient {
     }
 
     @Override
-    public HttpClientResponse<JsonObject> patchJson(String url, JsonObject json) throws HttpClientException {
-
-        HttpClientRequest request = HttpClientRequest.newPatchRequest(buildUri(url, null).toString(),
-                new ContentType[] { ContentType.APPLICATION_JSON }, ContentType.APPLICATION_JSON);
-        request.setJSONBody(json);
-
-        return executeJsonRequest(request);
-    }
-
-    @Override
     public HttpClientResponse<JsonObject> deleteJson(String url) throws HttpClientException {
 
         HttpClientRequest request = HttpClientRequest.newDeleteRequest(buildUri(url, null).toString(),

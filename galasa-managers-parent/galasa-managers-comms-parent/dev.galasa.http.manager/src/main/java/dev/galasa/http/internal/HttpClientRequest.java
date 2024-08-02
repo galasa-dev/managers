@@ -16,7 +16,12 @@ import java.util.Map.Entry;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.FileEntity;
@@ -48,7 +53,6 @@ public class HttpClientRequest {
         DELETE,
         PUT,
         POST,
-        PATCH,
         HEAD;
     }
 
@@ -271,9 +275,6 @@ public class HttpClientRequest {
             case HEAD:
                 request = new HttpHead(uri);
                 break;
-            case PATCH:
-                request = new HttpPatch(uri);
-                break;
             case GET:
             default:
                 request = new HttpGet(uri);
@@ -370,24 +371,6 @@ public class HttpClientRequest {
     public static HttpClientRequest newPostRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
 
         HttpClientRequest request = new HttpClientRequest(RequestType.POST);
-        request.setUrl(url);
-        request.setAcceptTypes(acceptTypes);
-        request.setContentType(contentType);
-
-        return request;
-    }
-
-    /**
-     * Create a new PATCH request
-     *
-     * @param url
-     * @param acceptTypes
-     * @param contentType
-     * @return new POST request
-     */
-    public static HttpClientRequest newPatchRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
-
-        HttpClientRequest request = new HttpClientRequest(RequestType.PATCH);
         request.setUrl(url);
         request.setAcceptTypes(acceptTypes);
         request.setContentType(contentType);
