@@ -60,6 +60,7 @@ import dev.galasa.openstack.manager.internal.json.ServersResponse;
 import dev.galasa.openstack.manager.internal.json.User;
 import dev.galasa.openstack.manager.internal.properties.OpenStackCredentialsId;
 import dev.galasa.openstack.manager.internal.properties.OpenStackDomainName;
+import dev.galasa.openstack.manager.internal.properties.OpenStackFloatingIPPool;
 import dev.galasa.openstack.manager.internal.properties.OpenStackIdentityUri;
 import dev.galasa.openstack.manager.internal.properties.OpenStackProjectName;
 
@@ -614,9 +615,12 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
+            String fipPool = OpenStackFloatingIPPool.get();
+
             Floatingip fip = new Floatingip();
             fip.port_id = port.id;
             fip.floating_network_id = network.id;
+            fip.floating_ip_address = fipPool;
             fip.description = "galasa_run=" + this.framework.getTestRunName();
 
             FloatingipRequestResponse fipRequest = new FloatingipRequestResponse();
