@@ -26,7 +26,7 @@ import dev.galasa.linux.LinuxManagerException;
  * The default is empty, ie no special capabilities
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxCapabilities extends CpsProperties {

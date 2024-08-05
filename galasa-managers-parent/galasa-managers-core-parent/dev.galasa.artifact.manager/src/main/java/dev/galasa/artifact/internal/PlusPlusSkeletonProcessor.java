@@ -26,7 +26,7 @@ import dev.galasa.framework.spi.IFramework;
 /**
  * A simple skeleton processor to replace velocity
  * 
- * @author James Bartlett
+ *  
  * 
  */
 public class PlusPlusSkeletonProcessor implements ISkeletonProcessor {
@@ -199,7 +199,7 @@ public class PlusPlusSkeletonProcessor implements ISkeletonProcessor {
     /**
      * Describes a known form of delimiting a value to be substituted
      * 
-     * @author root
+     *  
      * 
      */
     private class Delimiter {
@@ -277,7 +277,7 @@ public class PlusPlusSkeletonProcessor implements ISkeletonProcessor {
      * Describes a known way of describing a substitution for each member of some
      * collection
      * 
-     * @author root
+     *  
      * 
      */
     private class LoopForm {

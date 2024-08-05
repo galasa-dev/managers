@@ -24,7 +24,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * default value is true
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class OpenStackEnabled extends CpsProperties {

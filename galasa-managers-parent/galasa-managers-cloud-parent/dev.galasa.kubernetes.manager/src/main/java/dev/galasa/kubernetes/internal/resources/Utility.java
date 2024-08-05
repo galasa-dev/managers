@@ -16,7 +16,7 @@ import io.kubernetes.client.openapi.models.V1LabelSelectorRequirement;
 /**
  * Utility class for routines that are missing the kubernetes client
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class Utility {

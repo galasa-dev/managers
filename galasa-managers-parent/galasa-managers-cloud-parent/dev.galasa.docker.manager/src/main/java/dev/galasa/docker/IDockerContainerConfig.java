@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * An interface for the annotation object that represents the configurations for a container.
  * 
- * @author James Davies
+ *   
  */
 public interface IDockerContainerConfig {
 

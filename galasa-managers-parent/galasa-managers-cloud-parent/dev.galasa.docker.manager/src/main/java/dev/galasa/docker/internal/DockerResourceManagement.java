@@ -21,7 +21,7 @@ import dev.galasa.framework.spi.ResourceManagerException;
 /**
  * Resource management for the docker slots used to run docker containers
  * 
- * @author James Davies
+ *   
  */
 @Component(service = { IResourceManagementProvider.class })
 public class DockerResourceManagement implements IResourceManagementProvider {

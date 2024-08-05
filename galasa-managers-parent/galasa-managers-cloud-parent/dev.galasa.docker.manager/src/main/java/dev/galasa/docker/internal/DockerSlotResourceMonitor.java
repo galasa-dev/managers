@@ -21,7 +21,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Docker resource monitor
  * 
- * @author James Davies
+ *   
  */
 public class DockerSlotResourceMonitor implements Runnable {
     private final IFramework                            framework;

@@ -39,7 +39,7 @@ import dev.galasa.ipnetwork.SSHException;
 /**
  * SSH client for Galasa
  * 
- * @author James Bartlett
+ *  
  * 
  */
 public class SSHClient implements ICommandShell {

@@ -44,7 +44,7 @@ import dev.galasa.framework.spi.language.GalasaTest;
  * Provides two annotations, one for a Db2 Instance connections and one for
  * a Schema impl
  * 
- * @author jamesdavies
+ *  
  *
  */
 @Component(service = { IManager.class })

@@ -21,7 +21,7 @@ import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesS
 /**
  * Initialise the Resource Management routines for the Galasa Ecosystem Manager 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service= {IResourceManagementProvider.class})

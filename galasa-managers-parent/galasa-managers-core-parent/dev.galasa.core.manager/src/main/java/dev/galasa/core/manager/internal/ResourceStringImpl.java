@@ -11,7 +11,7 @@ import dev.galasa.core.manager.IResourceString;
  * Basic holder of a Resource String.
  * Not strictly necessary, but future proofing
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringImpl implements IResourceString {

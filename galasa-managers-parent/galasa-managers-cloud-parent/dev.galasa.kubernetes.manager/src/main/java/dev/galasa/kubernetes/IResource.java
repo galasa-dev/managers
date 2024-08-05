@@ -9,7 +9,7 @@ package dev.galasa.kubernetes;
  * Abstracts a Kubernetes Resource, so that the test is not dependent of whatever Kubernetes client the 
  * Kubernetes Manager decides to use.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IResource {

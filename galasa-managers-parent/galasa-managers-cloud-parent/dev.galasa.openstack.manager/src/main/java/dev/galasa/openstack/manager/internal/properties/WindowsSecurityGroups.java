@@ -29,7 +29,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * There is no default
  * </p>
  * 
- * @author James Davies
+ *   
  *
  */
 public class WindowsSecurityGroups extends CpsProperties {

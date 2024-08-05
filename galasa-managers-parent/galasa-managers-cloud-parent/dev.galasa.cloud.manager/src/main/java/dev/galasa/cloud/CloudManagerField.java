@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to capture the other cloud related annotations from the test class
  * 
- * @author Michael Baylis
+ *  
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

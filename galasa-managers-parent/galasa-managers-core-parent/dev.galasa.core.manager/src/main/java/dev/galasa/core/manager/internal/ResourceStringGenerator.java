@@ -30,7 +30,7 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
  * Generate Resource Strings using random letters
  * 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringGenerator {

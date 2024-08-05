@@ -28,7 +28,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * The default is OPENSTACKSSH
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxCredentials extends CpsProperties {

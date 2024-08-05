@@ -14,7 +14,7 @@ import dev.galasa.selenium.internal.properties.SeleniumDockerNodeVersion;
 /**
  * Specifies the supported browser types for Local and remote versions
  * 
- * @author jamesdavies
+ *  
  *
  */
 public enum Browser {

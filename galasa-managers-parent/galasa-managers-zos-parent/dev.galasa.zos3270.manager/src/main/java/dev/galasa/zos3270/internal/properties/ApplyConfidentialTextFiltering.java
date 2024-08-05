@@ -23,7 +23,7 @@ import dev.galasa.zos3270.Zos3270ManagerException;
  * default value is true
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ApplyConfidentialTextFiltering extends CpsProperties {

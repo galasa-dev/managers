@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  * 	})
  * </p>
  * 
- * @author Michael Baylis
+ *  
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

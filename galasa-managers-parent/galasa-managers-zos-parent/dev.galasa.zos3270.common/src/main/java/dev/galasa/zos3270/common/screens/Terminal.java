@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
  * These pojos are stored in a local directory for inflight tests, and in the
  * RAS.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class Terminal {

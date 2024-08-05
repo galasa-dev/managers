@@ -79,7 +79,7 @@ import dev.galasa.zos3270.internal.terminal.ScreenUpdateTextListener;
 /**
  * Screen representation of the 3270 terminal
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class Screen {

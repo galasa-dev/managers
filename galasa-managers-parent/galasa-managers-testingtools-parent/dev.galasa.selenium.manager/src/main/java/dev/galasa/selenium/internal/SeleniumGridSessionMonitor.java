@@ -34,7 +34,7 @@ import dev.galasa.selenium.SeleniumManagerException;
 /**
  * Monitors any configured Selenium Grids for stale sessions.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class SeleniumGridSessionMonitor implements Runnable {

@@ -9,7 +9,7 @@ import dev.galasa.java.IJavaInstallation;
 
 /**
  * 
- * @author Reece Williams
+ *  
  *
  */
 public interface IEclipseInstall {

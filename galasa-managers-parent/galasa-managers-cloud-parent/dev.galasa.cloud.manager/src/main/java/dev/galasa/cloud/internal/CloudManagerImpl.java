@@ -49,7 +49,7 @@ import dev.galasa.framework.spi.language.GalasaTest;
 /**
  * The Cloud Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })

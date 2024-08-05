@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.IFramework;
 /**
  * DockerImageImpl. Allows for the checking of images on registries and pulling of images to the docker engine.
  * 
- * @author James Davies
+ *   
  */
 public class DockerImageImpl implements IDockerImage {
     private final IFramework            framework;

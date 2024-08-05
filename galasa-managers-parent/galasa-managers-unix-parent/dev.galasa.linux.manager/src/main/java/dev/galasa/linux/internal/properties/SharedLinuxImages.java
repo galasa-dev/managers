@@ -27,7 +27,7 @@ import dev.galasa.linux.LinuxManagerException;
  * There are no defaults
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class SharedLinuxImages extends CpsProperties {

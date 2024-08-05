@@ -15,7 +15,7 @@ import dev.galasa.docker.IDockerVolume;
 /**
  * Implementation for the object that represents the container configurations that can be edited for container startup
  * 
- * @author James Davies
+ *   
  */
 public class DockerContainerConfigImpl implements IDockerContainerConfig {
     private List<IDockerVolume>     volumes     = new ArrayList<>();

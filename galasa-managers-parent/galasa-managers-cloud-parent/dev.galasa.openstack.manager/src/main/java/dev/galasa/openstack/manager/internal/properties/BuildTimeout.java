@@ -23,7 +23,7 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * default value is 10 minutes
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class BuildTimeout extends CpsProperties {

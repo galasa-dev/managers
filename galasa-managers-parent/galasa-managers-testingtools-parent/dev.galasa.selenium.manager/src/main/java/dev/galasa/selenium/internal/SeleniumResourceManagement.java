@@ -24,7 +24,7 @@ import dev.galasa.framework.spi.ResourceManagerException;
  * We only watch the slot properties and the Grid interactions. Both Docker
  * and Kubernetes are responsible for the own cleanup of stale resources.
  * 
- * @author jamesdavies
+ *  
  *
  */
 @Component(service = { IResourceManagementProvider.class })

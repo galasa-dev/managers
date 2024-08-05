@@ -8,7 +8,7 @@ package dev.galasa.zosbatch;
 /**
  * <p>Represents a zOS Batch Job.</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosBatchJob {

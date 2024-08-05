@@ -31,7 +31,7 @@ import dev.galasa.http.StandAloneHttpClient;
 /**
  * Resource monitor for cleaning up orphaned containers.
  * 
- * @author James Davies
+ *   
  */
 public class DockerContainerResourceMonitor implements Runnable {
     private final IFramework framework;

@@ -14,7 +14,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * PersistentVolumeClaim implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class PersistentVolumeClaimImpl implements IPersistentVolumeClaim {

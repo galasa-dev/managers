@@ -15,7 +15,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 /**
  * Kubernetes Manager CPS singleton
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = KubernetesPropertiesSingleton.class, immediate = true)

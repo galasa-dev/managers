@@ -19,7 +19,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * Service implementations
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ServiceImpl implements IService {

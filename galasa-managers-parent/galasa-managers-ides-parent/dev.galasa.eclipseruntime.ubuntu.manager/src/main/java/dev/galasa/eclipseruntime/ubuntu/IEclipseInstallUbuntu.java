@@ -16,7 +16,7 @@ import dev.galasa.eclipseruntime.IEclipseInstall;
  * Use a {@link EclipseInstallUbuntu} annotation to populate this field with
  * </p>
  * 
- * @author Reece Williams
+ *  
  *
  */
 
