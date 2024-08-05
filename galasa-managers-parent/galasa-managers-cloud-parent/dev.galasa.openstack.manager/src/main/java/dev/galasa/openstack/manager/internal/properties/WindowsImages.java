@@ -30,8 +30,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * There are no defaults
  * </p>
- * 
- *  
  *
  */
 public class WindowsImages extends CpsProperties {

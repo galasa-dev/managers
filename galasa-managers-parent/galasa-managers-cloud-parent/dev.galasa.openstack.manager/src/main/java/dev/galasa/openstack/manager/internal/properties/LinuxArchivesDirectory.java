@@ -23,8 +23,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * Default is /opt/archives
  * </p>
- * 
- *  
  *
  */
 public class LinuxArchivesDirectory extends CpsProperties {

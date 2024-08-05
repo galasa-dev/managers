@@ -30,8 +30,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * default value is GALASA{0-9}{0-9}
  * </p>
- * 
- *  
  *
  */
 public class NamePool extends CpsProperties {

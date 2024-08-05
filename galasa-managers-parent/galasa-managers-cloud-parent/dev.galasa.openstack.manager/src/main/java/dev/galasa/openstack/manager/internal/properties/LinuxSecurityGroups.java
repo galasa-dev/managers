@@ -29,8 +29,6 @@ import java.util.Arrays;
  * <p>
  * There is no default
  * </p>
- * 
- *   
  *
  */
 public class LinuxSecurityGroups extends CpsProperties {

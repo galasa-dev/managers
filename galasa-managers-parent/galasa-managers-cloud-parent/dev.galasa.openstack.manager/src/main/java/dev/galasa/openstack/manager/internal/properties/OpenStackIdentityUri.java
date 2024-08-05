@@ -25,8 +25,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * There is no default
  * </p>
- * 
- *  
  *
  */
 public class OpenStackIdentityUri extends CpsProperties {

@@ -5,36 +5,31 @@
  */
 package dev.galasa.openstack.manager.internal.properties;
 
-import javax.validation.constraints.NotNull;
-
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Linux Key Pair
+ * OpenStack Floating IP Pool
  * <p>
- * Provide the registered Key Pair that OpenStack will use when deploying the image
+ * The Openstack Floating IP Pool that the OpenStack Manager will use
+ * to create a Floating IP address within.
  * </p>
  * <p>
  * The property is:-<br>
  * <br>
- * openstack.linux.[imagename].keypair=galasa<br>
- * openstack.linux.default.keypair=galasa<br>
- * Where imagename is that provided in {@link LinuxImages}<br>
+ * openstack.server.floatingip.pool=my_network_name
  * </p>
  * <p>
  * There is no default
  * </p>
  *
  */
-public class LinuxKeyPair extends CpsProperties {
+public class OpenStackFloatingIPPool extends CpsProperties {
 
-    public static @NotNull String get(@NotNull String image)
+    public static String get()
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
-
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "linux", "keypair", image);
-
+        return getStringNulled(OpenstackPropertiesSingleton.cps(), "server", "floatingip.pool");
     }
 
 }

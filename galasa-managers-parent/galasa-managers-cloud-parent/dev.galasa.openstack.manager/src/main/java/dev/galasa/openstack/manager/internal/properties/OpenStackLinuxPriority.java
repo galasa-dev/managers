@@ -23,8 +23,6 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * <p>
  * default value is 1
  * </p>
- * 
- *  
  *
  */
 public class OpenStackLinuxPriority extends CpsProperties {

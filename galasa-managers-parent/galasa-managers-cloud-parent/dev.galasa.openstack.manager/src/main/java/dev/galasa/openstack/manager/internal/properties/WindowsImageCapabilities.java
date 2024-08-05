@@ -32,8 +32,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The default is no capabilities
  * </p>
- * 
- *  
  *
  */
 public class WindowsImageCapabilities extends CpsProperties {
