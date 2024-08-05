@@ -239,7 +239,7 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            // *** Retrieve a list of the networks available and select one
+            // *** Retrieve a list of the servers available and select one
 
             HttpGet get = new HttpGet(this.openstackComputeUri + "/servers");
             get.addHeader(this.openstackToken.getHeader());
@@ -578,7 +578,7 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            // *** Retrieve a list of the images
+            // *** Retrieve a list of the flavours
 
             HttpGet get = new HttpGet(this.openstackComputeUri + "/flavors");
             get.addHeader(this.openstackToken.getHeader());
@@ -588,7 +588,7 @@ public class OpenstackHttpClient {
                 String entity = EntityUtils.toString(response.getEntity());
 
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
-                    throw new OpenstackManagerException("OpenStack list image failed - " + status);
+                    throw new OpenstackManagerException("OpenStack list flavour failed - " + status);
                 }
 
                 Flavors flavours = gson.fromJson(entity, Flavors.class);
@@ -633,7 +633,7 @@ public class OpenstackHttpClient {
                 String entity = EntityUtils.toString(response.getEntity());
 
                 if (status.getStatusCode() != HttpStatus.SC_CREATED) {
-                    throw new OpenstackManagerException("OpenStack list image failed - " + status);
+                    throw new OpenstackManagerException("OpenStack create floating ip failed - " + status);
                 }
 
                 FloatingipRequestResponse fipResponse = this.gson.fromJson(entity, FloatingipRequestResponse.class);
@@ -684,7 +684,7 @@ public class OpenstackHttpClient {
         } catch (OpenstackManagerException e) {
             throw e;
         } catch (Exception e) {
-            throw new OpenstackManagerException("Unable to list floating ips ", e);
+            throw new OpenstackManagerException("Unable to list networks ", e);
         }
     }
 
