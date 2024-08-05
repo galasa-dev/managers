@@ -22,8 +22,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * default value is 2 instaces
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class MaximumInstances extends CpsProperties {

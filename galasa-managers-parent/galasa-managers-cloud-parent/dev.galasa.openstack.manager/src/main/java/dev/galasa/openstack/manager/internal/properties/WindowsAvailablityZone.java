@@ -26,8 +26,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The default is nova
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class WindowsAvailablityZone extends CpsProperties {
