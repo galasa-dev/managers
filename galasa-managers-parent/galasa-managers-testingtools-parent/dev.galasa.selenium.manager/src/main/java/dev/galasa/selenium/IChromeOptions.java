@@ -18,7 +18,7 @@ import org.openqa.selenium.UnexpectedAlertBehaviour;
 /**
  * A Options pass through interface for the Selenium Options object
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IChromeOptions {

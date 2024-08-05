@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Used to annotate annotations that are a dependency of a zosImage,  requires a imageTag for the zOS Manager to automatically provision the zOS Image
  *
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

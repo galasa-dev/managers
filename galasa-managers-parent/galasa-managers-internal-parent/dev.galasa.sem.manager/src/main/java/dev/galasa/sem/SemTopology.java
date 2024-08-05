@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Represents a SEM topology to build a set of CICS regions from
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

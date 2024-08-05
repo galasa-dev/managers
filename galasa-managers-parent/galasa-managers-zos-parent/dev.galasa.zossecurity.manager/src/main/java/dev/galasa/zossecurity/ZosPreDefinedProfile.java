@@ -18,7 +18,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * This can only be used with the v2 security manager
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)

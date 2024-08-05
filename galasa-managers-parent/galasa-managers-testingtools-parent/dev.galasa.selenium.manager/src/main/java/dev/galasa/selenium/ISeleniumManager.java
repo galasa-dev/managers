@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * This interface is being deprecated and replaced with a more appropriately named IWebDriver interface.
  * 
- * @author jamesdavies
+ *  
  *
  */
 @Deprecated

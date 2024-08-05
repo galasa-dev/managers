@@ -29,7 +29,7 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * default value is TEST{A-Z}{A-Z}
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunIdPrefix extends CpsProperties {

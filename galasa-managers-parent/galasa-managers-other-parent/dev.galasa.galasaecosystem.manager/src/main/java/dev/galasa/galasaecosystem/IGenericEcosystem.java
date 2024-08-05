@@ -18,7 +18,7 @@ import dev.galasa.zos.IZosImage;
  * 
  * Provides a means to manipulate the ecosystem
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IGenericEcosystem {

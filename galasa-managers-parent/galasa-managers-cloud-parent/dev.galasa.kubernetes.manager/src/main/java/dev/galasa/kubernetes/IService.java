@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Represents a Service resource
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IService extends IResource {

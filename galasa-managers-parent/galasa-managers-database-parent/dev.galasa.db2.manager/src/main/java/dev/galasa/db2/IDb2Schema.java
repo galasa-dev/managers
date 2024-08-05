@@ -14,7 +14,7 @@ import java.util.List;
  * 
  *  Allows users to submit statements as string, or as a batch of statements from a file.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IDb2Schema {

@@ -14,7 +14,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * ConfigMap implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ConfigMapImpl implements IConfigMap {

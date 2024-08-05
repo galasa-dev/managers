@@ -23,7 +23,7 @@ import dev.galasa.zos3270.Zos3270ManagerException;
  * default is IBM-DYNAMIC,IBM-3278-2
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TerminalDeviceTypes extends CpsProperties {

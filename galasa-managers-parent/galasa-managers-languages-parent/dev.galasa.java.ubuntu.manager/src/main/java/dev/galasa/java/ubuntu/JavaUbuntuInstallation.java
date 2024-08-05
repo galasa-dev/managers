@@ -21,7 +21,7 @@ import dev.galasa.java.JavaVersion;
  * Used to populate a {@link IJavaUbuntuInstallation} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -53,7 +53,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
  * @DockerEngine - where the containers will be running, set value in CPS (see properties)
  * @DockerContainer - define what container is to be run, image names mus be defined, tag can be set
  * 
- * @author James Davies
+ *   
  */
 @Component(service = { IManager.class })
 public class DockerManagerImpl extends AbstractManager implements IDockerManagerSpi {

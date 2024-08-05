@@ -23,7 +23,7 @@ import dev.galasa.zos.IZosImage;
  * To gain access to the ZosSecurityManager include a field of type IZosSecurity
  * in your Galasa class.
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 public interface IZosSecurity {

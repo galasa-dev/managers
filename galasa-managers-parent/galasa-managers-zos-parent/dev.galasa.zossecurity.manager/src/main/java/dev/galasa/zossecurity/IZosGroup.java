@@ -9,7 +9,7 @@ package dev.galasa.zossecurity;
 /**
  * Represents a group 
  * 
- * @author mikebyls
+ *  
  *
  */
 public interface IZosGroup {

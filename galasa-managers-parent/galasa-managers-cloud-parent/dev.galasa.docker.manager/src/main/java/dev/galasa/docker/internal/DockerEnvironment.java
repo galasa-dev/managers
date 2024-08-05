@@ -31,7 +31,7 @@ import dev.galasa.framework.spi.IFramework;
  * Docker Environment. Manages the flow of both docker containers and slots to a
  * specified docker engine
  * 
- * @author James Davies
+ *   
  */
 public class DockerEnvironment implements IDockerEnvironment {
     private IFramework framework;

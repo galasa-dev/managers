@@ -14,7 +14,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * Secret implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class SecretImpl implements ISecret {

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * You can obtain an implementation of this interface using the {@link LogScanner} annotation.
  * You will need a separate object per log you will be scanning.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ILogScanner {

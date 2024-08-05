@@ -24,7 +24,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Looks for slots allocated to non active tests.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class SeleniumSlotResourceMonitor implements Runnable {

@@ -27,7 +27,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Test the backSpace function
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class BackSpaceTest extends Zos3270TestBase {

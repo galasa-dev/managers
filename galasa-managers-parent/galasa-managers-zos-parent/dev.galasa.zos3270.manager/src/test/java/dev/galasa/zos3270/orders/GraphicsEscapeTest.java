@@ -29,7 +29,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Test the Graphics Escape order 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class GraphicsEscapeTest extends Zos3270TestBase {

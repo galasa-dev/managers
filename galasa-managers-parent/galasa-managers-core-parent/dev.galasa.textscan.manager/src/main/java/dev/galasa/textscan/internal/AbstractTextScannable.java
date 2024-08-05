@@ -13,7 +13,7 @@ import dev.galasa.textscan.TextScanException;
 /**
  * Abstract Text Scannable
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class AbstractTextScannable implements ITextScannable {

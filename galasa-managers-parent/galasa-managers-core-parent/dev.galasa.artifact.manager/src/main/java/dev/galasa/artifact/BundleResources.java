@@ -15,7 +15,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 /**
  * Obtain a {@link IBundleResources} object for this test class
  *
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

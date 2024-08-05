@@ -18,7 +18,7 @@ import dev.galasa.ICredentials;
  * Use the appropriate host manager annotation to obtain an object
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IIpHost {

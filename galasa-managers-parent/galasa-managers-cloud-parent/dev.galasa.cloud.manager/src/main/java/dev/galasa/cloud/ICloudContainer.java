@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 /**
  * Cloud Container
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ICloudContainer {

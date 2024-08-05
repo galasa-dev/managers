@@ -35,7 +35,7 @@ import dev.galasa.selenium.internal.properties.SeleniumLocalDriverPath;
 /**
  * Interactions with a different browser types for local Selenium drivers.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public enum LocalBrowser {

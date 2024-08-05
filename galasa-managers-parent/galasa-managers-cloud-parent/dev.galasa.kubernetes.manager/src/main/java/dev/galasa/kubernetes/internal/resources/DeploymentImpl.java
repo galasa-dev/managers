@@ -17,7 +17,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * Deployment Implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class DeploymentImpl extends ReplicaSetHolder implements IDeployment {

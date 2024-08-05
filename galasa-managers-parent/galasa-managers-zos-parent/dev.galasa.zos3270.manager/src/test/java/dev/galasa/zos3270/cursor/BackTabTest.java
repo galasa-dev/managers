@@ -24,7 +24,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Test the backTab function
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class BackTabTest extends Zos3270TestBase {

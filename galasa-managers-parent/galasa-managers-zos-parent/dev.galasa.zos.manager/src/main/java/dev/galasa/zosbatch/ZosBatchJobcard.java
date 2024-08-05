@@ -15,7 +15,7 @@ import dev.galasa.zosbatch.internal.properties.MsgLevel;
  * 
  * No validation is performed on the values that are set
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ZosBatchJobcard {

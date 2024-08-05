@@ -80,7 +80,7 @@ import io.kubernetes.client.util.Yaml;
  * 
  * See example scripts in examples/ to see how to create a name space with the necessary rbac.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesNamespaceImpl implements IKubernetesNamespace {

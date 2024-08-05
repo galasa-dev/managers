@@ -24,7 +24,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * default value is 1
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class SharedLinuxPriority extends CpsProperties {

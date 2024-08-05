@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Will only populate public {@link dev.galasa.core.manager.IResourceString} fields.
  * </p>
  *
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RUNTIME)

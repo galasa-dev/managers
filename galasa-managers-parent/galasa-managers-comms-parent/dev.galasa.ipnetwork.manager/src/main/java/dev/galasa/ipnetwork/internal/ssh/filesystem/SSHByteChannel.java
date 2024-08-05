@@ -25,7 +25,7 @@ import dev.galasa.ipnetwork.SSHException;
 /**
  * Dummy Byte Channel for a null Result Archive Store
  *
- * @author Michael Baylis
+ *  
  *
  */
 public class SSHByteChannel implements SeekableByteChannel {

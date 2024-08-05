@@ -17,7 +17,7 @@ import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 /**
  * Interface from the Cloud Manager to Cloud Container Providers 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ICloudContainerProvider {

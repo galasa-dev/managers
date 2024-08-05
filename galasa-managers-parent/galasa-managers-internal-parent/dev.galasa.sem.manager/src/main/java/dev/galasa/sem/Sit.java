@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * 	{@link @Sit}(parameter="SITPARM2",value="TWO")<br>
  * </p>
  * 
- * @author Michael Baylis
+ *  
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

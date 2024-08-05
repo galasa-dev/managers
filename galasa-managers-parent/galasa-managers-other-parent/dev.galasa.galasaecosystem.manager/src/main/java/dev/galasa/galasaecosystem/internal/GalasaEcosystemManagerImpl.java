@@ -69,7 +69,7 @@ import dev.galasa.zos.spi.IZosManagerSpi;
 /**
  * The Galasa Ecosystem Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })

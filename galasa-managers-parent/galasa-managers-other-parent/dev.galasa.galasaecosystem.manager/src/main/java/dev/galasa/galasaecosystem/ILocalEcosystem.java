@@ -12,7 +12,7 @@ import dev.galasa.ipnetwork.ICommandShell;
  * 
  * Provides access to the ecosystem endpoints and provides the mean to manipulate the ecosystem
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface ILocalEcosystem extends IGenericEcosystem {

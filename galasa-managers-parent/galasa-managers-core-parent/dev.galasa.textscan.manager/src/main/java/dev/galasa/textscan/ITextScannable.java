@@ -12,7 +12,7 @@ import java.io.InputStream;
  * Examples with be a running batch job, docker container log or a linux server log.
  * 
  * It is the intention that other Managers will provide IScannable objects for use within the Text Scan Manager
- * @author Michael Baylis
+ *  
  *
  */
 public interface ITextScannable {

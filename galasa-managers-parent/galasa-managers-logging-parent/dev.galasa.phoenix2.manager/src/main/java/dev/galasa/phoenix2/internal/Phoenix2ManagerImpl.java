@@ -46,7 +46,7 @@ import dev.galasa.phoenix2.internal.properties.Phoenix2PropertiesSingleton;
 /**
  * ElasticLog Manager implementation
  * 
- * @author Michael Baylis
+ *  
  */
 @Component(service = { IManager.class })
 public class Phoenix2ManagerImpl extends AbstractManager {

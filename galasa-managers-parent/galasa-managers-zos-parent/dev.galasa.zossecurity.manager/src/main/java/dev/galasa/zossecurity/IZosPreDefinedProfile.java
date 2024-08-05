@@ -14,7 +14,7 @@ import dev.galasa.zossecurity.datatypes.RACFAccessType;
  * 
  * This can only be used with the v2 security manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosPreDefinedProfile {

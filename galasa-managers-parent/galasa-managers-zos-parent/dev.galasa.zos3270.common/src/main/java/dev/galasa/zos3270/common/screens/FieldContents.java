@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Pojo to contain the onscreen contents. May contain nulls.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class FieldContents {

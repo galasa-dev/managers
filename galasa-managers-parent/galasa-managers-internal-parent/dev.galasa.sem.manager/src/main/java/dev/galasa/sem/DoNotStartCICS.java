@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * This annotation will inform the provisioning system (SEM)
  * not to start any CICS regions.
  *  
- * @author Ross Henderson
+ *  
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

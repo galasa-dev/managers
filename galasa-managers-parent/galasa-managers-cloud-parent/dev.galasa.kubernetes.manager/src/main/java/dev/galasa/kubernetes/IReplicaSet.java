@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Represents a resource that utilises ReplicatSets,  ie Deployment and StatefulSet
  * 
- * @author mikebyls
+ *  
  *
  */
 public interface IReplicaSet extends IResource {

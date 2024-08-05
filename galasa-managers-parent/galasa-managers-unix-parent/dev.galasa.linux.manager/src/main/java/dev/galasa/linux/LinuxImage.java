@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link ILinuxImage} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
