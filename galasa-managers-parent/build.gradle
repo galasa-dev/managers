@@ -45,19 +45,27 @@ subprojects {
 }
 
 // Define the artifact
-def execFile = layout.buildDirectory.file('jacoco/jacocoMerge.exec')
-def execArtifact = artifacts.add('archives', execFile.get().asFile) {
+def mergedReportFile = layout.buildDirectory.file('reports/jacoco/jacocoMerge/jacocoMerge.xml')
+def mergedReportArtifact = artifacts.add('archives', mergedReportFile.get().asFile) {
     builtBy 'jacocoMerge'
 }
 
+task jacocoMerge(type: JacocoReport) {
+    gradle.projectsEvaluated {
+        // Get the jacocoTestReport tasks in all subprojects
+        def searchRecursively = true
+        def reportTasks = project.getTasksByName('jacocoTestReport', searchRecursively)
+        dependsOn reportTasks
 
-task jacocoMerge(type: JacocoMerge) {
-    doFirst {
-        // go through all the files and remove the ones that do not exist.   some managers do not have unit tests yet
-        executionData = executionData.filter({f -> f.exists()})
+        executionData.setFrom(executionData.filter({ it.exists() }))
+        sourceDirectories.setFrom(reportTasks.sourceDirectories)
+        classDirectories.setFrom(reportTasks.classDirectories)
     }
 
-    enabled = jacocoEnabled.toBoolean()
+    reports {
+        html.required = true
+        xml.required = true
+    }
 }
 
 repositories {
@@ -71,6 +79,10 @@ repositories {
 }
 
 signing {
+    def signingKeyId = findProperty("signingKeyId")
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign publishing.publications
 }
 
@@ -82,7 +94,7 @@ if (jacocoEnabled.toBoolean()) {
     publishing {
         publications {
             maven(MavenPublication) {
-                artifact execArtifact
+                artifact mergedReportArtifact
                 
                 groupId = 'codecoverage'
                 artifactId = 'manager-unit-tests'
@@ -94,8 +106,8 @@ if (jacocoEnabled.toBoolean()) {
                 
                 if ("$targetMaven".startsWith('http')) {
                     credentials {
-                        username System.getenv('MAVENUSERNAME')
-                        password System.getenv('MAVENPASSWORD')
+                        username System.getenv("GITHUB_ACTOR")
+                        password System.getenv("GITHUB_TOKEN")
                     }
                 }
             }
@@ -104,7 +116,7 @@ if (jacocoEnabled.toBoolean()) {
 }
 
 
-def manifestFilePath = "$buildDir/release.yaml"
+def manifestFile = layout.buildDirectory.file("release.yaml").get().asFile
 
 def header = """#
 # Copyright contributors to the Galasa project 
@@ -141,14 +153,13 @@ task buildReleaseYaml() {
         if ( !buildDir.exists() ) {
             buildDir.mkdirs()
         }
-        def manifest_file = new File(manifestFilePath)
-        if (!manifest_file.exists()){
-            manifest_file.createNewFile()
+        if (!manifestFile.exists()){
+            manifestFile.createNewFile()
         } else {
-            manifest_file.delete()
-            manifest_file.createNewFile()
+            manifestFile.delete()
+            manifestFile.createNewFile()
         }
-        manifest_file.append(header)
+        manifestFile.append(header)
     }
 
 
@@ -169,7 +180,7 @@ task buildReleaseYaml() {
             doLast {
                 // Some projects don't have a version property... as they are parent projects mostly.
                 if (version != 'unspecified') {
-                    def f = new File(manifestFilePath)
+                    def f = manifestFile
                     f.append("\n\n  - artifact: $projectName")
                     f.append("\n    version: $version")
                     if (includeInOBR != '') {
@@ -196,7 +207,7 @@ task buildReleaseYaml() {
     }
 }
 
-def myReleaseYaml = artifacts.add('release_metadata', file("$buildDir/release.yaml")) {
+def myReleaseYaml = artifacts.add('release_metadata', manifestFile) {
     builtBy 'buildReleaseYaml'
 }
 
@@ -250,8 +261,8 @@ publishing {
         
             if ("$targetMaven".startsWith('http')) {
                 credentials {
-                    username System.getenv('MAVENUSERNAME')
-                    password System.getenv('MAVENPASSWORD')
+                    username System.getenv("GITHUB_ACTOR")
+                    password System.getenv("GITHUB_TOKEN")
                 }
             }
         }
