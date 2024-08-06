@@ -682,11 +682,6 @@ public class OpenstackHttpClient {
                         if (externalNetwork != null && externalNetwork.equals(network.name)) {
                             logger.debug("Selected network: " + network.id);
                             return network;
-                        } else {
-                            if (network.route_external) {
-                                logger.debug("External network name was not provided in CPS or no match was found. Selected network: " + network.id);
-                                return network;
-                            }
                         }
                     }
                 }
