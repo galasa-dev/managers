@@ -60,7 +60,6 @@ import dev.galasa.openstack.manager.internal.json.ServersResponse;
 import dev.galasa.openstack.manager.internal.json.User;
 import dev.galasa.openstack.manager.internal.properties.OpenStackCredentialsId;
 import dev.galasa.openstack.manager.internal.properties.OpenStackDomainName;
-import dev.galasa.openstack.manager.internal.properties.OpenStackFloatingIPPool;
 import dev.galasa.openstack.manager.internal.properties.OpenStackIdentityUri;
 import dev.galasa.openstack.manager.internal.properties.OpenStackProjectName;
 
