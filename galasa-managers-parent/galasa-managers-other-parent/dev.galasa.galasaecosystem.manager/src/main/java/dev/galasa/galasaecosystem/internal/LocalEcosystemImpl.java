@@ -56,6 +56,7 @@ import dev.galasa.galasaecosystem.internal.properties.GalasaBootVersion;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedFullZip;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedMvpZip;
 import dev.galasa.galasaecosystem.internal.properties.MavenUseDefaultLocalRepository;
+import dev.galasa.galasaecosystem.internal.properties.RunsTimeout;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeRepo;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
 import dev.galasa.galasaecosystem.internal.properties.SimBankTestsVersion;
@@ -101,6 +102,8 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
     private final RunIdPrefixImpl runIdPrefix;
     
     private IFramework framework;
+
+    private int runsTimeout;
 
     public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
             @NotNull String tag,
@@ -171,6 +174,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
             this.galasaBootVersion = GalasaBootVersion.get();
             this.simplatformVersion = SimplatformVersion.get();
+            this.runsTimeout = RunsTimeout.get();
 
             switch(this.isolationInstallation) {
                 case Full:
@@ -382,7 +386,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     @Override
     public JsonObject waitForRun(String runName) throws GalasaEcosystemManagerException {
-        return waitForRun(runName, 3);
+        return waitForRun(runName, runsTimeout);
     }
 
     @Override
