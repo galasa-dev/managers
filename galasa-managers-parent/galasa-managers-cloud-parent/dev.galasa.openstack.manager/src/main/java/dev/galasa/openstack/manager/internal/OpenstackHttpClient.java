@@ -615,12 +615,9 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            String fipPool = OpenStackFloatingIPPool.get();
-
             Floatingip fip = new Floatingip();
             fip.port_id = port.id;
             fip.floating_network_id = network.id;
-            fip.floating_ip_address = fipPool;
             fip.description = "galasa_run=" + this.framework.getTestRunName();
 
             FloatingipRequestResponse fipRequest = new FloatingipRequestResponse();

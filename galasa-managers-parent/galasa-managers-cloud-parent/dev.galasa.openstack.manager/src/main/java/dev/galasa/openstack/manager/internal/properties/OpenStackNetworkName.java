@@ -10,26 +10,23 @@ import dev.galasa.framework.spi.cps.CpsProperties;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 
 /**
- * OpenStack Floating IP Pool
- * <p>
- * The Openstack Floating IP Pool that the OpenStack Manager will use
- * to create a Floating IP address within.
- * </p>
- * <p>
- * The property is:-<br>
- * <br>
- * openstack.server.floatingip.pool=my_network_name
- * </p>
- * <p>
+ * OpenStack Network name
+ * 
+ * The Openstack Network name that the OpenStack Manager will use
+ * to create a Floating IP address within. The Network name is used
+ * to get the Network ID.
+ * 
+ * The property is:
+ * <code>openstack.network.name=my_network_name</code>
+ * 
  * There is no default
- * </p>
  *
  */
-public class OpenStackFloatingIPPool extends CpsProperties {
+public class OpenStackNetworkName extends CpsProperties {
 
     public static String get()
             throws ConfigurationPropertyStoreException, OpenstackManagerException {
-        return getStringNulled(OpenstackPropertiesSingleton.cps(), "server", "floatingip.pool");
+        return getStringNulled(OpenstackPropertiesSingleton.cps(), "network", "name");
     }
 
 }
