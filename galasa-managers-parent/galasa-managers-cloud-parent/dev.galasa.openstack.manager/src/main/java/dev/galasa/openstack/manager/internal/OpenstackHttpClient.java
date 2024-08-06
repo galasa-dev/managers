@@ -496,7 +496,9 @@ public class OpenstackHttpClient {
                 PortsResponse portsResponse = this.gson.fromJson(entity, PortsResponse.class);
                 if (portsResponse != null && portsResponse.ports != null) {
                     for (Port port : portsResponse.ports) {
+                        logger.debug("Available port - ID: " + port.id + " Device ID: " + port.device_id);
                         if (deviceId.equals(port.device_id)) {
+                            logger.debug("Port selected that matches our device ID: " + port.id);
                             return port;
                         }
                     }
@@ -614,6 +616,8 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
+            logger.debug("Attempting to allocate a floating ID with port ID: " + port.id + " and network ID: " + network.id);
+
             Floatingip fip = new Floatingip();
             fip.port_id = port.id;
             fip.floating_network_id = network.id;
@@ -631,6 +635,8 @@ public class OpenstackHttpClient {
             try (CloseableHttpResponse response = httpClient.execute(post)) {
                 StatusLine status = response.getStatusLine();
                 String entity = EntityUtils.toString(response.getEntity());
+
+                logger.debug("Response body: " + entity);
 
                 if (status.getStatusCode() != HttpStatus.SC_CREATED) {
                     throw new OpenstackManagerException("OpenStack create floating ip failed - " + status);
@@ -650,6 +656,9 @@ public class OpenstackHttpClient {
     }
 
     public Network findExternalNetwork(String externalNetwork) throws OpenstackManagerException {
+
+        logger.debug("External network name from the CPS: " + externalNetwork);
+
         try {
             checkToken();
 
@@ -669,10 +678,13 @@ public class OpenstackHttpClient {
                 Networks networks = this.gson.fromJson(entity, Networks.class);
                 if (networks != null && networks.networks != null) {
                     for (Network network : networks.networks) {
+                        logger.debug("Available network - ID: " + network.id + " Name: " + network.name + " External? " + network.route_external);
                         if (externalNetwork != null && externalNetwork.equals(network.name)) {
+                            logger.debug("Selected network: " + network.id);
                             return network;
                         } else {
                             if (network.route_external) {
+                                logger.debug("External network name was not provided in CPS or no match was found. Selected network: " + network.id);
                                 return network;
                             }
                         }
