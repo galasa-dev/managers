@@ -48,7 +48,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 /**
  * ElasticLog Manager implementation
  * 
- * @author Richard Somers
+ *  
  */
 @Component(service = { IManager.class })
 public class ElasticLogManagerImpl extends AbstractManager {

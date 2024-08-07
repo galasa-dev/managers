@@ -8,7 +8,7 @@ package dev.galasa.kubernetes;
 /**
  * Represent a Deployment resource
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IDeployment extends IReplicaSet {

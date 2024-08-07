@@ -50,7 +50,7 @@ import dev.galasa.framework.spi.IFramework;
 /**
  * Docker Container implementation used to contain all container configurations.
  * 
- * @author James Davies
+ *   
  */
 public class DockerContainerImpl implements IDockerContainer {
 

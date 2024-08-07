@@ -10,7 +10,7 @@ import dev.galasa.kubernetes.IPodLog;
 /**
  * A holder for the Pod Log
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class PodLogImpl implements IPodLog {

@@ -23,7 +23,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link IEclipseInstallUbuntu} field
  * </p>
  * 
- * @author Reece Williams
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

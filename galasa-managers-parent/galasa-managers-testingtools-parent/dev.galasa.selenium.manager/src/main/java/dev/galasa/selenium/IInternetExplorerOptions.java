@@ -19,7 +19,7 @@ import org.openqa.selenium.ie.ElementScrollBehavior;
 /**
  * A Options pass through interface for the Selenium Options object
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IInternetExplorerOptions {

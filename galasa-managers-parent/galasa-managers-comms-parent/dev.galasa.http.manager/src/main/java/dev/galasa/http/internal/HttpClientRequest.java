@@ -43,7 +43,7 @@ import jakarta.xml.bind.JAXBException;
  * {@link #setUrl(String)} must be called before use, as well as one of the
  * setBody(...) methods if this is a PUT or POST request
  * 
- * @author Will Yates
+ *  
  *
  */
 public class HttpClientRequest {

@@ -24,7 +24,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * </p>
  *
  * @see {@link org.apache.commons.logging.Log}
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RUNTIME)

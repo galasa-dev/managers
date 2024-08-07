@@ -43,7 +43,7 @@ import com.jcraft.jsch.SftpException;
 /**
  * SSH FileStore for Galasa
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 public class SSHFileSystemProvider extends FileSystemProvider {

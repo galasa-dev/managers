@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to capture the other db2 realted annotations from the test class
  * 
- * @author James Davies
+ *   
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

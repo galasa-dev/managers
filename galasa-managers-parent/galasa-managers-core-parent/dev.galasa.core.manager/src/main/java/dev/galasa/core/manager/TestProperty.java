@@ -22,7 +22,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * </p>
  *
  * @see {@link String}
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RUNTIME)

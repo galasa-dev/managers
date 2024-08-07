@@ -23,7 +23,7 @@ import dev.galasa.linux.LinuxManagerException;
  * default value is 2 slots
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class MaximumSlots extends CpsProperties {

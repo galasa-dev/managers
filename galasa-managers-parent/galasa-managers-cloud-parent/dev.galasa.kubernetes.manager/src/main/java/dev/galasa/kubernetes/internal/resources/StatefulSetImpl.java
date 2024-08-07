@@ -18,7 +18,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * StatefulSet implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class StatefulSetImpl extends ReplicaSetHolder implements IStatefulSet {

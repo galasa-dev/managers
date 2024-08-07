@@ -12,7 +12,7 @@ import dev.galasa.artifact.ISkeletonProcessor.SkeletonType;
  * retrieving artifacts/resources from the 'resources' directory in your test
  * bundle, and manipulating those resources
  * 
- * @author James Bartlett
+ *  
  *
  */
 public interface IArtifactManager {

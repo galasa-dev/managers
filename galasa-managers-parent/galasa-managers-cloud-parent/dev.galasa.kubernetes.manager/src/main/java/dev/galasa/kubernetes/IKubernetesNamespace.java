@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * This is the main interface to a provisioned Kubernetes namespace on an infrastructure cluster.
  * Access to the Object is via the {@link KubernetesNamespace} annotation or the SPI. 
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IKubernetesNamespace {

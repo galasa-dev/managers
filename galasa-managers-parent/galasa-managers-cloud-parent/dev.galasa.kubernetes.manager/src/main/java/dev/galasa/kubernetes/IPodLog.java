@@ -9,7 +9,7 @@ package dev.galasa.kubernetes;
 /**
  * Holder for a Pod Log
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IPodLog {

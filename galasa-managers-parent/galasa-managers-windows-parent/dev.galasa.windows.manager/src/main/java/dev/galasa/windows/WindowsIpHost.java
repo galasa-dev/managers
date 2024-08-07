@@ -20,7 +20,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link dev.galasa.ipnetwork.IIpHost} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

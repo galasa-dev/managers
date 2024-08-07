@@ -8,7 +8,7 @@ package dev.galasa.zos3270.common.screens;
 /**
  * Represents the terminal screen size
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TerminalSize {

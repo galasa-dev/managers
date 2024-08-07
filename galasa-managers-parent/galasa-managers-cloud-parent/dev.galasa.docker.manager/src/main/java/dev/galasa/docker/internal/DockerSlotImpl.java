@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Docker slot implemtnation to limit the number of concurrently running docker containers.
  * 
- * @author James Davies
+ *   
  */
 public class DockerSlotImpl {
 

@@ -22,7 +22,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 /**
  * A Options pass through interface for the Selenium Options object
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IFirefoxOptions {

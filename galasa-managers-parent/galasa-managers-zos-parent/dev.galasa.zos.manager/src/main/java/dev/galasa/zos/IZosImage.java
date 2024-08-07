@@ -17,7 +17,7 @@ import dev.galasa.ipnetwork.IIpHost;
  * 
  * <p>Use a {@link ZosImage} annotation to populate this field with</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosImage {

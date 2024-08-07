@@ -24,7 +24,7 @@ import dev.galasa.linux.LinuxManagerException;
  * There is no default, the property must be provided for the image to be selectable
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxOperatingSystem extends CpsProperties {

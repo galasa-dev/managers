@@ -39,7 +39,7 @@ import dev.galasa.http.IHttpClient;
  * Docker RegistryImpl. Controls the location of where docker images can be
  * pulled from
  * 
- * @author James Davies
+ *   
  */
 public class DockerRegistryImpl {
 	private IFramework 							framework;

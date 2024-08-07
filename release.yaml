@@ -160,7 +160,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.openstack.manager
-    version: 0.32.0
+    version: 0.36.0
     obr:          true
     mvp:          false
     bom:          true
@@ -367,7 +367,7 @@ managers:
     codecoverage: false
 
   - artifact: dev.galasa.galasaecosystem.manager
-    version: 0.34.0
+    version: 0.36.0
     obr:          true
     mvp:          false
     bom:          true

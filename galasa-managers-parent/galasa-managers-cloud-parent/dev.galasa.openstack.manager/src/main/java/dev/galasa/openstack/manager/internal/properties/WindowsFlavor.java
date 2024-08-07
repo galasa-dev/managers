@@ -26,8 +26,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The default is m1.medium
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class WindowsFlavor extends CpsProperties {

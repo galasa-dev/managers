@@ -11,7 +11,7 @@ import dev.galasa.zossecurity.datatypes.RACFCertificateType;
 /**
  * Represents a Certificate that has been imported into RACF
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosCertificate {

@@ -26,7 +26,7 @@ import dev.galasa.zos3270.Zos3270ManagerException;
  * to be done
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LiveTerminalUrl extends CpsProperties {

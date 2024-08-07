@@ -15,7 +15,7 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Client Authentication Trust Manager
  * 
- * @author James Bartlett
+ *  
  *
  */
 public class ClientAuthTrustManager implements X509TrustManager {

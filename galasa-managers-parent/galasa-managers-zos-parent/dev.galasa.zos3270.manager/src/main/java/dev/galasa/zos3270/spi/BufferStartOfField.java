@@ -16,7 +16,7 @@ import dev.galasa.zos3270.internal.datastream.AttributeTransparency;
 /**
  * Create a Start of Field position, represents to SF order
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class BufferStartOfField implements IBufferHolder {

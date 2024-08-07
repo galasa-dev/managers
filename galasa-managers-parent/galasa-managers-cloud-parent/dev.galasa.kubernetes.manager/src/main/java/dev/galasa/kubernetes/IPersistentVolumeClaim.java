@@ -8,7 +8,7 @@ package dev.galasa.kubernetes;
 /**
  * Represents a PersistentVolumeClaim
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IPersistentVolumeClaim extends IResource {
