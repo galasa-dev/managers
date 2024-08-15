@@ -918,21 +918,13 @@ public class JvmserverImpl implements IJvmserver {
 
     @Override
     public void saveToResultsArchive(String rasPath) throws CicsJvmserverResourceException {
-        if (this.jvmprofile != null) {
-            this.jvmprofile.saveToResultsArchive(rasPath);
-        }
-        if (this.jvmLogLog != null) {
-            this.jvmLogLog.saveToResultsArchive(rasPath);
-        }
-        if (this.stdOutLog != null) {
-            this.stdOutLog.saveToResultsArchive(rasPath);
-        }
-        if (this.stdErrLog != null) {
-            this.stdErrLog.saveToResultsArchive(rasPath);
-        }
-        if (this.jvmTraceLog != null) {
-            this.jvmTraceLog.saveToResultsArchive(rasPath);
-        }
+        getJvmprofile().saveToResultsArchive(rasPath);
+
+        getJvmLog().saveToResultsArchive(rasPath);
+        getStdOut().saveToResultsArchive(rasPath);
+        getStdErr().saveToResultsArchive(rasPath);
+        getJvmTrace().saveToResultsArchive(rasPath);
+
         saveDiagnosticsToResultsArchive(rasPath);
         saveJavaLogsToResultsArchive(rasPath);
         if (isLiberty()) {
