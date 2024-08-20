@@ -38,10 +38,7 @@ jobs:
 
       - name: list build folder contents
         run: |
-         cd galasa-managers-parent
-         cd build
-         ls
-         cd reports
+         cd galasa-managers-parent/build/reports/jacoco
          ls 
 
       - name: Build Managers image for testing
