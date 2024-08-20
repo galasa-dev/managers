@@ -34,12 +34,7 @@ jobs:
           -Dorg.gradle.jvmargs=-Xmx4096M \
           -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions \
           -PcentralMaven=https://repo.maven.apache.org/maven2/ \
-          -PtargetMaven=${{github.workspace}}/repo
-
-      - name: list build folder contents
-        run: |
-         cd galasa-managers-parent/build/reports/jacoco/jacocoMerge
-         ls 
+          -PtargetMaven=${{github.workspace}}/repo 2>&1 | tee build.log
 
       - name: Build Managers image for testing
         uses: docker/build-push-action@v5
