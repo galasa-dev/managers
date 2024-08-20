@@ -36,6 +36,13 @@ jobs:
           -PcentralMaven=https://repo.maven.apache.org/maven2/ \
           -PtargetMaven=${{github.workspace}}/repo
 
+      - name: list build folder contents
+        run: |
+         cd build
+         ls
+         cd reports
+         ls 
+         
       - name: Build Managers image for testing
         uses: docker/build-push-action@v5
         with:
