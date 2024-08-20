@@ -38,7 +38,6 @@ import dev.galasa.zos.internal.ZosManagerImpl;
 import dev.galasa.zosbatch.IZosBatchJob;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import sun.misc.Unsafe;
 
 
 class TestSdvManagerImpl {
@@ -93,7 +93,7 @@ class TestSdvManagerImpl {
     private String frameworkString = "framework";
     private String sdvRecorderVarName = "sdvRecorder";
     private String logString = "LOG";
-    private String modifiersString = "modifiers";
+    private String theUnsafeString = "theUnsafe";
     private String regionaApplid = "APPL1";
     private String runName = "RUN123";
     private String regionbApplid = "APPL2";
@@ -764,13 +764,14 @@ class TestSdvManagerImpl {
         sdvUsersToRecordList.set(sdvManager, listOfUsersForAllRegions);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionGenerate();
@@ -912,13 +913,14 @@ class TestSdvManagerImpl {
         sdvUsersToRecordList.set(sdvManager, listOfUsersForAllRegions);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionGenerate();
@@ -1057,13 +1059,14 @@ class TestSdvManagerImpl {
         sdvUsersToRecordList.set(sdvManager, listOfUsersForAllRegions);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionGenerate();
@@ -1422,13 +1425,14 @@ class TestSdvManagerImpl {
         frameworkField.set(sdvManager, framework);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionStop();
@@ -1539,13 +1543,14 @@ class TestSdvManagerImpl {
         frameworkField.set(sdvManager, framework);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionStop();
@@ -1656,13 +1661,14 @@ class TestSdvManagerImpl {
         frameworkField.set(sdvManager, framework);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionStop();
@@ -1896,13 +1902,14 @@ class TestSdvManagerImpl {
         frameworkField.set(sdvManager, framework);
 
         // Replace LOG
-        Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvManager, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvManagerImplClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvManager.provisionStop();
