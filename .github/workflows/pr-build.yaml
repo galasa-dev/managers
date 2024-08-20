@@ -38,11 +38,12 @@ jobs:
 
       - name: list build folder contents
         run: |
+         cd galasa-managers-parent
          cd build
          ls
          cd reports
          ls 
-         
+
       - name: Build Managers image for testing
         uses: docker/build-push-action@v5
         with:
