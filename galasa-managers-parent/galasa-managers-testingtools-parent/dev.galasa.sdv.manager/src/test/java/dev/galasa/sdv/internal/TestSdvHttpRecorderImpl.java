@@ -47,7 +47,6 @@ import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -67,6 +66,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import sun.misc.Unsafe;
 
 
 class TestSdvHttpRecorderImpl {
@@ -109,7 +109,7 @@ class TestSdvHttpRecorderImpl {
     private String jclDeleteLogstreamPathString = "/jcl/deletelogstreams.jcl";
     private String jclGetYamlPathString = "/jcl/getYaml.jcl";
     private String structureString = "A_STRUCTURE";
-    private String modifiersString = "modifiers";
+    private String theUnsafeString = "theUnsafe";
     private String managerPrefixString = "manager.";
     private String runningManagersString = "runningManagers.";
     private String falseString = "false";
@@ -314,18 +314,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionbTag)).thenReturn(true);
@@ -460,18 +462,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -577,18 +581,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -700,18 +706,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -812,18 +820,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -922,18 +932,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1034,18 +1046,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1132,18 +1146,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1201,18 +1217,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(framework, recordingRegions, null, null, null, dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1311,18 +1329,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1435,18 +1455,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1551,18 +1573,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1683,18 +1707,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionbTag)).thenReturn(true);
@@ -1790,18 +1816,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(framework, recordingRegions, null, null, null, dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionbTag)).thenReturn(true);
@@ -1857,18 +1885,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(framework, recordingRegions, null, null, null, dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -1956,18 +1986,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -2063,18 +2095,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -2158,18 +2192,20 @@ class TestSdvHttpRecorderImpl {
                         null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
 
@@ -2261,18 +2297,20 @@ class TestSdvHttpRecorderImpl {
                         dssService, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionaTag)).thenReturn(true);
         sdvSdcActivation.when(() -> SdvSdcActivation.get(regionbTag)).thenReturn(true);
@@ -2407,18 +2445,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvHttpRecorder.startRecording();
@@ -2582,18 +2622,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvHttpRecorder.startRecording();
@@ -2684,18 +2726,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -2757,18 +2801,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -2845,18 +2891,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -2929,18 +2977,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3016,18 +3066,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3100,18 +3152,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3186,18 +3240,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3255,18 +3311,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3379,18 +3437,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvHttpRecorder.endRecording();
@@ -3464,18 +3524,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3554,18 +3616,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3632,18 +3696,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, null, null, null, null, httpManager);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -3782,18 +3848,20 @@ class TestSdvHttpRecorderImpl {
                 Mockito.eq(regionByaml.getBytes(utfString)), Mockito.any())).thenReturn(null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         sdvHttpRecorder.exportRecordings("bundleB", "TestClassB");
 
@@ -3854,18 +3922,20 @@ class TestSdvHttpRecorderImpl {
                 .newInstance(null, recordingRegions, artifactManager, null, null, null, null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         files.when(() -> Files.write(Mockito.any(Path.class), Mockito.any(byte[].class),
                 Mockito.any(OpenOption.class))).thenReturn(null);
@@ -3940,18 +4010,20 @@ class TestSdvHttpRecorderImpl {
                 Mockito.any(OpenOption.class))).thenReturn(null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -4018,18 +4090,20 @@ class TestSdvHttpRecorderImpl {
                 Mockito.any(OpenOption.class))).thenReturn(null);
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
@@ -4128,18 +4202,20 @@ class TestSdvHttpRecorderImpl {
                 .thenThrow(new IOException("path not there"));
 
         // Replace LOG
-        Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
-        loggerField.setAccessible(true);
-        Field loggerSuperField =
-                sdvHttpRecorderImplClass.getSuperclass().getDeclaredField(logVariableString);
-        loggerSuperField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        modifiersField.setInt(loggerSuperField, loggerSuperField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvHttpRecorder, mockLog);
-        loggerSuperField.set(sdvHttpRecorder, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvHttpRecorderImplClass.getDeclaredField(logVariableString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
+
+        final Field superLoggerField = sdvHttpRecorderImplClass.getSuperclass()
+                .getDeclaredField(logVariableString);
+        final Object staticSuperLoggerFieldBase = unsafe.staticFieldBase(superLoggerField);
+        final long staticSuperLoggerFieldOffset = unsafe.staticFieldOffset(superLoggerField);
+        unsafe.putObject(staticSuperLoggerFieldBase, staticSuperLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         SdvManagerException exception = Assertions.assertThrows(SdvManagerException.class, () -> {
