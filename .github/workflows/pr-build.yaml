@@ -30,7 +30,7 @@ jobs:
       
       - name: Build Managers source code
         run: |
-          gradle -b galasa-managers-parent/build.gradle check publish \
+          gradle -b galasa-managers-parent/build.gradle check publish --info \
           -Dorg.gradle.jvmargs=-Xmx4096M \
           -PsourceMaven=https://development.galasa.dev/gh/maven-repo/extensions \
           -PcentralMaven=https://repo.maven.apache.org/maven2/ \
