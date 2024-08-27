@@ -35,6 +35,7 @@ import dev.galasa.cicsts.spi.CicsTerminalImpl;
 import dev.galasa.cicsts.spi.ICeciProvider;
 import dev.galasa.cicsts.spi.ICedaProvider;
 import dev.galasa.cicsts.spi.ICemtProvider;
+import dev.galasa.cicsts.spi.ITsqProvider;
 import dev.galasa.cicsts.spi.ICicsRegionLogonProvider;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioned;
 import dev.galasa.cicsts.spi.ICicsRegionProvisioner;
@@ -80,6 +81,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private ICeciProvider ceciProvider;
     private ICedaProvider cedaProvider;
     private ICemtProvider cemtProvider;
+    private ITsqProvider tsqProvider;
     private ICicsResourceProvider cicsResourceProvider;
 
     @Override
@@ -362,6 +364,11 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     }
 
     @Override
+    public void registerTsqProvider(@NotNull ITsqProvider tsqProvider) {
+        this.tsqProvider = tsqProvider;
+    }
+
+    @Override
     public void registerCemtProvider(@NotNull ICemtProvider cemtProvider) {
         this.cemtProvider = cemtProvider;
     }
@@ -389,6 +396,16 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         }
         
         return this.cedaProvider;
+    }
+    
+    @Override
+    @NotNull
+    public ITsqProvider getTsqProvider() throws CicstsManagerException {
+        if (this.tsqProvider == null) {
+            throw new CicstsManagerException("No TSQ provider has been registered");
+        }
+        
+        return this.tsqProvider;
     }
 
     @Override
