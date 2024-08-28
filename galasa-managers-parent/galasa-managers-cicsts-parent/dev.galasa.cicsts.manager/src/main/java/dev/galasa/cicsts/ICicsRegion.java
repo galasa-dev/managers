@@ -52,6 +52,7 @@ public interface ICicsRegion {
     ICemt cemt() throws CicstsManagerException;    
     ICeda ceda() throws CicstsManagerException;    
     ICeci ceci() throws CicstsManagerException;
+    ITsqHandler tsq() throws CicstsManagerException;
     
     /**
      * Provides a CICS resource instance that can then be used to create a specific CICS resource 
