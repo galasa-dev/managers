@@ -1,0 +1,5 @@
+-snapshot: ${tstamp}
+Bundle-Name: Galasa TSQ Manager IVTs
+Export-Package: dev.galasa.cicsts.tsq.manager.ivt
+Import-Package: !javax.validation.constraints, \
+                *

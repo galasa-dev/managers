@@ -18,7 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import dev.galasa.cicsts.TsqException;
 import dev.galasa.cicsts.TsqManagerException;
 import dev.galasa.cicsts.CicstsManagerException;
-import dev.galasa.cicsts.ITsq;
+import dev.galasa.cicsts.ITsqHandler;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.cicsts.IExecInterfaceBlock;
@@ -36,9 +36,9 @@ import dev.galasa.zos3270.spi.NetworkException;
 
 
 /**
- * Implementation of {@link ITsq}
+ * Implementation of {@link ITsqHandler}
  */
-public class TsqImpl implements ITsq {
+public class TsqImpl implements ITsqHandler {
     
     private static final Log logger = LogFactory.getLog(TsqImpl.class);
     
@@ -80,10 +80,10 @@ public class TsqImpl implements ITsq {
     }
     
     /*
-	 * To set the TSQ name for readQ(), writeQ(), deleteQ() and makeRecoverable() methods
+	 * To set the TSQ name used for readQ(), writeQ(), deleteQ() and makeRecoverable() methods
 	 */
     @Override
-    public void setName(@NotNull String queueName) throws TsqException{
+    public void setQName(@NotNull String queueName) throws TsqException{
 		this.queueName = queueName;
 		// Check if queueName is blank
         if (this.queueName.trim().length() == 0){
@@ -92,6 +92,14 @@ public class TsqImpl implements ITsq {
 		logger.info("TSQ name set to: " + queueName);
         return;
     }   
+
+    /*
+	 * To get the TSQ name used for readQ(), writeQ(), deleteQ() and makeRecoverable() methods
+	 */
+    @Override
+    public String getQName() throws TsqException{
+        return this.queueName ;
+    } 	
 
 	/*
 	 * To read the TSQ with name set using setName() method

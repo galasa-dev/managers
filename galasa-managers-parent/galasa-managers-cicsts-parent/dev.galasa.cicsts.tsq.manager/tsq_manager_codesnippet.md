@@ -8,7 +8,7 @@ public ICicsRegion cicsRegion;
 
 ...
 
-ITsq tsq = cicsRegion.tsq();
+ITsqHandler tsq = cicsRegion.tsq();
 ```
 
 The code creates a CICS/TS TSQ instance. 
@@ -22,7 +22,7 @@ The following snippet shows the code required to issue the a TSQ WRITEQ command.
 In this case, the test will write a message to the TSQ named GALASAQ from the variable writeMessage:
 
 ```
-tsq.setName("GALASAQ");
+tsq.setQName("GALASAQ");
 
 String writeMessage = "Write this message to TSQ name GALASAQ";
 tsq.writeQ(writeMessage);
@@ -73,3 +73,12 @@ String readMessage = tsq.makeRecoverable();
 ```
 </details>
 
+<details><summary>To get TSQ name</summary>
+
+The following snippet shows the code required to get the TSQ name. 
+
+```
+String tsqName = tsq.getQName();
+
+```
+</details>

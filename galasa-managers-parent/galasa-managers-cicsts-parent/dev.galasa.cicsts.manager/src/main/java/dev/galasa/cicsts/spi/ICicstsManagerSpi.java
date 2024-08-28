@@ -46,7 +46,7 @@ public interface ICicstsManagerSpi {
     void registerCedaProvider(@NotNull ICedaProvider cedaProvider);
 
     /**
-     * Register the a ITsq instance provider with the CICS TS Manager
+     * Register the a ITsqHandler instance provider with the CICS TS Manager
      * 
      * @param tsqProvider - the new provider
      */

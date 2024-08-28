@@ -7,14 +7,21 @@ package dev.galasa.cicsts;
 
 import javax.validation.constraints.NotNull;
 
-public interface ITsq {
+public interface ITsqHandler {
 
       /**
        * Set TSQ name
        * @param queueName TSQ name
        * @throws TsqException if there is a problem in setting the TSQ name
        */
-      public void setName(@NotNull String queueName) throws TsqException;;   
+      public void setQName(@NotNull String queueName) throws TsqException;
+      
+      /**
+       * Get TSQ name
+       * @return TSQ name 
+       * @throws TsqException if there is a problem in setting the TSQ name
+       */
+      public String getQName() throws TsqException;        
 
       /**
        * Read Data from TSQ. TSQ name is set using setName() method.
