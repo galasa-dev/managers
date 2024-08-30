@@ -16,7 +16,7 @@ import dev.galasa.ManagerException;
 import dev.galasa.cicsts.TsqException;
 import dev.galasa.cicsts.TsqManagerException;
 import dev.galasa.cicsts.CicstsManagerException;
-import dev.galasa.cicsts.ITsqHandler;
+import dev.galasa.cicsts.ITsq;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.tsq.internal.properties.TsqPropertiesSingleton;
 import dev.galasa.cicsts.tsq.spi.ITsqManagerSpi;
@@ -35,7 +35,7 @@ public class TsqManagerImpl extends AbstractManager implements ITsqManagerSpi, I
     protected static final String NAMESPACE = "tsq";
     private ICicstsManagerSpi cicstsManager;
     
-    protected HashMap<ICicsRegion, ITsqHandler> regionTsqs = new HashMap<>();
+    protected HashMap<ICicsRegion, ITsq> regionTsqs = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -84,8 +84,8 @@ public class TsqManagerImpl extends AbstractManager implements ITsqManagerSpi, I
     }
     
     @Override
-    public @NotNull ITsqHandler getTsq(ICicsRegion cicsRegion, ICicstsManagerSpi cicstsManager) throws TsqManagerException{
-        ITsqHandler tsq = this.regionTsqs.get(cicsRegion);
+    public @NotNull ITsq getTsq(ICicsRegion cicsRegion, ICicstsManagerSpi cicstsManager) throws TsqManagerException{
+        ITsq tsq = this.regionTsqs.get(cicsRegion);
         if (tsq == null) {
             try{
                 tsq = new TsqImpl(this, cicsRegion, cicstsManager);

@@ -1,4 +1,4 @@
-<details><summary>Request a TSQ Handler instance</summary>
+<details><summary>Request a TSQ instance</summary>
 
 The following snippet shows the code that is required to request a TSQ instance in a Galasa test:
 
@@ -8,77 +8,100 @@ public ICicsRegion cicsRegion;
 
 ...
 
-ITsqHandler tsq = cicsRegion.tsq();
+ITsq tsq = cicsRegion.tsq();
 ```
 
 The code creates a CICS/TS TSQ instance. 
 
 </details>
 
-<details><summary>Issue a TSQ WRITEQ command</summary>
+<details><summary>Create and write to TSQ</summary>
 
-The following snippet shows the code required to issue the a TSQ WRITEQ command. 
+The following snippet shows the code required to create and write to a TSQ. 
 
-In this case, the test will write a message to the TSQ named GALASAQ from the variable writeMessage:
+In this case, the test will create a TSQ named GALASAQ and write data in the variable writeMessage.  
+
+Response will be: 
+- OK                : if new TSQ is created and data is written
+- ALREADY_EXISTING  : if TSQ is already existing and data is written
 
 ```
-tsq.setQName("GALASAQ");
 
-String writeMessage = "Write this message to TSQ name GALASAQ";
-tsq.writeQ(writeMessage);
+String queueName = "GALASAQ";
+String writeMessage = "Write this message to TSQ named GALASAQ";
+String response = tsq.createQueue(queueName, writeMessage);
+
+```
+
+The following snippet shows the code required to create and write to a recoverable TSQ. 
+
+In this case, the test will create a recoverable TSQ named GALASAQ (if not already existing) and write data from the variable writeMessage. 
+
+Response will be: 
+- OK                : if new TSQ is created and data is written
+- ALREADY_EXISTING  : if TSQ is already exiting and data is written
+
+```
+
+String queueName = "GALASAQ";
+String writeMessage = "Write this message to TSQ named GALASAQ";
+boolean recoverable = true;
+String response = tsq.createQueue(queueName, writeMessage, recoverable);
+
+```
+Note: If TSQ is already existing and is non-recoverable, then the TSQ needs to be deleted and then created with recoverable option to make it recoverable. Otherwise the TSQ will continue to be non-recoverable. 
+
+</details>
+
+<details><summary>Write to TSQ</summary>
+
+The following snippet shows the code required to write data to a TSQ. 
+
+In this case, the test will write the data contained in the variable named writeMessage to the TSQ named GALASAQ:
+
+```
+
+String queueName = "GALASAQ";
+String writeMessage = "Write this message to TSQ named GALASAQ";
+tsq.writeQueue(queueName, writeMessage);
 
 ```
 </details>
 
-<details><summary>Issue a TSQ READQ command</summary>
+<details><summary>Read from TSQ</summary>
 
-The following snippet shows the code required to issue the a TSQ READQ command. 
+The following snippet shows the code required to read data from a TSQ. 
 
-In this case, the test will read a message from the TSQ named GALASAQ based in the item number passed into the variable readMessage:
+In this case, the test will read a message into the variable named readMessage, from the TSQ named GALASAQ based on the item number passed :
 
 ```
-tsq.setName("GALASAQ");
 
+String queueName = "GALASAQ";
 int itemNum = 1;
-String readMessage = tsq.readQ(itemNum);
+String readMessage = tsq.readQueue(queueName, itemNum);
+
+```
+
+In this case, the test will read the next message from the TSQ named GALASAQ into the variable named readMessage:
+
+```
+
+String queueName = "GALASAQ";
+String readMessage = tsq.readQueueNext(queueName);
 
 ```
 </details>
 
-<details><summary>Issue a TSQ DELETEQ command</summary>
+<details><summary>Delete a TSQ</summary>
 
-The following snippet shows the code required to issue the a TSQ DELETEQ command. 
+The following snippet shows the code required to delete a TSQ. 
 
 In this case, the test will delete the TSQ named GALASAQ:
 
 ```
-tsq.setName("GALASAQ");
 
-String readMessage = tsq.deleteQ();
-
-```
-</details>
-
-<details><summary>Make a TSQ recoverable</summary>
-
-The following snippet shows the code required to make a TSQ recoverable. 
-
-In this case, the test will make the TSQ named GALASAQ recoverable:
-
-```
-tsq.setName("GALASAQ");
-
-String readMessage = tsq.makeRecoverable();
-
-```
-</details>
-
-<details><summary>To get TSQ name</summary>
-
-The following snippet shows the code required to get the TSQ name. 
-
-```
-String tsqName = tsq.getQName();
+String queueName = "GALASAQ";
+tsq.deleteQueue(queueName);
 
 ```
 </details>

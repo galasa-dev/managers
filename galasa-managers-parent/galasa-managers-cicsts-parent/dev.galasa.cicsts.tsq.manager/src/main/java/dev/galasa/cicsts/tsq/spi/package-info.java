@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 /**
- * zOSMF Batch Manager - Internal SPI
+ * CICS/TS TSQ Manager - Internal SPI
  */
 package dev.galasa.cicsts.tsq.spi;
