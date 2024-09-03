@@ -9,7 +9,7 @@ import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICeci;
 import dev.galasa.cicsts.ICeda;
 import dev.galasa.cicsts.ICemt;
-import dev.galasa.cicsts.ITsq;
+import dev.galasa.cicsts.ITsqFactory;
 import dev.galasa.cicsts.MasType;
 import dev.galasa.cicsts.cicsresource.CicsJvmserverResourceException;
 import dev.galasa.cicsts.cicsresource.ICicsResource;
@@ -30,7 +30,7 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     private ICeci ceci;
     private ICeda ceda;
     private ICemt cemt;
-    private ITsq tsq;
+    private ITsqFactory tsq;
     private ICicsResource cicsResource;
 	private IZosUNIXFile runTemporaryUNIXPath;
     
@@ -96,9 +96,9 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     }
 
     @Override
-    public ITsq tsq() throws CicstsManagerException {
+    public ITsqFactory getTSQFactory() throws CicstsManagerException {
         if (this.tsq == null) {
-            this.tsq = this.cicstsManager.getTsqProvider().getTsq(this, this.cicstsManager);
+            this.tsq = this.cicstsManager.getTsqProvider().getTsqFactory(this, this.cicstsManager);
         }
         return this.tsq;
     }

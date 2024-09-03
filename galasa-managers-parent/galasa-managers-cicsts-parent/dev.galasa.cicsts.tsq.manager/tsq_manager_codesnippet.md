@@ -1,55 +1,52 @@
-<details><summary>Request a TSQ instance</summary>
+<details><summary>Request a TSQ Factory instance</summary>
 
-The following snippet shows the code that is required to request a TSQ instance in a Galasa test:
+The following snippet shows the code that is required to request a TSQ Factory instance in a Galasa test:
 
 ```
 @CicsRegion()
 public ICicsRegion cicsRegion;
+public ITsqFactory tsqFactory; 
 
 ...
 
-ITsq tsq = cicsRegion.tsq();
-```
+this.tsqFactory = cicsRegion.getTSQFactory();
 
-The code creates a CICS/TS TSQ instance. 
+```
 
 </details>
 
-<details><summary>Create and write to TSQ</summary>
+<details><summary>Create a new ITsq object with a queue name</summary>
 
-The following snippet shows the code required to create and write to a TSQ. 
+The following snippets show the code required to create a new ITsq object. 
 
-In this case, the test will create a TSQ named GALASAQ and write data in the variable writeMessage.  
-
-Response will be: 
-- OK                : if new TSQ is created and data is written
-- ALREADY_EXISTING  : if TSQ is already existing and data is written
+In this case, the test will create an ITsq object with queue named GALASAR. The TSQ created using this object will be a recoverable queue.  
 
 ```
+public ITsq tsqRecoverable;
 
-String queueName = "GALASAQ";
-String writeMessage = "Write this message to TSQ named GALASAQ";
-String response = tsq.createQueue(queueName, writeMessage);
+...
 
-```
-
-The following snippet shows the code required to create and write to a recoverable TSQ. 
-
-In this case, the test will create a recoverable TSQ named GALASAQ (if not already existing) and write data from the variable writeMessage. 
-
-Response will be: 
-- OK                : if new TSQ is created and data is written
-- ALREADY_EXISTING  : if TSQ is already exiting and data is written
-
-```
-
-String queueName = "GALASAQ";
-String writeMessage = "Write this message to TSQ named GALASAQ";
+// Create ITsq object for recoverable TSQ
+String queueName = "GALASAR";
 boolean recoverable = true;
-String response = tsq.createQueue(queueName, writeMessage, recoverable);
+tsqRecoverable = this.tsqFactoryA.createQueue(queueName, recoverable);
 
 ```
-Note: If TSQ is already existing and is non-recoverable, then the TSQ needs to be deleted and then created with recoverable option to make it recoverable. Otherwise the TSQ will continue to be non-recoverable. 
+
+In this case, the test will create an ITsq object with queue named GALASAN. The TSQ created using this object will be a non-recoverable queue. 
+
+```
+public ITsq tsqNonRecoverable;
+
+...
+
+// Create ITsq object for non-recoverable TSQ
+String queueName = "GALASAN";
+boolean recoverable = false;
+tsqNonRecoverable = this.tsqFactoryA.createQueue(queueName, recoverable);
+
+```
+Note: If TSQ is already existing then the recoverable status will not change. 
 
 </details>
 
@@ -57,51 +54,76 @@ Note: If TSQ is already existing and is non-recoverable, then the TSQ needs to b
 
 The following snippet shows the code required to write data to a TSQ. 
 
-In this case, the test will write the data contained in the variable named writeMessage to the TSQ named GALASAQ:
+In this case, the test will write the data contained in the variable named writeMessage to the TSQ named GALASAN:
+
+```
+// Note: Here ITsq object - tsqNonRecoverable is created with queueName = "GALASAN"
+
+String writeMessage = "Write this message to TSQ named GALASAN.";
+tsqNonRecoverable.writeQueue(writeMessage);
 
 ```
 
-String queueName = "GALASAQ";
-String writeMessage = "Write this message to TSQ named GALASAQ";
-tsq.writeQueue(queueName, writeMessage);
-
-```
 </details>
 
 <details><summary>Read from TSQ</summary>
 
 The following snippet shows the code required to read data from a TSQ. 
 
-In this case, the test will read a message into the variable named readMessage, from the TSQ named GALASAQ based on the item number passed :
+In this case, the test will read a message into the variable named readMessage, from the TSQ named GALASAN based on the item number passed :
+
+```
+// Note: Here ITsq object - tsqNonRecoverable is created with queueName = "GALASAN"
+int itemNumber = 1;
+String readMessage =tsqNonRecoverable.readQueue(itemNumber);
 
 ```
 
-String queueName = "GALASAQ";
-int itemNum = 1;
-String readMessage = tsq.readQueue(queueName, itemNum);
+In this case, the test will read the next message from the TSQ named GALASAN.  Here the variable - readMessage2 will have item number 2 and variable - readMessage3 will have item number 3  :
 
 ```
-
-In this case, the test will read the next message from the TSQ named GALASAQ into the variable named readMessage:
-
-```
-
-String queueName = "GALASAQ";
-String readMessage = tsq.readQueueNext(queueName);
+String readMessage2 = tsqNonRecoverable.readQueueNext();
+String readMessage3 = tsqNonRecoverable.readQueueNext();
 
 ```
 </details>
 
 <details><summary>Delete a TSQ</summary>
 
-The following snippet shows the code required to delete a TSQ. 
+The following snippet shows the code required to delete a non-recoverable TSQ. 
 
-In this case, the test will delete the TSQ named GALASAQ:
+In this case, the test will delete the TSQ named GALASAN:
 
 ```
+// Note: Here ITsq object - tsqNonRecoverable is created with queueName = "GALASAN"
+tsqNonRecoverable.deleteQueue();
 
-String queueName = "GALASAQ";
-tsq.deleteQueue(queueName);
+```
+</details>
+
+<details><summary>Check if a TSQ is existing</summary>
+
+The following snippet shows the code required to check the existence of a TSQ. 
+
+In this case, the test will check the existence of the TSQ named GALASAN. The variable - response will be true if the TSQ is existing else it will be false:
+
+```
+// Note: Here ITsq object - tsqNonRecoverable is created with queueName = "GALASAN"
+boolean response = tsqNonRecoverable.exists();
+
+```
+</details>
+
+
+<details><summary>Check if a TSQ is recoverable</summary>
+
+The following snippet shows the code required to check if a TSQ is recoverable. 
+
+In this case, the test will check the TSQ named GALASAN if it is recoverable or not. The variable - response will be true if the TSQ is recoverable else it will be false:
+
+```
+// Note: Here ITsq object - tsqNonRecoverable is created with queueName = "GALASAN"
+boolean response = tsqNonRecoverable.isRecoverable();
 
 ```
 </details>

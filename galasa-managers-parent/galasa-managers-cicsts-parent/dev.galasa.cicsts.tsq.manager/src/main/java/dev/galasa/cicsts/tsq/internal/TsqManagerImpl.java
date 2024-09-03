@@ -16,7 +16,7 @@ import dev.galasa.ManagerException;
 import dev.galasa.cicsts.TsqException;
 import dev.galasa.cicsts.TsqManagerException;
 import dev.galasa.cicsts.CicstsManagerException;
-import dev.galasa.cicsts.ITsq;
+import dev.galasa.cicsts.ITsqFactory;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.tsq.internal.properties.TsqPropertiesSingleton;
 import dev.galasa.cicsts.tsq.spi.ITsqManagerSpi;
@@ -35,7 +35,7 @@ public class TsqManagerImpl extends AbstractManager implements ITsqManagerSpi, I
     protected static final String NAMESPACE = "tsq";
     private ICicstsManagerSpi cicstsManager;
     
-    protected HashMap<ICicsRegion, ITsq> regionTsqs = new HashMap<>();
+    protected HashMap<ICicsRegion, ITsqFactory> regionTsqs = new HashMap<>();
     
     /* (non-Javadoc)
      * @see dev.galasa.framework.spi.AbstractManager#initialise(dev.galasa.framework.spi.IFramework, java.util.List, java.util.List, java.lang.Class)
@@ -59,7 +59,6 @@ public class TsqManagerImpl extends AbstractManager implements ITsqManagerSpi, I
      */
     @Override
     public void provisionGenerate() throws ManagerException, ResourceUnavailableException {
-        generateAnnotatedFields(TsqManagerField.class);
     }
 
 
@@ -83,12 +82,13 @@ public class TsqManagerImpl extends AbstractManager implements ITsqManagerSpi, I
 
     }
     
+    // Get ITsqFactory instance for the CICS Region
     @Override
-    public @NotNull ITsq getTsq(ICicsRegion cicsRegion, ICicstsManagerSpi cicstsManager) throws TsqManagerException{
-        ITsq tsq = this.regionTsqs.get(cicsRegion);
+    public @NotNull ITsqFactory getTsqFactory(ICicsRegion cicsRegion, ICicstsManagerSpi cicstsManager) throws TsqManagerException{
+        ITsqFactory tsq = this.regionTsqs.get(cicsRegion);
         if (tsq == null) {
             try{
-                tsq = new TsqImpl(this, cicsRegion, cicstsManager);
+                tsq = new TsqFactoryImpl(this, cicsRegion, cicstsManager);
                 this.regionTsqs.put(cicsRegion, tsq);    
             } catch (TsqException e) {
                 throw new TsqManagerException("TSQ instance implemenation failed. ", e);
