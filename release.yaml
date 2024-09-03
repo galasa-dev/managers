@@ -303,15 +303,6 @@ managers:
     isolated:     false
     codecoverage: false
 
-  - artifact: dev.galasa.sem.manager
-    version: 0.36.0
-    obr:          true
-    mvp:          false
-    bom:          true
-    javadoc:      false
-    isolated:     false
-    codecoverage: false
-
   - artifact: dev.galasa.java.manager
     version: 0.21.0
     obr:          true

@@ -99,6 +99,3 @@ include 'galasa-managers-ides-parent:dev.galasa.eclipseruntime.ubuntu.manager'
 
 // galasa-managers-workflow-parent
 include 'galasa-managers-workflow-parent:dev.galasa.githubissue.manager'
-
-// galasa-managers-internal-parent
-include 'galasa-managers-internal-parent:dev.galasa.sem.manager'
