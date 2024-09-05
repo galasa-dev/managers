@@ -9,7 +9,7 @@ public ITsqFactory tsqFactory;
 
 ...
 
-this.tsqFactory = cicsRegion.getTSQFactory();
+this.tsqFactory = cicsRegion.getTsqFactory();
 
 ```
 
@@ -28,8 +28,8 @@ public ITsq tsqRecoverable;
 
 // Create ITsq object for recoverable TSQ
 String queueName = "GALASAR";
-boolean recoverable = true;
-tsqRecoverable = this.tsqFactoryA.createQueue(queueName, recoverable);
+boolean isRecoverable = true;
+tsqRecoverable = this.tsqFactoryA.createQueue(queueName, isRecoverable);
 
 ```
 
@@ -42,8 +42,8 @@ public ITsq tsqNonRecoverable;
 
 // Create ITsq object for non-recoverable TSQ
 String queueName = "GALASAN";
-boolean recoverable = false;
-tsqNonRecoverable = this.tsqFactoryA.createQueue(queueName, recoverable);
+boolean isRecoverable = false;
+tsqNonRecoverable = this.tsqFactoryA.createQueue(queueName, isRecoverable);
 
 ```
 Note: If TSQ is already existing then the recoverable status will not change. 

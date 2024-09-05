@@ -89,12 +89,12 @@ public class TsqFactoryImpl implements ITsqFactory {
 	 * Create and return the ITsq object for the queueName provided.
 	 */
     @Override
-	public ITsq createQueue(String queueName, boolean recoverable) throws TsqException {
+	public ITsq createQueue(String queueName, boolean isRecoverable) throws TsqException {
 		this.queueName = queueName;
         checkQueueName();
 
 		// If recoverable is true create a TSMODEL to make the TSQ as recoverable
-		if (recoverable) {
+		if (isRecoverable) {
 			this.setRecoverable(queueName);
 		}
 

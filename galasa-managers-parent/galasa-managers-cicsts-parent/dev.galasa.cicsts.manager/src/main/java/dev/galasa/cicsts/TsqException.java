@@ -5,6 +5,9 @@
  */
 package dev.galasa.cicsts;
 
+/*
+ * TsqException happens for errors in the TSQ manager methods. 
+ */
 public class TsqException extends TsqManagerException {
     private static final long serialVersionUID = 1L;
 

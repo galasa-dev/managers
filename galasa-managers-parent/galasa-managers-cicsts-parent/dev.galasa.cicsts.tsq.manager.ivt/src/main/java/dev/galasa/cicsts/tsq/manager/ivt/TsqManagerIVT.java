@@ -48,7 +48,7 @@ public class TsqManagerIVT {
     */
 	@BeforeClass
 	public void createTsqInstance() throws CicstsManagerException {
-		this.tsqFactoryA = cicsRegionA.getTSQFactory();
+		this.tsqFactoryA = cicsRegionA.getTsqFactory();
 		// Create ITsq object for recoverable TSQ
 		tsqRecoverable = this.tsqFactoryA.createQueue("GALASAR", true);
 		// Create ITsq object for non-recoverable TSQ

@@ -96,7 +96,7 @@ public abstract class BaseCicsImpl implements ICicsRegionProvisioned {
     }
 
     @Override
-    public ITsqFactory getTSQFactory() throws CicstsManagerException {
+    public ITsqFactory getTsqFactory() throws CicstsManagerException {
         if (this.tsq == null) {
             this.tsq = this.cicstsManager.getTsqProvider().getTsqFactory(this, this.cicstsManager);
         }

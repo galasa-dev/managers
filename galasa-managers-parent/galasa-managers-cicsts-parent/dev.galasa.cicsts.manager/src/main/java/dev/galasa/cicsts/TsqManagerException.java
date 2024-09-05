@@ -5,6 +5,9 @@
  */
 package dev.galasa.cicsts;
 
+/*
+ * TsqManagerException happens for errors in TSQ manager provisioning
+ */
 public class TsqManagerException extends CicstsManagerException {
     private static final long serialVersionUID = 1L;
 

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 public interface ITsq {
 
       /**
-       * Chect the existence of a TSQ. 
+       * Check the existence of a TSQ. 
        * @throws TsqException if there is a problem in checking the TSQ existence
        * @return boolean based on if TSQ is existing or not
        */
@@ -28,7 +28,7 @@ public interface ITsq {
        * @return Data read from TSQ as String 
        * @throws TsqException if there is a problem in reading from the TSQ
        */    
-      public String readQueue(@NotNull int item) throws TsqException;
+      public String readQueue(int item) throws TsqException;
 
       /**
        * Read next from TSQ. 
