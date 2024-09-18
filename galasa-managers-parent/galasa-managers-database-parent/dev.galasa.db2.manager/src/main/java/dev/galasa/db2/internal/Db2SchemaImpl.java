@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2.internal;
 
@@ -56,7 +58,7 @@ import dev.galasa.framework.spi.IFramework;
  * For any unsupported object types please gain a standard
  * sql connection from the IDb2Instance
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class Db2SchemaImpl implements IDb2Schema{

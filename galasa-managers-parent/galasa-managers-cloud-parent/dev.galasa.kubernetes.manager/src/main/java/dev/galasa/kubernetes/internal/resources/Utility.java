@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -16,7 +16,7 @@ import io.kubernetes.client.openapi.models.V1LabelSelectorRequirement;
 /**
  * Utility class for routines that are missing the kubernetes client
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class Utility {

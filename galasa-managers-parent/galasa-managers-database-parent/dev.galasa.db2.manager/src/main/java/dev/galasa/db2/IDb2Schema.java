@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2;
 
@@ -12,7 +14,7 @@ import java.util.List;
  * 
  *  Allows users to submit statements as string, or as a batch of statements from a file.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IDb2Schema {

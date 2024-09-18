@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019-2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -43,7 +43,7 @@ import com.jcraft.jsch.SftpException;
 /**
  * SSH FileStore for Galasa
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 public class SSHFileSystemProvider extends FileSystemProvider {

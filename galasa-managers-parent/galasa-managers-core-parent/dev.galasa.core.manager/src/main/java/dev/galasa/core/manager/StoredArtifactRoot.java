@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.core.manager;
 
 import static java.lang.annotation.ElementType.FIELD;
@@ -13,18 +15,12 @@ import java.nio.file.Path;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * <p>
  * Fill this field Root path of the Stored Artifacts for this Test Run. This can
  * be used to record test logs, job output, trace files etc.
- * </p>
  *
- * <p>
- * Will only populate public {@link java.nio.files.Path} fields.
- * </p>
- *
- * @author Michael Baylis
- * @see {@link java.nio.files.Path}
- *
+ * Will only populate public {@link java.nio.file.Path} fields.
+ * 
+ * @see java.nio.file.Path
  */
 @Retention(RUNTIME)
 @Target(FIELD)

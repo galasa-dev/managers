@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal.properties;
 
 import java.util.List;
@@ -27,7 +29,7 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * default value is TEST{A-Z}{A-Z}
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunIdPrefix extends CpsProperties {

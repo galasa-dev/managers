@@ -1,7 +1,11 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos;
+
+import java.nio.charset.Charset;
 
 import javax.validation.constraints.NotNull;
 
@@ -13,7 +17,7 @@ import dev.galasa.ipnetwork.IIpHost;
  * 
  * <p>Use a {@link ZosImage} annotation to populate this field with</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosImage {
@@ -50,6 +54,14 @@ public interface IZosImage {
     String getClusterID();
 
     /**
+     * Get the code page of this zOS Image. Defaults to 037
+     * 
+     * @return The EBCDIC code page, never null
+     */
+    @NotNull
+    Charset getCodePage();
+
+    /**
      * Get the default host name for this Image
      * 
      * @return a non-null String representing the default host name 
@@ -61,7 +73,7 @@ public interface IZosImage {
     /**
      * Retrieve the default credentials for the zOS Image. 
      * 
-     * @return The default credentials - see {@link dev.galasa.framework.spi.creds.ICredentials}
+     * @return The default credentials - see {@link dev.galasa.ICredentials}
      * @throws ZosManagerException if the credentials are missing or there is a problem with the credentials store
      */
     @NotNull

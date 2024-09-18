@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux;
 
@@ -20,7 +22,7 @@ import dev.galasa.ipnetwork.IIpHost;
  * Use a {@link LinuxImage} annotation to populate this field with
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ILinuxImage {
@@ -45,7 +47,7 @@ public interface ILinuxImage {
      * Retrieve the default credentials for the Image.
      * 
      * @return The default credentials - see
-     *         {@link dev.galasa.framework.spi.creds.ICredentials}
+     *         {@link dev.galasa.ICredentials}
      * @throws LinuxManagerException if the credentials are missing or there is a
      *                               problem with the credentials store
      */

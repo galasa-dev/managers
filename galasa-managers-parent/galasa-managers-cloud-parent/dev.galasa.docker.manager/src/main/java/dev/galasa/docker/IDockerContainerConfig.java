@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.docker;
 
@@ -9,7 +11,7 @@ import java.util.List;
 /**
  * An interface for the annotation object that represents the configurations for a container.
  * 
- * @author James Davies
+ *   
  */
 public interface IDockerContainerConfig {
 
@@ -34,9 +36,9 @@ public interface IDockerContainerConfig {
     public List<IDockerVolume> getVolumes();
 
     /**
-     * Return a volume from the configuration of a specfic tag. 
-     * 
-     * @return
+     * Get the volume by the tag it is known as.
+     * @param volumeTag
+     * @return a volume from the configuration of a specfic tag. 
      */
     public IDockerVolume getVolumeByTag(String volumeTag);
     

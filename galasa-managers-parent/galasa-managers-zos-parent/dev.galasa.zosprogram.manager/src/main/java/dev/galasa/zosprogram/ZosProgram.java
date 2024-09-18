@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosprogram;
 
@@ -23,14 +23,18 @@ import dev.galasa.zosprogram.internal.ZosProgramManagerField;
  * The test can request multiple z/OS Program instances
  * 
  * @galasa.examples 
+ * <code>
  * {@literal @}ZosImage(imageTag="A")<br>
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosProgram(imageTag="A")<br>
- * public IZosProgram zosProgramA;<br></code>
+ * public IZosProgram zosProgramA;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IZosProgram</code> interface has a number of methods to manage the zOS Program.
- * See {@link ZosProgram} and {@link IZosProgram} to find out more.
+ * 
+ * @see ZosProgram
+ * @see IZosProgram
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -80,19 +84,19 @@ public @interface ZosProgram {
      */
     public enum Language {
         /**
-         * COBOL program with <code>.cbl</code> file extension 
+         * COBOL program with ".cbl" file extension 
          */
         COBOL(".cbl"),
         /**
-         * C program with <code>.c</code> file extension 
+         * C program with ".c" file extension 
          */
         C(".c"),
         /**
-         * PL1 program with <code>.pl1</code> file extension 
+         * PL1 program with ".pl1" file extension 
          */
         PL1(".pl1"),
         /**
-         * Assembler program with <code>.asm<\code> file extension 
+         * Assembler program with ".asm" file extension 
          */
         ASSEMBLER(".asm"),
         /**

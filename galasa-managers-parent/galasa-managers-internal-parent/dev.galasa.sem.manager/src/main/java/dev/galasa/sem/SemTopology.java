@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.sem;
 
 import java.lang.annotation.ElementType;
@@ -11,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Represents a SEM topology to build a set of CICS regions from
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

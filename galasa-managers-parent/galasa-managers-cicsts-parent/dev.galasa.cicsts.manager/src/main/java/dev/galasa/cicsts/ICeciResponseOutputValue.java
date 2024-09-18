@@ -1,8 +1,9 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
+
 package dev.galasa.cicsts;
 
 /**
@@ -12,8 +13,8 @@ package dev.galasa.cicsts;
  * e.g. the request output screen might 
  * show:<br>
  * <code>INTO('A.....')</code><br>
- * and in Hex:<<br>
- * <code>INTO(X'C13456789ABC')</code><br>
+ * and in Hex:<br>
+ * <code>INTO(X'C13456789ABC')</code><br> example hex in javadoc comment //pragma: allowlist secret
  * Both representations are available using the {@link #getTextValue()} and {@link #getHexValue()} methods respectively
  */
 public interface ICeciResponseOutputValue {

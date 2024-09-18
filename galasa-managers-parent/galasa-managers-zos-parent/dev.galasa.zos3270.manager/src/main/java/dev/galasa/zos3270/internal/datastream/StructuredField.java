@@ -1,9 +1,11 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.datastream;
+
+import java.nio.charset.Charset;
 
 import dev.galasa.zos3270.spi.NetworkException;
 
@@ -15,12 +17,12 @@ public class StructuredField {
     protected StructuredField() {
     }
 
-    public static StructuredField getStructuredField(byte[] sfData) throws NetworkException {
+    public static StructuredField getStructuredField(byte[] sfData, Charset codePage) throws NetworkException {
         switch (sfData[0]) {
             case SF_READ_PARTITION:
                 return new StructuredFieldReadPartition(sfData);
             case SF_3270_DS:
-                return new StructuredField3270DS(sfData);
+                return new StructuredField3270DS(sfData, codePage);
             default:
                 throw new NetworkException("Unknown Structured Field = " + sfData[0]);
         }

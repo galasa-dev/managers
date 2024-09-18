@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.elasticlog.internal;
 
@@ -20,7 +20,6 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import dev.galasa.ICredentials;
@@ -40,6 +39,7 @@ import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
 import dev.galasa.http.HttpClientException;
 import dev.galasa.http.HttpClientResponse;
 import dev.galasa.http.IHttpClient;
@@ -48,7 +48,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
 /**
  * ElasticLog Manager implementation
  * 
- * @author Richard Somers
+ *  
  */
 @Component(service = { IManager.class })
 public class ElasticLogManagerImpl extends AbstractManager {
@@ -71,10 +71,9 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	/**
 	 * Initialise the ElasticLogManager, adding a pointer to the other active managers
 	 *  
-	 * @param IFramework - the galasa framework
-	 * @param List<IManager> - list of all the managers
-	 * @param List<Imanager> - list of all the active managers
-	 * @param Class<?> - the test class
+	 * @param framework - the galasa framework
+	 * @param allManagers - list of all the managers
+	 * @param activeManagers - list of all the active managers
 	 * @throws ManagerException
 	 */
 	@Override
@@ -101,8 +100,8 @@ public class ElasticLogManagerImpl extends AbstractManager {
 	/**
 	 * Makes sure that the elastic log manager is added to the list of active managers, and adds the dependency on http manager.
 	 * 
-	 * @param List<IManager> - list of all the managers
-	 * @param List<IManager> - list of the active managers
+	 * @param allManagers - list of all the managers
+	 * @param activeManagers - list of the active managers
 	 * @throws ManagerException
 	 */
 	@Override
@@ -204,7 +203,7 @@ public class ElasticLogManagerImpl extends AbstractManager {
 			this.runProperties.put("tags", tags.toArray(new String[tags.size()]));	    	
 	
 		//Convert HashMap of run properties to a Json String
-		Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+		Gson gson = new GalasaGsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").getGson();
 		JsonObject json = gson.toJsonTree(this.runProperties).getAsJsonObject();
 
 		logger.info("Sending Run Request to ElasticLog Endpoint");

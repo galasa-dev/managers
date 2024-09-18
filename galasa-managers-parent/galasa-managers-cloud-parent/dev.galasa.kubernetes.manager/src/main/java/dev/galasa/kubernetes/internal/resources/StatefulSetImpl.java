@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -16,7 +18,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * StatefulSet implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class StatefulSetImpl extends ReplicaSetHolder implements IStatefulSet {

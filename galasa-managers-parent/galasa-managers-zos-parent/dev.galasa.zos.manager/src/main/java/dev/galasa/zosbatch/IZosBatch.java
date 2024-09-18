@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosbatch;
 
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Provides the test code access to zOS Batch jobs via the zOS Manager 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosBatch {

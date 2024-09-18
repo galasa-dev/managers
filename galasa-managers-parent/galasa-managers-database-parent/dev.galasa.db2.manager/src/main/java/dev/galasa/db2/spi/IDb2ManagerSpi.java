@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2.spi;
 
@@ -14,7 +16,7 @@ import dev.galasa.db2.IDb2Schema;
  *  too before requesting a schema from that database, the connection will be initialised.
  *  
  *  
- * @author jamesdavies
+ *  
  *
  */
 public interface IDb2ManagerSpi {

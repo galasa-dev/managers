@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts;
 
@@ -14,7 +16,7 @@ public interface ICemt {
     /** 
      * Inquire a CEMT resource using the resource type and name.
      * This does not support inquiries of multiple resources at once. 
-     * Will return {@link null} if the resource is not found.
+     * @return null if the resource is not found.
      * @param cemtTerminal an {@link ITerminal} object logged on to the CICS region and in an active CEMT session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>

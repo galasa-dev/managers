@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.artifact;
 
@@ -12,7 +12,7 @@ import dev.galasa.artifact.ISkeletonProcessor.SkeletonType;
  * retrieving artifacts/resources from the 'resources' directory in your test
  * bundle, and manipulating those resources
  * 
- * @author James Bartlett
+ *  
  *
  */
 public interface IArtifactManager {

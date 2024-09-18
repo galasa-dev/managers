@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.ipnetwork;
 
@@ -18,7 +18,7 @@ import dev.galasa.ICredentials;
  * Use the appropriate host manager annotation to obtain an object
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IIpHost {

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts;
 
@@ -102,6 +104,7 @@ public interface ICicsRegion {
 	 * @throws CicstsManagerException
 	 */
 	public void removeSit(@NotNull String sitParam) throws CicstsManagerException;
+
 	
 	/**
 	 * This method adds a method to the DFHRPL concatenation in the CICS
@@ -111,4 +114,28 @@ public interface ICicsRegion {
 	 * @throws CicstsManagerException 
 	 */
 	public void addToDfhRpl(@NotNull String library) throws CicstsManagerException;
+
+
+    /**
+     * Allows a testcase to get a specific property about the region.
+     * 
+     * The list of properties supported will depend upon how the region was 
+     * deployed/provisioned.
+     * 
+     * By default, no properties are supported, but each implementation of this
+     * interface is free to provide tests with whatever values they wish to 
+     * reflect this particular CICS region.
+     * 
+     * @param propertyName The name of the property for which the caller wishes to 
+     * get a value.
+     * 
+     * @return A string value for the requested property, or null if that property
+     * value is not available.
+     * 
+     * @throws CicstsManagerException
+     */
+    public default String getRegionProperty( String propertyName ) throws CicstsManagerException {
+        return null;
+    }
+
 }

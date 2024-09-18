@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts.internal;
 
@@ -46,11 +48,9 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
-import dev.galasa.ipnetwork.IpNetworkManagerException;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
 import dev.galasa.zos.spi.IZosManagerSpi;
 import dev.galasa.zos3270.TerminalInterruptedException;
-import dev.galasa.zos3270.Zos3270ManagerException;
 import dev.galasa.zosbatch.IZosBatch;
 import dev.galasa.zosbatch.spi.IZosBatchSpi;
 import dev.galasa.zosfile.IZosFileHandler;
@@ -65,9 +65,9 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     private boolean required;
 
     private IZosManagerSpi zosManager;
-	private IZosBatchSpi zosBatchManager;
-	private IZosFileSpi zosFileManager;
-	private ITextScannerManagerSpi textScanner;
+    private IZosBatchSpi zosBatchManager;
+    private IZosFileSpi zosFileManager;
+    private ITextScannerManagerSpi textScanner;
 
     private final HashMap<String, ICicsRegionProvisioned> provisionedCicsRegions = new HashMap<>();
 
@@ -208,15 +208,16 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
         CicsTerminal annotation = field.getAnnotation(CicsTerminal.class);
 
         String tag = defaultString(annotation.cicsTag(), "PRIMARY").toUpperCase();
+        String loginCredentialsTag = defaultString(annotation.loginCredentialsTag(), "").toUpperCase();
         
         ICicsRegionProvisioned region = this.provisionedCicsRegions.get(tag);
         if (region == null) {
-            throw new CicstsManagerException("Unable to setup CICS Terminal for field " + field.getName()
-            + ", tagged region " + tag + " was not provisioned");
+            throw new CicstsManagerException("Unable to setup CICS Terminal for field '" + field.getName() + "', for region with tag '"
+            + tag + "' as a region with a matching 'cicsTag' tag was not found, or the region was not provisioned.");
         }
 
         try {
-            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner);
+            CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, annotation.connectAtStartup(), this.textScanner, loginCredentialsTag);
             this.terminals.add(newTerminal);
             return newTerminal;
         } catch (TerminalInterruptedException e) {
@@ -237,7 +238,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
             CicsTerminalImpl newTerminal = new CicsTerminalImpl(this, getFramework(), region, true, this.textScanner);
             this.terminals.add(newTerminal);
             return newTerminal;
-        } catch (TerminalInterruptedException | IpNetworkManagerException | Zos3270ManagerException e) {
+        } catch (TerminalInterruptedException | ManagerException e) {
             throw new CicstsManagerException(
                     "Unable to setup CICS Terminal for tagged region " + tag, e);
         }
@@ -264,7 +265,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     @Override
     public void provisionStart() throws ManagerException, ResourceUnavailableException {
         // Add the default Logon Provider incase one isn't supplied
-        this.logonProviders.add(new CicstsDefaultLogonProvider());
+        this.logonProviders.add(new CicstsDefaultLogonProvider(getFramework()));
 
         // First, give the provisioners the opportunity to start CICS regions
         for (ICicsRegionProvisioner provisioner : provisioners) {
@@ -300,6 +301,7 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
     public void provisionStop() {
         for (CicsTerminalImpl terminal : this.terminals) {
             try {
+                terminal.writeRasOutput();
             	terminal.flushTerminalCache();
                 terminal.disconnect();
             } catch (TerminalInterruptedException e) { // NOSONAR - wish to hide disconnect errors
@@ -446,5 +448,10 @@ public class CicstsManagerImpl extends AbstractManager implements ICicstsManager
 			clonedTaggedCicsRegions.put(entry.getKey(), entry.getValue());
 		}		
 		return clonedTaggedCicsRegions;
+	}
+
+	@Override
+	public List<ICicsTerminal> getCicsTerminals() {	
+		return new ArrayList<>(this.terminals);
 	}
 }

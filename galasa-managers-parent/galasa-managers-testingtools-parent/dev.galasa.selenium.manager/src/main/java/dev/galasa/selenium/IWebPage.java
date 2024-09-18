@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.selenium;
 
 import java.util.List;
@@ -27,7 +29,6 @@ public interface IWebPage {
     /**
      * Clears the Element specified by a Class Name
      * @param className The Object used to specify the Element
-     * @param secondsTimeout The wait timeout in seconds
      * @return The WebPage after the Element is cleared
      */
     public IWebPage clearElementByClassName(String className);

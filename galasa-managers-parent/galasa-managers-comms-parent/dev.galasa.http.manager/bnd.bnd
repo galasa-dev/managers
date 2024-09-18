@@ -5,7 +5,9 @@ Import-Package: com.google.gson,\
     dev.galasa,\
     dev.galasa.framework.spi,\
     dev.galasa.framework.spi.language,\
+    dev.galasa.framework.spi.utils,\
     dev.galasa.http.spi,\
+    dev.galasa.common,\
     javax.net.ssl,\
     javax.validation.constraints;resolution:=optional,\
     jakarta.xml.bind,\

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -21,7 +23,7 @@ import dev.galasa.zos.IZosImage;
  * To gain access to the ZosSecurityManager include a field of type IZosSecurity
  * in your Galasa class.
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 public interface IZosSecurity {
@@ -83,8 +85,7 @@ public interface IZosSecurity {
 
 	/**
 	 * Create a new profile on the specified image/sysplex.
-	 * 
-	 * @param image    - The image/sysplex
+	 * @param className
 	 * @param name    - The name of the profiles
 	 * @param uacc    - The uacc to assign, or null
 	 * @param refresh - issue SETROPTS REFRESH
@@ -98,6 +99,7 @@ public interface IZosSecurity {
 	 * Create a new profile on the specified image/sysplex.
 	 * 
 	 * @param image - The image/sysplex
+	 * @param className
 	 * @param name - The name of the profiles
 	 * @param uacc - The uacc to assign, or null
 	 * @return The profile
@@ -122,6 +124,7 @@ public interface IZosSecurity {
 	 * Create a new profile on the specified image/sysplex.
 	 * 
 	 * @param image    - The image/sysplex
+	 * @param className 
 	 * @param name    - The name of the profiles
 	 * @param uacc    - The uacc to assign, or null
 	 * @param refresh - issue SETROPTS REFRESH
@@ -387,7 +390,7 @@ public interface IZosSecurity {
 	 * Free this certificate. This will be performed automatically at the end of the
 	 * run
 	 * 
-	 * @param keyring
+	 * @param certificate The certificate to free
 	 * @throws ZosSecurityManagerException
 	 */
 	public void freeCertificate(IZosCertificate certificate) throws ZosSecurityManagerException;
@@ -397,7 +400,7 @@ public interface IZosSecurity {
 	 * best let the Resource Manager to clean this resource, so you run will perform
 	 * faster.
 	 * 
-	 * @param certificate
+	 * @param certificate The certificate to delete
 	 * @throws ZosSecurityManagerException
 	 */
 	public void deleteCertificate(IZosCertificate certificate) throws ZosSecurityManagerException;
@@ -517,7 +520,7 @@ public interface IZosSecurity {
 	/**
 	 * Create a Kerberos client principal. This will create the kerbname and the
 	 * required association with the passed in service principal (see
-	 * {@link #createKerberosPrincipal(IZosUserid, IZosImage, String)} fr the passed
+	 * {@link #createKerberosPrincipal(IZosUserid, String)} fr the passed
 	 * userid.
 	 * 
 	 * @param servicePrincipal - service principal with which to associate this
@@ -534,7 +537,8 @@ public interface IZosSecurity {
 	 * 
 	 * @param serviceUserid - zOS Userid for this principal
 	 * @param realm         - realm to use, see
-	 *                      {@link #getDefaultKerberosRealm(IZosImage)}
+	 *                      {@link #getDefaultKerberosRealm()}
+	 * 
 	 * @return
 	 * @throws ZosSecurityManagerException
 	 */

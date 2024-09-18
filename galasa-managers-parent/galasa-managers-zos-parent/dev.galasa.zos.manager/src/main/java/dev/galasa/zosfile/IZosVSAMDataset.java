@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosfile;
 
@@ -683,7 +685,7 @@ public interface IZosVSAMDataset {
 
     /**
      * Get the IDCAMS REPRO command 
-     * @param infile
+     * @param indatasetName
      * @return
      * @throws ZosVSAMDatasetException
      */

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.datastream;
 
@@ -10,14 +10,16 @@ import java.nio.charset.Charset;
 
 public class OrderText extends AbstractOrder {
 
-    public static final Charset ebcdic = Charset.forName("Cp037");
+    private final Charset ebcdic;
 
     private StringBuilder        text   = new StringBuilder();
 
-    public OrderText() {
+    public OrderText(Charset codePage) {
+        this.ebcdic = codePage;
     }
 
-    public OrderText(String newText) {
+    public OrderText(String newText, Charset codePage) {
+        this.ebcdic = codePage;
         this.text.append(newText);
     }
 

@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.zos;
 
 import java.lang.annotation.ElementType;
@@ -16,7 +18,7 @@ import dev.galasa.ipnetwork.IIpPort;
  * 
  * <p>Used to populate a {@link dev.galasa.ipnetwork.IIpPort} field</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

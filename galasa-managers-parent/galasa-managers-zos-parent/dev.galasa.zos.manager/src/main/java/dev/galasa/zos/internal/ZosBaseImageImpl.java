@@ -1,7 +1,11 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos.internal;
+
+import java.nio.charset.Charset;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,6 +16,7 @@ import dev.galasa.framework.spi.creds.CredentialsException;
 import dev.galasa.framework.spi.creds.ICredentialsService;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zos.ZosManagerException;
+import dev.galasa.zos.internal.properties.ImageCodePage;
 import dev.galasa.zos.internal.properties.ImageSysname;
 
 public abstract class ZosBaseImageImpl implements IZosImage {
@@ -25,6 +30,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     private final String        sysplexID;
     private final String        defaultCredentialsId;
     private final ZosIpHostImpl ipHost;
+    private final Charset       codePage;
 
     private final String        runTemporaryUNIXPath;
     private final String         javaHome;
@@ -42,6 +48,7 @@ public abstract class ZosBaseImageImpl implements IZosImage {
         this.clusterId  = clusterId;
 
         try {
+            this.codePage = ImageCodePage.get(this.imageId);
             this.sysname = ImageSysname.get(this.imageId);
             this.sysplexID = AbstractManager.nulled(this.cps.getProperty("image." + this.imageId, "sysplex"));
             this.defaultCredentialsId = AbstractManager.defaultString(this.cps.getProperty("image", "credentials", this.imageId), "ZOS");
@@ -90,6 +97,11 @@ public abstract class ZosBaseImageImpl implements IZosImage {
     @Override
     public String getClusterID() {
         return this.clusterId;
+    }
+
+    @Override
+    public @NotNull Charset getCodePage() {
+        return this.codePage;
     }
 
     @Override

@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.selenium;
 
 import java.io.File;
@@ -16,7 +18,7 @@ import org.openqa.selenium.UnexpectedAlertBehaviour;
 /**
  * A Options pass through interface for the Selenium Options object
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IChromeOptions {

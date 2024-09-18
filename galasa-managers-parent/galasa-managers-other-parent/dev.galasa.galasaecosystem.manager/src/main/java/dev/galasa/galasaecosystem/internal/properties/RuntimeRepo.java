@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.galasaecosystem.internal.properties;
 
@@ -29,7 +29,7 @@ import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
  * @galasa.valid_values Value URL
  * 
  * @galasa.examples 
- * <code>galasaecosystem.runtime.repository=https://nexus.galasa.dev/repository/maven-development</code>
+ * <code>galasaecosystem.runtime.repository=http://development.galasa.dev/main/maven-repo/obr</code>
  * 
  */
 public class RuntimeRepo extends CpsProperties {

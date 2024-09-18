@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.docker.internal;
 
 import java.lang.annotation.Annotation;
@@ -51,7 +53,7 @@ import dev.galasa.http.spi.IHttpManagerSpi;
  * @DockerEngine - where the containers will be running, set value in CPS (see properties)
  * @DockerContainer - define what container is to be run, image names mus be defined, tag can be set
  * 
- * @author James Davies
+ *   
  */
 @Component(service = { IManager.class })
 public class DockerManagerImpl extends AbstractManager implements IDockerManagerSpi {
@@ -69,10 +71,10 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
      * 
      * Docker Environment is generated at this stage
      * 
-     * @param IFramework - the galasa framework
-     * @param List<IManager> - list of all the managers
-     * @param List<Imanager> - list of all the active managers
-     * @param Class<?> - the test class
+     * @param framework - the galasa framework
+     * @param allManagers - list of all the managers
+     * @param activeManagers - list of all the active managers
+
      * @throws ManagerException
      */
     @Override
@@ -102,8 +104,8 @@ public class DockerManagerImpl extends AbstractManager implements IDockerManager
     /**
      * Makes sure that the docker manager is added to the list of active managers, and adds the dependency on http manager.
      * 
-     * @param List<IManager> - list of all the managers
-     * @param List<IManager> - list of the active managers
+     * @param allManagers - list of all the managers
+     * @param activeManagers - list of the active managers
      * @throws ManagerException
      */
     @Override

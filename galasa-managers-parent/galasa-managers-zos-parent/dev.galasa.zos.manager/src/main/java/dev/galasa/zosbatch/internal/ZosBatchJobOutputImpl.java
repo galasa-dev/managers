@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosbatch.internal;
 
@@ -20,7 +20,7 @@ import dev.galasa.zosbatch.spi.IZosBatchJobOutputSpi;
  * Implementation of {@link IZosBatchJobOutput}
  *
  */
-public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZosBatchJobOutputSpoolFile> {
+public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi {
 
 	private IZosBatchJob batchJob;
     private String jobname;
@@ -41,6 +41,14 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
 
     @Override
     public void addSpoolFile(String stepname, String procstep, String ddname, String id, String records) {
+        //the outline of the spool may already exist.  BUT the content might not - if it exists then update it
+        for (IZosBatchJobOutputSpoolFile spool : spoolFiles) {
+            if (ddname.equals(spool.getDdname()) && (stepname != null && stepname.equals(spool.getStepname()))) {
+                spool.setRecords(records);
+                return;
+            }
+        }
+        //if we get here then the spool doesn't already exist so add it
         spoolFiles.add(new ZosBatchJobOutputSpoolFileImpl(batchJob, this.jobname, this.jobid, Objects.toString(stepname, ""), Objects.toString(procstep, ""), ddname, id, records));
     }
 
@@ -90,7 +98,7 @@ public class ZosBatchJobOutputImpl implements IZosBatchJobOutputSpi, Iterable<IZ
             
             @Override
             public void remove() {
-                throw new UnsupportedOperationException("Object can not be updated");
+                throw new UnsupportedOperationException("Object cannot be updated");
             }
         };
     }

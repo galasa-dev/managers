@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal;
 
@@ -78,7 +80,7 @@ import io.kubernetes.client.util.Yaml;
  * 
  * See example scripts in examples/ to see how to create a name space with the necessary rbac.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesNamespaceImpl implements IKubernetesNamespace {
@@ -140,7 +142,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         addRunLabel(metadata);
 
         try {
-            api.createNamespacedConfigMap(this.namespaceId, configMap, null, null, null);
+            api.createNamespacedConfigMap(this.namespaceId, configMap, null, null, null, null);
         } catch(ApiException e) {         
             if (e.getCode() == 409) {
                 throw new KubernetesManagerException("The allocated namespace " + this.namespaceId + " on cluster " + this.cluster.getId() + " is dirty, the configmap galasa still exists", e);
@@ -422,7 +424,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
             spec.setStorageClassName(storageClass);
         }
 
-        V1PersistentVolumeClaim actualPvc = api.createNamespacedPersistentVolumeClaim(this.namespaceId, persistentVolumeClaim, null, null, null);
+        V1PersistentVolumeClaim actualPvc = api.createNamespacedPersistentVolumeClaim(this.namespaceId, persistentVolumeClaim, null, null, null, null);
 
         logger.debug("PersistentVolumeClaim " + actualPvc.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
@@ -443,7 +445,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         addRunLabel(configMap.getMetadata());
 
         CoreV1Api api = new CoreV1Api(cluster.getApi());
-        V1ConfigMap actualConfig = api.createNamespacedConfigMap(namespaceId, configMap, null, null, null);
+        V1ConfigMap actualConfig = api.createNamespacedConfigMap(namespaceId, configMap, null, null, null, null);
 
         logger.debug("ConfigMap " + actualConfig.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
@@ -458,7 +460,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         addRunLabel(secret.getMetadata());
 
         CoreV1Api api = new CoreV1Api(cluster.getApi());
-        V1Secret actualSecret = api.createNamespacedSecret(namespaceId, secret, null, null, null);
+        V1Secret actualSecret = api.createNamespacedSecret(namespaceId, secret, null, null, null, null);
 
         logger.debug("Secret " + actualSecret.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
@@ -472,7 +474,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
         addRunLabel(service.getMetadata());
 
         CoreV1Api api = new CoreV1Api(cluster.getApi());
-        V1Service actualService = api.createNamespacedService(namespaceId, service, null, null, null);
+        V1Service actualService = api.createNamespacedService(namespaceId, service, null, null, null, null);
 
         logger.debug("Service " + actualService.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
@@ -495,7 +497,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
 
         AppsV1Api api = new AppsV1Api(cluster.getApi());
-        V1Deployment actualDeployment = api.createNamespacedDeployment(namespaceId, deployment, null, null, null);
+        V1Deployment actualDeployment = api.createNamespacedDeployment(namespaceId, deployment, null, null, null, null);
 
         logger.debug("Deployment " + actualDeployment.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 
@@ -550,7 +552,7 @@ public class KubernetesNamespaceImpl implements IKubernetesNamespace {
 
 
 
-        V1StatefulSet actualStatefulSet = api.createNamespacedStatefulSet(namespaceId, statefulSet, null, null, null);
+        V1StatefulSet actualStatefulSet = api.createNamespacedStatefulSet(namespaceId, statefulSet, null, null, null, null);
 
         logger.debug("StatefulSet " + actualStatefulSet.getMetadata().getName() + " created in namespace " + this.namespaceId + " on cluster " + this.cluster.getId());
 

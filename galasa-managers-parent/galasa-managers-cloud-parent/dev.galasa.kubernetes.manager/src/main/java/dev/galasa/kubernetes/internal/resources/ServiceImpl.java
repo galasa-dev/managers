@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -19,7 +19,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * Service implementations
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ServiceImpl implements IService {

@@ -1,12 +1,14 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity.datatypes;
 
 /**
  * This enum represents the different types of RACF classes that CICS uses for security
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public enum ZosCicsClassResource {

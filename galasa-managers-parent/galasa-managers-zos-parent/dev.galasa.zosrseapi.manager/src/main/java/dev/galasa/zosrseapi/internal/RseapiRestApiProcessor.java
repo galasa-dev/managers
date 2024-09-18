@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosrseapi.internal;
 
@@ -50,13 +50,17 @@ public class RseapiRestApiProcessor implements IRseapiRestApiProcessor {
      * Send RSE API request
      * @param requestType
      * @param path
-     * @param body
      * @param headers
+     * @param body
      * @param validStatusCodes
+     * @param convert
      * @return
-     * @throws ZosBatchException
+     * @throws RseapiException
      */
-    public @NotNull IRseapiResponse sendRequest(RseapiRequestType requestType, String path, Map<String, String> headers, Object body, List<Integer> validStatusCodes, boolean convert) throws RseapiException {
+    public @NotNull IRseapiResponse sendRequest(RseapiRequestType requestType, String path, 
+        Map<String, String> headers, Object body, List<Integer> validStatusCodes, 
+        boolean convert) throws RseapiException {
+
         if (validStatusCodes == null) {
             validStatusCodes = new ArrayList<>(Arrays.asList(HttpStatus.SC_OK));
         }

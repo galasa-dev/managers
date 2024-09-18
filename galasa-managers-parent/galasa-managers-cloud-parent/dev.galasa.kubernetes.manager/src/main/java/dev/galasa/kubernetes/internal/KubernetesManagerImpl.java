@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal;
 
@@ -53,7 +55,7 @@ import io.kubernetes.client.util.Yaml;
 /**
  * The Kubernetes Manager implementation
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })

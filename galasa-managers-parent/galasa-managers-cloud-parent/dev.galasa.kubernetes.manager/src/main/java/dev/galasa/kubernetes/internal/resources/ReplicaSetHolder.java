@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal.resources;
 
@@ -20,7 +22,7 @@ import io.kubernetes.client.openapi.models.V1PodList;
 /**
  * ReplicaSet type resource implementation, ie Deployment/StatefulSet
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public abstract class ReplicaSetHolder {

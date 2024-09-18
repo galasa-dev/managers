@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.selenium.internal;
 
@@ -31,7 +33,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
  * Selenium Environment is a generic environment for both local and remote drivers
  * 
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class SeleniumEnvironment {

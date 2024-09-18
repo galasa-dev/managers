@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.core.manager.internal;
 
 import dev.galasa.core.manager.IResourceString;
@@ -9,7 +11,7 @@ import dev.galasa.core.manager.IResourceString;
  * Basic holder of a Resource String.
  * Not strictly necessary, but future proofing
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringImpl implements IResourceString {

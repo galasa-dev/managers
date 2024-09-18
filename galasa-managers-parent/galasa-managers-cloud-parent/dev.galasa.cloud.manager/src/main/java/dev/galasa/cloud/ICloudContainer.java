@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.cloud;
 
 import java.net.InetSocketAddress;
@@ -8,7 +10,7 @@ import java.net.InetSocketAddress;
 /**
  * Cloud Container
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ICloudContainer {

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes;
 
@@ -9,7 +9,7 @@ package dev.galasa.kubernetes;
  * Abstracts a Kubernetes Resource, so that the test is not dependent of whatever Kubernetes client the 
  * Kubernetes Manager decides to use.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IResource {

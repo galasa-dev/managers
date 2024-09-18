@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -9,7 +11,7 @@ import dev.galasa.zossecurity.datatypes.RACFCertificateType;
 /**
  * Represents a Certificate that has been imported into RACF
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosCertificate {

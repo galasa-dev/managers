@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux.internal.properties;
 
@@ -22,7 +24,7 @@ import dev.galasa.framework.spi.cps.CpsProperties;
  * default value is 1
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class SharedLinuxPriority extends CpsProperties {

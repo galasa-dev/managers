@@ -1,3 +1,8 @@
+/*
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.zos3270.internal.gherkin;
 
 import java.util.List;
@@ -37,6 +42,9 @@ public class Gherkin3270TypeInField  implements IStatementOwner {
         }
 
         Zos3270TerminalImpl terminal = this.gerkinCoordinator.getTerminal(terminalId);
+        if (terminal == null ) {
+            throw new Zos3270ManagerException("Unable to get terminal "+terminalId);
+        }
         if (!terminal.isConnected()) {
             throw new Zos3270ManagerException("Terminal '" + terminalId + "' is not connected");
         }

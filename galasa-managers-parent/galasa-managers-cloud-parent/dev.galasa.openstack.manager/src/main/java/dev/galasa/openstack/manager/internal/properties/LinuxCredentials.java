@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.openstack.manager.internal.properties;
 
@@ -27,8 +27,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The default is OPENSTACKSSH
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class LinuxCredentials extends CpsProperties {

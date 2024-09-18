@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 /**
  * zOS UNIX Manager - SSH Internal Implementation
@@ -13,8 +13,11 @@
  * @galasa.description
  * 
  * This Manager is the internal implementation of the z/OS UNIX Command Manager using SSH.
- * <br><br> See the <a href="/docs/managers/zos-manager">zOS Manager</a> for details of the z/OS UNIX annotations and 
- * code snippets.<br><br> You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zosunix/package-summary.html">Javadoc 
- * documentation for the Manager here</a>. <br><br>
+ * 
+ * See the <a href="/docs/managers/zos-manager">zOS Manager</a> for details of the z/OS UNIX annotations and 
+ * code snippets.
+ * 
+ * You can view the <a href="https://javadoc.galasa.dev/dev/galasa/zosunix/package-summary.html">Javadoc 
+ * documentation for the Manager here</a>
  */
 package dev.galasa.zosunixcommand.ssh.manager.internal;

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.java.windows;
 
@@ -16,7 +16,7 @@ import dev.galasa.java.IJavaInstallation;
  * Use a {@link JavaWindowsInstallation} annotation to populate this field with
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IJavaWindowsInstallation extends IJavaInstallation {

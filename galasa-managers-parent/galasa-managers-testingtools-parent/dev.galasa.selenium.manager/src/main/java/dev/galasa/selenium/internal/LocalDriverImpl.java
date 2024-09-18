@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.selenium.internal;
 
@@ -21,7 +23,7 @@ import dev.galasa.selenium.SeleniumManagerException;
  * A local driver can be used to run Selenium tests. This is not support inside an Galasa ecosystem, as the tests run inside 
  * the default engine. Please use the Docker, Kubernetes or Grid implementations for automation runs.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class LocalDriverImpl extends DriverImpl implements IWebDriver{

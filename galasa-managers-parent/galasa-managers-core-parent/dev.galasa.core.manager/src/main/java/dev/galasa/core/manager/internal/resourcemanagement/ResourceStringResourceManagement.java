@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.core.manager.internal.resourcemanagement;
 
@@ -20,7 +22,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Core Resource String Resource Management
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringResourceManagement implements Runnable {

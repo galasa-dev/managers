@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -14,7 +16,7 @@ import dev.galasa.zossecurity.datatypes.RACFAccessType;
  * Represents a set of RACF Classes that is used to CICS security.  A time of writing this is 
  * 10 classes TxxxxTRN and GxxxxTRN etc.
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosCicsClassSet {

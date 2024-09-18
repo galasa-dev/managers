@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux.internal.properties;
 
@@ -22,7 +24,7 @@ import dev.galasa.linux.LinuxManagerException;
  * There is no default, the property must be provided for the image to be selectable
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LinuxOperatingSystem extends CpsProperties {

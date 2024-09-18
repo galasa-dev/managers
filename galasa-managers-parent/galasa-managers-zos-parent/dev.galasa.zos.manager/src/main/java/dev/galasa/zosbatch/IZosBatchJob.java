@@ -1,12 +1,14 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosbatch;
 
 /**
  * <p>Represents a zOS Batch Job.</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosBatchJob {
@@ -64,7 +66,7 @@ public interface IZosBatchJob {
     public String getOwner();
     
     /**
-     * The type for this Job, i.e. <code>JOB</code>, <code>STC</code> or <code>TSU</code>. Returns "???" if no type has been associated
+     * The type for this Job, i.e. "JOB", "STC" or "TSU". Returns "???" if no type has been associated
      * 
      * @return batch job type
      */
@@ -79,7 +81,7 @@ public interface IZosBatchJob {
 
     /**
      * The batch job value as a {@link String}, e.g.<br>
-     * <code>INPUT</code>, <code>ACTIVE</code>, <code>OUTPUT</code> etc.<br>
+     * "INPUT", "ACTIVE", "OUTPUT" etc.<br>
      * Returns "????????" if the job has not been submitted
      * <p>
      * N.B. Values are implementation dependent
@@ -90,7 +92,7 @@ public interface IZosBatchJob {
     
     /**
      * The batch job completion return code, e.g.<br>
-     * <code>CC 0000</code>, <code>CC 0020</code>, <code>JCL ERROR</code>, <code>ABEND S0C4/code> etc.<br>
+     * "CC 0000", "CC 0020", "JCL ERROR", "ABEND S0C4" etc.
      * Returns "????" if the job has not been submitted
      * 
      * @return
@@ -99,7 +101,7 @@ public interface IZosBatchJob {
     
     /**
      * Wait for a job to complete. Return the highest return code for the job. The method will wait for the default 
-     * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
+     * resource wait time before timing out. Returns {@link Integer#MIN_VALUE} if return code is non numeric. 
      * Use {@link #getRetcode()} to get the {@link String} value
      * 
      * @return highest CC
@@ -109,7 +111,7 @@ public interface IZosBatchJob {
     
     /**
      * Wait for a job to complete. Return the highest return code for the job. The method will wait for the default 
-     * resource wait time before timing out. Returns {@link Integer.MIN_VALUE} if return code is non numeric. 
+     * resource wait time before timing out. Returns {@link Integer#MIN_VALUE} if return code is non numeric. 
      * Use {@link #getRetcode()} to get the {@link String} value
      * 
      * @param timeout in seconds

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.core.manager.internal.resourcemanagement;
 
@@ -21,7 +23,7 @@ import dev.galasa.framework.spi.ResourceManagerException;
  * resources after a test has been terminated
  *  
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IResourceManagementProvider.class })

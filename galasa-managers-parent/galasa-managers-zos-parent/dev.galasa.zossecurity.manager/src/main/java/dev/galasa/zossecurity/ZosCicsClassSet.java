@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -14,7 +16,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 /**
  * Requests a CICS Security Class set to be allocated.  Use allowAllAccess to have a default profile created in each of all the classes. 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

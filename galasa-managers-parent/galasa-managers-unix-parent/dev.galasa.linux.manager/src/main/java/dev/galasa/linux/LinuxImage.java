@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux;
 
@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link ILinuxImage} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

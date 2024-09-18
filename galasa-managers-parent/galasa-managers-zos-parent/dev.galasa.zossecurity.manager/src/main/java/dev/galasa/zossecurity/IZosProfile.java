@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -8,7 +10,7 @@ import dev.galasa.zossecurity.datatypes.RACFAccessType;
 /**
  * Represents a profile created by this zossec security manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosProfile {

@@ -1,31 +1,27 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.core.manager;
 
 import javax.validation.constraints.NotNull;
 
 import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 
 /**
- * <p>
  * The Core Manager provides Tests with access to some of the most common
  * features within the Galasa Framework
- * </p>
  *
- * <p>
  * To gain access to the Core Manager, include the following in the test class:-
- * </p>
  * 
  * <pre>
- * &#64;CoreManager
- * public ICoreManager coreManager;
- * </pre>
+   &#64;CoreManager
+   public ICoreManager coreManager;
+   </pre>
  *
- * @author Michael Baylis
- * @See {@link CoreManager}
+ * @see CoreManager
  *
  */
 public interface ICoreManager {
@@ -46,6 +42,16 @@ public interface ICoreManager {
      * @throws CoreManagerException If there is a problem accessing the credentials store
      */
     ICredentials getCredentials(@NotNull String credentialsId) throws CoreManagerException;
+    
+    /**
+     * Retrieve Username and Password Credentials only
+     * 
+     * @param  credentialsId
+     * @return A credentials object or null if id not found
+     * @throws CoreManagerException If there is a problem accessing the credentials store 
+     *         or if the credential is not of type ICredentialsUsernamePassword
+     */
+    ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException;
     
     void registerConfidentialText(String confidentialString, String comment);
 }

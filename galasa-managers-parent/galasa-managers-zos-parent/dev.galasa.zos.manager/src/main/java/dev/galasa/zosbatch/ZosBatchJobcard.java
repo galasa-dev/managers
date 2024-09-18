@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosbatch;
 
@@ -13,7 +15,7 @@ import dev.galasa.zosbatch.internal.properties.MsgLevel;
  * 
  * No validation is performed on the values that are set
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ZosBatchJobcard {

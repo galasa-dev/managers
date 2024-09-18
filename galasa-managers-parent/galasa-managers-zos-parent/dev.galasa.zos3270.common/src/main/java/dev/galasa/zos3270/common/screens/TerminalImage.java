@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.common.screens;
 
@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
  * Pojo to represent a screen image as received or sent from the client. Inbound
  * means received by the client.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class TerminalImage {

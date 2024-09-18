@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.internal;
 
@@ -21,7 +21,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Clean up namespaces when a run is finished with it.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesNamespaceResourceMonitor implements Runnable {

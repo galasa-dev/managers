@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosprogram.internal;
 
@@ -116,7 +116,7 @@ public class ZosProgramManagerImpl extends AbstractManager implements IZosProgra
             throw new ZosProgramManagerException("Unable to request framework services", e);
         }
 
-        if(Boolean.TRUE.equals(galasaTest.isJava())) {
+        if(galasaTest.isJava()) {
             //*** Check to see if any of our annotations are present in the test class
             //*** If there is,  we need to activate
             List<AnnotatedField> ourFields = findAnnotatedFields(ZosProgramManagerField.class);

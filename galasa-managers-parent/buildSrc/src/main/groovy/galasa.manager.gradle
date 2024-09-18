@@ -5,8 +5,8 @@ plugins {
 }
 
 dependencies {
-    api            'dev.galasa:dev.galasa:0.21.0'
-    implementation 'dev.galasa:dev.galasa.framework:0.25.0'
+    api            'dev.galasa:dev.galasa:0.34.0'
+    implementation 'dev.galasa:dev.galasa.framework:0.37.0'
     implementation 'commons-logging:commons-logging:1.2'
     implementation 'org.osgi:org.osgi.core:6.0.0'
     implementation 'org.osgi:org.osgi.service.component.annotations:1.3.0'
@@ -21,11 +21,22 @@ dependencies {
 }
 
 jacoco {
-    toolVersion = "0.8.6"
+    toolVersion = "0.8.7"
 }
 
 test {
     jacoco {
         enabled = jacocoEnabled.toBoolean()
+    }
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    enabled = jacocoEnabled.toBoolean()
+    dependsOn test
+
+    reports {
+        html.required = true
+        xml.required = true
     }
 }

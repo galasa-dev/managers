@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.selenium;
 
 import java.security.SecureRandom;
@@ -12,7 +14,7 @@ import dev.galasa.selenium.internal.properties.SeleniumDockerNodeVersion;
 /**
  * Specifies the supported browser types for Local and remote versions
  * 
- * @author jamesdavies
+ *  
  *
  */
 public enum Browser {

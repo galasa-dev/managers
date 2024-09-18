@@ -13,6 +13,8 @@ pluginManagement {
 
 rootProject.name = 'galasa-managers-parent'
 
+// galasa-managers-common-parent
+include 'galasa-managers-common-parent:dev.galasa.common'
 // galasa-managers-core-parent
 include 'galasa-managers-core-parent:dev.galasa.core.manager'
 include 'galasa-managers-core-parent:dev.galasa.artifact.manager'
@@ -82,6 +84,8 @@ include 'galasa-managers-languages-parent:dev.galasa.java.windows.manager'
 // galasa-managers-testingtools-parent
 include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager'
 include 'galasa-managers-testingtools-parent:dev.galasa.jmeter.manager.ivt'
+include 'galasa-managers-testingtools-parent:dev.galasa.sdv.manager'
+include 'galasa-managers-testingtools-parent:dev.galasa.sdv.manager.ivt'
 include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager'
 include 'galasa-managers-testingtools-parent:dev.galasa.selenium.manager.ivt'
 include 'galasa-managers-testingtools-parent:dev.galasa.vtp.manager'

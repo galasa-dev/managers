@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: testcatalog-file
-data:
-  dev.galasa.testcatalog.cfg: |
-    framework.testcatalog.directory=file:/galasa/testcatalog

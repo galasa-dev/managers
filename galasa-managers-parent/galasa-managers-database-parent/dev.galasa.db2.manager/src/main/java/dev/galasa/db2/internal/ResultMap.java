@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2.internal;
 
@@ -17,7 +19,7 @@ import dev.galasa.db2.IResultMap;
  * Result Map is a basic object for simple SQL statements returns.
  * 
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class ResultMap implements IResultMap{

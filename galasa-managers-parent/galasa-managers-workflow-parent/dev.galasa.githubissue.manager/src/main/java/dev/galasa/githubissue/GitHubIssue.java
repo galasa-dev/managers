@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.githubissue;
 
@@ -12,7 +14,7 @@ import java.lang.annotation.ElementType;
  * This annotation will cause the Manager to influence the "failed" result of the test based on 
  * whether a GitHub issue is open or closed.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

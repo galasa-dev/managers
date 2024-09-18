@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes;
 
@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * This is the main interface to a provisioned Kubernetes namespace on an infrastructure cluster.
  * Access to the Object is via the {@link KubernetesNamespace} annotation or the SPI. 
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IKubernetesNamespace {

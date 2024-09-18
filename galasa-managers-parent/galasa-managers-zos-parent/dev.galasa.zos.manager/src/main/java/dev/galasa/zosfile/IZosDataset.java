@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosfile;
 
@@ -374,7 +376,7 @@ public interface IZosDataset {
      * primary and secondary extents to allocate.
      * 
      * @param spaceUnit
-     * @param primaryExtent
+     * @param primaryExtents
      * @param secondaryExtents
      */
     public void setSpace(SpaceUnit spaceUnit, int primaryExtents, int secondaryExtents);
@@ -414,13 +416,13 @@ public interface IZosDataset {
     
     /**
      * Set the storage class of the data set
-     * @param managementClass
+     * @param storageClass
      */
     public void setStorageClass(String storageClass);
     
     /**
      * Set the data class of the data set
-     * @param managementClass
+     * @param dataClass
      */
     public void setDataClass(String dataClass);
 

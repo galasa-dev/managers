@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.selenium.internal;
 
@@ -15,7 +17,7 @@ import dev.galasa.selenium.SeleniumManagerException;
 /**
  * Superclass for the local and remote driver implementations for tracking and discarding webpages
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class DriverImpl {

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts;
 
@@ -38,12 +38,15 @@ public interface ICeci {
      * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
+     * 
      * @param command a {@link String} containing the CECI command
      * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
-     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
-     * The following examples shows how to retrieve a specific returned value:<br><code>
-     * issueCommand(ICicsTerminal, "ASSIGN USERID(&VAR)", false)<br>
-     * retrieveVariableText(ICicsTerminal, "&VAR")
+     * that contain a lot of output fields, e.g. <code>ASSIGN</code>.
+     * 
+     * The following examples shows how to retrieve a specific returned value:<br>
+     * <code>
+     * issueCommand(ICicsTerminal, "ASSIGN USERID(&amp;VAR)", false)<br>
+     * retrieveVariableText(ICicsTerminal, "&amp;VAR")
      * </code>
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
@@ -72,8 +75,8 @@ public interface ICeci {
      * @param parseOutput parse the command output and store in {@link ICeciResponse}. Setting to false can improve performance on commands
      * that contain a lot of output fields, e.g. <code>ASSIGN</code>.<br><br>
      * The following examples shows how to retrieve a specific returned value:<br><code>
-     * issueCommand(ICicsTerminal, "ASSIGN USERID(&VAR)", false)<br>
-     * retrieveVariableText(ICicsTerminal, "ASSIGN USERID(&VAR)", false)
+     * issueCommand(ICicsTerminal, "ASSIGN USERID(&amp;VAR)", false)<br>
+     * retrieveVariableText(ICicsTerminal, "ASSIGN USERID(&amp;VAR)", false)
      * </code>
      * @return an {@link ICeciResponse} object containing the command's response.
      * @throws CeciException 
@@ -236,7 +239,7 @@ public interface ICeci {
 
     /**
      * Retrieve the content of the current EXEC Interface Block (EIB)
-     * @param terminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
+     * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @return the {@link IExecInterfaceBlock} 
      * @throws CeciException
      */
@@ -249,7 +252,7 @@ public interface ICeci {
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param programName the name of the PROGRAM
      * @param commarea a string representing the COMMAREA. If null, COMMAREA will be omitted from the command. Can be CECI variable name populated with
-     *  (<b>&</b>name set via {@link #defineVariableText(ICicsTerminal, String, String)}) or the actual data. The value of DATALENGTH in the command will be 
+     *  (<b>&amp;</b>)name set via {@link #defineVariableText(ICicsTerminal, String, String)}) or the actual data. The value of DATALENGTH in the command will be 
      * be allowed to default.
      * @param sysid the system name where the CICS region where the link request is to be routed. If null, SYSID will be omitted from the command.
      * @param transid the name of the mirror transaction on the remote region. If null, TRANSID will be omitted from the command.
@@ -260,8 +263,8 @@ public interface ICeci {
     public ICeciResponse linkProgram(@NotNull ICicsTerminal ceciTerminal, @NotNull String programName, String commarea, String sysid, String transid, boolean synconreturn) throws CeciException;
 
     /**
-     * EXEC CICS LINK to a PROGRAM with a CHANNEL. Use {@link #putContainer(ICicsTerminal, String, String, String)} to create the container(s) on the CHANNEL 
-     * and {@link #getContainer(ICicsTerminal, String, String, String)} to retrieve the content after the LINK.
+     * EXEC CICS LINK to a PROGRAM with a CHANNEL. Use {@link #putContainer(ICicsTerminal, String, String, String, String, String, String)} to create the container(s) on the CHANNEL 
+     * and {@link #getContainer(ICicsTerminal, String, String, String, String, String)} to retrieve the content after the LINK.
      * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * If mixed case is required, the terminal should be presented with no upper case translate status. 
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>  
@@ -276,7 +279,7 @@ public interface ICeci {
      * @param ceciTerminal an {@link ICicsTerminal} object logged on to the CICS region and in an active CECI session.
      * @param channelName the CHANNELNAME
      * @param containerName the COTAINER name
-     * @param content a string representing the container contents. Can be CECI variable name populated with (<b>&</b>name set via {@link #defineVariableText(ICicsTerminal, String, String)}) 
+     * @param content a string representing the container contents. Can be CECI variable name populated with (<b>&amp;</b>)name set via {@link #defineVariableText(ICicsTerminal, String, String)}) 
      * or the actual data. The value of FLENGTH in the command will be set to the data length.
      * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command.
      * @param fromCcsid provides a value for FROMCCSID. If null, will be omitted from the command.
@@ -293,8 +296,7 @@ public interface ICeci {
      * For example, the test could first issue <code>CEOT TRANIDONLY</code>
      * @param channelName the CHANNELNAME
      * @param containerName the CONTAINER name
-     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ICicsTerminal, String)} or {@link #retrieveVariableHex(ICicsTerminal, String)}
-     * @param dataType BIT or CHAR. If null, DATATYPE will be omitted from the command. 
+     * @param variableName the CECI variable name. Data can be retrieved using {@link #retrieveVariableText(ICicsTerminal, String)}
      * @param intoCcsid provides a value for INTOCCSID. If null, will be omitted from the command.
      * @param intoCodepage provides a value for INTOCODEPAGE. If null, will be omitted from the command.
      * @return an {@link ICeciResponse} object containing the command's response.

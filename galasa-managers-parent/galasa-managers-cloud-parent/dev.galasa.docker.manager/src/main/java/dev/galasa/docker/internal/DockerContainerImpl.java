@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.docker.internal;
 
 import java.io.BufferedInputStream;
@@ -48,7 +50,7 @@ import dev.galasa.framework.spi.IFramework;
 /**
  * Docker Container implementation used to contain all container configurations.
  * 
- * @author James Davies
+ *   
  */
 public class DockerContainerImpl implements IDockerContainer {
 
@@ -415,7 +417,7 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Retrieves the first open socket `
      * 
-     * @param exposed port
+     * @param exposedPort
      * @return InetSocketAddress
      */
     @Override
@@ -430,7 +432,7 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Retrieves a random open socket
      * 
-     * @param exposed port
+     * @param exposedPort
      * @return InetSocketAddress
      */
     @Override
@@ -445,7 +447,7 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Submit exec commands to be executed on the docker container.
      * 
-     * @param String... commands
+     * @param command
      * @return IDockerExec
      */
     @Override
@@ -458,7 +460,7 @@ public class DockerContainerImpl implements IDockerContainer {
      * timeout.
      * 
      * @param timeout
-     * @param String... commands
+     * @param command
      * @return IDockerExec
      */
     @Override
@@ -641,7 +643,7 @@ public class DockerContainerImpl implements IDockerContainer {
     }
 
     /**
-     * Retrieves the docker running ID
+     * @return the docker running ID
      */
     public String getContainerId() {
         return containerID;
@@ -676,8 +678,8 @@ public class DockerContainerImpl implements IDockerContainer {
     /**
      * Allows a file to be stored on a running docker container
      * 
-     * @param path
-     * @param InputStream
+     * @param absolutePath
+     * @param file
      */
     @Override
     public void storeFile(String absolutePath, InputStream file) throws DockerManagerException {

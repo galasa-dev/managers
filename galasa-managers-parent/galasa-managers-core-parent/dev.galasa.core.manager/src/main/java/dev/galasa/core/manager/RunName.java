@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.core.manager;
 
 import static java.lang.annotation.ElementType.FIELD;
@@ -12,19 +14,13 @@ import java.lang.annotation.Target;
 import dev.galasa.framework.spi.ValidAnnotatedFields;
 
 /**
- * <p>
- * Fill this field with the name of the Test Run. Can be used for making
- * resource names unique to this run. The Test Run will be unique across all
- * Local and Automated runs that are in the system at that point.
- * </p>
+ * Fill this field with the name of the Test Run. 
+ * 
+ * Can be used for making resource names unique to this run. 
+ * The Test Run will be unique across all Local and Automated runs 
+ * that are in the system at that point.
  *
- * <p>
  * Will only populate public {@link java.lang.String} fields.
- * </p>
- *
- * @author Michael Baylis
- * @see {@link java.lang.String}
- *
  */
 @Retention(RUNTIME)
 @Target(FIELD)

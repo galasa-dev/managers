@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020-2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts.ceda.internal;
 
@@ -46,11 +46,11 @@ public class CedaImpl implements ICeda{
 		try {
 			if(resourceParameters==null){
 				terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
-						") GROUP(" + groupName + ") ").enter().waitForKeyboard();
+						") GROUP(" + groupName + ") ").enter().wfk();
 			}else{
 
 				terminal.type("CEDA DEFINE " + resourceType + "(" + resourceName +
-						") GROUP(" + groupName + ") " + resourceParameters).enter().waitForKeyboard();
+						") GROUP(" + groupName + ") " + resourceParameters).enter().wfk();
 			}
 		}catch(TimeoutException | KeyboardLockedException | NetworkException | TerminalInterruptedException | FieldNotFoundException e) {
 			throw new CedaException("Problem with starting the CEDA transaction", e);
@@ -59,7 +59,7 @@ public class CedaImpl implements ICeda{
 		try {
 			if(terminal.retrieveScreen().contains("DEFINE SUCCESSFUL")){
 				if(terminal.retrieveScreen().contains("MESSAGES:")) {
-					terminal.pf9();
+					terminal.pf9().wfk();
 				}
 			}
 		}catch (Exception e) {
@@ -67,10 +67,8 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -92,7 +90,7 @@ public class CedaImpl implements ICeda{
         }
 
 		try {
-			terminal.type("CEDA INSTALL GROUP(" + groupName + ")").enter().waitForKeyboard();
+			terminal.type("CEDA INSTALL GROUP(" + groupName + ")").enter().wfk();
 
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction");
@@ -100,10 +98,9 @@ public class CedaImpl implements ICeda{
 
 		try {
 			if(!terminal.retrieveScreen().contains("INSTALL SUCCESSFUL")) {
-				terminal.pf9();
-				terminal.pf3();
-				terminal.clear();
-				terminal.waitForKeyboard();
+				terminal.pf9().wfk();
+				terminal.pf3().wfk();
+				terminal.clear().wfk();
 				throw new CedaException("Errors detected whilst installing group");
 			}
 		}catch(Exception e) {
@@ -111,10 +108,8 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -140,7 +135,7 @@ public class CedaImpl implements ICeda{
 		try {
 
 			terminal.type("CEDA INSTALL " + resourceType + "(" + resourceName + ") GROUP(" +
-					cedaGroup + ")").enter().waitForKeyboard();
+					cedaGroup + ")").enter().wfk();
 
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction", e);
@@ -159,8 +154,7 @@ public class CedaImpl implements ICeda{
 				}
 
 				if(error) {
-					terminal.pf9();
-					terminal.waitForKeyboard();
+					terminal.pf9().wfk();
 					throw new CedaException("Errors detected whilst installing group");
 				}
 			}catch(Exception e) {
@@ -171,10 +165,8 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -196,17 +188,16 @@ public class CedaImpl implements ICeda{
         }
 
 		try {
-			terminal.type("CEDA DELETE GROUP(" + groupName + ") ALL").enter().waitForKeyboard();
+			terminal.type("CEDA DELETE GROUP(" + groupName + ") ALL").enter().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction");
 		}
 
 		try {
 			if(!terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
-				terminal.pf9();
-				terminal.pf3();
-				terminal.clear();
-				terminal.waitForKeyboard();
+				terminal.pf9().wfk();
+				terminal.pf3().wfk();
+				terminal.clear().wfk();
 
 				throw new CedaException("Errors detected whilst discarding group");
 			}
@@ -215,10 +206,8 @@ public class CedaImpl implements ICeda{
 		}
 
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -244,30 +233,27 @@ public class CedaImpl implements ICeda{
 
 		try {
 
-			terminal.waitForKeyboard();
+			terminal.wfk();
 			terminal.type("CEDA DELETE " + resourceType + "("
-					+ resourceName + ") GROUP(" + groupName + ")").enter();
-			terminal.waitForKeyboard();
+					+ resourceName + ") GROUP(" + groupName + ")").enter().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
 
 		try {
 			if(!terminal.retrieveScreen().contains("DELETE SUCCESSFUL")) {
-				terminal.pf9()
-				.pf3().clear()
-				.waitForKeyboard();
+				terminal.pf9().wfk();
+				terminal.pf3().wfk();
+        terminal.clear().wfk();
 				throw new CedaException("Errors detected whilst discarding group");
 			}
 		}catch(Exception e) {
-			throw new CedaException("Problem determinign the result from the CEDA command)", e);
+			throw new CedaException("Problem determining the result from the CEDA command)", e);
 
 		}
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		}catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}
@@ -291,9 +277,8 @@ public class CedaImpl implements ICeda{
 
 
 		try {
-			terminal.waitForKeyboard();
-			terminal.type("CEDA DISPLAY " + resourceType + "(" + resourceName + ") GROUP(" + groupName + ")").enter();
-			terminal.waitForKeyboard();
+			terminal.wfk();
+			terminal.type("CEDA DISPLAY " + resourceType + "(" + resourceName + ") GROUP(" + groupName + ")").enter().wfk();
 		} catch(Exception e) {
 			throw new CedaException("Problem with starting the CEDA transaction", e);
 		}
@@ -303,18 +288,18 @@ public class CedaImpl implements ICeda{
 			if (terminal.retrieveScreen().contains("RESULTS: 1 TO 1 OF 1"))	{
 				exists = true;
 			} else if (!terminal.retrieveScreen().contains("DISPLAY UNSUCCESSFUL")) {
-				terminal.pf9().pf3().clear().waitForKeyboard();
+				terminal.pf9().wfk();
+        terminal.pf3().wfk();
+        terminal.clear().wfk();
 				throw new CedaException("Errors detected whilst displaying resource");
 			}
 		} catch(Exception e) {
-			throw new CedaException("Problem determinign the result from the CEDA command)", e);
+			throw new CedaException("Problem determining the result from the CEDA command)", e);
 
 		}
 		try {
-			terminal.pf3();
-			terminal.waitForKeyboard();
-			terminal.clear();
-			terminal.waitForKeyboard();
+			terminal.pf3().wfk();
+			terminal.clear().wfk();
 		} catch(Exception e) {
 			throw new CedaException("Unable to return terminal back into reset state", e);
 		}

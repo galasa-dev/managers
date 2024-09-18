@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.ipnetwork;
 
@@ -10,8 +10,8 @@ public interface ICommandShell {
     public String issueCommand(String command) throws IpNetworkManagerException;
 
     /**
-     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, false,
-     * long)}
+     * Issue a command using SSH. Equivalent to {@link #issueCommand(String, boolean, long)}
+
      * 
      * @param command - command to issue
      * @param timeout - time (in milliseconds) to wait with no new output appearing
@@ -23,7 +23,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH. Equivalent to
-     * {@link #issueCommand(String, boolean, defaultTimeout)}
+     * {@link #issueCommand(String, boolean, long)}
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
@@ -58,10 +58,12 @@ public interface ICommandShell {
     public void setChangePromptCommand(String command);
 
     /**
-     * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, false, defaultTimeout)} - not valid for
+     * Issue a command using SSH shell. 
+     * 
+     * Equivalent to
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for
      * Rexec implementation - equivalent to
-     * {@link #issueCommand(String, boolean, long)} for Telnet implementation
+     * {@link #issueCommand(String, long)} for Telnet implementation
      * 
      * @param command - command to issue
      * @return the output of the command (stdout and stderr)
@@ -71,8 +73,8 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, false, long)} - not valid for Rexec
-     * implementation - equivalent to {@link #issueCommand(String, boolean, long)}
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for Rexec
+     * implementation - equivalent to {@link #issueCommand(String, long)}
      * for Telnet implementation
      * 
      * @param command - command to issue - if true will start a new
@@ -83,9 +85,9 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell. Equivalent to
-     * {@link #issueCommandToShell(String, boolean, defaultTimeout)} - not valid for
+     * {@link #issueCommandToShell(String, boolean, long)} - not valid for
      * Rexec implementation - equivalent to
-     * {@link #issueCommand(String, boolean, long)} for Telnet implementation
+     * {@link #issueCommand(String, long)} for Telnet implementation
      * 
      * @param command  - command to issue
      * @param newShell - if true will start a new
@@ -96,7 +98,7 @@ public interface ICommandShell {
 
     /**
      * Issue a command using SSH shell - not valid for Rexec implementation -
-     * equivalent to {@link #issueCommand(String, boolean, long)} for Telnet
+     * equivalent to {@link #issueCommand(String, long)} for Telnet
      * implementation
      * 
      * @param command  - command to issue

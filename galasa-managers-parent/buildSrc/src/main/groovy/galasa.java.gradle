@@ -58,13 +58,17 @@ repositories {
 }
 
 signing {
+    def signingKeyId = findProperty("signingKeyId")
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign publishing.publications
 }
 
 
 
 tasks.withType(Sign) {
-    onlyIf { isRelease.toBoolean() }
+    onlyIf { isMainOrRelease.toBoolean() }
 }
 
 publishing {
@@ -79,45 +83,15 @@ publishing {
                 licenses {
                     license {
                         name = 'Eclipse Public License - v 2.0'
-                        url = 'https://www.eclipse.org/legal/epl-2.0/t'
+                        url = 'https://www.eclipse.org/legal/epl-2.0'
                     }
                 }
                 developers {
                     developer {
-                        name = 'Michael Baylis'
-                        email = 'Michael.Baylis@uk.ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
-                    }
-                    developer {
-                        name = 'William Yates'
-                        email = 'wyates@uk.ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
-                    }
-                    developer {
-                        name = 'David Roberts'
-                        email = 'david.roberts@uk.ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
-                    }
-                    developer {
-                        name = 'James Davies'
-                        email = 'james.davies@ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
-                    }
-                    developer {
-                        name = 'Kees Jansen'
-                        email = 'kees.jansen@ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
-                    }
-                    developer {
-                        name = 'Jade Carino'
-                        email = 'jade.carino@ibm.com'
-                        organization = 'IBM'
-                        organizationUrl = 'https://www.ibm.com'
+                        name = 'Galasa Contributors'
+                        email = 'galasadelivery@ibm.com'
+                        organization = 'Linux Foundation'
+                        organizationUrl = 'https://github.com/galasa-dev'
                     }
                 }
                 scm {
@@ -138,8 +112,8 @@ publishing {
             
             if ("$targetMaven".startsWith('http')) {
                 credentials {
-                    username System.getenv('MAVENUSERNAME')
-                    password System.getenv('MAVENPASSWORD')
+                    username System.getenv("GITHUB_ACTOR")
+                    password System.getenv("GITHUB_TOKEN")
                 }
             }
         }

@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.selenium;
 
 import java.nio.file.Path;
@@ -20,7 +22,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 /**
  * A Options pass through interface for the Selenium Options object
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IFirefoxOptions {

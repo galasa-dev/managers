@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +37,7 @@ import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.SharedEnvironmentRunType;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerField;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
@@ -66,7 +69,7 @@ import dev.galasa.zos.spi.IZosManagerSpi;
 /**
  * The Galasa Ecosystem Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })
@@ -75,7 +78,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     public final static String               NAMESPACE = "galasaecosystem";
     private final Log                           logger = LogFactory.getLog(getClass());
     private IDynamicStatusStoreService          dss;
-    private final Gson                          gson = new Gson();
+    private final GalasaGson                          gson = new GalasaGson();
 
     private IArtifactManager                    artifactManager;
     private IHttpManagerSpi                     httpManager;
@@ -549,7 +552,7 @@ public class GalasaEcosystemManagerImpl extends AbstractManager implements ILogg
     }
 
     public Gson getGson() {
-        return this.gson;
+        return this.gson.getGson();
     }
 
     public IDynamicStatusStoreService getDss() {

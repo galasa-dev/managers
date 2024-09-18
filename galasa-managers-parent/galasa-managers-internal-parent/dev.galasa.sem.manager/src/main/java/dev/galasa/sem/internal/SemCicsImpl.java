@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.sem.internal;
 
 import java.time.Instant;
@@ -593,4 +595,5 @@ public class SemCicsImpl extends BaseCicsImpl {
 		// Perform a rebuild of the JCL
 		buildCicsJcl(jobs.get(0));
 	}
+
 }

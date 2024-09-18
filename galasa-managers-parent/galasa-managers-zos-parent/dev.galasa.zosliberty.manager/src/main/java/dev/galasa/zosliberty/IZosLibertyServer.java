@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosliberty;
 
@@ -374,11 +376,11 @@ public interface IZosLibertyServer {
     /**
      * Deploy an application to the Liberty server. This method copies the application archive file to the zOS UNIX file system and
      * creates an <code>application</code> element in the server.xml.
-     * @param testClass a {@link class} in the same bundle containing the application archive file, use <code>this.getClass()</code>
+     * @param testClass a class in the same bundle containing the application archive file, use <code>this.getClass()</code>
      * @param path the path in the bundle to the application archive file
      * @param targetLocation the location on the zOS UNIX file system to store the application archive file. If the value is null, 
      * <code>${shared.app.dir}/fileName</code> will be used
-     * @param type the application type {@see ApplicationType}
+     * @param type the application type {@link dev.galasa.zosliberty.IZosLibertyServer.ApplicationType}
      * @param name the name of the application
      * @param contextRoot the application context-root. Can be null
      * @throws ZosLibertyServerException
@@ -387,7 +389,7 @@ public interface IZosLibertyServer {
     
     /**
      * Deploy an application to the Liberty server dropins directory. This method copies the application archive file to the Liberty server dropins directory
-     * @param testClass a {@link class} in the same bundle containing the application archive file, use <code>this.getClass()</code>
+     * @param testClass a class in the same bundle containing the application archive file, use <code>this.getClass()</code>
      * @param path the path in the bundle to the application archive file
      * @throws ZosLibertyServerException
      */

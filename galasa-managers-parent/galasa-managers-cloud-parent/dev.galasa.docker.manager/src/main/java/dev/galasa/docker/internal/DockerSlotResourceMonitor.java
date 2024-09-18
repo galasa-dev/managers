@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.docker.internal;
 
@@ -19,7 +21,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Docker resource monitor
  * 
- * @author James Davies
+ *   
  */
 public class DockerSlotResourceMonitor implements Runnable {
     private final IFramework                            framework;

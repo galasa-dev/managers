@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosliberty;
 
@@ -70,7 +72,7 @@ public interface IZosLibertyServerXml {
     public void store() throws ZosLibertyServerException;
     
     /**
-     * Update the content of the {@link IZosLibertyServerXml) with the content of the server.xml file from the zOS UNIX file system 
+     * Update the content of the {@link IZosLibertyServerXml} with the content of the server.xml file from the zOS UNIX file system 
      * @throws ZosLibertyServerException
      */
     public void loadFromFileSystem() throws ZosLibertyServerException;
@@ -175,7 +177,7 @@ public interface IZosLibertyServerXml {
     /**
      * Remove all XML elements with specified name and id from the Liberty server.xml Document object
      * @param elementName the XML element name
-     * @param elementId the XML element id
+     * @param id the XML element id
      * @throws ZosLibertyServerException
      */
     public void removeElementsById(String elementName, String id) throws ZosLibertyServerException;

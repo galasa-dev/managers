@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.docker.internal;
 
 import java.time.Instant;
@@ -29,7 +31,7 @@ import dev.galasa.framework.spi.IFramework;
  * Docker Environment. Manages the flow of both docker containers and slots to a
  * specified docker engine
  * 
- * @author James Davies
+ *   
  */
 public class DockerEnvironment implements IDockerEnvironment {
     private IFramework framework;

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.selenium.internal;
 
@@ -24,7 +24,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Looks for slots allocated to non active tests.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class SeleniumSlotResourceMonitor implements Runnable {

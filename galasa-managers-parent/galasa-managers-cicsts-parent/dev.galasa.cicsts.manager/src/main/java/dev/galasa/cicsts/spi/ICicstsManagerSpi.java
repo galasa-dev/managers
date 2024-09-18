@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts.spi;
 
@@ -97,4 +99,6 @@ public interface ICicstsManagerSpi {
 	public Map<String, ICicsRegionProvisioned> getTaggedCicsRegions();
 
 	public ICicsRegion locateCicsRegion(String tag) throws CicstsManagerException;
+
+	public List<ICicsTerminal> getCicsTerminals();
 }

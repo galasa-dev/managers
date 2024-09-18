@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.common.screens;
 
@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Pojo to contain the onscreen contents. May contain nulls.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class FieldContents {

@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal.resourcemanagement;
 
 import java.util.HashSet;
@@ -21,7 +23,7 @@ import dev.galasa.galasaecosystem.internal.RunIdPrefixImpl;
 /**
  * Clean up the hanging runid prefixes 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunIdPrefixMonitor implements Runnable {

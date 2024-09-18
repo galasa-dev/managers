@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.core.manager.internal;
 
 import java.lang.annotation.Annotation;
@@ -16,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.annotations.Component;
 
 import dev.galasa.ICredentials;
+import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.ManagerException;
 import dev.galasa.Tags;
 import dev.galasa.TestAreas;
@@ -174,7 +177,7 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 					+ ",suffix=" 
 					+ testPropertyAnnotation.suffix()
 					+ ",infixes=" 
-					+ testPropertyAnnotation.infixes());
+					+ String.join(",",testPropertyAnnotation.infixes()));
 		}
 
 		return value;
@@ -221,6 +224,15 @@ public class CoreManagerImpl extends AbstractGherkinManager implements ICoreMana
 		} catch (CredentialsException e) {
 			throw new CoreManagerException("Unable to retrieve credentials for id " + credentialsId, e);
 		}
+	}
+	
+	@Override
+	public ICredentialsUsernamePassword getUsernamePassword(@NotNull String credentialsId) throws CoreManagerException {
+		ICredentials cred =getCredentials(credentialsId);
+		if(!(cred instanceof ICredentialsUsernamePassword)) {
+			throw new CoreManagerException("Unable to retrieve username/password credentials for id"+ credentialsId);
+		}
+		return (ICredentialsUsernamePassword) cred;
 	}
 
 	@Override

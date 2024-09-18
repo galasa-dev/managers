@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux.internal.shared;
 
@@ -76,7 +78,7 @@ public class LinuxSharedImage implements ILinuxProvisionedImage {
                 throw new LinuxManagerException("useradd of username " + this.username + " failed:-\n" + response);
             }
 
-            String tempPassword = "ThisIsTheFutureOfTesting";
+            String tempPassword = "ThisIsTheFutureOfTesting"; //Not a secret but this raises a vulnerability on server side runs. Issue has been raised to correct this //pragma: allowlist secret
             for(int i = 0; i < 4; i++) {
                 tempPassword = tempPassword + Integer.toString(this.random.nextInt(10));
             }

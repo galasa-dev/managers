@@ -1,10 +1,14 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270;
 
 import javax.validation.constraints.NotNull;
 
+import dev.galasa.zos3270.spi.Colour;
+import dev.galasa.zos3270.spi.Highlight;
 import dev.galasa.zos3270.spi.NetworkException;
 
 public interface ITerminal {
@@ -56,7 +60,7 @@ public interface ITerminal {
      * The returned boolean will depend on if the amount of occurrences is found.
      * 
      * @param text
-     * @param occurances
+     * @param occurrences
      * @return if the text was found
      */
     boolean searchText(String text, int occurrences);
@@ -200,6 +204,22 @@ public interface ITerminal {
 
     ITerminal reportScreenWithCursor();
 
+    /**
+     * Report to the log the current state of the terminal with optional extended datastream settings
+     * 
+     * @param printCursor - report cursor position
+     * @param printColour - report the colour
+     * @param printHighlight - report highlighting
+     * @param printIntensity - report intensity
+     * @param printProtected - report field protection
+     * @param printNumeric - report numeric restrictions
+     * @param printModified - report field modification
+     * @return the ITerminal for fluent API
+     * @throws Zos3270Exception 
+     */
+    ITerminal reportExtendedScreen(boolean printCursor, boolean printColour, boolean printHighlight,
+            boolean printIntensity, boolean printProtected, boolean printNumeric, boolean printModified) throws Zos3270Exception;
+    
     String retrieveScreen();
 
     /**
@@ -251,11 +271,46 @@ public interface ITerminal {
      * If there are not enough characters on the row to satisfy the length requirement,  the retrieve will wrap to the next 
      * row, unless it is the last row, in which case an exception will be thrown. 
      *
-     * @param length
      * @param length - The number of characters to extract
      * @return The contents extracted
      * @throws Zos3270Exception - If the length causes the extract to overflow the end of the screen buffer
      */
     String retrieveTextAtCursor(int length) throws Zos3270Exception;
     
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @return - if position is not in an extended field,  null us returned
+     */
+    Colour retrieveColourAtCursor();
+    
+    /**
+     * Return the colour of the character at the cursor position
+     * 
+     * @param row of the screen, index 1 based
+     * @param col of the screen, index 1 based
+     * @return - if position is not in an extended field,  null us returned
+     * @throws Zos3270Exception 
+     */
+    Colour retrieveColourAtPosition(int row, int col) throws Zos3270Exception;
+    
+    /**
+     * Return the highlighting of the character at the cursor position
+     * 
+     * @return - if position is not in an extended field,  null us returned
+     */
+    Highlight retrieveHighlightAtCursor();
+    
+    /**
+     * Return the highlighting of the character at the cursor position
+     * 
+     * @param row of the screen, index 1 based
+     * @param col of the screen, index 1 based
+     * @return - if position is not in an extended field,  null us returned
+     * @throws Zos3270Exception 
+     */
+    Highlight retrieveHighlightAtPosition(int row, int col) throws Zos3270Exception;
+    
+    
+
 }

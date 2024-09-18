@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.vtp.manager.internal;
 
@@ -89,8 +91,10 @@ public class VtpManagerImpl extends AbstractManager {
 		
 		boolean useAPI = VtpAPI.get();
 		if(useAPI) {
+			logger.info("VTP Manager will use the VTP API for recordings");
 			this.recorder = new VtpApiRecorderImp(recordingRegions, this.dumpDataSetHLQ, logger, this);
 		}else {
+			logger.info("VTP Manager will use the VTP txns for recordings");
 			this.recorder = new VtpTxnRecorderImpl(recordingRegions, this.dumpDataSetHLQ, logger, this);
 		}
 	}
@@ -273,7 +277,7 @@ public class VtpManagerImpl extends AbstractManager {
 	
 	public void copyDumpedPlaybackFile(IZosImage image, HashMap<String, Object> attrs) throws VtpManagerException {
 		try {
-			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("resources/jcl/dumpJCL", attrs).trim();
+			String jcl = artifactManager.getBundleResources(this.getClass()).retrieveSkeletonFileAsString("/jcl/dumpJCL", attrs).trim();
 			IZosBatchJob job = batchManager.getZosBatch(image).submitJob(jcl, null);
 			int rc = job.waitForJob();
 			if(rc > 4) {

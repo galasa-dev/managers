@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.java;
 
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * Used to annotate annotations that are to be used for Test Class fields. To be
  * populated by the Manager.
  *
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

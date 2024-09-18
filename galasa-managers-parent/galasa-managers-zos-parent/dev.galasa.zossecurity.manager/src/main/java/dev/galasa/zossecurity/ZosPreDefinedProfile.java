@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -16,7 +18,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * This can only be used with the v2 security manager
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)

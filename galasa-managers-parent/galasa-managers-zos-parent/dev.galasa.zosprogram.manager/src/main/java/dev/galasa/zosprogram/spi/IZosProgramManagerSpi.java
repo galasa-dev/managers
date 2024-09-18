@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosprogram.spi;
 
@@ -22,7 +22,7 @@ public interface IZosProgramManagerSpi {
      * Returns a new zOS Program
      * @param image The zOS Image
      * @param name The program name
-     * @param programSource The program source in the bundle
+     * @param source The program source in the bundle
      * @param language The programming language. See {@link ZosProgram.Language}
      * @param cics Is a CICS program.
      * @param loadlib The load module data set name

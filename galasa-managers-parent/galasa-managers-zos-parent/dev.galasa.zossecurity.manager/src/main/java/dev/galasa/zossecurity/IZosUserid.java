@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -8,7 +10,7 @@ import dev.galasa.zos.IZosImage;
 /**
  * Represents a pooled userid 
  * 
- * @author mikebyls
+ *  
  *
  */
 public interface IZosUserid {

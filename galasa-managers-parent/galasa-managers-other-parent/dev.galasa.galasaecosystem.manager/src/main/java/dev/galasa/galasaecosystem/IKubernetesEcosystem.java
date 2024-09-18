@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.galasaecosystem;
 
@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
  * 
  * Provides access to the ecosystem endpoints and provides the mean to manipulate the ecosystem
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IKubernetesEcosystem extends IGenericEcosystem {

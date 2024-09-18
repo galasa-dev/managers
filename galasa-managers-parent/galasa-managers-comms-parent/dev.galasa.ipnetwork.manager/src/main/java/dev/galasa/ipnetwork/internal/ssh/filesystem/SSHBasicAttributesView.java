@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -13,7 +13,7 @@ import java.nio.file.attribute.FileTime;
 /**
  * For use with the dummy RAS file system
  *
- * @author Michael Baylis
+ *  
  *
  */
 public class SSHBasicAttributesView implements BasicFileAttributeView {

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.cicsts.cicsresource;
 
@@ -84,12 +86,14 @@ public interface ICicsBundle {
 	
 	/**
 	 * Check if the CICS BUNDLE resource definition exist via CEDA DISPLAY  
+	 * @return true if the resource definition exists, false otherwise
 	 * @throws CicsBundleResourceException
 	 */
 	public boolean resourceDefined() throws CicsBundleResourceException;	
 	
 	/**
 	 * Check if the CICS BUNDLE resource has been installed via CEMT INQUIRE  
+	 * @return true if it has been installed, false otherwise.
 	 * @throws CicsBundleResourceException
 	 */
 	public boolean resourceInstalled() throws CicsBundleResourceException;
@@ -140,7 +144,7 @@ public interface ICicsBundle {
 	 * Wait for the CICS BUNDLE resource to be disabled with specified timeout. Does NOT issue the disable command
 	 * @param timeout timeout in seconds
 	 * @return true if disabled, false if not disabled
-	 * @throws CicsJvmserverResourceException
+	 * @throws CicsBundleResourceException
 	 */
 	public boolean waitForDisable(int timeout) throws CicsBundleResourceException;
 

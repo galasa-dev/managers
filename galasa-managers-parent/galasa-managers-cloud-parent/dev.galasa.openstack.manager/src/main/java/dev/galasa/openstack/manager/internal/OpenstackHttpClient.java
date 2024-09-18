@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -26,13 +26,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import dev.galasa.ICredentials;
 import dev.galasa.ICredentialsUsernamePassword;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.openstack.manager.OpenstackManagerException;
 import dev.galasa.openstack.manager.internal.json.Api;
 import dev.galasa.openstack.manager.internal.json.Auth;
@@ -78,7 +76,7 @@ public class OpenstackHttpClient {
     private String                    openstackComputeUri;
     private String                    openstackNetworkUri;
 
-    private Gson                      gson   = new GsonBuilder().setPrettyPrinting().create();
+    private GalasaGson                      gson   = new GalasaGson();
 
     protected OpenstackHttpClient(IFramework framework) throws ConfigurationPropertyStoreException {
         this.framework = framework;
@@ -241,7 +239,7 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            // *** Retrieve a list of the networks available and select one
+            // *** Retrieve a list of the servers available and select one
 
             HttpGet get = new HttpGet(this.openstackComputeUri + "/servers");
             get.addHeader(this.openstackToken.getHeader());
@@ -540,9 +538,10 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            // *** Retrieve a list of the images
-
-            HttpGet get = new HttpGet(this.openstackImageUri + "/v2.5/images");
+            /* Attempt to retrieve the image ID we want from Openstack using the image name */
+            String uri = this.openstackImageUri + "/v2/images?name=" + image;
+            logger.trace("Attempting to get the image " + image + " from " + uri);
+            HttpGet get = new HttpGet(uri);
             get.addHeader(this.openstackToken.getHeader());
 
             try (CloseableHttpResponse response = httpClient.execute(get)) {
@@ -553,17 +552,20 @@ public class OpenstackHttpClient {
                     throw new OpenstackManagerException("OpenStack list image failed - " + status);
                 }
 
+                /* Even though we are searching by image name, the JSON returned is still an array of images */
                 Images images = gson.fromJson(entity, Images.class);
-                if (images != null && images.images != null) {
-                    for (Image i : images.images) {
-                        if (i.name != null) {
+                if (images != null & images.images != null) {
+                    for (Image i :images.images){
+                        if (i.name != null && i.name != ""){
                             if (image.equals(i.name)) {
+                                logger.trace("Image " + image + " found");
                                 return i.id;
                             }
                         }
                     }
-                }
+                } 
             }
+            logger.trace("Image " + image + " wasn't found in Openstack");
             return null;
         } catch (OpenstackManagerException e) {
             throw e;
@@ -576,7 +578,7 @@ public class OpenstackHttpClient {
         try {
             checkToken();
 
-            // *** Retrieve a list of the images
+            // *** Retrieve a list of the flavours
 
             HttpGet get = new HttpGet(this.openstackComputeUri + "/flavors");
             get.addHeader(this.openstackToken.getHeader());
@@ -586,7 +588,7 @@ public class OpenstackHttpClient {
                 String entity = EntityUtils.toString(response.getEntity());
 
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
-                    throw new OpenstackManagerException("OpenStack list image failed - " + status);
+                    throw new OpenstackManagerException("OpenStack list flavour failed - " + status);
                 }
 
                 Flavors flavours = gson.fromJson(entity, Flavors.class);
@@ -631,7 +633,7 @@ public class OpenstackHttpClient {
                 String entity = EntityUtils.toString(response.getEntity());
 
                 if (status.getStatusCode() != HttpStatus.SC_CREATED) {
-                    throw new OpenstackManagerException("OpenStack list image failed - " + status);
+                    throw new OpenstackManagerException("OpenStack create floating ip failed - " + status);
                 }
 
                 FloatingipRequestResponse fipResponse = this.gson.fromJson(entity, FloatingipRequestResponse.class);
@@ -648,6 +650,7 @@ public class OpenstackHttpClient {
     }
 
     public Network findExternalNetwork(String externalNetwork) throws OpenstackManagerException {
+
         try {
             checkToken();
 
@@ -669,10 +672,6 @@ public class OpenstackHttpClient {
                     for (Network network : networks.networks) {
                         if (externalNetwork != null && externalNetwork.equals(network.name)) {
                             return network;
-                        } else {
-                            if (network.route_external) {
-                                return network;
-                            }
                         }
                     }
                 }
@@ -682,7 +681,7 @@ public class OpenstackHttpClient {
         } catch (OpenstackManagerException e) {
             throw e;
         } catch (Exception e) {
-            throw new OpenstackManagerException("Unable to list floating ips ", e);
+            throw new OpenstackManagerException("Unable to list networks ", e);
         }
     }
 

@@ -1,9 +1,11 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.spi;
+
+import java.nio.charset.Charset;
 
 import org.apache.commons.codec.binary.Hex;
 
@@ -35,7 +37,7 @@ public class BufferGraphicsEscape extends BufferChar {
     }
 
     @Override
-    public byte getFieldEbcdic() {
+    public byte getFieldEbcdic(Charset codePage) {
         return this.data;
     }
 

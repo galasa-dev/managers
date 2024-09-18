@@ -1,5 +1,7 @@
 /*
- * Copyright contributors to the Galasa project 
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.galasaecosystem.internal;
 
@@ -33,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -47,7 +48,7 @@ import dev.galasa.framework.spi.IDynamicStatusStoreService;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IRun;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
-import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.IKubernetesEcosystem;
@@ -76,7 +77,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 /**
  * Deploy the Ecsosystem into a Kubernetes Namespace
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IKubernetesEcosystem {
@@ -89,7 +90,7 @@ public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IK
 
     private final Yaml                       yaml = new Yaml();
 
-    private final Gson                       gson = GalasaGsonBuilder.build();
+    private final GalasaGson                 gson = new GalasaGson();
 
     private String                           dockerVersion;
     private String                           dockerRegistry;

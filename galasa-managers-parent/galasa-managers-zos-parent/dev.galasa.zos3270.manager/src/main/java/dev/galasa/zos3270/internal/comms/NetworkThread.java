@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.comms;
 
@@ -28,6 +30,7 @@ import dev.galasa.zos3270.internal.datastream.OrderEraseUnprotectedToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderFormFeed;
 import dev.galasa.zos3270.internal.datastream.OrderGraphicsEscape;
 import dev.galasa.zos3270.internal.datastream.OrderInsertCursor;
+import dev.galasa.zos3270.internal.datastream.OrderModifyField;
 import dev.galasa.zos3270.internal.datastream.OrderNewLine;
 import dev.galasa.zos3270.internal.datastream.OrderRepeatToAddress;
 import dev.galasa.zos3270.internal.datastream.OrderSetAttribute;
@@ -194,10 +197,20 @@ public class NetworkThread extends Thread {
             if (tn3270eHeader == DT_BIND_IMAGE) {
                 logger.trace("BIND_IMAGE received");
                 return;
-            } else if (tn3270eHeader == DT_UNBIND) {
+            }
+            if (tn3270eHeader == DT_UNBIND) {
                 logger.trace("UNBIND_IMAGE received");
                 return;
-            } else if (tn3270eHeader != 0) {
+            }
+
+            if (tn3270eHeader == DT_SSCP_LU_DATA) {
+                logger.trace("SSCP_LU_DATA received");
+                logger.trace("Received message header: " + reportCommandSoFar());
+                logger.trace("Received message buffer: " + Hex.encodeHexString(buffer));
+                return;
+            }
+
+            if (tn3270eHeader != DT_3270_DATA) {
                 throw new NetworkException("Was expecting a TN3270E datastream header of zeros - " + reportCommandSoFar());
             }
 
@@ -205,7 +218,6 @@ public class NetworkThread extends Thread {
 
             Inbound3270Message inbound3270Message = process3270Data(buffer);
             this.screen.processInboundMessage(inbound3270Message);
-            return;
         }
     }
 
@@ -836,13 +848,13 @@ public class NetworkThread extends Thread {
 
         AbstractCommandCode commandCode = AbstractCommandCode.getCommandCode(buffer.get());
         if (commandCode instanceof CommandWriteStructured) {
-            return processStructuredFields((CommandWriteStructured) commandCode, buffer);
+            return processStructuredFields((CommandWriteStructured) commandCode, buffer, screen.getCodePage());
         } else {
-            return process3270Datastream(commandCode, buffer);
+            return process3270Datastream(commandCode, buffer, screen.getCodePage());
         }
     }
 
-    public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer)
+    public static Inbound3270Message process3270Datastream(AbstractCommandCode commandCode, ByteBuffer buffer, Charset codePage)
             throws DatastreamException {
 
         if (!buffer.hasRemaining()) {
@@ -851,12 +863,12 @@ public class NetworkThread extends Thread {
 
         WriteControlCharacter writeControlCharacter = new WriteControlCharacter(buffer.get());
 
-        List<AbstractOrder> orders = processOrders(buffer);
+        List<AbstractOrder> orders = processOrders(buffer, codePage);
 
         return new Inbound3270Message(commandCode, writeControlCharacter, orders);
     }
 
-    public static List<AbstractOrder> processOrders(ByteBuffer buffer) throws DatastreamException {
+    public static List<AbstractOrder> processOrders(ByteBuffer buffer, Charset codePage) throws DatastreamException {
         OrderText orderText = null;
 
         ArrayList<AbstractOrder> orders = new ArrayList<>();
@@ -872,7 +884,7 @@ public class NetworkThread extends Thread {
                         order = new OrderSetBufferAddress(buffer);
                         break;
                     case OrderRepeatToAddress.ID:
-                        order = new OrderRepeatToAddress(buffer);
+                        order = new OrderRepeatToAddress(buffer, codePage);
                         break;
                     case OrderStartField.ID:
                         order = new OrderStartField(buffer);
@@ -882,6 +894,9 @@ public class NetworkThread extends Thread {
                         break;
                     case OrderSetAttribute.ID:
                         order = new OrderSetAttribute(buffer);
+                        break;
+                    case OrderModifyField.ID:
+                        order = new OrderModifyField(buffer);
                         break;
                     case OrderInsertCursor.ID:
                         order = new OrderInsertCursor();
@@ -907,12 +922,12 @@ public class NetworkThread extends Thread {
                     default:
                         String byteHex = Hex.encodeHexString(new byte[] { orderByte });
                         logger.trace("Invalid byte detected in datastream, unrecognised byte order or text byte - 0x" + byteHex);
-                        order = new OrderText(" ");
+                        order = new OrderText(" ", codePage);
                 }
                 orders.add(order);
             } else {
                 if (orderText == null) {
-                    orderText = new OrderText();
+                    orderText = new OrderText(codePage);
                     orders.add(orderText);
                 }
                 orderText.append(orderByte);
@@ -921,7 +936,7 @@ public class NetworkThread extends Thread {
         return orders;
     }
 
-    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer)
+    public static Inbound3270Message processStructuredFields(CommandWriteStructured commandCode, ByteBuffer buffer, Charset codePage)
             throws NetworkException {
         ArrayList<StructuredField> structuredFields = new ArrayList<>();
 
@@ -937,7 +952,7 @@ public class NetworkThread extends Thread {
             byte[] sfData = new byte[length - 2];
             buffer.get(sfData);
 
-            structuredFields.add(StructuredField.getStructuredField(sfData));
+            structuredFields.add(StructuredField.getStructuredField(sfData, codePage));
         }
 
         return new Inbound3270Message(commandCode, structuredFields);

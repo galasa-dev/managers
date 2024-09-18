@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosliberty.angel;
 
@@ -20,10 +22,12 @@ import dev.galasa.zosliberty.angel.internal.ZosLibertyAngelField;
  * zOS Liberty Angel instance.
  * 
  * @galasa.examples 
- * @galasa.examples {@literal @}ZosImage(imageTag="A")<br> 
+ * <code>
+ * {@literal @}ZosImage(imageTag="A")<br> 
  * public IZosImage zosImageA;<br>
  * {@literal @}ZosLibertyAngel(imageTag="A", name="ANGELA")<br>
- * public IZosLibertyAngel zosLibertyAngel;<br></code>
+ * public IZosLibertyAngel zosLibertyAngel;<br>
+ * </code>
  * 
  * @galasa.extra
  * The <code>IZosLibertyAngel</code> interface has a number of methods to manage a zOS Liberty Angel
@@ -36,12 +40,12 @@ import dev.galasa.zosliberty.angel.internal.ZosLibertyAngelField;
 public @interface ZosLibertyAngel {
 	
     /**
-     * The <code>imageTag</code> is used to identify the zOS image
+     * @return The <code>imageTag</code> is used to identify the zOS image
      */
     String imageTag() default "primary";
     
     /**
-     * The Liberty Named Angel name. If null, a name will be generated
+     * @return The Liberty Named Angel name. If null, a name will be generated
      */
     String name() default "";
 }

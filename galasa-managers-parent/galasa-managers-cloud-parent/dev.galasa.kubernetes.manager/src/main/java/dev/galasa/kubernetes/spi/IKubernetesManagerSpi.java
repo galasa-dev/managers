@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.kubernetes.spi;
 
@@ -13,7 +13,7 @@ import dev.galasa.kubernetes.IKubernetesNamespace;
  * Provides the SPI for the Kubernetes Manager for Manager to Manager communication.
  * Should not be used by Test code
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IKubernetesManagerSpi {

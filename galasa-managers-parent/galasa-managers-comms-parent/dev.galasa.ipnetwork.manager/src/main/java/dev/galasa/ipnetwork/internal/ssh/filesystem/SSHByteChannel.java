@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2020,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.ipnetwork.internal.ssh.filesystem;
 
@@ -25,7 +25,7 @@ import dev.galasa.ipnetwork.SSHException;
 /**
  * Dummy Byte Channel for a null Result Archive Store
  *
- * @author Michael Baylis
+ *  
  *
  */
 public class SSHByteChannel implements SeekableByteChannel {

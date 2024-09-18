@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosliberty;
 
@@ -135,7 +137,7 @@ public interface IZosLibertyServerLog {
      * <li>the failText is found;</li>
      * <li>the specified timeout is reached.</li>
      * </ul>
-     * @param searchString the text to search
+     * @param searchText the text to search
      * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException
@@ -149,8 +151,8 @@ public interface IZosLibertyServerLog {
      * <li>the failText is found;</li>
      * <li>the specified timeout is reached.</li>
      * </ul>
-     * @param searchString the text to search
-     * @param failString the failure text to search
+     * @param searchText the text to search
+     * @param failText the failure text to search
      * @param timeout timeout value in seconds
      * @return the string found or null
      * @throws ZosLibertyServerException

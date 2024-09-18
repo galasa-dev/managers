@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.http;
 
@@ -24,7 +24,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -32,12 +31,13 @@ import com.google.gson.JsonSyntaxException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 
+import dev.galasa.framework.spi.utils.GalasaGson;
 /**
  * Parametrisable representation of a response to an HTTP request. The parameter
  * describes the content type of the response. Use the static methods to create
  * instances from an {@link HttpResponse}.
  * 
- * @author James Bartlett
+ *  
  *
  * @param <T> Class describing the content type of the response
  */
@@ -240,11 +240,11 @@ public class HttpClientResponse<T> {
     }
 
     /**
-     * Create an {@link HttpClientResponse} with a {@link JSONObject} content type
+     * Create an {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * from an {@link HttpResponse}.
      * 
      * @param httpResponse
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse)
@@ -253,14 +253,14 @@ public class HttpClientResponse<T> {
     }
 
     /**
-     * Create an {@link HttpClientResponse} with a {@link JSONObject} content type
+     * Create an {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * from an {@link HttpResponse}. If contentOnBadResponse is true, an attempt
      * will be made to retrieve the content even on a non 200 status code, otherwise
      * the content will be null in such an instance.
      * 
      * @param httpResponse
      * @param contentOnBadResponse
-     * @return - {@link HttpClientResponse} with a {@link JSONObject} content type
+     * @return - {@link HttpClientResponse} with a com.google.gson.JsonObject content type
      * @throws HttpClientException
      */
     public static HttpClientResponse<JsonObject> jsonResponse(CloseableHttpResponse httpResponse,
@@ -274,17 +274,21 @@ public class HttpClientResponse<T> {
                 if (response.getStatusCode() == HttpStatus.SC_OK || contentOnBadResponse) {
                     String sResponse = EntityUtils.toString(httpResponse.getEntity());
                     
-//                    JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-                    JsonElement jsonElement = null;
-                    try{
-                        jsonElement = new Gson().fromJson(sResponse, JsonElement.class);
-                    }catch(JsonSyntaxException jse){
-                        System.err.println("Unable to parse JSON from the following: " + sResponse);
-                        throw jse;
-                    }
-                    if (jsonElement != null) {
-                        JsonObject json = jsonElement.getAsJsonObject();
-                        response.setContent(json);
+                    if (sResponse.trim().startsWith("{")) {
+//                      JsonReader reader = new JsonReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+                        JsonElement jsonElement = null;
+                        try{
+                            jsonElement = new GalasaGson().fromJson(sResponse, JsonElement.class);
+                        }catch(JsonSyntaxException jse){
+                            System.err.println("Unable to parse JSON from the following: " + sResponse);
+                            throw jse;
+                        }
+                        if (jsonElement != null) {
+                            JsonObject json = jsonElement.getAsJsonObject();
+                            response.setContent(json);
+                        }
+                    } else {
+                      System.err.println("Did not attempt to parse JSON from the following: " + sResponse);
                     }
                 } else {
                     EntityUtils.consume(httpResponse.getEntity());

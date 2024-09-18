@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.zos.spi;
 
 import java.nio.file.Path;
@@ -44,7 +46,7 @@ public interface IZosManagerSpi extends IZosManager {
 
     /**
      * Returns a zOS Image for the specified image ID
-     * @param image the ID of the image
+     * @param imageId the ID of the image
      * @return the image, never null
      * @throws ZosManagerException
      */
@@ -53,7 +55,7 @@ public interface IZosManagerSpi extends IZosManager {
 
     /**
      * Returns a zOS Image for the specified image that may not have been provisioned so far
-     * @param image the ID of the image
+     * @param imageId the ID of the image
      * @return the image, never null
      * @throws ZosManagerException if there is no image defined
      */
@@ -62,7 +64,7 @@ public interface IZosManagerSpi extends IZosManager {
 
     /**
      * Returns the data set HLQ(s) for temporary data sets for the specified image
-     * @param the image
+     * @param image
      * @return the image, never null
      * @throws ZosManagerException
      */
@@ -71,7 +73,7 @@ public interface IZosManagerSpi extends IZosManager {
 
     /**
      * Returns the zOS UNIX path prefix for temporary file for the specified image
-     * @param the image
+     * @param image
      * @return the image, never null
      * @throws ZosManagerException
      */
@@ -112,7 +114,7 @@ public interface IZosManagerSpi extends IZosManager {
 
 	/**
 	 * Provides other managers a {@link IZosBatchJobname} with a prefix defined by the zOS Batch {@code zosbatch.jobname.[imageid].prefix} property
-	 * @param imageId
+	 * @param image
 	 * @return
 	 * @throws ZosBatchException
 	 */
@@ -160,7 +162,7 @@ public interface IZosManagerSpi extends IZosManager {
 
 	/**
 	 * Store an artifact in the results archive on behalf of another manager
-	 * @param archivePath
+	 * @param artifactPath
 	 * @param content
 	 * @param type
 	 */

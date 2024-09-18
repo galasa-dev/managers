@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosmf;
 
@@ -22,14 +22,7 @@ import dev.galasa.zos.IZosImage;
 public interface IZosmf {
     
     /**
-     * Enumeration of zOSMF request types:
-     * <li>{@link #POST}</li>
-     * <li>{@link #POST_JSON}</li>
-     * <li>{@link #GET}</li>
-     * <li>{@link #PUT}</li>
-     * <li>{@link #PUT_TEXT}</li>
-     * <li>{@link #PUT_JSON}</li>
-     * <li>{@link #DELETE}</li>
+     * Enumeration of zOSMF request types
      */
     public enum ZosmfRequestType {
         /**
@@ -67,15 +60,7 @@ public interface IZosmf {
     }
     
     /**
-     * Enumeration of zOSMF Custom HTTP headers:
-     * <li>{@link #X_IBM_ATTRIBUTES}</li>
-     * <li>{@link #X_IBM_DATA_TYPE}</li>
-     * <li>{@link #X_IBM_JOB_MODIFY_VERSION}</li>
-     * <li>{@link #X_IBM_LSTAT}</li>
-     * <li>{@link #X_IBM_MAX_ITEMS}</li>
-     * <li>{@link #X_IBM_OPTION}</li>
-     * <li>{@link #X_IBM_REQUESTED_METHOD}</li>
-     *
+     * Enumeration of zOSMF Custom HTTP headers
      */
     public enum ZosmfCustomHeaders {
         /**
@@ -149,7 +134,7 @@ public interface IZosmf {
      * Issue an HTTP PUT request to the zOSMF server with no request body
      * 
      * @param path identifies the zOSMF REST API
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the zOSMF server response
      * @throws ZosmfException
@@ -161,7 +146,7 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param requestBody the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the zOSMF server response
      * @throws ZosmfException
      */
@@ -172,7 +157,7 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param requestBody the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the zOSMF server response
      * @throws ZosmfException
      */
@@ -183,7 +168,7 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param body the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the zOSMF server response
      * @throws ZosmfException
      */
@@ -194,7 +179,7 @@ public interface IZosmf {
      * 
      * @param path identifies the zOSMF REST API
      * @param body the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the zOSMF server response
      * @throws ZosmfException
      */
@@ -204,7 +189,7 @@ public interface IZosmf {
      * Issue an HTTP DELETE request to the zOSMF server with no request body
      * 
      * @param path identifies the zOSMF REST API
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the zOSMF server response
      * @throws ZosmfException
      */

@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.core.manager.internal;
 
 import java.lang.reflect.Field;
@@ -28,7 +30,7 @@ import dev.galasa.framework.spi.ResourceUnavailableException;
  * Generate Resource Strings using random letters
  * 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class ResourceStringGenerator {

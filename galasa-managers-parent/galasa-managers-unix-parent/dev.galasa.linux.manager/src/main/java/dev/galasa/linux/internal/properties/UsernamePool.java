@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux.internal.properties;
 
@@ -28,7 +30,7 @@ import dev.galasa.linux.LinuxManagerException;
  * default value is galasa{0-9}{0-9}
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class UsernamePool extends CpsProperties {

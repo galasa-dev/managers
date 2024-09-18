@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.docker.internal;
 
@@ -58,6 +60,8 @@ public class DockerEngineImpl implements IDockerEngine {
 	 * 
 	 * @param framework
 	 * @param dockerManager
+	 * @param dockerEngineTag
+	 * @param dss
 	 * @throws DockerProvisionException
 	 */
 	public DockerEngineImpl(IFramework framework, DockerManagerImpl dockerManager, String dockerEngineTag,
@@ -299,7 +303,7 @@ public class DockerEngineImpl implements IDockerEngine {
 	/**
 	 * Creates a container from a image name
 	 * 
-	 * @param containerName
+	 * @param imageName
 	 * @param imageData
 	 * @return JsonObject
 	 * @throws DockerManagerException

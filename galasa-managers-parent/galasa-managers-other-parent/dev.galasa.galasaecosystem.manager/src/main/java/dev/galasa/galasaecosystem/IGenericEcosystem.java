@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.galasaecosystem;
 
@@ -16,7 +18,7 @@ import dev.galasa.zos.IZosImage;
  * 
  * Provides a means to manipulate the ecosystem
  *  
- * @author Michael Baylis
+ *  
  *
  */
 public interface IGenericEcosystem {
@@ -32,7 +34,6 @@ public interface IGenericEcosystem {
      * Retrieve a CPS property from the host ecosystem
      * 
      * @param namespace The namespace of the CPS
-     * @param property The property to retrieve
      * @return the value of the property or null if not found
      * @throws GalasaEcosystemManagerException if there is a problem accessing the CPS
      */

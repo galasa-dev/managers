@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2;
 
@@ -11,7 +13,7 @@ import java.sql.Connection;
  * 
  * This connection must be established to connected a IDb2Schema to this database.
  * 
- * @author jamesdavies
+ *  
  *
  */
 public interface IDb2Instance {

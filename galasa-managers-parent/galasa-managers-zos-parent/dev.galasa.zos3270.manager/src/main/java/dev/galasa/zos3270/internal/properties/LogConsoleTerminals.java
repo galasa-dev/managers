@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.properties;
 
@@ -20,7 +20,7 @@ import dev.galasa.zos3270.Zos3270ManagerException;
  * default is TRUE
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class LogConsoleTerminals extends CpsProperties {

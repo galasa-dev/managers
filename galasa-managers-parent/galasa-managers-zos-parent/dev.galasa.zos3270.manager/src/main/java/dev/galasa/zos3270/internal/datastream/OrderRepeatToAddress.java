@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.datastream;
 
@@ -12,7 +12,7 @@ import dev.galasa.zos3270.spi.DatastreamException;
 
 public class OrderRepeatToAddress extends AbstractOrder {
 
-    private static final Charset ebcdic = Charset.forName("Cp037");
+    private final Charset ebcdic;
 
     public static final byte     ID     = 0x3c;
 
@@ -20,7 +20,8 @@ public class OrderRepeatToAddress extends AbstractOrder {
 
     private final char           repeatChar;
 
-    public OrderRepeatToAddress(ByteBuffer buffer) throws DatastreamException {
+    public OrderRepeatToAddress(ByteBuffer buffer, Charset codePage) throws DatastreamException {
+        this.ebcdic = codePage;
         this.bufferAddress = new BufferAddress(buffer);
 
         byte[] charByte = new byte[] { buffer.get() };
@@ -31,7 +32,8 @@ public class OrderRepeatToAddress extends AbstractOrder {
         repeatChar = ebcdic.decode(ByteBuffer.wrap(charByte)).array()[0];
     }
 
-    public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress) {
+    public OrderRepeatToAddress(char repeatChar, BufferAddress bufferAddress, Charset codePage) {
+        this.ebcdic = codePage;
         this.bufferAddress = bufferAddress;
         this.repeatChar = repeatChar;
     }

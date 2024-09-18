@@ -1,3 +1,8 @@
+/*
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.http.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -158,7 +163,7 @@ public class HttpManagerIVT {
     	assertThat(response.getContent().length).isEqualTo(8);
     	assertThat(response.getHeader("Content-Type")).isEqualTo("application/octet-stream");
     }
-
+    
     @Test
     public void downloadFileTest()
             throws Exception {

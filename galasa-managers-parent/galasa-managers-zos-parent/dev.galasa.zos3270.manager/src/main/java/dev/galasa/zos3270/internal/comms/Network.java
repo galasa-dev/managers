@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zos3270.internal.comms;
 
@@ -20,6 +20,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import dev.galasa.common.SSLTLSContextNameSelector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +49,8 @@ public class Network {
     private Exception           errorException;
 
     private boolean             basicTelnet = false;
+
+    private SSLTLSContextNameSelector nameSelector = new SSLTLSContextNameSelector();
 
     public Network(String host, int port, String terminalId) {
         this(host, port, false, terminalId);
@@ -113,13 +117,8 @@ public class Network {
         if (!ssl) {
             newSocket = new Socket(this.host, this.port);
         } else {
-            boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
-            SSLContext sslContext;
-            if (ibmJdk) {
-                sslContext = SSLContext.getInstance("SSL_TLSv2");
-            } else {
-                sslContext = SSLContext.getInstance("TLSv1.2");
-            }
+            String contextName = nameSelector.getSelectedSSLContextName();
+            SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
             newSocket = sslContext.getSocketFactory().createSocket(this.host, this.port);
             ((SSLSocket) newSocket).startHandshake();
@@ -153,13 +152,8 @@ public class Network {
 
     public Socket startTls() throws NetworkException {
         try {
-            boolean ibmJdk = System.getProperty("java.vendor").contains("IBM");
-            SSLContext sslContext;
-            if (ibmJdk) {
-                sslContext = SSLContext.getInstance("SSL_TLSv2");
-            } else {
-                sslContext = SSLContext.getInstance("TLSv1.2");
-            }
+            String contextName = nameSelector.getSelectedSSLContextName();
+            SSLContext sslContext = SSLContext.getInstance(contextName);
             sslContext.init(null, new TrustManager[] { new TrustAllCerts() }, new java.security.SecureRandom());
             Socket tlsSocket = sslContext.getSocketFactory().createSocket(socket, this.host, this.port, false);
             ((SSLSocket) tlsSocket).startHandshake();

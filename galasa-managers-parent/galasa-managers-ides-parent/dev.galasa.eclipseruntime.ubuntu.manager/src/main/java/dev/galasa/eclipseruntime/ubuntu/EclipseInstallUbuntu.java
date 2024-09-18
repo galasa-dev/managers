@@ -1,7 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
-
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.eclipseruntime.ubuntu;
 
 import java.lang.annotation.Retention;
@@ -22,7 +23,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link IEclipseInstallUbuntu} field
  * </p>
  * 
- * @author Reece Williams
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

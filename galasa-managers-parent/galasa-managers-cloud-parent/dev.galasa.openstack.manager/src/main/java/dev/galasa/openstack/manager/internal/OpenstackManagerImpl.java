@@ -1,5 +1,7 @@
 /*
- * Copyright contributors to the Galasa project 
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.openstack.manager.internal;
 
@@ -18,7 +20,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import dev.galasa.ManagerException;
 import dev.galasa.framework.spi.AbstractManager;
@@ -35,6 +36,7 @@ import dev.galasa.framework.spi.IResourcePoolingService;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
 import dev.galasa.framework.spi.ResourceUnavailableException;
 import dev.galasa.framework.spi.language.GalasaTest;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.ipnetwork.spi.IIpNetworkManagerSpi;
 import dev.galasa.linux.LinuxManagerException;
 import dev.galasa.linux.OperatingSystem;
@@ -71,7 +73,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     private CloseableHttpClient                      httpClient;
     private OpenstackHttpClient                      openstackHttpClient;
 
-    private Gson                                     gson      = new GsonBuilder().setPrettyPrinting().create();
+    private GalasaGson                               gson      = new GalasaGson();
 
     /*
      * (non-Javadoc)
@@ -157,16 +159,18 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
         // check we are enabled
         if (!OpenStackEnabled.get()) {
+            logger.trace("OpenStack not enabled");
             return null;
         }
 
         // *** Check that we can connect to openstack before we attempt to provision, if
         // we can't end gracefully and give someone else a chance
         if (!openstackHttpClient.connectToOpenstack()) {
+            logger.trace("Unable to connect to OpenStack");
             return null;
         }
 
-        // *** Locate the possible images that are available for selection
+        logger.trace("Locating possible images that are available for selection");
         try {
             List<String> possibleImages = LinuxImages.get(operatingSystem, null);
 
@@ -174,21 +178,27 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
             nextImage:
             while(possibleImagesIterator.hasNext()) {
                 String image = possibleImagesIterator.next();
+                logger.trace("Checking if image " + image + " is correct for this test");
 
                 // First check to see the the tests MUST request a capability this server provides
                 List<String> availableCapabilities = LinuxImageCapabilities.get(image);
                 if (!availableCapabilities.isEmpty()) {
                     for(String availableCapability : availableCapabilities) {
+                        logger.trace(availableCapability + " is an available capability of this image");
                         if (availableCapability.startsWith("+")) {
                             String actualAvailableCapability = availableCapability.substring(1);
                             boolean requestedCapability = false;
                             for(String choosenCapability : capabilities) {
                                 if (choosenCapability.equalsIgnoreCase(actualAvailableCapability)) {
+                                    logger.trace("This image has an available capability " + actualAvailableCapability + " that matches a chosen capability " + choosenCapability);
                                     requestedCapability = true;
                                     break;
+                                } else {
+                                    logger.trace("This image's available capability " + availableCapability + " is not required");
                                 }
                             }
                             if (!requestedCapability) {
+                                logger.trace("This image had no availabilie capabilities that were chosen for this test");
                                 possibleImagesIterator.remove();
                                 continue nextImage;
                             }
@@ -209,12 +219,16 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
                                 availableCapability = availableCapability.substring(1);
                             }
                             if (availableCapability.equalsIgnoreCase(choosenCapability)) {
+                                logger.trace("This image has an available capability " + availableCapability + " that matches a required capability " + choosenCapability);
                                 found = true;
                                 break;
+                            } else {
+                                logger.trace("This image's available capability " + availableCapability + " is not required");
                             }
                         }
 
                         if (!found) {
+                            logger.trace("This image had no available capabilities that we need so it is not possible to use");
                             possibleImagesIterator.remove();
                             continue nextImage;
                         }
@@ -231,6 +245,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
 
             // *** Select the first image as they will be listed in preference order
             String selectedImage = possibleImages.get(0);
+            logger.trace("The selected image for this test is " + selectedImage);
 
             // *** See if we have capacity for a new Instance on Openstack
             String instanceName = reserveInstance();
@@ -393,7 +408,7 @@ public class OpenstackManagerImpl extends AbstractManager implements ILinuxProvi
     }
 
     protected Gson getGson() {
-        return this.gson;
+        return this.gson.getGson();
     }
 
     protected IIpNetworkManagerSpi getIpNetworkManager() {

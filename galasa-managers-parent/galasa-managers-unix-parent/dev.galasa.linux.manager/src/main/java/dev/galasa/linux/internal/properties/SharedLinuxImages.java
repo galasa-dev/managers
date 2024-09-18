@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.linux.internal.properties;
 
@@ -25,7 +27,7 @@ import dev.galasa.linux.LinuxManagerException;
  * There are no defaults
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class SharedLinuxImages extends CpsProperties {

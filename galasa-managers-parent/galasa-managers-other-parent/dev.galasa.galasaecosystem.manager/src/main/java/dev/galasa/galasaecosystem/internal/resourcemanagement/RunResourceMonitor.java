@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal.resourcemanagement;
 
 import java.util.HashSet;
@@ -20,7 +22,7 @@ import dev.galasa.framework.spi.IResourceManagement;
 /**
  * Clean up the ecosystem properties when the run is deleted
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunResourceMonitor implements Runnable {

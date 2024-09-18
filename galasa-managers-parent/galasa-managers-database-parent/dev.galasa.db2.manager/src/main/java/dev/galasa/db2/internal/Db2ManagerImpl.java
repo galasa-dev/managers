@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.db2.internal;
 
@@ -42,7 +44,7 @@ import dev.galasa.framework.spi.language.GalasaTest;
  * Provides two annotations, one for a Db2 Instance connections and one for
  * a Schema impl
  * 
- * @author jamesdavies
+ *  
  *
  */
 @Component(service = { IManager.class })

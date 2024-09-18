@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.docker.internal;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +25,7 @@ import dev.galasa.docker.IDockerVolume;
 /**
  * A implementation of the docker volumes that will be brought up on the engine
  * 
- * @author James Davies
+ *   
  */
 public class DockerVolumeImpl implements IDockerVolume {
     private DockerManagerImpl dockerManager;
@@ -204,7 +206,7 @@ public class DockerVolumeImpl implements IDockerVolume {
         try {
             String dockerfileTemplate = this.dockerManager.getArtifactManager()
             .getBundleResources(this.getClass())
-            .retrieveSkeletonFileAsString("resources/" + dockerfile, subs);
+            .retrieveSkeletonFileAsString(dockerfile, subs);
 
             return new ByteArrayInputStream(dockerfileTemplate.getBytes());
         } catch (IOException | TestBundleResourceException e) {

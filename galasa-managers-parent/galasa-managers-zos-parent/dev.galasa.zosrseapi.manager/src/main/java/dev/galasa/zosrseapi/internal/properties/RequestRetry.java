@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2020.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosrseapi.internal.properties;
 
@@ -23,7 +23,7 @@ import dev.galasa.zosrseapi.RseapiManagerException;
  * 
  * @galasa.default 3
  * 
- * @galasa.valid_values numerical value > 0 
+ * @galasa.valid_values numerical value &gt; 0 
  * 
  * @galasa.examples 
  * <code>rseapi.server.request.retry=5</code><br>

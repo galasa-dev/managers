@@ -1,7 +1,8 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
-
 package dev.galasa.cicsts.ceci.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -550,7 +551,7 @@ public class CECIManagerIVT {
 	   // EIBDATE is in packed decimal format
 	   String expectedEIBDate = (date.getYear() <= 1999 ? "0" : "1")
 			   					+ Integer.toString(date.getYear()).substring(2)
-			   					+ (date.getDayOfYear() <= 99 ? "0" + date.getDayOfYear() : date.getDayOfYear());
+			   					+ (date.getDayOfYear() <= 99 ? date.getDayOfYear() <= 9 ? "00" + date.getDayOfYear() : "0" + date.getDayOfYear() : date.getDayOfYear());
 	   
 	   return Integer.parseInt(expectedEIBDate);
    }

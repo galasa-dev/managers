@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project  
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.docker.manager.ivt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +55,7 @@ import dev.galasa.http.IHttpClient;
  * 8) Change config and start with ENV's and ensure they are set
  * 9) Mounts a non created volume to the container and ensure all is created and mounted
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Test
@@ -259,7 +261,7 @@ public class DockerManagerIVT {
     @Test 
     public void preLoadVolumeWithConfig() throws DockerManagerException, TestBundleResourceException, InterruptedException {
         IDockerVolume volume = config2.getVolumeByTag("testVolume");
-        InputStream in = resources.retrieveFile("resources/SampleConfig.cfg");
+        InputStream in = resources.retrieveFile("SampleConfig.cfg");
         volume.LoadFile("TestConfigFile.cfg", in);
         container.startWithConfig(config2);
         IDockerExec cmd = container.exec("/bin/cat", "/tmp/testvol/TestConfigFile.cfg");

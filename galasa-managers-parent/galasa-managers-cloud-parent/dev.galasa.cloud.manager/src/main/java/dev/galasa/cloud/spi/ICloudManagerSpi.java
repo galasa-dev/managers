@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.cloud.spi;
 
 import java.util.Properties;
@@ -13,7 +15,7 @@ import dev.galasa.cloud.ICloudContainer;
 /**
  * SPI for the Cloud Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ICloudManagerSpi {

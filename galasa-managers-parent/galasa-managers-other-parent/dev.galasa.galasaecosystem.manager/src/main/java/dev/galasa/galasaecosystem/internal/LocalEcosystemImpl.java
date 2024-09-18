@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal;
 
 import java.io.IOException;
@@ -13,11 +15,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -30,7 +34,6 @@ import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -43,7 +46,7 @@ import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.framework.spi.ConfigurationPropertyStoreException;
 import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.InsufficientResourcesAvailableException;
-import dev.galasa.framework.spi.utils.GalasaGsonBuilder;
+import dev.galasa.framework.spi.utils.GalasaGson;
 import dev.galasa.galasaecosystem.EcosystemEndpoint;
 import dev.galasa.galasaecosystem.GalasaEcosystemManagerException;
 import dev.galasa.galasaecosystem.ILocalEcosystem;
@@ -53,6 +56,7 @@ import dev.galasa.galasaecosystem.internal.properties.GalasaBootVersion;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedFullZip;
 import dev.galasa.galasaecosystem.internal.properties.IsolatedMvpZip;
 import dev.galasa.galasaecosystem.internal.properties.MavenUseDefaultLocalRepository;
+import dev.galasa.galasaecosystem.internal.properties.RunsTimeout;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeRepo;
 import dev.galasa.galasaecosystem.internal.properties.RuntimeVersion;
 import dev.galasa.galasaecosystem.internal.properties.SimBankTestsVersion;
@@ -91,13 +95,15 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     private SimPlatformInstance         simPlatformInstance;
 
-    private final Gson gson = GalasaGsonBuilder.build();
+    private final GalasaGson gson = new GalasaGson();
 
     private final ArrayList<LocalRun> localRuns = new ArrayList<>();
 
     private final RunIdPrefixImpl runIdPrefix;
     
     private IFramework framework;
+
+    private int runsTimeout;
 
     public LocalEcosystemImpl(@NotNull GalasaEcosystemManagerImpl manager, 
             @NotNull String tag,
@@ -168,6 +174,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
             this.galasaBootVersion = GalasaBootVersion.get();
             this.simplatformVersion = SimplatformVersion.get();
+            this.runsTimeout = RunsTimeout.get();
 
             switch(this.isolationInstallation) {
                 case Full:
@@ -379,7 +386,7 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
 
     @Override
     public JsonObject waitForRun(String runName) throws GalasaEcosystemManagerException {
-        return waitForRun(runName, 3);
+        return waitForRun(runName, runsTimeout);
     }
 
     @Override
@@ -462,117 +469,227 @@ public abstract class LocalEcosystemImpl extends AbstractEcosystemImpl implement
         this.localRuns.add(localRun);
     }
 
-    public void discard() {
-        
+
+    private void discardRunIdPrefix() {
         // Release runid prefix
-        
         try {
             this.runIdPrefix.discard();
         } catch (GalasaEcosystemManagerException e) {
             logger.warn("Failed to discard runid prefix from dss", e);
         }
+    }
+
+    private void saveArtifactFile(Path ecosystemRootFolderPath , Path sourceFilePath , String artifactName ) {
+        try {
+            Files.copy(cpsFile, ecosystemRootFolderPath.resolve(sourceFilePath.getFileName().toString()));
+        } catch(Exception e) {
+            logger.warn("Failed to save the local ecosystem "+artifactName,e);
+        }
+    }
+
+    private void saveArtifactFile(
+        Path targetRunFolderPath , 
+        String runName, 
+        Path sourceRasRunFolderPath , 
+        String artifactName ) {
+
+        try {
+            Path sourceFile = sourceRasRunFolderPath.resolve(artifactName);
+            if (Files.exists(sourceFile)) {
+                Files.copy(sourceFile, targetRunFolderPath.resolve(sourceFile.getFileName().toString()));
+            }
+        } catch(Exception e) {
+            logger.warn("Failed to copy run:" + runName + " artifact: "+artifactName,e);
+        }
+    }
+
+    private void saveBootstrap(Path bootstrapFile, Path ecosystemRootFolderPath) {
+        try {
+            if (bootstrapFile == null) {
+                throw new Exception("Programming logic error: Bootstrap file is null.");
+            }
+            
+            Path bootstrapFilePath = bootstrapFile.getFileName();
+            if (bootstrapFilePath==null) {
+                throw new Exception("Programming logic error: Bootstrap file path is null.");
+            }
+
+            String pathString = bootstrapFilePath.toString();
+            logger.debug("Bootstrap file path : "+pathString);
+
+            if (ecosystemRootFolderPath == null) {
+                throw new Exception("Programming logic error: ecosystemRootFolderPath is null.");
+            } 
+
+            Path ecosystemPath = ecosystemRootFolderPath.resolve(pathString);
+            if (ecosystemPath == null) {
+                throw new Exception("Programming logic error: ecosystemPath is null.");
+            }
+            logger.debug("ecosystemPath : "+pathString.toString());
+
+            Files.copy(bootstrapFile, ecosystemPath);
+            
+        } catch(Exception e) {
+            logger.warn("Failed to save the local ecosystem bootstrap",e);
+        }
+    }
+
+    public void discard() {
+        
+        discardRunIdPrefix();
 
         // save all data in the stored artifacts
 
         Path saRoot = getEcosystemManager().getFramework().getResultArchiveStore().getStoredArtifactsRoot();
-        Path saEcosystem = saRoot.resolve("ecosystem");
+        Path ecosystemRootFolder = saRoot.resolve("ecosystem");
 
-        // CPS
-        try {
-            Files.copy(this.cpsFile, saEcosystem.resolve(cpsFile.getFileName().toString()));
-        } catch(Exception e) {
-            logger.warn("Failed to save the local ecosystem CPS",e);
+        if (ecosystemRootFolder == null) {
+            logger.warn("Failed to save the local ecosystem CPS,DSS,overrides: Programming logic error: ecosystemRootFolder is null.");
+        } else {
+            saveArtifactFile(cpsFile            , ecosystemRootFolder, "CPS");
+            saveArtifactFile(this.dssFile       , ecosystemRootFolder, "DSS");
+            saveArtifactFile(this.overridesFile , ecosystemRootFolder, "Overrides");
+            
+            saveBootstrap(bootstrapFile, ecosystemRootFolder);
+
+            logger.info("Not saving credentials into stored artifacts for security reasons");
+
+            saveRunsData( this.localRuns , this.rasDirectory, ecosystemRootFolder);
+        }
+    }
+
+    /**
+     * A data bean class which represents an artifact.
+     * 
+     * You can get these by reading an artifact metadata file.
+     */
+    public static class ArtifactDescriptor {
+        private String path ;
+        private String contentType ;
+
+        public ArtifactDescriptor(String path, String contentType) {
+            this.path = path ;
+            this.contentType = contentType;
         }
 
-        // DSS
-        try {
-            Files.copy(this.dssFile, saEcosystem.resolve(dssFile.getFileName().toString()));
-        } catch(Exception e) {
-            logger.warn("Failed to save the local ecosystem DSS",e);
+        public String getPath() {
+            return this.path;
         }
 
-        // overrides
-        try {
-            Files.copy(this.overridesFile, saEcosystem.resolve(overridesFile.getFileName().toString()));
-        } catch(Exception e) {
-            logger.warn("Failed to save the local ecosystem overrides",e);
+        public String getContentType() {
+            return this.contentType;
         }
 
-        // bootstrap
-        try {
-            Files.copy(this.bootstrapFile, saEcosystem.resolve(bootstrapFile.getFileName().toString()));
-        } catch(Exception e) {
-            logger.warn("Failed to save the local ecosystem bootstrap",e);
+        @Override
+        public String toString() {
+            String template = "path: ''{0}'' contentType: ''{1}''";
+            return MessageFormat.format(template,path,contentType);
         }
+    }
 
-        logger.info("Not saving credentials into stored artifacts for security reasons");
+    /**
+     * The artifacts are described by a metadata file.
+     * 
+     * This is a properties file which has the form
+     * key=value
+     * 
+     * Where key is the path into the RAS folder of the artifact.
+     * And value is the content type used to create the folder
+     * in the target RAS folder.
+     * 
+     * Using this function to encapsulate the gathering of the artifact 
+     * descriptor information from that file, in case the file format changes.
+     * eg: To a json file which has more information inside.
+     * 
+     * Ideally, we would have an ArtifactMetadata object which housed the code which 
+     * does saving, and loading of the data...
+     * 
+     * @param sourceRasRunFolder
+     * @return A list of ArtifactDescriptor objects.
+     */
+    private List<ArtifactDescriptor> getArtifacts(Path sourceRasRunFolder) throws IOException {
+        Path artifactsMetadataFile = sourceRasRunFolder.resolve("artifacts.properties");
+        List<ArtifactDescriptor> artifacts = new ArrayList<ArtifactDescriptor>();
+        Properties artifactProperties = new Properties();
+        if (Files.exists(artifactsMetadataFile)) {
+            artifactProperties.load(Files.newInputStream(artifactsMetadataFile));
 
-        // copy all the run data
-        for(LocalRun run : this.localRuns) {
-            String runName = run.getRunName();
+            for(Entry<Object, Object> entry : artifactProperties.entrySet()) {
+                
 
-            Path rasRun = this.rasDirectory.resolve(runName);
-            Path saRun = saEcosystem.resolve("runs").resolve(runName);
+                String path = (String) entry.getKey();
+                String pathNoLeadingSlash = path.substring(1);
 
-            try {
-                Path runLog = rasRun.resolve("run.log");
-                if (Files.exists(runLog)) {
-                    Files.copy(runLog, saRun.resolve(runLog.getFileName().toString()));
-                }
-            } catch(Exception e) {
-                logger.warn("Failed to copy run " + runName + " run log",e);
+                String contentType = (String) entry.getValue();
+                ArtifactDescriptor artifact = new ArtifactDescriptor(pathNoLeadingSlash, contentType);
+
+                artifacts.add(artifact);
             }
+        }
+        return artifacts ;
+    }
 
-            try {
-                Path structure = rasRun.resolve("structure.json");
-                if (Files.exists(structure)) {
-                    Files.copy(structure, saRun.resolve(structure.getFileName().toString()));
+    private void saveRunsData( List<LocalRun> localRuns , Path rasDirectory, Path ecosystemRootFolder ) {
+
+        if (ecosystemRootFolder == null) {
+            logger.warn("Failed to save the local run log, structure, artifacts.properties, all other artifacts...etc : Programming logic error: saEcosystem is null.");
+        } else {
+
+            // copy all the run data
+            for(LocalRun run : localRuns) {
+                String runName = run.getRunName();
+
+                Path rasRun = rasDirectory.resolve(runName);
+            
+                Path saRun = ecosystemRootFolder.resolve("runs").resolve(runName);
+                if (saRun==null) {
+                    logger.warn("Failed to save artifacts for run "+runName+": Program logic error: saRun is null.");
+                } else {
+                    // Save the framework files.
+                    saveArtifactFile(saRun, runName, rasRun, "run.log");
+                    saveArtifactFile(saRun, runName, rasRun, "structure.json");
+                    saveArtifactFile(saRun, runName, rasRun, "artifacts.properties");
+
+                    // Save the files that testcases/managers added.
+                    saveTestCaseArtifactFiles(saRun, runName, rasRun);
                 }
-            } catch(Exception e) {
-                logger.warn("Failed to copy run " + runName + " structure json",e);
             }
+        }
+    }
 
-            try {
-                Path artifacts = rasRun.resolve("artifacts.properties");
-                if (Files.exists(artifacts)) {
-                    Files.copy(artifacts, saRun.resolve(artifacts.getFileName().toString()));
-                }
-            } catch(Exception e) {
-                logger.warn("Failed to copy run " + runName + " artifacts properties",e);
-            }
+    private void saveTestCaseArtifactFiles(Path saRun, String runName, Path rasRun) {
+        try {
+            Path artifactsDirectory = rasRun.resolve("artifacts");
 
+            // Don't bother going further if there is no artifacts folder
+            // where testcase-generated artifacts get stored.
+            if( Files.exists(artifactsDirectory) ) {
 
-            try {
-                Properties artifacts = new Properties();
-                Path artifactsFile = rasRun.resolve("artifacts.properties");
-                Path artifactsDirectory = rasRun.resolve("artifacts");
-                if (Files.exists(artifactsFile) && Files.exists(artifactsDirectory)) {
-                    artifacts.load(Files.newInputStream(artifactsFile));
+                List<ArtifactDescriptor> artifacts = getArtifacts(rasRun);
+                for( ArtifactDescriptor artifactDescriptor : artifacts ) {
 
-                    for(Entry<Object, Object> entry : artifacts.entrySet()) {
-                        String key = (String) entry.getKey();
-                        String value = (String) entry.getValue();
+                    try {
+                        String artifactPath = artifactDescriptor.getPath();
+                        String contentType = artifactDescriptor.getContentType();
+                        
+                        Path sourceArtifactPath = saRun.resolve(artifactPath);
+                        Files.createDirectories(sourceArtifactPath.getParent());
 
-                        try {
-                            String artifactPath = key.substring(1);
+                        Path rasArtifact = artifactsDirectory.resolve(artifactPath);
+                        ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(contentType);
 
-                            Path saArtifact = saRun.resolve(artifactPath);
-                            Files.createDirectories(saArtifact.getParent());
-                            Path rasArtifact = artifactsDirectory.resolve(artifactPath);
-                            ResultArchiveStoreContentType type = new ResultArchiveStoreContentType(value);
-
-                            try (InputStream is = Files.newInputStream(rasArtifact); 
-                                    OutputStream os = Files.newOutputStream(saArtifact, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
-                                IOUtils.copy(is, os);
-                            }
-                        } catch(Exception e) {
-                            logger.warn("Failed to copy run " + runName + " artifact " + key,e);
+                        try (InputStream is = Files.newInputStream(rasArtifact); 
+                            OutputStream os = Files.newOutputStream(sourceArtifactPath, StandardOpenOption.CREATE_NEW, new SetContentType(type))) {
+                            IOUtils.copy(is, os);
                         }
+
+                    } catch(Exception e) {
+                        logger.warn("Failed to copy run " + runName + " artifact " + artifactDescriptor,e);
                     }
                 }
-            } catch(Exception e) {
-                logger.warn("Failed to copy run " + runName + " artifacts",e);
             }
+        } catch(Exception e) {
+            logger.warn("Failed to copy run " + runName + " artifacts",e);
         }
     }
 

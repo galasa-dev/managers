@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -7,7 +9,7 @@ package dev.galasa.zossecurity;
 /**
  * Represents a group 
  * 
- * @author mikebyls
+ *  
  *
  */
 public interface IZosGroup {

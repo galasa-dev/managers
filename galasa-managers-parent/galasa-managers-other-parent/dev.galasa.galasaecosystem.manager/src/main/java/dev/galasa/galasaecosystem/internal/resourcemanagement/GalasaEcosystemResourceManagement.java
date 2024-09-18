@@ -1,6 +1,8 @@
 /*
-* Copyright contributors to the Galasa project 
-*/
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package dev.galasa.galasaecosystem.internal.resourcemanagement;
 
 import java.util.concurrent.TimeUnit;
@@ -19,7 +21,7 @@ import dev.galasa.galasaecosystem.internal.properties.GalasaEcosystemPropertiesS
 /**
  * Initialise the Resource Management routines for the Galasa Ecosystem Manager 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service= {IResourceManagementProvider.class})

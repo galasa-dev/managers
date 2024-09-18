@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
@@ -15,7 +17,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Requests a zOS Userid. Will not have any groups attached, a default password
  * set, no passphrase and no access to any resources.
  * 
- * @author Michael Baylis
+
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -44,8 +46,8 @@ public @interface ZosUserid {
 	public boolean runUser() default false;
 
 	/**
-	 * Set tag of {@link EnsZosClient} where user will be created.
-	 * 
+
+	 * @see #ensZosClient()
 	 * @return - the set symbolic
 	 */
 	public String ensZosClient() default "";

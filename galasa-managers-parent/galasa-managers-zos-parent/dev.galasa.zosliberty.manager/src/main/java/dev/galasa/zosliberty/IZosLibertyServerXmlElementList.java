@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosliberty;
 
@@ -15,7 +17,7 @@ public interface IZosLibertyServerXmlElementList
     /**
      * Put an XML element in the element list
      * @param elementName - The name of the element to add
-     * @param attributes - A HashMap<String, String> of attributes
+     * @param attributes - A HashMap of attributes
      */
     public void add(String elementName, Map<String, String> attributes);
     

@@ -1,5 +1,7 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zosmf.internal.properties;
 
@@ -26,7 +28,7 @@ public class TestServerCreds {
 //    
 //    private static final String SERVER_ID = "server";
 //    
-//    private static final String CREDS = "creds";
+//    private static final String CREDS = "creds"; commented out unit test //pragma: allowlist secret
 //    
 //    @Test
 //    public void testConstructor() {

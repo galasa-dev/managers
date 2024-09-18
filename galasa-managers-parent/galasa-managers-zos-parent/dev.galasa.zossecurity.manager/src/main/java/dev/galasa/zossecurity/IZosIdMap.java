@@ -1,12 +1,14 @@
 /*
  * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.zossecurity;
 
 /**
  * Represents a Id Map that has been created.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosIdMap {

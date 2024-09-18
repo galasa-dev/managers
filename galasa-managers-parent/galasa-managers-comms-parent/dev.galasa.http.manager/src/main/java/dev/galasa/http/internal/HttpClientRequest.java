@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019,2021.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.http.internal;
 
@@ -16,12 +16,12 @@ import java.util.Map.Entry;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
@@ -32,6 +32,7 @@ import org.w3c.dom.Document;
 import com.google.gson.JsonObject;
 
 import dev.galasa.http.ContentType;
+import dev.galasa.http.HttpDelete;
 import dev.galasa.http.HttpClientException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -42,7 +43,7 @@ import jakarta.xml.bind.JAXBException;
  * {@link #setUrl(String)} must be called before use, as well as one of the
  * setBody(...) methods if this is a PUT or POST request
  * 
- * @author Will Yates
+ *  
  *
  */
 public class HttpClientRequest {
@@ -53,6 +54,7 @@ public class HttpClientRequest {
         DELETE,
         PUT,
         POST,
+        PATCH,
         HEAD;
     }
 
@@ -275,6 +277,9 @@ public class HttpClientRequest {
             case HEAD:
                 request = new HttpHead(uri);
                 break;
+            case PATCH:
+                request = new HttpPatch(uri);
+                break;
             case GET:
             default:
                 request = new HttpGet(uri);
@@ -325,6 +330,24 @@ public class HttpClientRequest {
     }
 
     /**
+     * Create a new DELETE request
+     * 
+     * @param url
+     * @param acceptTypes
+     * @param contentType
+     * @return new DELETE request
+     */
+    public static HttpClientRequest newDeleteRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
+
+      HttpClientRequest request = new HttpClientRequest(RequestType.DELETE);
+      request.setUrl(url);
+      request.setAcceptTypes(acceptTypes);
+      request.setContentType(contentType);
+
+      return request;
+  }
+
+    /**
      * Create a new PUT request
      * 
      * @param url
@@ -353,6 +376,23 @@ public class HttpClientRequest {
     public static HttpClientRequest newPostRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
 
         HttpClientRequest request = new HttpClientRequest(RequestType.POST);
+        request.setUrl(url);
+        request.setAcceptTypes(acceptTypes);
+        request.setContentType(contentType);
+
+        return request;
+    }
+    /**
+     * Create a new PATCH request
+     *
+     * @param url
+     * @param acceptTypes
+     * @param contentType
+     * @return new POST request
+     */
+    public static HttpClientRequest newPatchRequest(String url, ContentType[] acceptTypes, ContentType contentType) {
+
+        HttpClientRequest request = new HttpClientRequest(RequestType.PATCH);
         request.setUrl(url);
         request.setAcceptTypes(acceptTypes);
         request.setContentType(contentType);

@@ -1,7 +1,7 @@
 /*
- * Licensed Materials - Property of IBM
- * 
- * (c) Copyright IBM Corp. 2019.
+ * Copyright contributors to the Galasa project
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package dev.galasa.artifact;
 
@@ -15,7 +15,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
 /**
  * Obtain a {@link IBundleResources} object for this test class
  *
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
