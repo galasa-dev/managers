@@ -5,45 +5,23 @@
  */
 package dev.galasa.cicsts.resource.internal;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import dev.galasa.artifact.IArtifactManager;
 import dev.galasa.artifact.IBundleResources;
-import dev.galasa.artifact.ISkeletonProcessor.SkeletonType;
-import dev.galasa.artifact.TestBundleResourceException;
 import dev.galasa.cicsts.CicstsHashMap;
 import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
@@ -57,7 +35,6 @@ import dev.galasa.cicsts.resource.internal.properties.DefaultResourceTimeout;
 import dev.galasa.zos.IZosImage;
 import dev.galasa.zosfile.IZosFileHandler;
 import dev.galasa.zosfile.IZosUNIXFile;
-import dev.galasa.zosfile.IZosUNIXFile.UNIXFileDataType;
 import dev.galasa.zosfile.ZosUNIXFileException;
 
 public class CicsBundleImpl implements ICicsBundle {
@@ -75,14 +52,15 @@ public class CicsBundleImpl implements ICicsBundle {
     private IZosFileHandler zosFileHandler;
 	private String localBundlePath;
 	private Map<String, Object> parameters = new HashMap<>();
-	private boolean shouldDeploy;
-	private List<CicsBundleComponent> cicsBundleComponents = new ArrayList<>();
+	private boolean needsCopying;
+	private String bundleRoot;
     
     private String resourceDefinitionName;
     private String resourceDefinitionGroup;
     private String resourceDefinitionDescription;
     private CicsResourceStatus resourceDefinitionStatus = CicsResourceStatus.ENABLED;
     private String resourceDefinitionBundledir;
+    private int skeletonType;
 
 	private int defaultTimeout;
 
@@ -90,7 +68,7 @@ public class CicsBundleImpl implements ICicsBundle {
 
 	private static final String RESOURCE_TYPE_BUNDLE = "BUNDLE";
 
-	public CicsBundleImpl(CicsResourceManagerImpl cicsResourceManager, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, String bunndledir, Map<String, String> parameters) throws CicsBundleResourceException {
+	public CicsBundleImpl(CicsResourceManagerImpl cicsResourceManager, ICicsRegion cicsRegion, ICicsTerminal cicsTerminal, Class<?> testClass, String name, String group, String bundlePath, String bunndledir, Map<String, Object> parameter,int skeletonType) throws CicsBundleResourceException {
         this.cicsResourceManager = cicsResourceManager;
         this.cicsResourceManager.registerCicsBundle(this);
         this.artifactManager = this.cicsResourceManager.getArtifactManager();
@@ -105,31 +83,109 @@ public class CicsBundleImpl implements ICicsBundle {
         this.testClass = testClass;
         this.resourceDefinitionName = name;
         this.resourceDefinitionGroup = group;
+        this.skeletonType = skeletonType;
+        logger.debug("Creating CICS Bundle Directory");      
         try {        	                          
-			this.runTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(cicsRegion.getRunTemporaryUNIXDirectory().getUnixPath() + "CICSBundles" + SLASH_SYBMOL + getName() + SLASH_SYBMOL, this.cicsZosImage);
+			this.runTemporaryUNIXPath = this.zosFileHandler.newUNIXFile(cicsRegion.getRunTemporaryUNIXDirectory().getUnixPath() + "CICSBundles" + SLASH_SYBMOL , this.cicsZosImage);
 		} catch (CicstsManagerException | ZosUNIXFileException e) {
 			throw new CicsBundleResourceException("Unable to get run temporary UNIX path", e);
 		}
         // CICS bundle source already stored on file system 
         if (bundlePath == null) {
-            this.shouldDeploy = false;
+            this.needsCopying = false;
             this.resourceDefinitionBundledir = bunndledir;
         } else {
-            this.shouldDeploy = true;
+            this.needsCopying = true;
 	        if (bundlePath.endsWith(SLASH_SYBMOL)) {
 	        	this.localBundlePath = bundlePath;
 	        } else {
 	        	this.localBundlePath = bundlePath + SLASH_SYBMOL;
 	    	}
-	    	String root = new File(this.localBundlePath).getName();
-	    	this.resourceDefinitionBundledir = this.runTemporaryUNIXPath.getUnixPath() + root + SLASH_SYBMOL;
-	        if (parameters != null && !parameters.isEmpty()) {
-	        	this.parameters.putAll(parameters);
+	        this.bundleRoot = new File(this.localBundlePath).getName();
+	    	this.resourceDefinitionBundledir = this.runTemporaryUNIXPath.getUnixPath() + this.bundleRoot + SLASH_SYBMOL;
+	    	logger.info("resourceDefinitionBundledir " + resourceDefinitionBundledir);
+	        
+	    	
+	    	if (parameter != null && !parameter.isEmpty()) {
+	        	this.parameters.putAll(parameter);
 	        }
-    		this.testBundleResources = this.artifactManager.getBundleResources(this.testClass);
+    		
+			Iterator<Map.Entry<String, Object>> iterator = this.parameters.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Map.Entry<String, Object> entry = iterator.next();
+				logger.info("Parameter :" + entry.getKey() +" " + entry.getValue());
+			}
+	    	this.testBundleResources = this.artifactManager.getBundleResources(this.testClass);
         }
 	}
+	
 
+
+
+	public void copyBundleFilesToZfs() throws ZosUNIXFileException, IOException {
+		//No need to mess around parsing XML.  Get the contents of the bundle directory and copy the files as per the resource type.
+		try {
+			Map<String, InputStream> dir;
+			//Copy to resourceDefinitionBundledir
+			dir = testBundleResources.retrieveDirectoryContents(localBundlePath);
+
+			Iterator<Map.Entry<String, InputStream>> iterator = dir.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Map.Entry<String, InputStream> entry = iterator.next();
+				
+				logger.info("File entry :" + entry.getKey());
+				
+				//Get the file suffix
+				String fileExtension = null;
+
+				if(entry.getKey().contentEquals("cics.xml")) {
+					fileExtension = "cics.xml";
+				}
+				else {
+					fileExtension = FilenameUtils.getExtension(entry.getKey());
+				}
+				logger.info("fileExtension:" + fileExtension);
+				//Get the component type to get file transfer type
+				CicsBundleResourceType componentType = null;
+				try { 
+					componentType = CicsBundleResourceType.valueOf(fileExtension.toUpperCase());
+				}
+				catch (IllegalArgumentException e) {
+					componentType = CicsBundleResourceType.valueOf("DEFAULT");
+				}
+				logger.info("File Type:"+ componentType);
+				logger.info("Copying file " + entry.getKey() + " to " + resourceDefinitionBundledir);
+				
+				//Strip the directories in the Galasa resources directory to copy the bundle files to the resourceDefinitionBundledir correctly.
+				int endIndex = entry.getKey().indexOf(this.bundleRoot)  + this.bundleRoot.length();;
+				
+				StringBuilder stringBuilder =  new StringBuilder(entry.getKey());  
+		        StringBuilder directory = stringBuilder.delete(0,endIndex);  
+		     	String resource = directory.toString(); 
+				logger.info("Resource: "+ resource);
+             
+				IZosUNIXFile bundleFile = this.zosFileHandler.newUNIXFile(resourceDefinitionBundledir + resource, cicsZosImage);
+                if (!bundleFile.exists()) {
+                	logger.info("Setting permissions");
+                    bundleFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
+                }
+                if (componentType.isBinaryBundleResource()) {
+                	logger.info("Copying binary file");
+                	bundleFile.storeBinary(IOUtils.toByteArray(this.testBundleResources.retrieveSkeletonFile(entry.getKey(), this.parameters),this.skeletonType));
+                } else {
+                	//Convert the byte array to String and substitute the variables
+                	logger.info("Copying text file");
+                	String s = new String(IOUtils.toByteArray(this.testBundleResources.retrieveSkeletonFile(entry.getKey(), this.parameters),this.skeletonType), StandardCharsets.UTF_8);
+                	bundleFile.storeText(s);
+                }
+			}
+		} catch (Exception e) {
+			logger.debug("Failure in copying bundle files to zFS");
+			e.printStackTrace();
+		} 
+		logger.info("Exiting copy of bundle files");
+	}
+	
 	@Override
 	public void setDefinitionDescriptionAttribute(String value) {
 		this.resourceDefinitionDescription = value;
@@ -169,14 +225,14 @@ public class CicsBundleImpl implements ICicsBundle {
 	public void buildResourceDefinition() throws CicsBundleResourceException {
         try {
             if (resourceDefined()) {
-                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " already exists");
+                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " already exists");
             }
             boolean setUcctran = false;
             if (this.cicsTerminal.isUppercaseTranslation() == true) {
             	this.cicsTerminal.setUppercaseTranslation(false);
             	setUcctran = true;
             }
-            this.cicsRegion.ceda().createResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), getResourceDefinitionGroupAttribute(), buildResourceParameters());
+            this.cicsRegion.ceda().createResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), getResourceDefinitionGroupAttribute(), buildResourceParameters());
             if (setUcctran) {
             	this.cicsTerminal.setUppercaseTranslation(true);
             }
@@ -189,134 +245,13 @@ public class CicsBundleImpl implements ICicsBundle {
         }
 	}
 	
-	@Override
-	public void deploy() throws CicsBundleResourceException {
-		if (!this.shouldDeploy) {
-			throw new CicsBundleResourceException("The CICS bundle content was not supplied when the ICicsBundle was created");
-		}
-        try {
-        	findComponents();
-        	for (CicsBundleComponent bundleComponent : this.cicsBundleComponents) {
-    			logger.debug("Copying file " + bundleComponent.localPath + " to " + bundleComponent.targetPath);
 
-                IZosUNIXFile bundleFile = this.zosFileHandler.newUNIXFile(bundleComponent.targetPath, cicsZosImage);
-                if (bundleComponent.type.isBinaryBundleResource()) {
-                	bundleFile.setDataType(UNIXFileDataType.BINARY);
-                } else {
-                	bundleFile.setDataType(UNIXFileDataType.TEXT);
-                }
-                if (!bundleFile.exists()) {
-                    bundleFile.create(PosixFilePermissions.fromString("rwxrwxrwx"));
-                }
-                bundleFile.storeBinary(bundleComponent.content);
-    		}
-        } catch (ZosUNIXFileException e) {
-            throw new CicsBundleResourceException("Problem deploying CICS bundle to zOS UNIX file system", e);
-        }
-	}
 
-	private void findComponents() throws CicsBundleResourceException {
-    	try {
-    		String localPath = this.localBundlePath + "META-INF/cics.xml";
-    		String targetPath = this.getResourceDefinitionBundledirAttribute() + "META-INF/cics.xml";
-    		byte[] content = IOUtils.toByteArray(this.testBundleResources.retrieveSkeletonFile(localPath, this.parameters, SkeletonType.VELOCITY));
-    		CicsBundleComponent cicsBundleComponent = new CicsBundleComponent(localPath, targetPath, content, CicsBundleResourceType.CICSXML);
-			this.cicsBundleComponents.add(cicsBundleComponent);
-    		NodeList nodes = getDocument(cicsBundleComponent).getElementsByTagName("define");
-    		for (int i = 0; i < nodes.getLength(); i++) {
-    			NamedNodeMap attributes = nodes.item(i).getAttributes();
-    			String type = attributes.getNamedItem("type").getNodeValue();
-    			String path = attributes.getNamedItem("path").getNodeValue();
-    			localPath = this.localBundlePath + path;
-    			targetPath = getResourceDefinitionBundledirAttribute() + path;
-    			content = IOUtils.toByteArray(this.testBundleResources.retrieveSkeletonFile(localPath, this.parameters, SkeletonType.VELOCITY));
-    			CicsBundleResourceType componentType = CicsBundleResourceType.valueOf(new File(type).getName());
-    			cicsBundleComponent = new CicsBundleComponent(localPath, targetPath, content, componentType);
-    			this.cicsBundleComponents.add(cicsBundleComponent);
-    			if (componentType.getSubComponentType() != null) {
-    				parseCicsBundleComponent(cicsBundleComponent);
-    			}
-            }
-    	} catch (CicsBundleResourceException | TestBundleResourceException | IOException e) {
-    		throw new CicsBundleResourceException("Problem retrieving the CICS bundle files from the test bundle", e);
-		}
-	}
-
-	private void parseCicsBundleComponent(CicsBundleComponent cicsBundleComponent) throws CicsBundleResourceException {
-		try {
-			NodeList nodes = getDocument(cicsBundleComponent).getChildNodes();
-			for (int i = 0; i < nodes.getLength(); i++) {
-	    		String localPath;
-	    		String targetPath;
-	    		byte[] content;
-				
-				Element element = (Element) nodes.item(i);
-				String nodeName = element.getTagName();
-				String symbolicName = element.getAttribute("symbolicname");
-				if (nodeName.equals("osgibundle")) {
-					String version = element.getAttribute("version");
-					String fileName = symbolicName + "_" + version + ".jar";
-					localPath = this.localBundlePath + fileName;
-					targetPath = getResourceDefinitionBundledirAttribute() + fileName;
-					content = IOUtils.toByteArray(this.testBundleResources.retrieveJar(symbolicName, version, this.localBundlePath));
-				} else if (nodeName.equals("nodejsapp")) {
-					//TODO !!??
-					throw new CicsBundleResourceException("nodejsapp not yet implemented");
-				} else {
-					String fileName = symbolicName + "." + cicsBundleComponent.type.getSubComponentType().toString().toLowerCase();
-					localPath = this.localBundlePath + fileName;
-					targetPath = getResourceDefinitionBundledirAttribute() + fileName;
-					content = IOUtils.toByteArray(this.testBundleResources.retrieveFile(localPath));
-				}
-				this.cicsBundleComponents.add(new CicsBundleComponent(localPath, targetPath , content, cicsBundleComponent.type.getSubComponentType()));
-			}
-		} catch (CicsBundleResourceException | TestBundleResourceException | IOException e) {
-			throw new CicsBundleResourceException("Problem parsing bundle component", e);
-		}
-	}
-
-	private Document getDocument(CicsBundleComponent cicsBundleComponent) throws CicsBundleResourceException {
-		try {
-			logger.trace("Parsing " + cicsBundleComponent.localPath);
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-	        Document document = documentBuilderFactory.newDocumentBuilder().parse(new ByteArrayInputStream(cicsBundleComponent.content));
-    		logger.debug("Content:" + "\n" + documentToString(document));
-	        return document;
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			throw new CicsBundleResourceException("Problem retrieving content of \"" + cicsBundleComponent.localPath + "\" from the test bundle", e);
-		}
-	}
-	
-    protected String documentToString(Document document) throws CicsBundleResourceException {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        try {
-            // Remove blank lines
-            document.normalize();
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            NodeList nodeList = (NodeList) xPath.evaluate("//text()[normalize-space()='']", document, XPathConstants.NODESET);
-            for (int i = 0; i < nodeList.getLength(); ++i) {
-                Node node = nodeList.item(i);
-                node.getParentNode().removeChild(node);
-            }
-            
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            Source source = new DOMSource(document);            
-            StringWriter stringWriter = new StringWriter();
-            StreamResult result = new StreamResult(stringWriter);
-            transformer.transform(source, result);
-            return stringWriter.toString();
-        } catch (XPathExpressionException | TransformerException e) {
-            throw new CicsBundleResourceException("Unable to convert server.xml org.w3c.dom.Document to java.lang.String");
-        }
-    }
 
 	@Override
 	public void buildInstallResourceDefinition() throws CicsBundleResourceException {
         buildResourceDefinition();
-        if (this.shouldDeploy) {
+        if (this.needsCopying) {
         	deploy();
         }
         installResourceDefinition();
@@ -326,10 +261,9 @@ public class CicsBundleImpl implements ICicsBundle {
 	public void installResourceDefinition() throws CicsBundleResourceException {
         try {
             if (resourceInstalled()) {
-                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " already installed");
+                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " already installed");
             }
-            this.cicsRegion.ceda().installResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), this.resourceDefinitionGroup);
-            //TODO: should return messages????
+            this.cicsRegion.ceda().installResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), this.resourceDefinitionGroup);
             if (!resourceInstalled()) {
                 throw new CicsBundleResourceException("Failed to install " + RESOURCE_TYPE_BUNDLE + " resource definition");
             }
@@ -341,7 +275,7 @@ public class CicsBundleImpl implements ICicsBundle {
 	@Override
 	public boolean resourceDefined() throws CicsBundleResourceException {
         try {
-            return this.cicsRegion.ceda().resourceExists(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), resourceDefinitionGroup);
+            return this.cicsRegion.ceda().resourceExists(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), resourceDefinitionGroup);
         } catch (CicstsManagerException e) {
             throw new CicsBundleResourceException("Unable to display " + RESOURCE_TYPE_BUNDLE + " resource definition", e);
         }
@@ -350,7 +284,7 @@ public class CicsBundleImpl implements ICicsBundle {
 	@Override
 	public boolean resourceInstalled() throws CicsBundleResourceException {
         try {
-            return this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName()) != null;
+            return this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName()) != null;
         } catch (CicstsManagerException e) {
             throw new CicsBundleResourceException("Unable to inquire " + RESOURCE_TYPE_BUNDLE + "", e);
         }
@@ -360,11 +294,11 @@ public class CicsBundleImpl implements ICicsBundle {
 	public void enable() throws CicsBundleResourceException {
         try {
             if (!resourceInstalled()) {
-                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " does not exist");
+                throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " does not exist");
             }
-            this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), "ENABLED");
+            this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), "ENABLED");
         } catch (CicstsManagerException e) {
-            throw new CicsBundleResourceException("Problem enabling " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
+            throw new CicsBundleResourceException("Problem enabling " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName(), e);
         }
 	}
 
@@ -375,7 +309,7 @@ public class CicsBundleImpl implements ICicsBundle {
 
 	@Override
 	public boolean waitForEnable(int timeout) throws CicsBundleResourceException {
-        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be enabled");
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " to be enabled");
 	    LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
 	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (isEnabled()) {
@@ -397,9 +331,9 @@ public class CicsBundleImpl implements ICicsBundle {
         }
         boolean enabled = cemtInquire().isParameterEquals("enablestatus", CicsResourceStatus.ENABLED.toString());
         if (enabled) {
-            logger.trace(RESOURCE_TYPE_BUNDLE + " " +  getName() + " is enabled");
+            logger.trace(RESOURCE_TYPE_BUNDLE + " " +  getDefinitionName() + " is enabled");
         } else {
-            logger.trace(RESOURCE_TYPE_BUNDLE + " " +  getName() + " is NOT enabled");
+            logger.trace(RESOURCE_TYPE_BUNDLE + " " +  getDefinitionName() + " is NOT enabled");
         }
         return enabled;
 	}
@@ -408,11 +342,11 @@ public class CicsBundleImpl implements ICicsBundle {
 	public boolean disable() throws CicsBundleResourceException {
         try {
             if (!resourceInstalled()) {
-                throw new CicsJvmserverResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " does not exist");
+                throw new CicsJvmserverResourceException(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " does not exist");
             }
-            this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), "DISABLED");
+            this.cicsRegion.cemt().setResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), "DISABLED");
         } catch (CicstsManagerException e) {
-            throw new CicsBundleResourceException("Problem disabling " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
+            throw new CicsBundleResourceException("Problem disabling " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName(), e);
         }
         return isEnabled();
 	}
@@ -424,7 +358,7 @@ public class CicsBundleImpl implements ICicsBundle {
 
 	@Override
 	public boolean waitForDisable(int timeout) throws CicsBundleResourceException {
-        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " +  getName() + " to be disabled");
+        logger.trace("Waiting " + timeout + " second(s) for " + RESOURCE_TYPE_BUNDLE + " " +  getDefinitionName() + " to be disabled");
 	    LocalDateTime timeoutTime = LocalDateTime.now().plusSeconds(timeout);
 	    while (LocalDateTime.now().isBefore(timeoutTime)) {
             if (!isEnabled()) {
@@ -437,7 +371,7 @@ public class CicsBundleImpl implements ICicsBundle {
             }
         }
         if (isEnabled()) {
-            throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getName() + " not disabled in " + timeout + " second(s)");
+            throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " not disabled in " + timeout + " second(s)");
         }
         return true;
 	}
@@ -460,10 +394,10 @@ public class CicsBundleImpl implements ICicsBundle {
 	public void delete() throws CicsBundleResourceException {
         try {
             if (resourceDefined()) {
-                this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName(), resourceDefinitionGroup);
+                this.cicsRegion.ceda().deleteResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName(), resourceDefinitionGroup);
             }
         } catch (CicstsManagerException e) {
-        	throw new CicsBundleResourceException("Problem deleteing " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
+        	throw new CicsBundleResourceException("Problem deleteing " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName(), e);
         }
 	}
 
@@ -471,13 +405,13 @@ public class CicsBundleImpl implements ICicsBundle {
 	public void discard() throws CicsBundleResourceException {
         try {
             if (resourceInstalled()) {
-                this.cicsRegion.cemt().discardResource(cicsTerminal, RESOURCE_TYPE_BUNDLE, getName());
+                this.cicsRegion.cemt().discardResource(cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName());
 	            if (resourceInstalled()) {
-	            	throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " was not discarded" + getName());
+	            	throw new CicsBundleResourceException(RESOURCE_TYPE_BUNDLE + " was not discarded" + getDefinitionName());
 	            }
             }
         } catch (CicstsManagerException e) {
-            throw new CicsBundleResourceException("Problem discarding " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
+            throw new CicsBundleResourceException("Problem discarding " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName(), e);
         }
 	}
 
@@ -492,24 +426,28 @@ public class CicsBundleImpl implements ICicsBundle {
 	@Override
 	public void build() throws CicsBundleResourceException {
         try {
-            if (this.shouldDeploy) {
-            	deploy();
+            if (this.needsCopying) {
+            	try {
+					copyBundleFilesToZfs();
+				} catch (ZosUNIXFileException | IOException e) {
+					throw new CicsBundleResourceException("Problem copying bundle files to zFS", e);
+				}
             }
             buildResourceDefinition();
             installResourceDefinition();
         } catch (CicsBundleResourceException e) {
-            throw new CicsBundleResourceException("Problem building " + RESOURCE_TYPE_BUNDLE + " " + getName(), e);
+            throw new CicsBundleResourceException("Problem building " + RESOURCE_TYPE_BUNDLE + " " + getDefinitionName(), e);
         }
 	}	
 
 	@Override
-	public String getName() {
+	public String getDefinitionName() {
 		return this.resourceDefinitionName;
 	}
 
 	@Override
     public String toString() {
-        return "[CICS Bundle] " + getName();
+        return "[CICS Bundle] " + getDefinitionName();
     }
 
     protected int getDefaultTimeout() throws CicsBundleResourceException {
@@ -543,13 +481,13 @@ public class CicsBundleImpl implements ICicsBundle {
 
     protected CicstsHashMap cemtInquire() throws CicsBundleResourceException {
         if (!resourceInstalled()) {
-            throw new CicsBundleResourceException("JVMSERVER " + getName() + " does not exist");
+            throw new CicsBundleResourceException("CICS Bundle " + getDefinitionName() + " does not exist");
         }
         CicstsHashMap cemtMap;
         try {
-            cemtMap = this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getName());
+            cemtMap = this.cicsRegion.cemt().inquireResource(this.cicsTerminal, RESOURCE_TYPE_BUNDLE, getDefinitionName());
         } catch (CicstsManagerException e) {
-            throw new CicsBundleResourceException("Problem inquiring JVMSERVER " + getName(), e);
+            throw new CicsBundleResourceException("Problem inquiring CICS Bundle " + getDefinitionName(), e);
         }
         return cemtMap;
     }
@@ -557,7 +495,7 @@ public class CicsBundleImpl implements ICicsBundle {
 	protected void cleanup() {
         try {
             if (!resourceInstalled()) {
-                logger.info(RESOURCE_TYPE_BUNDLE + " " + getName() + " has not been installed");
+                logger.info(RESOURCE_TYPE_BUNDLE + " " + getDefinitionName() + " has not been installed");
             } else {
                 try {
                     disable();
@@ -580,19 +518,26 @@ public class CicsBundleImpl implements ICicsBundle {
             logger.error("Problem in cleanup phase", e);
         }
     }
-	
-	private class CicsBundleComponent {
 
-		private String localPath;
-		private String targetPath;
-		private byte[] content;
-		private CicsBundleResourceType type;
 
-		private CicsBundleComponent(String localPath, String targetPath, byte[] content, CicsBundleResourceType type) {
-			this.localPath = localPath;
-			this.targetPath = targetPath;
-			this.content = content;
-			this.type = type;
+	@Override
+	public void deploy() throws CicsBundleResourceException {
+		if (!this.needsCopying) {
+			throw new CicsBundleResourceException("The CICS bundle content was not supplied when the ICicsBundle was created");
+		}
+        try {
+        	copyBundleFilesToZfs();
+        } catch (ZosUNIXFileException e) {
+            throw new CicsBundleResourceException("Problem deploying CICS bundle to zOS UNIX file system", e);
+        } catch (IOException e) {
+			logger.debug("Unexpected error deploying CICS Bundle");
+			e.printStackTrace();
 		}
 	}
+
+	
+
+	
+	
+	
 }
