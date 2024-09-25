@@ -23,5 +23,5 @@ ext.includeInMVP          = true
 ext.includeInBOM          = true
 ext.includeInIsolated     = true
 ext.includeInCodeCoverage = true
-ext.includeInJavadoc      = false
+ext.includeInJavadoc      = true
 
