@@ -476,11 +476,11 @@ managers:
 
   - artifact: dev.galasa.windows.manager
     version: 0.21.0
-    obr:          false
+    obr:          true
     mvp:          false
-    bom:          false
+    bom:          true
     javadoc:      false
-    isolated:     false
+    isolated:     true
     codecoverage: false
 
   - artifact: dev.galasa.githubissue.manager
@@ -601,7 +601,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.zosliberty.manager
-    version: 0.34.0
+    version: 0.38.0
     obr:          true
     mvp:          true
     bom:          true
