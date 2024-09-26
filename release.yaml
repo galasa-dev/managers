@@ -37,7 +37,7 @@ managers:
     version: 0.25.0
     obr:          true
     mvp:          true
-    bom:          true
+    bom:          false
     javadoc:      false
     isolated:     true
     codecoverage: false
@@ -91,9 +91,9 @@ managers:
     version: 0.25.0
     obr:          true
     mvp:          true
-    bom:          true
+    bom:          false
     javadoc:      false
-    isolated:     false
+    isolated:     true
     codecoverage: false
 
   - artifact: dev.galasa.cicsts.resource.manager
@@ -152,19 +152,19 @@ managers:
 
   - artifact: dev.galasa.liberty.manager
     version: 0.21.0
-    obr:          true
-    mvp:          true
-    bom:          true
-    javadoc:      true
-    isolated:     true
-    codecoverage: true
+    obr:          false
+    mvp:          false
+    bom:          false
+    javadoc:      false
+    isolated:     false
+    codecoverage: false
 
   - artifact: dev.galasa.openstack.manager
     version: 0.36.0
     obr:          true
     mvp:          false
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -199,10 +199,10 @@ managers:
     version: 0.25.0
     obr:          true
     mvp:          true
-    bom:          false
-    javadoc:      false
+    bom:          true
+    javadoc:      true
     isolated:     true
-    codecoverage: false
+    codecoverage: true
 
   - artifact: dev.galasa.mq.manager
     version: 0.25.0
@@ -217,7 +217,7 @@ managers:
     version: 0.21.0
     obr:          true
     mvp:          false
-    bom:          true
+    bom:          false
     javadoc:      false
     isolated:     true
     codecoverage: false
@@ -344,7 +344,7 @@ managers:
     obr:          true
     mvp:          false
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -363,7 +363,7 @@ managers:
     mvp:          false
     bom:          true
     javadoc:      false
-    isolated:     true
+    isolated:     false
     codecoverage: false
 
   - artifact: dev.galasa.galasaecosystem.manager
@@ -371,7 +371,7 @@ managers:
     obr:          true
     mvp:          false
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -397,8 +397,8 @@ managers:
     version: 0.25.0
     obr:          true
     mvp:          false
-    bom:          true
-    javadoc:      true
+    bom:          false
+    javadoc:      false
     isolated:     true
     codecoverage: false
 
@@ -441,10 +441,10 @@ managers:
   - artifact: dev.galasa.vtp.manager
     version: 0.25.0
     obr:          true
-    mvp:          true
+    mvp:          false
     bom:          true
     javadoc:      true
-    isolated:     true
+    isolated:     false
     codecoverage: false
 
   - artifact: dev.galasa.vtp.manager.ivt
@@ -478,7 +478,7 @@ managers:
     version: 0.21.0
     obr:          true
     mvp:          false
-    bom:          false
+    bom:          true
     javadoc:      false
     isolated:     true
     codecoverage: false
@@ -488,7 +488,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: false
 
@@ -514,7 +514,7 @@ managers:
     version: 0.32.0
     obr:          true
     mvp:          true
-    bom:          false
+    bom:          true
     javadoc:      true
     isolated:     true
     codecoverage: false
@@ -542,7 +542,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -551,7 +551,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -560,7 +560,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -569,7 +569,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -578,7 +578,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -587,7 +587,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -601,7 +601,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.zosliberty.manager
-    version: 0.34.0
+    version: 0.38.0
     obr:          true
     mvp:          true
     bom:          true
@@ -650,7 +650,7 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
 
@@ -659,6 +659,6 @@ managers:
     obr:          true
     mvp:          true
     bom:          true
-    javadoc:      false
+    javadoc:      true
     isolated:     true
     codecoverage: true
