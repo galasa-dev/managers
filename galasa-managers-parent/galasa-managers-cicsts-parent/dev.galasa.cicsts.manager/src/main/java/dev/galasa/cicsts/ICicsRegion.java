@@ -105,6 +105,17 @@ public interface ICicsRegion {
 	 */
 	public void removeSit(@NotNull String sitParam) throws CicstsManagerException;
 
+	
+	/**
+	 * This method adds a method to the DFHRPL concatenation in the CICS
+	 * startup JCL. Not allowed for DSE CICS regions.
+	 * 
+	 * @param library
+	 * @throws CicstsManagerException 
+	 */
+	public void addToDfhRpl(@NotNull String library) throws CicstsManagerException;
+
+
     /**
      * Allows a testcase to get a specific property about the region.
      * 
@@ -126,4 +137,5 @@ public interface ICicsRegion {
     public default String getRegionProperty( String propertyName ) throws CicstsManagerException {
         return null;
     }
+
 }
