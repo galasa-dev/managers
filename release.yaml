@@ -88,7 +88,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.cicsts.manager.ivt
-    version: 0.25.0
+    version: 0.38.0
     obr:          true
     mvp:          true
     bom:          false
@@ -299,15 +299,6 @@ managers:
     obr:          false
     mvp:          false
     bom:          false
-    javadoc:      false
-    isolated:     false
-    codecoverage: false
-
-  - artifact: dev.galasa.sem.manager
-    version: 0.36.0
-    obr:          true
-    mvp:          false
-    bom:          true
     javadoc:      false
     isolated:     false
     codecoverage: false
