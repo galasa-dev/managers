@@ -49,7 +49,7 @@ import dev.galasa.framework.spi.language.GalasaTest;
 /**
  * The Cloud Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Component(service = { IManager.class })
@@ -168,7 +168,7 @@ public class CloudManagerImpl extends AbstractManager implements ICloudManagerSp
 	 * 
 	 * @param field The test field
 	 * @param annotations any annotations with the ecosystem
-	 * @return a {@link IKubernetesEcosystem} ecosystem
+	 * @return a {@link dev.galasa.galasaecosystem.IKubernetesEcosystem} ecosystem
 	 * @throws InsufficientResourcesAvailableException 
 	 * @throws KubernetesManagerException if there is a problem generating a ecosystem
 	 */

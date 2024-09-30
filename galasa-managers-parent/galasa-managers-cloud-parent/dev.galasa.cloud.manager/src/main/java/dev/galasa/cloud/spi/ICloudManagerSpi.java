@@ -15,7 +15,7 @@ import dev.galasa.cloud.ICloudContainer;
 /**
  * SPI for the Cloud Manager
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ICloudManagerSpi {

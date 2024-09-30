@@ -17,7 +17,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * 
  * <p>Used to populate a {@link IZosImage} field</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -8,7 +8,7 @@ package dev.galasa.ipnetwork;
 /**
  * zOS Command exception indicating an error in SSH
  * 
- * @author James Bartlett
+ *  
  *
  */
 public class SSHException extends IpNetworkManagerException {

@@ -32,6 +32,7 @@ import dev.galasa.openstack.manager.internal.json.Port;
 import dev.galasa.openstack.manager.internal.json.Server;
 import dev.galasa.openstack.manager.internal.json.ServerRequest;
 import dev.galasa.openstack.manager.internal.properties.BuildTimeout;
+import dev.galasa.openstack.manager.internal.properties.OpenStackNetworkName;
 
 public abstract class OpenstackServerImpl {
 
@@ -315,9 +316,11 @@ public abstract class OpenstackServerImpl {
             }
 
             // *** Locate the external network
-            Network network = this.openstackHttpClient.findExternalNetwork(null); // TODO provide means to specify
-            // network
-
+            String networkName = OpenStackNetworkName.get();
+            if (networkName == null) {
+                throw new OpenstackManagerException("The external network name to allocate a floatingip on was not provided in the CPS");
+            }
+            Network network = this.openstackHttpClient.findExternalNetwork(networkName);
             if (network == null) {
                 throw new OpenstackManagerException("Unable to select an external network to allocate a floatingip on");
             }

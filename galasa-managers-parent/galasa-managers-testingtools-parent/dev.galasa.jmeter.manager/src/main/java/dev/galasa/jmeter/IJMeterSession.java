@@ -60,9 +60,11 @@ public interface IJMeterSession {
      * JMX-files have to be prepared for this by replacing ALL the $P__VARIABLE notations with $VARIABLE notations
      * Then by adding neccesary parameters inside a HashMap with it, it is possible to change the target of a test dynamically inside the test
      * Example:
-     * HashMap<String,Object> map = new HashMap<String,Object>();
-     * map.put("HOST", "galasa.dev");
-     * session.setChangedParametersJmxFile(jmxStream, map);
+     * <PRE>
+        HashMap<String,Object> map = new HashMap<String,Object>();
+        map.put("HOST", "galasa.dev");
+        session.setChangedParametersJmxFile(jmxStream, map);
+     </PRE>
      * @param jmxStream
      * @param parameters
      * @throws JMeterManagerException
@@ -107,7 +109,6 @@ public interface IJMeterSession {
 
     /**
      * Giving jmeter instance a shutdown signal to finish and clean up all running tests
-     * @param timeout specifying a timeout in milliseconds
      * @throws JMeterManagerException
      */
     public void stopTest() throws JMeterManagerException;

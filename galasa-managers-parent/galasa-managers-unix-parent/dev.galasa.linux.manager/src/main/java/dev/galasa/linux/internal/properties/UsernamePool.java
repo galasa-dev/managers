@@ -30,7 +30,7 @@ import dev.galasa.linux.LinuxManagerException;
  * default value is galasa{0-9}{0-9}
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class UsernamePool extends CpsProperties {

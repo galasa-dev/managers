@@ -16,7 +16,7 @@ import dev.galasa.java.IJavaInstallation;
  * Use a {@link JavaWindowsInstallation} annotation to populate this field with
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IJavaWindowsInstallation extends IJavaInstallation {

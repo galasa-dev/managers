@@ -10,7 +10,7 @@ import dev.galasa.zos.IZosImage;
 /**
  * Represents a pooled userid 
  * 
- * @author mikebyls
+ *  
  *
  */
 public interface IZosUserid {

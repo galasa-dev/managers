@@ -25,7 +25,7 @@ import dev.galasa.docker.IDockerVolume;
 /**
  * A implementation of the docker volumes that will be brought up on the engine
  * 
- * @author James Davies
+ *   
  */
 public class DockerVolumeImpl implements IDockerVolume {
     private DockerManagerImpl dockerManager;

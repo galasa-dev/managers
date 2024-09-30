@@ -8,7 +8,7 @@ package dev.galasa.zossecurity;
 /**
  * Represents a Id Map that has been created.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosIdMap {

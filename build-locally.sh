@@ -224,7 +224,23 @@ function check_secrets {
     success "secrets audit complete"
 }
 
+function update_release_yaml {
+    h2 "Updating release.yaml"
+
+    # After running 'gradle build', a release.yaml file should have been automatically generated
+    generated_release_yaml="${BASEDIR}/galasa-managers-parent/build/release.yaml"
+    current_release_yaml="${BASEDIR}/release.yaml"
+
+    if [[ -f ${generated_release_yaml} ]]; then
+        cp ${generated_release_yaml} ${current_release_yaml}
+        success "Updated release.yaml OK"
+    else
+        warn "Failed to automatically generate release.yaml, please ensure any changed bundles have had their versions updated in ${current_release_yaml}"
+    fi
+}
+
 
 build_code
+update_release_yaml
 
 check_secrets

@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * <br>
  * You can obtain an implementation of this interface using the {@link TextScanner} annotation.
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface ITextScanner {

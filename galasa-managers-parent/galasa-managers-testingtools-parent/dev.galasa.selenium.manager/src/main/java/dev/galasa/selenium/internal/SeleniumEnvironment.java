@@ -33,7 +33,7 @@ import dev.galasa.selenium.internal.properties.SeleniumWebDriverType;
  * Selenium Environment is a generic environment for both local and remote drivers
  * 
  * 
- * @author jamesdavies
+ *  
  *
  */
 public class SeleniumEnvironment {

@@ -26,8 +26,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * The default is the same as the imagename
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class LinuxName extends CpsProperties {

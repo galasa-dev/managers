@@ -394,7 +394,6 @@ public interface IJvmserver {
 
 	/**
 	 * Delete the JVM server logs
-     * @param rasPath path in Results Archive Store
      * @throws CicsJvmserverResourceException
 	 */
 	public void clearJvmLogs() throws CicsJvmserverResourceException;

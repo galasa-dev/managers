@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import java.net.HttpURLConnection;
+
 import org.apache.http.HttpStatus;
 
 import com.google.gson.JsonObject;
@@ -21,6 +23,8 @@ import dev.galasa.zos.IZosImage;
  */
 public interface IRseapi {
     
+
+
     /**
      * Enumeration of RSE API request types
      */
@@ -79,7 +83,7 @@ public interface IRseapi {
      * Issue an HTTP PUT request to the RSE API server with no request body
      * 
      * @param path identifies the RSE API REST API server
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @param convert is a data conversion required. If true, data will be converted betwen EBCDIC to ISO8859-1. If false, no data conversion will take place.
      * @return the RSE API server response
      * @throws RseapiException
@@ -91,7 +95,7 @@ public interface IRseapi {
 	 * 
 	 * @param path identifies the RSE API REST API server
 	 * @param body the request body
-	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
 	 * @return the RSE API server response
 	 * @throws RseapiException
 	 */
@@ -102,7 +106,7 @@ public interface IRseapi {
 	 * 
 	 * @param path identifies the RSE API REST API server
 	 * @param body the request body
-	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+	 * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
 	 * @return the RSE API server response
 	 * @throws RseapiException
 	 */
@@ -113,7 +117,7 @@ public interface IRseapi {
     * 
     * @param path identifies the RSE API REST API server
     * @param body the request body
-    * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+    * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
     * @return the RSE API server response
     * @throws RseapiException
     */
@@ -123,8 +127,7 @@ public interface IRseapi {
      * Issue an HTTP POST request to the RSE API server with no request body
      * 
      * @param path identifies the RSE API REST API server
-     * @param requestBody the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the RSE API server response
      * @throws RseapiException
      */
@@ -135,7 +138,7 @@ public interface IRseapi {
      * 
      * @param path identifies the RSE API REST API server
      * @param requestBody the request body
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the RSE API server response
      * @throws RseapiException
      */
@@ -145,7 +148,7 @@ public interface IRseapi {
      * Issue an HTTP DELETE request to the RSE API server with no request body
      * 
      * @param path identifies the RSE API REST API server
-     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus.HttpStatus.SC_OK} when null
+     * @param validStatusCodes a {@link List} of acceptable HTTP Status codes. Default to {@link HttpStatus#SC_OK} when null
      * @return the RSE API server response
      * @throws RseapiException
      */

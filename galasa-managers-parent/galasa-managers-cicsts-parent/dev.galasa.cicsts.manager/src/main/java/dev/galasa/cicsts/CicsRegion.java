@@ -20,7 +20,7 @@ import dev.galasa.zos.spi.ZosImageDependencyField;
  * Used to populate a {@link ICicsRegion} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -4,12 +4,11 @@ plugins {
 
 description = 'Galasa zOS Liberty Manager'
 
-version = '0.34.0'
+version = '0.38.0'
 
 dependencies {
     implementation project(':galasa-managers-zos-parent:dev.galasa.zos.manager')
     implementation project(':galasa-managers-zos-parent:dev.galasa.zosunixcommand.ssh.manager')
-    implementation project(':galasa-managers-cloud-parent:dev.galasa.liberty.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.textscan.manager')
     implementation project(':galasa-managers-core-parent:dev.galasa.artifact.manager')
     implementation 'org.apache.commons:commons-lang3:3.14.0'

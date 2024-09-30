@@ -23,7 +23,7 @@ import dev.galasa.zos.IZosImage;
  * To gain access to the ZosSecurityManager include a field of type IZosSecurity
  * in your Galasa class.
  * 
- * @author Michael Baylis
+ *  
  * 
  */
 public interface IZosSecurity {
@@ -86,7 +86,6 @@ public interface IZosSecurity {
 	/**
 	 * Create a new profile on the specified image/sysplex.
 	 * @param className
-	 * @param image    - The image/sysplex
 	 * @param name    - The name of the profiles
 	 * @param uacc    - The uacc to assign, or null
 	 * @param refresh - issue SETROPTS REFRESH
@@ -521,7 +520,7 @@ public interface IZosSecurity {
 	/**
 	 * Create a Kerberos client principal. This will create the kerbname and the
 	 * required association with the passed in service principal (see
-	 * {@link #createKerberosPrincipal(IZosUserid, IZosImage, String)} fr the passed
+	 * {@link #createKerberosPrincipal(IZosUserid, String)} fr the passed
 	 * userid.
 	 * 
 	 * @param servicePrincipal - service principal with which to associate this
@@ -538,7 +537,8 @@ public interface IZosSecurity {
 	 * 
 	 * @param serviceUserid - zOS Userid for this principal
 	 * @param realm         - realm to use, see
-	 *                      {@link #getDefaultKerberosRealm(IZosImage)}
+	 *                      {@link #getDefaultKerberosRealm()}
+	 * 
 	 * @return
 	 * @throws ZosSecurityManagerException
 	 */

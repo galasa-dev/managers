@@ -39,7 +39,7 @@ import dev.galasa.http.IHttpClient;
  * Docker RegistryImpl. Controls the location of where docker images can be
  * pulled from
  * 
- * @author James Davies
+ *   
  */
 public class DockerRegistryImpl {
 	private IFramework 							framework;
@@ -65,7 +65,7 @@ public class DockerRegistryImpl {
 	 * 
 	 * @param framework
 	 * @param dockerManager
-	 * @param registryUrl
+	 * @param registryId
 	 * @throws DockerManagerException
 	 */
 	public DockerRegistryImpl(IFramework framework, DockerManagerImpl dockerManager, String registryId)
@@ -95,9 +95,7 @@ public class DockerRegistryImpl {
 	/**
 	 * Checks the registry for and image.
 	 * 
-	 * @param namespace
-	 * @param repository
-	 * @param tag
+	 * @param image
 	 * @return true/false
 	 */
 	public boolean doYouHave(DockerImageImpl image) {
@@ -130,8 +128,7 @@ public class DockerRegistryImpl {
 	/**
 	 * Registry authentication
 	 * 
-	 * @param namespace
-	 * @param repository
+	 * @param image
 	 * @throws DockerManagerException
 	 */
 	public void registryAuthenticate(DockerImageImpl image) throws DockerManagerException {
@@ -155,7 +152,6 @@ public class DockerRegistryImpl {
 	 * Attempts to gain a bearer token from realm, if unauthorized tries basic credentials login 
 	 * retreive token
 	 * 
-	 * @param client
 	 * @return String token
 	 * @throws DockerManagerException
 	 */
@@ -191,7 +187,6 @@ public class DockerRegistryImpl {
 	/**
 	 * Uses basic crednetials to gain a basic auth token.
 	 * 
-	 * @param client
 	 * @return String token
 	 * @throws DockerManagerException
 	 */

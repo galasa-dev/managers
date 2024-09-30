@@ -18,7 +18,7 @@ import dev.galasa.ipnetwork.IIpPort;
  * 
  * <p>Used to populate a {@link dev.galasa.ipnetwork.IIpPort} field</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

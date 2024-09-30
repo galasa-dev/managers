@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Openstack Manager'
 
-version = '0.32.0'
+version = '0.36.0'
 
 dependencies {
     api            project(':galasa-managers-comms-parent:dev.galasa.ipnetwork.manager')
@@ -27,4 +27,4 @@ ext.includeInMVP          = false
 ext.includeInBOM          = true
 ext.includeInIsolated     = true
 ext.includeInCodeCoverage = true
-ext.includeInJavadoc      = false
+ext.includeInJavadoc      = true

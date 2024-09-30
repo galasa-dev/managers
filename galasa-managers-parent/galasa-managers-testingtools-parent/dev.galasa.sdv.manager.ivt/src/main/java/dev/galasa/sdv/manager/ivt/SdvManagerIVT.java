@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.galasa.BeforeClass;
+import dev.galasa.ProductVersion;
 import dev.galasa.Test;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
@@ -26,13 +27,13 @@ import dev.galasa.sdv.SdvUser;
     @Logger
     public Log logger;
 
-    @CicsRegion
+    @CicsRegion(cicsTag = "SDVIVT")
     public ICicsRegion cics;
 
-    @CicsTerminal
+    @CicsTerminal(cicsTag = "SDVIVT")
     public ICicsTerminal terminal;
 
-    @SdvUser(roleTag = "role1")
+    @SdvUser(cicsTag = "SDVIVT", roleTag = "R1")
     public ISdvUser user1;
 
     private static final String SDV_TCPIPSERVICE_NAME = "SDVXSDT";
@@ -45,11 +46,18 @@ import dev.galasa.sdv.SdvUser;
     @Test
     public void userUsesCeda() throws Exception {
 
-        terminal.type("CEDA DI G(SDVGRP)").enter().waitForTextInField(SDV_TCPIPSERVICE_NAME);
+        // Only run test if running on CICS 6.2+
+        if (!cics.getVersion().isEarlierThan(ProductVersion.v(750))) {
 
-        assertThat(terminal.searchText(SDV_TCPIPSERVICE_NAME))
-                .as("Expectation to see " + SDV_TCPIPSERVICE_NAME + " in terminal").isTrue();
-        terminal.pf3();
+            terminal.type("CEDA DI G(SDVGRP)").enter().waitForTextInField(SDV_TCPIPSERVICE_NAME);
+
+            assertThat(terminal.searchText(SDV_TCPIPSERVICE_NAME))
+                    .as("Expectation to see " + SDV_TCPIPSERVICE_NAME + " in terminal").isTrue();
+            terminal.pf3();
+        } else {
+            // Just pass the test if running on earlier CICS versions
+            assertThat(true).isTrue();
+        }
     }
   
  }

@@ -25,7 +25,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Ensure if type over the end of a field,  the cursor will skip to the next unprotected field
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class FieldOverflowTest extends Zos3270TestBase {

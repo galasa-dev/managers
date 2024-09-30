@@ -26,8 +26,6 @@ import dev.galasa.openstack.manager.OpenstackManagerException;
  * <p>
  * There is no default
  * </p>
- * 
- * @author Michael Baylis
  *
  */
 public class LinuxKeyPair extends CpsProperties {

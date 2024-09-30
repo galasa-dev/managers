@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +28,8 @@ import dev.galasa.framework.spi.IFramework;
 import dev.galasa.framework.spi.IGherkinManager;
 import dev.galasa.framework.spi.IManager;
 import dev.galasa.framework.spi.ResourceUnavailableException;
+import dev.galasa.framework.spi.Result;
+import dev.galasa.framework.spi.language.GalasaMethod;
 import dev.galasa.framework.spi.language.GalasaTest;
 import dev.galasa.ipnetwork.IIpHost;
 import dev.galasa.textscan.spi.ITextScannerManagerSpi;
@@ -51,7 +54,6 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
 
     private static final Log                            logger        = LogFactory.getLog(Zos3270ManagerImpl.class);
 
-    private IConfigurationPropertyStoreService          cps;
     private IDynamicStatusStoreService                  dss;
 
     private IZosManagerSpi                              zosManager;
@@ -97,7 +99,30 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
         }
 
     }
-    
+
+    @Override
+    public Result endOfTestMethod(@NotNull GalasaMethod galasaMethod, @NotNull Result currentResult, Throwable currentException)
+            throws ManagerException {
+
+        super.endOfTestMethod(galasaMethod, currentResult, currentException);
+
+        if (galasaMethod.isGherkin()) {
+            // The end of a test method in gherkin equates to the end of the scenario.
+            // So we need to free up terminals so their state doesn't leech into the next scenario.
+            // A scenario equates to a java method.
+            disconnectAllTerminals();
+        }
+
+        return currentResult;
+    }
+
+    private void disconnectAllTerminals() throws Zos3270ManagerException {
+        for( Zos3270TerminalImpl terminal: terminals) {
+            if (terminal.isConnected()) {
+                disconnectTerminal(terminal);
+            }
+        }
+    }
 
     @Override
     public List<String> extraBundles(@NotNull IFramework framework) throws ManagerException {
@@ -207,19 +232,25 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     public void provisionStop() {
         logger.trace("Disconnecting terminals");
         for (Zos3270TerminalImpl terminal : terminals) {
-            try {
-                terminal.writeRasOutput();
-                terminal.flushTerminalCache();
-                terminal.disconnect();
-            } catch (TerminalInterruptedException e) {
-                logger.warn("Thread interrupted whilst disconnecting terminals", e);
-                Thread.currentThread().interrupt();
-            }
+            disconnectTerminal(terminal);
         }
     }
 
-    protected IConfigurationPropertyStoreService getCps() {
-        return this.cps;
+    private void disconnectTerminal(Zos3270TerminalImpl terminal) {
+        String terminalId = terminal.getId();
+        logger.info("Disconnecting terminal "+terminalId);
+        try {
+            terminal.writeRasOutput();
+            terminal.flushTerminalCache();
+            terminal.disconnect();
+        } catch (TerminalInterruptedException e) {
+            logger.warn("Thread interrupted whilst disconnecting terminals", e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    protected IConfigurationPropertyStoreService getCps() throws Zos3270ManagerException {
+        return Zos3270PropertiesSingleton.cps();
     }
 
     protected IDynamicStatusStoreService getDss() {
@@ -229,4 +260,49 @@ public class Zos3270ManagerImpl extends AbstractGherkinManager implements IZos32
     public IZosManagerSpi getZosManager() {
         return this.zosManager;
     }
+
+    /**
+     * Get a CPS property from the zos3270 namespace.
+     * 
+     * The Gherkin sister-classes need to be able to retrieve properties from the CPS.
+     *
+     * @param fullPropertyName the name of the property you want. Including the namespace, which must
+     * match {@link Zos3270ManagerImpl#NAMESPACE}
+     */
+    public String getCpsProperty(String fullPropertyName) throws Zos3270ManagerException {
+
+        String propertyValue;
+
+        if (!fullPropertyName.startsWith(Zos3270ManagerImpl.NAMESPACE+".")) {
+            // This manager can only get properties from the zos3270 namespace.
+            throw new Zos3270ManagerException(
+                "Program logic error. CPS property name must start with '"+Zos3270ManagerImpl.NAMESPACE+".' for the Zos3270 manager to access it."+
+                " Property"+fullPropertyName+" cannot be retrieved.");
+        }
+
+        try {
+
+            // We get something like "zos3270.gherkin.terminal.rows" as input.
+            // The cps we are using is already pinned to the zos3270 namespace, so we don't need to 
+            // pass that. It is implicitly given.
+
+
+            String[] propNameParts = fullPropertyName.split("\\.");
+            // Skip the namespace zos3270 part.
+            String prefix = propNameParts[1]; 
+            String suffix = propNameParts[propNameParts.length-1]; 
+            // allocate space for the infixes.
+            String [] infixes = new String[propNameParts.length-3];
+            System.arraycopy( propNameParts, 2, infixes, 0, propNameParts.length-3 );
+
+            propertyValue = getCps().getProperty(prefix, suffix, infixes);
+            logger.info("Property requested:"+fullPropertyName+" value:"+propertyValue);
+
+        } catch (ConfigurationPropertyStoreException ex) {
+            throw new Zos3270ManagerException("Failed to retrieve the CPS property "+fullPropertyName , ex );
+        }
+
+        return propertyValue;
+    }
+
 }

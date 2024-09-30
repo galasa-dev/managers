@@ -17,7 +17,7 @@ import dev.galasa.ipnetwork.IIpHost;
  * 
  * <p>Use a {@link ZosImage} annotation to populate this field with</p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public interface IZosImage {
@@ -73,7 +73,7 @@ public interface IZosImage {
     /**
      * Retrieve the default credentials for the zOS Image. 
      * 
-     * @return The default credentials - see {@link dev.galasa.framework.spi.creds.ICredentials}
+     * @return The default credentials - see {@link dev.galasa.ICredentials}
      * @throws ZosManagerException if the credentials are missing or there is a problem with the credentials store
      */
     @NotNull

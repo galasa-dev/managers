@@ -2,20 +2,25 @@ plugins {
     id 'galasa.manager'
     id 'checkstyle'
     id 'pmd'
-    id("com.github.spotbugs") version "4.7.0"
+    id("com.github.spotbugs") version "6.0.20"
 }
 
 description = 'Galasa SDV Manager'
 
-version = '0.34.0'
+version = '0.36.0'
 
 checkstyle {
     configFile = file("config/checkstyle/checkstyle.xml") 
     toolVersion = "10.14.2"
 }
-configurations.all {
-    attributes {
-        attribute(Attribute.of('org.gradle.jvm.environment', String), 'standard-jvm')
+
+// Apply a workaround to get checkstyle working with Gradle 6.x,
+// this workaround is not required for later versions of Gradle.
+if (project.getGradle().getGradleVersion().compareTo("7.0") < 0) {
+    configurations.all {
+        attributes {
+            attribute(Attribute.of('org.gradle.jvm.environment', String), 'standard-jvm')
+        }
     }
 }
 

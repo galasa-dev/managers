@@ -11,7 +11,7 @@ import java.net.InetSocketAddress;
 /**
  * Types of Endpoints for the Galasa Ecosystem
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public enum EcosystemEndpoint {

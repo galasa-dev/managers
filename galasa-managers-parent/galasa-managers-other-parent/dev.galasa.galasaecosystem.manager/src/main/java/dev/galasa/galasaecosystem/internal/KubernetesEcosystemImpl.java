@@ -77,7 +77,7 @@ import dev.galasa.kubernetes.KubernetesManagerException;
 /**
  * Deploy the Ecsosystem into a Kubernetes Namespace
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesEcosystemImpl extends AbstractEcosystemImpl implements IKubernetesEcosystem {

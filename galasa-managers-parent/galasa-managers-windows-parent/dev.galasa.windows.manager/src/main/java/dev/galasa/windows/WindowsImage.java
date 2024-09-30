@@ -19,7 +19,7 @@ import dev.galasa.framework.spi.ValidAnnotatedFields;
  * Used to populate a {@link IWindowsImage} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

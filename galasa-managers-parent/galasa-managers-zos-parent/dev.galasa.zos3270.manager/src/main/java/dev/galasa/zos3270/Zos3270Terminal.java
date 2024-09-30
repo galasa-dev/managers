@@ -20,7 +20,7 @@ import dev.galasa.zos3270.internal.Zos3270ManagerField;
  * Used to populate a {@link ITerminal} field
  * </p>
  * 
- * @author Michael Baylis
+ *  
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -20,7 +20,6 @@ import dev.galasa.sdv.internal.properties.SdvPoolUsers;
 import dev.galasa.zos.IZosImage;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.logging.Log;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import sun.misc.Unsafe;
 
 
 class TestSdvUserPool {
@@ -115,13 +115,14 @@ class TestSdvUserPool {
         frameworkField.set(sdvUserPool, framework);
 
         // Replace LOG
-        Field loggerField = sdvUserPoolClass.getDeclaredField("LOG");
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserPool, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserPoolClass.getDeclaredField("LOG");
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         String userCred = sdvUserPool.allocateUser(roleName, mockCicsaRegion);

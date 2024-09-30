@@ -12,7 +12,7 @@ import java.net.HttpURLConnection;
  * container.
  * <p>
  * 
- * @author James Davies
+ *   
  *
  */
 public interface IDockerExec {

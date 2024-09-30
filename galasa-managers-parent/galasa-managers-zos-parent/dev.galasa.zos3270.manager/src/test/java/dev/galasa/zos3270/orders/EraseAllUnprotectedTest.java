@@ -27,7 +27,7 @@ import dev.galasa.zos3270.util.Zos3270TestBase;
 /**
  * Test the Erase All Unprotected order 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class EraseAllUnprotectedTest extends Zos3270TestBase {

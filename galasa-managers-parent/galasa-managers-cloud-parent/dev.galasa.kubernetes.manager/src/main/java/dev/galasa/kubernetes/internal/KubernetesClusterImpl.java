@@ -45,7 +45,7 @@ import io.kubernetes.client.util.Config;
 /**
  * Represents a Kubernetes Cluster
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class KubernetesClusterImpl {

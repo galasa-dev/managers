@@ -23,7 +23,7 @@ import dev.galasa.galasaecosystem.internal.RunIdPrefixImpl;
 /**
  * Clean up the hanging runid prefixes 
  * 
- * @author Michael Baylis
+ *  
  *
  */
 public class RunIdPrefixMonitor implements Runnable {

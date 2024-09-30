@@ -15,7 +15,6 @@ import dev.galasa.framework.spi.IFrameworkRuns;
 import dev.galasa.framework.spi.IResourceManagement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import sun.misc.Unsafe;
 
 
 class TestSdvUserResourceMonitor {
@@ -37,7 +37,7 @@ class TestSdvUserResourceMonitor {
     private String sdvUserResourceMonitorClassString =
             "dev.galasa.sdv.internal.SdvUserResourceMonitor";
     private String logString = "LOG";
-    private String modifiersString = "modifiers";
+    private String theUnsafeString = "theUnsafe";
 
     private String dssEntryUser1RegionA = "sdvuser.APPL1.USER1";
     private String dssEntryUser2RegionA = "sdvuser.APPL1.USER2";
@@ -100,13 +100,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.run();
@@ -154,13 +155,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.run();
@@ -206,13 +208,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.run();
@@ -261,13 +264,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.run();
@@ -311,13 +315,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.runFinishedOrDeleted(runThreeString);
@@ -359,13 +364,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         // Make call to funtion under test
         sdvUserResourceMonitor.runFinishedOrDeleted(runThreeString);
@@ -410,13 +416,14 @@ class TestSdvUserResourceMonitor {
                         .newInstance(framework, resMan, dssService);
 
         // Replace LOG
-        Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
-        loggerField.setAccessible(true);
-        // remove final modifier
-        Field modifiersField = Field.class.getDeclaredField(modifiersString);
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        loggerField.set(sdvUserResourceMonitorClass, mockLog);
+        final Field unsafeField = Unsafe.class.getDeclaredField(theUnsafeString);
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+
+        final Field loggerField = sdvUserResourceMonitorClass.getDeclaredField(logString);
+        final Object staticLoggerFieldBase = unsafe.staticFieldBase(loggerField);
+        final long staticLoggerFieldOffset = unsafe.staticFieldOffset(loggerField);
+        unsafe.putObject(staticLoggerFieldBase, staticLoggerFieldOffset, mockLog);
 
         sdvUserPoolStatic.when(() -> SdvUserPool.deleteDss(Mockito.eq(user1String), Mockito.any(),
         Mockito.eq(runThreeString), Mockito.any()))
