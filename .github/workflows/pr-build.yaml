@@ -40,7 +40,6 @@ jobs:
           gradle -b galasa-managers-parent/build.gradle check publish --info \
           --no-daemon --console plain \
           -Dorg.gradle.jvmargs=-Xmx4096M \
-          -PsourceMaven=https://development.galasa.dev/main/maven-repo/extensions \
           -PcentralMaven=https://repo.maven.apache.org/maven2/ \
           -PtargetMaven=${{ github.workspace }}/repo 2>&1 | tee build.log
 
