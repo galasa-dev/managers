@@ -404,7 +404,7 @@ managers:
 
   - artifact: dev.galasa.sdv.manager.ivt
     version: 0.35.0
-    obr:          false
+    obr:          true
     mvp:          false
     bom:          false
     javadoc:      false
