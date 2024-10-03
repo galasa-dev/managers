@@ -448,7 +448,7 @@ managers:
     codecoverage: false
 
   - artifact: dev.galasa.linux.manager
-    version: 0.21.0
+    version: 0.38.0
     obr:          true
     mvp:          false
     bom:          true
