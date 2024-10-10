@@ -268,14 +268,18 @@ public class SdvManagerImpl extends AbstractManager {
         try {
             credsObj = (ICredentialsUsernamePassword) getFramework().getCredentialsService()
                     .getCredentials(credentialTag);
-
-            cts.registerText(credsObj.getPassword(),
-                    "Password for credential tag: " + credentialTag);
-
         } catch (CredentialsException e) {
             throw new SdvManagerException(
                     "No credentials were found with the tag: " + credentialTag, e);
         }
+
+        if (credsObj == null) {
+            throw new SdvManagerException(
+                    "No credentials were found with the tag: " + credentialTag);
+        }
+
+        cts.registerText(credsObj.getPassword(),
+                "Password for credential tag: " + credentialTag);
 
         SdvUserImpl newSdvUser = new SdvUserImpl(credentialTag, credsObj, cicsTag, role);
         sdvUsersToRecordList.add(newSdvUser);
