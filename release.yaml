@@ -394,7 +394,7 @@ managers:
     codecoverage: false
 
   - artifact: dev.galasa.sdv.manager
-    version: 0.36.0
+    version: 0.38.0
     obr:          true
     mvp:          true
     bom:          true
@@ -403,7 +403,7 @@ managers:
     codecoverage: true
 
   - artifact: dev.galasa.sdv.manager.ivt
-    version: 0.35.0
+    version: 0.38.0
     obr:          true
     mvp:          false
     bom:          false
