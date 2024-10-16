@@ -14,12 +14,14 @@ import dev.galasa.ProductVersion;
 import dev.galasa.Test;
 import dev.galasa.cicsts.CicsRegion;
 import dev.galasa.cicsts.CicsTerminal;
+import dev.galasa.cicsts.CicstsManagerException;
 import dev.galasa.cicsts.ICicsRegion;
 import dev.galasa.cicsts.ICicsTerminal;
 import dev.galasa.core.manager.Logger;
 import dev.galasa.sdv.ISdvUser;
 import dev.galasa.sdv.SdvManagerException;
 import dev.galasa.sdv.SdvUser;
+import dev.galasa.zosbatch.ZosBatchException;
 
  @Test
  public class SdvManagerIVT {
@@ -39,15 +41,22 @@ import dev.galasa.sdv.SdvUser;
     private static final String SDV_TCPIPSERVICE_NAME = "SDVXSDT";
 
     @BeforeClass
-    public void logIntoTerminals() throws SdvManagerException {
-        user1.logIntoTerminal(terminal);
+    public void logIntoTerminals() throws SdvManagerException, ZosBatchException, CicstsManagerException {
+        // Only run test if running on CICS 6.2+ & SEC=YES
+        if (!cics.getRegionJob().retrieveOutputAsString().contains("DFHXS1102I")
+            && !cics.getVersion().isEarlierThan(ProductVersion.v(750))
+        ) {
+                user1.logIntoTerminal(terminal);
+        }
     }
 
     @Test
     public void userUsesCeda() throws Exception {
 
-        // Only run test if running on CICS 6.2+
-        if (!cics.getVersion().isEarlierThan(ProductVersion.v(750))) {
+        // Only run test if running on CICS 6.2+ & SEC=YES
+        if (!cics.getRegionJob().retrieveOutputAsString().contains("DFHXS1102I")
+            && !cics.getVersion().isEarlierThan(ProductVersion.v(750))
+        ) {
 
             terminal.type("CEDA DI G(SDVGRP)").enter().waitForTextInField(SDV_TCPIPSERVICE_NAME);
 
