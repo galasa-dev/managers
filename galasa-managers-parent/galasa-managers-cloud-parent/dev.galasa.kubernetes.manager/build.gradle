@@ -4,7 +4,7 @@ plugins {
 
 description = 'Galasa Kubernetes Manager'
 
-version = '0.34.0'
+version = '0.38.0'
 
 dependencies {
     api project(':galasa-managers-cloud-parent:dev.galasa.cloud.manager')
@@ -22,7 +22,7 @@ dependencies {
     }
     implementation ('com.google.code.gson:gson'){
         version {
-            strictly '2.10'
+            strictly '2.10.1'
         }
     }
     implementation ('org.apache.commons:commons-lang3'){
@@ -45,6 +45,12 @@ dependencies {
             strictly '1.26.0'
         }
     }
+    implementation ('com.google.protobuf:protobuf-java') {
+        version {
+            strictly '3.25.5'
+        }
+    }
+    		
     implementation 'io.prometheus:simpleclient:0.15.0'
     implementation 'io.prometheus:simpleclient_httpserver:0.15.0'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
