@@ -1,3 +1,8 @@
+# BEFORE YOU READ ON...
+
+This repository is no longer used. Any code which is still relevant has been moved to the main galasa
+repository here: https://github.com/galasa-dev/galasa
+
 # Galasa Managers
 This repository contains code relating to Galasa Managers. Managers are the power-houses of Galasa and are used to reduce the amount of boilerplate code within a test and provide proven tool interaction code.
 The repository has a hierarchical structure with a "galasa-managers-parent" folder at the top containing a "pom.xml" file, listing all currently available Managers. 
